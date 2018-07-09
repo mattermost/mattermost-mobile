@@ -12,7 +12,7 @@ import {
 import {Posts, Preferences} from 'mattermost-redux/constants';
 import {getPreferenceKey} from 'mattermost-redux/utils/preference_utils';
 
-/* eslint-disable max-nested-callbacks, no-console */
+/* eslint-disable max-nested-callbacks */
 
 describe('Selectors.PostList', () => {
     describe('makePreparePostIdsForPostList', () => {
@@ -44,7 +44,11 @@ describe('Selectors.PostList', () => {
 
             // Defaults to show post
             let now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
-            assert.deepEqual(removeDateLines(now), ['1002', '1001']);
+            assert.deepEqual(now, [
+                '1002', 
+                '1001',
+                'date-Thu Jan 01 1970 00:00:00 GMT+0000 (GMT)',
+            ]);
 
             // Show join/leave posts
             state = {
@@ -66,7 +70,11 @@ describe('Selectors.PostList', () => {
             };
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
-            assert.deepEqual(removeDateLines(now), ['1002', '1001']);
+            assert.deepEqual(now, [
+                '1002', 
+                '1001',
+                'date-Thu Jan 01 1970 00:00:00 GMT+0000 (GMT)',
+            ]);
 
             // Hide join/leave posts
             state = {
@@ -88,7 +96,10 @@ describe('Selectors.PostList', () => {
             };
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
-            assert.deepEqual(removeDateLines(now), ['1001']);
+            assert.deepEqual(now, [
+                '1001',
+                'date-Thu Jan 01 1970 00:00:00 GMT+0000 (GMT)',
+            ]);
 
             // always show join/leave posts for the current user
             state = {
@@ -107,7 +118,11 @@ describe('Selectors.PostList', () => {
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
 
-            assert.deepEqual(removeDateLines(now), ['1002', '1001']);
+            assert.deepEqual(now, [
+                '1002', 
+                '1001',
+                'date-Thu Jan 01 1970 00:00:00 GMT+0000 (GMT)',
+            ]);
         });
 
         it('new messages indicator', () => {
@@ -138,28 +153,66 @@ describe('Selectors.PostList', () => {
 
             // Do not show new messages indicator before all posts
             let now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 0, indicateNewMessages: true});
-            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000']);
+            assert.deepEqual(now, [
+                '1010', 
+                '1005', 
+                '1000',
+                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
+            ]);
 
             now = preparePostIdsForPostList(state, {postIds, indicateNewMessages: true});
-            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000']);
+            assert.deepEqual(now, [
+                '1010', 
+                '1005', 
+                '1000',
+                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
+            ]);
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 999, indicateNewMessages: false});
-            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000']);
+            assert.deepEqual(now, [
+                '1010', 
+                '1005', 
+                '1000',
+                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
+            ]);
 
             // Show new messages indicator before all posts
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 999, indicateNewMessages: true});
-            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000', START_OF_NEW_MESSAGES]);
+            assert.deepEqual(now, [
+                '1010', 
+                '1005', 
+                '1000',
+                START_OF_NEW_MESSAGES,
+                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
+            ]);
 
             // Show indicator between posts
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1003, indicateNewMessages: true});
-            assert.deepEqual(removeDateLines(now), ['1010', '1005', START_OF_NEW_MESSAGES, '1000']);
+            assert.deepEqual(now, [
+                '1010', 
+                '1005', 
+                START_OF_NEW_MESSAGES, 
+                '1000',
+                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
+            ]);
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1006, indicateNewMessages: true});
-            assert.deepEqual(removeDateLines(now), ['1010', START_OF_NEW_MESSAGES, '1005', '1000']);
+            assert.deepEqual(now, [
+                '1010', 
+                START_OF_NEW_MESSAGES, 
+                '1005', 
+                '1000',
+                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
+            ]);
 
             // Don't show indicator when all posts are read
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1020});
-            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000']);
+            assert.deepEqual(now, [
+                '1010', 
+                '1005', 
+                '1000',
+                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
+            ]);
         });
 
         it('memoization', () => {
@@ -197,17 +250,38 @@ describe('Selectors.PostList', () => {
                 },
             };
 
-            let postIds = ['1006', '1004', '1003', '1001'];
+            let postIds = [
+                '1006', 
+                '1004', 
+                '1003', 
+                '1001', 
+            ];
             let lastViewedAt = initialPosts['1001'].create_at + 1;
 
             let now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
-            assert.deepEqual(removeDateLines(now), ['1006', '1004', '1003', START_OF_NEW_MESSAGES, '1001']);
+            assert.deepEqual(now, [
+                '1006', 
+                '1004', 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)', 
+                '1003', 
+                START_OF_NEW_MESSAGES, 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
 
             // No changes
             let prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
-            assert.deepEqual(removeDateLines(now), ['1006', '1004', '1003', START_OF_NEW_MESSAGES, '1001']);
+            assert.deepEqual(now, [
+                '1006', 
+                '1004', 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003', 
+                START_OF_NEW_MESSAGES, 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
 
             // lastViewedAt changed slightly
             lastViewedAt = initialPosts['1001'].create_at + 2;
@@ -215,7 +289,15 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
-            assert.deepEqual(removeDateLines(now), ['1006', '1004', '1003', START_OF_NEW_MESSAGES, '1001']);
+            assert.deepEqual(now, [
+                '1006', 
+                '1004', 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003', 
+                START_OF_NEW_MESSAGES, 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
 
             // lastViewedAt changed a lot
             lastViewedAt += initialPosts['1003'].create_at + 1;
@@ -223,12 +305,28 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.notEqual(now, prev);
-            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
+            assert.deepEqual(now, [
+                '1006', 
+                '1004', 
+                START_OF_NEW_MESSAGES, 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003', 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
 
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
-            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
+            assert.deepEqual(now, [
+                '1006', 
+                '1004', 
+                START_OF_NEW_MESSAGES, 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003', 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
 
             // postIds changed, but still shallowly equal
             postIds = [...postIds];
@@ -236,7 +334,15 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
-            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
+            assert.deepEqual(now, [
+                '1006',
+                '1004', 
+                START_OF_NEW_MESSAGES, 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003', 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
 
             // Post changed, not in postIds
             state = {
@@ -256,7 +362,15 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
-            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
+            assert.deepEqual(now, [
+                '1006', 
+                '1004', 
+                START_OF_NEW_MESSAGES, 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003', 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
 
             // Post changed, in postIds
             state = {
@@ -276,7 +390,15 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
-            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
+            assert.deepEqual(now, [
+                '1006', 
+                '1004',
+                START_OF_NEW_MESSAGES, 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003', 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
 
             // Filter changed
             state = {
@@ -300,17 +422,26 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.notEqual(now, prev);
-            assert.deepEqual(removeDateLines(now), ['1004', START_OF_NEW_MESSAGES, '1003', '1001']);
+            assert.deepEqual(now, [
+                '1004', 
+                START_OF_NEW_MESSAGES, 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003', 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
 
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
-            assert.deepEqual(removeDateLines(now), ['1004', START_OF_NEW_MESSAGES, '1003', '1001']);
+            assert.deepEqual(now, [
+                '1004', 
+                START_OF_NEW_MESSAGES, 
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003', 
+                '1001',
+                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
+            ]);
         });
     });
 });
-
-// Remove date lines when checking equality since those depend on time-zone of the computer running the tests
-function removeDateLines(list) {
-    return list.filter((item) => !item.startsWith(DATE_LINE));
-}
