@@ -69,13 +69,3 @@ export function throttle(fn, limit, ...args) {
         }
     };
 }
-
-export function isEmail(email) {
-    // writing a regex to match all valid email addresses is really, really hard. (see http://stackoverflow.com/a/201378)
-    // this regex ensures:
-    // - at least one character that is not a space, comma, or @ symbol
-    // - followed by a single @ symbol
-    // - followed by at least one character that is not a space, comma, or @ symbol
-    // this prevents <Outlook Style> outlook.style@domain.com addresses and multiple comma-separated addresses from being accepted
-    return (/^[^ ,@]+@[^ ,@]+$/).test(email);
-}

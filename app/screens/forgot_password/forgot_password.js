@@ -8,7 +8,6 @@ import {intlShape} from 'react-intl';
 
 import {
     Image,
-    Keyboard,
     StyleSheet,
     Text,
     TextInput,
@@ -16,13 +15,13 @@ import {
     View,
 } from 'react-native';
 
+import {isEmail} from 'mattermost-redux/utils/helpers';
+
 import {GlobalStyles} from 'app/styles';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
-
-import {isEmail} from 'app/utils/general';
 
 export default class ForgotPassword extends PureComponent {
     static propTypes = {
@@ -79,7 +78,6 @@ export default class ForgotPassword extends PureComponent {
         if (this.emailId) {
             this.emailId.blur();
         }
-        Keyboard.dismiss();
     }
 
     render() {
@@ -100,7 +98,7 @@ export default class ForgotPassword extends PureComponent {
                 <View style={style.resetSuccessContainer}>
                     <FormattedText
                         style={style.successTxtColor}
-                        id='mobile.password_send.link'
+                        id='password_send.link'
                         defaultMessage='If the account exists, a password reset email will be sent to:'
                     />
                     <Text style={[style.successTxtColor, style.emailId]}>
