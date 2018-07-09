@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, BackHandler, Keyboard, Platform, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -507,6 +507,8 @@ export default class PostTextbox extends PureComponent {
             inputContainerStyle.push(style.inputContainerWithoutFileUpload);
         }
 
+        const InputComponent = Platform.OS === 'android' ? TextInput : QuickTextInput;
+
         return (
             <View>
                 <Typing/>
@@ -527,7 +529,7 @@ export default class PostTextbox extends PureComponent {
                 <View style={style.inputWrapper}>
                     {!channelIsReadOnly && attachmentButton}
                     <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
-                        <QuickTextInput
+                        <InputComponent
                             ref='input'
                             value={textValue}
                             onChangeText={this.handleTextChange}
