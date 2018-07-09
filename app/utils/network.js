@@ -9,7 +9,7 @@ import {Client4} from 'mattermost-redux/client';
 const PING_TIMEOUT = 10000;
 
 export async function checkConnection(isConnected) {
-    if (Client4.getBaseRoute() === '/api/v4') {
+    if (!Client4.getBaseRoute().startsWith('http')) {
         // If we don't have a server yet, return the default implementation
         return isConnected;
     }
