@@ -111,6 +111,20 @@ function resetStateForNewVersion(action) {
         lastTeamId = payload.views.team.lastTeamId;
     }
 
+    const currentChannelId = lastChannelForTeam[lastTeamId] && lastChannelForTeam[lastTeamId].length ? lastChannelForTeam[lastTeamId][0] : '';
+    let channels = initialState.entities.channels;
+    if (payload.entities.channels && currentChannelId) {
+        channels = {
+            currentChannelId,
+            channels: {
+                [currentChannelId]: payload.entities.channels.channels[currentChannelId],
+            },
+            myMembers: {
+                [currentChannelId]: payload.entities.channels.myMembers[currentChannelId],
+            },
+        };
+    }
+
     let threadDrafts = initialState.views.thread.drafts;
     if (payload.views.thread && payload.views.thread.drafts) {
         threadDrafts = payload.views.thread.drafts;
@@ -132,6 +146,7 @@ function resetStateForNewVersion(action) {
             version: DeviceInfo.getVersion(),
         },
         entities: {
+            channels,
             general,
             teams,
             users,

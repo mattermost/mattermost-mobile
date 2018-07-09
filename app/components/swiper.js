@@ -144,9 +144,9 @@ export default class Swiper extends PureComponent {
                     contentContainerStyle={[styles.wrapperIOS, this.props.style]}
                     onScrollBeginDrag={this.onScrollBegin}
                     onMomentumScrollEnd={this.onScrollEnd}
-                    pagingEnabled={true}
+                    pagingEnabled={scrollEnabled}
                     keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-                    scrollEnabled={true}
+                    scrollEnabled={scrollEnabled}
                 >
                     {pages}
                 </ScrollView>

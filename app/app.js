@@ -91,12 +91,17 @@ export default class App {
                     const [deviceToken, currentUserId] = usernameParsed;
                     const [token, url] = passwordParsed;
 
-                    this.deviceToken = deviceToken;
-                    this.currentUserId = currentUserId;
-                    this.token = token;
-                    this.url = url;
-                    Client4.setUrl(url);
-                    Client4.setToken(token);
+                    // if for any case the url and the token aren't valid proceed with re-hydration
+                    if (url && url !== 'undefined' && token && token !== 'undefined') {
+                        this.deviceToken = deviceToken;
+                        this.currentUserId = currentUserId;
+                        this.token = token;
+                        this.url = url;
+                        Client4.setUrl(url);
+                        Client4.setToken(token);
+                    } else {
+                        this.waitForRehydration = true;
+                    }
                 }
             }
         } catch (error) {
@@ -161,7 +166,10 @@ export default class App {
             this.url = url;
         }
 
-        setGenericPassword(username, password);
+        // Only save to keychain if the url and token are set
+        if (url && token) {
+            setGenericPassword(username, password);
+        }
     };
 
     setStartupThemes = (toolbarBackground, toolbarTextColor, appBackground) => {
