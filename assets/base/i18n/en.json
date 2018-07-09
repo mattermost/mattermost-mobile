@@ -2308,6 +2308,8 @@
   "mobile.android.videos_permission_denied_title": "Video library access is required",
   "mobile.announcement_banner.dismiss": "Dismiss",
   "mobile.announcement_banner.title": "Announcement",
+  "mobile.authentication_error.title": "Authentication Error",
+  "mobile.authentication_error.message": "Mattermost has encountered an error. Please re-authenticate to start a new session.",
   "mobile.channel.markAsRead": "Mark As Read",
   "mobile.channel_drawer.search": "Jump to...",
   "mobile.channel_info.alertMessageDeleteChannel": "Are you sure you want to archive the {term} {name}?",
