@@ -47,7 +47,7 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1002',
                 '1001',
-                'date-Thu Jan 01 1970 00:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-0',
             ]);
 
             // Show join/leave posts
@@ -73,7 +73,7 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1002',
                 '1001',
-                'date-Thu Jan 01 1970 00:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-0',
             ]);
 
             // Hide join/leave posts
@@ -98,7 +98,7 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
             assert.deepEqual(now, [
                 '1001',
-                'date-Thu Jan 01 1970 00:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-0',
             ]);
 
             // always show join/leave posts for the current user
@@ -121,7 +121,7 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1002',
                 '1001',
-                'date-Thu Jan 01 1970 00:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-0',
             ]);
         });
 
@@ -157,7 +157,7 @@ describe('Selectors.PostList', () => {
                 '1010',
                 '1005',
                 '1000',
-                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (Greenwich Mean Time)',
+                'date-1000',
             ]);
 
             now = preparePostIdsForPostList(state, {postIds, indicateNewMessages: true});
@@ -165,7 +165,7 @@ describe('Selectors.PostList', () => {
                 '1010',
                 '1005',
                 '1000',
-                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (Greenwich Mean Time)',
+                'date-1000',
             ]);
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 999, indicateNewMessages: false});
@@ -173,7 +173,7 @@ describe('Selectors.PostList', () => {
                 '1010',
                 '1005',
                 '1000',
-                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (Greenwich Mean Time)',
+                'date-1000',
             ]);
 
             // Show new messages indicator before all posts
@@ -183,7 +183,7 @@ describe('Selectors.PostList', () => {
                 '1005',
                 '1000',
                 START_OF_NEW_MESSAGES,
-                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (Greenwich Mean Time)',
+                'date-1000',
             ]);
 
             // Show indicator between posts
@@ -193,7 +193,7 @@ describe('Selectors.PostList', () => {
                 '1005',
                 START_OF_NEW_MESSAGES,
                 '1000',
-                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (Greenwich Mean Time)',
+                'date-1000',
             ]);
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1006, indicateNewMessages: true});
@@ -202,7 +202,7 @@ describe('Selectors.PostList', () => {
                 START_OF_NEW_MESSAGES,
                 '1005',
                 '1000',
-                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (Greenwich Mean Time)',
+                'date-1000',
             ]);
 
             // Don't show indicator when all posts are read
@@ -211,7 +211,7 @@ describe('Selectors.PostList', () => {
                 '1010',
                 '1005',
                 '1000',
-                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (Greenwich Mean Time)',
+                'date-1000',
             ]);
         });
 
@@ -262,11 +262,11 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1006',
                 '1004',
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 START_OF_NEW_MESSAGES,
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
 
             // No changes
@@ -276,11 +276,11 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1006',
                 '1004',
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 START_OF_NEW_MESSAGES,
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
 
             // lastViewedAt changed slightly
@@ -292,11 +292,11 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1006',
                 '1004',
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 START_OF_NEW_MESSAGES,
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
 
             // lastViewedAt changed a lot
@@ -309,10 +309,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
 
             prev = now;
@@ -322,10 +322,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
 
             // postIds changed, but still shallowly equal
@@ -338,10 +338,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
 
             // Post changed, not in postIds
@@ -366,10 +366,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
 
             // Post changed, in postIds
@@ -394,10 +394,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
 
             // Filter changed
@@ -425,10 +425,10 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
 
             prev = now;
@@ -437,10 +437,10 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-90000000',
                 '1003',
                 '1001',
-                'date-Thu Jan 01 1970 01:00:00 GMT+0000 (Greenwich Mean Time)',
+                'date-3600000',
             ]);
         });
     });
@@ -519,11 +519,11 @@ describe('Selectors.PostList', () => {
             const postIds = ['1003', '1002', '1001'];
             const actual = preparePostIdsForSearchPosts(state, postIds);
             assert.deepEqual(actual, [
-                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (Greenwich Mean Time)-index-0',
+                'date-1000-index-0',
                 '1003',
-                'date-Thu Jan 01 1970 00:00:01 GMT+0000 (Greenwich Mean Time)-index-1',
+                'date-1000-index-1',
                 '1002',
-                'date-Thu Jan 01 1970 00:00:00 GMT+0000 (Greenwich Mean Time)-index-2',
+                'date-0-index-2',
                 '1001',
             ]);
         });

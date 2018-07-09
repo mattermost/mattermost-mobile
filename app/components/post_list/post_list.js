@@ -13,12 +13,13 @@ import {
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import Post from 'app/components/post';
-import {DATE_LINE, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
+import {START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
 
 import DateHeader from './date_header';
+import {isDateLine} from './date_header/utils';
 import NewMessagesDivider from './new_messages_divider';
 import withLayout from './with_layout';
 
@@ -264,9 +265,14 @@ export default class PostList extends PureComponent {
                     moreMessages={this.moreNewMessages}
                 />
             );
-        } else if (item.indexOf(DATE_LINE) === 0) {
-            const date = item.substring(DATE_LINE.length);
-            return this.renderDateHeader(new Date(date), index);
+        } else if (isDateLine(item)) {
+            this.itemMeasurements[index] = DATE_HEADER_HEIGHT;
+            return (
+                <DateHeader
+                    dateLineString={item}
+                    index={index}
+                />
+            );
         }
 
         const postId = item;
@@ -277,16 +283,6 @@ export default class PostList extends PureComponent {
         const nextPostId = index > 0 ? this.props.postIds[index - 1] : null;
 
         return this.renderPost(postId, previousPostId, nextPostId, index);
-    };
-
-    renderDateHeader = (date, index) => {
-        this.itemMeasurements[index] = DATE_HEADER_HEIGHT;
-        return (
-            <DateHeader
-                date={date}
-                index={index}
-            />
-        );
     };
 
     renderPost = (postId, previousPostId, nextPostId, index) => {

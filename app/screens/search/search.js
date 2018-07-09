@@ -20,7 +20,8 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
-import {isDateLine, DateLine} from 'app/components/post_list/date_header/date_line';
+import DateHeader from 'app/components/post_list/date_header';
+import {isDateLine} from 'app/components/post_list/date_header/utils';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import PostListRetry from 'app/components/post_list_retry';
@@ -308,8 +309,8 @@ export default class Search extends PureComponent {
 
         if (isDateLine(item)) {
             return (
-                <DateLine
-                    dateString={item}
+                <DateHeader
+                    dateLineString={item}
                     index={index}
                 />
             );

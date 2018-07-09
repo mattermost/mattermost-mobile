@@ -57,7 +57,7 @@ export function makePreparePostIdsForPostList() {
                 const postDate = new Date(post.create_at);
 
                 if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
-                    out.push(DATE_LINE + postDate.toString());
+                    out.push(DATE_LINE + post.create_at);
 
                     lastDate = postDate;
                 }
@@ -106,14 +106,12 @@ export function makePreparePostIdsForSearchPosts() {
                     continue;
                 }
 
-                const postDate = new Date(post.create_at);
-
                 // Render a date line for each post, even if displayed on the same date as the
                 // previous post. Since we don't deduplicate here like in other views, we need to
                 // ensure the resulting key is unique, even if the post timestamps (down to the
                 // second) are identical. The screens know to parse out the index before trying
                 // to consume the date value.
-                out.push(DATE_LINE + postDate.toString() + DATE_LINE_SUFFIX + i);
+                out.push(DATE_LINE + post.create_at + DATE_LINE_SUFFIX + i);
 
                 out.push(post.id);
             }

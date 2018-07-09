@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 
 import ChannelLoader from 'app/components/channel_loader';
-import {isDateLine, DateLine} from 'app/components/post_list/date_header/date_line';
+import DateHeader from 'app/components/post_list/date_header';
+import {isDateLine} from 'app/components/post_list/date_header/utils';
 import FailedNetworkAction from 'app/components/failed_network_action';
 import NoResults from 'app/components/no_results';
 import PostSeparator from 'app/components/post_separator';
@@ -151,8 +152,8 @@ export default class RecentMentions extends PureComponent {
         const {managedConfig} = this.state;
         if (isDateLine(item)) {
             return (
-                <DateLine
-                    dateString={item}
+                <DateHeader
+                    dateLineString={item}
                     index={index}
                 />
             );
