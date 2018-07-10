@@ -25,16 +25,18 @@ export default class NotificationSettingsMobileBase extends PureComponent {
 
         const {currentUser} = props;
         const notifyProps = getNotificationProps(currentUser);
+        const notifyPreferences = this.getNotificationPreferences(props);
 
         this.state = {
             ...notifyProps,
-            ...this.getNotificationPreferences(props),
+            ...notifyPreferences,
+            newPush: notifyProps.push,
+            newPushStatus: notifyProps.push_status,
+            newSound: notifyPreferences.sound,
             showMobilePushModal: false,
             showMobilePushStatusModal: false,
             showMobileSoundsModal: false,
         };
-        this.push = this.state.push;
-        this.pushStatus = this.state.push_status;
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     }
 
