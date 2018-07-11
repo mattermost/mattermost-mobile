@@ -61,6 +61,8 @@ class FormattedMarkdownText extends React.PureComponent {
                 softBreak: this.renderBreak,
                 paragraph: this.renderParagraph,
                 del: Renderer.forwardChildren,
+                html_inline: this.renderHTML,
+                html_block: this.renderHTML,
             },
         });
     }
@@ -90,6 +92,11 @@ class FormattedMarkdownText extends React.PureComponent {
 
     renderParagraph = ({children}) => {
         return <Text>{children}</Text>;
+    }
+
+    renderHTML = (props) => {
+        console.warn(`HTML used in FormattedMarkdownText component with id ${this.props.id}`); // eslint-disable-line no-console
+        return this.renderText(props);
     }
 
     render() {
