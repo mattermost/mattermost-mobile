@@ -63,7 +63,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                             </View>
                             <TextInputWithLocalizedPlaceholder
                                 autoFocus={true}
-                                defaultValue={this.keywords}
+                                value={this.keywords}
                                 blurOnSubmit={false}
                                 onChangeText={this.onKeywordsChangeText}
                                 multiline={false}
