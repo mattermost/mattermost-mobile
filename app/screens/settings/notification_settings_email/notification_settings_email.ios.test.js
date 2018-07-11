@@ -75,7 +75,7 @@ describe('NotificationSettingsEmailIos', () => {
             <NotificationSettingsEmailIos {...props}/>
         );
 
-        wrapper.setState({email: 'true', interval: '3600'});
+        wrapper.setState({email: 'true', newInterval: '3600'});
         wrapper.instance().saveEmailNotifyProps();
         expect(props.actions.savePreferences).toHaveBeenCalledTimes(1);
         expect(props.actions.savePreferences).toBeCalledWith(
