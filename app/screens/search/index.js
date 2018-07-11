@@ -22,6 +22,18 @@ function makeMapStateToProps() {
 
     return (state) => {
         const postIds = preparePostIds(state, state.entities.search.results);
+
+        const channels = {};
+        postIds.forEach((postID) => {
+            const post = state.entities.posts.posts[postID];
+            if (post) {
+                const channel = state.entities.channels.channels[post.channel_id];
+                if (channel) {
+                    channels[postID] = channel;
+                }
+            }
+        });
+
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
         const {recent} = state.entities.search;
@@ -32,6 +44,7 @@ function makeMapStateToProps() {
             currentChannelId,
             isLandscape: isLandscape(state),
             postIds,
+            channels,
             recent: recent[currentTeamId],
             searchingStatus: searchRequest.status,
             theme: getTheme(state),

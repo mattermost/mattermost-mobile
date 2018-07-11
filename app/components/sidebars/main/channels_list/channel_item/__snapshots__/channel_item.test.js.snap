@@ -9,6 +9,7 @@ ShallowWrapper {
     currentChannelId="current_channel_id"
     displayName="display_name"
     fake={false}
+    isArchived={false}
     isChannelMuted={false}
     isMyUser={true}
     isUnread={true}
@@ -81,6 +82,7 @@ ShallowWrapper {
             <ChannelIcon
               channelId="channel_id"
               isActive={false}
+              isArchived={false}
               isInfo={false}
               isUnread={true}
               membersCount={1}
@@ -159,6 +161,7 @@ ShallowWrapper {
             <ChannelIcon
               channelId="channel_id"
               isActive={false}
+              isArchived={false}
               isInfo={false}
               isUnread={true}
               membersCount={1}
@@ -229,6 +232,7 @@ ShallowWrapper {
               <ChannelIcon
                 channelId="channel_id"
                 isActive={false}
+                isArchived={false}
                 isInfo={false}
                 isUnread={true}
                 membersCount={1}
@@ -291,6 +295,7 @@ ShallowWrapper {
                 <ChannelIcon
                   channelId="channel_id"
                   isActive={false}
+                  isArchived={false}
                   isInfo={false}
                   isUnread={true}
                   membersCount={1}
@@ -351,6 +356,7 @@ ShallowWrapper {
                 "props": Object {
                   "channelId": "channel_id",
                   "isActive": false,
+                  "isArchived": false,
                   "isInfo": false,
                   "isUnread": true,
                   "membersCount": 1,
@@ -451,6 +457,7 @@ ShallowWrapper {
               <ChannelIcon
                 channelId="channel_id"
                 isActive={false}
+                isArchived={false}
                 isInfo={false}
                 isUnread={true}
                 membersCount={1}
@@ -529,6 +536,7 @@ ShallowWrapper {
               <ChannelIcon
                 channelId="channel_id"
                 isActive={false}
+                isArchived={false}
                 isInfo={false}
                 isUnread={true}
                 membersCount={1}
@@ -599,6 +607,7 @@ ShallowWrapper {
                 <ChannelIcon
                   channelId="channel_id"
                   isActive={false}
+                  isArchived={false}
                   isInfo={false}
                   isUnread={true}
                   membersCount={1}
@@ -661,6 +670,7 @@ ShallowWrapper {
                   <ChannelIcon
                     channelId="channel_id"
                     isActive={false}
+                    isArchived={false}
                     isInfo={false}
                     isUnread={true}
                     membersCount={1}
@@ -721,6 +731,7 @@ ShallowWrapper {
                   "props": Object {
                     "channelId": "channel_id",
                     "isActive": false,
+                    "isArchived": false,
                     "isInfo": false,
                     "isUnread": true,
                     "membersCount": 1,

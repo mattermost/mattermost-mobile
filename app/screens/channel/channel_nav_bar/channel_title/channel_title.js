@@ -20,6 +20,7 @@ export default class ChannelTitle extends PureComponent {
         isChannelMuted: PropTypes.bool,
         onPress: PropTypes.func,
         theme: PropTypes.object,
+        isArchived: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -27,6 +28,19 @@ export default class ChannelTitle extends PureComponent {
         displayName: null,
         theme: {},
     };
+
+    archiveIcon(style) {
+        let content = null;
+        if (this.props.isArchived) {
+            content = (
+                <Icon
+                    name='archive'
+                    style={[style.archiveIcon]}
+                />
+            );
+        }
+        return content;
+    }
 
     render() {
         const {currentChannelName, displayName, isChannelMuted, onPress, theme} = this.props;
@@ -60,6 +74,7 @@ export default class ChannelTitle extends PureComponent {
                 onPress={onPress}
             >
                 <View style={style.wrapper}>
+                    {this.archiveIcon(style)}
                     <Text
                         ellipsizeMode='tail'
                         numberOfLines={1}
@@ -103,6 +118,11 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             marginTop: 1,
             opacity: 0.6,
             marginLeft: 0,
+        },
+        archiveIcon: {
+            fontSize: 17,
+            color: theme.sidebarHeaderTextColor,
+            paddingRight: 7,
         },
     };
 });

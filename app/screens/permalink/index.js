@@ -43,7 +43,7 @@ function makeMapStateToProps() {
         }
 
         return {
-            channelId: channel ? channel.id : '',
+            channel,
             channelName: channel ? channel.display_name : '',
             channelTeamId: channel ? channel.team_id : '',
             currentTeamId: getCurrentTeamId(state),

@@ -17,6 +17,8 @@ describe('AnnouncementBanner', () => {
         bannerEnabled: true,
         bannerText: 'Banner Text',
         bannerTextColor: '#fff',
+        navigator: {},
+        theme: {},
     };
 
     test('should match snapshot', () => {

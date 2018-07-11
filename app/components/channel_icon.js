@@ -25,6 +25,7 @@ export default class ChannelIcon extends React.PureComponent {
         teammateDeletedAt: PropTypes.number,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
+        isArchived: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -45,6 +46,7 @@ export default class ChannelIcon extends React.PureComponent {
             teammateDeletedAt,
             theme,
             type,
+            isArchived,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -76,8 +78,14 @@ export default class ChannelIcon extends React.PureComponent {
         }
 
         let icon;
-
-        if (type === General.OPEN_CHANNEL) {
+        if (isArchived) {
+            icon = (
+                <Icon
+                    name='archive'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                />
+            );
+        } else if (type === General.OPEN_CHANNEL) {
             icon = (
                 <Icon
                     name='globe'

@@ -34,6 +34,7 @@ describe('ChannelItem', () => {
             sidebarTextHoverBg: '#aaa',
         },
         unreadMsgs: 1,
+        isArchived: false,
     };
 
     test('should match snapshot', () => {

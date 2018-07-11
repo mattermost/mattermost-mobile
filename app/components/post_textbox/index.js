@@ -14,7 +14,7 @@ import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/e
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
-import {handlePostDraftChanged} from 'app/actions/views/channel';
+import {handlePostDraftChanged, setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {handleClearFiles, handleClearFailedFiles, handleRemoveLastFile, initUploadFiles} from 'app/actions/views/file_upload';
 import {handleCommentDraftChanged, handleCommentDraftSelectionChanged} from 'app/actions/views/thread';
 import {userTyping} from 'app/actions/views/typing';
@@ -42,11 +42,16 @@ function mapStateToProps(state, ownProps) {
     const status = getStatusForUserId(state, currentUserId);
     const userIsOutOfOffice = status === General.OUT_OF_OFFICE;
 
+    const defaultChannel = Object.values(state.entities.channels.channels).find((c) => {
+        return c.team_id === state.entities.teams.currentTeamId && c.name === General.DEFAULT_CHANNEL;
+    });
+
     return {
         channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
         channelIsReadOnly: isCurrentChannelReadOnly(state),
+        channelIsArchived: currentChannel ? currentChannel.delete_at !== 0 : false,
         currentUserId,
         userIsOutOfOffice,
         deactivatedChannel,
@@ -55,6 +60,7 @@ function mapStateToProps(state, ownProps) {
         theme: getTheme(state),
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
         value: currentDraft.draft,
+        defaultChannel,
     };
 }
 
@@ -73,6 +79,8 @@ function mapDispatchToProps(dispatch) {
             userTyping,
             handleCommentDraftSelectionChanged,
             setStatus,
+            setChannelDisplayName,
+            setChannelLoading,
         }, dispatch),
     };
 }

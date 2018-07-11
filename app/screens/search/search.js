@@ -56,10 +56,10 @@ export default class Search extends PureComponent {
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
-        currentChannelId: PropTypes.string.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
         postIds: PropTypes.array,
+        channels: PropTypes.object,
         recent: PropTypes.array.isRequired,
         searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -68,6 +68,7 @@ export default class Search extends PureComponent {
     static defaultProps = {
         postIds: [],
         recent: [],
+        channels: [],
     };
 
     static contextTypes = {
@@ -294,6 +295,31 @@ export default class Search extends PureComponent {
         );
     };
 
+    archivedIndicator = (postID, style) => {
+        const channel = this.props.channels[postID];
+        const channelIsArchived = channel.delete_at !== 0;
+        let archivedIndicator = null;
+        if (channelIsArchived) {
+            archivedIndicator = (
+                <View style={style.archivedIndicator}>
+                    <Text>
+                        <AwesomeIcon
+                            name='archive'
+                            style={style.archivedText}
+                        />
+                        {' '}
+                        <FormattedText
+                            style={style.archivedText}
+                            id='archived'
+                            defaultMessage='Archived'
+                        />
+                    </Text>
+                </View>
+            );
+        }
+        return archivedIndicator;
+    };
+
     renderPost = ({item, index}) => {
         const {postIds, theme} = this.props;
         const {managedConfig} = this.state;
@@ -325,6 +351,7 @@ export default class Search extends PureComponent {
         return (
             <View>
                 <ChannelDisplayName postId={item}/>
+                {this.archivedIndicator(postIds[index], style)}
                 <SearchResultPost
                     postId={item}
                     previewPost={this.previewPost}
@@ -748,6 +775,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         searching: {
             marginTop: 65,
+        },
+        archivedIndicator: {
+            alignItems: 'flex-end',
+            width: 150,
+            alignSelf: 'flex-end',
+            marginTop: -17,
+            marginRight: 10,
+        },
+        archivedText: {
+            color: '#C0C0C0',
         },
     };
 });

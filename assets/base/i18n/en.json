@@ -3529,5 +3529,8 @@
   "webrtc.unmute_audio": "Unmute microphone",
   "webrtc.unpause_video": "Turn on camera",
   "webrtc.unsupported": "{username} client does not support video calls.",
-  "youtube_video.notFound": "Video not found"
+  "youtube_video.notFound": "Video not found",
+  "archived": "Archived",
+  "archived.closeButtonText": "Close Channel",
+  "archived.noPosting": "You are viewing an **archived channel**. New messages cannot be posted."
 }

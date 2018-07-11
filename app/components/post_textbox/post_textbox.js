@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {intlShape} from 'react-intl';
+import Button from 'react-native-button';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -15,6 +16,8 @@ import QuickTextInput from 'app/components/quick_text_input';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import FormattedMarkdownText from 'app/components/formatted_markdown_text';
+import FormattedText from 'app/components/formatted_text';
 
 import Typing from './components/typing';
 
@@ -35,6 +38,8 @@ export default class PostTextbox extends PureComponent {
             userTyping: PropTypes.func.isRequired,
             handleCommentDraftSelectionChanged: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired,
+            setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
@@ -50,6 +55,8 @@ export default class PostTextbox extends PureComponent {
         uploadFileRequestStatus: PropTypes.string.isRequired,
         value: PropTypes.string.isRequired,
         userIsOutOfOffice: PropTypes.bool.isRequired,
+        channelIsArchived: PropTypes.bool,
+        defaultChannel: PropTypes.object,
     };
 
     static defaultProps = {
@@ -451,6 +458,35 @@ export default class PostTextbox extends PureComponent {
         });
     };
 
+    onCloseChannelPress = () => {
+        const {defaultChannel, channelId} = this.props;
+        const {setChannelDisplayName, setChannelLoading} = this.props.actions;
+        setChannelLoading(true);
+        setChannelDisplayName(defaultChannel.display_name);
+        EventEmitter.emit('switch_channel', defaultChannel, channelId);
+    };
+
+    archivedView = (theme, style) => {
+        return (<View style={style.archivedWrapper}>
+            <FormattedMarkdownText
+                id='archived.noPosting'
+                defaultMessage='You are viewing an **archived channel**. New messages cannot be posted.'
+                theme={theme}
+                style={style.archivedText}
+            />
+            <Button
+                containerStyle={style.closeButton}
+                onPress={this.onCloseChannelPress}
+            >
+                <FormattedText
+                    id='archived.closeButtonText'
+                    defaultMessage='Close Channel'
+                    style={style.closeButtonText}
+                />
+            </Button>
+        </View>);
+    };
+
     render() {
         const {intl} = this.context;
         const {
@@ -463,6 +499,7 @@ export default class PostTextbox extends PureComponent {
             navigator,
             rootId,
             theme,
+            channelIsArchived,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -528,7 +565,7 @@ export default class PostTextbox extends PureComponent {
                     value={this.state.value}
                     rootId={rootId}
                 />
-                <View style={style.inputWrapper}>
+                {!channelIsArchived && <View style={style.inputWrapper}>
                     {!channelIsReadOnly && attachmentButton}
                     <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
                         <InputComponent
@@ -551,7 +588,8 @@ export default class PostTextbox extends PureComponent {
                         />
                         {this.renderSendButton()}
                     </View>
-                </View>
+                </View>}
+                {channelIsArchived && this.archivedView(theme, style)}
             </View>
         );
     }
@@ -623,6 +661,32 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 28,
             alignItems: 'center',
             justifyContent: 'center',
+        },
+        archivedWrapper: {
+            paddingLeft: 20,
+            paddingRight: 20,
+            paddingTop: 10,
+            paddingBottom: 10,
+            borderTopWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
+        },
+        archivedText: {
+            textAlign: 'center',
+            color: theme.centerChannelColor,
+        },
+        closeButton: {
+            backgroundColor: theme.buttonBg,
+            alignItems: 'center',
+            paddingTop: 5,
+            paddingBottom: 5,
+            borderRadius: 4,
+            marginTop: 10,
+            height: 40,
+        },
+        closeButtonText: {
+            marginTop: 7,
+            color: 'white',
+            fontWeight: 'bold',
         },
     };
 });

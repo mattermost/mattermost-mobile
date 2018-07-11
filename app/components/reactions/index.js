@@ -23,10 +23,14 @@ function makeMapStateToProps() {
         const post = getPost(state, ownProps.postId);
         const channel = getChannel(state, post.channel_id) || {};
         const teamId = channel.team_id;
+        const channelIsArchived = channel.delete_at !== 0;
 
         let canAddReaction = true;
         let canRemoveReaction = true;
-        if (hasNewPermissions(state)) {
+        if (channelIsArchived) {
+            canAddReaction = false;
+            canRemoveReaction = false;
+        } else if (hasNewPermissions(state)) {
             canAddReaction = haveIChannelPermission(state, {
                 team: teamId,
                 channel: post.channel_id,

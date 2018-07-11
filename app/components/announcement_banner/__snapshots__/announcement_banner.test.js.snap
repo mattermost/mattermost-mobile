@@ -10,6 +10,8 @@ ShallowWrapper {
     bannerEnabled={true}
     bannerText="Banner Text"
     bannerTextColor="#fff"
+    navigator={Object {}}
+    theme={Object {}}
   />,
   Symbol(enzyme.__renderer__): Object {
     "batchedUpdates": [Function],
@@ -362,6 +364,8 @@ ShallowWrapper {
     bannerEnabled={false}
     bannerText="Banner Text"
     bannerTextColor="#fff"
+    navigator={Object {}}
+    theme={Object {}}
   />,
   Symbol(enzyme.__renderer__): Object {
     "batchedUpdates": [Function],

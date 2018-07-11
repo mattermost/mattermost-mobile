@@ -68,25 +68,28 @@ export default class Reactions extends PureComponent {
     };
 
     render() {
-        const {position, reactions} = this.props;
+        const {position, reactions, canAddReaction} = this.props;
         const styles = getStyleSheet(this.props.theme);
 
         if (!reactions.size) {
             return null;
         }
 
-        const addMoreReactions = (
-            <TouchableOpacity
-                key='addReaction'
-                onPress={this.props.onAddReaction}
-                style={[styles.reaction]}
-            >
-                <Image
-                    source={addReactionIcon}
-                    style={styles.addReaction}
-                />
-            </TouchableOpacity>
-        );
+        let addMoreReactions = null;
+        if (canAddReaction) {
+            addMoreReactions = (
+                <TouchableOpacity
+                    key='addReaction'
+                    onPress={this.props.onAddReaction}
+                    style={[styles.reaction]}
+                >
+                    <Image
+                        source={addReactionIcon}
+                        style={styles.addReaction}
+                    />
+                </TouchableOpacity>
+            );
+        }
 
         const reactionElements = [];
         switch (position) {
