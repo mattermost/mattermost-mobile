@@ -213,7 +213,7 @@ export default class ChannelSidebar extends Component {
         } else {
             result = await joinChannel(currentUserId, currentTeamId, channel.id);
 
-            if (result.error) {
+            if (result.error || !result.data || !result.data.channel) {
                 const joinFailedMessage = {
                     id: 'mobile.join_channel.error',
                     defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
@@ -226,7 +226,7 @@ export default class ChannelSidebar extends Component {
             return;
         }
 
-        this.selectChannel(result.data, currentChannelId);
+        this.selectChannel(result.data.channel, currentChannelId);
     };
 
     onPageSelected = (index) => {
