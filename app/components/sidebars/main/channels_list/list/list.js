@@ -18,6 +18,7 @@ import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
+import {SidebarSectionTypes} from 'app/constants/view';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -32,15 +33,12 @@ let UnreadIndicator = null;
 export default class List extends PureComponent {
     static propTypes = {
         canCreatePrivateChannels: PropTypes.bool.isRequired,
-        directChannelIds: PropTypes.array.isRequired,
-        favoriteChannelIds: PropTypes.array.isRequired,
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
-        publicChannelIds: PropTypes.array.isRequired,
-        privateChannelIds: PropTypes.array.isRequired,
+        unreadChannelIds: PropTypes.array.isRequired,
         styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        unreadChannelIds: PropTypes.array.isRequired,
+        orderedChannelIds: PropTypes.array.isRequired,
     };
 
     static contextTypes = {
@@ -64,17 +62,13 @@ export default class List extends PureComponent {
     componentWillReceiveProps(nextProps) {
         const {
             canCreatePrivateChannels,
-            directChannelIds,
-            favoriteChannelIds,
-            publicChannelIds,
-            privateChannelIds,
+            orderedChannelIds,
             unreadChannelIds,
         } = this.props;
 
         if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
-            nextProps.directChannelIds !== directChannelIds || nextProps.favoriteChannelIds !== favoriteChannelIds ||
-            nextProps.publicChannelIds !== publicChannelIds || nextProps.privateChannelIds !== privateChannelIds ||
-            nextProps.unreadChannelIds !== unreadChannelIds) {
+            nextProps.unreadChannelIds !== unreadChannelIds ||
+            nextProps.orderedChannelIds !== orderedChannelIds) {
             this.setState({sections: this.buildSections(nextProps)});
         }
     }
@@ -88,67 +82,145 @@ export default class List extends PureComponent {
         }
     }
 
+    getSectionConfigByType = (sectionType) => {
+        const {canCreatePrivateChannels} = this.props;
+
+        switch(sectionType) {
+            case SidebarSectionTypes.UNREADS:
+                return {
+                    id: 'mobile.channel_list.unreads',
+                    defaultMessage: 'UNREADS',
+                    renderItem: this.renderUnreadItem,
+                }
+            case SidebarSectionTypes.FAVORITE:
+                return {
+                    id: 'sidebar.favorite',
+                    defaultMessage: 'FAVORITES',
+                }
+            case SidebarSectionTypes.PUBLIC:
+                return {
+                    action: this.goToMoreChannels,
+                    id: 'sidebar.channels',
+                    defaultMessage: 'PUBLIC CHANNELS',
+                }
+            case SidebarSectionTypes.PRIVATE:
+                return {
+                    action: canCreatePrivateChannels ? this.goToCreatePrivateChannel : null,
+                    id: 'sidebar.pg',
+                    defaultMessage: 'PRIVATE CHANNELS',
+                }
+            case SidebarSectionTypes.DIRECT:
+                return {
+                    action: this.goToDirectMessages,
+                    id: 'sidebar.direct',
+                    defaultMessage: 'DIRECT MESSAGES'
+                }
+            default:
+                return {
+                    action: this.showCreateChannelOptions,
+                    id: 'mobile.channel_list.channels',
+                    defaultMessage: 'CHANNELS'
+                }
+        }
+    }
+
     buildSections = (props) => {
         const {
-            canCreatePrivateChannels,
-            directChannelIds,
-            favoriteChannelIds,
-            publicChannelIds,
-            privateChannelIds,
-            unreadChannelIds,
+            orderedChannelIds,
         } = props;
-        const sections = [];
 
-        if (unreadChannelIds.length) {
-            sections.push({
-                id: t('mobile.channel_list.unreads'),
-                defaultMessage: 'UNREADS',
-                data: unreadChannelIds,
-                renderItem: this.renderUnreadItem,
-                topSeparator: false,
-                bottomSeparator: true,
-            });
-        }
-
-        if (favoriteChannelIds.length) {
-            sections.push({
-                id: t('sidebar.favorite'),
-                defaultMessage: 'FAVORITES',
-                data: favoriteChannelIds,
-                topSeparator: unreadChannelIds.length > 0,
-                bottomSeparator: true,
-            });
-        }
-
-        sections.push({
-            action: this.goToMoreChannels,
-            id: t('sidebar.channels'),
-            defaultMessage: 'PUBLIC CHANNELS',
-            data: publicChannelIds,
-            topSeparator: favoriteChannelIds.length > 0 || unreadChannelIds.length > 0,
-            bottomSeparator: publicChannelIds.length > 0,
+        return orderedChannelIds.map((s, i) => {
+            return {
+                ...this.getSectionConfigByType(s.type),
+                data: s.items,
+                topSeparator: i != 0 && orderedChannelIds[i - 1].items.length > 0,
+                bottomSeparator: true
+            }
         });
-
-        sections.push({
-            action: canCreatePrivateChannels ? this.goToCreatePrivateChannel : null,
-            id: t('sidebar.pg'),
-            defaultMessage: 'PRIVATE CHANNELS',
-            data: privateChannelIds,
-            topSeparator: true,
-            bottomSeparator: privateChannelIds.length > 0,
-        });
-
-        sections.push({
-            action: this.goToDirectMessages,
-            id: t('sidebar.direct'),
-            defaultMessage: 'DIRECT MESSAGES',
-            data: directChannelIds,
-            topSeparator: true,
-            bottomSeparator: directChannelIds.length > 0,
-        });
-
-        return sections;
     };
+
+    showCreateChannelOptions = () => {
+        const {canCreatePrivateChannels, navigator} = this.props;
+
+        const items = [];
+        const moreChannels = {
+            action: this.goToMoreChannels,
+            text: {
+                id: 'more_channels.title',
+                defaultMessage: 'More Channels',
+            },
+        };
+        const createPublicChannel = {
+            action: this.goToCreatePublicChannel,
+            text: {
+                id: 'mobile.create_channel.public',
+                defaultMessage: 'New Public Channel',
+            },
+        };
+        const createPrivateChannel = {
+            action: this.goToCreatePrivateChannel,
+            text: {
+                id: 'mobile.create_channel.private',
+                defaultMessage: 'New Private Channel',
+            },
+        };
+        const newConversation = {
+            action: this.goToDirectMessages,
+            text: {
+                id: 'mobile.more_dms.title',
+                defaultMessage: 'New Conversation',
+            },
+        }
+
+        items.push(moreChannels, createPublicChannel);
+        if (canCreatePrivateChannels) {
+            items.push(createPrivateChannel)
+        }
+        items.push(newConversation);
+
+        navigator.showModal({
+            screen: 'OptionsModal',
+            title: '',
+            animationType: 'none',
+            passProps: {
+                items: items,
+                onItemPress: () => navigator.dismissModal({
+                    animationType: 'none',
+                })
+            },
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext',
+            },
+        });
+    }
+
+    goToCreatePublicChannel = preventDoubleTap(() => {
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
+
+        navigator.showModal({
+            screen: 'CreateChannel',
+            animationType: 'slide-up',
+            title: intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'}),
+            backButtonTitle: '',
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                channelType: General.OPEN_CHANNEL,
+                closeButton: this.closeButton,
+                isModal: true,
+            },
+        });
+    });
 
     goToCreatePrivateChannel = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
@@ -256,21 +328,12 @@ export default class List extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        return (
-            <ChannelItem
-                channelId={item}
-                isFavorite={this.props.favoriteChannelIds.includes(item)}
-                navigator={this.props.navigator}
-                onSelectChannel={this.onSelectChannel}
-            />
-        );
-    };
+        const {unreadChannelIds} = this.props;
 
-    renderUnreadItem = ({item}) => {
         return (
             <ChannelItem
                 channelId={item}
-                isUnread={true}
+                isUnread={unreadChannelIds.includes(item)}
                 navigator={this.props.navigator}
                 onSelectChannel={this.onSelectChannel}
             />
