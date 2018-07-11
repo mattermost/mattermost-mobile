@@ -23,30 +23,37 @@ import NotificationSettingsMobileBase from './notification_settings_mobile_base'
 
 class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     cancelMobilePushModal = () => {
-        this.setState({showMobilePushModal: false});
-        this.push = this.state.push;
+        this.setState({
+            newPush: this.state.push,
+            showMobilePushModal: false,
+        });
     };
 
     cancelMobilePushStatusModal = () => {
-        this.setState({showMobilePushStatusModal: false});
-        this.pushStatus = this.state.push_status;
+        this.setState({
+            newPushStatus: this.state.push_status,
+            showMobilePushStatusModal: false,
+        });
     };
 
     cancelMobileSoundsModal = () => {
-        this.setState({showMobileSoundsModal: false});
-        this.sound = this.state.selectedUri;
+        this.setState({
+            newSound: this.state.selectedUri,
+            showMobileSoundsModal: false,
+        });
     };
 
     onMobilePushChanged = (value) => {
-        this.push = value;
+        this.setState({newPush: value});
     };
 
     onMobilePushStatusChanged = (value) => {
-        this.pushStatus = value;
+        this.setState({newPushStatus: value});
     };
 
     onMobileSoundChanged = (value) => {
-        this.sound = value;
+        this.setState({newSound: value});
+
         if (value && value !== 'none') {
             NotificationPreferences.play(value);
         }
@@ -83,6 +90,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     renderMobilePushModal(style) {
         const {config, intl} = this.props;
         const pushNotificationsEnabled = config.SendPushNotifications === 'true';
+        const {newPush} = this.state;
 
         const options = [{
             label: intl.formatMessage({
@@ -90,21 +98,21 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 defaultMessage: 'For all activity',
             }),
             value: 'all',
-            checked: this.state.push === 'all',
+            checked: newPush === 'all',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.notifications.onlyMentions',
                 defaultMessage: 'Only for mentions and direct messages',
             }),
             value: 'mention',
-            checked: this.state.push === 'mention',
+            checked: newPush === 'mention',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.notifications.never',
                 defaultMessage: 'Never',
             }),
             value: 'none',
-            checked: this.state.push === 'none',
+            checked: newPush === 'none',
         }];
 
         return (
@@ -177,6 +185,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
 
     renderMobilePushStatusModal(style) {
         const {intl} = this.props;
+        const {newPushStatus} = this.state;
 
         const options = [{
             label: intl.formatMessage({
@@ -184,21 +193,21 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 defaultMessage: 'Online, away or offline',
             }),
             value: 'online',
-            checked: this.state.push_status === 'online',
+            checked: newPushStatus === 'online',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.push_notification.away',
                 defaultMessage: 'Away or offline',
             }),
             value: 'away',
-            checked: this.state.push_status === 'away',
+            checked: newPushStatus === 'away',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.push_notification.offline',
                 defaultMessage: 'Offline',
             }),
             value: 'offline',
-            checked: this.state.push_status === 'offline',
+            checked: newPushStatus === 'offline',
         }];
 
         return (
@@ -257,7 +266,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     }
 
     renderMobileSoundsModal(style) {
-        const {defaultSound, selectedUri} = this.state;
+        const {defaultSound, newSound} = this.state;
         const {intl, notificationPreferences} = this.props;
         const {defaultUri, sounds} = notificationPreferences;
         const soundsArray = [{
@@ -266,14 +275,14 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 defaultMessage: 'Default ({sound})',
             }, {sound: defaultSound}),
             value: defaultUri,
-            checked: selectedUri === null,
+            checked: newSound === null,
         }, {
             label: intl.formatMessage({
                 id: 'mobile.notification_settings_mobile.no_sound',
                 defaultMessage: 'None',
             }),
             value: 'none',
-            checked: selectedUri === 'none',
+            checked: newSound === 'none',
         }];
 
         if (sounds && sounds.length) {
@@ -281,7 +290,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 return {
                     label: s.name,
                     value: s.uri,
-                    checked: s.uri === selectedUri,
+                    checked: s.uri === newSound,
                 };
             });
             soundsArray.push(...filteredSounds);
@@ -559,31 +568,31 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
 
     saveMobilePushModal = () => {
         this.setState({showMobilePushModal: false});
-        this.setMobilePush(this.push);
+        this.setMobilePush(this.state.newPush);
     };
 
     saveMobilePushStatusModal = () => {
         this.setState({showMobilePushStatusModal: false});
-        this.setMobilePushStatus(this.pushStatus);
+        this.setMobilePushStatus(this.state.newPushStatus);
     };
 
     saveMobileSoundsModal = () => {
-        const {defaultSound} = this.state;
+        const {defaultSound, newSound} = this.state;
         const {intl, notificationPreferences} = this.props;
         const {defaultUri, sounds} = notificationPreferences;
 
         let sound;
         let selectedUri = null;
-        if (this.sound === defaultUri) {
+        if (newSound === defaultUri) {
             sound = defaultSound;
-        } else if (this.sound === 'none') {
-            selectedUri = this.sound;
+        } else if (newSound === 'none') {
+            selectedUri = 'none';
             sound = intl.formatMessage({
                 id: 'mobile.notification_settings_mobile.no_sound',
                 defaultMessage: 'None',
             });
         } else {
-            selectedUri = this.sound;
+            selectedUri = newSound;
             const selected = sounds.find((s) => s.uri === selectedUri);
             sound = selected ? selected.name : 'none';
         }
