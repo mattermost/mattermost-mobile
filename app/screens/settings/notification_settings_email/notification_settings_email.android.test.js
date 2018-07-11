@@ -71,9 +71,10 @@ describe('NotificationSettingsMobileAndroid', () => {
             <NotificationSettingsMobileAndroid {...baseProps}/>
         );
 
-        wrapper.setState({showEmailNotificationsModal: true});
+        wrapper.setState({showEmailNotificationsModal: true, interval: '30', newInterval: '3600'});
         wrapper.instance().handleClose();
         expect(wrapper.state('showEmailNotificationsModal')).toEqual(false);
+        expect(wrapper.state('newInterval')).toEqual('30');
     });
 
     test('should saveEmailNotifyProps and handleClose on handleSaveEmailNotification', () => {
@@ -83,11 +84,9 @@ describe('NotificationSettingsMobileAndroid', () => {
 
         const instance = wrapper.instance();
         instance.saveEmailNotifyProps = jest.fn();
-        instance.handleClose = jest.fn();
 
         instance.handleSaveEmailNotification();
         expect(instance.saveEmailNotifyProps).toHaveBeenCalledTimes(1);
-        expect(instance.handleClose).toHaveBeenCalledTimes(1);
     });
 
     test('should match state on showEmailModal', () => {
@@ -98,5 +97,15 @@ describe('NotificationSettingsMobileAndroid', () => {
         wrapper.setState({showEmailNotificationsModal: false});
         wrapper.instance().showEmailModal();
         expect(wrapper.state('showEmailNotificationsModal')).toEqual(true);
+    });
+
+    test('should match state on handleChange', () => {
+        const wrapper = shallowWithIntl(
+            <NotificationSettingsMobileAndroid {...baseProps}/>
+        );
+
+        wrapper.setState({newInterval: '3600'});
+        wrapper.instance().handleChange('30');
+        expect(wrapper.state('newInterval')).toEqual('30');
     });
 });

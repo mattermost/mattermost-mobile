@@ -26,17 +26,24 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
     };
 
     handleClose = () => {
-        this.setState({showEmailNotificationsModal: false});
+        this.setState({
+            newInterval: this.state.interval,
+            showEmailNotificationsModal: false,
+        });
     }
 
     handleSaveEmailNotification = () => {
+        this.setState({showEmailNotificationsModal: false});
         this.saveEmailNotifyProps();
-        this.handleClose();
     };
 
     showEmailModal = () => {
         this.setState({showEmailNotificationsModal: true});
     };
+
+    handleChange = (value) => {
+        this.setState({newInterval: value});
+    }
 
     renderEmailSection() {
         const {
@@ -99,7 +106,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
             sendEmailNotifications,
             siteName,
         } = this.props;
-        const {interval} = this.state;
+        const {newInterval} = this.state;
 
         let helpText;
         if (sendEmailNotifications) {
@@ -119,7 +126,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                 defaultMessage: 'Immediately',
             }),
             value: Preferences.INTERVAL_IMMEDIATE.toString(),
-            checked: interval === Preferences.INTERVAL_IMMEDIATE.toString(),
+            checked: newInterval === Preferences.INTERVAL_IMMEDIATE.toString(),
         }];
 
         if (enableEmailBatching) {
@@ -129,14 +136,14 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                     defaultMessage: 'Every 15 minutes',
                 }),
                 value: Preferences.INTERVAL_FIFTEEN_MINUTES.toString(),
-                checked: interval === Preferences.INTERVAL_FIFTEEN_MINUTES.toString(),
+                checked: newInterval === Preferences.INTERVAL_FIFTEEN_MINUTES.toString(),
             }, {
                 label: intl.formatMessage({
                     id: 'user.settings.notifications.email.everyHour',
                     defaultMessage: 'Every hour',
                 }),
                 value: Preferences.INTERVAL_HOUR.toString(),
-                checked: interval === Preferences.INTERVAL_HOUR.toString(),
+                checked: newInterval === Preferences.INTERVAL_HOUR.toString(),
             });
         }
 
@@ -146,7 +153,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                 defaultMessage: 'Never',
             }),
             value: Preferences.INTERVAL_NEVER.toString(),
-            checked: interval === Preferences.INTERVAL_NEVER.toString(),
+            checked: newInterval === Preferences.INTERVAL_NEVER.toString(),
         });
 
         return (
@@ -176,7 +183,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                             {sendEmailNotifications &&
                             <RadioButtonGroup
                                 name='emailSettings'
-                                onSelect={this.setEmailNotifications}
+                                onSelect={this.handleChange}
                                 options={emailOptions}
                             />
                             }
