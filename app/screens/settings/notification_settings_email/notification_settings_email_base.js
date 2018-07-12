@@ -33,12 +33,11 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             sendEmailNotifications,
         } = props;
 
+        const interval = this.computeEmailInterval(sendEmailNotifications, enableEmailBatching, emailInterval);
+
         this.state = {
-            interval: getEmailInterval(
-                sendEmailNotifications,
-                enableEmailBatching,
-                parseInt(emailInterval, 10),
-            ).toString(),
+            interval,
+            newInterval: interval,
             showEmailNotificationsModal: false,
         };
 
@@ -50,17 +49,21 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             setNavigatorStyles(this.props.navigator, nextProps.theme);
         }
 
+        const {
+            sendEmailNotifications,
+            enableEmailBatching,
+            emailInterval,
+        } = nextProps;
+
         if (
-            this.props.sendEmailNotifications !== nextProps.sendEmailNotifications ||
-            this.props.enableEmailBatching !== nextProps.enableEmailBatching ||
-            this.props.emailInterval !== nextProps.emailInterval
+            this.props.sendEmailNotifications !== sendEmailNotifications ||
+            this.props.enableEmailBatching !== enableEmailBatching ||
+            this.props.emailInterval !== emailInterval
         ) {
+            const interval = this.computeEmailInterval(sendEmailNotifications, enableEmailBatching, emailInterval);
             this.setState({
-                interval: getEmailInterval(
-                    nextProps.sendEmailNotifications,
-                    nextProps.enableEmailBatching,
-                    parseInt(nextProps.emailInterval, 10),
-                ).toString(),
+                interval,
+                newInterval: interval,
             });
         }
     }
@@ -75,25 +78,34 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         }
     };
 
-    setEmailNotifications = (interval) => {
+    setEmailNotifications = (value) => {
         const {sendEmailNotifications} = this.props;
 
         let email = 'false';
-        if (sendEmailNotifications && interval !== Preferences.INTERVAL_NEVER.toString()) {
+        if (sendEmailNotifications && value !== Preferences.INTERVAL_NEVER.toString()) {
             email = 'true';
         }
 
         this.setState({
             email,
-            interval,
+            interval: value,
+            newInterval: value,
         });
     };
 
     saveEmailNotifyProps = () => {
         const {currentUserId} = this.props;
-        const {email, interval} = this.state;
+        const {email, newInterval} = this.state;
         const emailNotify = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: 'email', value: email};
-        const emailInterval = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: Preferences.EMAIL_INTERVAL, value: interval};
+        const emailInterval = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: Preferences.EMAIL_INTERVAL, value: newInterval};
         this.props.actions.savePreferences(currentUserId, [emailNotify, emailInterval]);
     };
+
+    computeEmailInterval = (sendEmailNotifications, enableEmailBatching, emailInterval) => {
+        return getEmailInterval(
+            sendEmailNotifications,
+            enableEmailBatching,
+            parseInt(emailInterval, 10),
+        ).toString();
+    }
 }

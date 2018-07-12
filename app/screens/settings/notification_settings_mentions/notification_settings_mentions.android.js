@@ -27,8 +27,10 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
     };
 
     cancelReplyNotification = () => {
-        this.setState({showReplyModal: false});
-        this.replyValue = this.state.comments;
+        this.setState({
+            newReplyValue: this.state.comments,
+            showReplyModal: false,
+        });
     };
 
     onKeywordsChangeText = (value) => {
@@ -36,7 +38,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
     };
 
     onReplyChanged = (value) => {
-        this.replyValue = value;
+        this.setState({newReplyValue: value});
     };
 
     renderKeywordsModal(style) {
@@ -61,7 +63,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                             </View>
                             <TextInputWithLocalizedPlaceholder
                                 autoFocus={true}
-                                defaultValue={this.keywords}
+                                value={this.keywords}
                                 blurOnSubmit={false}
                                 onChangeText={this.onKeywordsChangeText}
                                 multiline={false}
@@ -113,6 +115,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
 
     renderReplyModal(style) {
         const {intl} = this.props;
+        const {newReplyValue} = this.state;
 
         const options = [{
             label: intl.formatMessage({
@@ -120,21 +123,21 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                 defaultMessage: 'Threads that I start or participate in',
             }),
             value: 'any',
-            checked: this.state.comments === 'any',
+            checked: newReplyValue === 'any',
         }, {
             label: intl.formatMessage({
                 id: 'mobile.account_notifications.threads_start',
                 defaultMessage: 'Threads that I start',
             }),
             value: 'root',
-            checked: this.state.comments === 'root',
+            checked: newReplyValue === 'root',
         }, {
             label: intl.formatMessage({
                 id: 'mobile.account_notifications.threads_mentions',
                 defaultMessage: 'Mentions in threads',
             }),
             value: 'never',
-            checked: this.state.comments === 'never',
+            checked: newReplyValue === 'never',
         }];
 
         return (
@@ -243,7 +246,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
 
     saveReplyNotification = () => {
         this.setState({showReplyModal: false});
-        this.setReplyNotifications(this.replyValue);
+        this.setReplyNotifications(this.state.newReplyValue);
     };
 
     showKeywordsModal = () => {

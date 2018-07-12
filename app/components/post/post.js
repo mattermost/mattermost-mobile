@@ -14,6 +14,7 @@ import {
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import FlagIcon from 'app/components/flag_icon';
 import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
@@ -419,9 +420,26 @@ export default class Post extends PureComponent {
 
         let postHeader;
         let userProfile;
+        let consecutiveStyle;
 
         if (mergeMessage) {
-            userProfile = <View style={style.consecutivePostContainer}/>;
+            consecutiveStyle = {paddingBottom: 5};
+
+            if (isFlagged) {
+                userProfile = (
+                    <View style={style.consecutivePostContainer}>
+                        <View style={style.consecutivePostWithFlag}>
+                            <FlagIcon
+                                height={11}
+                                width={11}
+                                color={theme.linkColor}
+                            />
+                        </View>
+                    </View>
+                );
+            } else {
+                userProfile = <View style={style.consecutivePostContainer}/>;
+            }
         } else {
             userProfile = (
                 <TouchableHighlight
@@ -456,7 +474,7 @@ export default class Post extends PureComponent {
         }
 
         return (
-            <View style={[style.container, this.props.style, highlighted, selected]}>
+            <View style={[style.container, this.props.style, consecutiveStyle, highlighted, selected]}>
                 {userProfile}
                 <View style={style.messageContainerWithReplyBar}>
                     {!commentedOnPost && this.renderReplyBar()}
@@ -521,6 +539,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginRight: 10,
             marginLeft: 46,
             marginTop: 10,
+        },
+        consecutivePostWithFlag: {
+            width: 11,
+            height: 11,
+            position: 'absolute',
+            top: -6,
+            left: -11,
         },
         profilePictureContainer: {
             marginBottom: 10,
