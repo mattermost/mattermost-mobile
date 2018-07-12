@@ -424,6 +424,8 @@ export default class PostTextbox extends PureComponent {
         const {error} = await actions.executeCommand(msg, channelId, rootId);
 
         if (error) {
+            this.handleTextChange(msg);
+            this.changeDraft(msg);
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.commands.error_title',
