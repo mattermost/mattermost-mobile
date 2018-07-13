@@ -22,9 +22,9 @@ function makeMapStateToProps() {
 
         return {
             channelName: channel ? channel.display_name : '',
-            hasReactions: post.has_reactions,
+            hasReactions: post ? post.has_reactions : false,
             inThreadView: Boolean(state.entities.posts.selectedPostId),
-            fileIds: post.file_ids,
+            fileIds: post ? post.file_ids : false,
             theme: getTheme(state),
         };
     };
