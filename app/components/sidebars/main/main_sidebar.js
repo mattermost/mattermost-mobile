@@ -226,7 +226,7 @@ export default class ChannelSidebar extends Component {
             return;
         }
 
-        this.selectChannel(result.data.channel, currentChannelId);
+        this.selectChannel(result.data.channel || result.data, currentChannelId);
     };
 
     onPageSelected = (index) => {
