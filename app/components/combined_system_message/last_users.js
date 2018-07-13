@@ -4,43 +4,44 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Text} from 'react-native';
+import {intlShape} from 'react-intl';
 
 import {Posts} from 'mattermost-redux/constants';
 
-import FormattedText from 'app/components/formatted_text';
+import Markdown from 'app/components/markdown';
 
 const typeMessage = {
     [Posts.POST_TYPES.ADD_TO_CHANNEL]: {
-        id: ['mobile.combined_system_message.were', 'mobile.combined_system_message.added_to_channel', 'mobile.combined_system_message.by_actor'],
-        defaultMessage: ['were ', 'added to the channel', ' by {actor}.'],
+        id: 'last_users_message.added_to_channel.type',
+        defaultMessage: 'were **added to the channel** by {actor}.',
     },
     [Posts.POST_TYPES.JOIN_CHANNEL]: {
-        id: ['', 'mobile.combined_system_message.joined_channel'],
-        defaultMessage: ['', 'joined the channel'],
+        id: 'last_users_message.joined_channel.type',
+        defaultMessage: '**joined the channel**.',
     },
     [Posts.POST_TYPES.LEAVE_CHANNEL]: {
-        id: ['', 'mobile.combined_system_message.left_channel', ''],
-        defaultMessage: ['', 'left the channel'],
+        id: 'last_users_message.left_channel.type',
+        defaultMessage: '**left the channel**.',
     },
     [Posts.POST_TYPES.REMOVE_FROM_CHANNEL]: {
-        id: ['mobile.combined_system_message.were', 'mobile.combined_system_message.removed_from_channel'],
-        defaultMessage: ['were ', 'removed from the channel'],
+        id: 'last_users_message.removed_from_channel.type',
+        defaultMessage: 'were **removed from the channel**.',
     },
     [Posts.POST_TYPES.ADD_TO_TEAM]: {
-        id: ['mobile.combined_system_message.were', 'mobile.combined_system_message.added_to_team', 'mobile.combined_system_message.by_actor'],
-        defaultMessage: ['were ', 'added to the team', ' by {actor}.'],
+        id: 'last_users_message.added_to_team.type',
+        defaultMessage: 'were **added to the team** by {actor}.',
     },
     [Posts.POST_TYPES.JOIN_TEAM]: {
-        id: ['', 'mobile.combined_system_message.joined_team'],
-        defaultMessage: ['', 'joined the team'],
+        id: 'last_users_message.joined_team.type',
+        defaultMessage: '**joined the team**.',
     },
     [Posts.POST_TYPES.LEAVE_TEAM]: {
-        id: ['', 'mobile.combined_system_message.left_team'],
-        defaultMessage: ['', 'left the team'],
+        id: 'last_users_message.left_team.type',
+        defaultMessage: '**left the team**.',
     },
     [Posts.POST_TYPES.REMOVE_FROM_TEAM]: {
-        id: ['', 'mobile.combined_system_message.removed_from_team'],
-        defaultMessage: ['were ', 'removed from the team'],
+        id: 'last_users_message.removed_from_team.type',
+        defaultMessage: 'were **removed from the team**.',
     },
 };
 
@@ -48,9 +49,11 @@ export default class LastUsers extends React.PureComponent {
     static propTypes = {
         actor: PropTypes.string,
         expandedLocale: PropTypes.object.isRequired,
+        navigator: PropTypes.object.isRequired,
         postType: PropTypes.string.isRequired,
         style: PropTypes.object.isRequired,
-        userDisplayNames: PropTypes.array.isRequired,
+        textStyles: PropTypes.object,
+        usernames: PropTypes.array.isRequired,
     };
 
     constructor(props) {
@@ -61,99 +64,88 @@ export default class LastUsers extends React.PureComponent {
         };
     }
 
-    handleOnClick = (e) => {
+    static contextTypes = {
+        intl: intlShape,
+    };
+
+    handleOnPress = (e) => {
         e.preventDefault();
 
         this.setState({expand: true});
     }
 
-    renderExpandedView = (expandedLocale, userDisplayNames, actor, lastIndex, style) => {
+    renderExpandedView = () => {
+        const {formatMessage} = this.context.intl;
+        const {
+            actor,
+            expandedLocale,
+            usernames,
+        } = this.props;
+
+        const lastIndex = usernames.length - 1;
+        const lastUser = usernames[lastIndex];
+
+        const formattedMessage = formatMessage(expandedLocale, {
+            users: usernames.slice(0, lastIndex).join(', '),
+            lastUser,
+            actor,
+        });
+
+        return this.renderMessage(formattedMessage);
+    }
+
+    renderCollapsedView = () => {
+        const {formatMessage} = this.context.intl;
+        const {
+            actor,
+            postType,
+            usernames,
+            textStyles,
+        } = this.props;
+
+        const firstUser = usernames[0];
+        const numOthers = usernames.length - 1;
+
+        const formattedStartMessage = formatMessage({id: 'last_users_message.first', defaultMessage: '{firstUser} and '}, {firstUser});
+        const formattedMidMessage = formatMessage({id: 'last_users_message.others', defaultMessage: '{numOthers} others '}, {numOthers});
+        const formattedEndMessage = formatMessage(typeMessage[postType], {actor});
+
         return (
-            <Text style={style.text}>
-                <FormattedText
-                    id={expandedLocale.id[0]}
-                    defaultMessage={expandedLocale.defaultMessage[0]}
-                    values={{
-                        users: userDisplayNames.slice(0, lastIndex).join(', '),
-                        lastUser: userDisplayNames[lastIndex],
-                    }}
-                />
-                <Text style={style.activityType}>
-                    <FormattedText
-                        id={expandedLocale.id[1]}
-                        defaultMessage={expandedLocale.defaultMessage[1]}
-                    />
+            <Text>
+                <Text>{this.renderMessage(formattedStartMessage)}</Text>
+                <Text
+                    style={[textStyles.link]}
+                    onPress={this.handleOnPress}
+                >
+                    {formattedMidMessage}
                 </Text>
-                {expandedLocale.id[2] ? (
-                    <FormattedText
-                        id={expandedLocale.id[2]}
-                        defaultMessage={expandedLocale.defaultMessage[2]}
-                        values={{actor}}
-                    />
-                ) : ('.')
-                }
+                <Text>{this.renderMessage(formattedEndMessage)}</Text>
             </Text>
         );
     }
 
-    renderCollapsedView = (postType, userDisplayNames, actor, lastIndex, style) => {
+    renderMessage = (formattedMessage) => {
+        const {
+            navigator,
+            style,
+            textStyles,
+        } = this.props;
+
         return (
-            <Text style={style.text}>
-                <FormattedText
-                    id={'mobile.combined_system_message.first_user_and'}
-                    defaultMessage={'{firstUser} and '}
-                    values={{firstUser: userDisplayNames[0]}}
-                />
-                <Text
-                    style={style.link}
-                    onPress={this.handleOnClick}
-                >
-                    <FormattedText
-                        id={'mobile.combined_system_message.others'}
-                        defaultMessage={'{numOthers} others '}
-                        values={{numOthers: lastIndex}}
-                    />
-                </Text>
-                {typeMessage[postType].id[0] &&
-                <FormattedText
-                    id={typeMessage[postType].id[0]}
-                    defaultMessage={typeMessage[postType].defaultMessage[0]}
-                />
-                }
-                <Text style={style.activityType}>
-                    <FormattedText
-                        id={typeMessage[postType].id[1]}
-                        defaultMessage={typeMessage[postType].defaultMessage[1]}
-                    />
-                </Text>
-                {typeMessage[postType].id[2] ? (
-                    <FormattedText
-                        id={typeMessage[postType].id[2]}
-                        defaultMessage={typeMessage[postType].defaultMessage[2]}
-                        values={{actor}}
-                    />
-                ) : ('.')
-                }
-            </Text>
+            <Markdown
+                baseTextStyle={style.baseText}
+                navigator={navigator}
+                textStyles={textStyles}
+                value={formattedMessage}
+            />
         );
     }
 
     render() {
-        const {expand} = this.state;
-        const {
-            actor,
-            expandedLocale,
-            postType,
-            userDisplayNames,
-            style,
-        } = this.props;
-
-        const lastIndex = userDisplayNames.length - 1;
-
-        if (expand) {
-            return this.renderExpandedView(expandedLocale, userDisplayNames, actor, lastIndex, style);
+        if (this.state.expand) {
+            return this.renderExpandedView();
         }
 
-        return this.renderCollapsedView(postType, userDisplayNames, actor, lastIndex, style);
+        return this.renderCollapsedView();
     }
 }

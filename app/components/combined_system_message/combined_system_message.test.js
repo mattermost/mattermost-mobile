@@ -28,8 +28,9 @@ describe('CombinedSystemMessage', () => {
         messageData: [
             {postType: Posts.POST_TYPES.ADD_TO_TEAM, userIds: ['user_id_1'], actorId: 'user_id_2'},
         ],
+        navigator: {},
         showJoinLeave: true,
-        teammateNameDisplay: 'username',
+        textStyles: {},
         theme: {centerChannelColor: '#aaa'},
         userProfiles: [{id: 'user_id_1', username: 'user1'}, {id: 'user_id_2', username: 'user2'}, {id: 'user_id_3', username: 'user3'}],
     };

@@ -16,9 +16,11 @@ describe('LastUsers', () => {
     const baseProps = {
         actor: 'actor',
         expandedLocale: {id: 'expanded_locale_id', defaultMessage: 'Expanded Locale'},
+        navigator: {},
         postType: Posts.POST_TYPES.ADD_TO_TEAM,
         style: {activityType: {fontSize: 14}, link: 1, text: {opacity: 0.6}},
-        userDisplayNames: ['User One', 'User Two'],
+        textStyles: {},
+        usernames: ['username_1', 'username_2'],
     };
 
     test('should match snapshot', () => {
@@ -33,13 +35,13 @@ describe('LastUsers', () => {
         expect(collapsed).toMatchSnapshot();
     });
 
-    test('should match state on handleOnClick', () => {
+    test('should match state on handleOnPress', () => {
         const wrapper = shallowWithIntl(
             <LastUsers {...baseProps}/>
         );
 
         wrapper.setState({expand: false});
-        wrapper.instance().handleOnClick({preventDefault: jest.fn()});
+        wrapper.instance().handleOnPress({preventDefault: jest.fn()});
         expect(wrapper.state('expand')).toEqual(true);
     });
 });

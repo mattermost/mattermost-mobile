@@ -6,7 +6,7 @@ import {bindActionCreators} from 'redux';
 
 import {getMissingProfilesByIds, getMissingProfilesByUsernames} from 'mattermost-redux/actions/users';
 import {Preferences} from 'mattermost-redux/constants';
-import {getBool, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
+import {getBool} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUser, makeGetProfilesByIdsAndUsernames} from 'mattermost-redux/selectors/entities/users';
 
 import CombinedSystemMessage from './combined_system_message';
@@ -21,7 +21,6 @@ function makeMapStateToProps() {
             currentUserId: currentUser.id,
             currentUsername: currentUser.username,
             showJoinLeave: getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true),
-            teammateNameDisplay: getTeammateNameDisplaySetting(state),
             userProfiles: getProfilesByIdsAndUsernames(state, {allUserIds, allUsernames}),
         };
     };

@@ -450,6 +450,8 @@ export default class PostBody extends PureComponent {
                             allUsernames={allUsernames}
                             linkStyle={textStyles.link}
                             messageData={messageData}
+                            navigator={navigator}
+                            textStyles={textStyles}
                             theme={theme}
                         />
                     </View>
