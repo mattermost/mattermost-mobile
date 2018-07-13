@@ -330,7 +330,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
 
             content.push(
                 <React.Fragment key={postType + actorId}>
-                    {this.renderFormattedMessage(postType, userIds, actorId, {baseText: style.baseText})}
+                    {this.renderFormattedMessage(postType, userIds, actorId, {baseText: style.baseText, linkText: style.linkText})}
                 </React.Fragment>
             );
         }
@@ -347,6 +347,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         baseText: {
             color: theme.centerChannelColor,
+            opacity: 0.6,
+        },
+        linkText: {
+            color: theme.linkColor,
             opacity: 0.6,
         },
     };

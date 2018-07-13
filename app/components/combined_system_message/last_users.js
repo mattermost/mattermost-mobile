@@ -3,7 +3,7 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {Text} from 'react-native';
+import {Text, StyleSheet} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import {Posts} from 'mattermost-redux/constants';
@@ -100,7 +100,6 @@ export default class LastUsers extends React.PureComponent {
             actor,
             postType,
             usernames,
-            textStyles,
         } = this.props;
 
         const firstUser = usernames[0];
@@ -113,12 +112,7 @@ export default class LastUsers extends React.PureComponent {
         return (
             <Text>
                 <Text>{this.renderMessage(formattedStartMessage)}</Text>
-                <Text
-                    style={[textStyles.link]}
-                    onPress={this.handleOnPress}
-                >
-                    {formattedMidMessage}
-                </Text>
+                <Text onPress={this.handleOnPress}>{this.renderCombinedMessage(formattedMidMessage)}</Text>
                 <Text>{this.renderMessage(formattedEndMessage)}</Text>
             </Text>
         );
@@ -134,6 +128,23 @@ export default class LastUsers extends React.PureComponent {
         return (
             <Markdown
                 baseTextStyle={style.baseText}
+                navigator={navigator}
+                textStyles={textStyles}
+                value={formattedMessage}
+            />
+        );
+    }
+
+    renderCombinedMessage = (formattedMessage) => {
+        const {
+            navigator,
+            style,
+            textStyles,
+        } = this.props;
+
+        return (
+            <Markdown
+                baseTextStyle={style.linkText}
                 navigator={navigator}
                 textStyles={textStyles}
                 value={formattedMessage}
