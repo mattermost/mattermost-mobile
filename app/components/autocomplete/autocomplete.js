@@ -85,10 +85,6 @@ export default class Autocomplete extends PureComponent {
     }
 
     render() {
-        if (!this.props.value) {
-            return null;
-        }
-
         const style = getStyleFromTheme(this.props.theme);
 
         const wrapperStyle = [];
@@ -110,6 +106,7 @@ export default class Autocomplete extends PureComponent {
             }
         }
         const listHeight = this.listHeight();
+
         return (
             <View style={wrapperStyle}>
                 <View style={containerStyle}>
