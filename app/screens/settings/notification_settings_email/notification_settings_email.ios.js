@@ -13,6 +13,7 @@ import {Preferences} from 'mattermost-redux/constants';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
@@ -32,9 +33,9 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
 
         return (
             <Section
-                headerId='mobile.notification_settings.email.send'
+                headerId={t('mobile.notification_settings.email.send')}
                 headerDefaultMessage='SEND EMAIL NOTIFICATIONS'
-                footerId='user.settings.notifications.emailInfo'
+                footerId={t('user.settings.notifications.emailInfo')}
                 footerDefaultMessage='Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes.'
                 footerValues={{siteName}}
                 disableFooter={!sendEmailNotifications}

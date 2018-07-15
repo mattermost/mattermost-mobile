@@ -23,6 +23,7 @@ import {fromAutoResponder} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getToolTipVisible} from 'app/utils/tooltip';
+import {t} from 'app/utils/i18n';
 
 import {Posts} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -191,7 +192,7 @@ export default class Post extends PureComponent {
     handleFailedPostPress = () => {
         const options = {
             title: {
-                id: 'mobile.post.failed_title',
+                id: t('mobile.post.failed_title'),
                 defaultMessage: 'Unable to send your message:',
             },
             items: [{
@@ -202,7 +203,7 @@ export default class Post extends PureComponent {
                     this.props.actions.createPost(post);
                 },
                 text: {
-                    id: 'mobile.post.failed_retry',
+                    id: t('mobile.post.failed_retry'),
                     defaultMessage: 'Try Again',
                 },
             }, {
@@ -211,7 +212,7 @@ export default class Post extends PureComponent {
                     this.onRemovePost(this.props.post);
                 },
                 text: {
-                    id: 'mobile.post.failed_delete',
+                    id: t('mobile.post.failed_delete'),
                     defaultMessage: 'Delete Message',
                 },
                 textStyle: {

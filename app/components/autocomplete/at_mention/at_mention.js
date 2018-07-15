@@ -13,6 +13,7 @@ import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divide
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import SpecialMentionItem from 'app/components/autocomplete/special_mention_item';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 export default class AtMention extends PureComponent {
     static propTypes = {
@@ -81,7 +82,7 @@ export default class AtMention extends PureComponent {
             const sections = [];
             if (isSearch) {
                 sections.push({
-                    id: 'mobile.suggestion.members',
+                    id: t('mobile.suggestion.members'),
                     defaultMessage: 'Members',
                     data: teamMembers,
                     key: 'teamMembers',
@@ -89,7 +90,7 @@ export default class AtMention extends PureComponent {
             } else {
                 if (inChannel.length) {
                     sections.push({
-                        id: 'suggestion.mention.members',
+                        id: t('suggestion.mention.members'),
                         defaultMessage: 'Channel Members',
                         data: inChannel,
                         key: 'inChannel',
@@ -98,7 +99,7 @@ export default class AtMention extends PureComponent {
 
                 if (this.checkSpecialMentions(matchTerm)) {
                     sections.push({
-                        id: 'suggestion.mention.special',
+                        id: t('suggestion.mention.special'),
                         defaultMessage: 'Special Mentions',
                         data: this.getSpecialMentions(),
                         key: 'special',
@@ -108,7 +109,7 @@ export default class AtMention extends PureComponent {
 
                 if (outChannel.length) {
                     sections.push({
-                        id: 'suggestion.mention.nonmembers',
+                        id: t('suggestion.mention.nonmembers'),
                         defaultMessage: 'Not in Channel',
                         data: outChannel,
                         key: 'outChannel',
@@ -131,18 +132,18 @@ export default class AtMention extends PureComponent {
     getSpecialMentions = () => {
         return [{
             completeHandle: 'all',
-            id: 'suggestion.mention.all',
+            id: t('suggestion.mention.all'),
             defaultMessage: 'Notifies everyone in the channel, use in {townsquare} to notify the whole team',
             values: {
                 townsquare: this.props.defaultChannel.display_name,
             },
         }, {
             completeHandle: 'channel',
-            id: 'suggestion.mention.channel',
+            id: t('suggestion.mention.channel'),
             defaultMessage: 'Notifies everyone in the channel',
         }, {
             completeHandle: 'here',
-            id: 'suggestion.mention.here',
+            id: t('suggestion.mention.here'),
             defaultMessage: 'Notifies everyone in the channel and online',
         }];
     };

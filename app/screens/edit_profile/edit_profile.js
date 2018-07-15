@@ -14,6 +14,7 @@ import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import Loading from 'app/components/loading';
 import ErrorText from 'app/components/error_text';
@@ -27,27 +28,27 @@ import EditProfileItem from './edit_profile_item';
 
 const holders = {
     firstName: {
-        id: 'user.settings.general.firstName',
+        id: t('user.settings.general.firstName'),
         defaultMessage: 'First Name',
     },
     lastName: {
-        id: 'user.settings.general.lastName',
+        id: t('user.settings.general.lastName'),
         defaultMessage: 'Last Name',
     },
     username: {
-        id: 'user.settings.general.username',
+        id: t('user.settings.general.username'),
         defaultMessage: 'Username',
     },
     nickname: {
-        id: 'user.settings.general.nickname',
+        id: t('user.settings.general.nickname'),
         defaultMessage: 'Nickname',
     },
     position: {
-        id: 'user.settings.general.position',
+        id: t('user.settings.general.position'),
         defaultMessage: 'Position',
     },
     email: {
-        id: 'user.settings.general.email',
+        id: t('user.settings.general.email'),
         defaultMessage: 'Email',
     },
 };

@@ -14,6 +14,7 @@ import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divide
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import ChannelMentionItem from 'app/components/autocomplete/channel_mention_item';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 export default class ChannelMention extends PureComponent {
     static propTypes = {
@@ -96,7 +97,7 @@ export default class ChannelMention extends PureComponent {
             if (isSearch) {
                 if (publicChannels.length) {
                     sections.push({
-                        id: 'suggestion.search.public',
+                        id: t('suggestion.search.public'),
                         defaultMessage: 'Public Channels',
                         data: publicChannels.filter((cId) => myMembers[cId]),
                         key: 'publicChannels',
@@ -105,7 +106,7 @@ export default class ChannelMention extends PureComponent {
 
                 if (privateChannels.length) {
                     sections.push({
-                        id: 'suggestion.search.private',
+                        id: t('suggestion.search.private'),
                         defaultMessage: 'Private Channels',
                         data: privateChannels,
                         key: 'privateChannels',
@@ -114,7 +115,7 @@ export default class ChannelMention extends PureComponent {
             } else {
                 if (myChannels.length) {
                     sections.push({
-                        id: 'suggestion.mention.channels',
+                        id: t('suggestion.mention.channels'),
                         defaultMessage: 'My Channels',
                         data: myChannels,
                         key: 'myChannels',
@@ -123,7 +124,7 @@ export default class ChannelMention extends PureComponent {
 
                 if (otherChannels.length) {
                     sections.push({
-                        id: 'suggestion.mention.morechannels',
+                        id: t('suggestion.mention.morechannels'),
                         defaultMessage: 'Other Channels',
                         data: otherChannels,
                         key: 'otherChannels',

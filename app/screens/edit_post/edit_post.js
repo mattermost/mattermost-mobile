@@ -13,6 +13,7 @@ import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -187,7 +188,7 @@ export default class EditPost extends PureComponent {
                             autoFocus={true}
                             autoCapitalize='none'
                             autoCorrect={false}
-                            placeholder={{id: 'edit_post.editPost', defaultMessage: 'Edit the post...'}}
+                            placeholder={{id: t('edit_post.editPost'), defaultMessage: 'Edit the post...'}}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}

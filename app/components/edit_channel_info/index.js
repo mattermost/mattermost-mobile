@@ -23,6 +23,7 @@ import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_lo
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {General} from 'mattermost-redux/constants';
 import {getShortenedURL} from 'app/utils/url';
+import {t} from 'app/utils/i18n';
 
 export default class EditChannelInfo extends PureComponent {
     static propTypes = {
@@ -248,7 +249,7 @@ export default class EditChannelInfo extends PureComponent {
                                             style={style.input}
                                             autoCapitalize='none'
                                             autoCorrect={false}
-                                            placeholder={{id: 'channel_modal.nameEx', defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'}}
+                                            placeholder={{id: t('channel_modal.nameEx'), defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'}}
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
@@ -277,7 +278,7 @@ export default class EditChannelInfo extends PureComponent {
                                             style={style.input}
                                             autoCapitalize='none'
                                             autoCorrect={false}
-                                            placeholder={{id: 'rename_channel.handleHolder', defaultMessage: 'lowercase alphanumeric characters'}}
+                                            placeholder={{id: t('rename_channel.handleHolder'), defaultMessage: 'lowercase alphanumeric characters'}}
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
@@ -307,7 +308,7 @@ export default class EditChannelInfo extends PureComponent {
                                             style={[style.input, {height: 110}]}
                                             autoCapitalize='none'
                                             autoCorrect={false}
-                                            placeholder={{id: 'channel_modal.purposeEx', defaultMessage: 'E.g.: "A channel to file bugs and improvements"'}}
+                                            placeholder={{id: t('channel_modal.purposeEx'), defaultMessage: 'E.g.: "A channel to file bugs and improvements"'}}
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             multiline={true}
                                             blurOnSubmit={false}
@@ -345,7 +346,7 @@ export default class EditChannelInfo extends PureComponent {
                                     style={[style.input, {height: 110}]}
                                     autoCapitalize='none'
                                     autoCorrect={false}
-                                    placeholder={{id: 'channel_modal.headerEx', defaultMessage: 'E.g.: "[Link Title](http://example.com)"'}}
+                                    placeholder={{id: t('channel_modal.headerEx'), defaultMessage: 'E.g.: "[Link Title](http://example.com)"'}}
                                     placeholderTextColor={changeOpacity('#000', 0.5)}
                                     multiline={true}
                                     blurOnSubmit={false}

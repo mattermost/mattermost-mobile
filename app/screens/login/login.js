@@ -26,6 +26,7 @@ import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
+import {t} from 'app/utils/i18n';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -178,7 +179,7 @@ export default class Login extends PureComponent {
                     isLoading: false,
                     error: {
                         intl: {
-                            id: 'login.noPassword',
+                            id: t('login.noPassword'),
                             defaultMessage: 'Please enter your password',
                         },
                     },
@@ -262,7 +263,7 @@ export default class Login extends PureComponent {
         ) {
             return {
                 intl: {
-                    id: 'login.userNotFound',
+                    id: t('login.userNotFound'),
                     defaultMessage: "We couldn't find an account matching your login credentials.",
                 },
             };
@@ -272,7 +273,7 @@ export default class Login extends PureComponent {
         ) {
             return {
                 intl: {
-                    id: 'login.invalidPassword',
+                    id: t('login.invalidPassword'),
                     defaultMessage: 'Your password is incorrect.',
                 },
             };

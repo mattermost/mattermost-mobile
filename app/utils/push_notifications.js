@@ -19,6 +19,7 @@ import {
 } from 'app/actions/views/root';
 import {ViewTypes} from 'app/constants';
 import {DEFAULT_LOCALE, getLocalizedMessage} from 'app/i18n';
+import {t} from 'app/utils/i18n';
 import {
     app,
     store,
@@ -142,7 +143,7 @@ export const onPushNotificationReply = async (data, text, badge, completed) => {
         if (result.error) {
             const locale = reduxCurrentUser ? reduxCurrentUser.locale : DEFAULT_LOCALE;
             PushNotifications.localNotification({
-                message: getLocalizedMessage(locale, 'mobile.reply_post.failed'),
+                message: getLocalizedMessage(locale, t('mobile.reply_post.failed')),
                 userInfo: {
                     localNotification: true,
                     localTest: true,

@@ -32,6 +32,7 @@ import {DeviceTypes, NavigationTypes, PermissionTypes} from 'app/constants';
 import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
+import {t} from 'app/utils/i18n';
 
 import Downloader from './downloader';
 import VideoPreview from './video_preview';
@@ -544,7 +545,7 @@ export default class ImagePreview extends PureComponent {
                 items.push({
                     action: this.saveVideoIOS,
                     text: {
-                        id: 'mobile.image_preview.save_video',
+                        id: t('mobile.image_preview.save_video'),
                         defaultMessage: 'Save Video',
                     },
                 });
@@ -555,7 +556,7 @@ export default class ImagePreview extends PureComponent {
             items.push({
                 action: this.showDownloader,
                 text: {
-                    id: 'mobile.image_preview.save',
+                    id: t('mobile.image_preview.save'),
                     defaultMessage: 'Save Image',
                 },
             });

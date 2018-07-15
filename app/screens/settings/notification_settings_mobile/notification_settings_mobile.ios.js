@@ -11,6 +11,7 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
@@ -24,7 +25,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
         const pushNotificationsEnabled = config.SendPushNotifications === 'true';
         return (
             <Section
-                headerId='mobile.notification_settings_mobile.push_activity'
+                headerId={t('mobile.notification_settings_mobile.push_activity')}
                 headerDefaultMessage='SEND NOTIFICATIONS'
                 theme={theme}
             >
@@ -94,7 +95,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
 
         return (
             <Section
-                headerId='mobile.notification_settings_mobile.push_status'
+                headerId={t('mobile.notification_settings_mobile.push_status')}
                 headerDefaultMessage='TRIGGER PUSH NOTIFICATIONS WHEN'
                 theme={theme}
             >

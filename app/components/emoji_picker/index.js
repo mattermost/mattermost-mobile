@@ -13,58 +13,59 @@ import {getCustomEmojis, searchCustomEmojis} from 'mattermost-redux/actions/emoj
 import {incrementEmojiPickerPage} from 'app/actions/views/emoji';
 import {getDimensions, isLandscape} from 'app/selectors/device';
 import {CategoryNames, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory} from 'app/utils/emojis';
+import {t} from 'app/utils/i18n';
 
 import EmojiPicker from './emoji_picker';
 import Fuse from 'fuse.js';
 
 const categoryToI18n = {
     activity: {
-        id: 'mobile.emoji_picker.activity',
+        id: t('mobile.emoji_picker.activity'),
         defaultMessage: 'ACTIVITY',
         icon: 'futbol-o',
     },
     custom: {
-        id: 'mobile.emoji_picker.custom',
+        id: t('mobile.emoji_picker.custom'),
         defaultMessage: 'CUSTOM',
         icon: 'at',
     },
     flags: {
-        id: 'mobile.emoji_picker.flags',
+        id: t('mobile.emoji_picker.flags'),
         defaultMessage: 'FLAGS',
         icon: 'flag-o',
     },
     foods: {
-        id: 'mobile.emoji_picker.foods',
+        id: t('mobile.emoji_picker.foods'),
         defaultMessage: 'FOODS',
         icon: 'cutlery',
     },
     nature: {
-        id: 'mobile.emoji_picker.nature',
+        id: t('mobile.emoji_picker.nature'),
         defaultMessage: 'NATURE',
         icon: 'leaf',
     },
     objects: {
-        id: 'mobile.emoji_picker.objects',
+        id: t('mobile.emoji_picker.objects'),
         defaultMessage: 'OBJECTS',
         icon: 'lightbulb-o',
     },
     people: {
-        id: 'mobile.emoji_picker.people',
+        id: t('mobile.emoji_picker.people'),
         defaultMessage: 'PEOPLE',
         icon: 'smile-o',
     },
     places: {
-        id: 'mobile.emoji_picker.places',
+        id: t('mobile.emoji_picker.places'),
         defaultMessage: 'PLACES',
         icon: 'plane',
     },
     recent: {
-        id: 'mobile.emoji_picker.recent',
+        id: t('mobile.emoji_picker.recent'),
         defaultMessage: 'RECENTLY USED',
         icon: 'clock-o',
     },
     symbols: {
-        id: 'mobile.emoji_picker.symbols',
+        id: t('mobile.emoji_picker.symbols'),
         defaultMessage: 'SYMBOLS',
         icon: 'heart-o',
     },

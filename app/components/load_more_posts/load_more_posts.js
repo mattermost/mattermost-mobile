@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import FormattedText from 'app/components/formatted_text';
 
@@ -32,7 +33,7 @@ export default class LoadMorePosts extends PureComponent {
 
     renderText(style) {
         if (this.props.loading) {
-            const i18nId = 'mobile.loading_posts';
+            const i18nId = t('mobile.loading_posts');
             const defaultMessage = 'Loading messages...';
 
             return (

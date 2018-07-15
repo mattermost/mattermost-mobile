@@ -22,6 +22,7 @@ import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
+import {t} from 'app/utils/i18n';
 
 export default class Mfa extends PureComponent {
     static propTypes = {
@@ -88,7 +89,7 @@ export default class Mfa extends PureComponent {
             this.setState({
                 error: {
                     intl: {
-                        id: 'login_mfa.tokenReq',
+                        id: t('login_mfa.tokenReq'),
                         defaultMessage: 'Please enter an MFA token',
                     },
                 },
@@ -155,7 +156,7 @@ export default class Mfa extends PureComponent {
                             autoCapitalize='none'
                             autoCorrect={false}
                             keyboardType='numeric'
-                            placeholder={{id: 'login_mfa.token', defaultMessage: 'MFA Token'}}
+                            placeholder={{id: t('login_mfa.token'), defaultMessage: 'MFA Token'}}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}

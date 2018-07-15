@@ -12,6 +12,8 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
 
+import {t} from 'app/utils/i18n';
+
 const HEADER_X_VERSION_ID = 'X-Version-Id';
 const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
 const HEADER_TOKEN = 'Token';
@@ -59,7 +61,7 @@ Client4.doFetchWithResponse = async (url, options) => {
         throw {
             message: 'Received invalid response from the server.',
             intl: {
-                id: 'mobile.request.invalid_response',
+                id: t('mobile.request.invalid_response'),
                 defaultMessage: 'Received invalid response from the server.',
             },
         };
