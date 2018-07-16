@@ -5,11 +5,10 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {UserTypes} from 'mattermost-redux/action_types';
+import {UserTypes, ChannelTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     markChannelAsRead,
-    selectChannel,
     leaveChannel as serviceLeaveChannel,
 } from 'mattermost-redux/actions/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
@@ -302,23 +301,24 @@ export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
 
-        dispatch(setLoadMorePostsVisible(true));
-
-        loadPostsIfNecessaryWithRetry(channelId)(dispatch, getState);
-        selectChannel(channelId)(dispatch, getState);
+        dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
         dispatch(batchActions([
+            setLoadMorePostsVisible(true),
+            {
+                type: ChannelTypes.SELECT_CHANNEL,
+                data: channelId,
+            },
             {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
                 data: channelId,
             },
-            setChannelLoading(false),
             {
                 type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
                 teamId: currentTeamId,
                 channelId,
             },
-        ]));
+        ], 'BATCH_SELECT_CHANNEL'));
     };
 }
 

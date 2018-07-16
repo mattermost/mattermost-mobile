@@ -23,7 +23,6 @@ function mapStateToProps(state) {
         channelId,
         channelRefreshingFailed,
         currentUserId: getCurrentUserId(state),
-        deviceHeight: state.device.dimension.deviceHeight,
         postIds: getPostIdsInCurrentChannel(state),
         postVisibility: state.views.channel.postVisibility[channelId],
         lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
