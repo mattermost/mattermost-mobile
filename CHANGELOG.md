@@ -7,11 +7,14 @@
 ### Highlights
 
 #### Channel drawer performance
- - Replaced the current drawer with DrawerLayout and brought back the channel loader when switching channels.
+- Android devices will notice significant performance improvements when opening and closing the channel drawer.
 
-#### Channel loading improvements by retrieving posts with push notifications
+#### Channel loading performance
+- Improved channel loading performance as post are retrieved with every push notification
 
-#### Markdown support for announcement banner
+#### Announcement banner improvements
+- Markdown now renders when announcement banners are expanded
+- When enabled by the System Admin, users can now dismiss announcement banners until their next session
 
 ### Improvements
 
