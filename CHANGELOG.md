@@ -10,11 +10,11 @@
 - Android devices will notice significant performance improvements when opening and closing the channel drawer.
 
 #### Channel loading performance
-- Improved channel loading performance as post are retrieved with every push notification
+- Improved channel loading performance as posts are retrieved with every push notification.
 
 #### Announcement banner improvements
-- Markdown now renders when announcement banners are expanded
-- When enabled by the System Admin, users can now dismiss announcement banners until their next session
+- Markdown now renders when announcement banners are expanded.
+- When enabled by the System Admin, users can now dismiss announcement banners until their next session.
 
 ### Improvements
 
