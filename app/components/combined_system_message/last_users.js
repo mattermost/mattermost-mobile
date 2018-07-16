@@ -112,7 +112,9 @@ export default class LastUsers extends React.PureComponent {
         return (
             <Text>
                 <Text>{this.renderMessage(formattedStartMessage)}</Text>
+                <Text>{' '}</Text>
                 <Text onPress={this.handleOnPress}>{this.renderCombinedMessage(formattedMidMessage)}</Text>
+                <Text>{' '}</Text>
                 <Text>{this.renderMessage(formattedEndMessage)}</Text>
             </Text>
         );
