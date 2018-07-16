@@ -304,7 +304,7 @@ export default class Search extends PureComponent {
                 <View style={style.archivedIndicator}>
                     <Text>
                         <AwesomeIcon
-                            name='archive'
+                            name='search_item.channelArchived'
                             style={style.archivedText}
                         />
                         {' '}

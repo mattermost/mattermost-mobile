@@ -469,7 +469,7 @@ export default class PostTextbox extends PureComponent {
     archivedView = (theme, style) => {
         return (<View style={style.archivedWrapper}>
             <FormattedMarkdownText
-                id='archived.noPosting'
+                id='archivedChannelMessage'
                 defaultMessage='You are viewing an **archived channel**. New messages cannot be posted.'
                 theme={theme}
                 style={style.archivedText}
@@ -479,7 +479,7 @@ export default class PostTextbox extends PureComponent {
                 onPress={this.onCloseChannelPress}
             >
                 <FormattedText
-                    id='archived.closeButtonText'
+                    id='center_panel.archived.closeChannel'
                     defaultMessage='Close Channel'
                     style={style.closeButtonText}
                 />
