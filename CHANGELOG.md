@@ -10,23 +10,23 @@
 - Android devices will notice significant performance improvements when opening and closing the channel drawer.
 
 #### Channel loading performance
-- Improved channel loading performance as posts are retrieved with every push notification.
+- Improved channel loading performance as post are retrieved with every push notification
 
 #### Announcement banner improvements
-- Markdown now renders when announcement banners are expanded.
-- When enabled by the System Admin, users can now dismiss announcement banners until their next session.
+- Markdown now renders when announcement banners are expanded
+- When enabled by the System Admin, users can now dismiss announcement banners until their next session
 
 ### Improvements
 
+ - Combined consecutive messages from the same user.
  - Added experimental support for certificate-based authentication (CBA) for iOS to identify a user or a device before granting access to Mattermost. See [documentation](https://docs.mattermost.com/deployment/certificate-based-authentication.html) to learn more.
- - Added an experimental setting that users can use to set a custom message that will be automatically sent in response to Direct Messages.
- - Added support for a timezone feature.
+ - Added support for the experimental automatic direct message replies feature.
+ - Added support for the experimental timezone feature.
  - Changed post textbox to not be a connected component.
  - Allow connecting to mattermost instances hosted at subpaths.
- - Allow retrieving posts when push notifications are received to improve messages appearing more quickly.
  - Added support for starting YouTube videos at a given time.
  - Added support for keeping messages if slash command fails.
- - Combined consecutive messages from the same user.
+
 
 ### Bug Fixes
 
