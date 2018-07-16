@@ -7,7 +7,7 @@
 ### Highlights
 
 #### Channel drawer performance
- - On Android, replaced the current drawer with DrawerLayout and brought back the channel loader when switching channels.
+ - Replaced the current drawer with DrawerLayout and brought back the channel loader when switching channels.
 
 #### Channel loading improvements by retrieving posts with push notifications
 
@@ -16,10 +16,14 @@
 ### Improvements
 
  - Added experimental support for certificate-based authentication (CBA) for iOS to identify a user or a device before granting access to Mattermost. See [documentation](https://docs.mattermost.com/deployment/certificate-based-authentication.html) to learn more.
+ - Added an experimental setting that users can use to set a custom message that will be automatically sent in response to Direct Messages.
+ - Added support for a timezone feature.
  - Changed post textbox to not be a connected component.
  - Allow connecting to mattermost instances hosted at subpaths.
  - Allow retrieving posts when push notifications are received to improve messages appearing more quickly.
- - Implemented ``FormattedMarkdownMessage`` to format translations.
+ - Added support for starting YouTube videos at a given time.
+ - Added support for keeping messages if slash command fails.
+ - Combined consecutive messages from the same user.
 
 ### Bug Fixes
 
@@ -28,11 +32,12 @@
  - Fixed an issue where Android Sharing from Microsoft apps failed.
  - Fixed an issue where YouTube crashed the app if link did not have a time set.
  - Fixed an issue where System Admins did not see all teams available to join on mobile.
- - Fixed an issue with iOS extension crash and ability to share from Files app.
+ - Fixed an issue where users were unable to share from Files app.
  - Fixed an issue where viewing a non-existent permalink didn't show an error message.
  - Fixed an issue where jumping to a channel search did not bold unread channels.
  - Fixed an issue with being able to add own user to a Group Message channel.
  - Fixed an issue with not being able to reply from a push notification on iOS.
+ - Fixed an issue where the app did not display Brazilian language.
  
 ## 1.9.3 Release
 - Release Date: July 04, 2018
