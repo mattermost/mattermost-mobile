@@ -306,6 +306,11 @@ export function handleSelectChannel(channelId) {
         dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
         dispatch(batchActions([
+            setLoadMorePostsVisible(true),
+            {
+                type: ChannelTypes.SELECT_CHANNEL,
+                data: channelId,
+            },
             {
                 type: ChannelTypes.SELECT_CHANNEL,
                 data: channelId,
@@ -314,7 +319,6 @@ export function handleSelectChannel(channelId) {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
                 data: channelId,
             },
-            setChannelLoading(false),
             {
                 type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
                 teamId: currentTeamId,

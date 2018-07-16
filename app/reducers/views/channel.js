@@ -221,7 +221,7 @@ function drafts(state = {}, action) { // eslint-disable-line complexity
     }
 }
 
-function loading(state = false, action) {
+function loading(state = true, action) {
     switch (action.type) {
     case ViewTypes.SET_CHANNEL_LOADER:
         return action.loading;
