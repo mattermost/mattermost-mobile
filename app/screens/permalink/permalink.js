@@ -59,7 +59,8 @@ export default class Permalink extends PureComponent {
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
-        channel: PropTypes.object,
+        channelId: PropTypes.string,
+        channelIsArchived: PropTypes.bool,
         channelName: PropTypes.string,
         channelTeamId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
@@ -113,7 +114,7 @@ export default class Permalink extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (!nextProps.channel && this.mounted) {
+        if (nextProps.channelId === '' && this.mounted) {
             this.handleClose();
         }
 
@@ -178,11 +179,11 @@ export default class Permalink extends PureComponent {
     };
 
     handlePress = () => {
-        const {channel, channelName} = this.props;
+        const {channelId, channelName} = this.props;
 
         if (this.refs.view) {
             this.refs.view.growOut().then(() => {
-                this.jumpToChannel(channel.id, channelName);
+                this.jumpToChannel(channelId, channelName);
             });
         }
     };
@@ -190,7 +191,7 @@ export default class Permalink extends PureComponent {
     jumpToChannel = (channelId, channelDisplayName) => {
         if (channelId) {
             const {actions, channelTeamId, currentTeamId, navigator, onClose, theme} = this.props;
-            const currentChannelId = this.props.channel.id;
+            const currentChannelId = this.props.channelId;
             const {
                 handleSelectChannel,
                 handleTeamChange,
@@ -243,9 +244,9 @@ export default class Permalink extends PureComponent {
 
     loadPosts = async (props) => {
         const {intl} = this.context;
-        const {actions, channel, currentUserId, focusedPostId, isPermalink, postIds} = props;
+        const {actions, channelId, currentUserId, focusedPostId, isPermalink, postIds} = props;
         const {formatMessage} = intl;
-        let focusChannelId = channel.id;
+        let focusChannelId = channelId;
 
         const post = await actions.getPostThread(focusedPostId, false);
         if (this.mounted && post.error && (!postIds || !postIds.length)) {
@@ -267,12 +268,12 @@ export default class Permalink extends PureComponent {
             return;
         }
 
-        if (!channel) {
+        if (!channelId) {
             focusChannelId = post.data.posts[focusedPostId].channel_id;
             if (!this.props.myMembers[focusChannelId]) {
-                const {data: c} = await actions.getChannel(focusChannelId);
-                if (c && c.type === General.OPEN_CHANNEL) {
-                    await actions.joinChannel(currentUserId, c.team_id, c.id);
+                const {data: channel} = await actions.getChannel(focusChannelId);
+                if (channel && channel.type === General.OPEN_CHANNEL) {
+                    await actions.joinChannel(currentUserId, channel.team_id, channel.id);
                 }
             }
         }
@@ -303,9 +304,8 @@ export default class Permalink extends PureComponent {
     };
 
     archivedIcon = (style) => {
-        const channelIsArchived = this.props.channel ? this.props.channel.delete_at !== 0 : false;
         let ico = null;
-        if (channelIsArchived) {
+        if (this.props.channelIsArchived) {
             ico = (<Text>
                 <AwesomeIcon
                     name='archive'

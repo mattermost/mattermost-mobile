@@ -43,7 +43,8 @@ function makeMapStateToProps() {
         }
 
         return {
-            channel,
+            channelId: channel ? channel.id : '',
+            channelIsArchived: channel ? channel.delete_at !== 0 : false,
             channelName: channel ? channel.display_name : '',
             channelTeamId: channel ? channel.team_id : '',
             currentTeamId: getCurrentTeamId(state),
