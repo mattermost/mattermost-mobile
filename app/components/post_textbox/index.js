@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {General} from 'mattermost-redux/constants';
 import {createPost} from 'mattermost-redux/actions/posts';
 import {setStatus} from 'mattermost-redux/actions/users';
-import {getCurrentChannel, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannel, isCurrentChannelReadOnly, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
@@ -42,10 +42,6 @@ function mapStateToProps(state, ownProps) {
     const status = getStatusForUserId(state, currentUserId);
     const userIsOutOfOffice = status === General.OUT_OF_OFFICE;
 
-    const defaultChannel = Object.values(state.entities.channels.channels).find((c) => {
-        return c.team_id === state.entities.teams.currentTeamId && c.name === General.DEFAULT_CHANNEL;
-    });
-
     return {
         channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
         canUploadFiles: canUploadFilesOnMobile(state),
@@ -60,7 +56,7 @@ function mapStateToProps(state, ownProps) {
         theme: getTheme(state),
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
         value: currentDraft.draft,
-        defaultChannel,
+        defaultChannel: getDefaultChannel(state),
     };
 }
 
