@@ -22,9 +22,9 @@ import {SidebarSectionTypes} from 'app/constants/view';
 import List from './list';
 
 const filterZeroUnreads = createSelector(
-    sections => sections,
+    (sections) => sections,
     (sections) => {
-        return sections.filter(s => {
+        return sections.filter((s) => {
             if (s.type === SidebarSectionTypes.UNREADS) {
                 return s.items.length > 0;
             }
@@ -43,7 +43,7 @@ function mapStateToProps(state) {
     const sidebarPrefs = getSidebarPreferences(state);
     const lastUnreadChannel = state.views.channel.keepChannelIdAsUnread;
     const unreadChannelIds = getSortedUnreadChannelIds(state, lastUnreadChannel);
-    let orderedChannelIds = filterZeroUnreads(getOrderedChannelIds(
+    const orderedChannelIds = filterZeroUnreads(getOrderedChannelIds(
         state,
         lastUnreadChannel,
         sidebarPrefs.grouping,

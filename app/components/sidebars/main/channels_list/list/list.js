@@ -85,42 +85,42 @@ export default class List extends PureComponent {
     getSectionConfigByType = (sectionType) => {
         const {canCreatePrivateChannels} = this.props;
 
-        switch(sectionType) {
-            case SidebarSectionTypes.UNREADS:
-                return {
-                    id: 'mobile.channel_list.unreads',
-                    defaultMessage: 'UNREADS',
-                    renderItem: this.renderUnreadItem,
-                }
-            case SidebarSectionTypes.FAVORITE:
-                return {
-                    id: 'sidebar.favorite',
-                    defaultMessage: 'FAVORITES',
-                }
-            case SidebarSectionTypes.PUBLIC:
-                return {
-                    action: this.goToMoreChannels,
-                    id: 'sidebar.channels',
-                    defaultMessage: 'PUBLIC CHANNELS',
-                }
-            case SidebarSectionTypes.PRIVATE:
-                return {
-                    action: canCreatePrivateChannels ? this.goToCreatePrivateChannel : null,
-                    id: 'sidebar.pg',
-                    defaultMessage: 'PRIVATE CHANNELS',
-                }
-            case SidebarSectionTypes.DIRECT:
-                return {
-                    action: this.goToDirectMessages,
-                    id: 'sidebar.direct',
-                    defaultMessage: 'DIRECT MESSAGES'
-                }
-            default:
-                return {
-                    action: this.showCreateChannelOptions,
-                    id: 'mobile.channel_list.channels',
-                    defaultMessage: 'CHANNELS'
-                }
+        switch (sectionType) {
+        case SidebarSectionTypes.UNREADS:
+            return {
+                id: 'mobile.channel_list.unreads',
+                defaultMessage: 'UNREADS',
+                renderItem: this.renderUnreadItem,
+            };
+        case SidebarSectionTypes.FAVORITE:
+            return {
+                id: 'sidebar.favorite',
+                defaultMessage: 'FAVORITES',
+            };
+        case SidebarSectionTypes.PUBLIC:
+            return {
+                action: this.goToMoreChannels,
+                id: 'sidebar.channels',
+                defaultMessage: 'PUBLIC CHANNELS',
+            };
+        case SidebarSectionTypes.PRIVATE:
+            return {
+                action: canCreatePrivateChannels ? this.goToCreatePrivateChannel : null,
+                id: 'sidebar.pg',
+                defaultMessage: 'PRIVATE CHANNELS',
+            };
+        case SidebarSectionTypes.DIRECT:
+            return {
+                action: this.goToDirectMessages,
+                id: 'sidebar.direct',
+                defaultMessage: 'DIRECT MESSAGES',
+            };
+        default:
+            return {
+                action: this.showCreateChannelOptions,
+                id: 'mobile.channel_list.channels',
+                defaultMessage: 'CHANNELS',
+            };
         }
     }
 
@@ -133,9 +133,9 @@ export default class List extends PureComponent {
             return {
                 ...this.getSectionConfigByType(s.type),
                 data: s.items,
-                topSeparator: i != 0 && orderedChannelIds[i - 1].items.length > 0,
-                bottomSeparator: true
-            }
+                topSeparator: i !== 0 && orderedChannelIds[i - 1].items.length > 0,
+                bottomSeparator: true,
+            };
         });
     };
 
@@ -170,11 +170,11 @@ export default class List extends PureComponent {
                 id: 'mobile.more_dms.title',
                 defaultMessage: 'New Conversation',
             },
-        }
+        };
 
         items.push(moreChannels, createPublicChannel);
         if (canCreatePrivateChannels) {
-            items.push(createPrivateChannel)
+            items.push(createPrivateChannel);
         }
         items.push(newConversation);
 
@@ -183,10 +183,10 @@ export default class List extends PureComponent {
             title: '',
             animationType: 'none',
             passProps: {
-                items: items,
+                items,
                 onItemPress: () => navigator.dismissModal({
                     animationType: 'none',
-                })
+                }),
             },
             navigatorStyle: {
                 navBarHidden: true,
