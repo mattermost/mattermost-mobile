@@ -45,13 +45,21 @@ export default class UserInfo extends PureComponent {
                     />
                     <View style={style.wrapper}>
                         <View>
-                            <Text style={style.username}>
+                            <Text
+                                style={style.username}
+                                numberOfLines={1}
+                            >
                                 {`@${user.username}`}
                             </Text>
                         </View>
                         {Boolean(fullName) &&
                         <View>
-                            <Text style={style.fullName}>{fullName}</Text>
+                            <Text
+                                style={style.fullName}
+                                numberOfLines={1}
+                            >
+                                {fullName}
+                            </Text>
                         </View>
                         }
                     </View>
@@ -69,6 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
         },
         wrapper: {
+            flex: 1,
             marginLeft: 10,
         },
         username: {
