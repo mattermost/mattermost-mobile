@@ -24,7 +24,6 @@ export default class ExtensionNavBar extends PureComponent {
     static defaultProps = {
         backButton: false,
         onLeftButtonPress: emptyFunction,
-        title: 'Mattermost',
     };
 
     renderLeftButton = (styles) => {

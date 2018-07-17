@@ -2609,6 +2609,7 @@
   "mobile.share_extension.post_error": "An error has occurred while posting the message. Please try again.",
   "mobile.share_extension.send": "Send",
   "mobile.share_extension.team": "Team",
+  "mobile.share_extension.title": "Mattermost",
   "mobile.suggestion.members": "Members",
   "mobile.timezone_settings.automatically": "Set automatically",
   "mobile.timezone_settings.manual": "Change timezone",
