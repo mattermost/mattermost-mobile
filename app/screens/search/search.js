@@ -59,7 +59,7 @@ export default class Search extends PureComponent {
         isLandscape: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
         postIds: PropTypes.array,
-        channels: PropTypes.object,
+        archivedPostIds: PropTypes.arrayOf(PropTypes.string),
         recent: PropTypes.array.isRequired,
         searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -68,7 +68,7 @@ export default class Search extends PureComponent {
     static defaultProps = {
         postIds: [],
         recent: [],
-        channels: [],
+        archivedPostIds: [],
     };
 
     static contextTypes = {
@@ -296,21 +296,20 @@ export default class Search extends PureComponent {
     };
 
     archivedIndicator = (postID, style) => {
-        const channel = this.props.channels[postID];
-        const channelIsArchived = channel.delete_at !== 0;
+        const channelIsArchived = this.props.archivedPostIds.includes(postID);
         let archivedIndicator = null;
         if (channelIsArchived) {
             archivedIndicator = (
                 <View style={style.archivedIndicator}>
                     <Text>
                         <AwesomeIcon
-                            name='search_item.channelArchived'
+                            name='archive'
                             style={style.archivedText}
                         />
                         {' '}
                         <FormattedText
                             style={style.archivedText}
-                            id='archived'
+                            id='search_item.channelArchived'
                             defaultMessage='Archived'
                         />
                     </Text>
@@ -467,7 +466,7 @@ export default class Search extends PureComponent {
             },
         });
 
-        actions.searchPosts(currentTeamId, terms.trim(), isOrSearch);
+        actions.searchPosts(currentTeamId, terms.trim(), isOrSearch, true);
     };
 
     handleSearchButtonPress = preventDoubleTap((text) => {

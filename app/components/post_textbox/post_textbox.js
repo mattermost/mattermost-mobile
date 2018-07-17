@@ -57,6 +57,7 @@ export default class PostTextbox extends PureComponent {
         userIsOutOfOffice: PropTypes.bool.isRequired,
         channelIsArchived: PropTypes.bool,
         defaultChannel: PropTypes.object,
+        onCloseChannel: PropTypes.func,
     };
 
     static defaultProps = {
@@ -459,11 +460,14 @@ export default class PostTextbox extends PureComponent {
     };
 
     onCloseChannelPress = () => {
-        const {defaultChannel, channelId} = this.props;
+        const {defaultChannel, channelId, onCloseChannel} = this.props;
         const {setChannelDisplayName, setChannelLoading} = this.props.actions;
         setChannelLoading(true);
         setChannelDisplayName(defaultChannel.display_name);
         EventEmitter.emit('switch_channel', defaultChannel, channelId);
+        if (onCloseChannel) {
+            onCloseChannel();
+        }
     };
 
     archivedView = (theme, style) => {

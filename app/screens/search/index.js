@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {selectFocusedPostId, selectPost} from 'mattermost-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/actions/search';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId, filterPostIds} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -23,28 +23,18 @@ function makeMapStateToProps() {
     return (state) => {
         const postIds = preparePostIds(state, state.entities.search.results);
 
-        const channels = {};
-        postIds.forEach((postID) => {
-            const post = state.entities.posts.posts[postID];
-            if (post) {
-                const channel = state.entities.channels.channels[post.channel_id];
-                if (channel) {
-                    channels[postID] = channel;
-                }
-            }
-        });
-
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
         const {recent} = state.entities.search;
         const {searchPosts: searchRequest} = state.requests.search;
+        const filterPostIdsByDeletedChannels = filterPostIds((c) => c && c.delete_at !== 0);
 
         return {
             currentTeamId,
             currentChannelId,
             isLandscape: isLandscape(state),
             postIds,
-            channels,
+            archivedPostIds: filterPostIdsByDeletedChannels(state, postIds),
             recent: recent[currentTeamId],
             searchingStatus: searchRequest.status,
             theme: getTheme(state),

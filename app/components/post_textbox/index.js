@@ -47,7 +47,7 @@ function mapStateToProps(state, ownProps) {
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
         channelIsReadOnly: isCurrentChannelReadOnly(state),
-        channelIsArchived: currentChannel ? currentChannel.delete_at !== 0 : false,
+        channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
         currentUserId,
         userIsOutOfOffice,
         deactivatedChannel,
