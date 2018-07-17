@@ -15,6 +15,8 @@ export const SidebarSectionTypes = {
     PUBLIC: 'public',
     PRIVATE: 'private',
     DIRECT: 'direct',
+    RECENT_ACTIVITY: 'recent',
+    ALPHA: 'alpha',
 };
 
 const ViewTypes = keyMirror({

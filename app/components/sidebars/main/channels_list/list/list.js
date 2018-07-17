@@ -115,6 +115,18 @@ export default class List extends PureComponent {
                 id: 'sidebar.direct',
                 defaultMessage: 'DIRECT MESSAGES',
             };
+        case SidebarSectionTypes.RECENT_ACTIVITY:
+            return {
+                action: this.goToDirectMessages,
+                id: 'sidebar.types.recent',
+                defaultMessage: 'RECENT ACTIVITY',
+            };
+        case SidebarSectionTypes.ALPHA:
+            return {
+                action: this.showCreateChannelOptions,
+                id: 'mobile.channel_list.channels',
+                defaultMessage: 'CHANNELS',
+            };
         default:
             return {
                 action: this.showCreateChannelOptions,
