@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {General} from 'mattermost-redux/constants';
 
