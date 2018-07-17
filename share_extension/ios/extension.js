@@ -88,8 +88,8 @@ export default class SharedApp extends PureComponent {
         }
 
         const title = formatMessage({
-            id: 'mobile.share_extension.title',
-            defaultMessage: 'Mattermost',
+            id: 'mobile.extension.title',
+            defaultMessage: 'Share in Mattermost',
         });
 
         const theme = Preferences.THEMES.default;
