@@ -101,7 +101,7 @@ const hashCode = (str) => {
     let hash = 0;
     let i;
     let chr;
-    if (str.length === 0) {
+    if (!str || str.length === 0) {
         return hash;
     }
 

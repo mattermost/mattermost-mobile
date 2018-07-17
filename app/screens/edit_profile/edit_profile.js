@@ -5,17 +5,21 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {View} from 'react-native';
-
+import RNFetchBlob from 'react-native-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+
+import {Client4} from 'mattermost-redux/client';
+
+import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
+import {emptyFunction} from 'app/utils/general';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Loading from 'app/components/loading';
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar/index';
 import ProfilePicture from 'app/components/profile_picture';
 import AttachmentButton from 'app/components/attachment_button';
-import {emptyFunction} from 'app/utils/general';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import EditProfileItem from './edit_profile_item';
 
@@ -49,7 +53,6 @@ const holders = {
 export default class EditProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleUploadProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
@@ -165,11 +168,7 @@ export default class EditProfile extends PureComponent {
         };
 
         if (profileImage) {
-            const {error} = await this.props.actions.handleUploadProfileImage(profileImage, this.props.currentUser.id);
-            if (error) {
-                this.handleRequestError(error);
-                return;
-            }
+            this.uploadProfileImage().catch(this.handleUploadError);
         }
 
         if (this.canUpdate()) {
@@ -187,6 +186,26 @@ export default class EditProfile extends PureComponent {
         const image = images && images.length > 0 && images[0];
         this.setState({profileImage: image});
         this.emitCanUpdateAccount(true);
+    };
+
+    uploadProfileImage = () => {
+        const {profileImage} = this.state;
+        const {currentUser} = this.props;
+        const fileData = buildFileUploadData(profileImage);
+
+        const headers = {
+            Authorization: `Bearer ${Client4.getToken()}`,
+            'Content-Type': 'multipart/form-data',
+        };
+
+        const fileInfo = {
+            name: 'image',
+            filename: encodeHeaderURIStringToUTF8(fileData.name),
+            data: RNFetchBlob.wrap(profileImage.uri.replace('file://', '')),
+            type: fileData.type,
+        };
+
+        return RNFetchBlob.fetch('POST', `${Client4.getUserRoute(currentUser.id)}/image`, headers, [fileInfo]);
     };
 
     updateField = (field) => {

@@ -25,6 +25,23 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  // Clear keychain on first run in case of reinstallation
+  if (![[NSUserDefaults standardUserDefaults] objectForKey:@"FirstRun"]) {
+
+    NSString *service = [[NSBundle mainBundle] bundleIdentifier];
+    NSDictionary *query = @{
+                            (__bridge NSString *)kSecClass: (__bridge id)(kSecClassGenericPassword),
+                            (__bridge NSString *)kSecAttrService: service,
+                            (__bridge NSString *)kSecReturnAttributes: (__bridge id)kCFBooleanTrue,
+                            (__bridge NSString *)kSecReturnData: (__bridge id)kCFBooleanFalse
+                            };
+
+    SecItemDelete((__bridge CFDictionaryRef) query);
+
+    [[NSUserDefaults standardUserDefaults] setValue:@YES forKey:@"FirstRun"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+  }
+
   NSURL *jsCodeLocation;
 
   jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];

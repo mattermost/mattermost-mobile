@@ -9,10 +9,12 @@ import {Client4} from 'mattermost-redux/client';
 
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {setDeviceToken} from 'mattermost-redux/actions/general';
+import {getPosts} from 'mattermost-redux/actions/posts';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {ViewTypes} from 'app/constants';
+import {retryGetPostsAction} from 'app/actions/views/channel';
 import {
     createPost,
     loadFromPushNotification,
@@ -46,8 +48,18 @@ const onRegisterDevice = (data) => {
     }
 };
 
+const loadFromNotification = async (notification) => {
+    await store.dispatch(loadFromPushNotification(notification));
+    if (!app.startAppFromPushNotification) {
+        EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
+        PushNotifications.resetNotification();
+    }
+};
+
 const onPushNotification = async (deviceNotification) => {
     const {dispatch, getState} = store;
+    let unsubscribeFromStore = null;
+    let stopLoadingNotification = false;
 
     // mark the app as started as soon as possible
     if (Platform.OS === 'android' && !app.appStarted) {
@@ -66,15 +78,26 @@ const onPushNotification = async (deviceNotification) => {
 
     if (data.type === 'clear') {
         dispatch(markChannelAsRead(data.channel_id, null, false));
-    } else if (foreground) {
-        EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
-    } else if (userInteraction && !notification.localNotification) {
-        EventEmitter.emit('close_channel_drawer');
-        if (getState().views.root.hydrationComplete) {
-            await dispatch(loadFromPushNotification(notification));
-            if (!app.startAppFromPushNotification) {
-                EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
-                PushNotifications.resetNotification();
+    } else {
+        // get the posts for the channel as soon as possible
+        retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
+
+        if (foreground) {
+            EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
+        } else if (userInteraction && !notification.localNotification) {
+            EventEmitter.emit('close_channel_drawer');
+            if (getState().views.root.hydrationComplete) {
+                loadFromNotification(notification);
+            } else {
+                const waitForHydration = () => {
+                    if (getState().views.root.hydrationComplete && !stopLoadingNotification) {
+                        stopLoadingNotification = true;
+                        unsubscribeFromStore();
+                        loadFromNotification(notification);
+                    }
+                };
+
+                unsubscribeFromStore = store.subscribe(waitForHydration);
             }
         }
     }
@@ -112,8 +135,9 @@ export const onPushNotificationReply = (data, text, badge, completed) => {
             Client4.setToken(token);
         }
 
-        createPost(post)(dispatch, getState).then(() => {
-            markChannelAsRead(data.channel_id)(dispatch, getState);
+        retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
+        dispatch(createPost(post)).then(() => {
+            dispatch(markChannelAsRead(data.channel_id));
 
             if (badge >= 0) {
                 PushNotifications.setApplicationIconBadgeNumber(badge);

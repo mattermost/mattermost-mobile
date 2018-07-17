@@ -3,12 +3,8 @@
 
 import DeviceInfo from 'react-native-device-info';
 
-import {UserTypes} from 'mattermost-redux/action_types';
-
 import {ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
-import mattermostBucket from 'app/mattermost_bucket';
-import Config from 'assets/config';
 
 import {
     captureException,
@@ -115,6 +111,20 @@ function resetStateForNewVersion(action) {
         lastTeamId = payload.views.team.lastTeamId;
     }
 
+    const currentChannelId = lastChannelForTeam[lastTeamId] && lastChannelForTeam[lastTeamId].length ? lastChannelForTeam[lastTeamId][0] : '';
+    let channels = initialState.entities.channels;
+    if (payload.entities.channels && currentChannelId) {
+        channels = {
+            currentChannelId,
+            channels: {
+                [currentChannelId]: payload.entities.channels.channels[currentChannelId],
+            },
+            myMembers: {
+                [currentChannelId]: payload.entities.channels.myMembers[currentChannelId],
+            },
+        };
+    }
+
     let threadDrafts = initialState.views.thread.drafts;
     if (payload.views.thread && payload.views.thread.drafts) {
         threadDrafts = payload.views.thread.drafts;
@@ -136,6 +146,7 @@ function resetStateForNewVersion(action) {
             version: DeviceInfo.getVersion(),
         },
         entities: {
+            channels,
             general,
             teams,
             users,
@@ -351,22 +362,6 @@ function cleanupState(action, keepCurrent = false) {
         type: action.type,
         payload: nextState,
         error: action.error,
-    };
-}
-
-export function shareExtensionData() {
-    return (next) => (action) => {
-        // allow other middleware to do their things
-        const nextAction = next(action);
-
-        switch (action.type) {
-        case UserTypes.LOGOUT_SUCCESS:
-            mattermostBucket.removePreference('cert', Config.AppGroupId);
-            mattermostBucket.removePreference('emm', Config.AppGroupId);
-            mattermostBucket.removeFile('entities', Config.AppGroupId);
-            break;
-        }
-        return nextAction;
     };
 }
 

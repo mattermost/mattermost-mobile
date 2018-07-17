@@ -190,6 +190,7 @@ export default class ExtensionTeam extends PureComponent {
                     titleCancelColor={defaultTheme.centerChannelColor}
                     onChangeText={this.handleSearch}
                     autoCapitalize='none'
+                    value={this.state.term}
                 />
             </View>
         );

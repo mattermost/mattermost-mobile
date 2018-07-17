@@ -3,9 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, BackHandler, Keyboard, Platform, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {intlShape} from 'react-intl';
-import {RequestStatus} from 'mattermost-redux/constants';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import AttachmentButton from 'app/components/attachment_button';
@@ -13,6 +13,7 @@ import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import QuickTextInput from 'app/components/quick_text_input';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Typing from './components/typing';
@@ -33,6 +34,7 @@ export default class PostTextbox extends PureComponent {
             initUploadFiles: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired,
             handleCommentDraftSelectionChanged: PropTypes.func.isRequired,
+            setStatus: PropTypes.func.isRequired,
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
@@ -47,6 +49,7 @@ export default class PostTextbox extends PureComponent {
         theme: PropTypes.object.isRequired,
         uploadFileRequestStatus: PropTypes.string.isRequired,
         value: PropTypes.string.isRequired,
+        userIsOutOfOffice: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -386,12 +389,43 @@ export default class PostTextbox extends PureComponent {
         }
     };
 
+    getStatusFromSlashCommand = (message) => {
+        const tokens = message.split(' ');
+
+        if (tokens.length > 0) {
+            return tokens[0].substring(1);
+        }
+        return '';
+    };
+
+    isStatusSlashCommand = (command) => {
+        return command === General.ONLINE || command === General.AWAY ||
+            command === General.DND || command === General.OFFLINE;
+    };
+
+    updateStatus = (status) => {
+        const {actions, currentUserId} = this.props;
+        actions.setStatus({
+            user_id: currentUserId,
+            status,
+        });
+    };
+
     sendCommand = async (msg) => {
         const {intl} = this.context;
-        const {actions, channelId, rootId} = this.props;
+        const {userIsOutOfOffice, actions, channelId, rootId} = this.props;
+
+        const status = this.getStatusFromSlashCommand(msg);
+        if (userIsOutOfOffice && this.isStatusSlashCommand(status)) {
+            confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
+            return;
+        }
+
         const {error} = await actions.executeCommand(msg, channelId, rootId);
 
         if (error) {
+            this.handleTextChange(msg);
+            this.changeDraft(msg);
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.commands.error_title',
@@ -475,6 +509,8 @@ export default class PostTextbox extends PureComponent {
             inputContainerStyle.push(style.inputContainerWithoutFileUpload);
         }
 
+        const InputComponent = Platform.OS === 'android' ? TextInput : QuickTextInput;
+
         return (
             <View>
                 <Typing/>
@@ -495,7 +531,7 @@ export default class PostTextbox extends PureComponent {
                 <View style={style.inputWrapper}>
                     {!channelIsReadOnly && attachmentButton}
                     <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
-                        <QuickTextInput
+                        <InputComponent
                             ref='input'
                             value={textValue}
                             onChangeText={this.handleTextChange}

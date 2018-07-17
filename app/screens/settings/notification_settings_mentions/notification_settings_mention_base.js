@@ -57,6 +57,7 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         const newState = {
             ...notifyProps,
             comments,
+            newReplyValue: comments,
             usernameMention: usernameMentionIndex > -1,
             mention_keys: mentionKeys.join(','),
             showKeywordsModal: false,
@@ -64,7 +65,6 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         };
 
         this.keywords = newState.mention_keys;
-        this.replyValue = comments;
 
         return newState;
     };

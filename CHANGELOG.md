@@ -1,5 +1,81 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.10.0 Release
+- Release Date: July 16, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+#### Channel drawer performance
+- Android devices will notice significant performance improvements when opening and closing the channel drawer.
+
+#### Channel loading performance
+- Improved channel loading performance as post are retrieved with every push notification
+
+#### Announcement banner improvements
+- Markdown now renders when announcement banners are expanded
+- When enabled by the System Admin, users can now dismiss announcement banners until their next session
+
+### Improvements
+
+ - Combined consecutive messages from the same user.
+ - Added experimental support for certificate-based authentication (CBA) for iOS to identify a user or a device before granting access to Mattermost. See [documentation](https://docs.mattermost.com/deployment/certificate-based-authentication.html) to learn more.
+ - Added support for the experimental automatic direct message replies feature.
+ - Added support for the experimental timezone feature.
+ - Changed post textbox to not be a connected component.
+ - Allow connecting to mattermost instances hosted at subpaths.
+ - Added support for starting YouTube videos at a given time.
+ - Added support for keeping messages if slash command fails.
+
+
+### Bug Fixes
+
+ - Fixed an issue where the unread badge background was always white.
+ - Fixed an issue where a username repeated in system message if user was added to a channel more than once.
+ - Fixed an issue where Android Sharing from Microsoft apps failed.
+ - Fixed an issue where YouTube crashed the app if link did not have a time set.
+ - Fixed an issue where System Admins did not see all teams available to join on mobile.
+ - Fixed an issue where users were unable to share from Files app.
+ - Fixed an issue where viewing a non-existent permalink didn't show an error message.
+ - Fixed an issue where jumping to a channel search did not bold unread channels.
+ - Fixed an issue with being able to add own user to a Group Message channel.
+ - Fixed an issue with not being able to reply from a push notification on iOS.
+ - Fixed an issue where the app did not display Brazilian language.
+ 
+## 1.9.3 Release
+- Release Date: July 04, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+
+- Fixed multiple issues causing app crashes
+- Fixed an issue on iOS devices with typing non-english characters in the post input box
+
+## 1.9.2 Release
+- Release Date: June 27, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+
+- Fixed an issue where attached videos did not play for the poster
+- Fixed an issue where "Jump to recent messages" from the permalink view did not direct the user to the bottom of the channel
+- Fixed an issue where post comments did not identify which parent post they belonged to
+- Fixed multiple issues with typing non-english characters in the post input box
+- Fixed multiple issues causing random app crashes
+- Fixed an issue where files from the Android Files app failed to upload
+- Fixed an issue where the iOS share extension crashed when switching the team or channel
+- Fixed an issue where files from the Microsoft app failed to upload
+- Fixed an issue on Android devices where sharing files changed the file extension of the attachment
+
+## 1.9.1 Release
+- Release Date: June 23, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+- Fixed an issue with typing lag on Android devices
+- Fixed an issue causing users to be logged out after upgrading to v1.9.0
+- Fixed an issue where the ``in:`` and ``from:`` modifiers were not being added to the search field
+
 ## v1.9.0 Release
 - Release Date: June 16, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported

@@ -12,8 +12,11 @@ import {
 import {intlShape} from 'react-intl';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 
 import ProfilePicture from 'app/components/profile_picture';
+import FormattedText from 'app/components/formatted_text';
+import FormattedTime from 'app/components/formatted_time';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
@@ -33,6 +36,8 @@ export default class UserProfile extends PureComponent {
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
+        militaryTime: PropTypes.bool.isRequired,
+        enableTimezone: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -89,6 +94,34 @@ export default class UserProfile extends PureComponent {
         }
 
         return null;
+    };
+
+    buildTimezoneBlock = () => {
+        const {theme, user, militaryTime} = this.props;
+        const style = createStyleSheet(theme);
+
+        const currentTimezone = getUserCurrentTimezone(user.timezone);
+        if (!currentTimezone) {
+            return null;
+        }
+        const nowDate = new Date();
+
+        return (
+            <View>
+                <FormattedText
+                    id='mobile.routes.user_profile.local_time'
+                    defaultMessage='LOCAL TIME'
+                    style={style.header}
+                />
+                <Text style={style.text}>
+                    <FormattedTime
+                        timeZone={currentTimezone}
+                        hour12={!militaryTime}
+                        value={nowDate}
+                    />
+                </Text>
+            </View>
+        );
     };
 
     sendMessage = async () => {
@@ -162,7 +195,7 @@ export default class UserProfile extends PureComponent {
     };
 
     render() {
-        const {config, theme, user} = this.props;
+        const {config, theme, user, enableTimezone} = this.props;
         const style = createStyleSheet(theme);
 
         if (!user) {
@@ -186,6 +219,7 @@ export default class UserProfile extends PureComponent {
                         <Text style={style.username}>{`@${user.username}`}</Text>
                     </View>
                     <View style={style.content}>
+                        {enableTimezone && this.buildTimezoneBlock()}
                         {this.buildDisplayBlock('username')}
                         {config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
                         {this.buildDisplayBlock('position')}

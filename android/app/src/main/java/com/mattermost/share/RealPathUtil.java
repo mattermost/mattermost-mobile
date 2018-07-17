@@ -10,6 +10,8 @@ import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.os.Environment;
 import android.webkit.MimeTypeMap;
+import android.util.Log;
+import android.text.TextUtils;
 
 import android.os.ParcelFileDescriptor;
 import java.io.*;
@@ -37,10 +39,19 @@ public class RealPathUtil {
                 // DownloadsProvider
 
                 final String id = DocumentsContract.getDocumentId(uri);
-                final Uri contentUri = ContentUris.withAppendedId(
-                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
-                return getDataColumn(context, contentUri, null, null);
+                if (!TextUtils.isEmpty(id)) {
+                    if (id.startsWith("raw:")) {
+                        return id.replaceFirst("raw:", "");
+                    }
+                    try {
+                        final Uri contentUri = ContentUris.withAppendedId(
+                                Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                        return getDataColumn(context, contentUri, null, null);
+                    } catch (NumberFormatException e) {
+                        Log.e("ReactNative", "DownloadsProvider unexpected uri " + uri.toString());
+                        return null;
+                    }
+                }
             } else if (isMediaDocument(uri)) {
                 // MediaProvider
 
@@ -71,16 +82,6 @@ public class RealPathUtil {
 
             if (isGooglePhotosUri(uri)) {
                 return uri.getLastPathSegment();
-            }
-
-            try {
-                String path = getDataColumn(context, uri, null, null);
-
-                if (path != null) {
-                    return path;
-                }
-            } catch (Exception e) {
-                // do nothing and try to get a temp file
             }
 
             // Try save to tmp file, and return tmp file path

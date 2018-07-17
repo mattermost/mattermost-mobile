@@ -8,19 +8,19 @@ import {
     BackHandler,
     InteractionManager,
     Keyboard,
-    Platform,
     ScrollView,
     View,
 } from 'react-native';
+import DrawerLayout from 'react-native-drawer-layout';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import Drawer from 'app/components/drawer';
 import UserStatus from 'app/components/user_status';
 import {NavigationTypes} from 'app/constants';
+import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -39,12 +39,15 @@ export default class SettingsDrawer extends PureComponent {
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
         currentUser: PropTypes.object.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         navigator: PropTypes.object,
+        status: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         currentUser: {},
+        status: 'offline',
     };
 
     static contextTypes = {
@@ -54,10 +57,7 @@ export default class SettingsDrawer extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.closeHandle = null;
-        this.openHandle = null;
-
-        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
@@ -71,68 +71,30 @@ export default class SettingsDrawer extends PureComponent {
     }
 
     handleAndroidBack = () => {
-        if (this.refs.drawer && this.refs.drawer.isOpened()) {
-            this.refs.drawer.close();
+        if (this.refs.drawer) {
+            this.refs.drawer.closeDrawer();
             return true;
         }
 
         return false;
     };
 
-    openSettingsDrawer = () => {
+    openSettingsSidebar = () => {
         this.props.blurPostTextBox();
 
-        if (this.refs.drawer && !this.refs.drawer.isOpened()) {
-            this.refs.drawer.open();
+        if (this.refs.drawer) {
+            this.refs.drawer.openDrawer();
         }
     };
 
-    closeSettingsDrawer = () => {
-        if (this.refs.drawer && this.refs.drawer.isOpened()) {
-            this.refs.drawer.close();
-        }
-    };
-
-    handleDrawerTween = (ratio) => {
-        const opacity = (ratio / 2);
-
-        EventEmitter.emit('drawer_opacity', opacity);
-
-        return {
-            mainOverlay: {
-                backgroundColor: '#000',
-                elevation: 3,
-                opacity,
-            },
-        };
-    };
-
-    handleDrawerClose = () => {
-        if (this.closeHandle) {
-            InteractionManager.clearInteractionHandle(this.closeHandle);
-            this.closeHandle = null;
-        }
-    };
-
-    handleDrawerCloseStart = () => {
-        if (!this.closeHandle) {
-            this.closeHandle = InteractionManager.createInteractionHandle();
+    closeSettingsSidebar = () => {
+        if (this.refs.drawer) {
+            this.refs.drawer.closeDrawer();
         }
     };
 
     handleDrawerOpen = () => {
         Keyboard.dismiss();
-
-        if (this.openHandle) {
-            InteractionManager.clearInteractionHandle(this.openHandle);
-            this.openHandle = null;
-        }
-    };
-
-    handleDrawerOpenStart = () => {
-        if (!this.openHandle) {
-            this.openHandle = InteractionManager.createInteractionHandle();
-        }
     };
 
     handleSetStatus = preventDoubleTap(() => {
@@ -183,7 +145,6 @@ export default class SettingsDrawer extends PureComponent {
         const {currentUser} = this.props;
         const {formatMessage} = this.context.intl;
 
-        this.closeSettingsDrawer();
         this.openModal(
             'EditProfile',
             formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
@@ -194,7 +155,6 @@ export default class SettingsDrawer extends PureComponent {
     goToFlagged = preventDoubleTap(() => {
         const {formatMessage} = this.context.intl;
 
-        this.closeSettingsDrawer();
         this.openModal(
             'FlaggedPosts',
             formatMessage({id: 'search_header.title3', defaultMessage: 'Flagged Posts'}),
@@ -204,7 +164,6 @@ export default class SettingsDrawer extends PureComponent {
     goToMentions = preventDoubleTap(() => {
         const {intl} = this.context;
 
-        this.closeSettingsDrawer();
         this.openModal(
             'RecentMentions',
             intl.formatMessage({id: 'search_header.title2', defaultMessage: 'Recent Mentions'}),
@@ -214,7 +173,6 @@ export default class SettingsDrawer extends PureComponent {
     goToSettings = preventDoubleTap(() => {
         const {intl} = this.context;
 
-        this.closeSettingsDrawer();
         this.openModal(
             'Settings',
             intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
@@ -223,33 +181,36 @@ export default class SettingsDrawer extends PureComponent {
 
     logout = preventDoubleTap(() => {
         const {logout} = this.props.actions;
-        this.closeSettingsDrawer();
-        InteractionManager.runAfterInteractions(logout);
+        this.closeSettingsSidebar();
+        logout();
     });
 
     openModal = (screen, title, passProps) => {
         const {navigator, theme} = this.props;
 
-        this.closeSettingsDrawer();
-        navigator.showModal({
-            screen,
-            title,
-            animationType: 'slide-up',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            navigatorButtons: {
-                leftButtons: [{
-                    id: 'close-settings',
-                    icon: this.closeButton,
-                }],
-            },
-            passProps,
+        this.closeSettingsSidebar();
+
+        InteractionManager.runAfterInteractions(() => {
+            navigator.showModal({
+                screen,
+                title,
+                animationType: 'slide-up',
+                animated: true,
+                backButtonTitle: '',
+                navigatorStyle: {
+                    navBarTextColor: theme.sidebarHeaderTextColor,
+                    navBarBackgroundColor: theme.sidebarHeaderBg,
+                    navBarButtonColor: theme.sidebarHeaderTextColor,
+                    screenBackgroundColor: theme.centerChannelBg,
+                },
+                navigatorButtons: {
+                    leftButtons: [{
+                        id: 'close-settings',
+                        icon: this.closeButton,
+                    }],
+                },
+                passProps,
+            });
         });
     };
 
@@ -268,7 +229,7 @@ export default class SettingsDrawer extends PureComponent {
         );
     };
 
-    renderContent = () => {
+    renderNavigationView = () => {
         const {currentUser, navigator, theme} = this.props;
         const style = getStyleSheet(theme);
 
@@ -351,60 +312,47 @@ export default class SettingsDrawer extends PureComponent {
         );
     };
 
-    setStatus = (status) => {
+    confirmReset = (status) => {
+        const {intl} = this.context;
+        confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
+    };
+
+    updateStatus = (status) => {
         const {currentUser: {id: currentUserId}} = this.props;
         this.props.actions.setStatus({
             user_id: currentUserId,
             status,
         });
+    };
+
+    setStatus = (status) => {
+        const {status: currentUserStatus, navigator} = this.props;
+
+        if (currentUserStatus === General.OUT_OF_OFFICE) {
+            navigator.dismissModal({
+                animationType: 'none',
+            });
+            this.closeSettingsDrawer();
+            this.confirmReset(status);
+            return;
+        }
+        this.updateStatus(status);
         EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
     };
 
     render() {
-        const {children} = this.props;
+        const {children, deviceWidth} = this.props;
 
         return (
-            <Drawer
+            <DrawerLayout
                 ref='drawer'
-                onOpenStart={this.handleDrawerOpenStart}
-                onOpen={this.handleDrawerOpen}
-                onClose={this.handleDrawerClose}
-                onCloseStart={this.handleDrawerCloseStart}
-                side='right'
-                captureGestures='open'
-                type='overlay'
-                acceptTap={true}
-                acceptPanOnDrawer={false}
-                disabled={false}
-                content={this.renderContent()}
-                tapToClose={true}
-                openDrawerOffset={DRAWER_INITIAL_OFFSET}
-                onRequestClose={this.closeSettingsDrawer}
-                panOpenMask={0.05}
-                panCloseMask={DRAWER_INITIAL_OFFSET}
-                panThreshold={0.25}
-                acceptPan={true}
-                negotiatePan={true}
-                useInteractionManager={false}
-                tweenDuration={100}
-                tweenHandler={this.handleDrawerTween}
-                elevation={5}
-                bottomPanOffset={Platform.OS === 'ios' ? 46 : 64}
-                topPanOffset={Platform.OS === 'ios' ? 64 : 46}
-                styles={{
-                    main: {
-                        shadowColor: '#000000',
-                        shadowOpacity: 0.4,
-                        shadowRadius: 12,
-                        shadowOffset: {
-                            width: -4,
-                            height: 0,
-                        },
-                    },
-                }}
+                renderNavigationView={this.renderNavigationView}
+                onDrawerOpen={this.handleDrawerOpen}
+                drawerPosition='right'
+                drawerWidth={deviceWidth - DRAWER_INITIAL_OFFSET}
             >
                 {children}
-            </Drawer>
+            </DrawerLayout>
         );
     }
 }

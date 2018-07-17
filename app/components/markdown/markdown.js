@@ -39,6 +39,7 @@ export default class Markdown extends PureComponent {
         isEdited: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
+        onChannelLinkPress: PropTypes.func,
         onLongPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
@@ -194,6 +195,7 @@ export default class Markdown extends PureComponent {
             <ChannelLink
                 linkStyle={this.props.textStyles.link}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+                onChannelLinkPress={this.props.onChannelLinkPress}
                 channelName={channelName}
             />
         );

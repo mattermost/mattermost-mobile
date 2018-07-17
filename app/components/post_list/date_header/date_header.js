@@ -10,17 +10,27 @@ import {
 
 import FormattedDate from 'app/components/formatted_date';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {DATE_LINE, DATE_LINE_SUFFIX} from 'app/selectors/post_list';
 
+// DateHeader accepts as a timestamp encoded as a string for rendering as part of a post list.
 export default class DateHeader extends PureComponent {
     static propTypes = {
-        date: PropTypes.object.isRequired,
+        dateLineString: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         style: ViewPropTypes.style,
     };
 
     render() {
-        const {date, theme} = this.props;
+        const {theme, dateLineString} = this.props;
         const style = getStyleSheet(theme);
+        const indexSuffix = dateLineString.indexOf(DATE_LINE_SUFFIX);
+
+        let date;
+        if (indexSuffix >= 0) {
+            date = new Date(parseInt(dateLineString.substring(DATE_LINE.length, indexSuffix), 10));
+        } else {
+            date = new Date(parseInt(dateLineString.substring(DATE_LINE.length), 10));
+        }
 
         return (
             <View style={[style.container, this.props.style]}>

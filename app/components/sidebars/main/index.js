@@ -4,21 +4,22 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {joinChannel, markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
+import {joinChannel} from 'mattermost-redux/actions/channels';
 import {getTeams} from 'mattermost-redux/actions/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getMyTeamsCount} from 'mattermost-redux/selectors/entities/teams';
 
-import {handleSelectChannel, setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
+import {setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
-import {isLandscape, isTablet} from 'app/selectors/device';
+import {isLandscape, isTablet, getDimensions} from 'app/selectors/device';
 
-import ChannelDrawer from './channel_drawer.js';
+import MainSidebar from './main_sidebar.js';
 
 function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
 
     return {
+        ...getDimensions(state),
         currentTeamId: getCurrentTeamId(state),
         currentUserId,
         isLandscape: isLandscape(state),
@@ -32,15 +33,12 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getTeams,
-            handleSelectChannel,
             joinChannel,
-            markChannelAsViewed,
             makeDirectChannel,
-            markChannelAsRead,
             setChannelDisplayName,
             setChannelLoading,
         }, dispatch),
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(ChannelDrawer);
+export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(MainSidebar);

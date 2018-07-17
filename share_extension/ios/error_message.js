@@ -43,7 +43,6 @@ export default function errorMessage(props) {
 
 errorMessage.propTypes = {
     close: PropTypes.func.isRequired,
-    formatMessage: PropTypes.func.isRequired,
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {

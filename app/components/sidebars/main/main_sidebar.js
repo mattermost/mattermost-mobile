@@ -5,42 +5,31 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     BackHandler,
-    InteractionManager,
     Keyboard,
-    Platform,
     StyleSheet,
     View,
 } from 'react-native';
+import {intlShape} from 'react-intl';
+import DrawerLayout from 'react-native-drawer-layout';
 
 import {General, WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import Drawer from 'app/components/drawer';
 import SafeAreaView from 'app/components/safe_area_view';
-import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 
 import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swipper';
 import TeamsList from './teams_list';
 
-const {
-    ANDROID_TOP_LANDSCAPE,
-    ANDROID_TOP_PORTRAIT,
-    IOS_TOP_LANDSCAPE,
-    IOS_TOP_PORTRAIT,
-} = ViewTypes;
 const DRAWER_INITIAL_OFFSET = 40;
 const DRAWER_LANDSCAPE_OFFSET = 150;
 
-export default class ChannelDrawer extends Component {
+export default class ChannelSidebar extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
-            handleSelectChannel: PropTypes.func.isRequired,
-            markChannelAsViewed: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
@@ -48,16 +37,18 @@ export default class ChannelDrawer extends Component {
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTablet: PropTypes.bool.isRequired,
-        intl: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
-    closeHandle = null;
-    openHandle = null;
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     swiperIndex = 1;
 
     constructor(props) {
@@ -67,8 +58,12 @@ export default class ChannelDrawer extends Component {
         if (props.isLandscape || props.isTablet) {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
         }
+
+        this.drawerOpened = false;
+
         this.state = {
             show: false,
+            lockMode: 'unlocked',
             openDrawerOffset,
         };
     }
@@ -98,7 +93,7 @@ export default class ChannelDrawer extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, isLandscape, teamsCount} = this.props;
+        const {currentTeamId, deviceWidth, isLandscape, teamsCount} = this.props;
         const {openDrawerOffset} = this.state;
 
         if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== this.state.show) {
@@ -106,8 +101,8 @@ export default class ChannelDrawer extends Component {
         }
 
         return nextProps.currentTeamId !== currentTeamId ||
-            nextProps.isLandscape !== isLandscape ||
-            nextProps.teamsCount !== teamsCount;
+            nextProps.isLandscape !== isLandscape || nextProps.deviceWidth !== deviceWidth ||
+            nextProps.teamsCount !== teamsCount || this.state.lockMode !== nextState.lockMode;
     }
 
     componentWillUnmount() {
@@ -118,8 +113,8 @@ export default class ChannelDrawer extends Component {
     }
 
     handleAndroidBack = () => {
-        if (this.refs.drawer && this.refs.drawer.isOpened()) {
-            this.refs.drawer.close();
+        if (this.drawerOpened && this.refs.drawer) {
+            this.refs.drawer.closeDrawer();
             return true;
         }
 
@@ -131,8 +126,8 @@ export default class ChannelDrawer extends Component {
     };
 
     closeChannelDrawer = () => {
-        if (this.refs.drawer && this.refs.drawer.isOpened()) {
-            this.refs.drawer.close();
+        if (this.drawerOpened && this.refs.drawer) {
+            this.refs.drawer.closeDrawer();
         }
     };
 
@@ -141,53 +136,16 @@ export default class ChannelDrawer extends Component {
     };
 
     handleDrawerClose = () => {
+        this.drawerOpened = false;
         this.resetDrawer();
-
-        if (this.closeHandle) {
-            InteractionManager.clearInteractionHandle(this.closeHandle);
-            this.closeHandle = null;
-        }
-    };
-
-    handleDrawerCloseStart = () => {
-        if (!this.closeHandle) {
-            this.closeHandle = InteractionManager.createInteractionHandle();
-        }
     };
 
     handleDrawerOpen = () => {
+        this.drawerOpened = true;
+
         if (this.state.openDrawerOffset !== 0) {
             Keyboard.dismiss();
         }
-
-        if (this.openHandle) {
-            InteractionManager.clearInteractionHandle(this.openHandle);
-            this.openHandle = null;
-        }
-    };
-
-    handleDrawerOpenStart = () => {
-        if (!this.openHandle) {
-            this.openHandle = InteractionManager.createInteractionHandle();
-        }
-    };
-
-    handleDrawerTween = (ratio) => {
-        const opacity = (ratio / 2);
-
-        EventEmitter.emit('drawer_opacity', opacity);
-
-        return {
-            mainOverlay: {
-                backgroundColor: this.props.theme.centerChannelBg,
-                elevation: 3,
-                opacity,
-            },
-            drawerOverlay: {
-                backgroundColor: ratio ? '#000' : '#FFF',
-                opacity: ratio ? (1 - ratio) / 2 : 1,
-            },
-        };
     };
 
     handleUpdateTitle = (channel) => {
@@ -198,11 +156,11 @@ export default class ChannelDrawer extends Component {
         this.props.actions.setChannelDisplayName(channelName);
     };
 
-    openChannelDrawer = () => {
+    openChannelSidebar = () => {
         this.props.blurPostTextBox();
 
-        if (this.refs.drawer && !this.refs.drawer.isOpened()) {
-            this.refs.drawer.open();
+        if (this.refs.drawer) {
+            this.refs.drawer.openDrawer();
         }
     };
 
@@ -212,38 +170,25 @@ export default class ChannelDrawer extends Component {
         } = this.props;
 
         const {
-            handleSelectChannel,
-            markChannelAsRead,
             setChannelLoading,
             setChannelDisplayName,
-            markChannelAsViewed,
         } = actions;
 
         tracker.channelSwitch = Date.now();
 
         this.closeChannelDrawer();
 
-        InteractionManager.runAfterInteractions(() => {
-            setChannelLoading(channel.id !== currentChannelId);
-            setChannelDisplayName(channel.display_name);
-
-            handleSelectChannel(channel.id);
-            requestAnimationFrame(() => {
-                // mark the channel as viewed after all the frame has flushed
-                markChannelAsRead(channel.id, currentChannelId);
-                if (channel.id !== currentChannelId) {
-                    markChannelAsViewed(currentChannelId);
-                }
-            });
-        });
+        setChannelLoading(channel.id !== currentChannelId);
+        setChannelDisplayName(channel.display_name);
+        EventEmitter.emit('switch_channel', channel, currentChannelId);
     };
 
     joinChannel = async (channel, currentChannelId) => {
+        const {intl} = this.context;
         const {
             actions,
             currentTeamId,
             currentUserId,
-            intl,
         } = this.props;
 
         const {
@@ -256,7 +201,7 @@ export default class ChannelDrawer extends Component {
 
         let result;
         if (channel.type === General.DM_CHANNEL) {
-            result = await makeDirectChannel(channel.id);
+            result = await makeDirectChannel(channel.id, false);
 
             if (result.error) {
                 const dmFailedMessage = {
@@ -268,7 +213,7 @@ export default class ChannelDrawer extends Component {
         } else {
             result = await joinChannel(currentUserId, currentTeamId, channel.id);
 
-            if (result.error) {
+            if (result.error || !result.data || !result.data.channel) {
                 const joinFailedMessage = {
                     id: 'mobile.join_channel.error',
                     defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
@@ -281,20 +226,21 @@ export default class ChannelDrawer extends Component {
             return;
         }
 
-        this.selectChannel(result.data, currentChannelId);
+        this.selectChannel(result.data.channel || result.data, currentChannelId);
     };
 
     onPageSelected = (index) => {
         this.swiperIndex = index;
+        if (this.swiperIndex === 0) {
+            this.setState({lockMode: 'locked-open'});
+        } else {
+            this.setState({lockMode: 'unlocked'});
+        }
     };
 
     onSearchEnds = () => {
         //hack to update the drawer when the offset changes
         const {isLandscape, isTablet} = this.props;
-
-        if (this.refs.drawer) {
-            this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
-        }
 
         let openDrawerOffset = DRAWER_INITIAL_OFFSET;
         if (isLandscape || isTablet) {
@@ -304,10 +250,6 @@ export default class ChannelDrawer extends Component {
     };
 
     onSearchStart = () => {
-        if (this.refs.drawer) {
-            this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
-        }
-
         this.setState({openDrawerOffset: 0});
     };
 
@@ -323,7 +265,7 @@ export default class ChannelDrawer extends Component {
         }
     };
 
-    renderContent = () => {
+    renderNavigationView = () => {
         const {
             navigator,
             teamsCount,
@@ -401,53 +343,20 @@ export default class ChannelDrawer extends Component {
     };
 
     render() {
-        const {children, isLandscape} = this.props;
-        const {openDrawerOffset} = this.state;
-
-        const androidTop = isLandscape ? ANDROID_TOP_LANDSCAPE : ANDROID_TOP_PORTRAIT;
-        const iosTop = isLandscape ? IOS_TOP_LANDSCAPE : IOS_TOP_PORTRAIT;
+        const {children, deviceWidth} = this.props;
+        const {lockMode, openDrawerOffset} = this.state;
 
         return (
-            <Drawer
+            <DrawerLayout
+                drawerLockMode={lockMode}
                 ref='drawer'
-                onOpenStart={this.handleDrawerOpenStart}
-                onOpen={this.handleDrawerOpen}
-                onClose={this.handleDrawerClose}
-                onCloseStart={this.handleDrawerCloseStart}
-                captureGestures='open'
-                type={Platform.OS === 'ios' ? 'static' : 'displace'}
-                acceptTap={true}
-                acceptPanOnDrawer={false}
-                disabled={false}
-                content={this.renderContent()}
-                tapToClose={true}
-                openDrawerOffset={openDrawerOffset}
-                onRequestClose={this.closeChannelDrawer}
-                panOpenMask={0.2}
-                panCloseMask={openDrawerOffset}
-                panThreshold={0.25}
-                acceptPan={true}
-                negotiatePan={true}
-                useInteractionManager={false}
-                tweenDuration={100}
-                tweenHandler={this.handleDrawerTween}
-                elevation={-5}
-                bottomPanOffset={Platform.OS === 'ios' ? ANDROID_TOP_LANDSCAPE : IOS_TOP_PORTRAIT}
-                topPanOffset={Platform.OS === 'ios' ? iosTop : androidTop}
-                styles={{
-                    main: {
-                        shadowColor: '#000000',
-                        shadowOpacity: 0.4,
-                        shadowRadius: 12,
-                        shadowOffset: {
-                            width: -4,
-                            height: 0,
-                        },
-                    },
-                }}
+                renderNavigationView={this.renderNavigationView}
+                onDrawerClose={this.handleDrawerClose}
+                onDrawerOpen={this.handleDrawerOpen}
+                drawerWidth={deviceWidth - openDrawerOffset}
             >
                 {children}
-            </Drawer>
+            </DrawerLayout>
         );
     }
 }

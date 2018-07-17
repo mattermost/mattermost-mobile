@@ -3,12 +3,14 @@
 
 import {getDataRetentionPolicy} from 'mattermost-redux/actions/general';
 import {GeneralTypes} from 'mattermost-redux/action_types';
+import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {Client4} from 'mattermost-redux/client';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {ViewTypes} from 'app/constants';
 import {app} from 'app/mattermost';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {getDeviceTimezone, isTimezoneEnabled} from 'app/utils/timezone';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -39,6 +41,11 @@ export function handleSuccessfulLogin() {
         const currentUserId = getCurrentUserId(state);
 
         app.setAppCredentials(deviceToken, currentUserId, token, url);
+
+        const enableTimezone = isTimezoneEnabled(state);
+        if (enableTimezone) {
+            dispatch(autoUpdateTimezone(getDeviceTimezone()));
+        }
 
         dispatch({
             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,

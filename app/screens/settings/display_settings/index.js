@@ -5,10 +5,15 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {isTimezoneEnabled} from 'app/utils/timezone';
+
 import DisplaySettings from './display_settings';
 
 function mapStateToProps(state) {
+    const enableTimezone = isTimezoneEnabled(state);
+
     return {
+        enableTimezone,
         theme: getTheme(state),
     };
 }

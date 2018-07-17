@@ -14,6 +14,7 @@ import {
 
 import ChannelLoader from 'app/components/channel_loader';
 import DateHeader from 'app/components/post_list/date_header';
+import {isDateLine} from 'app/components/post_list/date_header/utils';
 import FailedNetworkAction from 'app/components/failed_network_action';
 import NoResults from 'app/components/no_results';
 import PostSeparator from 'app/components/post_separator';
@@ -21,7 +22,6 @@ import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
 import SearchResultPost from 'app/screens/search/search_result_post';
 import ChannelDisplayName from 'app/screens/search/channel_display_name';
-import {DATE_LINE} from 'app/selectors/post_list';
 import {changeOpacity} from 'app/utils/theme';
 
 export default class FlaggedPosts extends PureComponent {
@@ -150,13 +150,10 @@ export default class FlaggedPosts extends PureComponent {
     renderPost = ({item, index}) => {
         const {postIds, theme} = this.props;
         const {managedConfig} = this.state;
-        if (item.indexOf(DATE_LINE) === 0) {
-            const date = new Date(item.substring(DATE_LINE.length));
-
+        if (isDateLine(item)) {
             return (
                 <DateHeader
-                    key={`${date}-${index}`}
-                    date={date}
+                    dateLineString={item}
                     index={index}
                 />
             );
@@ -164,7 +161,7 @@ export default class FlaggedPosts extends PureComponent {
 
         let separator;
         const nextPost = postIds[index + 1];
-        if (nextPost && nextPost.indexOf(DATE_LINE) === -1) {
+        if (nextPost && !isDateLine(nextPost)) {
             separator = <PostSeparator theme={theme}/>;
         }
 

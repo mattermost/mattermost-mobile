@@ -25,9 +25,11 @@ export default class DrawerSwiper extends Component {
     };
 
     shouldComponentUpdate(nextProps) {
-        const {deviceWidth, showTeams, theme} = this.props;
+        const {deviceWidth, openDrawerOffset, showTeams, theme} = this.props;
         return nextProps.deviceWidth !== deviceWidth ||
-            nextProps.showTeams !== showTeams || nextProps.theme !== theme;
+            nextProps.showTeams !== showTeams ||
+            nextProps.openDrawerOffset !== openDrawerOffset ||
+            nextProps.theme !== theme;
     }
 
     runOnLayout = (shouldRun = true) => {

@@ -6,10 +6,11 @@ import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
 import {createPost} from 'mattermost-redux/actions/posts';
+import {setStatus} from 'mattermost-redux/actions/users';
 import {getCurrentChannel, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
@@ -37,12 +38,17 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
+    const currentUserId = getCurrentUserId(state);
+    const status = getStatusForUserId(state, currentUserId);
+    const userIsOutOfOffice = status === General.OUT_OF_OFFICE;
+
     return {
         channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
         channelIsReadOnly: isCurrentChannelReadOnly(state),
-        currentUserId: getCurrentUserId(state),
+        currentUserId,
+        userIsOutOfOffice,
         deactivatedChannel,
         files: currentDraft.files,
         maxMessageLength: (config && parseInt(config.MaxPostSize || 0, 10)) || MAX_MESSAGE_LENGTH,
@@ -66,6 +72,7 @@ function mapDispatchToProps(dispatch) {
             initUploadFiles,
             userTyping,
             handleCommentDraftSelectionChanged,
+            setStatus,
         }, dispatch),
     };
 }

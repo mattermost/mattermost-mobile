@@ -22,11 +22,15 @@ Client4.doFetchWithResponse = async (url, options) => {
             url,
         };
     }
-    const response = await fetch(url, Client4.getOptions(options));
-    const headers = response.headers;
+
+    let response;
+    let headers;
 
     let data;
     try {
+        response = await fetch(url, Client4.getOptions(options));
+        headers = response.headers;
+
         data = await response.json();
     } catch (err) {
         if (response && response.resp && response.resp.data && response.resp.data.includes('SSL certificate')) {
