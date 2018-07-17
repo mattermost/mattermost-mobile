@@ -7,10 +7,13 @@ import PropTypes from 'prop-types';
 import Renderer from 'commonmark-react-renderer';
 import {Parser} from 'commonmark';
 import {injectIntl, intlShape} from 'react-intl';
-import MarkdownLink from 'app/components/markdown/markdown_link';
+
 import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getMarkdownTextStyles} from 'app/utils/markdown';
 import CustomPropTypes from 'app/constants/custom_prop_types';
+
+import AtMention from 'app/components/at_mention';
+import MarkdownLink from 'app/components/markdown/markdown_link';
 
 const TARGET_BLANK_URL_PREFIX = '!';
 
@@ -29,12 +32,19 @@ const TARGET_BLANK_URL_PREFIX = '!';
 */
 class FormattedMarkdownText extends React.PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
-        id: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired,
+        baseTextStyle: CustomPropTypes.Style,
         defaultMessage: PropTypes.string.isRequired,
-        values: PropTypes.object,
+        id: PropTypes.string.isRequired,
+        navigator: PropTypes.object.isRequired,
+        onPostPress: PropTypes.func,
         style: CustomPropTypes.Style,
+        textStyles: PropTypes.object,
+        theme: PropTypes.object.isRequired,
+        values: PropTypes.object,
+    };
+
+    static contextTypes = {
+        intl: intlShape,
     };
 
     constructor(props) {
@@ -63,6 +73,7 @@ class FormattedMarkdownText extends React.PureComponent {
                 del: Renderer.forwardChildren,
                 html_inline: this.renderHTML,
                 html_block: this.renderHTML,
+                atMention: this.renderAtMention,
             },
         });
     }
@@ -99,10 +110,24 @@ class FormattedMarkdownText extends React.PureComponent {
         return this.renderText(props);
     }
 
+    renderAtMention = ({context, mentionName}) => {
+        return (
+            <AtMention
+                mentionStyle={this.props.textStyles.mention}
+                mentionName={mentionName}
+                navigator={this.props.navigator}
+                onLongPress={this.props.onPostPress}
+                onPostPress={this.props.onPostPress}
+                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+            />
+        );
+    }
+
     render() {
         const {id, defaultMessage, values, theme} = this.props;
         const messageDescriptor = {id, defaultMessage};
-        const message = this.props.intl.formatMessage(messageDescriptor, values);
+        const {formatMessage} = this.context.intl;
+        const message = formatMessage(messageDescriptor, values);
         const ast = this.parser.parse(message);
         this.textStyles = getMarkdownTextStyles(theme);
         this.baseTextStyle = getStyleSheet(theme).message;

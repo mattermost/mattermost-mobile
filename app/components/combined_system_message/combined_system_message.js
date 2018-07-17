@@ -250,6 +250,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
             currentUsername,
             navigator,
             textStyles,
+            theme,
         } = this.props;
         const usernames = this.getUsernamesByIds(userIds);
         let actor = actorId ? this.getUsernamesByIds([actorId])[0] : '';
@@ -270,6 +271,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
                     postType={postType}
                     style={style}
                     textStyles={textStyles}
+                    theme={theme}
                     usernames={usernames}
                 />
             );
@@ -351,7 +353,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         linkText: {
             color: theme.linkColor,
-            opacity: 0.6,
+            opacity: 0.8,
         },
     };
 });

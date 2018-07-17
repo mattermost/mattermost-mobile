@@ -3,11 +3,13 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {Text, StyleSheet} from 'react-native';
+import {Text} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import {Posts} from 'mattermost-redux/constants';
 
+import FormattedMarkdownText from 'app/components/formatted_markdown_text';
+import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 
 const typeMessage = {
@@ -53,6 +55,7 @@ export default class LastUsers extends React.PureComponent {
         postType: PropTypes.string.isRequired,
         style: PropTypes.object.isRequired,
         textStyles: PropTypes.object,
+        theme: PropTypes.object.isRequired,
         usernames: PropTypes.array.isRequired,
     };
 
@@ -79,6 +82,9 @@ export default class LastUsers extends React.PureComponent {
         const {
             actor,
             expandedLocale,
+            navigator,
+            style,
+            textStyles,
             usernames,
         } = this.props;
 
@@ -91,42 +97,6 @@ export default class LastUsers extends React.PureComponent {
             actor,
         });
 
-        return this.renderMessage(formattedMessage);
-    }
-
-    renderCollapsedView = () => {
-        const {formatMessage} = this.context.intl;
-        const {
-            actor,
-            postType,
-            usernames,
-        } = this.props;
-
-        const firstUser = usernames[0];
-        const numOthers = usernames.length - 1;
-
-        const formattedStartMessage = formatMessage({id: 'last_users_message.first', defaultMessage: '{firstUser} and '}, {firstUser});
-        const formattedMidMessage = formatMessage({id: 'last_users_message.others', defaultMessage: '{numOthers} others '}, {numOthers});
-        const formattedEndMessage = formatMessage(typeMessage[postType], {actor});
-
-        return (
-            <Text>
-                <Text>{this.renderMessage(formattedStartMessage)}</Text>
-                <Text>{' '}</Text>
-                <Text onPress={this.handleOnPress}>{this.renderCombinedMessage(formattedMidMessage)}</Text>
-                <Text>{' '}</Text>
-                <Text>{this.renderMessage(formattedEndMessage)}</Text>
-            </Text>
-        );
-    }
-
-    renderMessage = (formattedMessage) => {
-        const {
-            navigator,
-            style,
-            textStyles,
-        } = this.props;
-
         return (
             <Markdown
                 baseTextStyle={style.baseText}
@@ -137,20 +107,54 @@ export default class LastUsers extends React.PureComponent {
         );
     }
 
-    renderCombinedMessage = (formattedMessage) => {
+    renderCollapsedView = () => {
         const {
+            actor,
             navigator,
+            postType,
             style,
             textStyles,
+            theme,
+            usernames,
         } = this.props;
 
+        const firstUser = usernames[0];
+        const numOthers = usernames.length - 1;
+
         return (
-            <Markdown
-                baseTextStyle={style.linkText}
-                navigator={navigator}
-                textStyles={textStyles}
-                value={formattedMessage}
-            />
+            <Text>
+                <FormattedMarkdownText
+                    id={'last_users_message.first'}
+                    defaultMessage={'{firstUser} and '}
+                    values={{firstUser}}
+                    baseTextStyle={style.baseText}
+                    navigator={navigator}
+                    style={style.baseText}
+                    textStyles={textStyles}
+                    theme={theme}
+                />
+                <Text>{' '}</Text>
+                <Text
+                    style={style.linkText}
+                    onPress={this.handleOnPress}
+                >
+                    <FormattedText
+                        id={'last_users_message.others'}
+                        defaultMessage={'{numOthers} others '}
+                        values={{numOthers}}
+                    />
+                </Text>
+                <FormattedMarkdownText
+                    id={typeMessage[postType].id}
+                    defaultMessage={typeMessage[postType].defaultMessage}
+                    values={{actor}}
+                    baseTextStyle={style.baseText}
+                    navigator={navigator}
+                    style={style.baseText}
+                    textStyles={textStyles}
+                    theme={theme}
+                />
+            </Text>
         );
     }
 

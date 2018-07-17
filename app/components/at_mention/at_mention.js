@@ -17,7 +17,7 @@ export default class AtMention extends React.PureComponent {
         mentionName: PropTypes.string.isRequired,
         mentionStyle: CustomPropTypes.Style,
         navigator: PropTypes.object.isRequired,
-        onLongPress: PropTypes.func.isRequired,
+        onLongPress: PropTypes.func,
         onPostPress: PropTypes.func,
         textStyle: CustomPropTypes.Style,
         teammateNameDisplay: PropTypes.string,
