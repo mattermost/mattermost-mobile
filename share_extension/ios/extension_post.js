@@ -67,6 +67,7 @@ export default class ExtensionPost extends PureComponent {
         navigator: PropTypes.object.isRequired,
         onClose: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        title: PropTypes.string,
     };
 
     static contextTypes = {
@@ -655,7 +656,7 @@ export default class ExtensionPost extends PureComponent {
     };
 
     render() {
-        const {authenticated, theme} = this.props;
+        const {authenticated, theme, title} = this.props;
         const {channel, error, totalSize, sending} = this.state;
         const {formatMessage} = this.context.intl;
         const styles = getStyleSheet(theme);
@@ -684,6 +685,7 @@ export default class ExtensionPost extends PureComponent {
                     onRightButtonPress={this.sendMessage}
                     rightButtonTitle={postButtonText}
                     theme={theme}
+                    title={title}
                 />
                 {this.renderBody(styles)}
                 {!error && this.renderTeamButton(styles)}

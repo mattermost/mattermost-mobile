@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Animated, Dimensions, NavigatorIOS, StyleSheet, View} from 'react-native';
+import {intlShape} from 'react-intl';
 
 import {Preferences} from 'mattermost-redux/constants';
 
@@ -18,6 +19,10 @@ export default class SharedApp extends PureComponent {
     static propTypes = {
         appGroupId: PropTypes.string.isRequired,
         onClose: PropTypes.func.isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape,
     };
 
     constructor(props) {
@@ -75,22 +80,30 @@ export default class SharedApp extends PureComponent {
 
     render() {
         const {init, isLandscape} = this.state;
+        const {intl} = this.context;
+        const {formatMessage} = intl;
 
         if (!init) {
             return null;
         }
 
+        const title = formatMessage({
+            id: 'mobile.extension.title',
+            defaultMessage: 'Share in Mattermost',
+        });
+
         const theme = Preferences.THEMES.default;
 
         const initialRoute = {
             component: ExtensionPost,
-            title: 'Mattermost',
+            title,
             passProps: {
                 authenticated: this.userIsLoggedIn(),
                 entities: this.entities,
                 onClose: this.props.onClose,
                 isLandscape,
                 theme,
+                title,
             },
             wrapperStyle: {
                 borderRadius: 10,
