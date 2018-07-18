@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Image,
     Linking,
     Platform,
@@ -16,16 +15,21 @@ import {
 
 import ProgressiveImage from 'app/components/progressive_image';
 import ImageCacheManager from 'app/utils/image_cache_manager';
+import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {getNearestPoint} from 'app/utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_IMAGE_HEIGHT = 150;
+const VIEWPORT_IMAGE_OFFSET = 88;
+const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
 export default class PostAttachmentOpenGraph extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getOpenGraphMetadata: PropTypes.func.isRequired,
         }).isRequired,
+        deviceHeight: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         isReplyPost: PropTypes.bool,
         link: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
@@ -66,27 +70,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         this.mounted = false;
     }
 
-    calculateLargeImageDimensions = (width, height) => {
-        const {width: deviceWidth} = Dimensions.get('window');
-        let maxHeight = MAX_IMAGE_HEIGHT;
-        let maxWidth = deviceWidth - 88 - (this.props.isReplyPost ? 15 : 0);
-
-        if (height <= MAX_IMAGE_HEIGHT) {
-            maxHeight = height;
-        } else {
-            maxHeight = (height / width) * maxWidth;
-            if (maxHeight > MAX_IMAGE_HEIGHT) {
-                maxHeight = MAX_IMAGE_HEIGHT;
-            }
-        }
-
-        if (height > width) {
-            maxWidth = (width / height) * maxHeight;
-        }
-
-        return {width: maxWidth, height: maxHeight};
-    };
-
     fetchData(url, openGraphData) {
         if (!openGraphData) {
             this.props.actions.getOpenGraphMetadata(url);
@@ -99,7 +82,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }
 
         const bestDimensions = {
-            width: Dimensions.get('window').width - 88,
+            width: this.getViewPostWidth(),
             height: MAX_IMAGE_HEIGHT,
         };
 
@@ -126,51 +109,25 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         const uri = `${prefix}${imageUrl}`;
 
         Image.getSize(uri, (width, height) => {
-            const dimensions = this.calculateLargeImageDimensions(width, height);
+            const dimensions = calculateDimensions(height, width, this.getViewPostWidth());
 
             if (this.mounted) {
                 this.setState({
                     ...dimensions,
+                    originalHeight: height,
+                    originalWidth: width,
                     imageUrl: uri,
                 });
             }
         }, () => null);
     };
 
-    getItemMeasures = (index, cb) => {
-        const activeComponent = this.refs.item;
+    getViewPostWidth = () => {
+        const {deviceHeight, deviceWidth, isReplyPost} = this.props;
+        const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
+        const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
 
-        if (!activeComponent) {
-            cb(null);
-            return;
-        }
-
-        activeComponent.measure((rx, ry, width, height, x, y) => {
-            cb({
-                origin: {x, y, width, height},
-            });
-        });
-    };
-
-    getPreviewProps = () => {
-        const previewComponent = this.refs.image;
-        return previewComponent ? {...previewComponent.props} : {};
-    };
-
-    goToImagePreview = (passProps) => {
-        this.props.navigator.showModal({
-            screen: 'ImagePreview',
-            title: '',
-            animationType: 'none',
-            passProps,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
+        return viewPortWidth;
     };
 
     goToLink = () => {
@@ -178,39 +135,33 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     };
 
     handlePreviewImage = () => {
-        const component = this.refs.item;
+        const {
+            imageUrl: uri,
+            openGraphImageUrl: link,
+            originalWidth,
+            originalHeight,
+        } = this.state;
+        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+        const extension = filename.split('.').pop();
 
-        if (!component) {
-            return;
+        if (extension === filename) {
+            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+            filename = `${filename}${ext}`;
         }
 
-        component.measure((rx, ry, width, height, x, y) => {
-            const {imageUrl: uri, openGraphImageUrl: link} = this.state;
-            let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-            const extension = filename.split('.').pop();
+        const files = [{
+            caption: filename,
+            dimensions: {
+                width: originalWidth,
+                height: originalHeight,
+            },
+            source: {uri},
+            data: {
+                localPath: uri,
+            },
+        }];
 
-            if (extension === filename) {
-                const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
-                filename = `${filename}${ext}`;
-            }
-
-            const files = [{
-                caption: filename,
-                source: {uri},
-                data: {
-                    localPath: uri,
-                },
-            }];
-
-            this.goToImagePreview({
-                index: 0,
-                origin: {x, y, width, height},
-                target: {x: 0, y: 0, opacity: 1},
-                files,
-                getItemMeasures: this.getItemMeasures,
-                getPreviewProps: this.getPreviewProps,
-            });
-        });
+        previewImageAtIndex(this.props.navigator, [this.refs.item], 0, files);
     };
 
     render() {
@@ -274,7 +225,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                                 ref='image'
                                 style={[style.image, {width, height}]}
                                 imageUri={imageUrl}
-                                resizeMode='cover'
+                                resizeMode='contain'
                             />
                         </TouchableWithoutFeedback>
                     </View>

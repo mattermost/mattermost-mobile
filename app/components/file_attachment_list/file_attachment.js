@@ -24,7 +24,6 @@ export default class FileAttachment extends PureComponent {
         file: PropTypes.object.isRequired,
         index: PropTypes.number.isRequired,
         onCaptureRef: PropTypes.func,
-        onCapturePreviewRef: PropTypes.func,
         onInfoPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
@@ -41,14 +40,6 @@ export default class FileAttachment extends PureComponent {
 
         if (onCaptureRef) {
             onCaptureRef(ref, index);
-        }
-    };
-
-    handleCapturePreviewRef = (ref) => {
-        const {onCapturePreviewRef, index} = this.props;
-
-        if (onCapturePreviewRef) {
-            onCapturePreviewRef(ref, index);
         }
     };
 
@@ -105,7 +96,6 @@ export default class FileAttachment extends PureComponent {
                     <FileAttachmentImage
                         file={data || {}}
                         onCaptureRef={this.handleCaptureRef}
-                        onCapturePreviewRef={this.handleCapturePreviewRef}
                         theme={theme}
                     />
                 </TouchableOpacity>
@@ -124,7 +114,6 @@ export default class FileAttachment extends PureComponent {
                     <FileAttachmentIcon
                         file={data}
                         onCaptureRef={this.handleCaptureRef}
-                        onCapturePreviewRef={this.handleCapturePreviewRef}
                         theme={theme}
                     />
                 </TouchableOpacity>

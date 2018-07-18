@@ -398,6 +398,7 @@ export default class PostBody extends PureComponent {
             isFailed,
             isPending,
             isPostAddChannelMember,
+            isReplyPost,
             isSearchResult,
             isSystemMessage,
             message,
@@ -466,6 +467,7 @@ export default class PostBody extends PureComponent {
                             baseTextStyle={messageStyle}
                             blockStyles={blockStyles}
                             isEdited={hasBeenEdited}
+                            isReplyPost={isReplyPost}
                             isSearchResult={isSearchResult}
                             navigator={navigator}
                             onLongPress={this.showOptionsContext}

@@ -17,6 +17,7 @@ import {RequestStatus} from 'mattermost-redux/constants';
 
 import {isDocument, isGif, isVideo} from 'app/utils/file';
 import {getCacheFile} from 'app/utils/image_cache_manager';
+import {previewImageAtIndex} from 'app/utils/images';
 import {preventDoubleTap} from 'app/utils/tap';
 
 import FileAttachment from './file_attachment';
@@ -119,48 +120,8 @@ export default class FileAttachmentList extends Component {
         return results;
     };
 
-    getItemMeasures = (index, cb) => {
-        const activeComponent = this.items[index];
-
-        if (!activeComponent) {
-            cb(null);
-            return;
-        }
-
-        activeComponent.measure((rx, ry, width, height, x, y) => {
-            cb({
-                origin: {x, y, width, height},
-            });
-        });
-    };
-
-    getPreviewProps = (index) => {
-        const previewComponent = this.previewItems[index];
-        return previewComponent ? {...previewComponent.props} : {};
-    };
-
-    goToImagePreview = (passProps) => {
-        this.props.navigator.showModal({
-            screen: 'ImagePreview',
-            title: '',
-            animationType: 'none',
-            passProps,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
-    };
-
     handleCaptureRef = (ref, idx) => {
         this.items[idx] = ref;
-    };
-
-    handleCapturePreviewRef = (ref, idx) => {
-        this.previewItems[idx] = ref;
     };
 
     handleInfoPress = () => {
@@ -171,22 +132,7 @@ export default class FileAttachmentList extends Component {
     handlePreviewPress = preventDoubleTap((idx) => {
         this.props.hideOptionsContext();
         Keyboard.dismiss();
-        const component = this.items[idx];
-
-        if (!component) {
-            return;
-        }
-
-        component.measure((rx, ry, width, height, x, y) => {
-            this.goToImagePreview({
-                index: idx,
-                origin: {x, y, width, height},
-                target: {x: 0, y: 0, opacity: 1},
-                files: this.galleryFiles,
-                getItemMeasures: this.getItemMeasures,
-                getPreviewProps: this.getPreviewProps,
-            });
-        });
+        previewImageAtIndex(this.props.navigator, this.items, idx, this.galleryFiles);
     });
 
     handlePressIn = () => {
@@ -231,7 +177,6 @@ export default class FileAttachmentList extends Component {
                         index={idx}
                         navigator={navigator}
                         onCaptureRef={this.handleCaptureRef}
-                        onCapturePreviewRef={this.handleCapturePreviewRef}
                         onInfoPress={this.handleInfoPress}
                         onPreviewPress={this.handlePreviewPress}
                         theme={this.props.theme}
