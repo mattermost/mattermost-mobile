@@ -271,7 +271,7 @@ public class CustomPushNotification extends PushNotification {
             replyIntent.setAction(KEY_TEXT_REPLY);
             replyIntent.putExtra(NOTIFICATION_ID, notificationId);
             replyIntent.putExtra("pushNotification", bundle);
-            PendingIntent replyPendingIntent = PendingIntent.getService(mContext, 103, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent replyPendingIntent = PendingIntent.getService(mContext, notificationId, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
                     .setLabel("Reply")
