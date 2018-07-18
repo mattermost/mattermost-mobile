@@ -71,7 +71,7 @@ export default class SettingsDrawer extends PureComponent {
     }
 
     handleAndroidBack = () => {
-        if (this.refs.drawer) {
+        if (this.refs.drawer && this.drawerOpened) {
             this.refs.drawer.closeDrawer();
             return true;
         }
@@ -82,18 +82,24 @@ export default class SettingsDrawer extends PureComponent {
     openSettingsSidebar = () => {
         this.props.blurPostTextBox();
 
-        if (this.refs.drawer) {
+        if (this.refs.drawer && !this.drawerOpened) {
             this.refs.drawer.openDrawer();
         }
     };
 
     closeSettingsSidebar = () => {
-        if (this.refs.drawer) {
+        if (this.refs.drawer && this.drawerOpened) {
             this.refs.drawer.closeDrawer();
         }
     };
 
+    handleDrawerClose = () => {
+        this.drawerOpened = false;
+        Keyboard.dismiss();
+    };
+
     handleDrawerOpen = () => {
+        this.drawerOpened = true;
         Keyboard.dismiss();
     };
 
@@ -347,6 +353,7 @@ export default class SettingsDrawer extends PureComponent {
             <DrawerLayout
                 ref='drawer'
                 renderNavigationView={this.renderNavigationView}
+                onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}
                 drawerPosition='right'
                 drawerWidth={deviceWidth - DRAWER_INITIAL_OFFSET}
