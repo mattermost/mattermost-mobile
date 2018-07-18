@@ -180,9 +180,10 @@ export default class CombinedSystemMessage extends React.PureComponent {
         this.loadUserProfiles(this.props.allUserIds, this.props.allUsernames);
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
-        if (this.props.allUserIds !== nextProps.allUserIds || this.props.allUsernames !== nextProps.allUsernames) {
-            this.loadUserProfiles(nextProps.allUserIds, nextProps.allUsernames);
+    componentDidUpdate(prevProps) {
+        const {allUserIds, allUsernames} = this.props;
+        if (allUserIds !== prevProps.allUserIds || allUsernames !== prevProps.allUsernames) {
+            this.loadUserProfiles(allUserIds, allUsernames);
         }
     }
 
