@@ -300,6 +300,23 @@ export default class Login extends PureComponent {
         this.scroll = ref;
     };
 
+    forgotPassword = () => {
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
+        navigator.push({
+            screen: 'ForgotPassword',
+            title: intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'}),
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        });
+    }
+
     render() {
         const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
 
@@ -394,6 +411,16 @@ export default class Login extends PureComponent {
                             disableFullscreenUI={true}
                         />
                         {proceed}
+                        <Button
+                            onPress={this.forgotPassword}
+                            containerStyle={[style.forgotPasswordBtn]}
+                        >
+                            <FormattedText
+                                id='login.forgot'
+                                defaultMessage='I forgot my password'
+                                style={style.forgotPasswordTxt}
+                            />
+                        </Button>
                     </KeyboardAwareScrollView>
                 </TouchableWithoutFeedback>
             </View>
@@ -412,5 +439,12 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         paddingHorizontal: 15,
         paddingVertical: 50,
+    },
+    forgotPasswordBtn: {
+        borderColor: 'transparent',
+        marginTop: 15,
+    },
+    forgotPasswordTxt: {
+        color: '#2389D7',
     },
 });
