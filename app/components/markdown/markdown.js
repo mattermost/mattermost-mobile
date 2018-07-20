@@ -37,6 +37,7 @@ export default class Markdown extends PureComponent {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
         isEdited: PropTypes.bool,
+        isReplyPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
         onChannelLinkPress: PropTypes.func,
@@ -166,6 +167,7 @@ export default class Markdown extends PureComponent {
         return (
             <MarkdownImage
                 linkDestination={linkDestination}
+                isReplyPost={this.props.isReplyPost}
                 navigator={this.props.navigator}
                 onLongPress={this.props.onLongPress}
                 source={src}

@@ -35,7 +35,6 @@ export default class FileAttachmentImage extends PureComponent {
         ]),
         imageWidth: PropTypes.number,
         onCaptureRef: PropTypes.func,
-        onCapturePreviewRef: PropTypes.func,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
         wrapperHeight: PropTypes.number,
@@ -92,14 +91,6 @@ export default class FileAttachmentImage extends PureComponent {
         }
     };
 
-    handleCapturePreviewRef = (ref) => {
-        const {onCapturePreviewRef} = this.props;
-
-        if (onCapturePreviewRef) {
-            onCapturePreviewRef(ref);
-        }
-    };
-
     render() {
         const {
             file,
@@ -135,7 +126,6 @@ export default class FileAttachmentImage extends PureComponent {
                 style={[style.fileImageWrapper, {height: wrapperHeight, width: wrapperWidth, overflow: 'hidden'}]}
             >
                 <ProgressiveImage
-                    ref={this.handleCapturePreviewRef}
                     style={imageStyle}
                     defaultSource={thumb}
                     tintDefaultSource={!file.localPath}

@@ -6,7 +6,15 @@ import {bindActionCreators} from 'redux';
 
 import {getOpenGraphMetadata} from 'mattermost-redux/actions/posts';
 
+import {getDimensions} from 'app/selectors/device';
+
 import PostAttachmentOpenGraph from './post_attachment_opengraph';
+
+function mapStateToProps(state) {
+    return {
+        ...getDimensions(state),
+    };
+}
 
 function mapDispatchToProps(dispatch) {
     return {
@@ -16,4 +24,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(null, mapDispatchToProps)(PostAttachmentOpenGraph);
+export default connect(mapStateToProps, mapDispatchToProps)(PostAttachmentOpenGraph);

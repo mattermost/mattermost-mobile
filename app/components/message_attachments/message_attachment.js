@@ -6,17 +6,24 @@ import PropTypes from 'prop-types';
 import {
     Image,
     Linking,
+    Platform,
     Text,
+    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
+import ProgressiveImage from 'app/components/progressive_image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import ImageCacheManager from 'app/utils/image_cache_manager';
+import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import InteractiveAction from './interactive_action';
 
+const VIEWPORT_IMAGE_CONTAINER_OFFSET = 10;
+const VIEWPORT_IMAGE_OFFSET = 32;
 const STATUS_COLORS = {
     good: '#00c100',
     warning: '#dede01',
@@ -40,6 +47,20 @@ export default class MessageAttachment extends PureComponent {
         super(props);
 
         this.state = this.getInitState();
+    }
+
+    componentWillMount() {
+        if (this.props.attachment.image_url) {
+            ImageCacheManager.cache(null, this.props.attachment.image_url, this.setImageUrl);
+        }
+    }
+
+    componentDidMount() {
+        this.mounted = true;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     getActionView = (style) => {
@@ -95,6 +116,7 @@ export default class MessageAttachment extends PureComponent {
             uncollapsedText,
             text: shouldCollapse ? collapsedText : uncollapsedText,
             collapsed: shouldCollapse,
+            imageUri: null,
         };
     };
 
@@ -189,10 +211,68 @@ export default class MessageAttachment extends PureComponent {
         );
     };
 
+    handleLayout = (event) => {
+        if (!this.maxImageWidth) {
+            const {height, width} = event.nativeEvent.layout;
+            const viewPortWidth = width > height ? height : width;
+            this.maxImageWidth = viewPortWidth - VIEWPORT_IMAGE_OFFSET;
+        }
+    };
+
+    handlePreviewImage = () => {
+        const {attachment, navigator} = this.props;
+        const {
+            imageUri: uri,
+            originalHeight,
+            originalWidth,
+        } = this.state;
+        const link = attachment.image_url;
+        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+        const extension = filename.split('.').pop();
+
+        if (extension === filename) {
+            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+            filename = `${filename}${ext}`;
+        }
+
+        const files = [{
+            caption: filename,
+            dimensions: {
+                height: originalHeight,
+                width: originalWidth,
+            },
+            source: {uri},
+            data: {
+                localPath: uri,
+            },
+        }];
+        previewImageAtIndex(navigator, [this.refs.item], 0, files);
+    };
+
     openLink = (link) => {
         if (Linking.canOpenURL(link)) {
             Linking.openURL(link);
         }
+    };
+
+    setImageUrl = (imageURL) => {
+        let imageUri = imageURL;
+
+        if (Platform.OS === 'android') {
+            imageUri = `file://${imageURL}`;
+        }
+
+        Image.getSize(imageUri, (width, height) => {
+            const dimensions = calculateDimensions(height, width, this.maxImageWidth);
+            if (this.mounted) {
+                this.setState({
+                    ...dimensions,
+                    originalWidth: width,
+                    originalHeight: height,
+                    imageUri,
+                });
+            }
+        }, () => null);
     };
 
     shouldCollapse = () => {
@@ -218,6 +298,12 @@ export default class MessageAttachment extends PureComponent {
             onPermalinkPress,
             theme,
         } = this.props;
+
+        const {
+            height,
+            imageUri,
+            width,
+        } = this.state;
 
         const style = getStyleSheet(theme);
 
@@ -357,13 +443,23 @@ export default class MessageAttachment extends PureComponent {
         const actions = this.getActionView(style);
 
         let image;
-        if (attachment.image_url) {
+        if (imageUri) {
             image = (
-                <View style={style.imageContainer}>
-                    <Image
-                        source={{uri: attachment.image_url}}
-                        style={style.image}
-                    />
+                <View
+                    ref='item'
+                    style={[style.imageContainer, {width: this.maxImageWidth + VIEWPORT_IMAGE_CONTAINER_OFFSET}]}
+                >
+                    <TouchableWithoutFeedback
+                        onPress={this.handlePreviewImage}
+                        style={{height, width}}
+                    >
+                        <ProgressiveImage
+                            ref='image'
+                            style={{height, width}}
+                            imageUri={imageUri}
+                            resizeMode='contain'
+                        />
+                    </TouchableWithoutFeedback>
                 </View>
             );
         }
@@ -371,7 +467,10 @@ export default class MessageAttachment extends PureComponent {
         return (
             <View>
                 {preText}
-                <View style={[style.container, style.border, borderStyle]}>
+                <View
+                    onLayout={this.handleLayout}
+                    style={[style.container, style.border, borderStyle]}
+                >
                     <View style={{flex: 1, flexDirection: 'row'}}>
                         {author}
                     </View>
@@ -459,10 +558,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderRadius: 2,
             marginTop: 5,
-        },
-        image: {
-            flex: 1,
-            height: 50,
+            padding: 5,
         },
         actionsContainer: {
             flex: 1,

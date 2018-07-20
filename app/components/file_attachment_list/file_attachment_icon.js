@@ -42,7 +42,6 @@ export default class FileAttachmentIcon extends PureComponent {
         iconHeight: PropTypes.number,
         iconWidth: PropTypes.number,
         onCaptureRef: PropTypes.func,
-        onCapturePreviewRef: PropTypes.func,
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
     };
@@ -67,14 +66,6 @@ export default class FileAttachmentIcon extends PureComponent {
         }
     };
 
-    handleCapturePreviewRef = (ref) => {
-        const {onCapturePreviewRef} = this.props;
-
-        if (onCapturePreviewRef) {
-            onCapturePreviewRef(ref);
-        }
-    };
-
     render() {
         const {file, iconHeight, iconWidth, wrapperHeight, wrapperWidth} = this.props;
         const source = this.getFileIconPath(file);
@@ -85,7 +76,6 @@ export default class FileAttachmentIcon extends PureComponent {
                 style={[styles.fileIconWrapper, {height: wrapperHeight, width: wrapperWidth}]}
             >
                 <ProgressiveImage
-                    ref={this.handleCapturePreviewRef}
                     style={[styles.icon, {height: iconHeight, width: iconWidth}]}
                     defaultSource={source}
                 />

@@ -19,10 +19,12 @@ import ProgressiveImage from 'app/components/progressive_image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager from 'app/utils/image_cache_manager';
+import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {getYouTubeVideoId, isImageLink, isYoutubeLink} from 'app/utils/url';
 
-const MAX_IMAGE_HEIGHT = 150;
-
+const VIEWPORT_IMAGE_OFFSET = 66;
+const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
+const MAX_YOUTUBE_IMAGE_HEIGHT = 150;
 let MessageAttachments;
 let PostAttachmentOpenGraph;
 
@@ -97,18 +99,18 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
     };
 
-    calculateDimensions = (width, height) => {
+    calculateYouTubeImageDimensions = (width, height) => {
         const {deviceHeight, deviceWidth} = this.props;
-        let maxHeight = MAX_IMAGE_HEIGHT;
+        let maxHeight = MAX_YOUTUBE_IMAGE_HEIGHT;
         const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
         let maxWidth = deviceSize - 78;
 
-        if (height <= MAX_IMAGE_HEIGHT) {
+        if (height <= MAX_YOUTUBE_IMAGE_HEIGHT) {
             maxHeight = height;
         } else {
             maxHeight = (height / width) * maxWidth;
-            if (maxHeight > MAX_IMAGE_HEIGHT) {
-                maxHeight = MAX_IMAGE_HEIGHT;
+            if (maxHeight > MAX_YOUTUBE_IMAGE_HEIGHT) {
+                maxHeight = MAX_YOUTUBE_IMAGE_HEIGHT;
             }
         }
 
@@ -151,7 +153,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
     generateToggleableEmbed = (isImage, isYouTube) => {
         const {link} = this.props;
         const {width, height, uri} = this.state;
-        const imgHeight = height || MAX_IMAGE_HEIGHT;
+        const imgHeight = height;
 
         if (link) {
             if (isYouTube) {
@@ -196,7 +198,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                                 ref='image'
                                 style={[styles.image, {width, height: imgHeight}]}
                                 defaultSource={{uri}}
-                                resizeMode='cover'
+                                resizeMode='contain'
                                 onError={this.handleLinkLoadError}
                             />
                         </View>
@@ -209,7 +211,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     getImageSize = (path) => {
-        const {link} = this.props;
+        const {deviceHeight, deviceWidth, link, isReplyPost} = this.props;
+        const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
+        const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
 
         if (link && path) {
             let prefix = '';
@@ -228,25 +232,22 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     return;
                 }
 
-                const dimensions = this.calculateDimensions(width, height);
-                this.setState({...dimensions, linkLoaded: true, uri});
+                let dimensions;
+                if (isYoutubeLink(link)) {
+                    dimensions = this.calculateYouTubeImageDimensions(width, height);
+                } else {
+                    dimensions = calculateDimensions(height, width, viewPortWidth);
+                }
+
+                this.setState({
+                    ...dimensions,
+                    originalHeight: height,
+                    originalWidth: width,
+                    linkLoaded: true,
+                    uri,
+                });
             }, () => this.setState({linkLoadError: true}));
         }
-    };
-
-    getItemMeasures = (index, cb) => {
-        const activeComponent = this.refs.item;
-
-        if (!activeComponent) {
-            cb(null);
-            return;
-        }
-
-        activeComponent.measure((rx, ry, width, height, x, y) => {
-            cb({
-                origin: {x, y, width, height},
-            });
-        });
     };
 
     getMessageAttachment = () => {
@@ -285,11 +286,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return null;
     };
 
-    getPreviewProps = () => {
-        const previewComponent = this.refs.image;
-        return previewComponent ? {...previewComponent.props} : {};
-    };
-
     getYouTubeTime = (link) => {
         const timeRegex = /[\\?&](t|start|time_continue)=([0-9]+h)?([0-9]+m)?([0-9]+s?)/;
 
@@ -319,54 +315,31 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return ticks;
     };
 
-    goToImagePreview = (passProps) => {
-        this.props.navigator.showModal({
-            screen: 'ImagePreview',
-            title: '',
-            animationType: 'none',
-            passProps,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
-    };
-
     handleLinkLoadError = () => {
         this.setState({linkLoadError: true});
     };
 
     handlePreviewImage = () => {
-        const component = this.refs.item;
+        const {link, navigator} = this.props;
+        const {
+            originalHeight,
+            originalWidth,
+            uri,
+        } = this.state;
+        const filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+        const files = [{
+            caption: filename,
+            source: {uri},
+            dimensions: {
+                width: originalWidth,
+                height: originalHeight,
+            },
+            data: {
+                localPath: uri,
+            },
+        }];
 
-        if (!component) {
-            return;
-        }
-
-        component.measure((rx, ry, width, height, x, y) => {
-            const {link} = this.props;
-            const {uri} = this.state;
-            const filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-            const files = [{
-                caption: filename,
-                source: {uri},
-                data: {
-                    localPath: uri,
-                },
-            }];
-
-            this.goToImagePreview({
-                index: 0,
-                origin: {x, y, width, height},
-                target: {x: 0, y: 0, opacity: 1},
-                files,
-                getItemMeasures: this.getItemMeasures,
-                getPreviewProps: this.getPreviewProps,
-            });
-        });
+        previewImageAtIndex(navigator, [this.refs.item], 0, files);
     };
 
     playYouTubeVideo = () => {
