@@ -358,7 +358,7 @@ export default class PostList extends PureComponent {
                 ListFooterComponent={this.props.renderFooter}
                 onEndReached={onEndReached}
                 onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
-                removeClippedSubviews={Platform.OS === 'android'}
+                removeClippedSubviews={true}
                 {...refreshControl}
                 renderItem={this.renderItem}
                 contentContainerStyle={styles.postListContent}
