@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
     Image,
     Linking,
     Platform,
@@ -46,7 +47,11 @@ export default class MessageAttachment extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.state = this.getInitState();
+        this.state = {
+            collapsed: true,
+            imageUri: null,
+            isLongText: false,
+        };
     }
 
     componentWillMount() {
@@ -94,30 +99,16 @@ export default class MessageAttachment extends PureComponent {
         );
     };
 
-    getCollapsedText = () => {
-        let text = this.props.attachment.text || '';
-        if ((text.match(/\n/g) || []).length >= 5) {
-            text = text.split('\n').splice(0, 5).join('\n');
-        } else if (text.length > 400) {
-            text = text.substr(0, 400);
+    measurePost = (event) => {
+        const {height} = event.nativeEvent.layout;
+        const {height: deviceHeight} = Dimensions.get('window');
+
+        if (height >= (deviceHeight * 1.2)) {
+            this.setState({
+                isLongText: true,
+                maxHeight: (deviceHeight * 0.6),
+            });
         }
-
-        return text;
-    };
-
-    getInitState = () => {
-        const shouldCollapse = this.shouldCollapse();
-        const uncollapsedText = this.props.attachment.text;
-        const collapsedText = shouldCollapse ? this.getCollapsedText() : uncollapsedText;
-
-        return {
-            shouldCollapse,
-            collapsedText,
-            uncollapsedText,
-            text: shouldCollapse ? collapsedText : uncollapsedText,
-            collapsed: shouldCollapse,
-            imageUri: null,
-        };
     };
 
     getFieldsTable = (style) => {
@@ -275,17 +266,8 @@ export default class MessageAttachment extends PureComponent {
         }, () => null);
     };
 
-    shouldCollapse = () => {
-        const text = this.props.attachment.text || '';
-        return (text.match(/\n/g) || []).length >= 5 || text.length > 400;
-    };
-
     toggleCollapseState = () => {
-        const state = this.state;
-        const text = state.collapsed ? state.uncollapsedText : state.collapsedText;
-        const collapsed = !state.collapsed;
-
-        this.setState({collapsed, text});
+        this.setState((prevState) => ({collapsed: !prevState.collapsed}));
     };
 
     render() { // eslint-disable-line complexity
@@ -303,6 +285,9 @@ export default class MessageAttachment extends PureComponent {
             height,
             imageUri,
             width,
+            collapsed,
+            isLongText,
+            maxHeight,
         } = this.state;
 
         const style = getStyleSheet(theme);
@@ -400,40 +385,42 @@ export default class MessageAttachment extends PureComponent {
 
         let text;
         if (attachment.text) {
+            let moreLessLocale = {id: 'post_attachment.collapse', defaultMessage: 'Show less...'};
+            if (collapsed) {
+                moreLessLocale = {id: 'post_attachment.more', defaultMessage: 'Show more...'};
+            }
+
             let moreLess;
-            if (this.state.shouldCollapse) {
-                if (this.state.collapsed) {
-                    moreLess = (
-                        <FormattedText
-                            id='post_attachment.more'
-                            defaultMessage='Show more...'
-                            onPress={this.toggleCollapseState}
-                            style={style.moreLess}
-                        />
-                    );
-                } else {
-                    moreLess = (
-                        <FormattedText
-                            id='post_attachment.collapse'
-                            defaultMessage='Show less...'
-                            onPress={this.toggleCollapseState}
-                            style={style.moreLess}
-                        />
-                    );
-                }
+            if (isLongText) {
+                moreLess = (
+                    <FormattedText
+                        id={moreLessLocale.id}
+                        defaultMessage={moreLessLocale.defaultMessage}
+                        onPress={this.toggleCollapseState}
+                        style={style.moreLess}
+                    />
+                );
             }
 
             text = (
-                <View style={topStyle}>
-                    <Markdown
-                        baseTextStyle={baseTextStyle}
-                        textStyles={textStyles}
-                        blockStyles={blockStyles}
-                        value={this.state.text}
-                        navigator={navigator}
-                        onLongPress={this.props.onLongPress}
-                        onPermalinkPress={onPermalinkPress}
-                    />
+                <View
+                    onLayout={this.measurePost}
+                    style={topStyle}
+                >
+                    <View
+                        style={[(isLongText && collapsed && {maxHeight, overflow: 'hidden'})]}
+                        removeClippedSubviews={isLongText && collapsed}
+                    >
+                        <Markdown
+                            baseTextStyle={baseTextStyle}
+                            textStyles={textStyles}
+                            blockStyles={blockStyles}
+                            value={attachment.text}
+                            navigator={navigator}
+                            onLongPress={this.props.onLongPress}
+                            onPermalinkPress={onPermalinkPress}
+                        />
+                    </View>
                     {moreLess}
                 </View>
             );
