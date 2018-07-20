@@ -415,9 +415,6 @@ export default class Post extends PureComponent {
         const onUsernamePress = Config.ExperimentalUsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile;
         const mergeMessage = consecutivePost && !hasComments;
 
-        // postWidth = deviceWidth - profilePic width - profilePictureContainer margins - right column margin
-        const postWidth = this.props.deviceWidth - 66;
-
         let postHeader;
         let userProfile;
         let consecutiveStyle;
@@ -480,33 +477,31 @@ export default class Post extends PureComponent {
                     {!commentedOnPost && this.renderReplyBar()}
                     <View style={[style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)]}>
                         {postHeader}
-                        <View style={{maxWidth: postWidth}}>
-                            <PostBody
-                                ref={'postBody'}
-                                canDelete={this.props.canDelete}
-                                canEdit={this.state.canEdit}
-                                highlight={highlight}
-                                channelIsReadOnly={channelIsReadOnly}
-                                isSearchResult={isSearchResult}
-                                navigator={this.props.navigator}
-                                onAddReaction={this.handleAddReaction}
-                                onCopyPermalink={this.handleCopyPermalink}
-                                onCopyText={this.handleCopyText}
-                                onFailedPostPress={this.handleFailedPostPress}
-                                onPermalinkPress={onPermalinkPress}
-                                onPostDelete={this.handlePostDelete}
-                                onPostEdit={this.handlePostEdit}
-                                onPress={this.handlePress}
-                                postId={post.id}
-                                renderReplyBar={commentedOnPost ? this.renderReplyBar : emptyFunction}
-                                toggleSelected={this.toggleSelected}
-                                managedConfig={managedConfig}
-                                isFlagged={isFlagged}
-                                isReplyPost={isReplyPost}
-                                showAddReaction={showAddReaction}
-                                showLongPost={showLongPost}
-                            />
-                        </View>
+                        <PostBody
+                            ref={'postBody'}
+                            canDelete={this.props.canDelete}
+                            canEdit={this.state.canEdit}
+                            highlight={highlight}
+                            channelIsReadOnly={channelIsReadOnly}
+                            isSearchResult={isSearchResult}
+                            navigator={this.props.navigator}
+                            onAddReaction={this.handleAddReaction}
+                            onCopyPermalink={this.handleCopyPermalink}
+                            onCopyText={this.handleCopyText}
+                            onFailedPostPress={this.handleFailedPostPress}
+                            onPermalinkPress={onPermalinkPress}
+                            onPostDelete={this.handlePostDelete}
+                            onPostEdit={this.handlePostEdit}
+                            onPress={this.handlePress}
+                            postId={post.id}
+                            renderReplyBar={commentedOnPost ? this.renderReplyBar : emptyFunction}
+                            toggleSelected={this.toggleSelected}
+                            managedConfig={managedConfig}
+                            isFlagged={isFlagged}
+                            isReplyPost={isReplyPost}
+                            showAddReaction={showAddReaction}
+                            showLongPost={showLongPost}
+                        />
                     </View>
                 </View>
             </View>
@@ -518,6 +513,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flexDirection: 'row',
+            overflow: 'hidden',
         },
         pendingPost: {
             opacity: 0.5,
