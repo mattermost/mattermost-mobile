@@ -294,6 +294,7 @@ export default class EditProfile extends PureComponent {
                     id: 'user.settings.general.field_handled_externally',
                     defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
+                maxLength={22}
                 updateValue={this.updateField}
                 theme={theme}
                 value={username}
@@ -385,6 +386,7 @@ export default class EditProfile extends PureComponent {
                     id: 'user.settings.general.field_handled_externally',
                     defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
+                maxLength={22}
                 updateValue={this.updateField}
                 theme={theme}
                 value={nickname}
@@ -409,6 +411,7 @@ export default class EditProfile extends PureComponent {
                     id: 'user.settings.general.field_handled_externally',
                     defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
+                maxLength={128}
                 updateValue={this.updateField}
                 theme={theme}
                 value={position}
