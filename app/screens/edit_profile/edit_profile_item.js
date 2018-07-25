@@ -21,6 +21,7 @@ export default class AccountSettingsItem extends PureComponent {
             defaultMessage: PropTypes.string.isRequired,
         }),
         helpText: PropTypes.string,
+        maxLength: PropTypes.number,
         optional: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         updateValue: PropTypes.func.isRequired,
@@ -72,6 +73,7 @@ export default class AccountSettingsItem extends PureComponent {
                         style={[style.input, disabled ? style.disabled : null]}
                         autoCapitalize='none'
                         autoCorrect={false}
+                        maxLength={this.props.maxLength}
                         editable={!disabled}
                         underlineColorAndroid='transparent'
                         disableFullscreenUI={true}
