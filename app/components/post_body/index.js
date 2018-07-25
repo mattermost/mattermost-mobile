@@ -34,6 +34,7 @@ const POST_TIMEOUT = 20000;
 function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
     const channel = getChannel(state, post.channel_id) || {};
+    const channelIsArchived = channel ? channel.delete_at !== 0 : false;
     const teamId = channel.team_id;
 
     let canAddReaction = true;
@@ -68,8 +69,10 @@ function mapStateToProps(state, ownProps) {
     let canDelete = false;
     let canEdit = false;
     if (post) {
-        canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
-        canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
+        if (!channelIsArchived) {
+            canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
+            canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
+        }
     }
 
     let isPostAddChannelMember = false;
