@@ -59,9 +59,7 @@ export default class QuickTextInput extends React.PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.props.value !== this.storedValue) {
-            this.updateInputFromProps();
-        }
+        this.updateInputFromProps();
 
         if (prevState.key !== this.state.key && this.hadFocus) {
             this.input.focus();
