@@ -19,6 +19,7 @@ import Search from './search';
 
 function makeMapStateToProps() {
     const preparePostIds = makePreparePostIdsForSearchPosts();
+    const filterPostIdsByDeletedChannels = filterPostIds((c) => c && c.delete_at !== 0);
 
     return (state) => {
         const postIds = preparePostIds(state, state.entities.search.results);
@@ -27,7 +28,6 @@ function makeMapStateToProps() {
         const currentChannelId = getCurrentChannelId(state);
         const {recent} = state.entities.search;
         const {searchPosts: searchRequest} = state.requests.search;
-        const filterPostIdsByDeletedChannels = filterPostIds((c) => c && c.delete_at !== 0);
 
         return {
             currentTeamId,
