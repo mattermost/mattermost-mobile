@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {IntlProvider} from 'react-intl';
 import {Platform} from 'react-native';
 
+import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes, ViewTypes} from 'app/constants';
@@ -23,10 +24,18 @@ export default class Root extends PureComponent {
     };
 
     componentWillMount() {
+        Client4.setAcceptLanguage(this.props.locale);
+
         if (!this.props.excludeEvents) {
             EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
             EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
             EventEmitter.on(NavigationTypes.NAVIGATION_NO_TEAMS, this.handleNoTeams);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.locale !== this.props.locale) {
+            Client4.setAcceptLanguage(this.props.locale);
         }
     }
 
