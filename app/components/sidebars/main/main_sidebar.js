@@ -59,12 +59,11 @@ export default class ChannelSidebar extends Component {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
         }
 
-        this.drawerOpened = false;
-
         this.state = {
             show: false,
             lockMode: 'unlocked',
             openDrawerOffset,
+            drawerOpened: false,
         };
     }
 
@@ -113,7 +112,7 @@ export default class ChannelSidebar extends Component {
     }
 
     handleAndroidBack = () => {
-        if (this.drawerOpened && this.refs.drawer) {
+        if (this.state.drawerOpened && this.refs.drawer) {
             this.refs.drawer.closeDrawer();
             return true;
         }
@@ -126,7 +125,7 @@ export default class ChannelSidebar extends Component {
     };
 
     closeChannelDrawer = () => {
-        if (this.drawerOpened && this.refs.drawer) {
+        if (this.state.drawerOpened && this.refs.drawer) {
             this.refs.drawer.closeDrawer();
         }
     };
@@ -136,12 +135,16 @@ export default class ChannelSidebar extends Component {
     };
 
     handleDrawerClose = () => {
-        this.drawerOpened = false;
+        this.setState({
+            drawerOpened: false,
+        });
         this.resetDrawer();
     };
 
     handleDrawerOpen = () => {
-        this.drawerOpened = true;
+        this.setState({
+            drawerOpened: true,
+        });
 
         if (this.state.openDrawerOffset !== 0) {
             Keyboard.dismiss();
@@ -320,6 +323,7 @@ export default class ChannelSidebar extends Component {
                     onSearchStart={this.onSearchStart}
                     onSearchEnds={this.onSearchEnds}
                     theme={theme}
+                    drawerOpened={this.state.drawerOpened}
                 />
             </View>
         );
@@ -335,6 +339,7 @@ export default class ChannelSidebar extends Component {
                     onPageSelected={this.onPageSelected}
                     openDrawerOffset={openDrawerOffset}
                     showTeams={showTeams}
+                    drawerOpened={this.state.drawerOpened}
                 >
                     {lists}
                 </DrawerSwiper>
