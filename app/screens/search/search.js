@@ -783,7 +783,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginRight: 10,
         },
         archivedText: {
-            color: '#C0C0C0',
+            color: changeOpacity(theme.centerChannelColor, 0.4),
         },
     };
 });
