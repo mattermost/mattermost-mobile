@@ -18,6 +18,7 @@ import {TextInput} from 'react-native';
 export default class QuickTextInput extends React.PureComponent {
     static propTypes = {
 
+        editable: PropTypes.bool,
         onChangeText: PropTypes.func,
 
         /**
@@ -28,6 +29,7 @@ export default class QuickTextInput extends React.PureComponent {
 
     static defaultProps = {
         delayInputUpdate: false,
+        editable: true,
         value: '',
     };
 
@@ -59,7 +61,9 @@ export default class QuickTextInput extends React.PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        this.updateInputFromProps();
+        if (this.props.value !== this.storedValue || !this.props.editable) {
+            this.updateInputFromProps();
+        }
 
         if (prevState.key !== this.state.key && this.hadFocus) {
             this.input.focus();
