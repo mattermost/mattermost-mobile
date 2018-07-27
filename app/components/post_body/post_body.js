@@ -487,27 +487,29 @@ export default class PostBody extends PureComponent {
 
         if (!hasBeenDeleted) {
             body = (
-                <OptionsContext
-                    actions={this.getPostActions()}
-                    ref='options'
-                    onPress={onPress}
-                    toggleSelected={toggleSelected}
-                    cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
-                >
-                    <View onLayout={this.measurePost}>
-                        {messageComponent}
-                        {this.renderShowMoreOption(style)}
-                    </View>
-                    {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
-                    {this.renderFileAttachments()}
-                    {this.renderReactions()}
-                </OptionsContext>
+                <View style={style.bottomPadding}>
+                    <OptionsContext
+                        actions={this.getPostActions()}
+                        ref='options'
+                        onPress={onPress}
+                        toggleSelected={toggleSelected}
+                        cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
+                    >
+                        <View onLayout={this.measurePost}>
+                            {messageComponent}
+                            {this.renderShowMoreOption(style)}
+                        </View>
+                        {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
+                        {this.renderFileAttachments()}
+                        {this.renderReactions()}
+                    </OptionsContext>
+                </View>
             );
         }
 
         return (
             <View style={style.messageContainerWithReplyBar}>
-                {renderReplyBar()}
+                <View style={renderReplyBar}/>
                 <View style={[style.flex, style.row]}>
                     <View style={style.flex}>
                         {body}
@@ -537,6 +539,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         row: {
             flexDirection: 'row',
+        },
+        bottomPadding: {
+            paddingBottom: 5,
         },
         retry: {
             justifyContent: 'center',

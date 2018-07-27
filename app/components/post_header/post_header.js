@@ -268,7 +268,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         postInfoContainer: {
             alignItems: 'center',
             flexDirection: 'row',
-            marginTop: 10,
+            marginTop: 5,
         },
         pendingPost: {
             opacity: 0.5,

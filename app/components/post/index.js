@@ -30,12 +30,11 @@ function isConsecutivePost(state, ownProps) {
     if (previousPost) {
         const postFromWebhook = Boolean(post.props && post.props.from_webhook);
         const prevPostFromWebhook = Boolean(previousPost.props && previousPost.props.from_webhook);
-
         if (previousPost && previousPost.user_id === post.user_id &&
             post.create_at - previousPost.create_at <= Posts.POST_COLLAPSE_TIMEOUT &&
             !postFromWebhook && !prevPostFromWebhook &&
             !isSystemMessage(post) && !isSystemMessage(previousPost) &&
-            previousPost.root_id === post.root_id) {
+            (previousPost.root_id === post.root_id || previousPost.id === post.root_id)) {
             // The last post and this post were made by the same user within some time
             consecutivePost = true;
         }
