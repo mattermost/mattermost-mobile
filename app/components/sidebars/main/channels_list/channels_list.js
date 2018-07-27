@@ -50,7 +50,7 @@ export default class ChannelsList extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (!nextProps.drawerOpened && (this.props.drawerOpened !== nextProps.drawerOpened)) {
+        if (!nextProps.drawerOpened && this.props.drawerOpened) {
             this.cancelSearch();
         }
     }
