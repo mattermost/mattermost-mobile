@@ -29,6 +29,7 @@ export default class ChannelsList extends PureComponent {
         onSelectChannel: PropTypes.func.isRequired,
         onShowTeams: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        drawerOpened: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -46,6 +47,12 @@ export default class ChannelsList extends PureComponent {
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (!nextProps.drawerOpened && this.props.drawerOpened) {
+            this.cancelSearch();
+        }
     }
 
     onSelectChannel = (channel, currentChannelId) => {

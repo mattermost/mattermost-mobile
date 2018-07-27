@@ -17,6 +17,7 @@ export default class DrawerSwiper extends Component {
         openDrawerOffset: PropTypes.number,
         showTeams: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
+        drawerOpened: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -29,7 +30,8 @@ export default class DrawerSwiper extends Component {
         return nextProps.deviceWidth !== deviceWidth ||
             nextProps.showTeams !== showTeams ||
             nextProps.openDrawerOffset !== openDrawerOffset ||
-            nextProps.theme !== theme;
+            nextProps.theme !== theme ||
+            nextProps.drawerOpened !== this.props.drawerOpened;
     }
 
     runOnLayout = (shouldRun = true) => {
