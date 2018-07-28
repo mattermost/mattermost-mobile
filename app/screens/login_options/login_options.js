@@ -89,7 +89,7 @@ class LoginOptions extends PureComponent {
                 backgroundColor,
             };
 
-            if (config.hasOwnProperty('EmailLoginButtonBorderColor')) {
+            if (config.EmailLoginButtonBorderColor) {
                 additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
             }
 
@@ -123,7 +123,7 @@ class LoginOptions extends PureComponent {
                 backgroundColor,
             };
 
-            if (config.hasOwnProperty('LDAPLoginButtonBorderColor')) {
+            if (config.LDAPLoginButtonBorderColor) {
                 additionalStyle.borderColor = config.LDAPLoginButtonBorderColor;
             }
 
