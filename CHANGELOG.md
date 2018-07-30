@@ -1,5 +1,26 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.11.0 Release
+- Release Date: August 16, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+
+### Improvements
+- Added profile pop-up to combined system messages.
+
+### Bug Fixes
+- Fixed an issue on Android where the app did not get sent to the background when pressing the hardware back button in the channel screen.
+- Fixed an issue on Android where pressing a push notification to reply to it sometimes went to the wrong channel.
+- Fixed an issue where user menu was not translated after App was translated.
+- Fixed an issue where maximum field lengths didn't match web app when editing Account Settings.
+- Fixed an issue where long URLs for embedded images in message attachments got cut off and didn't render.
+- Fixed an issue where link preview images were not cropped properly.
+- Fixed an issue where long usernames didn't wrap properly in the Account Settings menu.
+- Fixed an issue where DMs would not open if users were using Jump To.
+
+
 ## v1.10.0 Release
 - Release Date: July 16, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
@@ -26,7 +47,6 @@
  - Allow connecting to mattermost instances hosted at subpaths.
  - Added support for starting YouTube videos at a given time.
  - Added support for keeping messages if slash command fails.
-
 
 ### Bug Fixes
 
