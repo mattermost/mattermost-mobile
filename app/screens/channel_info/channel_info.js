@@ -340,7 +340,7 @@ export default class ChannelInfo extends PureComponent {
             return null;
         }
 
-        return (<View style={style.rowsContainer}>
+        return (<View>
             <ChannelInfoRow
                 action={this.handleFavorite}
                 defaultMessage='Favorite'
@@ -410,18 +410,7 @@ export default class ChannelInfo extends PureComponent {
                     />
                 </View>
             )}
-            {this.renderLeaveOrDeleteChannelRow() &&
-                <View>
-                    <View style={style.separator}/>
-                    <ChannelInfoRow
-                        action={this.handleLeave}
-                        defaultMessage='Leave Channel'
-                        icon='sign-out'
-                        textId='navbar.leave'
-                        theme={theme}
-                    />
-                </View>
-            }
+            <View style={style.separator}/>
         </View>);
     };
 
@@ -473,7 +462,20 @@ export default class ChannelInfo extends PureComponent {
                             type={currentChannel.type}
                         />
                     }
-                    {this.actionsRows(style, channelIsArchived)}
+                    <View style={style.rowsContainer}>
+                        {this.actionsRows(style, channelIsArchived)}
+                        {this.renderLeaveOrDeleteChannelRow() &&
+                            <View>
+                                <ChannelInfoRow
+                                    action={this.handleLeave}
+                                    defaultMessage='Leave Channel'
+                                    icon='sign-out'
+                                    textId='navbar.leave'
+                                    theme={theme}
+                                />
+                            </View>
+                        }
+                    </View>
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel && !channelIsArchived &&
                         <View style={style.footer}>
                             <ChannelInfoRow
