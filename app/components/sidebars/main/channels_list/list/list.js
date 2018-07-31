@@ -33,6 +33,7 @@ let UnreadIndicator = null;
 export default class List extends PureComponent {
     static propTypes = {
         canCreatePrivateChannels: PropTypes.bool.isRequired,
+        favoriteChannelIds: PropTypes.array.isRequired,
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         unreadChannelIds: PropTypes.array.isRequired,
@@ -90,7 +91,6 @@ export default class List extends PureComponent {
             return {
                 id: 'mobile.channel_list.unreads',
                 defaultMessage: 'UNREADS',
-                renderItem: this.renderUnreadItem,
             };
         case SidebarSectionTypes.FAVORITE:
             return {
@@ -145,8 +145,8 @@ export default class List extends PureComponent {
             return {
                 ...this.getSectionConfigByType(s.type),
                 data: s.items,
-                topSeparator: i !== 0 && orderedChannelIds[i - 1].items.length > 0,
-                bottomSeparator: true,
+                topSeparator: i !== 0,
+                bottomSeparator: s.items.length > 0,
             };
         });
     };
@@ -229,7 +229,6 @@ export default class List extends PureComponent {
             passProps: {
                 channelType: General.OPEN_CHANNEL,
                 closeButton: this.closeButton,
-                isModal: true,
             },
         });
     });
@@ -340,12 +339,13 @@ export default class List extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {unreadChannelIds} = this.props;
+        const {favoriteChannelIds, unreadChannelIds} = this.props;
 
         return (
             <ChannelItem
                 channelId={item}
                 isUnread={unreadChannelIds.includes(item)}
+                isFavorite={favoriteChannelIds.includes(item)}
                 navigator={this.props.navigator}
                 onSelectChannel={this.onSelectChannel}
             />

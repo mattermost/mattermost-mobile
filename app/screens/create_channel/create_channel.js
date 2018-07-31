@@ -24,7 +24,6 @@ export default class CreateChannel extends PureComponent {
         createChannelRequest: PropTypes.object.isRequired,
         channelType: PropTypes.string,
         closeButton: PropTypes.object,
-        isModal: PropTypes.bool,
         actions: PropTypes.shape({
             handleCreateChannel: PropTypes.func.isRequired,
         }),
@@ -61,7 +60,7 @@ export default class CreateChannel extends PureComponent {
 
         this.rightButton.title = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
 
-        if (props.closeButton && props.isModal) {
+        if (props.closeButton) {
             this.left = {...this.leftButton, icon: props.closeButton};
         }
 
@@ -155,7 +154,7 @@ export default class CreateChannel extends PureComponent {
         if (event.type === 'NavBarButtonPress') {
             switch (event.id) {
             case 'close-new-channel':
-                this.close(this.props.channelType === General.OPEN_CHANNEL && !this.props.isModal);
+                this.close(!this.props.closeButton);
                 break;
             case 'create-channel':
                 this.onCreateChannel();
