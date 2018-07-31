@@ -338,7 +338,7 @@ export default class SettingsDrawer extends PureComponent {
             navigator.dismissModal({
                 animationType: 'none',
             });
-            this.closeSettingsDrawer();
+            this.closeSettingsSidebar();
             this.confirmReset(status);
             return;
         }
