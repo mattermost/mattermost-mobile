@@ -12,9 +12,8 @@ import mattermostManaged from 'app/mattermost_managed';
 
 import Config from 'assets/config';
 
-import {escapeRegex} from 'app/utils/markdown';
 import {preventDoubleTap} from 'app/utils/tap';
-import {normalizeProtocol} from 'app/utils/url';
+import {matchPermalink, normalizeProtocol} from 'app/utils/url';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {
@@ -43,7 +42,7 @@ export default class MarkdownLink extends PureComponent {
             return;
         }
 
-        const match = this.matchPermalink(url, serverURL) || this.matchPermalink(url, siteURL);
+        const match = matchPermalink(url, serverURL) || matchPermalink(url, siteURL);
 
         if (match) {
             const teamName = match[1];
@@ -57,14 +56,6 @@ export default class MarkdownLink extends PureComponent {
             });
         }
     });
-
-    matchPermalink = (link, rootURL) => {
-        if (!rootURL) {
-            return null;
-        }
-
-        return new RegExp('^' + escapeRegex(rootURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(link);
-    }
 
     parseLinkLiteral = (literal) => {
         let nextLiteral = literal;

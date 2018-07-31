@@ -271,6 +271,7 @@ const state = {
             password: '',
         },
         root: {
+            deepLinkURL: '',
             hydrationComplete: false,
             purge: false,
         },

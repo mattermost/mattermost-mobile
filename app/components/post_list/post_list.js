@@ -17,6 +17,7 @@ import {START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
+import {matchPermalink} from 'app/utils/url';
 
 import DateHeader from './date_header';
 import {isDateLine} from './date_header/utils';
@@ -35,9 +36,11 @@ export default class PostList extends PureComponent {
             loadChannelsByTeamName: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
+            setDeepLinkURL: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
+        deepLinkURL: PropTypes.string,
         deviceHeight: PropTypes.number.isRequired,
         extraData: PropTypes.any,
         highlightPostId: PropTypes.string,
@@ -54,7 +57,9 @@ export default class PostList extends PureComponent {
         postIds: PropTypes.array.isRequired,
         renderFooter: PropTypes.func,
         renderReplies: PropTypes.bool,
+        serverURL: PropTypes.string.isRequired,
         shouldRenderReplyButton: PropTypes.bool,
+        siteURL: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -99,6 +104,11 @@ export default class PostList extends PureComponent {
         if ((this.props.measureCellLayout || this.props.isSearchResult) && this.state.scrollToMessage) {
             this.scrollListToMessageOffset();
         }
+
+        if (this.props.deepLinkURL) {
+            this.handleDeepLink(this.props.deepLinkURL);
+            this.props.actions.setDeepLinkURL('');
+        }
     }
 
     componentWillUnmount() {
@@ -110,6 +120,18 @@ export default class PostList extends PureComponent {
         const {actions} = this.props;
         actions.selectFocusedPostId('');
         this.showingPermalink = false;
+    };
+
+    handleDeepLink = (url) => {
+        const {serverURL, siteURL} = this.props;
+
+        const match = matchPermalink(url, serverURL) || matchPermalink(url, siteURL);
+
+        if (match) {
+            const teamName = match[1];
+            const postId = match[2];
+            this.handlePermalinkPress(postId, teamName);
+        }
     };
 
     handlePermalinkPress = (postId, teamName) => {
@@ -179,7 +201,7 @@ export default class PostList extends PureComponent {
     scrollListToMessageOffset = () => {
         const index = this.moreNewMessages ? this.props.postIds.length - 1 : this.newMessagesIndex;
         if (index !== -1) {
-            let offset = this.getMeasurementOffset(index) - (3 * this.itemMeasurements[index]);
+            let offset = this.getMeasurementOffset(index) + this.itemMeasurements[index];
             const windowHeight = this.state.postListHeight;
 
             if (offset < windowHeight) {
