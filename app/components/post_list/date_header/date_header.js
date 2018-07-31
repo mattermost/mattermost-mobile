@@ -57,6 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             flexDirection: 'row',
             height: 28,
+            marginTop: 8,
         },
         dateContainer: {
             marginHorizontal: 15,

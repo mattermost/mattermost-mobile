@@ -541,8 +541,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
         },
         messageBody: {
-            paddingBottom: 3,
-            paddingTop: 3,
+            paddingBottom: 2,
+            paddingTop: 2,
         },
         retry: {
             justifyContent: 'center',
