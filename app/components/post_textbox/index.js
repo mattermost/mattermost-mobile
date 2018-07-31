@@ -7,14 +7,14 @@ import {connect} from 'react-redux';
 import {General} from 'mattermost-redux/constants';
 import {createPost} from 'mattermost-redux/actions/posts';
 import {setStatus} from 'mattermost-redux/actions/users';
-import {getCurrentChannel, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannel, isCurrentChannelReadOnly, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
-import {handlePostDraftChanged} from 'app/actions/views/channel';
+import {handlePostDraftChanged, setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {handleClearFiles, handleClearFailedFiles, handleRemoveLastFile, initUploadFiles} from 'app/actions/views/file_upload';
 import {handleCommentDraftChanged, handleCommentDraftSelectionChanged} from 'app/actions/views/thread';
 import {userTyping} from 'app/actions/views/typing';
@@ -47,6 +47,7 @@ function mapStateToProps(state, ownProps) {
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
         channelIsReadOnly: isCurrentChannelReadOnly(state),
+        channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
         currentUserId,
         userIsOutOfOffice,
         deactivatedChannel,
@@ -55,6 +56,7 @@ function mapStateToProps(state, ownProps) {
         theme: getTheme(state),
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
         value: currentDraft.draft,
+        defaultChannel: getDefaultChannel(state),
     };
 }
 
@@ -73,6 +75,8 @@ function mapDispatchToProps(dispatch) {
             userTyping,
             handleCommentDraftSelectionChanged,
             setStatus,
+            setChannelDisplayName,
+            setChannelLoading,
         }, dispatch),
     };
 }

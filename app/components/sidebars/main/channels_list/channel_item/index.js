@@ -72,6 +72,7 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             type: channel.type,
             unreadMsgs,
+            isArchived: channel.delete_at !== 0,
         };
     };
 }

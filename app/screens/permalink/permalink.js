@@ -12,6 +12,7 @@ import {
 import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -59,6 +60,7 @@ export default class Permalink extends PureComponent {
             setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
+        channelIsArchived: PropTypes.bool,
         channelName: PropTypes.string,
         channelTeamId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
@@ -301,6 +303,20 @@ export default class Permalink extends PureComponent {
         }
     };
 
+    archivedIcon = (style) => {
+        let ico = null;
+        if (this.props.channelIsArchived) {
+            ico = (<Text>
+                <AwesomeIcon
+                    name='archive'
+                    style={[style.archiveIcon]}
+                />
+                {' '}
+            </Text>);
+        }
+        return ico;
+    };
+
     render() {
         const {
             currentUserId,
@@ -386,6 +402,7 @@ export default class Permalink extends PureComponent {
                                     numberOfLines={1}
                                     style={style.title}
                                 >
+                                    {this.archivedIcon(style)}
                                     {title}
                                 </Text>
                             </View>
@@ -491,6 +508,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         errorText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
             fontSize: 15,
+        },
+        archiveIcon: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            paddingRight: 20,
         },
     };
 });

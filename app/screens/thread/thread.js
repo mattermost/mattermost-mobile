@@ -30,6 +30,7 @@ class Thread extends PureComponent {
         rootId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
+        channelIsArchived: PropTypes.bool,
     };
 
     state = {};
@@ -95,6 +96,23 @@ class Thread extends PureComponent {
         return null;
     }
 
+    onCloseChannel = () => {
+        this.props.navigator.resetTo({
+            screen: 'Channel',
+            title: '',
+            animated: false,
+            backButtonTitle: '',
+            navigatorStyle: {
+                animated: true,
+                animationType: 'fade',
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+            },
+        });
+    }
+
     render() {
         const {
             channelId,
@@ -103,6 +121,7 @@ class Thread extends PureComponent {
             postIds,
             rootId,
             theme,
+            channelIsArchived,
         } = this.props;
         const style = getStyle(theme);
 
@@ -127,9 +146,11 @@ class Thread extends PureComponent {
                     />
                     {this.hasRootPost() &&
                     <PostTextbox
+                        channelIsArchived={channelIsArchived}
                         rootId={rootId}
                         channelId={channelId}
                         navigator={navigator}
+                        onCloseChannel={this.onCloseChannel}
                     />}
                 </KeyboardLayout>
             </SafeAreaView>

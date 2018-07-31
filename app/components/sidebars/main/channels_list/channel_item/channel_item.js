@@ -38,6 +38,7 @@ export default class ChannelItem extends PureComponent {
         type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         unreadMsgs: PropTypes.number.isRequired,
+        isArchived: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -97,7 +98,14 @@ export default class ChannelItem extends PureComponent {
             teammateDeletedAt,
             theme,
             type,
+            isArchived,
         } = this.props;
+
+        // Only ever show an archived channel if it's the currently viewed channel.
+        // It should disappear as soon as one navigates to another channel.
+        if (isArchived && (currentChannelId !== channelId)) {
+            return null;
+        }
 
         if (!this.showChannelAsUnread() && shouldHideChannel) {
             return null;
@@ -161,6 +169,7 @@ export default class ChannelItem extends PureComponent {
                 teammateDeletedAt={teammateDeletedAt}
                 theme={theme}
                 type={type}
+                isArchived={isArchived}
             />
         );
 
