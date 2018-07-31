@@ -487,7 +487,7 @@ export default class PostBody extends PureComponent {
 
         if (!hasBeenDeleted) {
             body = (
-                <View style={style.bottomPadding}>
+                <View style={style.messageBody}>
                     <OptionsContext
                         actions={this.getPostActions()}
                         ref='options'
@@ -540,8 +540,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         row: {
             flexDirection: 'row',
         },
-        bottomPadding: {
-            paddingBottom: 5,
+        messageBody: {
+            paddingBottom: 3,
+            paddingTop: 3,
         },
         retry: {
             justifyContent: 'center',
