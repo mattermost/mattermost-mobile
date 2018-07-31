@@ -69,7 +69,7 @@ export default class PostBody extends PureComponent {
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object,
         postType: PropTypes.string,
-        renderReplyBar: PropTypes.func,
+        replyBarStyle: PropTypes.func,
         showAddReaction: PropTypes.bool,
         showLongPost: PropTypes.bool.isRequired,
         theme: PropTypes.object,
@@ -85,7 +85,7 @@ export default class PostBody extends PureComponent {
         onPostDelete: emptyFunction,
         onPostEdit: emptyFunction,
         onPress: emptyFunction,
-        renderReplyBar: emptyFunction,
+        replyBarStyle: emptyFunction,
         toggleSelected: emptyFunction,
     };
 
@@ -408,7 +408,7 @@ export default class PostBody extends PureComponent {
             onPress,
             postProps,
             postType,
-            renderReplyBar,
+            replyBarStyle,
             theme,
             toggleSelected,
         } = this.props;
@@ -509,7 +509,7 @@ export default class PostBody extends PureComponent {
 
         return (
             <View style={style.messageContainerWithReplyBar}>
-                <View style={renderReplyBar}/>
+                <View style={replyBarStyle}/>
                 <View style={[style.flex, style.row]}>
                     <View style={style.flex}>
                         {body}

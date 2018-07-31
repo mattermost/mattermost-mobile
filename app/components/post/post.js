@@ -315,7 +315,7 @@ export default class Post extends PureComponent {
         return Boolean(renderReplies && post.root_id && !isPostEphemeral(post));
     };
 
-    renderReplyBar = () => {
+    replyBarStyle = () => {
         const {
             commentedOnPost,
             isFirstReply,
@@ -468,7 +468,7 @@ export default class Post extends PureComponent {
                 />
             );
         }
-        const replyBarStyle = this.renderReplyBar();
+        const replyBarStyle = this.replyBarStyle();
 
         return (
             <View style={[style.container, this.props.style, consecutiveStyle, highlighted, selected]}>
@@ -493,7 +493,7 @@ export default class Post extends PureComponent {
                             onPostEdit={this.handlePostEdit}
                             onPress={this.handlePress}
                             postId={post.id}
-                            renderReplyBar={replyBarStyle}
+                            replyBarStyle={replyBarStyle}
                             toggleSelected={this.toggleSelected}
                             managedConfig={managedConfig}
                             isFlagged={isFlagged}
