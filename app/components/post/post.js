@@ -19,7 +19,7 @@ import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
 import {NavigationTypes} from 'app/constants';
-import {emptyFunction, fromAutoResponder} from 'app/utils/general';
+import {fromAutoResponder} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getToolTipVisible} from 'app/utils/tooltip';
@@ -315,7 +315,7 @@ export default class Post extends PureComponent {
         return Boolean(renderReplies && post.root_id && !isPostEphemeral(post));
     };
 
-    renderReplyBar = () => {
+    replyBarStyle = () => {
         const {
             commentedOnPost,
             isFirstReply,
@@ -338,7 +338,7 @@ export default class Post extends PureComponent {
             replyBarStyle.push(style.replyBarLast);
         }
 
-        return <View style={replyBarStyle}/>;
+        return replyBarStyle;
     };
 
     viewUserProfile = preventDoubleTap(() => {
@@ -420,8 +420,7 @@ export default class Post extends PureComponent {
         let consecutiveStyle;
 
         if (mergeMessage) {
-            consecutiveStyle = {paddingBottom: 5};
-
+            consecutiveStyle = {marginTop: 0};
             if (isFlagged) {
                 userProfile = (
                     <View style={style.consecutivePostContainer}>
@@ -469,12 +468,12 @@ export default class Post extends PureComponent {
                 />
             );
         }
+        const replyBarStyle = this.replyBarStyle();
 
         return (
             <View style={[style.container, this.props.style, consecutiveStyle, highlighted, selected]}>
                 {userProfile}
                 <View style={style.messageContainerWithReplyBar}>
-                    {!commentedOnPost && this.renderReplyBar()}
                     <View style={[style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)]}>
                         {postHeader}
                         <PostBody
@@ -494,7 +493,7 @@ export default class Post extends PureComponent {
                             onPostEdit={this.handlePostEdit}
                             onPress={this.handlePress}
                             postId={post.id}
-                            renderReplyBar={commentedOnPost ? this.renderReplyBar : emptyFunction}
+                            replyBarStyle={replyBarStyle}
                             toggleSelected={this.toggleSelected}
                             managedConfig={managedConfig}
                             isFlagged={isFlagged}
@@ -533,7 +532,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         consecutivePostContainer: {
             marginBottom: 10,
             marginRight: 10,
-            marginLeft: 46,
+            marginLeft: 47,
             marginTop: 10,
         },
         consecutivePostWithFlag: {
@@ -544,7 +543,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             left: -11,
         },
         profilePictureContainer: {
-            marginBottom: 10,
+            marginBottom: 5,
             marginRight: 10,
             marginLeft: 12,
             marginTop: 10,
@@ -552,7 +551,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         replyBar: {
             backgroundColor: theme.centerChannelColor,
             opacity: 0.1,
-            marginRight: 10,
+            marginRight: 7,
             width: 3,
             flexBasis: 3,
         },

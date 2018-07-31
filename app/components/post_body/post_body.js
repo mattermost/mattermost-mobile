@@ -69,7 +69,7 @@ export default class PostBody extends PureComponent {
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object,
         postType: PropTypes.string,
-        renderReplyBar: PropTypes.func,
+        replyBarStyle: PropTypes.func,
         showAddReaction: PropTypes.bool,
         showLongPost: PropTypes.bool.isRequired,
         theme: PropTypes.object,
@@ -85,7 +85,7 @@ export default class PostBody extends PureComponent {
         onPostDelete: emptyFunction,
         onPostEdit: emptyFunction,
         onPress: emptyFunction,
-        renderReplyBar: emptyFunction,
+        replyBarStyle: emptyFunction,
         toggleSelected: emptyFunction,
     };
 
@@ -408,7 +408,7 @@ export default class PostBody extends PureComponent {
             onPress,
             postProps,
             postType,
-            renderReplyBar,
+            replyBarStyle,
             theme,
             toggleSelected,
         } = this.props;
@@ -487,27 +487,29 @@ export default class PostBody extends PureComponent {
 
         if (!hasBeenDeleted) {
             body = (
-                <OptionsContext
-                    actions={this.getPostActions()}
-                    ref='options'
-                    onPress={onPress}
-                    toggleSelected={toggleSelected}
-                    cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
-                >
-                    <View onLayout={this.measurePost}>
-                        {messageComponent}
-                        {this.renderShowMoreOption(style)}
-                    </View>
-                    {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
-                    {this.renderFileAttachments()}
-                    {this.renderReactions()}
-                </OptionsContext>
+                <View style={style.messageBody}>
+                    <OptionsContext
+                        actions={this.getPostActions()}
+                        ref='options'
+                        onPress={onPress}
+                        toggleSelected={toggleSelected}
+                        cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
+                    >
+                        <View onLayout={this.measurePost}>
+                            {messageComponent}
+                            {this.renderShowMoreOption(style)}
+                        </View>
+                        {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
+                        {this.renderFileAttachments()}
+                        {this.renderReactions()}
+                    </OptionsContext>
+                </View>
             );
         }
 
         return (
             <View style={style.messageContainerWithReplyBar}>
-                {renderReplyBar()}
+                <View style={replyBarStyle}/>
                 <View style={[style.flex, style.row]}>
                     <View style={style.flex}>
                         {body}
@@ -537,6 +539,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         row: {
             flexDirection: 'row',
+        },
+        messageBody: {
+            paddingBottom: 2,
+            paddingTop: 2,
         },
         retry: {
             justifyContent: 'center',
