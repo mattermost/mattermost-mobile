@@ -158,21 +158,26 @@ export default class App {
     };
 
     setAppCredentials = (deviceToken, currentUserId, token, url) => {
-        if (!currentUserId) {
-            return;
-        }
-        const username = `${deviceToken}, ${currentUserId}`;
-        const password = `${token},${url}`;
+        try {
+            if (!currentUserId) {
+                return;
+            }
 
-        if (this.waitForRehydration) {
-            this.waitForRehydration = false;
-            this.token = token;
-            this.url = url;
-        }
+            const username = `${deviceToken}, ${currentUserId}`;
+            const password = `${token},${url}`;
 
-        // Only save to keychain if the url and token are set
-        if (url && token) {
-            setGenericPassword(username, password);
+            if (this.waitForRehydration) {
+                this.waitForRehydration = false;
+                this.token = token;
+                this.url = url;
+            }
+
+            // Only save to keychain if the url and token are set
+            if (url && token) {
+                setGenericPassword(username, password);
+            }
+        } catch (e) {
+            console.warn('could not set credentials', e); //eslint-disable-line no-console
         }
     };
 
