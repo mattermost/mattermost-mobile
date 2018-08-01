@@ -574,6 +574,7 @@ export default class PostTextbox extends PureComponent {
                     <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
                         <InputComponent
                             ref='input'
+                            returnKeyType='send'
                             value={textValue}
                             onChangeText={this.handleTextChange}
                             onSelectionChange={this.handlePostDraftSelectionChanged}
@@ -587,6 +588,7 @@ export default class PostTextbox extends PureComponent {
                             onContentSizeChange={this.handleContentSizeChange}
                             keyboardType={this.state.keyboardType}
                             onEndEditing={this.handleEndEditing}
+                            onSubmitEditing={this.renderSendButton}
                             disableFullscreenUI={true}
                             editable={!channelIsReadOnly}
                         />
