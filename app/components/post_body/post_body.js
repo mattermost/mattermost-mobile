@@ -69,7 +69,7 @@ export default class PostBody extends PureComponent {
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object,
         postType: PropTypes.string,
-        replyBarStyle: PropTypes.func,
+        replyBarStyle: PropTypes.array,
         showAddReaction: PropTypes.bool,
         showLongPost: PropTypes.bool.isRequired,
         theme: PropTypes.object,
@@ -85,7 +85,7 @@ export default class PostBody extends PureComponent {
         onPostDelete: emptyFunction,
         onPostEdit: emptyFunction,
         onPress: emptyFunction,
-        replyBarStyle: emptyFunction,
+        replyBarStyle: [],
         toggleSelected: emptyFunction,
     };
 
