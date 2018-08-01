@@ -6,6 +6,9 @@
 
 ### Highlights
 
+#### Searching Archived Channels
+
+#### Deep Linking
 
 ### Improvements
 - Added profile pop-up to combined system messages.
