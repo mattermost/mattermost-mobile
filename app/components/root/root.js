@@ -51,7 +51,7 @@ export default class Root extends PureComponent {
         const {data} = notification;
         const {currentChannelId, navigator} = this.props;
 
-        if (data.channel_id !== currentChannelId) {
+        if (data && data.channel_id !== currentChannelId) {
             navigator.showInAppNotification({
                 screen: 'Notification',
                 position: 'top',
