@@ -21,7 +21,8 @@ function makeMapStateToProps() {
     const getReactionsForPostSelector = makeGetReactionsForPost();
     return function mapStateToProps(state, ownProps) {
         const post = getPost(state, ownProps.postId);
-        const channel = getChannel(state, post.channel_id) || {};
+        const channelId = post ? post.channel_id : '';
+        const channel = getChannel(state, channelId);
         const teamId = channel.team_id;
         const channelIsArchived = channel.delete_at !== 0;
 
@@ -33,12 +34,12 @@ function makeMapStateToProps() {
         } else if (hasNewPermissions(state)) {
             canAddReaction = haveIChannelPermission(state, {
                 team: teamId,
-                channel: post.channel_id,
+                channel: channelId,
                 permission: Permissions.ADD_REACTION,
             });
             canRemoveReaction = haveIChannelPermission(state, {
                 team: teamId,
-                channel: post.channel_id,
+                channel: channelId,
                 permission: Permissions.REMOVE_REACTION,
             });
         }

@@ -13,7 +13,7 @@ function makeMapStateToProps() {
     const getChannel = makeGetChannel();
     return (state, ownProps) => {
         const post = getPost(state, ownProps.postId);
-        const channel = getChannel(state, {id: post.channel_id});
+        const channel = post ? getChannel(state, {id: post.channel_id}) : null;
 
         return {
             displayName: channel ? channel.display_name : '',
