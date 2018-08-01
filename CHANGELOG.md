@@ -12,10 +12,12 @@
 
 ### Improvements
 - Added profile pop-up to combined system messages.
+- Updated the home screen icon for Android.
 
 ### Bug Fixes
 - Fixed an issue on Android where the app did not get sent to the background when pressing the hardware back button in the channel screen.
 - Fixed an issue on Android where pressing a push notification to reply to it sometimes went to the wrong channel.
+- Fixed an issue where the previous server URL was present on the input textbox before changing the screen to Login.
 - Fixed an issue where user menu was not translated after App was translated.
 - Fixed an issue where maximum field lengths didn't match web app when editing Account Settings.
 - Fixed an issue where long URLs for embedded images in message attachments got cut off and didn't render.
