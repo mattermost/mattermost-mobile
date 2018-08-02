@@ -260,7 +260,6 @@ export function selectInitialChannel(teamId) {
             isGroupChannelVisible(myPreferences, lastChannel);
 
         if (
-            lastChannelId &&
             myMembers[lastChannelId] &&
             lastChannel &&
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
