@@ -161,6 +161,7 @@ export default class App {
         if (!currentUserId) {
             return;
         }
+
         const username = `${deviceToken}, ${currentUserId}`;
         const password = `${token},${url}`;
 
@@ -172,7 +173,11 @@ export default class App {
 
         // Only save to keychain if the url and token are set
         if (url && token) {
-            setGenericPassword(username, password);
+            try {
+                setGenericPassword(username, password);
+            } catch (e) {
+                console.warn('could not set credentials', e); //eslint-disable-line no-console
+            }
         }
     };
 
