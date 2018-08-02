@@ -57,6 +57,10 @@ function loadTranslation(locale) {
             TRANSLATIONS.tr = require('assets/i18n/tr.json');
             localeData = require('react-intl/locale-data/tr');
             break;
+        case 'ro':
+            TRANSLATIONS.ro = require('assets/i18n/ro.json');
+            localeData = require('react-intl/locale-data/ro');
+            break;
         case 'ru':
             TRANSLATIONS.ru = require('assets/i18n/ru.json');
             localeData = require('react-intl/locale-data/ru');
