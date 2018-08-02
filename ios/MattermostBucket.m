@@ -109,7 +109,7 @@ RCT_EXPORT_METHOD(removePreference:(NSString *) key
 
 -(void) setPreference:(NSString *)key value:(NSString *) value appGroupId:(NSString*)appGroupId {
   NSUserDefaults* bucket = [self bucketByName: appGroupId];
-  if ([key length] > 0 && [value length] > 0) {
+  if (bucket && [key length] > 0 && [value length] > 0) {
     [bucket setObject:value forKey:key];
   }
 }

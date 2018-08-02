@@ -32,7 +32,7 @@ import PostBody from './post_body';
 const POST_TIMEOUT = 20000;
 
 function mapStateToProps(state, ownProps) {
-    const post = getPost(state, ownProps.postId);
+    const post = getPost(state, ownProps.postId) || {};
     const channel = getChannel(state, post.channel_id) || {};
     const channelIsArchived = channel ? channel.delete_at !== 0 : false;
     const teamId = channel.team_id;

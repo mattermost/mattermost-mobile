@@ -55,7 +55,7 @@ export function loadFromPushNotification(notification) {
         const {data} = notification;
         const {currentTeamId, teams, myMembers: myTeamMembers} = state.entities.teams;
         const {currentChannelId, channels} = state.entities.channels;
-        const channelId = data.channel_id;
+        const channelId = data ? data.channel_id : '';
 
         // when the notification does not have a team id is because its from a DM or GM
         const teamId = data.team_id || currentTeamId;
