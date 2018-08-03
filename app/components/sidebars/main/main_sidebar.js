@@ -168,6 +168,9 @@ export default class ChannelSidebar extends Component {
     };
 
     selectChannel = (channel, currentChannelId) => {
+        if (!channel) {
+            return;
+        }
         const {
             actions,
         } = this.props;
