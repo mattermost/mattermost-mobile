@@ -339,8 +339,10 @@ export default class CombinedSystemMessage extends React.PureComponent {
                     // Not something the current user did or was affected by
                     continue;
                 }
-            } else if (postType === REMOVE_FROM_CHANNEL) {
-                removedUserIds.push(userIds);
+            }
+
+            if (postType === REMOVE_FROM_CHANNEL) {
+                removedUserIds.push(...userIds);
                 continue;
             }
 
@@ -348,7 +350,8 @@ export default class CombinedSystemMessage extends React.PureComponent {
         }
 
         if (removedUserIds.length > 0) {
-            content.push(this.renderMessage(REMOVE_FROM_CHANNEL, removedUserIds, currentUserId, style));
+            const uniqueRemovedUserIds = removedUserIds.filter((id, index, arr) => arr.indexOf(id) === index);
+            content.push(this.renderMessage(REMOVE_FROM_CHANNEL, uniqueRemovedUserIds, currentUserId, style));
         }
 
         return (
