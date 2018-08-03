@@ -20,6 +20,7 @@ export default class ChannelLoader extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             markChannelAsViewed: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired,
+            setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
         backgroundColor: PropTypes.string,
         channelIsLoading: PropTypes.bool.isRequired,
@@ -62,6 +63,7 @@ export default class ChannelLoader extends PureComponent {
                 handleSelectChannel,
                 markChannelAsRead,
                 markChannelAsViewed,
+                setChannelLoading,
             } = this.props.actions;
 
             const {channel, currentChannelId} = this.state;
@@ -74,6 +76,8 @@ export default class ChannelLoader extends PureComponent {
                 if (channel.id !== currentChannelId) {
                     markChannelAsViewed(currentChannelId);
                 }
+
+                setChannelLoading(false);
             }, 250);
         }
     }
@@ -99,7 +103,9 @@ export default class ChannelLoader extends PureComponent {
     }
 
     handleChannelSwitch = (channel, currentChannelId) => {
-        if (channel.id !== currentChannelId) {
+        if (channel.id === currentChannelId) {
+            this.props.actions.setChannelLoading(false);
+        } else {
             this.setState({switch: true, channel, currentChannelId});
         }
     };

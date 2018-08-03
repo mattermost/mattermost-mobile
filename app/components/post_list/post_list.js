@@ -36,7 +36,6 @@ export default class PostList extends PureComponent {
             loadChannelsByTeamName: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
             setDeepLinkURL: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
@@ -118,10 +117,6 @@ export default class PostList extends PureComponent {
             this.handleDeepLink(this.props.deepLinkURL);
             this.props.actions.setDeepLinkURL('');
         }
-
-        setTimeout(() => {
-            this.props.actions.setChannelLoading(false);
-        }, 100);
     }
 
     componentWillUnmount() {
