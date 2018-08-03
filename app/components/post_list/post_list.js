@@ -34,7 +34,6 @@ export default class PostList extends PureComponent {
             loadChannelsByTeamName: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
             setDeepLinkURL: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
@@ -49,7 +48,8 @@ export default class PostList extends PureComponent {
         measureCellLayout: PropTypes.bool,
         navigator: PropTypes.object,
         onContentSizeChange: PropTypes.func,
-        onEndReached: PropTypes.func,
+        onLoadMoreDown: PropTypes.func,
+        onLoadMoreUp: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
@@ -63,7 +63,8 @@ export default class PostList extends PureComponent {
     };
 
     static defaultProps = {
-        onEndReached: () => true,
+        onLoadMoreDown: () => true,
+        onLoadMoreUp: () => true,
         onContentSizeChange: () => true,
     };
 
@@ -115,10 +116,6 @@ export default class PostList extends PureComponent {
             this.handleDeepLink(this.props.deepLinkURL);
             this.props.actions.setDeepLinkURL('');
         }
-
-        setTimeout(() => {
-            this.props.actions.setChannelLoading(false);
-        }, 100);
     }
 
     componentWillUnmount() {
@@ -356,25 +353,14 @@ export default class PostList extends PureComponent {
 
         if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
             // We still have less than 1 screen of posts loaded with more to get, so load more
-            this.loadMoreUp();
+            this.props.onLoadMoreUp();
         }
-    }
+    };
 
     onLayout = (event) => {
         const {height} = event.nativeEvent.layout;
         this.setState({postListHeight: height});
     };
-
-    loadMoreUp = () => {
-        if (!this.isLoadingMoreUp) {
-            this.isLoadingMoreUp = true;
-            this.props.onEndReached();
-        }
-    };
-
-    loadMoreDown = () => {
-        // console.log('load more bottom');
-    }
 
     onScroll = (event) => {
         const contentOffset = event.nativeEvent.contentOffset.y;
@@ -384,10 +370,10 @@ export default class PostList extends PureComponent {
             const direction = this.contentOffsetY < contentOffset ? 'up' : 'down';
             this.contentOffsetY = contentOffset;
 
-            if (direction === 'up' && (this.contentHeight - this.pageOffsetY) < (this.state.postListHeight * 3)) {
-                this.loadMoreUp();
-            } else if (direction === 'down' && this.pageOffsetY < 600) {
-                this.loadMoreDown();
+            if (direction === 'up' && (this.contentHeight - this.pageOffsetY) < (this.state.postListHeight * 3.5)) {
+                this.props.onLoadMoreUp();
+            } else if (direction === 'down' && this.pageOffsetY < this.state.postListHeight) {
+                this.props.onLoadMoreDown();
             }
         }
     };

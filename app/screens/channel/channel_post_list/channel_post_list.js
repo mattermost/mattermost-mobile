@@ -9,12 +9,11 @@ import {
     View,
 } from 'react-native';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-
 import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
+import {ListTypes, ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 
 let ChannelIntro = null;
@@ -42,7 +41,7 @@ export default class ChannelPostList extends PureComponent {
     };
 
     static defaultProps = {
-        postVisibility: 15,
+        postVisibility: ViewTypes.POST_VISIBILITY_CHUNK_SIZE,
     };
 
     constructor(props) {
@@ -106,16 +105,29 @@ export default class ChannelPostList extends PureComponent {
         }
     };
 
-    loadMorePostsTop = debounce(() => {
-        if (this.props.loadMorePostsVisible) {
-            const {actions, channelId} = this.props;
-            actions.increasePostVisibility(channelId);
+    loadMorePostsTop = async () => {
+        const {actions, channelId} = this.props;
+        if (!this.isLoadingMoreTop) {
+            this.isLoadingMoreTop = true;
+            actions.increasePostVisibility(channelId).then((hasMore) => {
+                this.isLoadingMoreTop = !hasMore;
+            });
         }
-    }, 100);
+    };
 
-    loadMorePostsBottom = debounce(() => {
-        return true;
-    });
+    loadMorePostsBottom = async () => {
+        const {actions, channelId} = this.props;
+        if (!this.isLoadingMoreBottom) {
+            this.isLoadingMoreBottom = true;
+            actions.increasePostVisibility(
+                channelId,
+                null,
+                ListTypes.VISIBILITY_SCROLL_DOWN,
+            ).then((hasMore) => {
+                this.isLoadingMoreBottom = !hasMore;
+            });
+        }
+    };
 
     loadPostsRetry = () => {
         const {actions, channelId} = this.props;
@@ -181,7 +193,8 @@ export default class ChannelPostList extends PureComponent {
                 <PostList
                     postIds={visiblePostIds}
                     extraData={loadMorePostsVisible}
-                    onEndReached={this.loadMorePostsTop}
+                    onLoadMoreDown={this.loadMorePostsBottom}
+                    onLoadMoreUp={this.loadMorePostsTop}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}
                     renderReplies={true}
