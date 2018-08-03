@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.os.Environment;
@@ -95,15 +96,33 @@ public class RealPathUtil {
 
     public static String getPathFromSavingTempFile(Context context, final Uri uri) {
         File tmpFile;
+        String fileName = null;
+
+        // Try and get the filename from the Uri
         try {
-            String fileName = uri.getLastPathSegment();
+            Cursor returnCursor =
+                    context.getContentResolver().query(uri, null, null, null, null);
+            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            returnCursor.moveToFirst();
+            fileName = returnCursor.getString(nameIndex);
+        } catch (Exception e) {
+            // just continue to get the filename with the last segment of the path
+        }
+
+        try {
+            if (fileName == null) {
+                fileName = uri.getLastPathSegment().toString().trim();
+            }
+
+
             File cacheDir = new File(context.getCacheDir(), "mmShare");
             if (!cacheDir.exists()) {
                 cacheDir.mkdirs();
             }
 
             String mimeType = getMimeType(uri.getPath());
-            tmpFile = File.createTempFile("tmp", fileName, cacheDir);
+            tmpFile = new File(cacheDir, fileName);
+            tmpFile.createNewFile();
 
             ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
 
