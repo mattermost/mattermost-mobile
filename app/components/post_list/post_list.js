@@ -10,6 +10,7 @@ import {
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import {ListTypes} from 'app/components/action_types';
 import Post from 'app/components/post';
 import {START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
@@ -367,12 +368,20 @@ export default class PostList extends PureComponent {
         if (contentOffset > 0) {
             this.pageOffsetY = contentOffset;
             this.contentHeight = event.nativeEvent.contentSize.height;
-            const direction = this.contentOffsetY < contentOffset ? 'up' : 'down';
+            const direction = (this.contentOffsetY < contentOffset) ?
+                ListTypes.VISIBILITY_SCROLL_UP :
+                ListTypes.VISIBILITY_SCROLL_DOWN;
             this.contentOffsetY = contentOffset;
 
-            if (direction === 'up' && (this.contentHeight - this.pageOffsetY) < (this.state.postListHeight * 3.5)) {
+            if (
+                direction === ListTypes.VISIBILITY_SCROLL_UP &&
+                (this.contentHeight - this.pageOffsetY) < (this.state.postListHeight * 3.5)
+            ) {
                 this.props.onLoadMoreUp();
-            } else if (direction === 'down' && this.pageOffsetY < this.state.postListHeight) {
+            } else if (
+                direction === ListTypes.VISIBILITY_SCROLL_DOWN &&
+                this.pageOffsetY < this.state.postListHeight
+            ) {
                 this.props.onLoadMoreDown();
             }
         }
