@@ -56,7 +56,7 @@ export default {
         }
     },
     isTrustedDevice: () => {
-        if (__DEV__) { //eslint-disable-line no-undef
+        if (__DEV__) {
             return true;
         }
 

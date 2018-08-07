@@ -16,27 +16,35 @@ import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {purgeOfflineStore} from 'app/actions/views/root';
 import {
     captureException,
+    captureJSException,
     initializeSentry,
-    LOGGER_JAVASCRIPT,
     LOGGER_NATIVE,
 } from 'app/utils/sentry';
 
 import {app, store} from 'app/mattermost';
 
 const errorHandler = (e, isFatal) => {
-    console.warn('Handling Javascript error ', e); // eslint-disable-line no-console
+    if (__DEV__ && !e && !isFatal) {
+        // react-native-exception-handler redirects console.error to call this, and React calls
+        // console.error without an exception when prop type validation fails, so this ends up
+        // being called with no arguments when the error handler is enabled in dev mode.
+        return;
+    }
+
+    console.warn('Handling Javascript error', e, isFatal); // eslint-disable-line no-console
+    captureJSException(e, isFatal, store);
+
     const {dispatch} = store;
 
-    captureException(e, LOGGER_JAVASCRIPT, store);
-
-    const translations = app.getTranslations();
     dispatch(closeWebSocket());
 
     if (Client4.getUrl()) {
         dispatch(logError(e));
     }
 
-    if (isFatal) {
+    if (isFatal && e instanceof Error) {
+        const translations = app.getTranslations();
+
         Alert.alert(
             translations['mobile.error_handler.title'],
             translations['mobile.error_handler.description'],

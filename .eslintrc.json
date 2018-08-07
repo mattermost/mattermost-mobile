@@ -32,7 +32,8 @@
         "expect": true,
         "it": true,
         "jest": true,
-        "test": true
+        "test": true,
+        "__DEV__": true
     },
     "rules": {
         "array-bracket-spacing": [2, "never"],
