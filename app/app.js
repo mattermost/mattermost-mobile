@@ -259,7 +259,13 @@ export default class App {
         if (this.token && this.url) {
             screen = 'Channel';
             tracker.initialLoad = Date.now();
-            dispatch(loadMe());
+
+            try {
+                dispatch(loadMe());
+            } catch (e) {
+                // Fall through since we should have a previous version of the current user because we have a token
+                console.warn('Failed to load current user when starting on Channel screen', e); // eslint-disable-line no-console
+            }
         }
 
         switch (screen) {

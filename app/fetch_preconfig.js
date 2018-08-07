@@ -42,6 +42,7 @@ Client4.doFetchWithResponse = async (url, options) => {
         }
 
         throw {
+            message: 'Received invalid response from the server.',
             intl: {
                 id: 'mobile.request.invalid_response',
                 defaultMessage: 'Received invalid response from the server.',

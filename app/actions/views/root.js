@@ -102,7 +102,9 @@ export function purgeOfflineStore() {
     return {type: General.OFFLINE_STORE_PURGE};
 }
 
-export function createPost(post) {
+// A non-optimistic version of the createPost action in mattermost-redux with the file handling
+// removed since it's not needed.
+export function createPostForNotificationReply(post) {
     return (dispatch, getState) => {
         const state = getState();
         const currentUserId = state.entities.users.currentUserId;
