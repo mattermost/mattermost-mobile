@@ -121,7 +121,9 @@ ShallowWrapper {
                   },
                 ]
               }
-            />
+            >
+              <LoadingPlaceholder />
+            </Text>
           </Component>
         </Component>
       </TouchableHighlight>,
@@ -200,7 +202,9 @@ ShallowWrapper {
                   },
                 ]
               }
-            />
+            >
+              <LoadingPlaceholder />
+            </Text>
           </Component>
         </Component>,
         "delayPressOut": 100,
@@ -271,7 +275,9 @@ ShallowWrapper {
                     },
                   ]
                 }
-              />
+              >
+                <LoadingPlaceholder />
+              </Text>
             </Component>,
           ],
           "style": Array [
@@ -334,7 +340,9 @@ ShallowWrapper {
                       },
                     ]
                   }
-                />,
+                >
+                  <LoadingPlaceholder />
+                </Text>,
                 undefined,
               ],
               "style": Array [
@@ -382,7 +390,7 @@ ShallowWrapper {
                 "props": Object {
                   "accessible": true,
                   "allowFontScaling": true,
-                  "children": undefined,
+                  "children": <LoadingPlaceholder />,
                   "ellipsizeMode": "tail",
                   "numberOfLines": 1,
                   "style": Array [
@@ -402,7 +410,15 @@ ShallowWrapper {
                   ],
                 },
                 "ref": null,
-                "rendered": null,
+                "rendered": Object {
+                  "instance": null,
+                  "key": undefined,
+                  "nodeType": "function",
+                  "props": Object {},
+                  "ref": null,
+                  "rendered": null,
+                  "type": [Function],
+                },
                 "type": [Function],
               },
               undefined,
@@ -496,7 +512,9 @@ ShallowWrapper {
                     },
                   ]
                 }
-              />
+              >
+                <LoadingPlaceholder />
+              </Text>
             </Component>
           </Component>
         </TouchableHighlight>,
@@ -575,7 +593,9 @@ ShallowWrapper {
                     },
                   ]
                 }
-              />
+              >
+                <LoadingPlaceholder />
+              </Text>
             </Component>
           </Component>,
           "delayPressOut": 100,
@@ -646,7 +666,9 @@ ShallowWrapper {
                       },
                     ]
                   }
-                />
+                >
+                  <LoadingPlaceholder />
+                </Text>
               </Component>,
             ],
             "style": Array [
@@ -709,7 +731,9 @@ ShallowWrapper {
                         },
                       ]
                     }
-                  />,
+                  >
+                    <LoadingPlaceholder />
+                  </Text>,
                   undefined,
                 ],
                 "style": Array [
@@ -757,7 +781,7 @@ ShallowWrapper {
                   "props": Object {
                     "accessible": true,
                     "allowFontScaling": true,
-                    "children": undefined,
+                    "children": <LoadingPlaceholder />,
                     "ellipsizeMode": "tail",
                     "numberOfLines": 1,
                     "style": Array [
@@ -777,7 +801,15 @@ ShallowWrapper {
                     ],
                   },
                   "ref": null,
-                  "rendered": null,
+                  "rendered": Object {
+                    "instance": null,
+                    "key": undefined,
+                    "nodeType": "function",
+                    "props": Object {},
+                    "ref": null,
+                    "rendered": null,
+                    "type": [Function],
+                  },
                   "type": [Function],
                 },
                 undefined,
@@ -809,6 +841,857 @@ ShallowWrapper {
               },
               Object {
                 "displayname": "display_name",
+              },
+            ],
+          ],
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`ChannelItem should match snapshot for no displayName 1`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <ChannelItem
+    channelId="channel_id"
+    currentChannelId="current_channel_id"
+    displayName=""
+    fake={false}
+    isArchived={false}
+    isChannelMuted={false}
+    isMyUser={true}
+    isUnread={true}
+    mentions={0}
+    navigator={
+      Object {
+        "push": [Function],
+      }
+    }
+    onSelectChannel={[Function]}
+    shouldHideChannel={false}
+    showUnreadForMsgs={true}
+    status="online"
+    teammateDeletedAt={0}
+    theme={
+      Object {
+        "sidebarText": "#aaa",
+        "sidebarTextActiveBorder": "#aaa",
+        "sidebarTextActiveColor": "#aaa",
+        "sidebarTextHoverBg": "#aaa",
+      }
+    }
+    type="O"
+    unreadMsgs={1}
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": undefined,
+    "nodeType": "class",
+    "props": Object {
+      "children": <TouchableHighlight
+        activeOpacity={0.85}
+        delayPressOut={100}
+        onLongPress={[Function]}
+        onPress={[Function]}
+        underlayColor="rgba(170,170,170,0.5)"
+      >
+        <Component
+          style={
+            Array [
+              Object {
+                "flex": 1,
+                "flexDirection": "row",
+                "height": 44,
+              },
+              undefined,
+            ]
+          }
+        >
+          <Component
+            style={
+              Array [
+                Object {
+                  "alignItems": "center",
+                  "flex": 1,
+                  "flexDirection": "row",
+                  "paddingLeft": 16,
+                },
+                undefined,
+              ]
+            }
+          >
+            <ChannelIcon
+              channelId="channel_id"
+              isActive={false}
+              isArchived={false}
+              isInfo={false}
+              isUnread={true}
+              membersCount={1}
+              size={16}
+              status="online"
+              teammateDeletedAt={0}
+              theme={
+                Object {
+                  "sidebarText": "#aaa",
+                  "sidebarTextActiveBorder": "#aaa",
+                  "sidebarTextActiveColor": "#aaa",
+                  "sidebarTextHoverBg": "#aaa",
+                }
+              }
+              type="O"
+            />
+            <Text
+              accessible={true}
+              allowFontScaling={true}
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={
+                Array [
+                  Object {
+                    "color": "rgba(170,170,170,0.4)",
+                    "flex": 1,
+                    "fontSize": 14,
+                    "fontWeight": "600",
+                    "height": "100%",
+                    "lineHeight": 44,
+                    "paddingRight": 40,
+                    "textAlignVertical": "center",
+                  },
+                  Object {
+                    "color": undefined,
+                  },
+                ]
+              }
+            >
+              <LoadingPlaceholder />
+            </Text>
+          </Component>
+        </Component>
+      </TouchableHighlight>,
+    },
+    "ref": [Function],
+    "rendered": Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "activeOpacity": 0.85,
+        "children": <Component
+          style={
+            Array [
+              Object {
+                "flex": 1,
+                "flexDirection": "row",
+                "height": 44,
+              },
+              undefined,
+            ]
+          }
+        >
+          <Component
+            style={
+              Array [
+                Object {
+                  "alignItems": "center",
+                  "flex": 1,
+                  "flexDirection": "row",
+                  "paddingLeft": 16,
+                },
+                undefined,
+              ]
+            }
+          >
+            <ChannelIcon
+              channelId="channel_id"
+              isActive={false}
+              isArchived={false}
+              isInfo={false}
+              isUnread={true}
+              membersCount={1}
+              size={16}
+              status="online"
+              teammateDeletedAt={0}
+              theme={
+                Object {
+                  "sidebarText": "#aaa",
+                  "sidebarTextActiveBorder": "#aaa",
+                  "sidebarTextActiveColor": "#aaa",
+                  "sidebarTextHoverBg": "#aaa",
+                }
+              }
+              type="O"
+            />
+            <Text
+              accessible={true}
+              allowFontScaling={true}
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={
+                Array [
+                  Object {
+                    "color": "rgba(170,170,170,0.4)",
+                    "flex": 1,
+                    "fontSize": 14,
+                    "fontWeight": "600",
+                    "height": "100%",
+                    "lineHeight": 44,
+                    "paddingRight": 40,
+                    "textAlignVertical": "center",
+                  },
+                  Object {
+                    "color": undefined,
+                  },
+                ]
+              }
+            >
+              <LoadingPlaceholder />
+            </Text>
+          </Component>
+        </Component>,
+        "delayPressOut": 100,
+        "onLongPress": [Function],
+        "onPress": [Function],
+        "underlayColor": "rgba(170,170,170,0.5)",
+      },
+      "ref": null,
+      "rendered": Object {
+        "instance": null,
+        "key": undefined,
+        "nodeType": "class",
+        "props": Object {
+          "children": Array [
+            undefined,
+            <Component
+              style={
+                Array [
+                  Object {
+                    "alignItems": "center",
+                    "flex": 1,
+                    "flexDirection": "row",
+                    "paddingLeft": 16,
+                  },
+                  undefined,
+                ]
+              }
+            >
+              <ChannelIcon
+                channelId="channel_id"
+                isActive={false}
+                isArchived={false}
+                isInfo={false}
+                isUnread={true}
+                membersCount={1}
+                size={16}
+                status="online"
+                teammateDeletedAt={0}
+                theme={
+                  Object {
+                    "sidebarText": "#aaa",
+                    "sidebarTextActiveBorder": "#aaa",
+                    "sidebarTextActiveColor": "#aaa",
+                    "sidebarTextHoverBg": "#aaa",
+                  }
+                }
+                type="O"
+              />
+              <Text
+                accessible={true}
+                allowFontScaling={true}
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                style={
+                  Array [
+                    Object {
+                      "color": "rgba(170,170,170,0.4)",
+                      "flex": 1,
+                      "fontSize": 14,
+                      "fontWeight": "600",
+                      "height": "100%",
+                      "lineHeight": 44,
+                      "paddingRight": 40,
+                      "textAlignVertical": "center",
+                    },
+                    Object {
+                      "color": undefined,
+                    },
+                  ]
+                }
+              >
+                <LoadingPlaceholder />
+              </Text>
+            </Component>,
+          ],
+          "style": Array [
+            Object {
+              "flex": 1,
+              "flexDirection": "row",
+              "height": 44,
+            },
+            undefined,
+          ],
+        },
+        "ref": null,
+        "rendered": Array [
+          undefined,
+          Object {
+            "instance": null,
+            "key": undefined,
+            "nodeType": "class",
+            "props": Object {
+              "children": Array [
+                <ChannelIcon
+                  channelId="channel_id"
+                  isActive={false}
+                  isArchived={false}
+                  isInfo={false}
+                  isUnread={true}
+                  membersCount={1}
+                  size={16}
+                  status="online"
+                  teammateDeletedAt={0}
+                  theme={
+                    Object {
+                      "sidebarText": "#aaa",
+                      "sidebarTextActiveBorder": "#aaa",
+                      "sidebarTextActiveColor": "#aaa",
+                      "sidebarTextHoverBg": "#aaa",
+                    }
+                  }
+                  type="O"
+                />,
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={
+                    Array [
+                      Object {
+                        "color": "rgba(170,170,170,0.4)",
+                        "flex": 1,
+                        "fontSize": 14,
+                        "fontWeight": "600",
+                        "height": "100%",
+                        "lineHeight": 44,
+                        "paddingRight": 40,
+                        "textAlignVertical": "center",
+                      },
+                      Object {
+                        "color": undefined,
+                      },
+                    ]
+                  }
+                >
+                  <LoadingPlaceholder />
+                </Text>,
+                undefined,
+              ],
+              "style": Array [
+                Object {
+                  "alignItems": "center",
+                  "flex": 1,
+                  "flexDirection": "row",
+                  "paddingLeft": 16,
+                },
+                undefined,
+              ],
+            },
+            "ref": null,
+            "rendered": Array [
+              Object {
+                "instance": null,
+                "key": undefined,
+                "nodeType": "class",
+                "props": Object {
+                  "channelId": "channel_id",
+                  "isActive": false,
+                  "isArchived": false,
+                  "isInfo": false,
+                  "isUnread": true,
+                  "membersCount": 1,
+                  "size": 16,
+                  "status": "online",
+                  "teammateDeletedAt": 0,
+                  "theme": Object {
+                    "sidebarText": "#aaa",
+                    "sidebarTextActiveBorder": "#aaa",
+                    "sidebarTextActiveColor": "#aaa",
+                    "sidebarTextHoverBg": "#aaa",
+                  },
+                  "type": "O",
+                },
+                "ref": null,
+                "rendered": null,
+                "type": [Function],
+              },
+              Object {
+                "instance": null,
+                "key": undefined,
+                "nodeType": "class",
+                "props": Object {
+                  "accessible": true,
+                  "allowFontScaling": true,
+                  "children": <LoadingPlaceholder />,
+                  "ellipsizeMode": "tail",
+                  "numberOfLines": 1,
+                  "style": Array [
+                    Object {
+                      "color": "rgba(170,170,170,0.4)",
+                      "flex": 1,
+                      "fontSize": 14,
+                      "fontWeight": "600",
+                      "height": "100%",
+                      "lineHeight": 44,
+                      "paddingRight": 40,
+                      "textAlignVertical": "center",
+                    },
+                    Object {
+                      "color": undefined,
+                    },
+                  ],
+                },
+                "ref": null,
+                "rendered": Object {
+                  "instance": null,
+                  "key": undefined,
+                  "nodeType": "function",
+                  "props": Object {},
+                  "ref": null,
+                  "rendered": null,
+                  "type": [Function],
+                },
+                "type": [Function],
+              },
+              undefined,
+            ],
+            "type": [Function],
+          },
+        ],
+        "type": [Function],
+      },
+      "type": [Function],
+    },
+    "type": [Function],
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "children": <TouchableHighlight
+          activeOpacity={0.85}
+          delayPressOut={100}
+          onLongPress={[Function]}
+          onPress={[Function]}
+          underlayColor="rgba(170,170,170,0.5)"
+        >
+          <Component
+            style={
+              Array [
+                Object {
+                  "flex": 1,
+                  "flexDirection": "row",
+                  "height": 44,
+                },
+                undefined,
+              ]
+            }
+          >
+            <Component
+              style={
+                Array [
+                  Object {
+                    "alignItems": "center",
+                    "flex": 1,
+                    "flexDirection": "row",
+                    "paddingLeft": 16,
+                  },
+                  undefined,
+                ]
+              }
+            >
+              <ChannelIcon
+                channelId="channel_id"
+                isActive={false}
+                isArchived={false}
+                isInfo={false}
+                isUnread={true}
+                membersCount={1}
+                size={16}
+                status="online"
+                teammateDeletedAt={0}
+                theme={
+                  Object {
+                    "sidebarText": "#aaa",
+                    "sidebarTextActiveBorder": "#aaa",
+                    "sidebarTextActiveColor": "#aaa",
+                    "sidebarTextHoverBg": "#aaa",
+                  }
+                }
+                type="O"
+              />
+              <Text
+                accessible={true}
+                allowFontScaling={true}
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                style={
+                  Array [
+                    Object {
+                      "color": "rgba(170,170,170,0.4)",
+                      "flex": 1,
+                      "fontSize": 14,
+                      "fontWeight": "600",
+                      "height": "100%",
+                      "lineHeight": 44,
+                      "paddingRight": 40,
+                      "textAlignVertical": "center",
+                    },
+                    Object {
+                      "color": undefined,
+                    },
+                  ]
+                }
+              >
+                <LoadingPlaceholder />
+              </Text>
+            </Component>
+          </Component>
+        </TouchableHighlight>,
+      },
+      "ref": [Function],
+      "rendered": Object {
+        "instance": null,
+        "key": undefined,
+        "nodeType": "class",
+        "props": Object {
+          "activeOpacity": 0.85,
+          "children": <Component
+            style={
+              Array [
+                Object {
+                  "flex": 1,
+                  "flexDirection": "row",
+                  "height": 44,
+                },
+                undefined,
+              ]
+            }
+          >
+            <Component
+              style={
+                Array [
+                  Object {
+                    "alignItems": "center",
+                    "flex": 1,
+                    "flexDirection": "row",
+                    "paddingLeft": 16,
+                  },
+                  undefined,
+                ]
+              }
+            >
+              <ChannelIcon
+                channelId="channel_id"
+                isActive={false}
+                isArchived={false}
+                isInfo={false}
+                isUnread={true}
+                membersCount={1}
+                size={16}
+                status="online"
+                teammateDeletedAt={0}
+                theme={
+                  Object {
+                    "sidebarText": "#aaa",
+                    "sidebarTextActiveBorder": "#aaa",
+                    "sidebarTextActiveColor": "#aaa",
+                    "sidebarTextHoverBg": "#aaa",
+                  }
+                }
+                type="O"
+              />
+              <Text
+                accessible={true}
+                allowFontScaling={true}
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                style={
+                  Array [
+                    Object {
+                      "color": "rgba(170,170,170,0.4)",
+                      "flex": 1,
+                      "fontSize": 14,
+                      "fontWeight": "600",
+                      "height": "100%",
+                      "lineHeight": 44,
+                      "paddingRight": 40,
+                      "textAlignVertical": "center",
+                    },
+                    Object {
+                      "color": undefined,
+                    },
+                  ]
+                }
+              >
+                <LoadingPlaceholder />
+              </Text>
+            </Component>
+          </Component>,
+          "delayPressOut": 100,
+          "onLongPress": [Function],
+          "onPress": [Function],
+          "underlayColor": "rgba(170,170,170,0.5)",
+        },
+        "ref": null,
+        "rendered": Object {
+          "instance": null,
+          "key": undefined,
+          "nodeType": "class",
+          "props": Object {
+            "children": Array [
+              undefined,
+              <Component
+                style={
+                  Array [
+                    Object {
+                      "alignItems": "center",
+                      "flex": 1,
+                      "flexDirection": "row",
+                      "paddingLeft": 16,
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                <ChannelIcon
+                  channelId="channel_id"
+                  isActive={false}
+                  isArchived={false}
+                  isInfo={false}
+                  isUnread={true}
+                  membersCount={1}
+                  size={16}
+                  status="online"
+                  teammateDeletedAt={0}
+                  theme={
+                    Object {
+                      "sidebarText": "#aaa",
+                      "sidebarTextActiveBorder": "#aaa",
+                      "sidebarTextActiveColor": "#aaa",
+                      "sidebarTextHoverBg": "#aaa",
+                    }
+                  }
+                  type="O"
+                />
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={
+                    Array [
+                      Object {
+                        "color": "rgba(170,170,170,0.4)",
+                        "flex": 1,
+                        "fontSize": 14,
+                        "fontWeight": "600",
+                        "height": "100%",
+                        "lineHeight": 44,
+                        "paddingRight": 40,
+                        "textAlignVertical": "center",
+                      },
+                      Object {
+                        "color": undefined,
+                      },
+                    ]
+                  }
+                >
+                  <LoadingPlaceholder />
+                </Text>
+              </Component>,
+            ],
+            "style": Array [
+              Object {
+                "flex": 1,
+                "flexDirection": "row",
+                "height": 44,
+              },
+              undefined,
+            ],
+          },
+          "ref": null,
+          "rendered": Array [
+            undefined,
+            Object {
+              "instance": null,
+              "key": undefined,
+              "nodeType": "class",
+              "props": Object {
+                "children": Array [
+                  <ChannelIcon
+                    channelId="channel_id"
+                    isActive={false}
+                    isArchived={false}
+                    isInfo={false}
+                    isUnread={true}
+                    membersCount={1}
+                    size={16}
+                    status="online"
+                    teammateDeletedAt={0}
+                    theme={
+                      Object {
+                        "sidebarText": "#aaa",
+                        "sidebarTextActiveBorder": "#aaa",
+                        "sidebarTextActiveColor": "#aaa",
+                        "sidebarTextHoverBg": "#aaa",
+                      }
+                    }
+                    type="O"
+                  />,
+                  <Text
+                    accessible={true}
+                    allowFontScaling={true}
+                    ellipsizeMode="tail"
+                    numberOfLines={1}
+                    style={
+                      Array [
+                        Object {
+                          "color": "rgba(170,170,170,0.4)",
+                          "flex": 1,
+                          "fontSize": 14,
+                          "fontWeight": "600",
+                          "height": "100%",
+                          "lineHeight": 44,
+                          "paddingRight": 40,
+                          "textAlignVertical": "center",
+                        },
+                        Object {
+                          "color": undefined,
+                        },
+                      ]
+                    }
+                  >
+                    <LoadingPlaceholder />
+                  </Text>,
+                  undefined,
+                ],
+                "style": Array [
+                  Object {
+                    "alignItems": "center",
+                    "flex": 1,
+                    "flexDirection": "row",
+                    "paddingLeft": 16,
+                  },
+                  undefined,
+                ],
+              },
+              "ref": null,
+              "rendered": Array [
+                Object {
+                  "instance": null,
+                  "key": undefined,
+                  "nodeType": "class",
+                  "props": Object {
+                    "channelId": "channel_id",
+                    "isActive": false,
+                    "isArchived": false,
+                    "isInfo": false,
+                    "isUnread": true,
+                    "membersCount": 1,
+                    "size": 16,
+                    "status": "online",
+                    "teammateDeletedAt": 0,
+                    "theme": Object {
+                      "sidebarText": "#aaa",
+                      "sidebarTextActiveBorder": "#aaa",
+                      "sidebarTextActiveColor": "#aaa",
+                      "sidebarTextHoverBg": "#aaa",
+                    },
+                    "type": "O",
+                  },
+                  "ref": null,
+                  "rendered": null,
+                  "type": [Function],
+                },
+                Object {
+                  "instance": null,
+                  "key": undefined,
+                  "nodeType": "class",
+                  "props": Object {
+                    "accessible": true,
+                    "allowFontScaling": true,
+                    "children": <LoadingPlaceholder />,
+                    "ellipsizeMode": "tail",
+                    "numberOfLines": 1,
+                    "style": Array [
+                      Object {
+                        "color": "rgba(170,170,170,0.4)",
+                        "flex": 1,
+                        "fontSize": 14,
+                        "fontWeight": "600",
+                        "height": "100%",
+                        "lineHeight": 44,
+                        "paddingRight": 40,
+                        "textAlignVertical": "center",
+                      },
+                      Object {
+                        "color": undefined,
+                      },
+                    ],
+                  },
+                  "ref": null,
+                  "rendered": Object {
+                    "instance": null,
+                    "key": undefined,
+                    "nodeType": "function",
+                    "props": Object {},
+                    "ref": null,
+                    "rendered": null,
+                    "type": [Function],
+                  },
+                  "type": [Function],
+                },
+                undefined,
+              ],
+              "type": [Function],
+            },
+          ],
+          "type": [Function],
+        },
+        "type": [Function],
+      },
+      "type": [Function],
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+    "context": Object {
+      "intl": Object {
+        "formatMessage": [MockFunction] {
+          "calls": Array [
+            Array [
+              Object {
+                "defaultMessage": "{displayName} (you)",
+                "id": "channel_header.directchannel.you",
+              },
+              Object {
+                "displayname": "",
               },
             ],
           ],

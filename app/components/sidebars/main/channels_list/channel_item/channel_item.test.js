@@ -45,4 +45,18 @@ describe('ChannelItem', () => {
 
         expect(wrapper).toMatchSnapshot();
     });
+
+    test('should match snapshot for no displayName', () => {
+        const props = {
+            ...baseProps,
+            displayName: '',
+        };
+
+        const wrapper = shallow(
+            <ChannelItem {...props}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper).toMatchSnapshot();
+    });
 });

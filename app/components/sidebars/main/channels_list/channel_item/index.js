@@ -10,9 +10,10 @@ import {
     getMyChannelMember,
     shouldHideDefaultChannel,
 } from 'mattermost-redux/selectors/entities/channels';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isChannelMuted} from 'mattermost-redux/utils/channel_utils';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ChannelItem from './channel_item';
 
@@ -26,12 +27,15 @@ function makeMapStateToProps() {
 
         let isMyUser = false;
         let teammateDeletedAt = 0;
+        let displayName = channel.display_name;
         if (channel.type === General.DM_CHANNEL && channel.teammate_id) {
             isMyUser = channel.teammate_id === currentUserId;
             const teammate = getUser(state, channel.teammate_id);
             if (teammate && teammate.delete_at) {
                 teammateDeletedAt = teammate.delete_at;
             }
+            const teammateNameDisplay = getTeammateNameDisplaySetting(state);
+            displayName = displayUsername(teammate, teammateNameDisplay, false);
         }
 
         const currentChannelId = getCurrentChannelId(state);
@@ -57,10 +61,9 @@ function makeMapStateToProps() {
         if (member && member.notify_props) {
             showUnreadForMsgs = member.notify_props.mark_unread !== General.MENTION;
         }
-
         return {
             currentChannelId,
-            displayName: channel.display_name,
+            displayName,
             fake: channel.fake,
             isChannelMuted: isChannelMuted(member),
             isMyUser,
