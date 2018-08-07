@@ -9,7 +9,7 @@ import {getCurrentTeam, getMyTeamsCount, getChannelDrawerBadgeCount} from 'matte
 import SwitchTeamsButton from './switch_teams_button';
 
 function mapStateToProps(state) {
-    const team = getCurrentTeam(state);
+    const team = getCurrentTeam(state) || {};
 
     return {
         currentTeamId: team.id,
