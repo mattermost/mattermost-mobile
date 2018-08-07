@@ -2432,6 +2432,7 @@
   "mobile.error_handler.description": "\nClick relaunch to open the app again. After restart, you can report the problem from the settings menu.\n",
   "mobile.error_handler.title": "Unexpected error occurred",
   "mobile.extension.authentication_required": "Authentication required: Please first login using the app.",
+  "mobile.extension.file_error": "There was an error reading the file to be shared.\nPlease try again.",
   "mobile.extension.file_limit": "Sharing is limited to a maximum of 5 files.",
   "mobile.extension.max_file_size": "File attachments shared in Mattermost must be less than {size}.",
   "mobile.extension.permission": "Mattermost needs access to the device storage to share files.",

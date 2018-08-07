@@ -15,7 +15,7 @@ function makeMapStateToProps() {
     const getProfilesByIdsAndUsernames = makeGetProfilesByIdsAndUsernames();
 
     return (state, ownProps) => {
-        const currentUser = getCurrentUser(state);
+        const currentUser = getCurrentUser(state) || {};
         const {allUserIds, allUsernames} = ownProps;
         return {
             currentUserId: currentUser.id,

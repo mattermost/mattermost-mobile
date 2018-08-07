@@ -17,6 +17,9 @@ export const LOGGER_JAVASCRIPT_WARNING = 'javascript_warning';
 export const LOGGER_NATIVE = 'native';
 export const LOGGER_REDUX = 'redux';
 
+export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
+export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
+
 export function initializeSentry() {
     if (!Config.SentryEnabled) {
         // Still allow Sentry to configure itself in case other code tries to call it
@@ -44,12 +47,28 @@ function getDsn() {
     return '';
 }
 
-export function captureException(error, logger, store) {
-    if (error && logger && store) {
-        capture(() => {
-            Sentry.captureException(error, {logger});
-        }, store);
+export function captureJSException(error, isFatal, store) {
+    if (!error || !store) {
+        console.warn('captureJSException called with missing arguments', error, store); // eslint-disable-line no-console
+        return;
     }
+
+    if (error instanceof Error) {
+        captureException(error, LOGGER_JAVASCRIPT, store);
+    } else {
+        captureNonErrorAsBreadcrumb(error, isFatal);
+    }
+}
+
+export function captureException(error, logger, store) {
+    if (!error || !logger || !store) {
+        console.warn('captureException called with missing arguments', error, logger, store); // eslint-disable-line no-console
+        return;
+    }
+
+    capture(() => {
+        Sentry.captureException(error, {logger});
+    }, store);
 }
 
 export function captureExceptionWithoutState(err, logger) {
@@ -71,6 +90,54 @@ export function captureMessage(message, logger, store) {
         capture(() => {
             Sentry.captureMessage(message, {logger});
         }, store);
+    }
+}
+
+export function captureNonErrorAsBreadcrumb(obj, isFatal) {
+    if (!obj || typeof obj !== 'object') {
+        console.warning('Invalid object passed to captureNonErrorAsBreadcrumb', obj); // eslint-disable-line no-console
+        return;
+    }
+
+    const isAppError = Boolean(obj.server_error_id);
+
+    const breadcrumb = {
+        category: isAppError ? BREADCRUMB_UNCAUGHT_APP_ERROR : BREADCRUMB_UNCAUGHT_NON_ERROR,
+        data: {
+            isFatal: String(isFatal),
+        },
+        level: 'warn',
+    };
+
+    if (obj.message) {
+        breadcrumb.message = obj.message;
+    } else if (obj.intl && obj.intl.defaultMessage) {
+        breadcrumb.message = obj.intl.defaultMessage;
+    } else {
+        breadcrumb.message = 'no message provided';
+    }
+
+    if (obj.server_error_id) {
+        breadcrumb.data.server_error_id = obj.server_error_id;
+    }
+
+    if (obj.status_code) {
+        breadcrumb.data.status_code = obj.status_code;
+    }
+
+    if (obj.url) {
+        const match = (/^(?:https?:\/\/)[^/]+(\/.*)$/);
+
+        if (match && match.length >= 2) {
+            breadcrumb.data.url = match[1];
+        }
+    }
+
+    try {
+        Sentry.captureBreadcrumb(breadcrumb);
+    } catch (e) {
+        // Do nothing since this is only here to make sure we don't crash when handling an exception
+        console.warn('Failed to capture breadcrumb of non-error', e); // eslint-disable-line no-console
     }
 }
 

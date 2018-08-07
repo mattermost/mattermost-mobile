@@ -16,7 +16,6 @@ if (Platform.OS === 'android') {
 
 /*
 /!* eslint-disable no-console *!/
-/!* eslint-disable no-undef *!/
 if (__DEV__) {
     const modules = require.getModules();
     const moduleIds = Object.keys(modules);

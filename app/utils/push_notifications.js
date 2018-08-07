@@ -16,7 +16,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {ViewTypes} from 'app/constants';
 import {retryGetPostsAction} from 'app/actions/views/channel';
 import {
-    createPost,
+    createPostForNotificationReply,
     loadFromPushNotification,
 } from 'app/actions/views/root';
 
@@ -136,15 +136,20 @@ export const onPushNotificationReply = (data, text, badge, completed) => {
         }
 
         retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
-        dispatch(createPost(post)).then(() => {
-            dispatch(markChannelAsRead(data.channel_id));
+        dispatch(createPostForNotificationReply(post)).
+            then(() => {
+                dispatch(markChannelAsRead(data.channel_id));
 
-            if (badge >= 0) {
-                PushNotifications.setApplicationIconBadgeNumber(badge);
-            }
+                if (badge >= 0) {
+                    PushNotifications.setApplicationIconBadgeNumber(badge);
+                }
 
-            app.setReplyNotificationData(null);
-        }).then(completed);
+                app.setReplyNotificationData(null);
+            }).
+            then(completed).
+            catch((e) => {
+                console.warn('Failed to send reply to push notification', e); // eslint-disable-line no-console
+            });
     } else {
         app.setReplyNotificationData({
             data,

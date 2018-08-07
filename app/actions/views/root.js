@@ -55,10 +55,15 @@ export function loadFromPushNotification(notification) {
         const {data} = notification;
         const {currentTeamId, teams, myMembers: myTeamMembers} = state.entities.teams;
         const {currentChannelId, channels} = state.entities.channels;
-        const channelId = data ? data.channel_id : '';
 
-        // when the notification does not have a team id is because its from a DM or GM
-        const teamId = data.team_id || currentTeamId;
+        let channelId = '';
+        let teamId = currentTeamId;
+        if (data) {
+            channelId = data.channel_id;
+
+            // when the notification does not have a team id is because its from a DM or GM
+            teamId = data.team_id || currentTeamId;
+        }
 
         // load any missing data
         const loading = [];
@@ -97,7 +102,9 @@ export function purgeOfflineStore() {
     return {type: General.OFFLINE_STORE_PURGE};
 }
 
-export function createPost(post) {
+// A non-optimistic version of the createPost action in mattermost-redux with the file handling
+// removed since it's not needed.
+export function createPostForNotificationReply(post) {
     return (dispatch, getState) => {
         const state = getState();
         const currentUserId = state.entities.users.currentUserId;

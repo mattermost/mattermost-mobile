@@ -16,7 +16,7 @@ import Timezone from './timezone';
 
 function mapStateToProps(state) {
     const timezones = getTimezones(state);
-    const currentUser = getCurrentUser(state);
+    const currentUser = getCurrentUser(state) || {};
     const userTimezone = getUserTimezone(state, currentUser.id);
 
     return {

@@ -13,7 +13,7 @@ import {getDimensions} from 'app/selectors/device';
 import SettingsSidebar from './settings_sidebar';
 
 function mapStateToProps(state) {
-    const currentUser = getCurrentUser(state);
+    const currentUser = getCurrentUser(state) || {};
     const status = getStatusForUserId(state, currentUser.id);
 
     return {

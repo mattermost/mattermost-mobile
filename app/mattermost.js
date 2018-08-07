@@ -142,8 +142,13 @@ const handleLogout = () => {
 const restartApp = async () => {
     Navigation.dismissModal({animationType: 'none'});
 
-    await store.dispatch(loadConfigAndLicense());
-    await store.dispatch(loadMe());
+    try {
+        await store.dispatch(loadConfigAndLicense());
+        await store.dispatch(loadMe());
+    } catch (e) {
+        console.warn('Failed to load initial data while restarting', e); // eslint-disable-line no-console
+    }
+
     launchChannel();
 };
 

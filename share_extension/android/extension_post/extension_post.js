@@ -268,10 +268,7 @@ export default class ExtensionPost extends PureComponent {
             const text = [];
             const files = [];
             let totalSize = 0;
-
-            this.props.navigation.setParams({
-                post: this.onPost,
-            });
+            let error;
 
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
@@ -280,8 +277,18 @@ export default class ExtensionPost extends PureComponent {
                     text.push(item.value);
                     break;
                 default: {
+                    let fileSize = {size: 0};
                     const fullPath = item.value;
-                    const fileSize = await RNFetchBlob.fs.stat(fullPath);
+                    try {
+                        fileSize = await RNFetchBlob.fs.stat(fullPath);
+                    } catch (e) {
+                        const {formatMessage} = this.context.intl;
+                        error = formatMessage({
+                            id: 'mobile.extension.file_error',
+                            defaultMessage: 'There was an error reading the file to be shared.\nPlease try again.',
+                        });
+                        break;
+                    }
                     let filename = fullPath.replace(/^.*[\\/]/, '');
                     let extension = filename.split('.').pop();
                     if (extension === filename) {
@@ -305,7 +312,13 @@ export default class ExtensionPost extends PureComponent {
 
             const value = text.join('\n');
 
-            this.setState({files, value, hasPermission: true, totalSize});
+            if (!error) {
+                this.props.navigation.setParams({
+                    post: this.onPost,
+                });
+            }
+
+            this.setState({error, files, value, hasPermission: true, totalSize});
         }
     };
 
@@ -476,7 +489,11 @@ export default class ExtensionPost extends PureComponent {
     render() {
         const {formatMessage} = this.context.intl;
         const {maxFileSize, token, url} = this.props;
-        const {hasPermission, files, totalSize} = this.state;
+        const {error, hasPermission, files, totalSize} = this.state;
+
+        if (error) {
+            return this.renderErrorMessage(error);
+        }
 
         if (token && url) {
             if (hasPermission === false) {

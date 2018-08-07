@@ -22,7 +22,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         const post = getPost(state, ownProps.postId);
         const channelId = post ? post.channel_id : '';
-        const channel = getChannel(state, channelId);
+        const channel = getChannel(state, channelId) || {};
         const teamId = channel.team_id;
         const channelIsArchived = channel.delete_at !== 0;
 
