@@ -304,14 +304,24 @@ export default class CombinedSystemMessage extends React.PureComponent {
         );
     }
 
+    renderMessage(postType, userIds, actorId, style) {
+        return (
+            <React.Fragment key={postType + actorId}>
+                {this.renderFormattedMessage(postType, userIds, actorId, {baseText: style.baseText, linkText: style.linkText})}
+            </React.Fragment>
+        );
+    }
+
     render() {
         const {
+            currentUserId,
             messageData,
             theme,
         } = this.props;
         const style = getStyleSheet(theme);
 
         const content = [];
+        const removedUserIds = [];
         for (const message of messageData) {
             const {
                 postType,
@@ -319,23 +329,29 @@ export default class CombinedSystemMessage extends React.PureComponent {
             } = message;
             let userIds = message.userIds;
 
-            if (!this.props.showJoinLeave && actorId !== this.props.currentUserId) {
-                const affectsCurrentUser = userIds.indexOf(this.props.currentUserId) !== -1;
+            if (!this.props.showJoinLeave && actorId !== currentUserId) {
+                const affectsCurrentUser = userIds.indexOf(currentUserId) !== -1;
 
                 if (affectsCurrentUser) {
                     // Only show the message that the current user was added, etc
-                    userIds = [this.props.currentUserId];
+                    userIds = [currentUserId];
                 } else {
                     // Not something the current user did or was affected by
                     continue;
                 }
             }
 
-            content.push(
-                <React.Fragment key={postType + actorId}>
-                    {this.renderFormattedMessage(postType, userIds, actorId, {baseText: style.baseText, linkText: style.linkText})}
-                </React.Fragment>
-            );
+            if (postType === REMOVE_FROM_CHANNEL) {
+                removedUserIds.push(...userIds);
+                continue;
+            }
+
+            content.push(this.renderMessage(postType, userIds, actorId, style));
+        }
+
+        if (removedUserIds.length > 0) {
+            const uniqueRemovedUserIds = removedUserIds.filter((id, index, arr) => arr.indexOf(id) === index);
+            content.push(this.renderMessage(REMOVE_FROM_CHANNEL, uniqueRemovedUserIds, currentUserId, style));
         }
 
         return (
