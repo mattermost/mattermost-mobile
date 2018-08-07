@@ -112,7 +112,7 @@ export function captureNonErrorAsBreadcrumb(obj, isFatal) {
     if (obj.message) {
         breadcrumb.message = obj.message;
     } else if (obj.intl && obj.intl.defaultMessage) {
-        breadcrumb.message = breadcrumb.intl.defaultMessage;
+        breadcrumb.message = obj.intl.defaultMessage;
     } else {
         breadcrumb.message = 'no message provided';
     }
@@ -126,10 +126,10 @@ export function captureNonErrorAsBreadcrumb(obj, isFatal) {
     }
 
     if (obj.url) {
-        const index = obj.url.indexOf('/');
+        const match = (/^(?:https?:\/\/)[^/]+(\/.*)$/);
 
-        if (index !== -1) {
-            breadcrumb.data.url = obj.url.substring(index);
+        if (match && match.length >= 2) {
+            breadcrumb.data.url = match[1];
         }
     }
 
