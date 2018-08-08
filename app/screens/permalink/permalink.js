@@ -114,10 +114,6 @@ export default class Permalink extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.channelId === '' && this.mounted) {
-            this.handleClose();
-        }
-
         if (this.props.channelName !== nextProps.channelName && this.mounted) {
             this.setState({title: nextProps.channelName});
         }
