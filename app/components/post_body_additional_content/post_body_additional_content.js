@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Alert,
     Image,
     Linking,
     Platform,
@@ -13,6 +14,7 @@ import {
     View,
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
+import {intlShape} from 'react-intl';
 
 import ProgressiveImage from 'app/components/progressive_image';
 
@@ -51,6 +53,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     static defaultProps = {
         onLongPress: emptyFunction,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -348,7 +354,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const startTime = this.getYouTubeTime(link);
 
         if (Platform.OS === 'ios') {
-            YouTubeStandaloneIOS.playVideo(videoId, startTime);
+            YouTubeStandaloneIOS.
+                playVideo(videoId, startTime).
+                catch(this.playYouTubeVideoError);
         } else {
             const {config} = this.props;
 
@@ -358,11 +366,28 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     videoId,
                     autoplay: true,
                     startTime,
-                });
+                }).catch(this.playYouTubeVideoError);
             } else {
                 Linking.openURL(link);
             }
         }
+    };
+
+    playYouTubeVideoError = (errorMessage) => {
+        const {formatMessage} = this.context.intl;
+
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.youtube_playback_error.title',
+                defaultMessage: 'YouTube playback error',
+            }),
+            formatMessage({
+                id: 'mobile.youtube_playback_error.description',
+                defaultMessage: 'An error occurred while trying to play the YouTube video.\nDetails: {details}',
+            }, {
+                details: errorMessage,
+            }),
+        );
     };
 
     render() {
