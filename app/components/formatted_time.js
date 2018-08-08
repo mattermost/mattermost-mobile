@@ -52,9 +52,6 @@ export default class FormattedTime extends React.PureComponent {
 
     render() {
         const {children} = this.props;
-
-        // const timezoneProps = timeZone ? {timeZone} : '';
-        // console.log('timezoneProps', timezoneProps);
         const formattedTime = this.getFormattedTime();
 
         if (typeof children === 'function') {
