@@ -243,7 +243,7 @@ export default class About extends PureComponent {
                                         platform: (
                                             <FormattedText
                                                 id='mobile.notice_platform_link'
-                                                defaultMessage='platform'
+                                                defaultMessage='server'
                                                 style={style.noticeLink}
                                                 onPress={this.handlePlatformNotice}
                                             />
@@ -265,20 +265,20 @@ export default class About extends PureComponent {
                                 <FormattedText
                                     id='about.hash'
                                     defaultMessage='Build Hash:'
-                                    style={style.footerText}
+                                    style={style.footerTitleText}
                                 />
                                 <Text style={style.footerText}>
-                                    {'\u00a0' + config.BuildHash}
+                                    {config.BuildHash}
                                 </Text>
                             </View>
                             <View style={style.footerGroup}>
                                 <FormattedText
                                     id='about.hashee'
                                     defaultMessage='EE Build Hash:'
-                                    style={style.footerText}
+                                    style={style.footerTitleText}
                                 />
                                 <Text style={style.footerText}>
-                                    {'\u00a0' + config.BuildHashEnterprise}
+                                    {config.BuildHashEnterprise}
                                 </Text>
                             </View>
                         </View>
@@ -286,10 +286,10 @@ export default class About extends PureComponent {
                             <FormattedText
                                 id='about.date'
                                 defaultMessage='Build Date:'
-                                style={style.footerText}
+                                style={style.footerTitleText}
                             />
                             <Text style={style.footerText}>
-                                {'\u00a0' + config.BuildDate}
+                                {config.BuildDate}
                             </Text>
                         </View>
                     </View>
@@ -325,7 +325,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         titleContainer: {
             flex: 1,
-            flexDirection: 'row',
             marginBottom: 20,
         },
         title: {
@@ -375,7 +374,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         footerGroup: {
             flex: 1,
-            flexDirection: 'row',
+        },
+        footerTitleText: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 11,
+            fontWeight: '600',
+            lineHeight: 13,
         },
         footerText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
