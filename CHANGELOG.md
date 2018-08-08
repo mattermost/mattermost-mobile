@@ -7,8 +7,10 @@
 ### Highlights
 
 #### Searching Archived Channels
+- Added ability to search for archived channels on desktop and mobile clients.
 
 #### Deep Linking
+- 
 
 ### Improvements
 - Added profile pop-up to combined system messages.
@@ -24,7 +26,8 @@
 - Fixed an issue where link preview images were not cropped properly.
 - Fixed an issue where long usernames didn't wrap properly in the Account Settings menu.
 - Fixed an issue where DMs would not open if users were using Jump To.
-
+- Fixed an issue where no message was displayed after removing a user from a channel with join/leave messages disabled.
+- Fixed an issue where Android showed the wrong time when timezone setting was disabled .
 
 ## v1.10.0 Release
 - Release Date: July 16, 2018
