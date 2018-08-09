@@ -2482,7 +2482,7 @@
   "mobile.more_dms.title": "New Conversation",
   "mobile.more_dms.you": "(@{username} - you)",
   "mobile.notice_mobile_link": "mobile apps",
-  "mobile.notice_platform_link": "platform",
+  "mobile.notice_platform_link": "server",
   "mobile.notice_text": "Mattermost is made possible by the open source software used in our {platform} and {mobile}.",
   "mobile.notification.in": " in ",
   "mobile.notification_settings.auto_responder": "Automatic Direct Message Replies",
