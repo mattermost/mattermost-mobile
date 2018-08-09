@@ -53,6 +53,7 @@ const holders = {
 export default class EditProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            setProfileImageUri: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
@@ -166,13 +167,15 @@ export default class EditProfile extends PureComponent {
             position,
             email,
         };
+        const {actions} = this.props;
 
         if (profileImage) {
+            actions.setProfileImageUri(profileImage.uri);
             this.uploadProfileImage().catch(this.handleUploadError);
         }
 
         if (this.canUpdate()) {
-            const {error} = await this.props.actions.updateUser(user);
+            const {error} = await actions.updateUser(user);
             if (error) {
                 this.handleRequestError(error);
                 return;

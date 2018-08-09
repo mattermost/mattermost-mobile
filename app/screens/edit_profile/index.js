@@ -7,7 +7,7 @@ import {bindActionCreators} from 'redux';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {updateUser} from 'app/actions/views/edit_profile';
+import {setProfileImageUri, updateUser} from 'app/actions/views/edit_profile';
 
 import EditProfile from './edit_profile';
 
@@ -21,6 +21,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            setProfileImageUri,
             updateUser,
         }, dispatch),
     };

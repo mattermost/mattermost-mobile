@@ -3,6 +3,8 @@
 
 import {updateMe} from 'mattermost-redux/actions/users';
 
+import {ViewTypes} from 'app/constants';
+
 export function updateUser(user, success, error) {
     return async (dispatch, getState) => {
         const result = await updateMe(user)(dispatch, getState);
@@ -15,3 +17,15 @@ export function updateUser(user, success, error) {
         return result;
     };
 }
+
+export function setProfileImageUri(imageUri = '') {
+    return {
+        type: ViewTypes.SET_PROFILE_IMAGE_URI,
+        imageUri,
+    };
+}
+
+export default {
+    updateUser,
+    setProfileImageUri,
+};
