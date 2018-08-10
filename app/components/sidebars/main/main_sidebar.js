@@ -182,6 +182,16 @@ export default class ChannelSidebar extends Component {
         this.closeChannelDrawer();
 
         if (!channel) {
+            const utils = require('app/utils/general');
+            const {intl} = this.context;
+
+            const unableToJoinMessage = {
+                id: 'mobile.open_unknown_channel.error',
+                defaultMessage: "We couldn't join the channel. Please reset the cache and try again.",
+            };
+            const erroMessage = {};
+
+            utils.alertErrorWithFallback(intl, erroMessage, unableToJoinMessage);
             return;
         }
 
