@@ -14,7 +14,6 @@ import {intlShape} from 'react-intl';
 
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
-import LoadingPlaceholder from 'app/components/loading_placeholder';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -112,7 +111,19 @@ export default class ChannelItem extends PureComponent {
             return null;
         }
 
+        if (!this.props.displayName) {
+            return null;
+        }
+
         const {intl} = this.context;
+
+        let channelDisplayName = displayName;
+        if (isMyUser) {
+            channelDisplayName = intl.formatMessage({
+                id: 'channel_header.directchannel.you',
+                defaultMessage: '{displayName} (you)',
+            }, {displayname: displayName});
+        }
 
         const style = getStyleSheet(theme);
         const isActive = channelId === currentChannelId;
@@ -131,20 +142,6 @@ export default class ChannelItem extends PureComponent {
             );
         } else if (isUnread) {
             extraTextStyle = style.textUnread;
-        }
-
-        let channelDisplayName = displayName;
-        if (isMyUser) {
-            channelDisplayName = intl.formatMessage({
-                id: 'channel_header.directchannel.you',
-                defaultMessage: '{displayName} (you)',
-            }, {displayname: displayName});
-        }
-
-        if (!channelDisplayName) {
-            channelDisplayName = (
-                <LoadingPlaceholder/>
-            );
         }
 
         let badge;

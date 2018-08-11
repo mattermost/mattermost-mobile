@@ -139,16 +139,13 @@ export default class ChannelSidebar extends Component {
             drawerOpened: false,
         });
         this.resetDrawer();
+        Keyboard.dismiss();
     };
 
     handleDrawerOpen = () => {
         this.setState({
             drawerOpened: true,
         });
-
-        if (this.state.openDrawerOffset !== 0) {
-            Keyboard.dismiss();
-        }
     };
 
     handleUpdateTitle = (channel) => {

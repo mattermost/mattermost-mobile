@@ -18,22 +18,41 @@ export default class FormattedTime extends React.PureComponent {
         intl: intlShape.isRequired,
     };
 
-    render() {
+    getFormattedTime = () => {
+        const {intl} = this.context;
+
         const {
             value,
-            children,
             timeZone,
             hour12,
         } = this.props;
-        const {intl} = this.context;
 
-        const timezoneProps = timeZone ? {timeZone} : {};
-        const formattedTime = intl.formatDate(value, {
-            ...timezoneProps,
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12,
-        });
+        if (timeZone) {
+            return intl.formatDate(value, {
+                timeZone,
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12,
+            });
+        }
+
+        // If no timezone is defined fallback to the previous implementation
+        const date = new Date(value);
+        const militaryTime = !hour12;
+        const hour = militaryTime ? date.getHours() : (date.getHours() % 12 || 12);
+        let minute = date.getMinutes();
+        minute = minute >= 10 ? minute : ('0' + minute);
+        let time = '';
+        if (!militaryTime) {
+            time = (date.getHours() >= 12 ? ' PM' : ' AM');
+        }
+
+        return hour + ':' + minute + time;
+    };
+
+    render() {
+        const {children} = this.props;
+        const formattedTime = this.getFormattedTime();
 
         if (typeof children === 'function') {
             return children(formattedTime);
