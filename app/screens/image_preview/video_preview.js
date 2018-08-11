@@ -18,6 +18,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import VideoControls, {PLAYER_STATE} from 'app/components/video_controls';
 import {DeviceTypes} from 'app/constants/';
+import {getVideoPathFromFile} from 'app/utils/file';
 
 import Downloader from './downloader.ios';
 
@@ -70,7 +71,7 @@ export default class VideoPreview extends PureComponent {
     async initializeComponent() {
         const {file} = this.props;
         const prefix = Platform.OS === 'android' ? 'file:/' : '';
-        const path = `${VIDEOS_PATH}/${file.data.id}-${file.caption}`;
+        const path = getVideoPathFromFile(file);
         const exist = await RNFetchBlob.fs.exists(`${prefix}${path}`);
 
         if (exist) {
@@ -90,7 +91,7 @@ export default class VideoPreview extends PureComponent {
 
     onDownloadSuccess = () => {
         const {file} = this.props;
-        const path = file.data.localPath || `${VIDEOS_PATH}/${file.data.id}-${file.caption}`;
+        const path = file.data.localPath || getVideoPathFromFile(file);
 
         this.setState({showDownloader: false, path});
     };
@@ -193,7 +194,8 @@ export default class VideoPreview extends PureComponent {
                     file={file}
                     deviceHeight={deviceHeight}
                     deviceWidth={deviceWidth}
-                    downloadPath={VIDEOS_PATH}
+                    downloadDirectory={VIDEOS_PATH}
+                    downloadPath={getVideoPathFromFile(file)}
                     prompt={true}
                     saveToCameraRoll={false}
                     onDownloadSuccess={this.onDownloadSuccess}

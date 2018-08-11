@@ -215,3 +215,7 @@ function populateMaps() {
         }
     });
 }
+
+export function getVideoPathFromFile(file) {
+    return `${VIDEOS_PATH}/${file.data.id}-${decodeURIComponent(file.caption).replace(/\s+/g, '-')}`;
+}

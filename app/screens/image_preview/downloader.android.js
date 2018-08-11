@@ -17,10 +17,10 @@ import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants/';
 import FormattedText from 'app/components/formatted_text';
-import {isDocument, isVideo} from 'app/utils/file';
+import {getVideoPathFromFile, isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 
-const {DOCUMENTS_PATH, VIDEOS_PATH} = DeviceTypes;
+const {DOCUMENTS_PATH} = DeviceTypes;
 const EXTERNAL_STORAGE_PERMISSION = 'android.permission.WRITE_EXTERNAL_STORAGE';
 const HEADER_HEIGHT = 64;
 const OPTION_LIST_WIDTH = 39;
@@ -89,7 +89,7 @@ export default class Downloader extends PureComponent {
             ToastAndroid.show(started, ToastAndroid.SHORT);
             onDownloadStart();
 
-            const dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${data.id}-${file.caption}`;
+            let dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${data.id}-${file.caption}`;
             let downloadFile = true;
 
             if (data.localPath) {
@@ -100,11 +100,12 @@ export default class Downloader extends PureComponent {
                     await RNFetchBlob.fs.cp(data.localPath, dest);
                 }
             } else if (isVideo(data)) {
-                const path = `${VIDEOS_PATH}/${data.id}-${file.caption}`;
+                const path = getVideoPathFromFile(file);
                 const exists = await RNFetchBlob.fs.exists(path);
 
                 if (exists) {
                     downloadFile = false;
+                    dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${data.id}-${decodeURIComponent(file.caption).replace(/\s+/g, '-')}`;
                     await RNFetchBlob.fs.cp(path, dest);
                 }
             } else if (isDocument(data)) {

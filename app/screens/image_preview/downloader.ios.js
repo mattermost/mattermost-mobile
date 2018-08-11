@@ -23,12 +23,13 @@ export default class Downloader extends PureComponent {
     static propTypes = {
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
+        downloadDirectory: PropTypes.string,
+        downloadPath: PropTypes.string,
         file: PropTypes.object.isRequired,
         onDownloadCancel: PropTypes.func,
         onDownloadSuccess: PropTypes.func,
         prompt: PropTypes.bool,
         show: PropTypes.bool,
-        downloadPath: PropTypes.string,
         saveToCameraRoll: PropTypes.bool,
     };
 
@@ -276,7 +277,7 @@ export default class Downloader extends PureComponent {
     };
 
     startDownload = async () => {
-        const {file, downloadPath, prompt, saveToCameraRoll} = this.props;
+        const {file, downloadDirectory, downloadPath, prompt, saveToCameraRoll} = this.props;
         const {data} = file;
 
         try {
@@ -294,18 +295,18 @@ export default class Downloader extends PureComponent {
                 certificate,
             };
 
-            if (downloadPath && prompt) {
-                const isDir = await RNFetchBlob.fs.isDir(downloadPath);
+            if (downloadDirectory && downloadPath && prompt) {
+                const isDir = await RNFetchBlob.fs.isDir(downloadDirectory);
                 if (!isDir) {
                     try {
-                        await RNFetchBlob.fs.mkdir(downloadPath);
+                        await RNFetchBlob.fs.mkdir(downloadDirectory);
                     } catch (error) {
                         this.showDownloadFailedAlert();
                         return;
                     }
                 }
 
-                options.path = `${downloadPath}/${data.id}-${file.caption}`;
+                options.path = downloadPath;
             } else {
                 options.fileCache = true;
                 options.appendExt = data.extension;
@@ -356,7 +357,7 @@ export default class Downloader extends PureComponent {
         } catch (error) {
             // cancellation throws so we need to catch
             if (downloadPath) {
-                RNFetchBlob.fs.unlink(`${downloadPath}/${data.id}-${file.caption}`);
+                RNFetchBlob.fs.unlink(downloadPath);
             }
             if (error.message !== 'cancelled' && this.mounted) {
                 this.showDownloadFailedAlert();
@@ -382,7 +383,7 @@ export default class Downloader extends PureComponent {
     };
 
     render() {
-        const {show, downloadPath} = this.props;
+        const {show, downloadDirectory, downloadPath} = this.props;
         if (!show && !this.state.force) {
             return null;
         }
@@ -392,7 +393,7 @@ export default class Downloader extends PureComponent {
         const containerHeight = show ? '100%' : 0;
 
         let component;
-        if (downloadPath && !started) {
+        if (downloadDirectory && downloadPath && !started) {
             component = this.renderStartDownload;
         } else {
             component = this.renderProgress;
