@@ -22,7 +22,6 @@
     "react-intl": "2.4.0",
     "react-native": "github:enahum/react-native#mm",
     "react-native-animatable": "1.2.4",
-    "react-native-animated-ellipsis": "sudheerDev/react-native-animated-ellipsis.git#326167b8e0fa3b6f0422c06be412bf177b725666",
     "react-native-bottom-sheet": "1.0.3",
     "react-native-button": "2.3.0",
     "react-native-circular-progress": "0.2.0",
