@@ -2524,7 +2524,7 @@
   "mobile.offlineIndicator.offline": "Cannot connect to the server",
   "mobile.open_dm.error": "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
   "mobile.open_gm.error": "We couldn't open a group message with those users. Please check your connection and try again.",
-  "mobile.open_unknown_channel.error": "We couldn't join the channel. Please reset the cache and try again.",
+  "mobile.open_unknown_channel.error": "Unable to join the channel. Please reset the cache and try again.",
   "mobile.post.cancel": "Cancel",
   "mobile.post.delete_question": "Are you sure you want to delete this post?",
   "mobile.post.delete_title": "Delete Post",
