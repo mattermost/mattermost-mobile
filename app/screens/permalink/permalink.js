@@ -245,8 +245,8 @@ export default class Permalink extends PureComponent {
         let focusChannelId = channelId;
 
         const post = await actions.getPostThread(focusedPostId, false);
-        if (this.mounted && post.error && (!postIds || !postIds.length)) {
-            if (isPermalink && post.error.message.toLowerCase() !== 'network request failed') {
+        if (post.error && (!postIds || !postIds.length)) {
+            if (this.mounted && isPermalink && post.error.message.toLowerCase() !== 'network request failed') {
                 this.setState({
                     error: formatMessage({
                         id: 'permalink.error.access',
@@ -257,7 +257,7 @@ export default class Permalink extends PureComponent {
                         defaultMessage: 'No Results Found',
                     }),
                 });
-            } else {
+            } else if (this.mounted) {
                 this.setState({error: post.error.message, retry: true});
             }
 
@@ -280,7 +280,9 @@ export default class Permalink extends PureComponent {
             actions.getPostsAfter(focusChannelId, focusedPostId, 0, 10),
         ]);
 
-        this.setState({loading: false});
+        if (this.mounted) {
+            this.setState({loading: false});
+        }
     };
 
     onNavigatorEvent = (event) => {
