@@ -185,11 +185,11 @@ class MoreDirectMessages extends PureComponent {
                 this.searchProfiles(term.toLowerCase());
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
-            this.cancelSearch();
+            this.clearSearch();
         }
     };
 
-    cancelSearch = () => {
+    clearSearch = () => {
         const {profiles} = this.props;
 
         let newProfiles;
@@ -254,8 +254,6 @@ class MoreDirectMessages extends PureComponent {
         } else {
             this.setState((prevState) => {
                 const {
-                    profiles,
-                    selectedCount,
                     selectedIds,
                 } = prevState;
 
@@ -267,24 +265,17 @@ class MoreDirectMessages extends PureComponent {
                 }
 
                 const newSelectedIds = Object.assign({}, selectedIds);
-
-                let newProfiles = profiles;
-                if (wasSelected) {
-                    Reflect.deleteProperty(newSelectedIds, id);
-                    if (selectedCount === 1) {
-                        newProfiles = this.sliceProfiles(this.props.profiles);
-                    }
-                } else {
+                if (!wasSelected) {
                     newSelectedIds[id] = true;
-                    newProfiles = this.removeCurrentUserFromProfiles(profiles);
                 }
 
                 return {
-                    profiles: newProfiles,
                     selectedIds: newSelectedIds,
                     selectedCount: Object.keys(newSelectedIds).length,
                 };
             });
+
+            this.clearSearch();
         }
     };
 
@@ -526,7 +517,7 @@ class MoreDirectMessages extends PureComponent {
                         titleCancelColor={theme.centerChannelColor}
                         onChangeText={this.onSearch}
                         onSearchButtonPress={this.onSearch}
-                        onCancelButtonPress={this.cancelSearch}
+                        onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
                         value={term}
                     />
