@@ -17,7 +17,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants/';
 import FormattedText from 'app/components/formatted_text';
-import {isDocument, isVideo} from 'app/utils/file';
+import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 
 const {DOCUMENTS_PATH, VIDEOS_PATH} = DeviceTypes;
@@ -89,7 +89,7 @@ export default class Downloader extends PureComponent {
             ToastAndroid.show(started, ToastAndroid.SHORT);
             onDownloadStart();
 
-            const dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${data.id}-${file.caption}`;
+            let dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${data.id}-${file.caption}`;
             let downloadFile = true;
 
             if (data.localPath) {
@@ -100,15 +100,16 @@ export default class Downloader extends PureComponent {
                     await RNFetchBlob.fs.cp(data.localPath, dest);
                 }
             } else if (isVideo(data)) {
-                const path = `${VIDEOS_PATH}/${data.id}-${file.caption}`;
+                const path = getLocalFilePathFromFile(VIDEOS_PATH, file);
                 const exists = await RNFetchBlob.fs.exists(path);
 
                 if (exists) {
                     downloadFile = false;
+                    dest = getLocalFilePathFromFile(RNFetchBlob.fs.dirs.DownloadDir, file);
                     await RNFetchBlob.fs.cp(path, dest);
                 }
             } else if (isDocument(data)) {
-                const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
+                const path = getLocalFilePathFromFile(DOCUMENTS_PATH, file);
                 const exists = await RNFetchBlob.fs.exists(path);
 
                 if (exists) {
