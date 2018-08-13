@@ -215,3 +215,11 @@ function populateMaps() {
         }
     });
 }
+
+export function getLocalFilePathFromFile(dir, file) {
+    if (dir && file && file.caption && file.data && file.data.id) {
+        return `${dir}/${file.data.id}-${decodeURIComponent(file.caption).replace(/\s+/g, '-')}`;
+    }
+
+    return null;
+}

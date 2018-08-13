@@ -13,6 +13,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import FormattedText from 'app/components/formatted_text';
 import mattermostBucket from 'app/mattermost_bucket';
+import {getLocalFilePathFromFile} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 
 import LocalConfig from 'assets/config';
@@ -23,12 +24,12 @@ export default class Downloader extends PureComponent {
     static propTypes = {
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
+        downloadPath: PropTypes.string,
         file: PropTypes.object.isRequired,
         onDownloadCancel: PropTypes.func,
         onDownloadSuccess: PropTypes.func,
         prompt: PropTypes.bool,
         show: PropTypes.bool,
-        downloadPath: PropTypes.string,
         saveToCameraRoll: PropTypes.bool,
     };
 
@@ -305,7 +306,7 @@ export default class Downloader extends PureComponent {
                     }
                 }
 
-                options.path = `${downloadPath}/${data.id}-${file.caption}`;
+                options.path = getLocalFilePathFromFile(downloadPath, file);
             } else {
                 options.fileCache = true;
                 options.appendExt = data.extension;
@@ -356,7 +357,7 @@ export default class Downloader extends PureComponent {
         } catch (error) {
             // cancellation throws so we need to catch
             if (downloadPath) {
-                RNFetchBlob.fs.unlink(`${downloadPath}/${data.id}-${file.caption}`);
+                RNFetchBlob.fs.unlink(getLocalFilePathFromFile(downloadPath, file));
             }
             if (error.message !== 'cancelled' && this.mounted) {
                 this.showDownloadFailedAlert();

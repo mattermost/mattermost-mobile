@@ -25,18 +25,16 @@ import Gallery from 'react-native-image-gallery';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {DeviceTypes} from 'app/constants/';
 import FileAttachmentDocument from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import {NavigationTypes, PermissionTypes} from 'app/constants';
-import {isDocument, isVideo} from 'app/utils/file';
+import ProgressiveImage from 'app/components/progressive_image';
+import {DeviceTypes, NavigationTypes, PermissionTypes} from 'app/constants';
+import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
 
 import Downloader from './downloader';
 import VideoPreview from './video_preview';
-
-import ProgressiveImage from 'app/components/progressive_image';
 
 const {VIDEOS_PATH} = DeviceTypes;
 const {View: AnimatedView} = Animated;
@@ -455,11 +453,10 @@ export default class ImagePreview extends PureComponent {
 
     saveVideoIOS = () => {
         const file = this.getCurrentFile();
-        const {data} = file;
 
         if (this.refs.downloader) {
             EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
-            this.refs.downloader.saveVideo(`${VIDEOS_PATH}/${data.id}-${file.caption}`);
+            this.refs.downloader.saveVideo(getLocalFilePathFromFile(VIDEOS_PATH, file));
         }
     };
 
@@ -540,7 +537,7 @@ export default class ImagePreview extends PureComponent {
         }
 
         if (isVideo(file.data)) {
-            const path = `${VIDEOS_PATH}/${file.data.id}-${file.caption}`;
+            const path = getLocalFilePathFromFile(VIDEOS_PATH, file);
             const exist = await RNFetchBlob.fs.exists(path);
             if (exist) {
                 items.push({

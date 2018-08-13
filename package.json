@@ -52,7 +52,7 @@
     "react-native-tableview": "2.1.0",
     "react-native-tooltip": "5.2.0",
     "react-native-vector-icons": "4.6.0",
-    "react-native-video": "2.0.0",
+    "react-native-video": "3.2.0",
     "react-native-youtube": "enahum/react-native-youtube#3f395b620ae4e05a3f1c6bdeef3a1158e78daadc",
     "react-navigation": "1.5.11",
     "react-redux": "5.0.7",
