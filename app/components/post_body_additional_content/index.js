@@ -42,7 +42,7 @@ function makeMapStateToProps() {
 
         return {
             ...getDimensions(state),
-            config,
+            googleDeveloperKey: config.GoogleDeveloperKey,
             link,
             openGraphData: getOpenGraphMetadataForUrl(state, link),
             showLinkPreviews: previewsEnabled && config.EnableLinkPreviews === 'true',

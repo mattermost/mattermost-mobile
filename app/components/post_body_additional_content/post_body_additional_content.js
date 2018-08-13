@@ -34,7 +34,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
     static propTypes = {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
-        config: PropTypes.object,
+        googleDeveloperKey: PropTypes.string,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         isReplyPost: PropTypes.bool,
@@ -169,7 +169,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
                 return (
                     <TouchableOpacity
-                        style={[styles.imageContainer, {height: imgHeight}]}
+                        style={[styles.imageContainer, {height: imgHeight || MAX_YOUTUBE_IMAGE_HEIGHT}]}
                         {...this.responder}
                         onPress={this.playYouTubeVideo}
                     >
@@ -358,11 +358,11 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 playVideo(videoId, startTime).
                 catch(this.playYouTubeVideoError);
         } else {
-            const {config} = this.props;
+            const {googleDeveloperKey} = this.props;
 
-            if (config.GoogleDeveloperKey) {
+            if (googleDeveloperKey) {
                 YouTubeStandaloneAndroid.playVideo({
-                    apiKey: config.GoogleDeveloperKey,
+                    apiKey: googleDeveloperKey,
                     videoId,
                     autoplay: true,
                     startTime,
@@ -404,12 +404,14 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const isOpenGraph = Boolean(openGraphData && openGraphData.description);
 
         if (((isImage && !isOpenGraph) || isYouTube) && !linkLoadError) {
+            // console.log('render generateToggleableEmbed', link)
             const embed = this.generateToggleableEmbed(isImage, isYouTube);
             if (embed) {
                 return embed;
             }
         }
 
+        // console.log('render generateStaticEmbed', link)
         return this.generateStaticEmbed(isYouTube, isImage && !linkLoadError);
     }
 }
