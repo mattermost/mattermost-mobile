@@ -13,6 +13,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import FormattedText from 'app/components/formatted_text';
 import mattermostBucket from 'app/mattermost_bucket';
+import {getLocalFilePathFromFile} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 
 import LocalConfig from 'assets/config';
@@ -23,7 +24,6 @@ export default class Downloader extends PureComponent {
     static propTypes = {
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        downloadDirectory: PropTypes.string,
         downloadPath: PropTypes.string,
         file: PropTypes.object.isRequired,
         onDownloadCancel: PropTypes.func,
@@ -277,7 +277,7 @@ export default class Downloader extends PureComponent {
     };
 
     startDownload = async () => {
-        const {file, downloadDirectory, downloadPath, prompt, saveToCameraRoll} = this.props;
+        const {file, downloadPath, prompt, saveToCameraRoll} = this.props;
         const {data} = file;
 
         try {
@@ -295,18 +295,18 @@ export default class Downloader extends PureComponent {
                 certificate,
             };
 
-            if (downloadDirectory && downloadPath && prompt) {
-                const isDir = await RNFetchBlob.fs.isDir(downloadDirectory);
+            if (downloadPath && prompt) {
+                const isDir = await RNFetchBlob.fs.isDir(downloadPath);
                 if (!isDir) {
                     try {
-                        await RNFetchBlob.fs.mkdir(downloadDirectory);
+                        await RNFetchBlob.fs.mkdir(downloadPath);
                     } catch (error) {
                         this.showDownloadFailedAlert();
                         return;
                     }
                 }
 
-                options.path = downloadPath;
+                options.path = getLocalFilePathFromFile(downloadPath, file);
             } else {
                 options.fileCache = true;
                 options.appendExt = data.extension;
@@ -357,7 +357,7 @@ export default class Downloader extends PureComponent {
         } catch (error) {
             // cancellation throws so we need to catch
             if (downloadPath) {
-                RNFetchBlob.fs.unlink(downloadPath);
+                RNFetchBlob.fs.unlink(getLocalFilePathFromFile(downloadPath, file));
             }
             if (error.message !== 'cancelled' && this.mounted) {
                 this.showDownloadFailedAlert();
@@ -383,7 +383,7 @@ export default class Downloader extends PureComponent {
     };
 
     render() {
-        const {show, downloadDirectory, downloadPath} = this.props;
+        const {show, downloadPath} = this.props;
         if (!show && !this.state.force) {
             return null;
         }
@@ -393,7 +393,7 @@ export default class Downloader extends PureComponent {
         const containerHeight = show ? '100%' : 0;
 
         let component;
-        if (downloadDirectory && downloadPath && !started) {
+        if (downloadPath && !started) {
             component = this.renderStartDownload;
         } else {
             component = this.renderProgress;

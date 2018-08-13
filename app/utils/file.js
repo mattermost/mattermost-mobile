@@ -216,6 +216,10 @@ function populateMaps() {
     });
 }
 
-export function getVideoPathFromFile(file) {
-    return `${VIDEOS_PATH}/${file.data.id}-${decodeURIComponent(file.caption).replace(/\s+/g, '-')}`;
+export function getLocalFilePathFromFile(dir, file) {
+    if (dir && file && file.caption && file.data && file.data.id) {
+        return `${dir}/${file.data.id}-${decodeURIComponent(file.caption).replace(/\s+/g, '-')}`;
+    }
+
+    return null;
 }
