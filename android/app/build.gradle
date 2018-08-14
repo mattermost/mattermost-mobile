@@ -113,7 +113,7 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 122
+        versionCode 123
         versionName "1.9.3"
         ndk {
             abiFilters "armeabi-v7a", "x86"
