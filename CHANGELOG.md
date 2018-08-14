@@ -2,7 +2,7 @@
 
 ## v1.11.0 Release
 - Release Date: August 16, 2018
-- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
 
 ### Highlights
 
@@ -14,11 +14,17 @@
 
 ### Improvements
 - Added profile pop-up to combined system messages.
-- Updated the home screen icon for Android.
+- Force re-entering SSO auth credentials after logout.
+- Added consecutive posts by the same user.
+- Added a loading indicator when user info is still loading on the left hand side.
 
 ### Bug Fixes
 - Fixed an issue where Android showed the wrong time when the timezone setting was disabled.
 - Fixed an issue on Android where the app did not get sent to the background when pressing the hardware back button in the channel screen.
+- Fixed an issue with video playback when the filename had spaces.
+- Fixed an issue where the app crashed when playing YouTube videos.
+- Fixed an issue with session expiration notification.
+- Fixed an issue with sharing files from Google Drive in Android Share Extension.
 - Fixed an issue on Android where pressing a push notification to reply to it sometimes went to the wrong channel.
 - Fixed an issue where the previous server URL was present on the input textbox before changing the screen to Login.
 - Fixed an issue where user menu was not translated after App was translated.
