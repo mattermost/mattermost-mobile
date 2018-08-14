@@ -17,6 +17,7 @@
 - Updated the home screen icon for Android.
 
 ### Bug Fixes
+- Fixed an issue where Android showed the wrong time when the timezone setting was disabled.
 - Fixed an issue on Android where the app did not get sent to the background when pressing the hardware back button in the channel screen.
 - Fixed an issue on Android where pressing a push notification to reply to it sometimes went to the wrong channel.
 - Fixed an issue where the previous server URL was present on the input textbox before changing the screen to Login.
