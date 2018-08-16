@@ -33,3 +33,7 @@ export const getThreadDraft = createSelector(
         return drafts[rootId] || emptyDraft;
     }
 );
+
+export function getProfileImageUri(state) {
+    return state.views.user.profileImageUri;
+}

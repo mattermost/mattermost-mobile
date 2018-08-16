@@ -22,6 +22,7 @@ const STATUS_BUFFER = Platform.select({
 
 export default class ProfilePicture extends PureComponent {
     static propTypes = {
+        isCurrentUser: PropTypes.bool.isRequired,
         size: PropTypes.number,
         statusSize: PropTypes.number,
         user: PropTypes.object,
@@ -29,9 +30,11 @@ export default class ProfilePicture extends PureComponent {
         status: PropTypes.string,
         edit: PropTypes.bool,
         imageUri: PropTypes.string,
+        profileImageUri: PropTypes.string,
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getStatusForId: PropTypes.func.isRequired,
+            setProfileImageUri: PropTypes.func.isRequired,
         }),
     };
 
@@ -47,12 +50,14 @@ export default class ProfilePicture extends PureComponent {
     };
 
     componentWillMount() {
-        const {edit, imageUri, user} = this.props;
+        const {edit, imageUri, profileImageUri, user} = this.props;
 
-        if (edit && imageUri) {
+        if (profileImageUri) {
+            this.setImageURL(profileImageUri);
+        } else if (edit && imageUri) {
             this.setImageURL(imageUri);
         } else if (user) {
-            ImageCacheManager.cache('', Client4.getProfilePictureUrl(user.id, user.last_picture_update), this.setImageURL);
+            ImageCacheManager.cache('', Client4.getProfilePictureUrl(user.id, user.last_picture_update), this.setImageURL).then(this.clearProfileImageUri).catch(emptyFunction);
         }
     }
 
@@ -66,22 +71,21 @@ export default class ProfilePicture extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.mounted) {
+            if (nextProps.edit && nextProps.imageUri && nextProps.imageUri !== this.props.imageUri) {
+                this.setImageURL(nextProps.imageUri);
+                return;
+            }
+
+            if (nextProps.profileImageUri !== '' && nextProps.profileImageUri !== this.props.profileImageUri) {
+                this.setImageURL(nextProps.profileImageUri);
+            }
+
             const url = this.props.user ? Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update) : null;
             const nextUrl = nextProps.user ? Client4.getProfilePictureUrl(nextProps.user.id, nextProps.user.last_picture_update) : null;
 
-            if (url !== nextUrl) {
-                this.setState({
-                    pictureUrl: null,
-                });
-
-                if (nextUrl) {
-                    // empty function is so that promise unhandled is not triggered in dev mode
-                    ImageCacheManager.cache('', nextUrl, this.setImageURL).then(emptyFunction).catch(emptyFunction);
-                }
-            }
-
-            if (nextProps.edit && nextProps.imageUri !== this.props.imageUri) {
-                this.setImageURL(nextProps.imageUri);
+            if (nextUrl && url !== nextUrl) {
+                // empty function is so that promise unhandled is not triggered in dev mode
+                ImageCacheManager.cache('', nextUrl, this.setImageURL).then(this.clearProfileImageUri).catch(emptyFunction);
             }
         }
     }
@@ -95,6 +99,12 @@ export default class ProfilePicture extends PureComponent {
             this.setState({pictureUrl});
         }
     };
+
+    clearProfileImageUri = () => {
+        if (this.props.isCurrentUser && this.props.profileImageUri !== '') {
+            this.props.actions.setProfileImageUri('');
+        }
+    }
 
     render() {
         const {edit, showStatus, theme} = this.props;
@@ -139,13 +149,18 @@ export default class ProfilePicture extends PureComponent {
             };
         }
 
+        const otherImageProps = {};
+        if (!this.props.edit) {
+            otherImageProps.defaultSource = placeholder;
+        }
+
         return (
             <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
                 <Image
                     key={pictureUrl}
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={source}
-                    defaultSource={placeholder}
+                    {...otherImageProps}
                 />
                 {(showStatus || edit) &&
                     <View style={[style.statusWrapper, statusStyle, {borderRadius: this.props.statusSize / 2}]}>
