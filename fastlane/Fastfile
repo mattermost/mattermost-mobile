@@ -63,7 +63,7 @@ platform :ios do
     unless ENV['SEGMENT_API_KEY'].nil? || ENV['SEGMENT_API_KEY'].empty?
       find_replace_string(
           path_to_file: './dist/assets/config.json',
-          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
+          old_string: '"SegmentApiKey": "oPPT2MA24VYZTBGDyXtUDa7u50lkPIE4"',
           new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
       )
     end
