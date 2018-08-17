@@ -87,7 +87,9 @@ const onPushNotification = async (deviceNotification) => {
         } else if (userInteraction && !notification.localNotification) {
             EventEmitter.emit('close_channel_drawer');
             if (getState().views.root.hydrationComplete) {
-                loadFromNotification(notification);
+                setTimeout(() => {
+                    loadFromNotification(notification);
+                }, 0);
             } else {
                 const waitForHydration = () => {
                     if (getState().views.root.hydrationComplete && !stopLoadingNotification) {
