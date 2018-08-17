@@ -1,5 +1,40 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.11.0 Release
+- Release Date: August 16, 2018
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+#### Searching Archived Channels
+- Added ability to search for archived channels. Requires Mattermost server v5.2 or later.
+
+#### Deep Linking
+- Added the ability for custom builds to open Mattermost links directly in the app rather than the default mobile browser. Learn more in our [documentation](https://docs.mattermost.com/mobile/mobile-faq.html#how-do-i-configure-deep-linking)
+
+### Improvements
+- Added profile pop-up to combined system messages.
+- Force re-entering SSO auth credentials after logout.
+- Added consecutive posts by the same user.
+- Added a loading indicator when user info is still loading in the left-hand side.
+
+### Bug Fixes
+- Fixed an issue where Android devices showed an incorrect timestamp.
+- Fixed an issue on Android where the app did not get sent to the background when pressing the hardware back button in the channel screen.
+- Fixed an issue with video playback when the filename had spaces.
+- Fixed an issue where the app crashed when playing YouTube videos.
+- Fixed an issue with session expiration notification.
+- Fixed an issue with sharing files from Google Drive in Android Share Extension.
+- Fixed an issue on Android where replying to a push notification sometimes went to the wrong channel.
+- Fixed an issue where the previous server URL was present on the input textbox before changing the screen to Login.
+- Fixed an issue where user menu was not translated correctly.
+- Fixed an issue where some field lengths in Account Settings didn't match the desktop app.
+- Fixed an issue where long URLs for embedded images in message attachments got cut off and didn't render.
+- Fixed an issue where link preview images were not cropped properly.
+- Fixed an issue where long usernames didn't wrap properly in the Account Settings menu.
+- Fixed an issue where DMs would not open if users were using "Jump To".
+- Fixed an issue where no message was displayed after removing a user from a channel with join/leave messages disabled.
+
 ## v1.10.0 Release
 - Release Date: July 16, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
@@ -26,7 +61,6 @@
  - Allow connecting to mattermost instances hosted at subpaths.
  - Added support for starting YouTube videos at a given time.
  - Added support for keeping messages if slash command fails.
-
 
 ### Bug Fixes
 
