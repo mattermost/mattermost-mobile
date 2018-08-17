@@ -215,7 +215,7 @@ unsigned-android: pre-run check-style prepare-android-build
     fi
 	@echo "Building unsigned Android app"
 	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned
-	@mv android/app/build/outputs/apk/app-unsigned-unsigned.apk ./Mattermost-unsigned.apk
+	@mv android/app/build/outputs/apk/unsigned/app-unsigned-unsigned.apk ./Mattermost-unsigned.apk
 	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
 
 test: | pre-run check-style ## Runs tests
