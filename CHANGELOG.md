@@ -10,7 +10,7 @@
 - Added ability to search for archived channels. Requires Mattermost server v5.2 or later.
 
 #### Deep Linking
-- Added the ability for custom builds to open Mattermost links directly in the app rather than the default mobile browser. Learn more in our [documentation](https://docs.mattermost.com/mobile/mobile-faq.html#How-do-I-configure-Deep-Linking)
+- Added the ability for custom builds to open Mattermost links directly in the app rather than the default mobile browser. Learn more in our [documentation](https://docs.mattermost.com/mobile/mobile-faq.html#how-do-i-configure-deep-linking)
 
 ### Improvements
 - Added profile pop-up to combined system messages.
