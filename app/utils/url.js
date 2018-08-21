@@ -58,7 +58,8 @@ export async function getShortenedImageLink(link) {
             reject('');
         };
 
-        xhr.open('GET', link);
+        xhr.open('HEAD', link);
+        xhr.setRequestHeader('Accept', 'image/*');
         xhr.send();
     }));
 }
