@@ -228,15 +228,13 @@ export const filterPrivateChannels = createSelector(
 export const getMatchTermForDateMention = (() => {
     let lastMatchTerm = null;
     let lastValue;
-    let lastIsSearch;
-    return (value, isSearch) => {
-        if (value !== lastValue || isSearch !== lastIsSearch) {
-            const regex = isSearch ? Autocomplete.DATE_MENTION_SEARCH_REGEX : Autocomplete.DATE_MENTION_SEARCH_REGEX;
+    return (value) => {
+        if (value !== lastValue) {
+            const regex = Autocomplete.DATE_MENTION_SEARCH_REGEX;
             const match = value.match(regex);
             lastValue = value;
-            lastIsSearch = isSearch;
             if (match) {
-                lastMatchTerm = isSearch ? match[1] : match[2];
+                lastMatchTerm = match[1];
             } else {
                 lastMatchTerm = null;
             }

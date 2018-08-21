@@ -3,13 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-
-import {RequestStatus} from 'mattermost-redux/constants';
+import {CalendarList} from 'react-native-calendars';
 
 import {DATE_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import { CalendarList } from 'react-native-calendars';
 
 export default class DateSuggestion extends PureComponent {
     static propTypes = {
@@ -21,7 +17,6 @@ export default class DateSuggestion extends PureComponent {
         matchTerm: PropTypes.string,
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
-        requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
     };
@@ -35,12 +30,13 @@ export default class DateSuggestion extends PureComponent {
         super(props);
 
         this.state = {
+            mentionComplete: false,
             sections: [],
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        const {isSearch, matchTerm, requestStatus} = nextProps;
+        const {matchTerm} = nextProps;
 
         if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
             // if the term changes but is null or the mention has been completed we render this component as null
@@ -50,20 +46,6 @@ export default class DateSuggestion extends PureComponent {
             });
 
             this.props.onResultCountChange(0);
-
-            return;
-        } else if (matchTerm === null) {
-            // if the terms did not change but is null then we don't need to do anything
-            return;
-        }
-
-        if (requestStatus !== RequestStatus.STARTED) {
-            // if the request is complete and the term is not null we show the autocomplete
-            this.setState({
-                isDateFilter: 1,
-            });
-
-            this.props.onResultCountChange(1);
         }
     }
 
@@ -74,12 +56,12 @@ export default class DateSuggestion extends PureComponent {
 
         let completedDraft;
         if (isSearch) {
-            const dateFilter = '';
-            if(mentionPart.includes('on:')) {
+            let dateFilter = '';
+            if (mentionPart.includes('on:')) {
                 dateFilter = 'on:';
-            } else if(mentionPart.includes('before:')) {
+            } else if (mentionPart.includes('before:')) {
                 dateFilter = 'before:';
-            } else if(mentionPart.includes('after:')) {
+            } else if (mentionPart.includes('after:')) {
                 dateFilter = 'after:';
             }
 
@@ -91,41 +73,33 @@ export default class DateSuggestion extends PureComponent {
         }
 
         onChangeText(completedDraft, true);
+        this.props.onResultCountChange(1);
         this.setState({mentionComplete: true});
     };
 
     render() {
-        const {isSearch, listHeight, theme} = this.props;
-        const {mentionComplete, isDateFilter} = this.state;
+        const {mentionComplete} = this.state;
 
-        if (isDateFilter !== 1 || mentionComplete) {
+        if (this.props.matchTerm === null || mentionComplete) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.
             return null;
         }
 
-        const style = getStyleFromTheme(theme);
-
         return (
             <CalendarList
-                pastScrollRange={36}
-                futureScrollRange={1}
-                scrollEnabled={true}
+                style={{height: 1700}}
+                current={(new Date()).toDateString()}
+                pastScrollRange={24}
+                futureScrollRange={0}
+                scrollingEnabled={true}
+                pagingEnabled={true}
+                hideArrows={true}
+                horizontal={true}
                 showScrollIndicator={true}
                 onDayPress={this.completeMention}
                 showWeekNumbers={true}
-            />                                
+            />
         );
     }
 }
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        listView: {
-            backgroundColor: theme.centerChannelBg,
-        },
-        search: {
-            minHeight: 125,
-        },
-    };
-});

@@ -17,7 +17,6 @@ import ChannelMention from './channel_mention';
 import EmojiSuggestion from './emoji_suggestion';
 import SlashSuggestion from './slash_suggestion';
 import DateSuggestion from './date_suggestion';
-import { CalendarList } from 'react-native-calendars';
 
 export default class Autocomplete extends PureComponent {
     static propTypes = {
@@ -40,7 +39,7 @@ export default class Autocomplete extends PureComponent {
         channelMentionCount: 0,
         emojiCount: 0,
         commandCount: 0,
-        isDateFilter: false,
+        dateCount: 0,
         keyboardOffset: 0,
     };
 
@@ -60,8 +59,8 @@ export default class Autocomplete extends PureComponent {
         this.setState({commandCount});
     };
 
-    handleIsDateFilterChange = (isDateFilter) => {
-        this.setState({isDateFilter});
+    handleIsDateFilterChange = (dateCount) => {
+        this.setState({dateCount});
     };
 
     componentWillMount() {
@@ -104,8 +103,8 @@ export default class Autocomplete extends PureComponent {
         }
 
         // We always need to render something, but we only draw the borders when we have results to show
-        const {atMentionCount, channelMentionCount, emojiCount, commandCount} = this.state;
-        if (atMentionCount + channelMentionCount + emojiCount + commandCount > 0) {
+        const {atMentionCount, channelMentionCount, emojiCount, commandCount, dateCount} = this.state;
+        if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount > 0) {
             if (this.props.isSearch) {
                 wrapperStyle.push(style.bordersSearch);
             } else {
@@ -135,10 +134,12 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleCommandCountChange}
                         {...this.props}
                     />
+                    {this.props.isSearch &&
                     <DateSuggestion
                         onResultCountChange={this.handleIsDateFilterChange}
                         {...this.props}
                     />
+                    }
                 </View>
             </View>
         );
