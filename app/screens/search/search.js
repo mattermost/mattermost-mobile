@@ -529,6 +529,27 @@ export default class Search extends PureComponent {
                     id: 'mobile.search.in_modifier_description',
                     defaultMessage: 'to find posts in specific channels',
                 }),
+            }, {
+                value: 'on:',
+                modifier: `on:${intl.formatMessage({id: 'mobile.search.on_modifier_title', defaultMessage: 'YYYY-MM-DD'})}`,
+                description: intl.formatMessage({
+                    id: 'mobile.search.on_modifier_description',
+                    defaultMessage: 'to find posts on a specific date',
+                }),
+            }, {
+                value: 'after:',
+                modifier: `after:${intl.formatMessage({id: 'mobile.search.after_modifier_title', defaultMessage: 'YYYY-MM-DD'})}`,
+                description: intl.formatMessage({
+                    id: 'mobile.search.after_modifier_description',
+                    defaultMessage: 'to find posts after a specific date',
+                }),
+            }, {
+                value: 'before:',
+                modifier: `before:${intl.formatMessage({id: 'mobile.search.before_modifier_title', defaultMessage: 'YYYY-MM-DD'})}`,
+                description: intl.formatMessage({
+                    id: 'mobile.search.before_modifier_description',
+                    defaultMessage: 'to find posts before a specific date',
+                }),                                                
             }],
             key: 'modifiers',
             title: '',

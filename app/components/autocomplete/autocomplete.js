@@ -16,6 +16,8 @@ import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
 import EmojiSuggestion from './emoji_suggestion';
 import SlashSuggestion from './slash_suggestion';
+import DateSuggestion from './date_suggestion';
+import { CalendarList } from 'react-native-calendars';
 
 export default class Autocomplete extends PureComponent {
     static propTypes = {
@@ -38,6 +40,7 @@ export default class Autocomplete extends PureComponent {
         channelMentionCount: 0,
         emojiCount: 0,
         commandCount: 0,
+        isDateFilter: false,
         keyboardOffset: 0,
     };
 
@@ -55,6 +58,10 @@ export default class Autocomplete extends PureComponent {
 
     handleCommandCountChange = (commandCount) => {
         this.setState({commandCount});
+    };
+
+    handleIsDateFilterChange = (isDateFilter) => {
+        this.setState({isDateFilter});
     };
 
     componentWillMount() {
@@ -126,6 +133,10 @@ export default class Autocomplete extends PureComponent {
                     />
                     <SlashSuggestion
                         onResultCountChange={this.handleCommandCountChange}
+                        {...this.props}
+                    />
+                    <DateSuggestion
+                        onResultCountChange={this.handleIsDateFilterChange}
                         {...this.props}
                     />
                 </View>

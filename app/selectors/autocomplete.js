@@ -224,3 +224,23 @@ export const filterPrivateChannels = createSelector(
         return channels.map((c) => c.id);
     }
 );
+
+export const getMatchTermForDateMention = (() => {
+    let lastMatchTerm = null;
+    let lastValue;
+    let lastIsSearch;
+    return (value, isSearch) => {
+        if (value !== lastValue || isSearch !== lastIsSearch) {
+            const regex = isSearch ? Autocomplete.DATE_MENTION_SEARCH_REGEX : Autocomplete.DATE_MENTION_SEARCH_REGEX;
+            const match = value.match(regex);
+            lastValue = value;
+            lastIsSearch = isSearch;
+            if (match) {
+                lastMatchTerm = isSearch ? match[1] : match[2];
+            } else {
+                lastMatchTerm = null;
+            }
+        }
+        return lastMatchTerm;
+    };
+})();
