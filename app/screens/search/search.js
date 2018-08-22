@@ -549,7 +549,7 @@ export default class Search extends PureComponent {
                 description: intl.formatMessage({
                     id: 'mobile.search.before_modifier_description',
                     defaultMessage: 'to find posts before a specific date',
-                }),                                                
+                }),
             }],
             key: 'modifiers',
             title: '',
