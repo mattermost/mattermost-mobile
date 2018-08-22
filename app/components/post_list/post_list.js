@@ -10,7 +10,7 @@ import {
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {ListTypes} from 'app/components/action_types';
+import {ListTypes} from 'app/constants';
 import Post from 'app/components/post';
 import {START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
@@ -28,6 +28,7 @@ const PostWithLayout = withLayout(Post);
 const INITIAL_BATCH_TO_RENDER = 15;
 const NEW_MESSAGES_HEIGHT = 28;
 const DATE_HEADER_HEIGHT = 28;
+const SCROLL_UP_MULTIPLIER = 3.5;
 
 export default class PostList extends PureComponent {
     static propTypes = {
@@ -77,7 +78,6 @@ export default class PostList extends PureComponent {
         this.itemMeasurements = {};
 
         this.contentOffsetY = 0;
-        this.pageOffsetY = 0;
         this.contentHeight = 0;
 
         this.state = {
@@ -364,23 +364,22 @@ export default class PostList extends PureComponent {
     };
 
     onScroll = (event) => {
-        const contentOffset = event.nativeEvent.contentOffset.y;
-        if (contentOffset > 0) {
-            this.pageOffsetY = contentOffset;
+        const pageOffsetY = event.nativeEvent.contentOffset.y;
+        if (pageOffsetY > 0) {
             this.contentHeight = event.nativeEvent.contentSize.height;
-            const direction = (this.contentOffsetY < contentOffset) ?
+            const direction = (this.contentOffsetY < pageOffsetY) ?
                 ListTypes.VISIBILITY_SCROLL_UP :
                 ListTypes.VISIBILITY_SCROLL_DOWN;
-            this.contentOffsetY = contentOffset;
+            this.contentOffsetY = pageOffsetY;
 
             if (
                 direction === ListTypes.VISIBILITY_SCROLL_UP &&
-                (this.contentHeight - this.pageOffsetY) < (this.state.postListHeight * 3.5)
+                (this.contentHeight - pageOffsetY) < (this.state.postListHeight * SCROLL_UP_MULTIPLIER)
             ) {
                 this.props.onLoadMoreUp();
             } else if (
                 direction === ListTypes.VISIBILITY_SCROLL_DOWN &&
-                this.pageOffsetY < this.state.postListHeight
+                pageOffsetY < this.state.postListHeight
             ) {
                 this.props.onLoadMoreDown();
             }
