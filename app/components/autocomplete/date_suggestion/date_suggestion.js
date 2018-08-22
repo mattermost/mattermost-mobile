@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
+import { Keyboard } from 'react-native';
 import PropTypes from 'prop-types';
 import {CalendarList} from 'react-native-calendars';
 
@@ -85,6 +86,8 @@ export default class DateSuggestion extends PureComponent {
             // other components are not blocked.
             return null;
         }
+
+        Keyboard.dismiss();
 
         return (
             <CalendarList
