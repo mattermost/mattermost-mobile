@@ -71,6 +71,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             height: 28,
             marginVertical: 10,
+            overflow: 'hidden',
         },
         text: {
             fontSize: 14,

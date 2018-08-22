@@ -18,7 +18,8 @@ function makeMapStateToProps() {
     const preparePostIds = makePreparePostIdsForPostList();
     return (state, ownProps) => {
         const postIds = preparePostIds(state, ownProps);
-        const measureCellLayout = postIds.indexOf(START_OF_NEW_MESSAGES) > -1 || Boolean(ownProps.highlightPostId);
+        const unreadIndex = postIds.indexOf(START_OF_NEW_MESSAGES);
+        const measureCellLayout = unreadIndex > -1 || Boolean(ownProps.highlightPostId);
 
         const {deviceHeight} = state.device.dimension;
 
