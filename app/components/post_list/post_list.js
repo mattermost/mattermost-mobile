@@ -5,13 +5,12 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
-    InteractionManager,
-    Platform,
     StyleSheet,
 } from 'react-native';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import {ListTypes} from 'app/constants';
 import Post from 'app/components/post';
 import {START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
@@ -29,6 +28,7 @@ const PostWithLayout = withLayout(Post);
 const INITIAL_BATCH_TO_RENDER = 15;
 const NEW_MESSAGES_HEIGHT = 28;
 const DATE_HEADER_HEIGHT = 28;
+const SCROLL_UP_MULTIPLIER = 3.5;
 
 export default class PostList extends PureComponent {
     static propTypes = {
@@ -50,7 +50,8 @@ export default class PostList extends PureComponent {
         measureCellLayout: PropTypes.bool,
         navigator: PropTypes.object,
         onContentSizeChange: PropTypes.func,
-        onEndReached: PropTypes.func,
+        onLoadMoreDown: PropTypes.func,
+        onLoadMoreUp: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
@@ -64,7 +65,9 @@ export default class PostList extends PureComponent {
     };
 
     static defaultProps = {
-        loadMore: () => true,
+        onLoadMoreDown: () => true,
+        onLoadMoreUp: () => true,
+        onContentSizeChange: () => true,
     };
 
     constructor(props) {
@@ -74,9 +77,13 @@ export default class PostList extends PureComponent {
         this.makeExtraData = makeExtraData();
         this.itemMeasurements = {};
 
+        this.contentOffsetY = 0;
+        this.contentHeight = 0;
+
         this.state = {
             managedConfig: {},
             scrollToMessage: false,
+            postListHeight: 0,
         };
     }
 
@@ -92,6 +99,7 @@ export default class PostList extends PureComponent {
     componentWillReceiveProps(nextProps) {
         if (nextProps.postIds !== this.props.postIds) {
             this.newMessagesIndex = -1;
+            this.isLoadingMoreUp = false;
         }
         if (this.props.channelId !== nextProps.channelId) {
             this.itemMeasurements = {};
@@ -174,11 +182,10 @@ export default class PostList extends PureComponent {
     };
 
     scrollToBottomOffset = () => {
-        InteractionManager.runAfterInteractions(() => {
-            if (this.refs.list) {
-                this.refs.list.scrollToOffset({offset: 0, animated: false});
-            }
-        });
+        if (this.refs.list) {
+            this.refs.list.scrollToOffset({offset: 0, animated: false});
+        }
+        this.setState({scrollToMessage: false});
     };
 
     getMeasurementOffset = (index) => {
@@ -200,6 +207,7 @@ export default class PostList extends PureComponent {
 
     scrollListToMessageOffset = () => {
         const index = this.moreNewMessages ? this.props.postIds.length - 1 : this.newMessagesIndex;
+
         if (index !== -1) {
             let offset = this.getMeasurementOffset(index) + this.itemMeasurements[index];
             const windowHeight = this.state.postListHeight;
@@ -210,21 +218,18 @@ export default class PostList extends PureComponent {
 
             const upperBound = offset + windowHeight;
             offset = offset - ((upperBound - offset) / 2);
-
-            InteractionManager.runAfterInteractions(() => {
-                if (this.refs.list) {
-                    if (!this.moreNewMessages) {
-                        this.newMessageScrolledTo = true;
-                    }
-
-                    this.refs.list.scrollToOffset({offset, animated: true});
-                    this.newMessagesIndex = -1;
-                    this.moreNewMessages = false;
-                    this.setState({
-                        scrollToMessage: false,
-                    });
+            if (this.refs.list) {
+                if (!this.moreNewMessages) {
+                    this.newMessageScrolledTo = true;
                 }
-            });
+
+                this.refs.list.scrollToOffset({offset, animated: false});
+                this.newMessagesIndex = -1;
+                this.moreNewMessages = false;
+                this.setState({
+                    scrollToMessage: false,
+                });
+            }
         }
     };
 
@@ -345,18 +350,48 @@ export default class PostList extends PureComponent {
         );
     };
 
+    onContentSizeChange = (contentWidth, contentHeight) => {
+        this.contentHeight = contentHeight;
+        this.props.onContentSizeChange(this.state.postListHeight, contentHeight);
+
+        if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
+            // We still have less than 1 screen of posts loaded with more to get, so load more
+            this.props.onLoadMoreUp();
+        }
+    };
+
     onLayout = (event) => {
         const {height} = event.nativeEvent.layout;
-        this.setState({
-            postListHeight: height,
-        });
+        this.setState({postListHeight: height});
+    };
+
+    onScroll = (event) => {
+        const pageOffsetY = event.nativeEvent.contentOffset.y;
+        if (pageOffsetY > 0) {
+            this.contentHeight = event.nativeEvent.contentSize.height;
+            const direction = (this.contentOffsetY < pageOffsetY) ?
+                ListTypes.VISIBILITY_SCROLL_UP :
+                ListTypes.VISIBILITY_SCROLL_DOWN;
+            this.contentOffsetY = pageOffsetY;
+
+            if (
+                direction === ListTypes.VISIBILITY_SCROLL_UP &&
+                (this.contentHeight - pageOffsetY) < (this.state.postListHeight * SCROLL_UP_MULTIPLIER)
+            ) {
+                this.props.onLoadMoreUp();
+            } else if (
+                direction === ListTypes.VISIBILITY_SCROLL_DOWN &&
+                pageOffsetY < this.state.postListHeight
+            ) {
+                this.props.onLoadMoreDown();
+            }
+        }
     };
 
     render() {
         const {
             channelId,
             highlightPostId,
-            onEndReached,
             postIds,
         } = this.props;
 
@@ -370,22 +405,22 @@ export default class PostList extends PureComponent {
 
         return (
             <FlatList
-                onContentSizeChange={this.props.onContentSizeChange}
+                onContentSizeChange={this.onContentSizeChange}
                 onLayout={this.onLayout}
                 ref='list'
                 data={postIds}
                 extraData={this.makeExtraData(channelId, highlightPostId, this.props.extraData)}
-                initialNumToRender={10}
+                initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 inverted={true}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.props.renderFooter}
-                onEndReached={onEndReached}
-                onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
                 removeClippedSubviews={true}
                 {...refreshControl}
                 renderItem={this.renderItem}
                 contentContainerStyle={styles.postListContent}
+                onScroll={this.onScroll}
+                scrollEventThrottle={60}
             />
         );
     }
