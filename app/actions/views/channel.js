@@ -311,10 +311,6 @@ export function handleSelectChannel(channelId) {
                 data: channelId,
             },
             {
-                type: ChannelTypes.SELECT_CHANNEL,
-                data: channelId,
-            },
-            {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
                 data: channelId,
             },

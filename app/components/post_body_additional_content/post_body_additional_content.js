@@ -196,13 +196,13 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 return (
                     <TouchableWithoutFeedback
                         onPress={this.handlePreviewImage}
-                        style={[styles.imageContainer, {height: imgHeight}]}
+                        style={[styles.imageContainer, {height: imgHeight || MAX_YOUTUBE_IMAGE_HEIGHT}]}
                         {...this.responder}
                     >
                         <View ref='item'>
                             <ProgressiveImage
                                 ref='image'
-                                style={[styles.image, {width, height: imgHeight}]}
+                                style={[styles.image, {width, height: imgHeight || MAX_YOUTUBE_IMAGE_HEIGHT}]}
                                 defaultSource={{uri}}
                                 resizeMode='contain'
                                 onError={this.handleLinkLoadError}
@@ -404,14 +404,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const isOpenGraph = Boolean(openGraphData && openGraphData.description);
 
         if (((isImage && !isOpenGraph) || isYouTube) && !linkLoadError) {
-            // console.log('render generateToggleableEmbed', link)
             const embed = this.generateToggleableEmbed(isImage, isYouTube);
             if (embed) {
                 return embed;
             }
         }
 
-        // console.log('render generateStaticEmbed', link)
         return this.generateStaticEmbed(isYouTube, isImage && !linkLoadError);
     }
 }
