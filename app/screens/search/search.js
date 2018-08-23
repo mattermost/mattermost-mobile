@@ -531,21 +531,21 @@ export default class Search extends PureComponent {
                 }),
             }, {
                 value: 'on:',
-                modifier: `on: YYYY-MM-DD`,
+                modifier: 'on: YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.on_modifier_description',
                     defaultMessage: 'to find posts on a specific date',
                 }),
             }, {
                 value: 'after:',
-                modifier: `after: YYYY-MM-DD`,
+                modifier: 'after: YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.after_modifier_description',
                     defaultMessage: 'to find posts after a specific date',
                 }),
             }, {
                 value: 'before:',
-                modifier: `before: YYYY-MM-DD`,
+                modifier: 'before: YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.before_modifier_description',
                     defaultMessage: 'to find posts before a specific date',
