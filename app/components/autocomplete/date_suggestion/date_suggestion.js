@@ -10,10 +10,8 @@ import {DATE_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 
 export default class DateSuggestion extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({}),
         currentTeamId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
-        isSearch: PropTypes.bool,
         listHeight: PropTypes.number,
         matchTerm: PropTypes.string,
         onChangeText: PropTypes.func.isRequired,
@@ -23,7 +21,6 @@ export default class DateSuggestion extends PureComponent {
     };
 
     static defaultProps = {
-        isSearch: false,
         value: '',
     };
 
@@ -52,22 +49,20 @@ export default class DateSuggestion extends PureComponent {
 
     completeMention = (day) => {
         const mention = day.dateString;
-        const {cursorPosition, isSearch, onChangeText, value} = this.props;
+        const {cursorPosition, onChangeText, value} = this.props;
         const mentionPart = value.substring(0, cursorPosition);
 
-        let completedDraft;
-        if (isSearch) {
-            let dateFilter = '';
-            if (mentionPart.includes('on:')) {
-                dateFilter = 'on:';
-            } else if (mentionPart.includes('before:')) {
-                dateFilter = 'before:';
-            } else if (mentionPart.includes('after:')) {
-                dateFilter = 'after:';
-            }
-
-            completedDraft = mentionPart.replace(DATE_MENTION_SEARCH_REGEX, `${dateFilter} ${mention} `);
+        let dateFilter = '';
+        if (mentionPart.includes('on:')) {
+            dateFilter = 'on:';
+        } else if (mentionPart.includes('before:')) {
+            dateFilter = 'before:';
+        } else if (mentionPart.includes('after:')) {
+            dateFilter = 'after:';
         }
+
+        let completedDraft;
+        completedDraft = mentionPart.replace(DATE_MENTION_SEARCH_REGEX, `${dateFilter} ${mention} `);
 
         if (value.length > cursorPosition) {
             completedDraft += value.substring(cursorPosition);
@@ -87,12 +82,15 @@ export default class DateSuggestion extends PureComponent {
             return null;
         }
 
+        const style = getStyle();
+        const currentDate = (new Date()).toDateString();
+
         Keyboard.dismiss();
 
         return (
             <CalendarList
-                style={{height: 1700}}
-                current={(new Date()).toDateString()}
+                style={style.calList}
+                current={currentDate}
                 pastScrollRange={24}
                 futureScrollRange={0}
                 scrollingEnabled={true}
@@ -106,3 +104,11 @@ export default class DateSuggestion extends PureComponent {
         );
     }
 }
+
+const getStyle = () => {
+    return {
+        calList: {
+            height: 1700,
+        },
+    };
+};

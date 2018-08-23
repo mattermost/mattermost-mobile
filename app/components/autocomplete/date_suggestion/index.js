@@ -14,10 +14,10 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import DateSuggestion from './date_suggestion';
 
 function mapStateToProps(state, ownProps) {
-    const {cursorPosition} = ownProps;
+    const {cursorPosition, value} = ownProps;
 
-    const value = ownProps.value.substring(0, cursorPosition);
-    const matchTerm = getMatchTermForDateMention(value);
+    const newValue = value.substring(0, cursorPosition);
+    const matchTerm = getMatchTermForDateMention(newValue);
 
     return {
         currentTeamId: getCurrentTeamId(state),
