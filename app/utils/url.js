@@ -59,7 +59,6 @@ export async function getShortenedImageLink(link) {
         };
 
         xhr.open('HEAD', link);
-        xhr.setRequestHeader('Accept', 'image/*');
         xhr.send();
     }));
 }

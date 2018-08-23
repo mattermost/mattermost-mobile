@@ -94,16 +94,17 @@ export default class PostBodyAdditionalContent extends PureComponent {
             let imageUrl;
             if (isImageLink(link)) {
                 imageUrl = link;
-            } else if (isYoutubeLink(link)) {
-                const videoId = getYouTubeVideoId(link);
-                imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
             }
 
             if (!imageUrl) {
                 imageUrl = await getShortenedImageLink(link);
                 if (imageUrl) {
                     this.setState({shortenedImageLink: imageUrl});
+                    if (isYoutubeLink(imageUrl)) {
+                        const videoId = getYouTubeVideoId(imageUrl);
+                        imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                        ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
+                    }
                 }
             }
 
@@ -165,7 +166,11 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     generateToggleableEmbed = (isImage, isYouTube) => {
-        const {link} = this.props;
+        let {link} = this.props;
+        const {shortenedImageLink} = this.state;
+        if (shortenedImageLink) {
+            link = shortenedImageLink;
+        }
         const {width, height, uri} = this.state;
         const imgHeight = height;
 
