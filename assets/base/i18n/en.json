@@ -10,6 +10,7 @@
   "about.teamEditiont0": "Team Edition",
   "about.teamEditiont1": "Enterprise Edition",
   "about.title": "About Mattermost",
+  "announcment_banner.dont_show_again": "Don't show again",
   "api.channel.add_member.added": "{addedUsername} added to the channel by {username}.",
   "archivedChannelMessage": "You are viewing an **archived channel**. New messages cannot be posted.",
   "asdf": "Don't show again",

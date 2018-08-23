@@ -49,7 +49,7 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
                         onPress={this.dismissBanner}
                     >
                         <FormattedText
-                            id='asdf'
+                            id='announcment_banner.dont_show_again'
                             defaultMessage={'Don\'t show again'}
                             style={style.dismissButtonText}
                         />
