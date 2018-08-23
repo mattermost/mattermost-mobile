@@ -4,11 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-
-import {
-    getMatchTermForDateMention,
-} from 'app/selectors/autocomplete';
+import {getMatchTermForDateMention} from 'app/selectors/autocomplete';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import DateSuggestion from './date_suggestion';
@@ -20,7 +16,6 @@ function mapStateToProps(state, ownProps) {
     const matchTerm = getMatchTermForDateMention(newValue);
 
     return {
-        currentTeamId: getCurrentTeamId(state),
         matchTerm,
         theme: getTheme(state),
     };

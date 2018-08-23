@@ -10,7 +10,6 @@ import {DATE_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 
 export default class DateSuggestion extends PureComponent {
     static propTypes = {
-        currentTeamId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
         listHeight: PropTypes.number,
         matchTerm: PropTypes.string,
