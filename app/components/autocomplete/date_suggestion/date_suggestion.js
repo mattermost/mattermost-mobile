@@ -30,7 +30,7 @@ export default class DateSuggestion extends PureComponent {
 
         this.state = {
             mentionComplete: false,
-            sections: [],            
+            sections: [],
         };
     }
 

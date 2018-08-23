@@ -516,8 +516,8 @@ export default class Search extends PureComponent {
             value,
         } = this.state;
         const style = getStyleFromTheme(theme);
-        
-        let sectionsData = [{
+
+        const sectionsData = [{
             value: 'from:',
             modifier: `from:${intl.formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
             description: intl.formatMessage({
@@ -560,7 +560,7 @@ export default class Search extends PureComponent {
                 }),
             });
         }
-        
+
         const sections = [{
             data: sectionsData,
             key: 'modifiers',
