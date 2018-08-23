@@ -481,8 +481,7 @@ export default class ChannelInfo extends PureComponent {
                             <ChannelInfoRow
                                 action={this.handleDelete}
                                 defaultMessage='Archive Channel'
-                                image={require('assets/images/status/archive_avatar.png')}
-                                imageTintColor={changeOpacity(theme.sidebarText, 0.5)}
+                                icon='archive'
                                 textId='mobile.routes.channelInfo.delete_channel'
                                 textColor='#CA3B27'
                                 theme={theme}
