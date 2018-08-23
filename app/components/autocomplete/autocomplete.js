@@ -27,11 +27,13 @@ export default class Autocomplete extends PureComponent {
         isSearch: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
+        enableDateSuggestion: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         isSearch: false,
         cursorPosition: 0,
+        enableDateSuggestion: false,
     };
 
     state = {
@@ -134,7 +136,7 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleCommandCountChange}
                         {...this.props}
                     />
-                    {this.props.isSearch &&
+                    {(this.props.isSearch && this.props.enableDateSuggestion) &&
                     <DateSuggestion
                         onResultCountChange={this.handleIsDateFilterChange}
                         {...this.props}

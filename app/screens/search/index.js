@@ -9,6 +9,7 @@ import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/acti
 import {getCurrentChannelId, filterPostIds} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
 import {isLandscape} from 'app/selectors/device';
@@ -29,6 +30,9 @@ function makeMapStateToProps() {
         const {recent} = state.entities.search;
         const {searchPosts: searchRequest} = state.requests.search;
 
+        const serverVersion = state.entities.general.serverVersion;
+        const enableDateSuggestion = isMinimumServerVersion(serverVersion, 5, 2);
+
         return {
             currentTeamId,
             currentChannelId,
@@ -38,6 +42,7 @@ function makeMapStateToProps() {
             recent: recent[currentTeamId],
             searchingStatus: searchRequest.status,
             theme: getTheme(state),
+            enableDateSuggestion,
         };
     };
 }

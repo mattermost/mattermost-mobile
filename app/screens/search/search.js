@@ -63,12 +63,14 @@ export default class Search extends PureComponent {
         recent: PropTypes.array.isRequired,
         searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        enableDateSuggestion: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         postIds: [],
         recent: [],
         archivedPostIds: [],
+        enableDateSuggestion: false,
     };
 
     static contextTypes = {
@@ -514,43 +516,53 @@ export default class Search extends PureComponent {
             value,
         } = this.state;
         const style = getStyleFromTheme(theme);
-        const sections = [{
-            data: [{
-                value: 'from:',
-                modifier: `from:${intl.formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
-                description: intl.formatMessage({
-                    id: 'mobile.search.from_modifier_description',
-                    defaultMessage: 'to find posts from specific users',
-                }),
-            }, {
-                value: 'in:',
-                modifier: `in:${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
-                description: intl.formatMessage({
-                    id: 'mobile.search.in_modifier_description',
-                    defaultMessage: 'to find posts in specific channels',
-                }),
-            }, {
+        
+        let sectionsData = [{
+            value: 'from:',
+            modifier: `from:${intl.formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
+            description: intl.formatMessage({
+                id: 'mobile.search.from_modifier_description',
+                defaultMessage: 'to find posts from specific users',
+            }),
+        }, {
+            value: 'in:',
+            modifier: `in:${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
+            description: intl.formatMessage({
+                id: 'mobile.search.in_modifier_description',
+                defaultMessage: 'to find posts in specific channels',
+            }),
+        }];
+
+        // if search by date filters supported
+        if (this.props.enableDateSuggestion) {
+            sectionsData.push({
                 value: 'on:',
                 modifier: 'on: YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.on_modifier_description',
                     defaultMessage: 'to find posts on a specific date',
                 }),
-            }, {
+            });
+            sectionsData.push({
                 value: 'after:',
                 modifier: 'after: YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.after_modifier_description',
                     defaultMessage: 'to find posts after a specific date',
                 }),
-            }, {
+            });
+            sectionsData.push({
                 value: 'before:',
                 modifier: 'before: YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.before_modifier_description',
                     defaultMessage: 'to find posts before a specific date',
                 }),
-            }],
+            });
+        }
+        
+        const sections = [{
+            data: sectionsData,
             key: 'modifiers',
             title: '',
             renderItem: this.renderModifiers,

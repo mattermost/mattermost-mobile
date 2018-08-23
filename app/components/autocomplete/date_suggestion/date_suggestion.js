@@ -17,10 +17,12 @@ export default class DateSuggestion extends PureComponent {
         onResultCountChange: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
+        enableDateSuggestion: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         value: '',
+        enableDateSuggestion: false,
     };
 
     constructor(props) {
@@ -28,7 +30,7 @@ export default class DateSuggestion extends PureComponent {
 
         this.state = {
             mentionComplete: false,
-            sections: [],
+            sections: [],            
         };
     }
 
@@ -74,8 +76,9 @@ export default class DateSuggestion extends PureComponent {
 
     render() {
         const {mentionComplete} = this.state;
+        const {matchTerm, enableDateSuggestion} = this.props;
 
-        if (this.props.matchTerm === null || mentionComplete) {
+        if (matchTerm === null || mentionComplete || !enableDateSuggestion) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.
             return null;
