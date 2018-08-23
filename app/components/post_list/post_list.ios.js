@@ -28,6 +28,7 @@ export default class PostList extends PostListBase {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.channelId !== nextProps.channelId) {
+            this.contentOffsetY = 0;
             this.hasDoneInitialScroll = false;
         }
     }
@@ -57,7 +58,6 @@ export default class PostList extends PostListBase {
                 ListTypes.VISIBILITY_SCROLL_DOWN;
 
             this.contentOffsetY = pageOffsetY;
-
             if (
                 direction === ListTypes.VISIBILITY_SCROLL_UP &&
                 (this.contentHeight - pageOffsetY) < (this.state.postListHeight * SCROLL_UP_MULTIPLIER)

@@ -26,6 +26,11 @@ export default class PostList extends PostListBase {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.channelId !== nextProps.channelId) {
+            this.contentOffsetY = 0;
+            this.contentHeight = 0;
+        }
+
         if (nextProps.postIds !== this.props.postIds && this.mounted) {
             this.setState({
                 dataSource: new DataSource(nextProps.postIds, this.keyExtractor),
