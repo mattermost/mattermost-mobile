@@ -43,7 +43,7 @@ export function isYoutubeLink(link) {
     return link.trim().match(ytRegex);
 }
 
-export async function getShortenedImageLink(link) {
+export async function getShortenedLink(link) {
     return new Promise(((resolve, reject) => {
         const xhr = new XMLHttpRequest();
 

@@ -22,7 +22,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
-import {getYouTubeVideoId, isImageLink, isYoutubeLink, getShortenedImageLink} from 'app/utils/url';
+import {getYouTubeVideoId, isImageLink, isYoutubeLink, getShortenedLink} from 'app/utils/url';
 
 const VIEWPORT_IMAGE_OFFSET = 66;
 const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
@@ -67,7 +67,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             linkLoaded: false,
             width: 0,
             height: 0,
-            shortenedImageLink: null,
+            shortenedLink: null,
         };
 
         this.mounted = false;
@@ -97,9 +97,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
             }
 
             if (!imageUrl) {
-                imageUrl = await getShortenedImageLink(link);
+                imageUrl = await getShortenedLink(link);
                 if (imageUrl) {
-                    this.setState({shortenedImageLink: imageUrl});
+                    this.setState({shortenedLink: imageUrl});
                     if (isYoutubeLink(imageUrl)) {
                         const videoId = getYouTubeVideoId(imageUrl);
                         imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
@@ -167,9 +167,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     generateToggleableEmbed = (isImage, isYouTube) => {
         let {link} = this.props;
-        const {shortenedImageLink} = this.state;
-        if (shortenedImageLink) {
-            link = shortenedImageLink;
+        const {shortenedLink} = this.state;
+        if (shortenedLink) {
+            link = shortenedLink;
         }
         const {width, height, uri} = this.state;
         const imgHeight = height;
@@ -339,11 +339,11 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     handlePreviewImage = () => {
-        const {shortenedImageLink} = this.state;
+        const {shortenedLink} = this.state;
         let {link} = this.props;
         const {navigator} = this.props;
-        if (shortenedImageLink) {
-            link = shortenedImageLink;
+        if (shortenedLink) {
+            link = shortenedLink;
         }
         const {
             originalHeight,
@@ -411,9 +411,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
     render() {
         let {link} = this.props;
         const {openGraphData, postProps} = this.props;
-        const {linkLoadError, shortenedImageLink} = this.state;
-        if (shortenedImageLink) {
-            link = shortenedImageLink;
+        const {linkLoadError, shortenedLink} = this.state;
+        if (shortenedLink) {
+            link = shortenedLink;
         }
         const {attachments} = postProps;
 
