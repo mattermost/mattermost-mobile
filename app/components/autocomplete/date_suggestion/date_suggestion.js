@@ -22,7 +22,6 @@ export default class DateSuggestion extends PureComponent {
 
     static defaultProps = {
         value: '',
-        enableDateSuggestion: false,
     };
 
     constructor(props) {

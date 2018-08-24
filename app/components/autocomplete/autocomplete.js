@@ -33,7 +33,6 @@ export default class Autocomplete extends PureComponent {
     static defaultProps = {
         isSearch: false,
         cursorPosition: 0,
-        enableDateSuggestion: false,
     };
 
     state = {

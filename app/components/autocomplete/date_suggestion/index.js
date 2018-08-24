@@ -6,7 +6,6 @@ import {connect} from 'react-redux';
 
 import {getMatchTermForDateMention} from 'app/selectors/autocomplete';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import DateSuggestion from './date_suggestion';
 
@@ -15,13 +14,10 @@ function mapStateToProps(state, ownProps) {
 
     const newValue = value.substring(0, cursorPosition);
     const matchTerm = getMatchTermForDateMention(newValue);
-    const serverVersion = state.entities.general.serverVersion;
-    const enableDateSuggestion = isMinimumServerVersion(serverVersion, 5, 2);
 
     return {
         matchTerm,
         theme: getTheme(state),
-        enableDateSuggestion,
     };
 }
 

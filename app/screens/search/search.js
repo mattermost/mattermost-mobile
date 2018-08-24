@@ -63,14 +63,12 @@ export default class Search extends PureComponent {
         recent: PropTypes.array.isRequired,
         searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        enableDateSuggestion: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         postIds: [],
         recent: [],
         archivedPostIds: [],
-        enableDateSuggestion: false,
     };
 
     static contextTypes = {
@@ -684,6 +682,7 @@ export default class Search extends PureComponent {
                         onChangeText={this.handleTextChanged}
                         isSearch={true}
                         value={value}
+                        enableDateSuggestion={this.props.enableDateSuggestion}
                     />
                 </View>
             </SafeAreaView>
