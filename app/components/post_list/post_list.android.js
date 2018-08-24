@@ -108,7 +108,7 @@ export default class PostList extends PostListBase {
                 <RecyclerViewList
                     key={`${channelId}-${hasPostsKey}`}
                     ref={'list'}
-                    style={{flex: 1}}
+                    style={[styles.flex, styles.postListContent]}
                     dataSource={this.state.dataSource}
                     renderItem={this.renderItem}
                     initialScrollIndex={initialIndex}
@@ -127,5 +127,8 @@ export default class PostList extends PostListBase {
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
+    },
+    postListContent: {
+        paddingTop: 5,
     },
 });
