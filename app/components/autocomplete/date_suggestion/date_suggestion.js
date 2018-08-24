@@ -51,18 +51,9 @@ export default class DateSuggestion extends PureComponent {
         const mention = day.dateString;
         const {cursorPosition, onChangeText, value} = this.props;
         const mentionPart = value.substring(0, cursorPosition);
-
-        let dateFilter = '';
-        if (mentionPart.includes('on:')) {
-            dateFilter = 'on:';
-        } else if (mentionPart.includes('before:')) {
-            dateFilter = 'before:';
-        } else if (mentionPart.includes('after:')) {
-            dateFilter = 'after:';
-        }
-
-        let completedDraft;
-        completedDraft = mentionPart.replace(DATE_MENTION_SEARCH_REGEX, `${dateFilter} ${mention} `);
+        const flags = mentionPart.match(/\b\w+:/g);
+        const currentFlag = flags[flags.length-1];
+        let completedDraft = mentionPart.replace(DATE_MENTION_SEARCH_REGEX, `${currentFlag} ${mention} `);
 
         if (value.length > cursorPosition) {
             completedDraft += value.substring(cursorPosition);
