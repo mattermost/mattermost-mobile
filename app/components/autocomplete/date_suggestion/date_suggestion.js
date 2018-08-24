@@ -6,7 +6,7 @@ import {Keyboard} from 'react-native';
 import PropTypes from 'prop-types';
 import {CalendarList} from 'react-native-calendars';
 
-import {DATE_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
+import {DATE_MENTION_SEARCH_REGEX, ALL_SEARCH_FLAGS_REGEX} from 'app/constants/autocomplete';
 
 export default class DateSuggestion extends PureComponent {
     static propTypes = {
@@ -51,8 +51,8 @@ export default class DateSuggestion extends PureComponent {
         const mention = day.dateString;
         const {cursorPosition, onChangeText, value} = this.props;
         const mentionPart = value.substring(0, cursorPosition);
-        const flags = mentionPart.match(/\b\w+:/g);
-        const currentFlag = flags[flags.length-1];
+        const flags = mentionPart.match(ALL_SEARCH_FLAGS_REGEX);
+        const currentFlag = flags[flags.length - 1];
         let completedDraft = mentionPart.replace(DATE_MENTION_SEARCH_REGEX, `${currentFlag} ${mention} `);
 
         if (value.length > cursorPosition) {
