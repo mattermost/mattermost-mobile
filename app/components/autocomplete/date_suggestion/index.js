@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getMatchTermForDateMention} from 'app/selectors/autocomplete';
@@ -21,10 +20,4 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({}, dispatch),
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(DateSuggestion);
+export default connect(mapStateToProps)(DateSuggestion);
