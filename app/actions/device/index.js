@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {networkStatusChanged} from 'redux-offline/lib/actions';
+import {networkStatusChangedAction} from 'redux-offline';
 import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants';
@@ -9,7 +9,7 @@ import {DeviceTypes} from 'app/constants';
 export function connection(isOnline) {
     return async (dispatch) => {
         Client4.setOnline(isOnline);
-        dispatch(networkStatusChanged(isOnline));
+        dispatch(networkStatusChangedAction(isOnline));
         dispatch({
             type: DeviceTypes.CONNECTION_CHANGED,
             data: isOnline,
