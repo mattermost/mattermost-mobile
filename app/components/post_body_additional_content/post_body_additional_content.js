@@ -94,16 +94,22 @@ export default class PostBodyAdditionalContent extends PureComponent {
             let imageUrl;
             if (isImageLink(link)) {
                 imageUrl = link;
-            }
-
-            if (!imageUrl) {
-                imageUrl = await getShortenedLink(link);
-                if (imageUrl) {
-                    this.setState({shortenedLink: imageUrl});
-                    if (isYoutubeLink(imageUrl)) {
-                        const videoId = getYouTubeVideoId(imageUrl);
+            } else if (isYoutubeLink(link)) {
+                const videoId = getYouTubeVideoId(link);
+                imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
+            } else {
+                const shortenedLink = await getShortenedLink(link);
+                if (shortenedLink) {
+                    if (isImageLink(shortenedLink)) {
+                        imageUrl = shortenedLink;
+                    } else if (isYoutubeLink(shortenedLink)) {
+                        const videoId = getYouTubeVideoId(shortenedLink);
                         imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                         ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
+                    }
+                    if (this.mounted) {
+                        this.setState({shortenedLink});
                     }
                 }
             }
