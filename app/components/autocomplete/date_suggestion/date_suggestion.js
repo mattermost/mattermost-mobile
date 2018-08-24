@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Keyboard} from 'react-native';
+import {Keyboard, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 import {CalendarList} from 'react-native-calendars';
 
@@ -74,14 +74,13 @@ export default class DateSuggestion extends PureComponent {
             return null;
         }
 
-        const style = getStyle();
         const currentDate = (new Date()).toDateString();
 
         Keyboard.dismiss();
 
         return (
             <CalendarList
-                style={style.calList}
+                style={styles.calList}
                 current={currentDate}
                 pastScrollRange={24}
                 futureScrollRange={0}
@@ -97,10 +96,8 @@ export default class DateSuggestion extends PureComponent {
     }
 }
 
-const getStyle = () => {
-    return {
-        calList: {
-            height: 1700,
-        },
-    };
-};
+const styles = StyleSheet.create({
+    calList: {
+        height: 1700,
+    },
+});
