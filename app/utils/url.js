@@ -43,6 +43,26 @@ export function isYoutubeLink(link) {
     return link.trim().match(ytRegex);
 }
 
+export async function getShortenedLink(link) {
+    return new Promise(((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState !== XMLHttpRequest.DONE) {
+                return;
+            }
+            resolve(xhr.responseURL);
+        };
+
+        xhr.onerror = () => {
+            reject('');
+        };
+
+        xhr.open('HEAD', link);
+        xhr.send();
+    }));
+}
+
 export function isImageLink(link) {
     let linkWithoutQuery = link;
     if (link.indexOf('?') !== -1) {

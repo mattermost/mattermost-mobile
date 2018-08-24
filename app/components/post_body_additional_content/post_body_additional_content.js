@@ -22,7 +22,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
-import {getYouTubeVideoId, isImageLink, isYoutubeLink} from 'app/utils/url';
+import {getYouTubeVideoId, isImageLink, isYoutubeLink, getShortenedLink} from 'app/utils/url';
 
 const VIEWPORT_IMAGE_OFFSET = 66;
 const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
@@ -67,6 +67,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             linkLoaded: false,
             width: 0,
             height: 0,
+            shortenedLink: null,
         };
 
         this.mounted = false;
@@ -87,7 +88,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
     }
 
-    load = (props) => {
+    load = async (props) => {
         const {link} = props;
         if (link) {
             let imageUrl;
@@ -97,6 +98,20 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 const videoId = getYouTubeVideoId(link);
                 imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                 ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
+            } else {
+                const shortenedLink = await getShortenedLink(link);
+                if (shortenedLink) {
+                    if (isImageLink(shortenedLink)) {
+                        imageUrl = shortenedLink;
+                    } else if (isYoutubeLink(shortenedLink)) {
+                        const videoId = getYouTubeVideoId(shortenedLink);
+                        imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                        ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
+                    }
+                    if (this.mounted) {
+                        this.setState({shortenedLink});
+                    }
+                }
             }
 
             if (imageUrl) {
@@ -157,7 +172,11 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     generateToggleableEmbed = (isImage, isYouTube) => {
-        const {link} = this.props;
+        let {link} = this.props;
+        const {shortenedLink} = this.state;
+        if (shortenedLink) {
+            link = shortenedLink;
+        }
         const {width, height, uri} = this.state;
         const imgHeight = height;
 
@@ -326,7 +345,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     handlePreviewImage = () => {
-        const {link, navigator} = this.props;
+        const {shortenedLink} = this.state;
+        let {link} = this.props;
+        const {navigator} = this.props;
+        if (shortenedLink) {
+            link = shortenedLink;
+        }
         const {
             originalHeight,
             originalWidth,
@@ -391,8 +415,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     render() {
-        const {link, openGraphData, postProps} = this.props;
-        const {linkLoadError} = this.state;
+        let {link} = this.props;
+        const {openGraphData, postProps} = this.props;
+        const {linkLoadError, shortenedLink} = this.state;
+        if (shortenedLink) {
+            link = shortenedLink;
+        }
         const {attachments} = postProps;
 
         if (!link && !attachments) {
