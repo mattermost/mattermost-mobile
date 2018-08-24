@@ -63,6 +63,7 @@ export default class Search extends PureComponent {
         recent: PropTypes.array.isRequired,
         searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        enableDateSuggestion: PropTypes.bool,
     };
 
     static defaultProps = {
