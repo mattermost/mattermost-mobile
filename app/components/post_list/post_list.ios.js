@@ -44,9 +44,7 @@ export default class PostList extends PostListBase {
 
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
-        if (this.mounted) {
-            this.setState({postListHeight: height});
-        }
+        this.setState({postListHeight: height});
     };
 
     handleScroll = (event) => {
@@ -83,7 +81,6 @@ export default class PostList extends PostListBase {
         if (
             width > 0 &&
             height > 0 &&
-            this.props.initialIndex != null &&
             this.props.initialIndex > 0 &&
             !this.hasDoneInitialScroll
         ) {

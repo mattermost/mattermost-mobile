@@ -31,7 +31,7 @@ export default class PostList extends PostListBase {
             this.contentHeight = 0;
         }
 
-        if (nextProps.postIds !== this.props.postIds && this.mounted) {
+        if (nextProps.postIds !== this.props.postIds) {
             this.setState({
                 dataSource: new DataSource(nextProps.postIds, this.keyExtractor),
             });
@@ -39,8 +39,6 @@ export default class PostList extends PostListBase {
     }
 
     handleLayout = (layoutHeight, contentWidth, contentHeight) => {
-        this.contentHeight = contentHeight;
-
         if (layoutHeight && contentHeight < layoutHeight) {
             // We still have less than 1 screen of posts loaded with more to get, so load more
             this.props.onLoadMoreUp();
