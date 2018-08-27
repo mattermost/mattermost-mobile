@@ -18,7 +18,7 @@ import {
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';

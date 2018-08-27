@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import keyMirror from 'mattermost-redux/utils/key_mirror';
-import RNFetchBlobFS from 'react-native-fetch-blob/fs';
+import RNFetchBlobFS from 'rn-fetch-blob/fs';
 
 const deviceTypes = keyMirror({
     CONNECTION_CHANGED: null,

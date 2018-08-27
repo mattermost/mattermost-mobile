@@ -112,7 +112,7 @@ android {
     defaultConfig {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion 21
-        targetSdkVersion 23
+        targetSdkVersion 26
         versionCode 133
         versionName "1.11.0"
         ndk {
@@ -187,8 +187,8 @@ configurations.all {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "com.android.support:appcompat-v7:25.0.1"
-    implementation 'com.android.support:percent:25.3.1'
+    implementation "com.android.support:appcompat-v7:26.0.1"
+    implementation 'com.android.support:percent:26.0.1'
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation project(':react-native-document-picker')
     implementation project(':react-native-keychain')
@@ -211,7 +211,7 @@ dependencies {
     implementation project(':react-native-youtube')
     implementation project(':react-native-sentry')
     implementation project(':react-native-exception-handler')
-    implementation project(':react-native-fetch-blob')
+    implementation project(':rn-fetch-blob')
 
     // For animated GIF support
     implementation 'com.facebook.fresco:animated-base-support:1.3.0'

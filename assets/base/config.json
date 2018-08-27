@@ -12,7 +12,6 @@
     "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
     "SegmentApiKey": "oPPT2MA24VYZTBGDyXtUDa7u50lkPIE4",
     "ExperimentalUsernamePressIsMention": false,
-    "ExperimentalClientSideCertEnable": false,
 
     "HideEmailLoginExperimental": false,
     "HideGitLabLoginExperimental": false,

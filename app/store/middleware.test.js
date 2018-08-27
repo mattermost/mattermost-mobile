@@ -8,7 +8,7 @@ import assert from 'assert';
 import {ViewTypes} from 'app/constants';
 import {messageRetention} from 'app/store/middleware';
 
-jest.mock('react-native-fetch-blob/fs', () => ({
+jest.mock('rn-fetch-blob/fs', () => ({
     dirs: {
         DocumentDir: () => jest.fn(),
         CacheDir: () => jest.fn(),
