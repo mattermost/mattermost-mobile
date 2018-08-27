@@ -409,7 +409,7 @@ export default class MessageAttachment extends PureComponent {
                 >
                     <View
                         style={[(isLongText && collapsed && {maxHeight, overflow: 'hidden'})]}
-                        removeClippedSubviews={isLongText && collapsed}
+                        removeClippedSubviews={isLongText && collapsed && Platform.OS !== 'android'}
                     >
                         <Markdown
                             baseTextStyle={baseTextStyle}
@@ -526,6 +526,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         moreLess: {
             color: theme.linkColor,
             fontSize: 12,
+            marginTop: 5,
         },
         headingContainer: {
             alignSelf: 'stretch',
