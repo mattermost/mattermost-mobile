@@ -40,7 +40,6 @@ export default class ImageCacheManager {
                     timeout: 10000,
                     indicator: true,
                     overwrite: true,
-                    trusty: true,
                     path,
                     certificate,
                 };

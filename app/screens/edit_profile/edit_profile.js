@@ -213,7 +213,6 @@ export default class EditProfile extends PureComponent {
         const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
         const options = {
             timeout: 10000,
-            trusty: true,
             certificate,
         };
 

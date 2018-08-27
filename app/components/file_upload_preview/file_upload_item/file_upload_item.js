@@ -139,7 +139,6 @@ export default class FileUploadItem extends PureComponent {
         const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
         const options = {
             timeout: 10000,
-            trusty: true,
             certificate,
         };
         this.uploadPromise = RNFetchBlob.config(options).fetch('POST', Client4.getFilesRoute(), headers, data);

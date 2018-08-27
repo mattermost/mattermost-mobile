@@ -106,7 +106,6 @@ const initFetchConfig = async () => {
         const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
         fetchConfig = {
             auto: true,
-            trusty: true,
             certificate,
         };
         window.fetch = new RNFetchBlob.polyfill.Fetch(fetchConfig).build();
