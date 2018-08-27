@@ -66,18 +66,20 @@ export default class AccountSettingsItem extends PureComponent {
                     )}
                 </View>
                 <View style={style.inputContainer}>
-                    <QuickTextInput
-                        ref={this.channelNameRef}
-                        value={value}
-                        onChangeText={this.onChangeText}
-                        style={[style.input, disabled ? style.disabled : null]}
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        maxLength={this.props.maxLength}
-                        editable={!disabled}
-                        underlineColorAndroid='transparent'
-                        disableFullscreenUI={true}
-                    />
+                    <View style={disabled ? style.disabled : null}>
+                        <QuickTextInput
+                            ref={this.channelNameRef}
+                            value={value}
+                            onChangeText={this.onChangeText}
+                            style={style.input}
+                            autoCapitalize='none'
+                            autoCorrect={false}
+                            maxLength={this.props.maxLength}
+                            editable={!disabled}
+                            underlineColorAndroid='transparent'
+                            disableFullscreenUI={true}
+                        />
+                    </View>
                     {disabled &&
                     <Text style={style.helpText}>
                         {helpText}

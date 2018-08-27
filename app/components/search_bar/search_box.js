@@ -330,6 +330,7 @@ export default class Search extends Component {
     };
 
     render() {
+        const {backgroundColor, ...restOfInputPropStyles} = this.props.inputStyle;
         return (
             <Animated.View
                 ref='searchContainer'
@@ -339,45 +340,47 @@ export default class Search extends Component {
                 ]}
                 onLayout={this.onLayout}
             >
-                <AnimatedTextInput
-                    ref='input_keyword'
-                    style={[
-                        styles.input,
-                        this.props.placeholderTextColor && {color: this.props.placeholderTextColor},
-                        this.props.inputStyle && this.props.inputStyle,
-                        this.props.inputHeight && {height: this.props.inputHeight},
-                        this.props.inputBorderRadius && {borderRadius: this.props.inputBorderRadius},
-                        {
-                            width: this.inputFocusWidthAnimated,
-                            paddingLeft: this.inputFocusPlaceholderAnimated,
-                        },
-                        this.props.shadowVisible && {
-                            shadowOffset: {width: this.props.shadowOffsetWidth, height: this.shadowHeight},
-                            shadowColor: this.props.shadowColor,
-                            shadowOpacity: this.shadowOpacityAnimated,
-                            shadowRadius: this.props.shadowRadius,
-                        },
+                <View style={{backgroundColor}}>
+                    <AnimatedTextInput
+                        ref='input_keyword'
+                        style={[
+                            styles.input,
+                            this.props.placeholderTextColor && {color: this.props.placeholderTextColor},
+                            this.props.inputHeight && {height: this.props.inputHeight},
+                            this.props.inputBorderRadius && {borderRadius: this.props.inputBorderRadius},
+                            {
+                                width: this.inputFocusWidthAnimated,
+                                paddingLeft: this.inputFocusPlaceholderAnimated,
+                            },
+                            restOfInputPropStyles,
+                            this.props.shadowVisible && {
+                                shadowOffset: {width: this.props.shadowOffsetWidth, height: this.shadowHeight},
+                                shadowColor: this.props.shadowColor,
+                                shadowOpacity: this.shadowOpacityAnimated,
+                                shadowRadius: this.props.shadowRadius,
+                            },
 
-                    ]}
-                    autoFocus={this.props.autoFocus}
-                    editable={this.props.editable}
-                    value={this.props.value}
-                    onChangeText={this.onChangeText}
-                    placeholder={this.placeholder}
-                    placeholderTextColor={this.props.placeholderTextColor}
-                    selectionColor={this.props.selectionColor}
-                    onSubmitEditing={this.onSearch}
-                    onSelectionChange={this.onSelectionChange}
-                    autoCorrect={false}
-                    blurOnSubmit={this.props.blurOnSubmit}
-                    returnKeyType={this.props.returnKeyType || 'search'}
-                    keyboardType={this.props.keyboardType || 'default'}
-                    autoCapitalize={this.props.autoCapitalize}
-                    onBlur={this.onBlur}
-                    onFocus={this.onFocus}
-                    underlineColorAndroid='transparent'
-                    enablesReturnKeyAutomatically={true}
-                />
+                        ]}
+                        autoFocus={this.props.autoFocus}
+                        editable={this.props.editable}
+                        value={this.props.value}
+                        onChangeText={this.onChangeText}
+                        placeholder={this.placeholder}
+                        placeholderTextColor={this.props.placeholderTextColor}
+                        selectionColor={this.props.selectionColor}
+                        onSubmitEditing={this.onSearch}
+                        onSelectionChange={this.onSelectionChange}
+                        autoCorrect={false}
+                        blurOnSubmit={this.props.blurOnSubmit}
+                        returnKeyType={this.props.returnKeyType || 'search'}
+                        keyboardType={this.props.keyboardType || 'default'}
+                        autoCapitalize={this.props.autoCapitalize}
+                        onBlur={this.onBlur}
+                        onFocus={this.onFocus}
+                        underlineColorAndroid='transparent'
+                        enablesReturnKeyAutomatically={true}
+                    />
+                </View>
                 <TouchableWithoutFeedback onPress={this.onFocus}>
                     {((this.props.iconSearch) ?
                         <Animated.View
@@ -469,7 +472,6 @@ const styles = StyleSheet.create({
         paddingBottom: 5,
         paddingRight: 32,
         borderColor: '#444',
-        backgroundColor: '#f7f7f7',
         borderRadius: 5,
         fontSize: 15,
     },
@@ -504,4 +506,3 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
 });
-
