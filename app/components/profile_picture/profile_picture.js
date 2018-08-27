@@ -118,7 +118,7 @@ export default class ProfilePicture extends PureComponent {
             statusStyle = {
                 width: this.props.statusSize,
                 height: this.props.statusSize,
-                backgroundColor: 'white',
+                backgroundColor: theme.centerChannelBg,
             };
             statusIcon = (
                 <FontAwesomeIcon
