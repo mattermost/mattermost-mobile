@@ -233,7 +233,7 @@ export default class PostBody extends PureComponent {
         }
     };
 
-    renderAddChannelMember = (style, textStyles) => {
+    renderAddChannelMember = (style, messageStyle, textStyles) => {
         const {onPermalinkPress, onPress, postProps} = this.props;
 
         if (!PostAddChannelMember) {
@@ -244,6 +244,7 @@ export default class PostBody extends PureComponent {
             <View style={style.row}>
                 <View style={style.flex}>
                     <PostAddChannelMember
+                        baseTextStyle={messageStyle}
                         navigator={navigator}
                         onLongPress={this.showOptionsContext}
                         onPermalinkPress={onPermalinkPress}
@@ -440,7 +441,7 @@ export default class PostBody extends PureComponent {
             );
             body = (<View>{messageComponent}</View>);
         } else if (isPostAddChannelMember) {
-            messageComponent = this.renderAddChannelMember(style, textStyles);
+            messageComponent = this.renderAddChannelMember(style, messageStyle, textStyles);
         } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
             const {allUserIds, allUsernames, messageData} = postProps.user_activity;
             messageComponent = (

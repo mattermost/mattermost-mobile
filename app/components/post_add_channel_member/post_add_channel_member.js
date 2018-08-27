@@ -13,6 +13,7 @@ import {concatStyles} from 'app/utils/theme';
 
 import AtMention from 'app/components/at_mention';
 import FormattedText from 'app/components/formatted_text';
+import CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class PostAddChannelMember extends React.PureComponent {
     static propTypes = {
@@ -21,6 +22,7 @@ export default class PostAddChannelMember extends React.PureComponent {
             removePost: PropTypes.func.isRequired,
             sendAddToChannelEphemeralPost: PropTypes.func.isRequired,
         }).isRequired,
+        baseTextStyle: CustomPropTypes.Style,
         currentUser: PropTypes.object.isRequired,
         channelType: PropTypes.string,
         post: PropTypes.object.isRequired,
@@ -134,7 +136,8 @@ export default class PostAddChannelMember extends React.PureComponent {
     }
 
     render() {
-        const {channelType, postId, usernames} = this.props;
+        const {channelType, baseTextStyle, postId, usernames} = this.props;
+
         if (!postId || !channelType) {
             return null;
         }
@@ -168,6 +171,7 @@ export default class PostAddChannelMember extends React.PureComponent {
                 <FormattedText
                     id={messageId}
                     defaultMessage={messageText}
+                    style={baseTextStyle}
                 />
                 <Text
                     style={this.props.textStyles.link}
@@ -182,6 +186,7 @@ export default class PostAddChannelMember extends React.PureComponent {
                 <FormattedText
                     id={'post_body.check_for_out_of_channel_mentions.message_last'}
                     defaultMessage={'? They will have access to all message history.'}
+                    style={baseTextStyle}
                 />
             </Text>
         );
