@@ -211,6 +211,7 @@ dependencies {
     implementation project(':react-native-sentry')
     implementation project(':react-native-exception-handler')
     implementation project(':rn-fetch-blob')
+    implementation project(':react-native-recyclerview-list')
 
     // For animated GIF support
     implementation 'com.facebook.fresco:animated-base-support:1.3.0'

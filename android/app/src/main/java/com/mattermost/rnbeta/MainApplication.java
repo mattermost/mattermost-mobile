@@ -18,6 +18,7 @@ import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import com.gantix.JailMonkey.JailMonkeyPackage;
 import io.tradle.react.LocalAuthPackage;
+import com.github.godness84.RNRecyclerViewList.RNRecyclerviewListPackage;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
@@ -75,7 +76,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new ReactNativeDocumentPicker(),
             new SharePackage(this),
             new KeychainPackage(),
-            new InitializationPackage(this)
+            new InitializationPackage(this),
+            new RNRecyclerviewListPackage()
     );
   }
 

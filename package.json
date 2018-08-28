@@ -43,6 +43,7 @@
     "react-native-notifications": "github:enahum/react-native-notifications#e5bf431716613b6abf312698dde194537420f966",
     "react-native-passcode-status": "1.1.1",
     "react-native-permissions": "1.1.1",
+    "react-native-recyclerview-list": "enahum/react-native-recyclerview-list.git#a05429439c49c41c73f42bb1d8ddc86eb8af5d35",
     "react-native-safe-area": "0.5.0",
     "react-native-section-list-get-item-layout": "2.2.3",
     "react-native-sentry": "0.38.3",
