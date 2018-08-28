@@ -31,7 +31,7 @@ function makeMapStateToProps() {
         const {searchPosts: searchRequest} = state.requests.search;
 
         const serverVersion = state.entities.general.serverVersion;
-        const enableDateSuggestion = isMinimumServerVersion(serverVersion, 5, 2);
+        const enableDateSuggestion = isMinimumServerVersion(serverVersion, 5, 3);
 
         return {
             currentTeamId,
