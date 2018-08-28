@@ -50,7 +50,7 @@ export default class PostList extends PostListBase {
     handleScroll = (event) => {
         const pageOffsetY = event.nativeEvent.contentOffset.y;
         if (pageOffsetY > 0) {
-            this.contentHeight = event.nativeEvent.contentSize.height;
+            const contentHeight = event.nativeEvent.contentSize.height;
             const direction = (this.contentOffsetY < pageOffsetY) ?
                 ListTypes.VISIBILITY_SCROLL_UP :
                 ListTypes.VISIBILITY_SCROLL_DOWN;
@@ -58,7 +58,7 @@ export default class PostList extends PostListBase {
             this.contentOffsetY = pageOffsetY;
             if (
                 direction === ListTypes.VISIBILITY_SCROLL_UP &&
-                (this.contentHeight - pageOffsetY) < (this.state.postListHeight * SCROLL_UP_MULTIPLIER)
+                (contentHeight - pageOffsetY) < (this.state.postListHeight * SCROLL_UP_MULTIPLIER)
             ) {
                 this.props.onLoadMoreUp();
             } else if (
