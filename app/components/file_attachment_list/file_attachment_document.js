@@ -39,6 +39,7 @@ const TEXT_PREVIEW_FORMATS = [
 
 export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
+        canDownloadFiles: PropTypes.bool.isRequired,
         iconHeight: PropTypes.number,
         iconWidth: PropTypes.number,
         file: PropTypes.object.isRequired,
@@ -171,8 +172,13 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     handlePreviewPress = async () => {
-        const {file} = this.props;
+        const {canDownloadFiles, file} = this.props;
         const {downloading, progress} = this.state;
+
+        if (!canDownloadFiles) {
+            this.showDownloadDisabledAlert();
+            return;
+        }
 
         if (downloading && progress < 100) {
             this.cancelDownload();
@@ -287,6 +293,27 @@ export default class FileAttachmentDocument extends PureComponent {
                     wrapperWidth={iconWidth}
                 />
             </View>
+        );
+    };
+
+    showDownloadDisabledAlert = () => {
+        const {intl} = this.context;
+
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.downloader.disabled_title',
+                defaultMessage: 'Download disabled',
+            }),
+            intl.formatMessage({
+                id: 'mobile.downloader.disabled_description',
+                defaultMessage: 'File downloads are disabled on this server. Please contact your System Admin for more details.\n',
+            }),
+            [{
+                text: intl.formatMessage({
+                    id: 'mobile.server_upgrade.button',
+                    defaultMessage: 'OK',
+                }),
+            }]
         );
     };
 

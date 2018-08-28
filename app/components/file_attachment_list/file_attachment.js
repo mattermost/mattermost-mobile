@@ -20,6 +20,7 @@ import FileAttachmentImage from './file_attachment_image';
 
 export default class FileAttachment extends PureComponent {
     static propTypes = {
+        canDownloadFiles: PropTypes.bool.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         file: PropTypes.object.isRequired,
         index: PropTypes.number.isRequired,
@@ -80,6 +81,7 @@ export default class FileAttachment extends PureComponent {
 
     render() {
         const {
+            canDownloadFiles,
             deviceWidth,
             file,
             onInfoPress,
@@ -103,6 +105,7 @@ export default class FileAttachment extends PureComponent {
         } else if (isDocument(data)) {
             fileAttachmentComponent = (
                 <FileAttachmentDocument
+                    canDownloadFiles={canDownloadFiles}
                     file={file}
                     navigator={navigator}
                     theme={theme}

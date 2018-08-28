@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {canDownloadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -17,6 +18,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         return {
             ...getDimensions(state),
+            canDownloadFiles: canDownloadFilesOnMobile(state),
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),
             filesForPostRequest: state.requests.files.getFilesForPost,
