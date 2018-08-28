@@ -245,6 +245,10 @@ export default function configureAppStore(initialState) {
                             type: ViewTypes.SERVER_URL_CHANGED,
                             serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
                         },
+                        {
+                            type: GeneralTypes.RECEIVED_SERVER_VERSION,
+                            data: state.entities.general.serverVersion,
+                        },
                     ], 'BATCH_FOR_RESTART'));
 
                     setTimeout(() => {
