@@ -3,21 +3,25 @@
 
 import {connect} from 'react-redux';
 
-import {getMatchTermForDateMention} from 'app/selectors/autocomplete';
+import {makeGetMatchTermForDateMention} from 'app/selectors/autocomplete';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import DateSuggestion from './date_suggestion';
 
-function mapStateToProps(state, ownProps) {
-    const {cursorPosition, value} = ownProps;
+function makeMapStateToProps() {
+    const getMatchTermForDateMention = makeGetMatchTermForDateMention();
 
-    const newValue = value.substring(0, cursorPosition);
-    const matchTerm = getMatchTermForDateMention(newValue);
+    return (state, ownProps) => {
+        const {cursorPosition, value} = ownProps;
 
-    return {
-        matchTerm,
-        theme: getTheme(state),
+        const newValue = value.substring(0, cursorPosition);
+        const matchTerm = getMatchTermForDateMention(newValue);
+
+        return {
+            matchTerm,
+            theme: getTheme(state),
+        };
     };
 }
 
-export default connect(mapStateToProps)(DateSuggestion);
+export default connect(makeMapStateToProps)(DateSuggestion);

@@ -225,7 +225,7 @@ export const filterPrivateChannels = createSelector(
     }
 );
 
-export const getMatchTermForDateMention = (() => {
+export const makeGetMatchTermForDateMention = () => {
     let lastMatchTerm = null;
     let lastValue;
     return (value) => {
@@ -241,4 +241,4 @@ export const getMatchTermForDateMention = (() => {
         }
         return lastMatchTerm;
     };
-})();
+};
