@@ -18,15 +18,15 @@ function makeMapStateToProps() {
     const preparePostIds = makePreparePostIdsForPostList();
     return (state, ownProps) => {
         const postIds = preparePostIds(state, ownProps);
-        const measureCellLayout = postIds.indexOf(START_OF_NEW_MESSAGES) > -1 || Boolean(ownProps.highlightPostId);
-
-        const {deviceHeight} = state.device.dimension;
+        let initialIndex = postIds.indexOf(START_OF_NEW_MESSAGES);
+        if (ownProps.highlightPostId) {
+            initialIndex = postIds.indexOf(ownProps.highlightPostId);
+        }
 
         return {
             deepLinkURL: state.views.root.deepLinkURL,
-            deviceHeight,
-            measureCellLayout,
             postIds,
+            initialIndex,
             serverURL: getCurrentUrl(state),
             siteURL: getConfig(state).SiteURL,
             theme: getTheme(state),
