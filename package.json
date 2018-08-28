@@ -31,7 +31,6 @@
     "react-native-document-picker": "2.1.0",
     "react-native-drawer-layout": "2.0.0",
     "react-native-exception-handler": "2.7.5",
-    "react-native-fast-image": "4.0.8",
     "react-native-image-gallery": "github:enahum/react-native-image-gallery#a98b1051e94f5a394541ca1ff9b15e2c9ffed84f",
     "react-native-image-picker": "0.26.7",
     "react-native-keyboard-aware-scroll-view": "0.5.0",
