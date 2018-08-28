@@ -271,7 +271,7 @@ export default class ImagePreview extends PureComponent {
                 } else if (file.source || isVideo(file.data)) {
                     icon = (
                         <Icon
-                            name='ios-download-outline'
+                            name='ios-download'
                             size={26}
                             color='#fff'
                         />

@@ -1,5 +1,8 @@
 {
-    "extends": "eslint:recommended",
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended"
+    ],
     "parserOptions": {
         "ecmaVersion": 6,
         "sourceType": "module",
@@ -10,6 +13,12 @@
         }
     },
     "parser": "babel-eslint",
+    "settings": {
+        "react": {
+            "pragma": "React",
+            "version": "16.4"
+        }
+    },
     "plugins": [
         "react",
         "header"
@@ -220,7 +229,7 @@
         "react/jsx-uses-vars": 2,
         "react/jsx-no-comment-textnodes": 2,
         "react/no-danger": 0,
-        "react/no-deprecated": 2,
+        "react/no-deprecated": 1,
         "react/no-did-mount-set-state": 2,
         "react/no-did-update-set-state": 2,
         "react/no-direct-mutation-state": 2,

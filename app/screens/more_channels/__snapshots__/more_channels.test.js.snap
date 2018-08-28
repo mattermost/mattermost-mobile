@@ -2,7 +2,6 @@
 
 exports[`MoreChannels should match snapshot 1`] = `
 ShallowWrapper {
-  "length": 1,
   Symbol(enzyme.__root__): [Circular],
   Symbol(enzyme.__unrendered__): <MoreChannels
     actions={
@@ -72,7 +71,6 @@ ShallowWrapper {
               autoCapitalize="none"
               backgroundColor="transparent"
               blurOnSubmit={true}
-              cancelTitle={undefined}
               inputHeight={33}
               inputStyle={
                 Object {
@@ -87,7 +85,6 @@ ShallowWrapper {
               onFocus={[Function]}
               onSearchButtonPress={[Function]}
               onSelectionChange={[Function]}
-              placeholder={undefined}
               placeholderTextColor="rgba(170,170,170,0.5)"
               tintColorDelete="rgba(170,170,170,0.5)"
               tintColorSearch="rgba(170,170,170,0.5)"
@@ -164,7 +161,6 @@ ShallowWrapper {
                 autoCapitalize="none"
                 backgroundColor="transparent"
                 blurOnSubmit={true}
-                cancelTitle={undefined}
                 inputHeight={33}
                 inputStyle={
                   Object {
@@ -179,7 +175,6 @@ ShallowWrapper {
                 onFocus={[Function]}
                 onSearchButtonPress={[Function]}
                 onSelectionChange={[Function]}
-                placeholder={undefined}
                 placeholderTextColor="rgba(170,170,170,0.5)"
                 tintColorDelete="rgba(170,170,170,0.5)"
                 tintColorSearch="rgba(170,170,170,0.5)"
@@ -238,7 +233,6 @@ ShallowWrapper {
                 autoCapitalize="none"
                 backgroundColor="transparent"
                 blurOnSubmit={true}
-                cancelTitle={undefined}
                 inputHeight={33}
                 inputStyle={
                   Object {
@@ -253,7 +247,6 @@ ShallowWrapper {
                 onFocus={[Function]}
                 onSearchButtonPress={[Function]}
                 onSelectionChange={[Function]}
-                placeholder={undefined}
                 placeholderTextColor="rgba(170,170,170,0.5)"
                 tintColorDelete="rgba(170,170,170,0.5)"
                 tintColorSearch="rgba(170,170,170,0.5)"
@@ -365,7 +358,6 @@ ShallowWrapper {
                 autoCapitalize="none"
                 backgroundColor="transparent"
                 blurOnSubmit={true}
-                cancelTitle={undefined}
                 inputHeight={33}
                 inputStyle={
                   Object {
@@ -380,7 +372,6 @@ ShallowWrapper {
                 onFocus={[Function]}
                 onSearchButtonPress={[Function]}
                 onSelectionChange={[Function]}
-                placeholder={undefined}
                 placeholderTextColor="rgba(170,170,170,0.5)"
                 tintColorDelete="rgba(170,170,170,0.5)"
                 tintColorSearch="rgba(170,170,170,0.5)"
@@ -457,7 +448,6 @@ ShallowWrapper {
                   autoCapitalize="none"
                   backgroundColor="transparent"
                   blurOnSubmit={true}
-                  cancelTitle={undefined}
                   inputHeight={33}
                   inputStyle={
                     Object {
@@ -472,7 +462,6 @@ ShallowWrapper {
                   onFocus={[Function]}
                   onSearchButtonPress={[Function]}
                   onSelectionChange={[Function]}
-                  placeholder={undefined}
                   placeholderTextColor="rgba(170,170,170,0.5)"
                   tintColorDelete="rgba(170,170,170,0.5)"
                   tintColorSearch="rgba(170,170,170,0.5)"
@@ -531,7 +520,6 @@ ShallowWrapper {
                   autoCapitalize="none"
                   backgroundColor="transparent"
                   blurOnSubmit={true}
-                  cancelTitle={undefined}
                   inputHeight={33}
                   inputStyle={
                     Object {
@@ -546,7 +534,6 @@ ShallowWrapper {
                   onFocus={[Function]}
                   onSearchButtonPress={[Function]}
                   onSelectionChange={[Function]}
-                  placeholder={undefined}
                   placeholderTextColor="rgba(170,170,170,0.5)"
                   tintColorDelete="rgba(170,170,170,0.5)"
                   tintColorSearch="rgba(170,170,170,0.5)"
@@ -643,8 +630,19 @@ ShallowWrapper {
     "adapter": ReactSixteenAdapter {
       "options": Object {
         "enableComponentDidUpdateOnSetState": true,
+        "lifecycles": Object {
+          "componentDidUpdate": Object {
+            "onSetState": true,
+          },
+          "getDerivedStateFromProps": true,
+          "getSnapshotBeforeUpdate": true,
+          "setState": Object {
+            "skipsComponentDidUpdateOnNullish": true,
+          },
+        },
       },
     },
+    "attachTo": undefined,
     "context": Object {
       "intl": Object {
         "formatMessage": [MockFunction] {
@@ -668,9 +666,24 @@ ShallowWrapper {
               },
             ],
           ],
+          "results": Array [
+            Object {
+              "isThrow": false,
+              "value": undefined,
+            },
+            Object {
+              "isThrow": false,
+              "value": undefined,
+            },
+            Object {
+              "isThrow": false,
+              "value": undefined,
+            },
+          ],
         },
       },
     },
+    "hydrateIn": undefined,
   },
 }
 `;

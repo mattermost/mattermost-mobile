@@ -140,7 +140,7 @@ export default class RecentMentions extends PureComponent {
                     id: 'mobile.recent_mentions.empty_description',
                     defaultMessage: 'Messages containing your username and other words that trigger mentions will appear here.',
                 })}
-                iconName='ios-at-outline'
+                iconName='ios-at'
                 title={formatMessage({id: 'mobile.recent_mentions.empty_title', defaultMessage: 'No Recent Mentions'})}
                 theme={theme}
             />
