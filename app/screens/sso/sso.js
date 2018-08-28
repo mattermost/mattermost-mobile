@@ -11,6 +11,7 @@ import {
     WebView,
 } from 'react-native';
 import CookieManager from 'react-native-cookies';
+import urlParse from 'url-parse';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -84,7 +85,7 @@ class SSO extends PureComponent {
         switch (props.ssoType) {
         case ViewTypes.GITLAB:
             this.loginUrl = `${props.serverUrl}/oauth/gitlab/mobile_login`;
-            this.completedUrl = `${props.serverUrl}/signup/gitlab/complete`;
+            this.completedUrl = '/signup/gitlab/complete';
             break;
         case ViewTypes.SAML:
             this.loginUrl = `${props.serverUrl}/login/sso/saml?action=mobile`;
@@ -157,11 +158,13 @@ class SSO extends PureComponent {
     onNavigationStateChange = (navState) => {
         const {url} = navState;
         const nextState = {};
+        const parsed = urlParse(url);
+        const serverUrl = urlParse(this.props.serverUrl);
 
-        if (url.includes('.onelogin.com')) {
+        if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
             nextState.scalePagesToFit = true;
-        } else if (url.includes(this.props.serverUrl)) {
+        } else if (serverUrl.host === parsed.host) {
             nextState.jsCode = postMessageJS;
         } else {
             nextState.jsCode = '';
@@ -176,7 +179,7 @@ class SSO extends PureComponent {
         const url = event.nativeEvent.url;
 
         if (url.includes(this.completedUrl)) {
-            CookieManager.get(this.props.serverUrl).then((res) => {
+            CookieManager.get(urlParse(url).origin).then((res) => {
                 const token = res.MMAUTHTOKEN;
 
                 if (token) {
@@ -188,7 +191,7 @@ class SSO extends PureComponent {
                     } = this.props.actions;
 
                     Client4.setToken(token);
-                    setStoreFromLocalData({url: this.props.serverUrl, token}).
+                    setStoreFromLocalData({url: Client4.getUrl(), token}).
                         then(handleSuccessfulLogin).
                         then(getSession).
                         then(this.goToLoadTeam).

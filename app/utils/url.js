@@ -14,7 +14,7 @@ export function isValidUrl(url = '') {
 }
 
 export function stripTrailingSlashes(url = '') {
-    return url.trim().replace(/\/+$/, '');
+    return url.replace(/ /g, '').replace(/^\/+/, '').replace(/\/+$/, '');
 }
 
 export function removeProtocol(url = '') {

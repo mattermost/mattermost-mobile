@@ -37,6 +37,11 @@ import tracker from 'app/utils/time_tracker';
 
 import LocalConfig from 'assets/config';
 
+const PROTOCOL = {
+    HTTPS: 0,
+    HTTP: 1,
+};
+
 export default class SelectServer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -127,7 +132,17 @@ export default class SelectServer extends PureComponent {
 
     getUrl = () => {
         const urlParse = require('url-parse');
-        const preUrl = urlParse(this.state.url, true);
+        let preUrl = urlParse(this.state.url, true);
+        this.attemptWithProtocol = PROTOCOL.HTTPS;
+
+        if (!preUrl.host || preUrl.protocol === 'file:') {
+            preUrl = urlParse('https://' + stripTrailingSlashes(this.state.url), true);
+        }
+
+        if (preUrl.protocol === 'http:') {
+            preUrl.protocol = 'https:';
+        }
+
         return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
     };
 
@@ -176,9 +191,20 @@ export default class SelectServer extends PureComponent {
             return;
         }
 
-        mattermostBucket.removePreference('cert', LocalConfig.AppGroupId);
-        await fetchConfig();
-        this.pingServer(url);
+        if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
+            RNFetchBlob.cba.selectCertificate((certificate) => {
+                if (certificate) {
+                    mattermostBucket.setPreference('cert', certificate, LocalConfig.AppGroupId);
+                    window.fetch = new RNFetchBlob.polyfill.Fetch({
+                        auto: true,
+                        certificate,
+                    }).build();
+                    this.pingServer(url);
+                }
+            });
+        } else {
+            this.pingServer(url);
+        }
     });
 
     handleLoginOptions = (props = this.props) => {
@@ -330,6 +356,12 @@ export default class SelectServer extends PureComponent {
 
         getPing().then((result) => {
             if (cancel) {
+                return;
+            }
+
+            if (result.error && this.attemptWithProtocol === PROTOCOL.HTTPS) {
+                this.attemptWithProtocol = PROTOCOL.HTTP;
+                this.pingServer(url.replace('https:', 'http:'));
                 return;
             }
 
