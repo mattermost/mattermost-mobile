@@ -9,6 +9,11 @@ export function getDeviceTimezone() {
     return DeviceInfo.getTimezone();
 }
 
+export function getDeviceUtcOffset() {
+    const reverseOffsetInMinutes = new Date().getTimezoneOffset();
+    return -reverseOffsetInMinutes;
+}
+
 export function isTimezoneEnabled(state) {
     const {config} = state.entities.general;
     const serverVersion = state.entities.general.serverVersion;
