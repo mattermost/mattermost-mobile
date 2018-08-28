@@ -1,5 +1,20 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.12.0 Release
+- Release Date: September 16, 2018
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+
+### Improvements
+
+
+### Bug Fixes
+- Fixed an issue where messages in DM channels did not show when clicking "Jump To".
+- Fixed an issue where `Show More` on a JIRA post displayed a blank where content should have been.
+
+
 ## v1.11.0 Release
 - Release Date: August 16, 2018
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
