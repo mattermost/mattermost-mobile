@@ -31,6 +31,7 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
+import {getDeviceUtcOffset} from 'app/utils/timezone';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDisplayName from './channel_display_name';
@@ -51,7 +52,7 @@ export default class Search extends PureComponent {
             loadChannelsByTeamName: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
-            searchPosts: PropTypes.func.isRequired,
+            searchPostsWithParams: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
@@ -467,7 +468,9 @@ export default class Search extends PureComponent {
             },
         });
 
-        actions.searchPosts(currentTeamId, terms.trim(), isOrSearch, true);
+        // timezone offset in seconds
+        const timeZoneOffset = getDeviceUtcOffset() * 60;
+        actions.searchPostsWithParams(currentTeamId, {terms: terms.trim(), is_or_search: isOrSearch, time_zone_offset: timeZoneOffset}, true);
     };
 
     handleSearchButtonPress = preventDoubleTap((text) => {

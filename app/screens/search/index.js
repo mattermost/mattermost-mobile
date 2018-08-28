@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {selectFocusedPostId, selectPost} from 'mattermost-redux/actions/posts';
-import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/actions/search';
+import {clearSearch, removeSearchTerms, searchPostsWithParams} from 'mattermost-redux/actions/search';
 import {getCurrentChannelId, filterPostIds} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -56,7 +56,7 @@ function mapDispatchToProps(dispatch) {
             loadThreadIfNecessary,
             removeSearchTerms,
             selectFocusedPostId,
-            searchPosts,
+            searchPostsWithParams,
             selectPost,
         }, dispatch),
     };

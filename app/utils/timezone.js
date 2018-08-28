@@ -2,11 +2,16 @@
 // See LICENSE.txt for license information.
 
 import DeviceInfo from 'react-native-device-info';
+import moment from 'moment-timezone';
 
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 export function getDeviceTimezone() {
     return DeviceInfo.getTimezone();
+}
+
+export function getDeviceUtcOffset() {
+    return moment().utcOffset();
 }
 
 export function isTimezoneEnabled(state) {
