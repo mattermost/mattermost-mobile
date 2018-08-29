@@ -168,7 +168,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         const {isReplyPost, openGraphData, theme} = this.props;
         const {hasImage, height, imageUrl, width} = this.state;
 
-        if (!openGraphData || !openGraphData.url) {
+        if (!openGraphData) {
             return null;
         }
 
@@ -210,7 +210,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                             numberOfLines={3}
                             ellipsizeMode='tail'
                         >
-                            {openGraphData.title}
+                            {openGraphData.title || openGraphData.url}
                         </Text>
                     </TouchableOpacity>
                 </View>
