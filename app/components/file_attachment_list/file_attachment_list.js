@@ -34,7 +34,6 @@ export default class FileAttachmentList extends Component {
         isFailed: PropTypes.bool,
         navigator: PropTypes.object,
         onLongPress: PropTypes.func,
-        onPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         toggleSelected: PropTypes.func.isRequired,
@@ -125,11 +124,6 @@ export default class FileAttachmentList extends Component {
         this.items[idx] = ref;
     };
 
-    handleInfoPress = () => {
-        this.props.hideOptionsContext();
-        this.props.onPress();
-    };
-
     handlePreviewPress = preventDoubleTap((idx) => {
         this.props.hideOptionsContext();
         Keyboard.dismiss();
@@ -180,7 +174,6 @@ export default class FileAttachmentList extends Component {
                         index={idx}
                         navigator={navigator}
                         onCaptureRef={this.handleCaptureRef}
-                        onInfoPress={this.handleInfoPress}
                         onPreviewPress={this.handlePreviewPress}
                         theme={this.props.theme}
                     />

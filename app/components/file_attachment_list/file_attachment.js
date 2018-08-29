@@ -25,14 +25,12 @@ export default class FileAttachment extends PureComponent {
         file: PropTypes.object.isRequired,
         index: PropTypes.number.isRequired,
         onCaptureRef: PropTypes.func,
-        onInfoPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
         navigator: PropTypes.object,
     };
 
     static defaultProps = {
-        onInfoPress: () => true,
         onPreviewPress: () => true,
     };
 
@@ -45,7 +43,11 @@ export default class FileAttachment extends PureComponent {
     };
 
     handlePreviewPress = () => {
-        this.props.onPreviewPress(this.props.index);
+        if (this.documentElement) {
+            this.documentElement.handlePreviewPress();
+        } else {
+            this.props.onPreviewPress(this.props.index);
+        }
     };
 
     renderFileInfo() {
@@ -79,12 +81,15 @@ export default class FileAttachment extends PureComponent {
         );
     }
 
+    setDocumentRef = (ref) => {
+        this.documentElement = ref;
+    };
+
     render() {
         const {
             canDownloadFiles,
             deviceWidth,
             file,
-            onInfoPress,
             theme,
             navigator,
         } = this.props;
@@ -105,6 +110,7 @@ export default class FileAttachment extends PureComponent {
         } else if (isDocument(data)) {
             fileAttachmentComponent = (
                 <FileAttachmentDocument
+                    ref={this.setDocumentRef}
                     canDownloadFiles={canDownloadFiles}
                     file={file}
                     navigator={navigator}
@@ -129,7 +135,7 @@ export default class FileAttachment extends PureComponent {
             <View style={[style.fileWrapper, {width}]}>
                 {fileAttachmentComponent}
                 <TouchableOpacity
-                    onPress={onInfoPress}
+                    onPress={this.handlePreviewPress}
                     style={style.fileInfoContainer}
                 >
                     {this.renderFileInfo()}
