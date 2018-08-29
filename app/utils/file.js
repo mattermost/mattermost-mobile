@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import mimeDB from 'mime-db';
 
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';

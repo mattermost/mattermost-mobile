@@ -3,7 +3,7 @@
 
 // Based on the work done by https://github.com/wcandillon/react-native-expo-image-cache/
 
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 
 import {DeviceTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -27,7 +27,7 @@ export default class ImageCacheManager {
             listener(path);
         } else {
             addListener(uri, listener);
-            if (uri.startsWith('file://')) {
+            if (!uri.startsWith('http')) {
                 // In case the uri we are trying to cache is already a local file just notify and return
                 notifyAll(uri, uri);
                 return;

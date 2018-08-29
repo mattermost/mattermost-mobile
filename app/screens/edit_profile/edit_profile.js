@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {View} from 'react-native';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {Client4} from 'mattermost-redux/client';
@@ -20,6 +20,8 @@ import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar/index';
 import ProfilePicture from 'app/components/profile_picture';
 import AttachmentButton from 'app/components/attachment_button';
+import mattermostBucket from 'app/mattermost_bucket';
+import LocalConfig from 'assets/config';
 
 import EditProfileItem from './edit_profile_item';
 
@@ -191,7 +193,7 @@ export default class EditProfile extends PureComponent {
         this.emitCanUpdateAccount(true);
     };
 
-    uploadProfileImage = () => {
+    uploadProfileImage = async () => {
         const {profileImage} = this.state;
         const {currentUser} = this.props;
         const fileData = buildFileUploadData(profileImage);
@@ -208,7 +210,13 @@ export default class EditProfile extends PureComponent {
             type: fileData.type,
         };
 
-        return RNFetchBlob.fetch('POST', `${Client4.getUserRoute(currentUser.id)}/image`, headers, [fileInfo]);
+        const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+        const options = {
+            timeout: 10000,
+            certificate,
+        };
+
+        return RNFetchBlob.config(options).fetch('POST', `${Client4.getUserRoute(currentUser.id)}/image`, headers, [fileInfo]);
     };
 
     updateField = (field) => {

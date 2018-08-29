@@ -38,7 +38,6 @@ function mapStateToProps(state, ownProps) {
         imageUrl,
         isCustomEmoji,
         displayTextOnly,
-        token: state.entities.general.credentials.token,
     };
 }
 

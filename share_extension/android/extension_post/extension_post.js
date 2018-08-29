@@ -18,7 +18,7 @@ import {
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 
 import {Preferences} from 'mattermost-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';

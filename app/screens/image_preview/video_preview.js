@@ -11,7 +11,7 @@ import {
     View,
 } from 'react-native';
 import Video from 'react-native-video';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import {intlShape} from 'react-intl';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';

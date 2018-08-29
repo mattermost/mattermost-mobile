@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
+    DeviceEventEmitter,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -17,7 +18,7 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -25,6 +26,7 @@ import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import QuickTextInput from 'app/components/quick_text_input';
 import {UpgradeTypes} from 'app/constants/view';
+import fetchConfig from 'app/fetch_preconfig';
 import mattermostBucket from 'app/mattermost_bucket';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
@@ -82,13 +84,14 @@ export default class SelectServer extends PureComponent {
         if (!allowOtherServers && serverUrl) {
             // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
             // we automatically trigger the ping to move to the next screen
-            this.onClick();
+            this.handleConnect();
         }
 
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
 
+        this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
         this.props.navigator.setOnNavigatorEvent(this.handleNavigatorEvent);
     }
 
@@ -110,10 +113,23 @@ export default class SelectServer extends PureComponent {
     }
 
     componentWillUnmount() {
+        this.certificateListener.remove();
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
     }
+
+    blur = () => {
+        if (this.textInput) {
+            this.textInput.blur();
+        }
+    };
+
+    getUrl = () => {
+        const urlParse = require('url-parse');
+        const preUrl = urlParse(this.state.url, true);
+        return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
+    };
 
     goToNextScreen = (screen, title) => {
         const {navigator, theme} = this.props;
@@ -132,11 +148,84 @@ export default class SelectServer extends PureComponent {
         });
     };
 
+    handleAndroidKeyboard = () => {
+        this.blur();
+    };
+
+    handleConnect = preventDoubleTap(async () => {
+        const url = this.getUrl();
+
+        Keyboard.dismiss();
+
+        if (this.state.connecting || this.state.connected) {
+            this.cancelPing();
+
+            return;
+        }
+
+        if (!isValidUrl(url)) {
+            this.setState({
+                error: {
+                    intl: {
+                        id: 'mobile.server_url.invalid_format',
+                        defaultMessage: 'URL must start with http:// or https://',
+                    },
+                },
+            });
+
+            return;
+        }
+
+        mattermostBucket.removePreference('cert', LocalConfig.AppGroupId);
+        await fetchConfig();
+        this.pingServer(url);
+    });
+
+    handleLoginOptions = (props = this.props) => {
+        const {intl} = this.context;
+        const {config, license} = props;
+        const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
+        const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
+
+        let options = 0;
+        if (samlEnabled || gitlabEnabled) {
+            options += 1;
+        }
+
+        let screen;
+        let title;
+        if (options) {
+            screen = 'LoginOptions';
+            title = intl.formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
+        } else {
+            screen = 'Login';
+            title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
+        }
+
+        this.props.actions.resetPing();
+
+        if (Platform.OS === 'ios') {
+            if (config.ExperimentalClientSideCertEnable === 'true' && config.ExperimentalClientSideCertCheck === 'primary') {
+                // log in automatically and send directly to the channel screen
+                this.loginWithCertificate();
+                return;
+            }
+
+            setTimeout(() => {
+                this.goToNextScreen(screen, title);
+            }, 350);
+        } else {
+            this.goToNextScreen(screen, title);
+        }
+    };
+
     handleNavigatorEvent = (event) => {
-        if (event.id === 'didDisappear') {
+        switch (event.id) {
+        case 'didDisappear':
             this.setState({
                 connected: false,
             });
+            break;
         }
     };
 
@@ -164,50 +253,12 @@ export default class SelectServer extends PureComponent {
         });
     };
 
-    handleLoginOptions = (props = this.props) => {
-        const {intl} = this.context;
-        const {config, license} = props;
-        const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
-        const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-
-        let options = 0;
-        if (samlEnabled || gitlabEnabled) {
-            options += 1;
-        }
-
-        let screen;
-        let title;
-        if (options) {
-            screen = 'LoginOptions';
-            title = intl.formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
-        } else {
-            screen = 'Login';
-            title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
-        }
-
-        this.props.actions.resetPing();
-
-        if (Platform.OS === 'ios' && LocalConfig.ExperimentalClientSideCertEnable) {
-            if (config.ExperimentalClientSideCertEnable === 'true' && config.ExperimentalClientSideCertCheck === 'primary') {
-                // log in automatically and send directly to the channel screen
-                this.loginWithCertificate();
-                return;
-            }
-
-            setTimeout(() => {
-                this.goToNextScreen(screen, title);
-            }, 350);
-        } else {
-            this.goToNextScreen(screen, title);
-        }
-    };
-
-    handleAndroidKeyboard = () => {
-        this.blur();
-    };
-
     handleTextChanged = (url) => {
         this.setState({url});
+    };
+
+    inputRef = (ref) => {
+        this.textInput = ref;
     };
 
     loginWithCertificate = async () => {
@@ -247,48 +298,6 @@ export default class SelectServer extends PureComponent {
             },
         });
     };
-
-    onClick = preventDoubleTap(async () => {
-        const urlParse = require('url-parse');
-        const preUrl = urlParse(this.state.url, true);
-        const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
-
-        Keyboard.dismiss();
-
-        if (this.state.connecting || this.state.connected) {
-            this.cancelPing();
-
-            return;
-        }
-
-        if (!isValidUrl(url)) {
-            this.setState({
-                error: {
-                    intl: {
-                        id: 'mobile.server_url.invalid_format',
-                        defaultMessage: 'URL must start with http:// or https://',
-                    },
-                },
-            });
-
-            return;
-        }
-
-        if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
-            RNFetchBlob.cba.selectCertificate((certificate) => {
-                if (certificate) {
-                    mattermostBucket.setPreference('cert', certificate, LocalConfig.AppGroupId);
-                    window.fetch = new RNFetchBlob.polyfill.Fetch({
-                        auto: true,
-                        certificate,
-                    }).build();
-                    this.pingServer(url);
-                }
-            });
-        } else {
-            this.pingServer(url);
-        }
-    });
 
     pingServer = (url) => {
         const {
@@ -345,14 +354,16 @@ export default class SelectServer extends PureComponent {
         });
     };
 
-    inputRef = (ref) => {
-        this.textInput = ref;
-    };
-
-    blur = () => {
-        if (this.textInput) {
-            this.textInput.blur();
-        }
+    selectCertificate = () => {
+        const url = this.getUrl();
+        RNFetchBlob.cba.selectCertificate((certificate) => {
+            if (certificate) {
+                mattermostBucket.setPreference('cert', certificate, LocalConfig.AppGroupId);
+                fetchConfig().then(() => {
+                    this.pingServer(url);
+                });
+            }
+        });
     };
 
     render() {
@@ -426,7 +437,7 @@ export default class SelectServer extends PureComponent {
                             value={url}
                             editable={!inputDisabled}
                             onChangeText={this.handleTextChanged}
-                            onSubmitEditing={this.onClick}
+                            onSubmitEditing={this.handleConnect}
                             style={inputStyle}
                             autoCapitalize='none'
                             autoCorrect={false}
@@ -440,7 +451,7 @@ export default class SelectServer extends PureComponent {
                             disableFullscreenUI={true}
                         />
                         <Button
-                            onPress={this.onClick}
+                            onPress={this.handleConnect}
                             containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                         >
                             {buttonIcon}

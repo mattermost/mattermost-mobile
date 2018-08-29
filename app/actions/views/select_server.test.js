@@ -11,7 +11,7 @@ import {ViewTypes} from 'app/constants';
 
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 
-jest.mock('react-native-fetch-blob/fs', () => ({
+jest.mock('rn-fetch-blob/fs', () => ({
     dirs: {
         DocumentDir: () => jest.fn(),
         CacheDir: () => jest.fn(),

@@ -16,7 +16,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';

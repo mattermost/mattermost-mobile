@@ -14,7 +14,7 @@ import {
     View,
 } from 'react-native';
 import OpenFile from 'react-native-doc-viewer';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 import {CircularProgress} from 'react-native-circular-progress';
 import {intlShape} from 'react-intl';
 import tinyColor from 'tinycolor2';

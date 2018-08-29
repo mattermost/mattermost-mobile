@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
@@ -100,15 +100,25 @@ Client4.doFetchWithResponse = async (url, options) => {
     };
 };
 
-if (Platform.OS === 'ios') {
-    mattermostBucket.getPreference('cert', LocalConfig.AppGroupId).then((certificate) => {
-        window.fetch = new RNFetchBlob.polyfill.Fetch({
+const initFetchConfig = async () => {
+    let fetchConfig = {};
+    if (Platform.OS === 'ios') {
+        const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+        fetchConfig = {
             auto: true,
             certificate,
-        }).build();
-    });
-} else {
-    window.fetch = new RNFetchBlob.polyfill.Fetch({
-        auto: true,
-    }).build();
-}
+        };
+        window.fetch = new RNFetchBlob.polyfill.Fetch(fetchConfig).build();
+    } else {
+        fetchConfig = {
+            auto: true,
+        };
+        window.fetch = new RNFetchBlob.polyfill.Fetch(fetchConfig).build();
+    }
+
+    return true;
+};
+
+initFetchConfig();
+
+export default initFetchConfig;
