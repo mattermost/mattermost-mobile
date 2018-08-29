@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`NotificationSettingsMobileAndroid should match snapshot 1`] = `
+exports[`NotificationSettingsEmailAndroid should match snapshot 1`] = `
 <sectionItem
   action={[Function]}
   actionType="default"
@@ -25,7 +25,7 @@ exports[`NotificationSettingsMobileAndroid should match snapshot 1`] = `
 />
 `;
 
-exports[`NotificationSettingsMobileAndroid should match snapshot 2`] = `
+exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
 <Component
   animationType="slide"
   hardwareAccelerated={false}

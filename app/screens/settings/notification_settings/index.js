@@ -9,7 +9,7 @@ import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
-import {handleUpdateUserNotifyProps} from 'app/actions/views/account_notifications';
+import {updateMe} from 'mattermost-redux/actions/users';
 
 import NotificationSettings from './notification_settings';
 
@@ -34,7 +34,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleUpdateUserNotifyProps,
+            updateMe,
         }, dispatch),
     };
 }

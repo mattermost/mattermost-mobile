@@ -7,17 +7,19 @@ import Adapter from 'enzyme-adapter-react-16';
 configure({adapter: new Adapter()});
 
 import {shallowWithIntl} from 'test/intl-test-helper';
+import {emptyFunction} from 'app/utils/general';
 
-import NotificationSettingsMobileAndroid from './notification_settings_email.android.js';
+import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
 
-describe('NotificationSettingsMobileAndroid', () => {
+describe('NotificationSettingsEmailAndroid', () => {
     const baseProps = {
-        currentUserId: 'current_user_id',
+        currentUser: {id: 'current_user_id'},
         emailInterval: '30',
         enableEmailBatching: false,
-        navigator: {setOnNavigatorEvent: () => {}}, // eslint-disable-line no-empty-function
+        navigator: {setOnNavigatorEvent: emptyFunction},
         actions: {
-            savePreferences: () => {}, // eslint-disable-line no-empty-function
+            updateMe: jest.fn(),
+            savePreferences: jest.fn(),
         },
         sendEmailNotifications: true,
         siteName: 'Mattermost',
@@ -29,7 +31,7 @@ describe('NotificationSettingsMobileAndroid', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsMobileAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
         const style = {
@@ -52,7 +54,7 @@ describe('NotificationSettingsMobileAndroid', () => {
 
     test('should match state on setEmailNotifications', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsMobileAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
         wrapper.setState({email: 'false', interval: '0'});
@@ -68,7 +70,7 @@ describe('NotificationSettingsMobileAndroid', () => {
 
     test('should match state on handleClose', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsMobileAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
         wrapper.setState({showEmailNotificationsModal: true, interval: '30', newInterval: '3600'});
@@ -79,7 +81,7 @@ describe('NotificationSettingsMobileAndroid', () => {
 
     test('should saveEmailNotifyProps and handleClose on handleSaveEmailNotification', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsMobileAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
         const instance = wrapper.instance();
@@ -89,9 +91,27 @@ describe('NotificationSettingsMobileAndroid', () => {
         expect(instance.saveEmailNotifyProps).toHaveBeenCalledTimes(1);
     });
 
+    test('should call actions.updateMe and actions.savePreferences on saveEmailNotifyProps', () => {
+        const savePreferences = jest.fn();
+        const updateMe = jest.fn();
+        const props = {...baseProps, actions: {savePreferences, updateMe}};
+        const wrapper = shallowWithIntl(
+            <NotificationSettingsEmailAndroid {...props}/>
+        );
+
+        wrapper.setState({email: 'true', newInterval: 30});
+        wrapper.instance().saveEmailNotifyProps();
+
+        expect(updateMe).toHaveBeenCalledTimes(1);
+        expect(updateMe.mock.calls[0][0].notify_props.email).toBe('true');
+
+        expect(savePreferences).toHaveBeenCalledTimes(1);
+        expect(savePreferences).toBeCalledWith('current_user_id', [{category: 'notifications', name: 'email_interval', user_id: 'current_user_id', value: 30}]);
+    });
+
     test('should match state on showEmailModal', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsMobileAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
         wrapper.setState({showEmailNotificationsModal: false});
@@ -101,7 +121,7 @@ describe('NotificationSettingsMobileAndroid', () => {
 
     test('should match state on handleChange', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsMobileAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
         wrapper.setState({newInterval: '3600'});

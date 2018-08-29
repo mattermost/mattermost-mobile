@@ -24,7 +24,7 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 class NotificationSettings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleUpdateUserNotifyProps: PropTypes.func.isRequired,
+            updateMe: PropTypes.func.isRequired,
         }),
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
@@ -99,7 +99,7 @@ class NotificationSettings extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
-                currentUserId: currentUser.id,
+                currentUser,
             },
         });
     };
@@ -161,7 +161,7 @@ class NotificationSettings extends PureComponent {
         };
 
         if (!deepEqual(previousProps, notifyProps)) {
-            this.props.actions.handleUpdateUserNotifyProps(notifyProps);
+            this.props.actions.updateMe({notify_props: notifyProps});
         }
     };
 
@@ -195,7 +195,7 @@ class NotificationSettings extends PureComponent {
         }
 
         if (this.shouldSaveAutoResponder(notifyProps)) {
-            this.props.actions.handleUpdateUserNotifyProps(notifyProps);
+            this.props.actions.updateMe({notify_props: notifyProps});
         }
     };
 
