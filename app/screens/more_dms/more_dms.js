@@ -212,7 +212,7 @@ class MoreDirectMessages extends PureComponent {
             return this.props.actions.getProfiles(page, General.PROFILE_CHUNK_SIZE);
         }
 
-        return this.props.actions.getProfilesInTeam(page, General.PROFILE_CHUNK_SIZE);
+        return this.props.actions.getProfilesInTeam(this.props.currentTeamId, page, General.PROFILE_CHUNK_SIZE);
     };
 
     searchProfiles = (term) => {
