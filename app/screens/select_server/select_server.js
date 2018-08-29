@@ -37,11 +37,6 @@ import tracker from 'app/utils/time_tracker';
 
 import LocalConfig from 'assets/config';
 
-const PROTOCOL = {
-    HTTPS: 0,
-    HTTP: 1,
-};
-
 export default class SelectServer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -133,7 +128,6 @@ export default class SelectServer extends PureComponent {
     getUrl = () => {
         const urlParse = require('url-parse');
         let preUrl = urlParse(this.state.url, true);
-        this.attemptWithProtocol = PROTOCOL.HTTPS;
 
         if (!preUrl.host || preUrl.protocol === 'file:') {
             preUrl = urlParse('https://' + stripTrailingSlashes(this.state.url), true);
@@ -325,7 +319,7 @@ export default class SelectServer extends PureComponent {
         });
     };
 
-    pingServer = (url) => {
+    pingServer = (url, retryWithHttp = false) => {
         const {
             getPing,
             handleServerUrlChanged,
@@ -359,9 +353,8 @@ export default class SelectServer extends PureComponent {
                 return;
             }
 
-            if (result.error && this.attemptWithProtocol === PROTOCOL.HTTPS) {
-                this.attemptWithProtocol = PROTOCOL.HTTP;
-                this.pingServer(url.replace('https:', 'http:'));
+            if (result.error && retryWithHttp) {
+                this.pingServer(url.replace('https:', 'http:'), false);
                 return;
             }
 
@@ -392,7 +385,7 @@ export default class SelectServer extends PureComponent {
             if (certificate) {
                 mattermostBucket.setPreference('cert', certificate, LocalConfig.AppGroupId);
                 fetchConfig().then(() => {
-                    this.pingServer(url);
+                    this.pingServer(url, true);
                 });
             }
         });
