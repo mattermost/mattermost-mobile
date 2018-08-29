@@ -38,7 +38,9 @@ function mapStateToProps(state, ownProps) {
     const teamId = channel.team_id;
 
     let canAddReaction = true;
-    if (hasNewPermissions(state)) {
+    if (channelIsArchived) {
+        canAddReaction = false;
+    } else if (hasNewPermissions(state)) {
         canAddReaction = haveIChannelPermission(state, {
             team: teamId,
             channel: post.channel_id,
