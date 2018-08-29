@@ -25,6 +25,7 @@ import FileAttachment from './file_attachment';
 export default class FileAttachmentList extends Component {
     static propTypes = {
         actions: PropTypes.object.isRequired,
+        canDownloadFiles: PropTypes.bool.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         fileIds: PropTypes.array.isRequired,
@@ -144,12 +145,13 @@ export default class FileAttachmentList extends Component {
     };
 
     renderItems = () => {
-        const {deviceWidth, fileIds, files, navigator} = this.props;
+        const {canDownloadFiles, deviceWidth, fileIds, files, navigator} = this.props;
 
         if (!files.length && fileIds.length > 0) {
             return fileIds.map((id, idx) => (
                 <FileAttachment
                     key={id}
+                    canDownloadFiles={canDownloadFiles}
                     deviceWidth={deviceWidth}
                     file={{loading: true}}
                     index={idx}
@@ -172,6 +174,7 @@ export default class FileAttachmentList extends Component {
                     onPressOut={this.handlePressOut}
                 >
                     <FileAttachment
+                        canDownloadFiles={canDownloadFiles}
                         deviceWidth={deviceWidth}
                         file={f}
                         index={idx}

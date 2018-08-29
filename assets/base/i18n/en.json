@@ -2422,6 +2422,8 @@
   "mobile.downloader.android_started": "Download started",
   "mobile.downloader.android_success": "download successful",
   "mobile.downloader.complete": "Download complete",
+  "mobile.downloader.disabled_title": "Download disabled",
+  "mobile.downloader.disabled_description": "File downloads are disabled on this server. Please contact your System Admin for more details.\n",
   "mobile.downloader.downloading": "Downloading...",
   "mobile.downloader.failed_description": "An error occurred while downloading the file. Please check your internet connection and try again.\n",
   "mobile.downloader.failed_title": "Download failed",
