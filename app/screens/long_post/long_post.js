@@ -143,7 +143,6 @@ export default class LongPost extends PureComponent {
                         hideOptionsContext={emptyFunction}
                         isFailed={false}
                         onLongPress={emptyFunction}
-                        onPress={this.handlePress}
                         postId={postId}
                         toggleSelected={emptyFunction}
                         navigator={navigator}

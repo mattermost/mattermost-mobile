@@ -264,7 +264,6 @@ export default class PostBody extends PureComponent {
             fileIds,
             isFailed,
             navigator,
-            onPress,
             postId,
             showLongPost,
             toggleSelected,
@@ -286,7 +285,6 @@ export default class PostBody extends PureComponent {
                     hideOptionsContext={this.hideOptionsContext}
                     isFailed={isFailed}
                     onLongPress={this.showOptionsContext}
-                    onPress={onPress}
                     postId={postId}
                     toggleSelected={toggleSelected}
                     navigator={navigator}
