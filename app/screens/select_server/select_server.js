@@ -127,7 +127,16 @@ export default class SelectServer extends PureComponent {
 
     getUrl = () => {
         const urlParse = require('url-parse');
-        const preUrl = urlParse(this.state.url, true);
+        let preUrl = urlParse(this.state.url, true);
+
+        if (!preUrl.host || preUrl.protocol === 'file:') {
+            preUrl = urlParse('https://' + stripTrailingSlashes(this.state.url), true);
+        }
+
+        if (preUrl.protocol === 'http:') {
+            preUrl.protocol = 'https:';
+        }
+
         return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
     };
 
@@ -176,9 +185,20 @@ export default class SelectServer extends PureComponent {
             return;
         }
 
-        mattermostBucket.removePreference('cert', LocalConfig.AppGroupId);
-        await fetchConfig();
-        this.pingServer(url);
+        if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
+            RNFetchBlob.cba.selectCertificate((certificate) => {
+                if (certificate) {
+                    mattermostBucket.setPreference('cert', certificate, LocalConfig.AppGroupId);
+                    window.fetch = new RNFetchBlob.polyfill.Fetch({
+                        auto: true,
+                        certificate,
+                    }).build();
+                    this.pingServer(url);
+                }
+            });
+        } else {
+            this.pingServer(url);
+        }
     });
 
     handleLoginOptions = (props = this.props) => {
@@ -299,7 +319,7 @@ export default class SelectServer extends PureComponent {
         });
     };
 
-    pingServer = (url) => {
+    pingServer = (url, retryWithHttp = true) => {
         const {
             getPing,
             handleServerUrlChanged,
@@ -333,6 +353,11 @@ export default class SelectServer extends PureComponent {
                 return;
             }
 
+            if (result.error && retryWithHttp) {
+                this.pingServer(url.replace('https:', 'http:'), false);
+                return;
+            }
+
             if (!result.error) {
                 loadConfigAndLicense();
                 setServerVersion(Client4.getServerVersion());
@@ -360,7 +385,7 @@ export default class SelectServer extends PureComponent {
             if (certificate) {
                 mattermostBucket.setPreference('cert', certificate, LocalConfig.AppGroupId);
                 fetchConfig().then(() => {
-                    this.pingServer(url);
+                    this.pingServer(url, true);
                 });
             }
         });

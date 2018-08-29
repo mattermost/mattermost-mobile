@@ -61,4 +61,29 @@ describe('UrlUtils', () => {
             });
         }
     });
+
+    describe('stripTrailingSlashes', () => {
+        it('should return the same url', () => {
+            const url = 'https://www.youtube.com/watch?v=zrFWrmPgfzc&feature=youtu.be';
+            expect(UrlUtils.stripTrailingSlashes(url)).toEqual(url);
+        });
+
+        it('should return an url without the initial //', () => {
+            const url = '//www.youtube.com/watch?v=zrFWrmPgfzc&feature=youtu.be';
+            const expected = 'www.youtube.com/watch?v=zrFWrmPgfzc&feature=youtu.be';
+            expect(UrlUtils.stripTrailingSlashes(url)).toEqual(expected);
+        });
+
+        it('should return an url without the initial // and the lasts ////', () => {
+            const url = '//www.youtube.com/watch?v=zrFWrmPgfzc&feature=youtu.be////';
+            const expected = 'www.youtube.com/watch?v=zrFWrmPgfzc&feature=youtu.be';
+            expect(UrlUtils.stripTrailingSlashes(url)).toEqual(expected);
+        });
+
+        it('should return an url without the initial // and the lasts //// or spaces', () => {
+            const url = 'https: //www .y o u t u be .co m/watch   ?v=z r FW r mP gf zc& fe atu r e = you  tu .be////';
+            const expected = 'https://www.youtube.com/watch?v=zrFWrmPgfzc&feature=youtu.be';
+            expect(UrlUtils.stripTrailingSlashes(url)).toEqual(expected);
+        });
+    });
 });

@@ -3,6 +3,7 @@
 
 import {Platform} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
+import urlParse from 'url-parse';
 
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
@@ -14,6 +15,17 @@ import LocalConfig from 'assets/config';
 const HEADER_X_VERSION_ID = 'X-Version-Id';
 const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
 const HEADER_TOKEN = 'Token';
+
+const handleRedirectProtocol = (url, response) => {
+    const serverUrl = Client4.getUrl();
+    const parsed = urlParse(url);
+    const {redirects} = response.rnfbRespInfo;
+    const redirectUrl = urlParse(redirects[redirects.length - 1]);
+
+    if (serverUrl === parsed.origin && parsed.host === redirectUrl.host && parsed.protocol !== redirectUrl.protocol) {
+        Client4.setUrl(serverUrl.replace(parsed.protocol, redirectUrl.protocol));
+    }
+};
 
 Client4.doFetchWithResponse = async (url, options) => {
     if (!Client4.online) {
@@ -30,6 +42,9 @@ Client4.doFetchWithResponse = async (url, options) => {
     try {
         response = await fetch(url, Client4.getOptions(options));
         headers = response.headers;
+        if (!url.startsWith('https') && response.rnfbRespInfo && response.rnfbRespInfo.redirects && response.rnfbRespInfo.redirects.length > 1) {
+            handleRedirectProtocol(url, response);
+        }
 
         data = await response.json();
     } catch (err) {
