@@ -265,7 +265,7 @@ export default class Permalink extends PureComponent {
         }
 
         if (!channelId) {
-            const focusedPost = post.data.posts[focusedPostId];
+            const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
             focusChannelId = focusedPost ? focusedPost.channel_id : '';
             if (focusChannelId && !this.props.myMembers[focusChannelId]) {
                 const {data: channel} = await actions.getChannel(focusChannelId);
