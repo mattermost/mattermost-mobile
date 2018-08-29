@@ -319,7 +319,7 @@ export default class SelectServer extends PureComponent {
         });
     };
 
-    pingServer = (url, retryWithHttp = false) => {
+    pingServer = (url, retryWithHttp = true) => {
         const {
             getPing,
             handleServerUrlChanged,
