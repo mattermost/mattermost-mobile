@@ -7,14 +7,16 @@ import PropTypes from 'prop-types';
 import {Preferences} from 'mattermost-redux/constants';
 import {getEmailInterval} from 'mattermost-redux/utils/notify_props';
 
+import {getNotificationProps} from 'app/utils/notify_props';
 import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsEmailBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             savePreferences: PropTypes.func.isRequired,
+            updateMe: PropTypes.func.isRequired,
         }),
-        currentUserId: PropTypes.string.isRequired,
+        currentUser: PropTypes.object.isRequired,
         emailInterval: PropTypes.string.isRequired,
         enableEmailBatching: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
@@ -94,11 +96,14 @@ export default class NotificationSettingsEmailBase extends PureComponent {
     };
 
     saveEmailNotifyProps = () => {
-        const {currentUserId} = this.props;
+        const {actions, currentUser} = this.props;
         const {email, newInterval} = this.state;
-        const emailNotify = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: 'email', value: email};
-        const emailInterval = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: Preferences.EMAIL_INTERVAL, value: newInterval};
-        this.props.actions.savePreferences(currentUserId, [emailNotify, emailInterval]);
+
+        const notifyProps = getNotificationProps(currentUser);
+        actions.updateMe({notify_props: {...notifyProps, email}});
+
+        const emailInterval = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUser.id, name: Preferences.EMAIL_INTERVAL, value: newInterval};
+        actions.savePreferences(currentUser.id, [emailInterval]);
     };
 
     computeEmailInterval = (sendEmailNotifications, enableEmailBatching, emailInterval) => {

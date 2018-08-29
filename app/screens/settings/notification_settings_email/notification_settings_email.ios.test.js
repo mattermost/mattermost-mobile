@@ -6,6 +6,8 @@ import {configure, shallow} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 configure({adapter: new Adapter()});
 
+import {emptyFunction} from 'app/utils/general';
+
 import NotificationSettingsEmailIos from './notification_settings_email.ios.js';
 
 jest.mock('app/utils/theme', () => {
@@ -18,12 +20,13 @@ jest.mock('app/utils/theme', () => {
 
 describe('NotificationSettingsEmailIos', () => {
     const baseProps = {
-        currentUserId: 'current_user_id',
+        currentUser: {id: 'current_user_id'},
         emailInterval: '30',
         enableEmailBatching: false,
-        navigator: {setOnNavigatorEvent: () => {}}, // eslint-disable-line no-empty-function
+        navigator: {setOnNavigatorEvent: emptyFunction},
         actions: {
-            savePreferences: () => {}, // eslint-disable-line no-empty-function
+            updateMe: jest.fn(),
+            savePreferences: jest.fn(),
         },
         sendEmailNotifications: true,
         siteName: 'Mattermost',
@@ -53,6 +56,24 @@ describe('NotificationSettingsEmailIos', () => {
         expect(instance.saveEmailNotifyProps).toHaveBeenCalledTimes(1);
     });
 
+    test('should call actions.updateMe and actions.savePreferences on saveEmailNotifyProps', () => {
+        const savePreferences = jest.fn();
+        const updateMe = jest.fn();
+        const props = {...baseProps, actions: {savePreferences, updateMe}};
+        const wrapper = shallow(
+            <NotificationSettingsEmailIos {...props}/>
+        );
+
+        wrapper.setState({email: 'true', newInterval: 30});
+        wrapper.instance().saveEmailNotifyProps();
+
+        expect(updateMe).toHaveBeenCalledTimes(1);
+        expect(updateMe.mock.calls[0][0].notify_props.email).toBe('true');
+
+        expect(savePreferences).toHaveBeenCalledTimes(1);
+        expect(savePreferences).toBeCalledWith('current_user_id', [{category: 'notifications', name: 'email_interval', user_id: 'current_user_id', value: 30}]);
+    });
+
     test('should macth state on setEmailNotifications', () => {
         const wrapper = shallow(
             <NotificationSettingsEmailIos {...baseProps}/>
@@ -70,7 +91,7 @@ describe('NotificationSettingsEmailIos', () => {
     });
 
     test('should call props.actions.savePreferences on saveUserNotifyProps', () => {
-        const props = {...baseProps, actions: {savePreferences: jest.fn()}};
+        const props = {...baseProps, actions: {savePreferences: jest.fn(), updateMe: jest.fn()}};
         const wrapper = shallow(
             <NotificationSettingsEmailIos {...props}/>
         );
@@ -80,10 +101,7 @@ describe('NotificationSettingsEmailIos', () => {
         expect(props.actions.savePreferences).toHaveBeenCalledTimes(1);
         expect(props.actions.savePreferences).toBeCalledWith(
             'current_user_id',
-            [
-                {category: 'notifications', name: 'email', user_id: 'current_user_id', value: 'true'},
-                {category: 'notifications', name: 'email_interval', user_id: 'current_user_id', value: '3600'},
-            ]
+            [{category: 'notifications', name: 'email_interval', user_id: 'current_user_id', value: '3600'}],
         );
     });
 });

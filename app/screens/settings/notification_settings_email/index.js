@@ -7,6 +7,7 @@ import {connect} from 'react-redux';
 import {Preferences} from 'mattermost-redux/constants';
 
 import {savePreferences} from 'mattermost-redux/actions/preferences';
+import {updateMe} from 'mattermost-redux/actions/users';
 
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {
@@ -40,6 +41,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             savePreferences,
+            updateMe,
         }, dispatch),
     };
 }
