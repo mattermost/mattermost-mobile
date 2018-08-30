@@ -1,9 +1,13 @@
 package com.mattermost.rnbeta;
 
-import android.content.Context;
-import android.content.Intent;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.RemoteInput;
+import android.content.Context;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -17,6 +21,28 @@ import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 
 public class NotificationReplyService extends HeadlessJsTaskService {
     private Context mContext;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            Context mContext = this.getApplicationContext();
+            final Resources res = mContext.getResources();
+            String packageName = mContext.getPackageName();
+            int smallIconResId = res.getIdentifier("ic_notification", "mipmap", packageName);
+            String CHANNEL_ID = "Reply job";
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, NotificationManager.IMPORTANCE_LOW);
+            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+            Notification notification =
+                    new Notification.Builder(mContext, CHANNEL_ID)
+                            .setContentTitle("Replying to message")
+                            .setContentText(packageName)
+                            .setSmallIcon(smallIconResId)
+                            .build();
+            startForeground(1, notification);
+        }
+
+    }
 
     @Override
     protected @Nullable HeadlessJsTaskConfig getTaskConfig(Intent intent) {
