@@ -6,7 +6,10 @@ import {Keyboard, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 import {CalendarList} from 'react-native-calendars';
 
+import {memoizeResult} from 'mattermost-redux/utils/helpers';
+
 import {DATE_MENTION_SEARCH_REGEX, ALL_SEARCH_FLAGS_REGEX} from 'app/constants/autocomplete';
+import {changeOpacity} from 'app/utils/theme';
 
 export default class DateSuggestion extends PureComponent {
     static propTypes = {
@@ -66,7 +69,7 @@ export default class DateSuggestion extends PureComponent {
 
     render() {
         const {mentionComplete} = this.state;
-        const {matchTerm, enableDateSuggestion} = this.props;
+        const {matchTerm, enableDateSuggestion, theme} = this.props;
 
         if (matchTerm === null || mentionComplete || !enableDateSuggestion) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
@@ -75,6 +78,7 @@ export default class DateSuggestion extends PureComponent {
         }
 
         const currentDate = (new Date()).toDateString();
+        const calendarStyle = calendarTheme(theme);
 
         Keyboard.dismiss();
 
@@ -90,14 +94,34 @@ export default class DateSuggestion extends PureComponent {
                 horizontal={true}
                 showScrollIndicator={true}
                 onDayPress={this.completeMention}
-                showWeekNumbers={true}
+                showWeekNumbers={false}
+                theme={calendarStyle}
             />
         );
     }
 }
 
+const calendarTheme = memoizeResult((theme) => ({
+    calendarBackground: theme.centerChannelBg,
+    monthTextColor: changeOpacity(theme.centerChannelColor, 0.8),
+    dayTextColor: theme.centerChannelColor,
+    textSectionTitleColor: changeOpacity(theme.centerChannelColor, 0.25),
+    'stylesheet.day.basic': {
+        today: {
+            backgroundColor: theme.buttonBg,
+            width: 33,
+            height: 33,
+            borderRadius: 16.5,
+        },
+        todayText: {
+            color: theme.buttonColor,
+        },
+    },
+}));
+
 const styles = StyleSheet.create({
     calList: {
         height: 1700,
+        paddingTop: 5,
     },
 });
