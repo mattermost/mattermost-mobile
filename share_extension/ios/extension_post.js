@@ -22,7 +22,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
-import {getChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getChannel, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
@@ -235,6 +235,10 @@ export default class ExtensionPost extends PureComponent {
 
                 if (channel && (channel.type === General.GM_CHANNEL || channel.type === General.DM_CHANNEL)) {
                     channel = getChannel({entities}, channel.id);
+                }
+
+                if (channel.delete_at !== 0) {
+                    channel = getDefaultChannel({entities});
                 }
 
                 for (let i = 0; i < items.length; i++) {

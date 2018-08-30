@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannel, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
@@ -16,9 +16,13 @@ function mapStateToProps(state) {
     const config = getConfig(state);
     const {credentials} = state.entities.general;
     const {token, url} = credentials;
+    let channel = getCurrentChannel(state);
+    if (channel.delete_at !== 0) {
+        channel = getDefaultChannel(state);
+    }
 
     return {
-        channelId: getCurrentChannelId(state),
+        channelId: channel.id,
         currentUserId: getCurrentUserId(state),
         maxFileSize: getAllowedServerMaxFileSize(config),
         teamId: getCurrentTeamId(state),

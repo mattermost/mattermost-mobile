@@ -59,6 +59,10 @@ export default class ExtensionTeam extends PureComponent {
             publicChannels: publicFiltered,
         } = this.props;
 
+        directFiltered = directFiltered.filter((c) => c.delete_at === 0);
+        privateFiletered = privateFiletered.filter((c) => c.delete_at === 0);
+        publicFiltered = publicFiltered.filter((c) => c.delete_at === 0);
+
         if (term) {
             directFiltered = directFiltered.filter((c) => c.display_name.toLowerCase().includes(term.toLowerCase()));
             privateFiletered = privateFiletered.filter((c) => c.display_name.toLowerCase().includes(term.toLowerCase()));
