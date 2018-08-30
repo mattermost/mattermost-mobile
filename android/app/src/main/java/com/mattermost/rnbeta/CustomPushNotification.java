@@ -1,6 +1,7 @@
 package com.mattermost.rnbeta;
 
 import android.app.PendingIntent;
+import android.app.NotificationChannel;
 import android.content.Intent;
 import android.content.Context;
 import android.content.res.Resources;
@@ -140,8 +141,19 @@ public class CustomPushNotification extends PushNotification {
         String packageName = mContext.getPackageName();
         NotificationPreferences notificationPreferences = NotificationPreferences.getInstance(mContext);
 
+        String CHANNEL_ID = "channel_01";
+        String CHANNEL_NAME = "Mattermost notifications";
+
         // First, get a builder initialized with defaults from the core class.
         final Notification.Builder notification = new Notification.Builder(mContext);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                    CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(channel);
+            notification.setChannelId(CHANNEL_ID);
+        }
         Bundle bundle = mNotificationProps.asBundle();
         String version = bundle.getString("version");
 
@@ -271,7 +283,13 @@ public class CustomPushNotification extends PushNotification {
             replyIntent.setAction(KEY_TEXT_REPLY);
             replyIntent.putExtra(NOTIFICATION_ID, notificationId);
             replyIntent.putExtra("pushNotification", bundle);
-            PendingIntent replyPendingIntent = PendingIntent.getService(mContext, notificationId, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent replyPendingIntent;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                replyPendingIntent = PendingIntent.getForegroundService(mContext, notificationId, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            } else {
+                replyPendingIntent = PendingIntent.getService(mContext, notificationId, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            }
 
             RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
                     .setLabel("Reply")

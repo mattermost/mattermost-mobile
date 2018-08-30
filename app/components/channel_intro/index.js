@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser, makeGetProfilesInChannel} from 'mattermost-redux/selectors/entities/users';
 
@@ -29,11 +29,9 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const currentChannel = getChannel(state, {id: ownProps.channelId}) || {};
-        const {status: getPostsRequestStatus} = state.requests.posts.getPosts;
 
         let currentChannelMembers;
         let creator;
-        let postsInChannel;
 
         if (currentChannel) {
             if (currentChannel.type === General.DM_CHANNEL) {
@@ -43,14 +41,12 @@ function makeMapStateToProps() {
             }
 
             creator = getUser(state, currentChannel.creator_id);
-            postsInChannel = state.entities.posts.postsInChannel[currentChannel.Id];
         }
 
         return {
             creator,
             currentChannel,
             currentChannelMembers,
-            isLoadingPosts: (!postsInChannel || postsInChannel.length === 0) && getPostsRequestStatus === RequestStatus.STARTED,
             theme: getTheme(state),
         };
     };

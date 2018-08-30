@@ -5,6 +5,7 @@ import React from 'react';
 import {injectIntl} from 'react-intl';
 import {
     Modal,
+    Platform,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -566,6 +567,20 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         );
     }
 
+    renderNotificationOptions(style) {
+        if (Platform.Version >= 26) {
+            return null;
+        }
+
+        return (
+            <React.Fragment>
+                {this.renderMobileSoundSection(style)}
+                {this.renderMobileVibrateSection(style)}
+                {this.renderMobileBlinkSection(style)}
+            </React.Fragment>
+        );
+    }
+
     saveMobilePushModal = () => {
         this.setState({showMobilePushModal: false});
         this.setMobilePush(this.state.newPush);
@@ -653,9 +668,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                     {this.renderMobilePushSection()}
                     <View style={style.separator}/>
                     {this.renderMobilePushStatusSection(style)}
-                    {this.renderMobileSoundSection(style)}
-                    {this.renderMobileVibrateSection(style)}
-                    {this.renderMobileBlinkSection(style)}
+                    {this.renderNotificationOptions(style)}
                     {this.renderMobileTestSection(style)}
                 </ScrollView>
                 {this.renderMobilePushModal(style)}

@@ -187,8 +187,15 @@ configurations.all {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "com.android.support:appcompat-v7:26.0.1"
-    implementation 'com.android.support:percent:26.0.1'
+    implementation ("com.android.support:appcompat-v7:26.1.0") {
+        force = true;
+    }
+    implementation ('com.android.support:design:26.1.0') {
+        force = true;
+    }
+    implementation ('com.android.support:percent:26.1.0') {
+        force = true;
+    }
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation project(':react-native-document-picker')
     implementation project(':react-native-keychain')
@@ -197,9 +204,6 @@ dependencies {
     implementation project(':react-native-navigation')
     implementation project(':react-native-image-picker')
     implementation project(':react-native-bottom-sheet')
-    implementation ('com.google.android.gms:play-services-gcm:9.4.0') {
-        force = true;
-    }
     implementation project(':react-native-device-info')
     implementation project(':reactnativenotifications')
     implementation project(':react-native-cookies')
