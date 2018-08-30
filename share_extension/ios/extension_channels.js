@@ -53,7 +53,7 @@ export default class ExtensionChannels extends PureComponent {
 
         channels.forEach((channel) => {
             const include = term ? channel.display_name.toLowerCase().includes(term.toLowerCase()) : true;
-            if (channel.display_name && include) {
+            if (channel.display_name && include && channel.delete_at === 0) {
                 switch (channel.type) {
                 case General.OPEN_CHANNEL:
                     publicChannels.push(channel);
