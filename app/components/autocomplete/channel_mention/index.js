@@ -12,6 +12,8 @@ import {
     filterOtherChannels,
     filterPublicChannels,
     filterPrivateChannels,
+    getDeletedPublicChannelsIds,
+    getMyChannelIdMemberships,
     getMatchTermForChannelMention,
 } from 'app/selectors/autocomplete';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -38,8 +40,10 @@ function mapStateToProps(state, ownProps) {
 
     return {
         myChannels,
+        myMembers: getMyChannelIdMemberships(state),
         otherChannels,
         publicChannels,
+        deletedPublicChannels: getDeletedPublicChannelsIds(state),
         privateChannels,
         currentTeamId: getCurrentTeamId(state),
         matchTerm,

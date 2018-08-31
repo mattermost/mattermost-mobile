@@ -4,7 +4,7 @@
 import {createSelector} from 'reselect';
 
 import {General} from 'mattermost-redux/constants';
-import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
+import {getMyChannels, getOtherChannels, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {
     getCurrentUser, getCurrentUserId, getProfilesInCurrentChannel,
     getProfilesNotInCurrentChannel, getProfilesInCurrentTeam,
@@ -242,3 +242,22 @@ export const makeGetMatchTermForDateMention = () => {
         return lastMatchTerm;
     };
 };
+
+export const getDeletedPublicChannelsIds = createSelector(
+    getMyChannels,
+    getOtherChannels,
+    (myChannels, otherChannels) => {
+        const channels = myChannels.filter((c) => {
+            return (c.type === General.OPEN_CHANNEL);
+        }).concat(otherChannels);
+
+        return new Set(channels.filter((c) => c.delete_at !== 0).map((c) => c.id));
+    }
+);
+
+export const getMyChannelIdMemberships = createSelector(
+    getMyChannelMemberships,
+    (myMembers) => {
+        return new Set(Object.keys(myMembers));
+    }
+);
