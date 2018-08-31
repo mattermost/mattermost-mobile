@@ -16,7 +16,6 @@ import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-import {isValidUrl} from 'app/utils/url';
 
 import LocalConfig from 'assets/config';
 
@@ -214,10 +213,9 @@ class Settings extends PureComponent {
     });
 
     render() {
-        const {config, joinableTeams, theme} = this.props;
+        const {joinableTeams, theme} = this.props;
         const style = getStyleSheet(theme);
         const showTeams = Object.keys(joinableTeams).length > 0;
-        const showHelp = isValidUrl(config.HelpLink);
         const showArrow = Platform.OS === 'ios';
 
         return (
@@ -247,28 +245,28 @@ class Settings extends PureComponent {
                         theme={theme}
                     />
                     {showTeams &&
-                    <SettingsItem
-                        defaultMessage='Open teams you can join'
-                        i18nId='mobile.select_team.join_open'
-                        iconName='list'
-                        iconType='foundation'
-                        onPress={this.goToSelectTeam}
-                        showArrow={showArrow}
-                        theme={theme}
-                    />
+                        <SettingsItem
+                            defaultMessage='Open teams you can join'
+                            i18nId='mobile.select_team.join_open'
+                            iconName='list'
+                            iconType='foundation'
+                            onPress={this.goToSelectTeam}
+                            showArrow={showArrow}
+                            theme={theme}
+                        />
                     }
-                    {showHelp &&
-                    <SettingsItem
-                        defaultMessage='Help'
-                        i18nId='mobile.help.title'
-                        iconName='md-help'
-                        iconType='ion'
-                        onPress={this.openHelp}
-                        showArrow={showArrow}
-                        theme={theme}
-                    />
-                    }
-                    <SettingsItem
+                    {/* {showHelp &&
+                        <SettingsItem
+                            defaultMessage='Help'
+                            i18nId='mobile.help.title'
+                            iconName='md-help'
+                            iconType='ion'
+                            onPress={this.openHelp}
+                            showArrow={showArrow}
+                            theme={theme}
+                        />
+                    } */}
+                    {/* <SettingsItem
                         defaultMessage='Report a Problem'
                         i18nId='sidebar_right_menu.report'
                         iconName='exclamation'
@@ -276,7 +274,7 @@ class Settings extends PureComponent {
                         onPress={this.openErrorEmail}
                         showArrow={showArrow}
                         theme={theme}
-                    />
+                    /> */}
                     <SettingsItem
                         defaultMessage='Advanced Settings'
                         i18nId='mobile.advanced_settings.title'
@@ -287,17 +285,17 @@ class Settings extends PureComponent {
                         theme={theme}
                     />
                     {LocalConfig.EnableMobileClientUpgrade && LocalConfig.EnableMobileClientUpgradeUserSetting &&
-                    <SettingsItem
-                        defaultMessage='Check for Upgrade'
-                        i18nId='mobile.settings.modal.check_for_upgrade'
-                        iconName='update'
-                        iconType='material'
-                        onPress={this.goToClientUpgrade}
-                        showArrow={showArrow}
-                        theme={theme}
-                    />
+                        <SettingsItem
+                            defaultMessage='Check for Upgrade'
+                            i18nId='mobile.settings.modal.check_for_upgrade'
+                            iconName='update'
+                            iconType='material'
+                            onPress={this.goToClientUpgrade}
+                            showArrow={showArrow}
+                            theme={theme}
+                        />
                     }
-                    <SettingsItem
+                    {/* <SettingsItem
                         defaultMessage='About Mattermost'
                         i18nId='about.title'
                         iconName='ios-information-circle'
@@ -306,7 +304,7 @@ class Settings extends PureComponent {
                         separator={false}
                         showArrow={showArrow}
                         theme={theme}
-                    />
+                    /> */}
                     <View style={style.divider}/>
                 </ScrollView>
             </View>
