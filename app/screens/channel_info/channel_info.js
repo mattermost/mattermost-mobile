@@ -29,6 +29,7 @@ export default class ChannelInfo extends PureComponent {
             closeGMChannel: PropTypes.func.isRequired,
             deleteChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
+            getChannel: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
             loadChannelsByTeamName: PropTypes.func.isRequired,
             favoriteChannel: PropTypes.func.isRequired,
@@ -202,6 +203,9 @@ export default class ChannelInfo extends PureComponent {
                             displayName: channel.display_name,
                         }
                     );
+                    if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
+                        this.props.actions.getChannel(channel.id);
+                    }
                 } else {
                     this.close();
                 }

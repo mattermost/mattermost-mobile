@@ -52,6 +52,7 @@ export default class EditChannel extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             patchChannel: PropTypes.func.isRequired,
+            getChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }),
         navigator: PropTypes.object.isRequired,
@@ -204,7 +205,7 @@ export default class EditChannel extends PureComponent {
         return {error: formatMessage(messages.name_lowercase)};
     };
 
-    onUpdateChannel = () => {
+    onUpdateChannel = async () => {
         Keyboard.dismiss();
         const {displayName, channelURL, purpose, header} = this.state;
         const {channel: {id, type}} = this.props;
@@ -230,7 +231,10 @@ export default class EditChannel extends PureComponent {
             }
         }
 
-        this.props.actions.patchChannel(id, channel);
+        const data = await this.props.actions.patchChannel(id, channel);
+        if (data.error && data.error.server_error_id === 'store.sql_channel.update.archived_channel.app_error') {
+            this.props.actions.getChannel(id);
+        }
     };
 
     onNavigatorEvent = (event) => {
