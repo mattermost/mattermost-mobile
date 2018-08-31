@@ -8,6 +8,8 @@ configure({adapter: new Adapter()});
 
 import {emptyFunction} from 'app/utils/general';
 
+import SectionItem from 'app/screens/settings/section_item';
+
 import NotificationSettingsEmailIos from './notification_settings_email.ios.js';
 
 jest.mock('app/utils/theme', () => {
@@ -74,7 +76,7 @@ describe('NotificationSettingsEmailIos', () => {
         expect(savePreferences).toBeCalledWith('current_user_id', [{category: 'notifications', name: 'email_interval', user_id: 'current_user_id', value: 30}]);
     });
 
-    test('should macth state on setEmailNotifications', () => {
+    test('should match state on setEmailNotifications', () => {
         const wrapper = shallow(
             <NotificationSettingsEmailIos {...baseProps}/>
         );
@@ -87,6 +89,37 @@ describe('NotificationSettingsEmailIos', () => {
         expect(wrapper.state({email: 'false', interval: '0'}));
 
         wrapper.instance().setEmailNotifications('3600');
+        expect(wrapper.state({email: 'true', interval: '3600'}));
+    });
+
+    test('should match state on action of SectionItem', () => {
+        const wrapper = shallow(
+            <NotificationSettingsEmailIos
+                {...baseProps}
+                sendEmailNotifications={false}
+                enableEmailBatching={false}
+            />
+        );
+
+        expect(wrapper.find(SectionItem).exists()).toBe(false);
+
+        wrapper.setProps({sendEmailNotifications: true});
+        expect(wrapper.find(SectionItem).exists()).toBe(true);
+        expect(wrapper.find(SectionItem).length).toBe(2);
+
+        wrapper.setProps({enableEmailBatching: true});
+        expect(wrapper.find(SectionItem).exists()).toBe(true);
+        expect(wrapper.find(SectionItem).length).toBe(4);
+
+        wrapper.setState({email: 'false', interval: '0'});
+
+        wrapper.find(SectionItem).first().prop('action')('30');
+        expect(wrapper.state({email: 'true', interval: '30'}));
+
+        wrapper.find(SectionItem).first().prop('action')('0');
+        expect(wrapper.state({email: 'true', interval: '0'}));
+
+        wrapper.find(SectionItem).last().prop('action')('3600');
         expect(wrapper.state({email: 'true', interval: '3600'}));
     });
 

@@ -9,6 +9,8 @@ configure({adapter: new Adapter()});
 import {shallowWithIntl} from 'test/intl-test-helper';
 import {emptyFunction} from 'app/utils/general';
 
+import RadioButtonGroup from 'app/components/radio_button';
+
 import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
 
 describe('NotificationSettingsEmailAndroid', () => {
@@ -68,6 +70,29 @@ describe('NotificationSettingsEmailAndroid', () => {
         expect(wrapper.state({email: 'true', interval: '3600'}));
     });
 
+    test('should match state on select of RadioButtonGroup', () => {
+        const wrapper = shallowWithIntl(
+            <NotificationSettingsEmailAndroid
+                {...baseProps}
+                sendEmailNotifications={false}
+            />
+        );
+        expect(wrapper.find(RadioButtonGroup).exists()).toBe(false);
+        wrapper.setProps({sendEmailNotifications: true});
+        expect(wrapper.find(RadioButtonGroup).exists()).toBe(true);
+
+        wrapper.setState({email: 'false', interval: '0'});
+
+        wrapper.find(RadioButtonGroup).first().prop('onSelect')('30');
+        expect(wrapper.state({email: 'true', interval: '30'}));
+
+        wrapper.find(RadioButtonGroup).first().prop('onSelect')('0');
+        expect(wrapper.state({email: 'false', interval: '0'}));
+
+        wrapper.find(RadioButtonGroup).first().prop('onSelect')('3600');
+        expect(wrapper.state({email: 'true', interval: '3600'}));
+    });
+
     test('should match state on handleClose', () => {
         const wrapper = shallowWithIntl(
             <NotificationSettingsEmailAndroid {...baseProps}/>
@@ -117,15 +142,5 @@ describe('NotificationSettingsEmailAndroid', () => {
         wrapper.setState({showEmailNotificationsModal: false});
         wrapper.instance().showEmailModal();
         expect(wrapper.state('showEmailNotificationsModal')).toEqual(true);
-    });
-
-    test('should match state on handleChange', () => {
-        const wrapper = shallowWithIntl(
-            <NotificationSettingsEmailAndroid {...baseProps}/>
-        );
-
-        wrapper.setState({newInterval: '3600'});
-        wrapper.instance().handleChange('30');
-        expect(wrapper.state('newInterval')).toEqual('30');
     });
 });
