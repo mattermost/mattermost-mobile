@@ -15,6 +15,7 @@ import {
 import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import FailedNetworkAction from 'app/components/failed_network_action';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
@@ -44,6 +45,7 @@ export default class SelectTeam extends PureComponent {
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object,
+        teamsRequest: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -57,9 +59,7 @@ export default class SelectTeam extends PureComponent {
     }
 
     componentDidMount() {
-        this.props.actions.getTeams(0, TEAMS_PER_PAGE).then(() => {
-            this.buildData(this.props);
-        });
+        this.getTeams();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -75,6 +75,14 @@ export default class SelectTeam extends PureComponent {
             nextProps.joinTeamRequest.status === RequestStatus.FAILURE) {
             Alert.alert('', nextProps.joinTeamRequest.error.message);
         }
+    }
+
+    getTeams = () => {
+        this.setState({loading: true});
+        this.props.actions.getTeams(0, TEAMS_PER_PAGE).then(() => {
+            this.setState({loading: false});
+            this.buildData(this.props);
+        });
     }
 
     buildData = (props) => {
@@ -213,8 +221,17 @@ export default class SelectTeam extends PureComponent {
         const {teams} = this.state;
         const styles = getStyleSheet(theme);
 
-        if (this.state.joining) {
+        if (this.state.joining || this.state.loading) {
             return <Loading/>;
+        }
+
+        if (this.props.teamsRequest.status === RequestStatus.FAILURE) {
+            return (
+                <FailedNetworkAction
+                    onRetry={this.getTeams}
+                    theme={theme}
+                />
+            );
         }
 
         return (
