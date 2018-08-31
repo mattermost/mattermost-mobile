@@ -41,10 +41,6 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
         this.setState({showEmailNotificationsModal: true});
     };
 
-    handleChange = (value) => {
-        this.setState({newInterval: value});
-    }
-
     renderEmailSection() {
         const {
             sendEmailNotifications,
@@ -183,7 +179,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                             {sendEmailNotifications &&
                             <RadioButtonGroup
                                 name='emailSettings'
-                                onSelect={this.handleChange}
+                                onSelect={this.setEmailNotifications}
                                 options={emailOptions}
                             />
                             }
