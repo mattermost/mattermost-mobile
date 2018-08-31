@@ -6,13 +6,20 @@
 
 ### Highlights
 
+#### Search Date Filters
+- Only show search results matching the date filter criteria.
 
 ### Improvements
-
+- Added notification support for Android O and P.
+- Added ability to open channels at the new message indicator.
 
 ### Bug Fixes
-- Fixed an issue where messages in DM channels did not show when clicking "Jump To".
+- Fixed an issue where messages in Direct Message channels did not show when clicking "Jump To".
 - Fixed an issue where `Show More` on a JIRA post displayed a blank where content should have been.
+- Fixed an issue where downloading all file types on mobile apps should be disallowed when disallowed in System Console.
+- Fixed an issue where users could not click on attachment filenames to open them.
+- Fixed an issue where email notification settings did not save from mobile.
+- Fixed an issue where the share extension allowed users to select and attempt to share content to channels that had been archived.
 
 
 ## v1.11.0 Release
