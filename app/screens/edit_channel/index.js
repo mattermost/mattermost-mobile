@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
-import {patchChannel} from 'mattermost-redux/actions/channels';
+import {patchChannel, getChannel} from 'mattermost-redux/actions/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
@@ -33,6 +33,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             patchChannel,
+            getChannel,
             setChannelDisplayName,
         }, dispatch),
     };
