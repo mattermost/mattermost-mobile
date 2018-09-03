@@ -41,6 +41,7 @@ export default class PostBody extends PureComponent {
         canAddReaction: PropTypes.bool,
         canDelete: PropTypes.bool,
         canEdit: PropTypes.bool,
+        canEditUntil: PropTypes.number.isRequired,
         channelIsReadOnly: PropTypes.bool.isRequired,
         fileIds: PropTypes.array,
         hasBeenDeleted: PropTypes.bool,
@@ -120,6 +121,7 @@ export default class PostBody extends PureComponent {
         const {formatMessage} = this.context.intl;
         const {
             canEdit,
+            canEditUntil,
             canDelete,
             canAddReaction,
             channelIsReadOnly,
@@ -169,7 +171,7 @@ export default class PostBody extends PureComponent {
                 }
             }
 
-            if (canEdit) {
+            if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
                 actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: onPostEdit});
             }
 
@@ -488,7 +490,7 @@ export default class PostBody extends PureComponent {
             body = (
                 <View style={style.messageBody}>
                     <OptionsContext
-                        actions={this.getPostActions()}
+                        getPostActions={this.getPostActions}
                         ref='options'
                         onPress={onPress}
                         toggleSelected={toggleSelected}

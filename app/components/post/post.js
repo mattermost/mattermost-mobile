@@ -25,9 +25,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getToolTipVisible} from 'app/utils/tooltip';
 
 import {Posts} from 'mattermost-redux/constants';
-import DelayedAction from 'mattermost-redux/utils/delayed_action';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {editDisable, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
 import Config from 'assets/config';
 
@@ -41,10 +40,8 @@ export default class Post extends PureComponent {
             removePost: PropTypes.func.isRequired,
         }).isRequired,
         channelIsReadOnly: PropTypes.bool,
-        config: PropTypes.object.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
         highlight: PropTypes.bool,
         style: ViewPropTypes.style,
         post: PropTypes.object,
@@ -56,10 +53,10 @@ export default class Post extends PureComponent {
         hasComments: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         commentedOnPost: PropTypes.object,
-        license: PropTypes.object.isRequired,
         managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         canEdit: PropTypes.bool.isRequired,
+        canEditUntil: PropTypes.number.isRequired,
         canDelete: PropTypes.bool.isRequired,
         onPermalinkPress: PropTypes.func,
         shouldRenderReplyButton: PropTypes.bool,
@@ -82,37 +79,6 @@ export default class Post extends PureComponent {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
-
-    constructor(props) {
-        super(props);
-
-        const {config, license, currentUserId, post} = props;
-        this.editDisableAction = new DelayedAction(this.handleEditDisable);
-        if (post) {
-            editDisable(config, license, currentUserId, post, this.editDisableAction);
-        }
-        this.state = {
-            canEdit: this.props.canEdit,
-        };
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.config !== this.props.config ||
-            nextProps.license !== this.props.license ||
-            nextProps.currentUserId !== this.props.currentUserId ||
-            nextProps.post !== this.props.post) {
-            const {config, license, currentUserId, post} = nextProps;
-
-            editDisable(config, license, currentUserId, post, this.editDisableAction);
-            this.setState({
-                canEdit: nextProps.canEdit,
-            });
-        }
-    }
-
-    componentWillUnmount() {
-        this.editDisableAction.cancel();
-    }
 
     goToUserProfile = () => {
         const {intl} = this.context;
@@ -165,7 +131,6 @@ export default class Post extends PureComponent {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: () => {
-                    this.editDisableAction.cancel();
                     actions.deletePost(post);
                     if (post.user_id === currentUserId) {
                         actions.removePost(post);
@@ -479,7 +444,8 @@ export default class Post extends PureComponent {
                         <PostBody
                             ref={'postBody'}
                             canDelete={this.props.canDelete}
-                            canEdit={this.state.canEdit}
+                            canEdit={this.props.canEdit}
+                            canEditUntil={this.props.canEditUntil}
                             highlight={highlight}
                             channelIsReadOnly={channelIsReadOnly}
                             isSearchResult={isSearchResult}

@@ -28,9 +28,10 @@ function withLayout(WrappedComponent) {
         };
 
         render() {
+            const {index, onLayoutCalled, shouldCallOnLayout, ...otherProps} = this.props; //eslint-disable-line no-unused-vars
             return (
                 <View onLayout={this.onLayout}>
-                    <WrappedComponent {...this.props}/>
+                    <WrappedComponent {...otherProps}/>
                 </View>
             );
         }
