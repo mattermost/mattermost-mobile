@@ -5,6 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Image,
+    PixelRatio,
     Platform,
     StyleSheet,
     Text,
@@ -106,7 +107,7 @@ export default class Emoji extends React.PureComponent {
         if (!size && textStyle) {
             const flatten = StyleSheet.flatten(textStyle);
             fontSize = flatten.fontSize;
-            size = fontSize;
+            size = fontSize * (Platform.OS === 'android' ? PixelRatio.get() : 1);
         }
 
         if (displayTextOnly) {
@@ -116,6 +117,16 @@ export default class Emoji extends React.PureComponent {
         const width = size;
         const height = size;
 
+        let marginTop = 0;
+        if (textStyle) {
+            // hack to get the vertical alignment looking better
+            if (fontSize > 16) {
+                marginTop -= 2;
+            } else if (fontSize <= 16) {
+                marginTop += 1;
+            }
+        }
+
         // Android can't change the size of an image after its first render, so
         // force a new image to be rendered when the size changes
         const key = Platform.OS === 'android' ? (height + '-' + width) : null;
@@ -124,7 +135,7 @@ export default class Emoji extends React.PureComponent {
             return (
                 <Image
                     key={key}
-                    style={{width, height}}
+                    style={{width, height, marginTop}}
                 />
             );
         }
@@ -132,7 +143,7 @@ export default class Emoji extends React.PureComponent {
         return (
             <Image
                 key={key}
-                style={{width, height}}
+                style={{width, height, marginTop}}
                 source={{uri: imageUrl}}
                 onError={this.onError}
             />
