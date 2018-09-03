@@ -29,6 +29,16 @@ const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
 const TEAMS_PER_PAGE = 200;
 
+const errorTitle = {
+    id: 'error.team_not_found.title',
+    defaultMessage: 'Team Not Found',
+};
+
+const errorDescription = {
+    id: 'mobile.failed_network_action.shortDescription',
+    defaultMessage: 'Make sure you have an active connection and try again.',
+};
+
 export default class SelectTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -230,6 +240,8 @@ export default class SelectTeam extends PureComponent {
                 <FailedNetworkAction
                     onRetry={this.getTeams}
                     theme={theme}
+                    errorTitle={errorTitle}
+                    errorDescription={errorDescription}
                 />
             );
         }

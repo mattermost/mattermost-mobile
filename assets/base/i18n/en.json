@@ -2455,6 +2455,7 @@
   "mobile.failed_network_action.description": "There seems to be a problem with your internet connection. Make sure you have an active connection and try again.",
   "mobile.failed_network_action.retry": "Try Again",
   "mobile.failed_network_action.title": "No internet connection",
+  "mobile.failed_network_action.shortDescription": "Make sure you have an active connection and try again.",
   "mobile.file_upload.browse": "Browse Files",
   "mobile.file_upload.camera": "Take Photo or Video",
   "mobile.file_upload.library": "Photo Library",

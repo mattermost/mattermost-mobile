@@ -49,6 +49,14 @@ ShallowWrapper {
     "key": undefined,
     "nodeType": "class",
     "props": Object {
+      "errorDescription": Object {
+        "defaultMessage": "Make sure you have an active connection and try again.",
+        "id": "mobile.failed_network_action.shortDescription",
+      },
+      "errorTitle": Object {
+        "defaultMessage": "Team Not Found",
+        "id": "error.team_not_found.title",
+      },
       "onRetry": [Function],
       "theme": Object {},
     },
@@ -62,6 +70,14 @@ ShallowWrapper {
       "key": undefined,
       "nodeType": "class",
       "props": Object {
+        "errorDescription": Object {
+          "defaultMessage": "Make sure you have an active connection and try again.",
+          "id": "mobile.failed_network_action.shortDescription",
+        },
+        "errorTitle": Object {
+          "defaultMessage": "Team Not Found",
+          "id": "error.team_not_found.title",
+        },
         "onRetry": [Function],
         "theme": Object {},
       },
