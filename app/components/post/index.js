@@ -90,7 +90,7 @@ function makeMapStateToProps() {
             if (canEdit && license.IsLicensed === 'true' &&
                 (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT || (config.PostEditTimeLimit !== -1 && config.PostEditTimeLimit !== '-1'))
             ) {
-                canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000) + 1000;
+                canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
             }
         }
 
