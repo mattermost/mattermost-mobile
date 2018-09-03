@@ -512,11 +512,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 45,
             width: 45,
         },
-        moreLess: {
-            color: theme.linkColor,
-            fontSize: 12,
-            marginTop: 5,
-        },
         headingContainer: {
             alignSelf: 'stretch',
             flexDirection: 'row',

@@ -101,7 +101,7 @@ ShallowWrapper {
               "flexDirection": "row",
               "justifyContent": "center",
               "position": "relative",
-              "top": 0,
+              "top": 10,
             }
           }
         >
@@ -292,7 +292,7 @@ ShallowWrapper {
             "flexDirection": "row",
             "justifyContent": "center",
             "position": "relative",
-            "top": 0,
+            "top": 10,
           },
         },
         "ref": null,
@@ -511,7 +511,7 @@ ShallowWrapper {
                 "flexDirection": "row",
                 "justifyContent": "center",
                 "position": "relative",
-                "top": 0,
+                "top": 10,
               }
             }
           >
@@ -702,7 +702,7 @@ ShallowWrapper {
               "flexDirection": "row",
               "justifyContent": "center",
               "position": "relative",
-              "top": 0,
+              "top": 10,
             },
           },
           "ref": null,

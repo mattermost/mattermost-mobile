@@ -100,7 +100,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme, showMore) => {
             flex: 1,
             flexDirection: 'row',
             position: 'relative',
-            top: showMore ? -7.5 : 0,
+            top: showMore ? -7.5 : 10,
         },
         dividerLeft: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
