@@ -11,7 +11,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.mattermost.rnbeta</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -62,10 +62,10 @@
 	<string>Share contacts in your Mattermost instance</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Take a Photo or Video and upload it to your mattermost instance</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Send your current location to your Mattermost instance</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Send your current location to your Mattermost instance</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-    <string>Send your current location to your Mattermost instance</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Share your route in your Mattermost instance</string>
 	<key>NSPhotoLibraryUsageDescription</key>
