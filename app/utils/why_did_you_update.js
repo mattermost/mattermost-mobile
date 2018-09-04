@@ -40,10 +40,10 @@ function deepDiff(o1, o2, p) {
   }
 }
 
-function whyDidYouUpdate(prevProps, prevState) {
+function whyDidYouUpdate(theClass, prevProps, prevState) {
     deepDiff({props: prevProps, state: prevState},
-             {props: this.props, state: this.state},
-             this.constructor.name);
+             {props: theClass.props, state: theClass.state},
+        theClass.constructor.name);
 }
 
 export default whyDidYouUpdate;

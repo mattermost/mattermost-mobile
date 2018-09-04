@@ -11,6 +11,7 @@ import {
 
 import DeviceInfo from 'react-native-device-info';
 
+import {setSystemEmojis} from 'mattermost-redux/actions/emojis';
 import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -56,15 +57,14 @@ const lazyLoadReplyPushNotifications = () => {
  */
 export default class Entry extends PureComponent {
     static propTypes = {
-        config: PropTypes.object,
         theme: PropTypes.object,
         navigator: PropTypes.object,
         isLandscape: PropTypes.bool,
-        hydrationComplete: PropTypes.bool,
         enableTimezone: PropTypes.bool,
         deviceTimezone: PropTypes.string,
         initializeModules: PropTypes.func.isRequired,
         actions: PropTypes.shape({
+            autoUpdateTimezone: PropTypes.func.isRequired,
             setDeviceToken: PropTypes.func.isRequired,
         }).isRequired,
     };
@@ -132,6 +132,7 @@ export default class Entry extends PureComponent {
             this.setAppCredentials();
             this.setStartupThemes();
             this.handleNotification();
+            this.loadSystemEmojis();
 
             if (Platform.OS === 'android') {
                 this.launchForAndroid();
@@ -224,6 +225,11 @@ export default class Entry extends PureComponent {
         } else {
             app.launchApp();
         }
+    };
+
+    loadSystemEmojis = () => {
+        const EmojiIndicesByAlias = require('app/utils/emojis').EmojiIndicesByAlias;
+        setSystemEmojis(EmojiIndicesByAlias);
     };
 
     renderLogin = () => {

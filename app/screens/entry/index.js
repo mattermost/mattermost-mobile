@@ -6,7 +6,6 @@ import {connect} from 'react-redux';
 import {setDeviceToken} from 'mattermost-redux/actions/general';
 import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 import {isLandscape} from 'app/selectors/device';
 import {getDeviceTimezone, isTimezoneEnabled} from 'app/utils/timezone';
@@ -16,16 +15,12 @@ const lazyLoadEntry = () => {
 };
 
 function mapStateToProps(state) {
-    const config = getConfig(state);
-
     const enableTimezone = isTimezoneEnabled(state);
     const deviceTimezone = getDeviceTimezone();
 
     return {
-        config,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
-        hydrationComplete: state.views.root.hydrationComplete,
         enableTimezone,
         deviceTimezone,
     };
@@ -34,8 +29,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            setDeviceToken,
             autoUpdateTimezone,
+            setDeviceToken,
         }, dispatch),
     };
 }

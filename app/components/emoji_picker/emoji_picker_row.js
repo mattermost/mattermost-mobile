@@ -64,7 +64,7 @@ export default class EmojiPickerRow extends Component {
                 />
             </TouchableOpacity>
         );
-    }
+    };
 
     render() {
         const {emojiGutter, items} = this.props;
@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
     emoji: {
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
     },
     emojiLeft: {
         marginLeft: 0,

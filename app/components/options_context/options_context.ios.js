@@ -8,14 +8,14 @@ import ToolTip from 'app/components/tooltip';
 
 export default class OptionsContext extends PureComponent {
     static propTypes = {
-        actions: PropTypes.array,
+        getPostActions: PropTypes.func,
         children: PropTypes.node.isRequired,
         onPress: PropTypes.func.isRequired,
         toggleSelected: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
-        actions: [],
+        getPostActions: () => [],
         additionalActions: [],
     };
 
@@ -23,14 +23,8 @@ export default class OptionsContext extends PureComponent {
         super(props);
 
         this.state = {
-            actions: props.actions,
+            actions: props.getPostActions(),
         };
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.actions !== nextProps.actions) {
-            this.setState({actions: nextProps.actions});
-        }
     }
 
     handleHideUnderlay = () => {
@@ -45,11 +39,11 @@ export default class OptionsContext extends PureComponent {
 
     handleHide = () => {
         this.isShowing = false;
-        this.props.toggleSelected(false, this.props.actions.length > 0);
+        this.props.toggleSelected(false, this.props.getPostActions().length > 0);
     };
 
     handleShow = () => {
-        this.isShowing = this.props.actions.length > 0;
+        this.isShowing = this.props.getPostActions().length > 0;
         this.props.toggleSelected(true, this.isShowing);
     };
 
@@ -59,12 +53,12 @@ export default class OptionsContext extends PureComponent {
         }
 
         this.setState({
-            actions: this.props.actions,
+            actions: this.props.getPostActions(),
         });
     };
 
     show = (additionalAction) => {
-        const nextActions = [...this.props.actions];
+        const nextActions = this.props.getPostActions();
         if (additionalAction && additionalAction.text && !additionalAction.nativeEvent) {
             const copyPostIndex = nextActions.findIndex((action) => action.copyPost);
             nextActions.splice(copyPostIndex + 1, 0, additionalAction);
@@ -80,7 +74,7 @@ export default class OptionsContext extends PureComponent {
     };
 
     handlePress = () => {
-        this.props.toggleSelected(false, this.props.actions.length > 0);
+        this.props.toggleSelected(false, this.props.getPostActions().length > 0);
         this.props.onPress();
     };
 
