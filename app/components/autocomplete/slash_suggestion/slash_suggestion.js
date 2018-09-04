@@ -124,7 +124,6 @@ export default class SlashSuggestion extends Component {
 
     renderItem = ({item}) => (
         <SlashSuggestionItem
-            displayName={item.display_name}
             description={item.auto_complete_desc}
             hint={item.auto_complete_hint}
             onPress={this.completeSuggestion}
