@@ -1,0 +1,893 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ShowMoreButton should match, button snapshot 1`] = `
+<Component
+  style={Object {}}
+>
+  <Text
+    accessible={true}
+    allowFontScaling={true}
+    ellipsizeMode="tail"
+    style={Object {}}
+  >
+    +
+  </Text>
+  <InjectIntl(FormattedText)
+    defaultMessage="Show More"
+    id="post_info.message.show_more"
+    style={Object {}}
+  />
+</Component>
+`;
+
+exports[`ShowMoreButton should match, button snapshot 2`] = `
+<Component
+  style={Object {}}
+>
+  <Text
+    accessible={true}
+    allowFontScaling={true}
+    ellipsizeMode="tail"
+    style={Object {}}
+  >
+    -
+  </Text>
+  <InjectIntl(FormattedText)
+    defaultMessage="Show Less"
+    id="post_info.message.show_less"
+    style={Object {}}
+  />
+</Component>
+`;
+
+exports[`ShowMoreButton should match, full snapshot 1`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <ShowMoreButton
+    highlight={false}
+    onPress={[MockFunction]}
+    showMore={true}
+    theme={
+      Object {
+        "centerChannelBg": "#2f3e4e",
+        "centerChannelColor": "#dddddd",
+      }
+    }
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": undefined,
+    "nodeType": "class",
+    "props": Object {
+      "children": Array [
+        <LinearGradient
+          colors={
+            Array [
+              "rgba(47,62,78,0)",
+              "rgba(47,62,78,0.75)",
+              "#2f3e4e",
+            ]
+          }
+          locations={
+            Array [
+              0,
+              0.7,
+              1,
+            ]
+          }
+          style={
+            Object {
+              "flex": 1,
+              "height": 50,
+              "position": "absolute",
+              "top": -50,
+              "width": "100%",
+            }
+          }
+        />,
+        <Component
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+              "justifyContent": "center",
+              "position": "relative",
+              "top": 10,
+            }
+          }
+        >
+          <Component
+            style={
+              Object {
+                "backgroundColor": "rgba(221,221,221,0.2)",
+                "flex": 1,
+                "height": 1,
+                "marginRight": 10,
+              }
+            }
+          />
+          <TouchableOpacity
+            activeOpacity={0.2}
+            onPress={[MockFunction]}
+            style={
+              Object {
+                "backgroundColor": "#2f3e4e",
+                "borderColor": "rgba(221,221,221,0.2)",
+                "borderRadius": 4,
+                "borderWidth": 1,
+                "height": 37,
+                "paddingHorizontal": 10,
+              }
+            }
+          >
+            <Component
+              style={
+                Object {
+                  "alignItems": "center",
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Text
+                accessible={true}
+                allowFontScaling={true}
+                ellipsizeMode="tail"
+                style={
+                  Object {
+                    "color": undefined,
+                    "fontSize": 16,
+                    "fontWeight": "600",
+                    "marginRight": 8,
+                  }
+                }
+              >
+                +
+              </Text>
+              <InjectIntl(FormattedText)
+                defaultMessage="Show More"
+                id="post_info.message.show_more"
+                style={
+                  Object {
+                    "color": undefined,
+                    "fontSize": 13,
+                    "fontWeight": "600",
+                  }
+                }
+              />
+            </Component>
+          </TouchableOpacity>
+          <Component
+            style={
+              Object {
+                "backgroundColor": "rgba(221,221,221,0.2)",
+                "flex": 1,
+                "height": 1,
+                "marginLeft": 10,
+              }
+            }
+          />
+        </Component>,
+      ],
+    },
+    "ref": null,
+    "rendered": Array [
+      Object {
+        "instance": null,
+        "key": undefined,
+        "nodeType": "class",
+        "props": Object {
+          "colors": Array [
+            "rgba(47,62,78,0)",
+            "rgba(47,62,78,0.75)",
+            "#2f3e4e",
+          ],
+          "locations": Array [
+            0,
+            0.7,
+            1,
+          ],
+          "style": Object {
+            "flex": 1,
+            "height": 50,
+            "position": "absolute",
+            "top": -50,
+            "width": "100%",
+          },
+        },
+        "ref": null,
+        "rendered": null,
+        "type": [Function],
+      },
+      Object {
+        "instance": null,
+        "key": undefined,
+        "nodeType": "class",
+        "props": Object {
+          "children": Array [
+            <Component
+              style={
+                Object {
+                  "backgroundColor": "rgba(221,221,221,0.2)",
+                  "flex": 1,
+                  "height": 1,
+                  "marginRight": 10,
+                }
+              }
+            />,
+            <TouchableOpacity
+              activeOpacity={0.2}
+              onPress={[MockFunction]}
+              style={
+                Object {
+                  "backgroundColor": "#2f3e4e",
+                  "borderColor": "rgba(221,221,221,0.2)",
+                  "borderRadius": 4,
+                  "borderWidth": 1,
+                  "height": 37,
+                  "paddingHorizontal": 10,
+                }
+              }
+            >
+              <Component
+                style={
+                  Object {
+                    "alignItems": "center",
+                    "flex": 1,
+                    "flexDirection": "row",
+                  }
+                }
+              >
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  style={
+                    Object {
+                      "color": undefined,
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "marginRight": 8,
+                    }
+                  }
+                >
+                  +
+                </Text>
+                <InjectIntl(FormattedText)
+                  defaultMessage="Show More"
+                  id="post_info.message.show_more"
+                  style={
+                    Object {
+                      "color": undefined,
+                      "fontSize": 13,
+                      "fontWeight": "600",
+                    }
+                  }
+                />
+              </Component>
+            </TouchableOpacity>,
+            <Component
+              style={
+                Object {
+                  "backgroundColor": "rgba(221,221,221,0.2)",
+                  "flex": 1,
+                  "height": 1,
+                  "marginLeft": 10,
+                }
+              }
+            />,
+          ],
+          "style": Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+            "justifyContent": "center",
+            "position": "relative",
+            "top": 10,
+          },
+        },
+        "ref": null,
+        "rendered": Array [
+          Object {
+            "instance": null,
+            "key": undefined,
+            "nodeType": "class",
+            "props": Object {
+              "style": Object {
+                "backgroundColor": "rgba(221,221,221,0.2)",
+                "flex": 1,
+                "height": 1,
+                "marginRight": 10,
+              },
+            },
+            "ref": null,
+            "rendered": null,
+            "type": [Function],
+          },
+          Object {
+            "instance": null,
+            "key": undefined,
+            "nodeType": "class",
+            "props": Object {
+              "activeOpacity": 0.2,
+              "children": <Component
+                style={
+                  Object {
+                    "alignItems": "center",
+                    "flex": 1,
+                    "flexDirection": "row",
+                  }
+                }
+              >
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  style={
+                    Object {
+                      "color": undefined,
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "marginRight": 8,
+                    }
+                  }
+                >
+                  +
+                </Text>
+                <InjectIntl(FormattedText)
+                  defaultMessage="Show More"
+                  id="post_info.message.show_more"
+                  style={
+                    Object {
+                      "color": undefined,
+                      "fontSize": 13,
+                      "fontWeight": "600",
+                    }
+                  }
+                />
+              </Component>,
+              "onPress": [MockFunction],
+              "style": Object {
+                "backgroundColor": "#2f3e4e",
+                "borderColor": "rgba(221,221,221,0.2)",
+                "borderRadius": 4,
+                "borderWidth": 1,
+                "height": 37,
+                "paddingHorizontal": 10,
+              },
+            },
+            "ref": null,
+            "rendered": Object {
+              "instance": null,
+              "key": undefined,
+              "nodeType": "class",
+              "props": Object {
+                "children": Array [
+                  <Text
+                    accessible={true}
+                    allowFontScaling={true}
+                    ellipsizeMode="tail"
+                    style={
+                      Object {
+                        "color": undefined,
+                        "fontSize": 16,
+                        "fontWeight": "600",
+                        "marginRight": 8,
+                      }
+                    }
+                  >
+                    +
+                  </Text>,
+                  <InjectIntl(FormattedText)
+                    defaultMessage="Show More"
+                    id="post_info.message.show_more"
+                    style={
+                      Object {
+                        "color": undefined,
+                        "fontSize": 13,
+                        "fontWeight": "600",
+                      }
+                    }
+                  />,
+                ],
+                "style": Object {
+                  "alignItems": "center",
+                  "flex": 1,
+                  "flexDirection": "row",
+                },
+              },
+              "ref": null,
+              "rendered": Array [
+                Object {
+                  "instance": null,
+                  "key": undefined,
+                  "nodeType": "class",
+                  "props": Object {
+                    "accessible": true,
+                    "allowFontScaling": true,
+                    "children": "+",
+                    "ellipsizeMode": "tail",
+                    "style": Object {
+                      "color": undefined,
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "marginRight": 8,
+                    },
+                  },
+                  "ref": null,
+                  "rendered": "+",
+                  "type": [Function],
+                },
+                Object {
+                  "instance": null,
+                  "key": undefined,
+                  "nodeType": "class",
+                  "props": Object {
+                    "defaultMessage": "Show More",
+                    "id": "post_info.message.show_more",
+                    "style": Object {
+                      "color": undefined,
+                      "fontSize": 13,
+                      "fontWeight": "600",
+                    },
+                  },
+                  "ref": null,
+                  "rendered": null,
+                  "type": [Function],
+                },
+              ],
+              "type": [Function],
+            },
+            "type": [Function],
+          },
+          Object {
+            "instance": null,
+            "key": undefined,
+            "nodeType": "class",
+            "props": Object {
+              "style": Object {
+                "backgroundColor": "rgba(221,221,221,0.2)",
+                "flex": 1,
+                "height": 1,
+                "marginLeft": 10,
+              },
+            },
+            "ref": null,
+            "rendered": null,
+            "type": [Function],
+          },
+        ],
+        "type": [Function],
+      },
+    ],
+    "type": [Function],
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "children": Array [
+          <LinearGradient
+            colors={
+              Array [
+                "rgba(47,62,78,0)",
+                "rgba(47,62,78,0.75)",
+                "#2f3e4e",
+              ]
+            }
+            locations={
+              Array [
+                0,
+                0.7,
+                1,
+              ]
+            }
+            style={
+              Object {
+                "flex": 1,
+                "height": 50,
+                "position": "absolute",
+                "top": -50,
+                "width": "100%",
+              }
+            }
+          />,
+          <Component
+            style={
+              Object {
+                "alignItems": "center",
+                "flex": 1,
+                "flexDirection": "row",
+                "justifyContent": "center",
+                "position": "relative",
+                "top": 10,
+              }
+            }
+          >
+            <Component
+              style={
+                Object {
+                  "backgroundColor": "rgba(221,221,221,0.2)",
+                  "flex": 1,
+                  "height": 1,
+                  "marginRight": 10,
+                }
+              }
+            />
+            <TouchableOpacity
+              activeOpacity={0.2}
+              onPress={[MockFunction]}
+              style={
+                Object {
+                  "backgroundColor": "#2f3e4e",
+                  "borderColor": "rgba(221,221,221,0.2)",
+                  "borderRadius": 4,
+                  "borderWidth": 1,
+                  "height": 37,
+                  "paddingHorizontal": 10,
+                }
+              }
+            >
+              <Component
+                style={
+                  Object {
+                    "alignItems": "center",
+                    "flex": 1,
+                    "flexDirection": "row",
+                  }
+                }
+              >
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  style={
+                    Object {
+                      "color": undefined,
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "marginRight": 8,
+                    }
+                  }
+                >
+                  +
+                </Text>
+                <InjectIntl(FormattedText)
+                  defaultMessage="Show More"
+                  id="post_info.message.show_more"
+                  style={
+                    Object {
+                      "color": undefined,
+                      "fontSize": 13,
+                      "fontWeight": "600",
+                    }
+                  }
+                />
+              </Component>
+            </TouchableOpacity>
+            <Component
+              style={
+                Object {
+                  "backgroundColor": "rgba(221,221,221,0.2)",
+                  "flex": 1,
+                  "height": 1,
+                  "marginLeft": 10,
+                }
+              }
+            />
+          </Component>,
+        ],
+      },
+      "ref": null,
+      "rendered": Array [
+        Object {
+          "instance": null,
+          "key": undefined,
+          "nodeType": "class",
+          "props": Object {
+            "colors": Array [
+              "rgba(47,62,78,0)",
+              "rgba(47,62,78,0.75)",
+              "#2f3e4e",
+            ],
+            "locations": Array [
+              0,
+              0.7,
+              1,
+            ],
+            "style": Object {
+              "flex": 1,
+              "height": 50,
+              "position": "absolute",
+              "top": -50,
+              "width": "100%",
+            },
+          },
+          "ref": null,
+          "rendered": null,
+          "type": [Function],
+        },
+        Object {
+          "instance": null,
+          "key": undefined,
+          "nodeType": "class",
+          "props": Object {
+            "children": Array [
+              <Component
+                style={
+                  Object {
+                    "backgroundColor": "rgba(221,221,221,0.2)",
+                    "flex": 1,
+                    "height": 1,
+                    "marginRight": 10,
+                  }
+                }
+              />,
+              <TouchableOpacity
+                activeOpacity={0.2}
+                onPress={[MockFunction]}
+                style={
+                  Object {
+                    "backgroundColor": "#2f3e4e",
+                    "borderColor": "rgba(221,221,221,0.2)",
+                    "borderRadius": 4,
+                    "borderWidth": 1,
+                    "height": 37,
+                    "paddingHorizontal": 10,
+                  }
+                }
+              >
+                <Component
+                  style={
+                    Object {
+                      "alignItems": "center",
+                      "flex": 1,
+                      "flexDirection": "row",
+                    }
+                  }
+                >
+                  <Text
+                    accessible={true}
+                    allowFontScaling={true}
+                    ellipsizeMode="tail"
+                    style={
+                      Object {
+                        "color": undefined,
+                        "fontSize": 16,
+                        "fontWeight": "600",
+                        "marginRight": 8,
+                      }
+                    }
+                  >
+                    +
+                  </Text>
+                  <InjectIntl(FormattedText)
+                    defaultMessage="Show More"
+                    id="post_info.message.show_more"
+                    style={
+                      Object {
+                        "color": undefined,
+                        "fontSize": 13,
+                        "fontWeight": "600",
+                      }
+                    }
+                  />
+                </Component>
+              </TouchableOpacity>,
+              <Component
+                style={
+                  Object {
+                    "backgroundColor": "rgba(221,221,221,0.2)",
+                    "flex": 1,
+                    "height": 1,
+                    "marginLeft": 10,
+                  }
+                }
+              />,
+            ],
+            "style": Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+              "justifyContent": "center",
+              "position": "relative",
+              "top": 10,
+            },
+          },
+          "ref": null,
+          "rendered": Array [
+            Object {
+              "instance": null,
+              "key": undefined,
+              "nodeType": "class",
+              "props": Object {
+                "style": Object {
+                  "backgroundColor": "rgba(221,221,221,0.2)",
+                  "flex": 1,
+                  "height": 1,
+                  "marginRight": 10,
+                },
+              },
+              "ref": null,
+              "rendered": null,
+              "type": [Function],
+            },
+            Object {
+              "instance": null,
+              "key": undefined,
+              "nodeType": "class",
+              "props": Object {
+                "activeOpacity": 0.2,
+                "children": <Component
+                  style={
+                    Object {
+                      "alignItems": "center",
+                      "flex": 1,
+                      "flexDirection": "row",
+                    }
+                  }
+                >
+                  <Text
+                    accessible={true}
+                    allowFontScaling={true}
+                    ellipsizeMode="tail"
+                    style={
+                      Object {
+                        "color": undefined,
+                        "fontSize": 16,
+                        "fontWeight": "600",
+                        "marginRight": 8,
+                      }
+                    }
+                  >
+                    +
+                  </Text>
+                  <InjectIntl(FormattedText)
+                    defaultMessage="Show More"
+                    id="post_info.message.show_more"
+                    style={
+                      Object {
+                        "color": undefined,
+                        "fontSize": 13,
+                        "fontWeight": "600",
+                      }
+                    }
+                  />
+                </Component>,
+                "onPress": [MockFunction],
+                "style": Object {
+                  "backgroundColor": "#2f3e4e",
+                  "borderColor": "rgba(221,221,221,0.2)",
+                  "borderRadius": 4,
+                  "borderWidth": 1,
+                  "height": 37,
+                  "paddingHorizontal": 10,
+                },
+              },
+              "ref": null,
+              "rendered": Object {
+                "instance": null,
+                "key": undefined,
+                "nodeType": "class",
+                "props": Object {
+                  "children": Array [
+                    <Text
+                      accessible={true}
+                      allowFontScaling={true}
+                      ellipsizeMode="tail"
+                      style={
+                        Object {
+                          "color": undefined,
+                          "fontSize": 16,
+                          "fontWeight": "600",
+                          "marginRight": 8,
+                        }
+                      }
+                    >
+                      +
+                    </Text>,
+                    <InjectIntl(FormattedText)
+                      defaultMessage="Show More"
+                      id="post_info.message.show_more"
+                      style={
+                        Object {
+                          "color": undefined,
+                          "fontSize": 13,
+                          "fontWeight": "600",
+                        }
+                      }
+                    />,
+                  ],
+                  "style": Object {
+                    "alignItems": "center",
+                    "flex": 1,
+                    "flexDirection": "row",
+                  },
+                },
+                "ref": null,
+                "rendered": Array [
+                  Object {
+                    "instance": null,
+                    "key": undefined,
+                    "nodeType": "class",
+                    "props": Object {
+                      "accessible": true,
+                      "allowFontScaling": true,
+                      "children": "+",
+                      "ellipsizeMode": "tail",
+                      "style": Object {
+                        "color": undefined,
+                        "fontSize": 16,
+                        "fontWeight": "600",
+                        "marginRight": 8,
+                      },
+                    },
+                    "ref": null,
+                    "rendered": "+",
+                    "type": [Function],
+                  },
+                  Object {
+                    "instance": null,
+                    "key": undefined,
+                    "nodeType": "class",
+                    "props": Object {
+                      "defaultMessage": "Show More",
+                      "id": "post_info.message.show_more",
+                      "style": Object {
+                        "color": undefined,
+                        "fontSize": 13,
+                        "fontWeight": "600",
+                      },
+                    },
+                    "ref": null,
+                    "rendered": null,
+                    "type": [Function],
+                  },
+                ],
+                "type": [Function],
+              },
+              "type": [Function],
+            },
+            Object {
+              "instance": null,
+              "key": undefined,
+              "nodeType": "class",
+              "props": Object {
+                "style": Object {
+                  "backgroundColor": "rgba(221,221,221,0.2)",
+                  "flex": 1,
+                  "height": 1,
+                  "marginLeft": 10,
+                },
+              },
+              "ref": null,
+              "rendered": null,
+              "type": [Function],
+            },
+          ],
+          "type": [Function],
+        },
+      ],
+      "type": [Function],
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+  },
+}
+`;
