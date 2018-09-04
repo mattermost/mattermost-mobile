@@ -31,7 +31,6 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
-import {getDeviceUtcOffset} from 'app/utils/timezone';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDisplayName from './channel_display_name';
@@ -65,6 +64,7 @@ export default class Search extends PureComponent {
         searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired,
         enableDateSuggestion: PropTypes.bool,
+        timezoneOffsetInSeconds: PropTypes.number.isRequired,
     };
 
     static defaultProps = {
@@ -469,8 +469,7 @@ export default class Search extends PureComponent {
         });
 
         // timezone offset in seconds
-        const timeZoneOffset = getDeviceUtcOffset() * 60;
-        actions.searchPostsWithParams(currentTeamId, {terms: terms.trim(), is_or_search: isOrSearch, time_zone_offset: timeZoneOffset}, true);
+        actions.searchPostsWithParams(currentTeamId, {terms: terms.trim(), is_or_search: isOrSearch, time_zone_offset: this.props.timezoneOffsetInSeconds}, true);
     };
 
     handleSearchButtonPress = preventDoubleTap((text) => {

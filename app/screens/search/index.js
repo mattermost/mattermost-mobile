@@ -10,11 +10,14 @@ import {getCurrentChannelId, filterPostIds} from 'mattermost-redux/selectors/ent
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
 import {isLandscape} from 'app/selectors/device';
 import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
 import {handleSearchDraftChanged} from 'app/actions/views/search';
+import {getDeviceUtcOffset, getUtcOffsetForTimeZone, isTimezoneEnabled} from 'app/utils/timezone';
 
 import Search from './search';
 
@@ -30,6 +33,11 @@ function makeMapStateToProps() {
         const {recent} = state.entities.search;
         const {searchPosts: searchRequest} = state.requests.search;
 
+        const currentUser = getCurrentUser(state);
+        const enableTimezone = isTimezoneEnabled(state);
+        const userCurrentTimezone = enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : '';
+        const timezoneOffsetInSeconds = (userCurrentTimezone.length > 0 ? getUtcOffsetForTimeZone(userCurrentTimezone) : getDeviceUtcOffset()) * 60;
+
         const serverVersion = state.entities.general.serverVersion;
         const enableDateSuggestion = isMinimumServerVersion(serverVersion, 5, 3);
 
@@ -43,6 +51,7 @@ function makeMapStateToProps() {
             searchingStatus: searchRequest.status,
             theme: getTheme(state),
             enableDateSuggestion,
+            timezoneOffsetInSeconds,
         };
     };
 }
