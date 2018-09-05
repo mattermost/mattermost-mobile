@@ -57,10 +57,10 @@ export default class Emoji extends React.PureComponent {
     }
 
     componentWillMount() {
-        const {displayTextOnly, imageUrl} = this.props;
+        const {displayTextOnly, emojiName, imageUrl} = this.props;
         this.mounted = true;
         if (!displayTextOnly && imageUrl) {
-            ImageCacheManager.cache(imageUrl, imageUrl, this.setImageUrl);
+            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl);
         }
     }
 
@@ -74,7 +74,7 @@ export default class Emoji extends React.PureComponent {
 
         if (!displayTextOnly && imageUrl &&
                 imageUrl !== this.props.imageUrl) {
-            ImageCacheManager.cache(imageUrl, imageUrl, this.setImageUrl);
+            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl);
         }
     }
 
