@@ -11,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {General} from 'mattermost-redux/constants';
 
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
@@ -125,6 +126,13 @@ export default class ChannelItem extends PureComponent {
             }, {displayname: displayName});
         }
 
+        if (type === General.DM_CHANNEL && teammateDeletedAt > 0) {
+            channelDisplayName = intl.formatMessage({
+                id: 'more_direct_channels.directchannel.deactivated',
+                defaultMessage: '{displayname} - Deactivated',
+            }, {displayname: channelDisplayName});
+        }
+
         const style = getStyleSheet(theme);
         const isActive = channelId === currentChannelId;
 
@@ -170,7 +178,6 @@ export default class ChannelItem extends PureComponent {
                 membersCount={displayName.split(',').length}
                 size={16}
                 status={status}
-                teammateDeletedAt={teammateDeletedAt}
                 theme={theme}
                 type={type}
                 isArchived={isArchived}

@@ -203,7 +203,7 @@ class FilteredList extends Component {
         const pastDirectMessageUsers = pastDirectMessages.map((p) => profiles[p]).filter((p) => typeof p !== 'undefined');
 
         const dms = [...directChannelUsers, ...pastDirectMessageUsers].map((u) => {
-            const displayName = displayUsername(u, teammateNameDisplay);
+            const displayName = displayUsername(u, teammateNameDisplay, false);
 
             return {
                 id: u.id,
@@ -211,11 +211,11 @@ class FilteredList extends Component {
                 display_name: displayName,
                 username: u.username,
                 email: u.email,
-                name: displayName,
                 type: General.DM_CHANNEL,
                 fake: true,
                 nickname: u.nickname,
                 fullname: `${u.first_name} ${u.last_name}`,
+                delete_at: u.delete_at,
             };
         });
 
@@ -244,7 +244,7 @@ class FilteredList extends Component {
         const userNotInDirectOrGroupChannels = Object.values(profilesToUse).filter((u) => directAndGroupChannelMembers.indexOf(u.id) === -1 && pastDirectMessages.indexOf(u.id) === -1 && u.id !== currentUserId);
 
         const members = userNotInDirectOrGroupChannels.map((u) => {
-            const displayName = displayUsername(u, teammateNameDisplay);
+            const displayName = displayUsername(u, teammateNameDisplay, false);
 
             return {
                 id: u.id,
@@ -257,6 +257,7 @@ class FilteredList extends Component {
                 fake: true,
                 nickname: u.nickname,
                 fullname: `${u.first_name} ${u.last_name}`,
+                delete_at: u.delete_at,
             };
         });
 

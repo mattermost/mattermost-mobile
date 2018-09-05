@@ -43,4 +43,19 @@ describe('ChannelItem', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('should match snapshot for deactivated user', () => {
+        const newProps = {
+            ...baseProps,
+            teammateDeletedAt: 100,
+            type: 'D',
+        };
+
+        const wrapper = shallow(
+            <ChannelItem {...newProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper).toMatchSnapshot();
+    });
 });
