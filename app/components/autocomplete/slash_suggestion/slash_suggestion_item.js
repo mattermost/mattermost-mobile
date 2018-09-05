@@ -12,7 +12,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class SlashSuggestionItem extends PureComponent {
     static propTypes = {
-        displayName: PropTypes.string,
         description: PropTypes.string,
         hint: PropTypes.string,
         onPress: PropTypes.func.isRequired,
@@ -27,7 +26,6 @@ export default class SlashSuggestionItem extends PureComponent {
 
     render() {
         const {
-            displayName,
             description,
             hint,
             theme,
@@ -41,7 +39,7 @@ export default class SlashSuggestionItem extends PureComponent {
                 onPress={this.completeSuggestion}
                 style={style.row}
             >
-                <Text style={style.suggestionName}>{`/${displayName || trigger} ${hint}`}</Text>
+                <Text style={style.suggestionName}>{`/${trigger} ${hint}`}</Text>
                 <Text style={style.suggestionDescription}>{description}</Text>
             </TouchableOpacity>
         );
