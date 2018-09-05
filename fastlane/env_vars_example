@@ -19,7 +19,7 @@ export ANDROID_INCREMENT_BUILD_NUMBER=false
 export ANDROID_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE="Bump Android build number to"
 
 # The name of the app as it is going to be shown in the Android home screen
-export ANDROID_APP_NAME="Mattermost Beta"
+export ANDROID_APP_NAME="OWS Chat"
 
 # The package Id for the Android app
 export ANDROID_PACKAGE_ID=com.mattermost.rnbeta
@@ -54,7 +54,7 @@ export IOS_INCREMENT_BUILD_NUMBER=false
 export IOS_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE="Bump iOS build number to"
 
 # The name of the app as it is going to be shown in the iOS home screen
-export IOS_APP_NAME="Mattermost Beta"
+export IOS_APP_NAME="OWS Chat"
 
 # The Bundle Identifier for the main app
 export IOS_MAIN_APP_IDENTIFIER=com.mattermost.rnbeta

@@ -21,7 +21,7 @@ To help with testing app updates before they're released, you can:
 1. Sign up to be a beta tester
   - [Android](https://play.google.com/apps/testing/com.mattermost.rnbeta)
   - [iOS](https://mattermost-fastlane.herokuapp.com/)
-2. Install the `Mattermost Beta` app. New updates in the Beta app are released each Monday. You will receive a notification when the new updates are available.
+2. Install the `OWS Chat` app. New updates in the Beta app are released each Monday. You will receive a notification when the new updates are available.
 3. File any bugs you find by filing a [GitHub issue](https://github.com/mattermost/mattermost-mobile/issues) with:
   - Device information
   - Repro steps
@@ -49,7 +49,7 @@ App data is wiped from the device when a user logs out of the app. If the user i
 
 At the moment, we only support connecting to one server at a time. If you need to connect to multiple servers, please [upvote the feature request](https://mattermost.uservoice.com/forums/306457/suggestions/10975938) so we can track demand for it. 
 
-As a work around, you can install both the released "Mattermost" app and sign up to be a [tester](#testing) for the "Mattermost Beta" app so you can connect to two servers at once.
+As a work around, you can install both the released "Mattermost" app and sign up to be a [tester](#testing) for the "OWS Chat" app so you can connect to two servers at once.
 
 ### Will there be second generation apps available for tablets?
 

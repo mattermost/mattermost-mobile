@@ -126,7 +126,7 @@ platform :ios do
       )
     end
 
-    if ENV['IOS_APP_NAME'] != 'Mattermost Beta'
+    if ENV['IOS_APP_NAME'] != 'OWS Chat'
       update_info_plist(
           xcodeproj: './ios/Mattermost.xcodeproj',
           plist_path: 'Mattermost/Info.plist',
@@ -375,7 +375,7 @@ platform :android do
       android_update_application_id(app_folder_name: 'android/app', application_id: packageId)
     end
 
-    unless ENV['ANDROID_APP_NAME'].nil? || ENV['ANDROID_APP_NAME'].empty? || ENV['ANDROID_APP_NAME'] == 'Mattermost Beta'
+    unless ENV['ANDROID_APP_NAME'].nil? || ENV['ANDROID_APP_NAME'].empty? || ENV['ANDROID_APP_NAME'] == 'OWS Chat'
       android_change_string_app_name(
           newName: ENV['ANDROID_APP_NAME'],
           stringsFile: './android/app/src/main/res/values/strings.xml'
@@ -383,7 +383,7 @@ platform :android do
 
       find_replace_string(
           path_to_file: './fastlane/metadata/android/en-US/title.txt',
-          old_string: 'Mattermost Beta',
+          old_string: 'OWS Chat',
           new_string: ENV['ANDROID_APP_NAME']
       )
     end
