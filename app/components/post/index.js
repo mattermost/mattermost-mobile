@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {createPost, deletePost, removePost} from 'mattermost-redux/actions/posts';
+import {General, Posts} from 'mattermost-redux/constants';
 import {getCurrentChannelId, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
 import {getPost, makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
@@ -16,8 +17,6 @@ import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
-import {getDimensions} from 'app/selectors/device';
-import {Posts} from 'mattermost-redux/constants';
 
 import Post from './post';
 
@@ -78,33 +77,36 @@ function makeMapStateToProps() {
                 }
             }
         }
-        const {deviceWidth} = getDimensions(state);
 
         const isAdmin = checkIsAdmin(roles);
         const isSystemAdmin = checkIsSystemAdmin(roles);
 
         let canDelete = false;
         let canEdit = false;
+        let canEditUntil = -1;
         if (post) {
             canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
             canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
+            if (canEdit && license.IsLicensed === 'true' &&
+                (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT || (config.PostEditTimeLimit !== -1 && config.PostEditTimeLimit !== '-1'))
+            ) {
+                canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
+            }
         }
 
         return {
             channelIsReadOnly: isCurrentChannelReadOnly(state),
-            config,
             canDelete,
             canEdit,
+            canEditUntil,
             currentTeamUrl: getCurrentTeamUrl(state),
             currentUserId,
-            deviceWidth,
             post,
             isFirstReply,
             isLastReply,
             consecutivePost: isConsecutivePost(state, ownProps),
             hasComments: getCommentCountForPost(state, {post}) > 0,
             commentedOnPost,
-            license,
             theme: getTheme(state),
             isFlagged: isPostFlagged(post.id, myPreferences),
         };

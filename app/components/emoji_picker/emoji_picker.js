@@ -407,6 +407,7 @@ export default class EmojiPicker extends PureComponent {
                     renderItem={this.flatListRenderItem}
                     pageSize={10}
                     initialListSize={10}
+                    removeClippedSubviews={true}
                 />
             );
         } else {
@@ -558,6 +559,7 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderRightWidth: 1,
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
+            overflow: 'hidden',
         },
         listView: {
             backgroundColor: theme.centerChannelBg,

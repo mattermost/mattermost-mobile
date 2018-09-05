@@ -7,6 +7,7 @@ import {connect} from 'react-redux';
 import {
     favoriteChannel,
     getChannelStats,
+    getChannel,
     deleteChannel,
     unfavoriteChannel,
     updateChannelNotifyProps,
@@ -89,6 +90,7 @@ function mapDispatchToProps(dispatch) {
             closeGMChannel,
             deleteChannel,
             getChannelStats,
+            getChannel,
             leaveChannel,
             loadChannelsByTeamName,
             favoriteChannel,

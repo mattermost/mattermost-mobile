@@ -6,14 +6,12 @@ import PropTypes from 'prop-types';
 import {
     Dimensions,
     Platform,
-    Text,
     TouchableHighlight,
     TouchableOpacity,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
-import LinearGradient from 'react-native-linear-gradient';
 
 import {Posts} from 'mattermost-redux/constants';
 
@@ -21,6 +19,7 @@ import CombinedSystemMessage from 'app/components/combined_system_message';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import OptionsContext from 'app/components/options_context';
+import ShowMoreButton from 'app/components/show_more_button';
 
 import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
@@ -41,6 +40,7 @@ export default class PostBody extends PureComponent {
         canAddReaction: PropTypes.bool,
         canDelete: PropTypes.bool,
         canEdit: PropTypes.bool,
+        canEditUntil: PropTypes.number.isRequired,
         channelIsReadOnly: PropTypes.bool.isRequired,
         fileIds: PropTypes.array,
         hasBeenDeleted: PropTypes.bool,
@@ -120,6 +120,7 @@ export default class PostBody extends PureComponent {
         const {formatMessage} = this.context.intl;
         const {
             canEdit,
+            canEditUntil,
             canDelete,
             canAddReaction,
             channelIsReadOnly,
@@ -169,7 +170,7 @@ export default class PostBody extends PureComponent {
                 }
             }
 
-            if (canEdit) {
+            if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
                 actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: onPostEdit});
             }
 
@@ -336,64 +337,12 @@ export default class PostBody extends PureComponent {
         );
     };
 
-    renderShowMoreOption = (style) => {
-        const {highlight, theme} = this.props;
-        const {isLongPost} = this.state;
-
-        if (!isLongPost) {
-            return null;
-        }
-
-        const gradientColors = [];
-        if (highlight) {
-            gradientColors.push(
-                changeOpacity(theme.mentionHighlightBg, 0),
-                changeOpacity(theme.mentionHighlightBg, 0.15),
-                changeOpacity(theme.mentionHighlightBg, 0.5),
-            );
-        } else {
-            gradientColors.push(
-                changeOpacity(theme.centerChannelBg, 0),
-                changeOpacity(theme.centerChannelBg, 0.75),
-                theme.centerChannelBg,
-            );
-        }
-
-        return (
-            <View>
-                <LinearGradient
-                    colors={gradientColors}
-                    locations={[0, 0.7, 1]}
-                    style={style.showMoreGradient}
-                />
-                <View style={style.showMoreContainer}>
-                    <View style={style.showMoreDividerLeft}/>
-                    <TouchableOpacity
-                        onPress={this.openLongPost}
-                        style={style.showMoreButtonContainer}
-                    >
-                        <View style={style.showMoreButton}>
-                            <Text style={style.showMorePlusSign}>
-                                {'+'}
-                            </Text>
-                            <FormattedText
-                                id='mobile.post_body.show_more'
-                                defaultMessage='Show More'
-                                style={style.showMoreText}
-                            />
-                        </View>
-                    </TouchableOpacity>
-                    <View style={style.showMoreDividerRight}/>
-                </View>
-            </View>
-        );
-    };
-
     render() {
         const {formatMessage} = this.context.intl;
         const {
             hasBeenDeleted,
             hasBeenEdited,
+            highlight,
             isFailed,
             isPending,
             isPostAddChannelMember,
@@ -488,7 +437,7 @@ export default class PostBody extends PureComponent {
             body = (
                 <View style={style.messageBody}>
                     <OptionsContext
-                        actions={this.getPostActions()}
+                        getPostActions={this.getPostActions}
                         ref='options'
                         onPress={onPress}
                         toggleSelected={toggleSelected}
@@ -496,7 +445,12 @@ export default class PostBody extends PureComponent {
                     >
                         <View onLayout={this.measurePost}>
                             {messageComponent}
-                            {this.renderShowMoreOption(style)}
+                            {isLongPost &&
+                            <ShowMoreButton
+                                highlight={highlight}
+                                onPress={this.openLongPost}
+                            />
+                            }
                         </View>
                         {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
                         {this.renderFileAttachments()}
@@ -561,57 +515,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         systemMessage: {
             opacity: 0.6,
-        },
-        showMoreGradient: {
-            flex: 1,
-            height: 50,
-            position: 'absolute',
-            top: -50,
-            width: '100%',
-        },
-        showMoreContainer: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            position: 'relative',
-            top: -7.5,
-        },
-        showMoreDividerLeft: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            flex: 1,
-            height: 1,
-            marginRight: 10,
-        },
-        showMoreDividerRight: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            flex: 1,
-            height: 1,
-            marginLeft: 10,
-        },
-        showMoreButtonContainer: {
-            backgroundColor: theme.centerChannelBg,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRadius: 4,
-            borderWidth: 1,
-            height: 37,
-            paddingHorizontal: 10,
-        },
-        showMoreButton: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-        },
-        showMorePlusSign: {
-            color: theme.linkColor,
-            fontSize: 16,
-            fontWeight: '600',
-            marginRight: 8,
-        },
-        showMoreText: {
-            color: theme.linkColor,
-            fontSize: 13,
-            fontWeight: '600',
         },
     };
 });

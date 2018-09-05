@@ -13,9 +13,10 @@ import {
     View,
 } from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import ProgressiveImage from 'app/components/progressive_image';
+import ShowMoreButton from 'app/components/show_more_button';
+
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
@@ -103,10 +104,10 @@ export default class MessageAttachment extends PureComponent {
         const {height} = event.nativeEvent.layout;
         const {height: deviceHeight} = Dimensions.get('window');
 
-        if (height >= (deviceHeight * 1.2)) {
+        if (height >= (deviceHeight * 0.6)) {
             this.setState({
                 isLongText: true,
-                maxHeight: (deviceHeight * 0.6),
+                maxHeight: (deviceHeight * 0.4),
             });
         }
     };
@@ -385,23 +386,6 @@ export default class MessageAttachment extends PureComponent {
 
         let text;
         if (attachment.text) {
-            let moreLessLocale = {id: 'post_attachment.collapse', defaultMessage: 'Show less...'};
-            if (collapsed) {
-                moreLessLocale = {id: 'post_attachment.more', defaultMessage: 'Show more...'};
-            }
-
-            let moreLess;
-            if (isLongText) {
-                moreLess = (
-                    <FormattedText
-                        id={moreLessLocale.id}
-                        defaultMessage={moreLessLocale.defaultMessage}
-                        onPress={this.toggleCollapseState}
-                        style={style.moreLess}
-                    />
-                );
-            }
-
             text = (
                 <View
                     onLayout={this.measurePost}
@@ -421,7 +405,12 @@ export default class MessageAttachment extends PureComponent {
                             onPermalinkPress={onPermalinkPress}
                         />
                     </View>
-                    {moreLess}
+                    {isLongText &&
+                    <ShowMoreButton
+                        onPress={this.toggleCollapseState}
+                        showMore={collapsed}
+                    />
+                    }
                 </View>
             );
         }
@@ -522,11 +511,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         thumb: {
             height: 45,
             width: 45,
-        },
-        moreLess: {
-            color: theme.linkColor,
-            fontSize: 12,
-            marginTop: 5,
         },
         headingContainer: {
             alignSelf: 'stretch',

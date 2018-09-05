@@ -215,7 +215,7 @@ export default class PostHeader extends PureComponent {
         }
 
         return (
-            <View>
+            <React.Fragment>
                 <View style={[style.postInfoContainer, (isPendingOrFailedPost && style.pendingPost)]}>
                     <View style={{flexDirection: 'row', flex: 1}}>
                         {this.getDisplayName(style)}
@@ -253,7 +253,7 @@ export default class PostHeader extends PureComponent {
                     {this.renderCommentedOnMessage(style)}
                 </View>
                 }
-            </View>
+            </React.Fragment>
         );
     }
 }

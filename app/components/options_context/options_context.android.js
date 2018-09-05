@@ -8,7 +8,7 @@ import RNBottomSheet from 'react-native-bottom-sheet';
 
 export default class OptionsContext extends PureComponent {
     static propTypes = {
-        actions: PropTypes.array,
+        getPostActions: PropTypes.func,
         cancelText: PropTypes.string,
         children: PropTypes.node.isRequired,
         onPress: PropTypes.func.isRequired,
@@ -16,13 +16,13 @@ export default class OptionsContext extends PureComponent {
     };
 
     static defaultProps = {
-        actions: [],
+        getPostActions: () => [],
         cancelText: 'Cancel',
     };
 
     show = (additionalAction) => {
-        const {actions, cancelText} = this.props;
-        const nextActions = [...actions];
+        const {getPostActions, cancelText} = this.props;
+        const nextActions = getPostActions();
         if (additionalAction && !additionalAction.nativeEvent && additionalAction.text) {
             const copyPostIndex = nextActions.findIndex((action) => action.copyPost);
             nextActions.splice(copyPostIndex + 1, 0, additionalAction);
@@ -45,11 +45,11 @@ export default class OptionsContext extends PureComponent {
     };
 
     handleHideUnderlay = () => {
-        this.props.toggleSelected(false, this.props.actions.length > 0);
+        this.props.toggleSelected(false, this.props.getPostActions().length > 0);
     };
 
     handleShowUnderlay = () => {
-        this.props.toggleSelected(true, this.props.actions.length > 0);
+        this.props.toggleSelected(true, this.props.getPostActions().length > 0);
     };
 
     render() {
