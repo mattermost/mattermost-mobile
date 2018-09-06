@@ -8,6 +8,7 @@ const NavigationTypes = keyMirror({
     NAVIGATION_CLOSE_MODAL: null,
     NAVIGATION_NO_TEAMS: null,
     RESTART_APP: null,
+    NAVIGATION_ERROR_TEAMS: null,
 });
 
 export default NavigationTypes;
