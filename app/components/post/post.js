@@ -312,8 +312,8 @@ export default class Post extends PureComponent {
         }
     });
 
-    toggleSelected = (selected) => {
-        if (!getToolTipVisible()) {
+    toggleSelected = (selected, bypass) => {
+        if (!getToolTipVisible() || bypass) {
             this.setState({selected});
         }
     };

@@ -27,34 +27,34 @@ export default class OptionsContext extends PureComponent {
         };
     }
 
+    handleHide = () => {
+        this.isShowing = false;
+        this.props.toggleSelected(false, true);
+    };
+
     handleHideUnderlay = () => {
         if (!this.isShowing) {
-            this.props.toggleSelected(false, false);
+            this.props.toggleSelected(false, true);
         }
     };
 
     handleShowUnderlay = () => {
-        this.props.toggleSelected(true, false);
-    };
-
-    handleHide = () => {
-        this.isShowing = false;
-        this.props.toggleSelected(false, this.props.getPostActions().length > 0);
-    };
-
-    handleShow = () => {
-        this.isShowing = this.props.getPostActions().length > 0;
-        this.props.toggleSelected(true, this.isShowing);
+        this.show();
+        this.props.toggleSelected(true, true);
+        this.isShowing = this.state.actions.length > 0;
     };
 
     hide = () => {
+        this.setState({
+            actions: this.props.getPostActions(),
+        });
+
         if (this.refs.toolTip) {
             this.refs.toolTip.hideMenu();
         }
 
-        this.setState({
-            actions: this.props.getPostActions(),
-        });
+        this.isShowing = false;
+        this.props.toggleSelected(false, true);
     };
 
     show = (additionalAction) => {
@@ -87,10 +87,9 @@ export default class OptionsContext extends PureComponent {
                 actions={this.state.actions}
                 arrowDirection='down'
                 longPress={true}
+                onHide={this.handleHide}
                 onPress={this.handlePress}
                 underlayColor='transparent'
-                onShow={this.handleShow}
-                onHide={this.handleHide}
             >
                 {this.props.children}
             </ToolTip>
