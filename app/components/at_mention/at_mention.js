@@ -80,7 +80,7 @@ export default class AtMention extends React.PureComponent {
     };
 
     getUserDetailsFromMentionName(props) {
-        let mentionName = props.mentionName;
+        let mentionName = props.mentionName.toLowerCase();
 
         while (mentionName.length > 0) {
             if (props.usersByUsername.hasOwnProperty(mentionName)) {
