@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 let previewComponents;
-const IMAGE_MAX_HEIGHT = 350;
+const IMAGE_MAX_HEIGHT = 150;
 const IMAGE_MIN_DIMENSION = 50;
 
 export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHeight = 0) => {

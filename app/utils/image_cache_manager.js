@@ -27,33 +27,33 @@ export default class ImageCacheManager {
             listener(path);
         } else {
             addListener(uri, listener);
-            if (!uri.startsWith('http')) {
+            if (uri.startsWith('http')) {
+                try {
+                    const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+                    const options = {
+                        session: uri,
+                        timeout: 10000,
+                        indicator: true,
+                        overwrite: true,
+                        path,
+                        certificate,
+                    };
+
+                    this.downloadTask = await RNFetchBlob.config(options).fetch('GET', uri);
+                    if (this.downloadTask.respInfo.respType === 'text') {
+                        throw new Error();
+                    }
+
+                    notifyAll(uri, path);
+                } catch (e) {
+                    RNFetchBlob.fs.unlink(path);
+                    notifyAll(uri, uri);
+                }
+            } else {
                 // In case the uri we are trying to cache is already a local file just notify and return
                 notifyAll(uri, uri);
-                return;
             }
 
-            try {
-                const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
-                const options = {
-                    session: uri,
-                    timeout: 10000,
-                    indicator: true,
-                    overwrite: true,
-                    path,
-                    certificate,
-                };
-
-                this.downloadTask = await RNFetchBlob.config(options).fetch('GET', uri);
-                if (this.downloadTask.respInfo.respType === 'text') {
-                    throw new Error();
-                }
-
-                notifyAll(uri, path);
-            } catch (e) {
-                RNFetchBlob.fs.unlink(path);
-                notifyAll(uri, uri);
-            }
             unsubscribe(uri);
         }
     };

@@ -13,7 +13,6 @@ import {
     View,
 } from 'react-native';
 
-import ProgressiveImage from 'app/components/progressive_image';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {getNearestPoint} from 'app/utils/opengraph';
@@ -96,9 +95,21 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         });
 
         if (imageUrl) {
-            ImageCacheManager.cache(null, imageUrl, this.getImageSize);
+            ImageCacheManager.cache(this.getFilename(imageUrl), imageUrl, this.getImageSize);
         }
     }
+
+    getFilename = (link) => {
+        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+        const extension = filename.split('.').pop();
+
+        if (extension === filename) {
+            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+            filename = `${filename}${ext}`;
+        }
+
+        return `og-${filename}`;
+    };
 
     getImageSize = (imageUrl) => {
         let prefix = '';
@@ -141,13 +152,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             originalWidth,
             originalHeight,
         } = this.state;
-        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-        const extension = filename.split('.').pop();
-
-        if (extension === filename) {
-            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
-            filename = `${filename}${ext}`;
-        }
+        const filename = this.getFilename(link);
 
         const files = [{
             caption: filename,
@@ -175,6 +180,13 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         const style = getStyleSheet(theme);
 
         let description = null;
+        let source;
+        if (imageUrl) {
+            source = {
+                uri: imageUrl,
+            };
+        }
+
         if (openGraphData.description) {
             description = (
                 <View style={style.flex}>
@@ -216,19 +228,22 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                 </View>
                 {description}
                 {hasImage &&
-                    <View ref='item'>
-                        <TouchableWithoutFeedback
-                            onPress={this.handlePreviewImage}
-                            style={{width, height}}
-                        >
-                            <ProgressiveImage
-                                ref='image'
-                                style={[style.image, {width, height}]}
-                                imageUri={imageUrl}
-                                resizeMode='contain'
-                            />
-                        </TouchableWithoutFeedback>
-                    </View>
+                <View
+                    ref='item'
+                    style={style.imageContainer}
+                >
+                    <TouchableWithoutFeedback
+                        onPress={this.handlePreviewImage}
+                        style={{width, height}}
+                    >
+                        <Image
+                            ref='image'
+                            style={[style.image, {width, height}]}
+                            source={source}
+                            resizeMode='contain'
+                        />
+                    </TouchableWithoutFeedback>
+                </View>
                 }
             </View>
         );
@@ -265,6 +280,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 13,
             color: changeOpacity(theme.centerChannelColor, 0.7),
             marginBottom: 10,
+        },
+        imageContainer: {
+            alignItems: 'center',
         },
         image: {
             borderRadius: 3,
