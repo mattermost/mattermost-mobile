@@ -90,7 +90,7 @@ export default class DateSuggestion extends PureComponent {
                 futureScrollRange={0}
                 scrollingEnabled={true}
                 pagingEnabled={true}
-                hideArrows={true}
+                hideArrows={false}
                 horizontal={true}
                 showScrollIndicator={true}
                 onDayPress={this.completeMention}
