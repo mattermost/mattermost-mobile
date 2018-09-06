@@ -47,6 +47,7 @@ export default class PostBody extends PureComponent {
         hasBeenEdited: PropTypes.bool,
         hasReactions: PropTypes.bool,
         highlight: PropTypes.bool,
+        imageDimensions: PropTypes.array,
         isFailed: PropTypes.bool,
         isFlagged: PropTypes.bool,
         isPending: PropTypes.bool,
@@ -79,6 +80,7 @@ export default class PostBody extends PureComponent {
 
     static defaultProps = {
         fileIds: [],
+        imageDimensions: [],
         onAddReaction: emptyFunction,
         onCopyPermalink: emptyFunction,
         onCopyText: emptyFunction,
@@ -306,7 +308,7 @@ export default class PostBody extends PureComponent {
     }
 
     renderPostAdditionalContent = (blockStyles, messageStyle, textStyles) => {
-        const {isReplyPost, message, navigator, onHashtagPress, onPermalinkPress, postId, postProps} = this.props;
+        const {imageDimensions, isReplyPost, message, navigator, onHashtagPress, onPermalinkPress, postId, postProps} = this.props;
 
         if (!PostBodyAdditionalContent) {
             PostBodyAdditionalContent = require('app/components/post_body_additional_content').default;
@@ -316,6 +318,7 @@ export default class PostBody extends PureComponent {
             <PostBodyAdditionalContent
                 baseTextStyle={messageStyle}
                 blockStyles={blockStyles}
+                imageDimensions={imageDimensions}
                 navigator={navigator}
                 message={message}
                 postId={postId}
@@ -362,6 +365,7 @@ export default class PostBody extends PureComponent {
             hasBeenDeleted,
             hasBeenEdited,
             highlight,
+            imageDimensions,
             isFailed,
             isPending,
             isPostAddChannelMember,
@@ -438,6 +442,7 @@ export default class PostBody extends PureComponent {
                         <Markdown
                             baseTextStyle={messageStyle}
                             blockStyles={blockStyles}
+                            imageDimensions={imageDimensions}
                             isEdited={hasBeenEdited}
                             isReplyPost={isReplyPost}
                             isSearchResult={isSearchResult}

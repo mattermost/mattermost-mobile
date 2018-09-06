@@ -96,6 +96,7 @@ function mapStateToProps(state, ownProps) {
         hasBeenDeleted: post.state === Posts.POST_DELETED,
         hasBeenEdited: isEdited(post),
         hasReactions: post.has_reactions,
+        imageDimensions: post.image_dimensions,
         isFailed,
         isPending,
         isPostAddChannelMember,

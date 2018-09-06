@@ -7,7 +7,7 @@ import {bindActionCreators} from 'redux';
 import {getRedirectLocation} from 'mattermost-redux/actions/general';
 import {Preferences} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getOpenGraphMetadataForUrl} from 'mattermost-redux/selectors/entities/posts';
+import {getOpenGraphMetadataForUrl, getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getBool, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {ViewTypes} from 'app/constants';
@@ -35,6 +35,7 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const config = getConfig(state);
+        const post = getPost(state, ownProps.postId);
         const link = getFirstLink(ownProps.message);
 
         // Link previews used to be an advanced settings until server version 4.4 when it was changed to be a display setting.
@@ -42,11 +43,19 @@ function makeMapStateToProps() {
         const previewsEnabled = getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, `${ViewTypes.FEATURE_TOGGLE_PREFIX}${ViewTypes.EMBED_PREVIEW}`) ||
             getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true);
 
+        let openGraphData;
+        if (post && post.opengraph_data && post.opengraph_data.length) {
+            openGraphData = post.opengraph_data[0];
+        } else {
+            // TODO: Have the selector use the post data and the action set the post data
+            openGraphData = getOpenGraphMetadataForUrl(state, link);
+        }
+
         return {
             ...getDimensions(state),
             googleDeveloperKey: config.GoogleDeveloperKey,
             link,
-            openGraphData: getOpenGraphMetadataForUrl(state, link),
+            openGraphData,
             showLinkPreviews: previewsEnabled && config.EnableLinkPreviews === 'true',
             theme: getTheme(state),
         };

@@ -55,10 +55,20 @@ export default class ChannelPostList extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {postIds: nextPostIds} = nextProps;
+        const {channelId, postIds, postVisibility} = this.props;
+        const {
+            channelId: nextChannelId,
+            postIds: nextPostIds,
+            postVisibility: nextPostVisibility,
+        } = nextProps;
+
+        if (nextChannelId !== channelId) {
+            this.isLoadingMoreTop = false;
+            this.isLoadingMoreBottom = false;
+        }
 
         let visiblePostIds = this.state.visiblePostIds;
-        if (nextPostIds !== this.props.postIds || nextProps.postVisibility !== this.props.postVisibility) {
+        if (nextPostIds !== postIds || nextPostVisibility !== postVisibility) {
             visiblePostIds = this.getVisiblePostIds(nextProps);
         }
 

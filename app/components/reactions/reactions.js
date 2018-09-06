@@ -116,12 +116,8 @@ export default class Reactions extends PureComponent {
     };
 
     render() {
-        const {position, reactions, canAddReaction} = this.props;
+        const {position, canAddReaction} = this.props;
         const styles = getStyleSheet(this.props.theme);
-
-        if (!reactions.size) {
-            return null;
-        }
 
         let addMoreReactions = null;
         if (canAddReaction) {

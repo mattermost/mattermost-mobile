@@ -35,8 +35,9 @@ export default class MarkdownImage extends React.Component {
         children: PropTypes.node,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        linkDestination: PropTypes.string,
+        imageDimensions: PropTypes.array,
         isReplyPost: PropTypes.bool,
+        linkDestination: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
         serverURL: PropTypes.string.isRequired,
@@ -51,9 +52,26 @@ export default class MarkdownImage extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {
+        let dimensions = {
             width: 0,
             height: 0,
+        };
+        let originalWidth = 0;
+        let originalHeight = 0;
+
+        if (props.imageDimensions && props.imageDimensions.length) {
+            const img = props.imageDimensions.find((d) => d && d.url === props.source);
+            if (img && img.width && img.height) {
+                originalWidth = img.width;
+                originalHeight = img.height;
+                dimensions = calculateDimensions(originalHeight, originalWidth, this.getViewPortWidth());
+            }
+        }
+
+        this.state = {
+            ...dimensions,
+            originalHeight,
+            originalWidth,
             failed: false,
             uri: null,
         };
@@ -96,15 +114,18 @@ export default class MarkdownImage extends React.Component {
         return source;
     };
 
+    getViewPortWidth = () => {
+        const {deviceHeight, deviceWidth, isReplyPost} = this.props;
+        const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
+        return deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
+    };
+
     handleSizeReceived = (width, height) => {
         if (!this.mounted) {
             return;
         }
 
-        const {deviceHeight, deviceWidth, isReplyPost} = this.props;
-        const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
-        const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
-        const dimensions = calculateDimensions(height, width, viewPortWidth);
+        const dimensions = calculateDimensions(height, width, this.getViewPortWidth());
 
         this.setState({
             ...dimensions,
@@ -183,7 +204,9 @@ export default class MarkdownImage extends React.Component {
     };
 
     loadImageSize = (source) => {
-        Image.getSize(source, this.handleSizeReceived, this.handleSizeFailed);
+        if (!this.state.originalWidth) {
+            Image.getSize(source, this.handleSizeReceived, this.handleSizeFailed);
+        }
     };
 
     setImageUrl = (imageURL) => {
