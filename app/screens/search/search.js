@@ -104,7 +104,7 @@ export default class Search extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {searchingStatus: status, recent} = this.props;
+        const {searchingStatus: status, recent, enableDateSuggestion} = this.props;
         const {searchingStatus: prevStatus} = prevProps;
         const recentLength = recent.length;
         const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED);
@@ -114,12 +114,13 @@ export default class Search extends PureComponent {
         }
 
         if (shouldScroll) {
-            requestAnimationFrame(() => {
+            setTimeout(() => {
+                const modifiersCount = enableDateSuggestion ? 5 : 2;
                 this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                     animated: true,
-                    offset: SECTION_HEIGHT + (2 * MODIFIER_LABEL_HEIGHT) + (recentLength * RECENT_LABEL_HEIGHT) + ((recentLength + 1) * RECENT_SEPARATOR_HEIGHT),
+                    offset: SECTION_HEIGHT + (modifiersCount * MODIFIER_LABEL_HEIGHT) + (recentLength * RECENT_LABEL_HEIGHT) + ((recentLength + 1) * RECENT_SEPARATOR_HEIGHT),
                 });
-            });
+            }, 100);
         }
     }
 

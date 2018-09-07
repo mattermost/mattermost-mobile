@@ -26,7 +26,7 @@
     "react-native-animatable": "1.2.4",
     "react-native-bottom-sheet": "1.0.3",
     "react-native-button": "2.3.0",
-    "react-native-calendars": "1.20.0",
+    "react-native-calendars": "github:enahum/react-native-calendars#b96954bf85126222b311b638fe458a8194f25bed",
     "react-native-circular-progress": "0.2.0",
     "react-native-cookies": "3.2.0",
     "react-native-device-info": "github:enahum/react-native-device-info#a7bb3cff1086780b2c791a3e43e5b826fdf3ab11",
