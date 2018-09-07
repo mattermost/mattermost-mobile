@@ -12,7 +12,7 @@ exports[`ShowMoreButton should match, button snapshot 1`] = `
   >
     +
   </Text>
-  <InjectIntl(FormattedText)
+  <FormattedText
     defaultMessage="Show More"
     id="post_info.message.show_more"
     style={Object {}}
@@ -32,7 +32,7 @@ exports[`ShowMoreButton should match, button snapshot 2`] = `
   >
     -
   </Text>
-  <InjectIntl(FormattedText)
+  <FormattedText
     defaultMessage="Show Less"
     id="post_info.message.show_less"
     style={Object {}}
@@ -153,7 +153,7 @@ ShallowWrapper {
               >
                 +
               </Text>
-              <InjectIntl(FormattedText)
+              <FormattedText
                 defaultMessage="Show More"
                 id="post_info.message.show_more"
                 style={
@@ -262,7 +262,7 @@ ShallowWrapper {
                 >
                   +
                 </Text>
-                <InjectIntl(FormattedText)
+                <FormattedText
                   defaultMessage="Show More"
                   id="post_info.message.show_more"
                   style={
@@ -343,7 +343,7 @@ ShallowWrapper {
                 >
                   +
                 </Text>
-                <InjectIntl(FormattedText)
+                <FormattedText
                   defaultMessage="Show More"
                   id="post_info.message.show_more"
                   style={
@@ -387,7 +387,7 @@ ShallowWrapper {
                   >
                     +
                   </Text>,
-                  <InjectIntl(FormattedText)
+                  <FormattedText
                     defaultMessage="Show More"
                     id="post_info.message.show_more"
                     style={
@@ -563,7 +563,7 @@ ShallowWrapper {
                 >
                   +
                 </Text>
-                <InjectIntl(FormattedText)
+                <FormattedText
                   defaultMessage="Show More"
                   id="post_info.message.show_more"
                   style={
@@ -672,7 +672,7 @@ ShallowWrapper {
                   >
                     +
                   </Text>
-                  <InjectIntl(FormattedText)
+                  <FormattedText
                     defaultMessage="Show More"
                     id="post_info.message.show_more"
                     style={
@@ -753,7 +753,7 @@ ShallowWrapper {
                   >
                     +
                   </Text>
-                  <InjectIntl(FormattedText)
+                  <FormattedText
                     defaultMessage="Show More"
                     id="post_info.message.show_more"
                     style={
@@ -797,7 +797,7 @@ ShallowWrapper {
                     >
                       +
                     </Text>,
-                    <InjectIntl(FormattedText)
+                    <FormattedText
                       defaultMessage="Show More"
                       id="post_info.message.show_more"
                       style={

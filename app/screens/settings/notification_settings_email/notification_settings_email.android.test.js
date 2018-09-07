@@ -2,9 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {configure} from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-configure({adapter: new Adapter()});
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 import {emptyFunction} from 'app/utils/general';

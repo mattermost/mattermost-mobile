@@ -214,7 +214,7 @@ exports[`CustomList should match snapshot, renderFooter 2`] = `
     }
   }
 >
-  <InjectIntl(FormattedText)
+  <FormattedText
     defaultMessage="Loading Members..."
     id="mobile.loading_members"
     style={

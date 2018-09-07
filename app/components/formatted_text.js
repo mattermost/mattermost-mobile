@@ -4,11 +4,10 @@
 import React, {createElement, isValidElement} from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 
-class FormattedText extends React.PureComponent {
+export default class FormattedText extends React.PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
         id: PropTypes.string.isRequired,
         defaultMessage: PropTypes.string,
         values: PropTypes.object,
@@ -18,14 +17,18 @@ class FormattedText extends React.PureComponent {
         defaultMessage: '',
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     render() {
         const {
             id,
             defaultMessage,
             values,
-            intl,
             ...props
         } = this.props;
+        const {formatMessage} = this.context.intl;
 
         let tokenDelimiter;
         let tokenizedValues;
@@ -70,7 +73,7 @@ class FormattedText extends React.PureComponent {
         }
 
         const descriptor = {id, defaultMessage};
-        const formattedMessage = intl.formatMessage(descriptor, tokenizedValues || values);
+        const formattedMessage = formatMessage(descriptor, tokenizedValues || values);
         const hasElements = elements && Object.keys(elements).length > 0;
 
         let nodes;
@@ -90,5 +93,3 @@ class FormattedText extends React.PureComponent {
         return createElement(Text, props, ...nodes);
     }
 }
-
-export default injectIntl(FormattedText);

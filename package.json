@@ -125,6 +125,7 @@
       "text-summary"
     ],
     "preset": "react-native",
+    "setupTestFrameworkScriptFile": "<rootDir>/test/setup.js",
     "testPathIgnorePatterns": [
       "/node_modules/"
     ]

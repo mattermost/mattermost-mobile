@@ -172,7 +172,7 @@ ShallowWrapper {
               }
             }
           >
-            <InjectIntl(FormattedText)
+            <FormattedText
               defaultMessage="Open teams you can join"
               id="mobile.select_team.join_open"
               style={
@@ -251,7 +251,7 @@ ShallowWrapper {
                 }
               }
             >
-              <InjectIntl(FormattedText)
+              <FormattedText
                 defaultMessage="Open teams you can join"
                 id="mobile.select_team.join_open"
                 style={
@@ -286,7 +286,7 @@ ShallowWrapper {
             "key": undefined,
             "nodeType": "class",
             "props": Object {
-              "children": <InjectIntl(FormattedText)
+              "children": <FormattedText
                 defaultMessage="Open teams you can join"
                 id="mobile.select_team.join_open"
                 style={
@@ -397,7 +397,7 @@ ShallowWrapper {
                 }
               }
             >
-              <InjectIntl(FormattedText)
+              <FormattedText
                 defaultMessage="Open teams you can join"
                 id="mobile.select_team.join_open"
                 style={
@@ -476,7 +476,7 @@ ShallowWrapper {
                   }
                 }
               >
-                <InjectIntl(FormattedText)
+                <FormattedText
                   defaultMessage="Open teams you can join"
                   id="mobile.select_team.join_open"
                   style={
@@ -511,7 +511,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "children": <InjectIntl(FormattedText)
+                "children": <FormattedText
                   defaultMessage="Open teams you can join"
                   id="mobile.select_team.join_open"
                   style={
