@@ -110,10 +110,6 @@ export default class Post extends PureComponent {
         this.props.actions.insertToDraft(`@${username} `);
     };
 
-    handleEditDisable = () => {
-        this.setState({canEdit: false});
-    };
-
     handlePostDelete = () => {
         const {formatMessage} = this.context.intl;
         const {actions, currentUserId, post} = this.props;
@@ -312,10 +308,8 @@ export default class Post extends PureComponent {
         }
     });
 
-    toggleSelected = (selected, bypass) => {
-        if (!getToolTipVisible() || bypass) {
-            this.setState({selected});
-        }
+    toggleSelected = (selected) => {
+        this.setState({selected});
     };
 
     handleCopyText = (text) => {

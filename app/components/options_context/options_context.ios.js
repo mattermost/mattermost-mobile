@@ -29,18 +29,18 @@ export default class OptionsContext extends PureComponent {
 
     handleHide = () => {
         this.isShowing = false;
-        this.props.toggleSelected(false, true);
+        this.props.toggleSelected(false);
     };
 
     handleHideUnderlay = () => {
         if (!this.isShowing) {
-            this.props.toggleSelected(false, true);
+            this.props.toggleSelected(false);
         }
     };
 
     handleShowUnderlay = () => {
         this.show();
-        this.props.toggleSelected(true, true);
+        this.props.toggleSelected(true);
         this.isShowing = this.state.actions.length > 0;
     };
 
@@ -54,7 +54,7 @@ export default class OptionsContext extends PureComponent {
         }
 
         this.isShowing = false;
-        this.props.toggleSelected(false, true);
+        this.props.toggleSelected(false);
     };
 
     show = (additionalAction) => {
@@ -74,7 +74,7 @@ export default class OptionsContext extends PureComponent {
     };
 
     handlePress = () => {
-        this.props.toggleSelected(false, this.props.getPostActions().length > 0);
+        this.props.toggleSelected(false);
         this.props.onPress();
     };
 
