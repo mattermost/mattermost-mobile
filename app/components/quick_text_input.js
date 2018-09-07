@@ -25,9 +25,11 @@ export default class QuickTextInput extends React.PureComponent {
          * The string value displayed in this input
          */
         value: PropTypes.string.isRequired,
+        refocusInput: PropTypes.bool,
     };
 
     static defaultProps = {
+        refocusInput: true,
         delayInputUpdate: false,
         editable: true,
         value: '',
@@ -57,7 +59,7 @@ export default class QuickTextInput extends React.PureComponent {
             });
         }
 
-        this.hadFocus = this.input.isFocused();
+        this.hadFocus = this.input.isFocused() && this.props.refocusInput;
     }
 
     componentDidUpdate(prevProps, prevState) {

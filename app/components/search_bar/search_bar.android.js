@@ -70,6 +70,7 @@ export default class SearchBarAndroid extends PureComponent {
         this.state = {
             value: props.value,
             isFocused: false,
+            refocusInput: true,
         };
     }
 
@@ -93,10 +94,12 @@ export default class SearchBarAndroid extends PureComponent {
 
     onSearchButtonPress = () => {
         const {value} = this.props;
-
-        if (value) {
-            this.props.onSearchButtonPress(value);
-        }
+        this.setState({refocusInput: false}, () => {
+            if (value) {
+                this.props.onSearchButtonPress(value);
+            }
+            this.setState({refocusInput: true});
+        });
     };
 
     onCancelButtonPress = () => {
@@ -215,6 +218,7 @@ export default class SearchBarAndroid extends PureComponent {
                     <QuickTextInput
                         ref='input'
                         blurOnSubmit={blurOnSubmit}
+                        refocusInput={this.state.refocusInput}
                         value={this.state.value}
                         autoCapitalize={autoCapitalize}
                         autoCorrect={false}

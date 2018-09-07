@@ -8,12 +8,10 @@ import {
     Text,
     View,
 } from 'react-native';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import ProfilePicture from 'app/components/profile_picture';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-
 import CustomListRow from 'app/components/custom_list/custom_list_row';
-
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 export default class UserListRow extends React.PureComponent {
     static propTypes = {
@@ -56,6 +54,13 @@ export default class UserListRow extends React.PureComponent {
                 id: 'mobile.more_dms.you',
                 defaultMessage: '(@{username} - you)',
             }, {username});
+        }
+
+        if (user.delete_at > 0) {
+            usernameDisplay = formatMessage({
+                id: 'more_direct_channels.directchannel.deactivated',
+                defaultMessage: '{displayname} - Deactivated',
+            }, {displayname: usernameDisplay});
         }
 
         return (

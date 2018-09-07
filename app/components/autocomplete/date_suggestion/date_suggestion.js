@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Keyboard, StyleSheet} from 'react-native';
+import {Dimensions, Platform, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 import {CalendarList} from 'react-native-calendars';
 
@@ -80,8 +80,6 @@ export default class DateSuggestion extends PureComponent {
         const currentDate = (new Date()).toDateString();
         const calendarStyle = calendarTheme(theme);
 
-        Keyboard.dismiss();
-
         return (
             <CalendarList
                 style={styles.calList}
@@ -90,16 +88,30 @@ export default class DateSuggestion extends PureComponent {
                 futureScrollRange={0}
                 scrollingEnabled={true}
                 pagingEnabled={true}
-                hideArrows={true}
+                hideArrows={false}
                 horizontal={true}
                 showScrollIndicator={true}
                 onDayPress={this.completeMention}
                 showWeekNumbers={false}
                 theme={calendarStyle}
+                keyboardShouldPersistTaps='always'
             />
         );
     }
 }
+
+const getDateFontSize = () => {
+    let fontSize = 14;
+
+    if (Platform.OS === 'ios') {
+        const {height, width} = Dimensions.get('window');
+        if (height < 375 || width < 375) {
+            fontSize = 13;
+        }
+    }
+
+    return fontSize;
+};
 
 const calendarTheme = memoizeResult((theme) => ({
     calendarBackground: theme.centerChannelBg,
@@ -107,11 +119,24 @@ const calendarTheme = memoizeResult((theme) => ({
     dayTextColor: theme.centerChannelColor,
     textSectionTitleColor: changeOpacity(theme.centerChannelColor, 0.25),
     'stylesheet.day.basic': {
+        base: {
+            width: 22,
+            height: 22,
+            alignItems: 'center',
+        },
+        text: {
+            marginTop: 0,
+            fontSize: getDateFontSize(),
+            fontWeight: '300',
+            color: theme.centerChannelColor,
+            backgroundColor: 'rgba(255, 255, 255, 0)',
+            lineHeight: 23,
+        },
         today: {
             backgroundColor: theme.buttonBg,
-            width: 33,
-            height: 33,
-            borderRadius: 16.5,
+            width: 24,
+            height: 24,
+            borderRadius: 12,
         },
         todayText: {
             color: theme.buttonColor,

@@ -30,6 +30,7 @@ export default class Root extends PureComponent {
             EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
             EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
             EventEmitter.on(NavigationTypes.NAVIGATION_NO_TEAMS, this.handleNoTeams);
+            EventEmitter.on(NavigationTypes.NAVIGATION_ERROR_TEAMS, this.errorTeamsList);
         }
     }
 
@@ -44,6 +45,7 @@ export default class Root extends PureComponent {
             EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
             EventEmitter.off(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
             EventEmitter.off(NavigationTypes.NAVIGATION_NO_TEAMS, this.handleNoTeams);
+            EventEmitter.off(NavigationTypes.NAVIGATION_ERROR_TEAMS, this.errorTeamsList);
         }
     }
 
@@ -69,11 +71,23 @@ export default class Root extends PureComponent {
             setTimeout(this.handleNoTeams, 200);
             return;
         }
+        this.navigateToTeamsPage('SelectTeam');
+    };
 
+    errorTeamsList = () => {
+        if (!this.refs.provider) {
+            setTimeout(this.errorTeamsList, 200);
+            return;
+        }
+        this.navigateToTeamsPage('ErrorTeamsList');
+    }
+
+    navigateToTeamsPage = (screen) => {
         const {currentUrl, navigator, theme} = this.props;
         const {intl} = this.refs.provider.getChildContext();
 
         let navigatorButtons;
+        let passProps = {theme};
         if (Platform.OS === 'android') {
             navigatorButtons = {
                 rightButtons: [{
@@ -93,8 +107,16 @@ export default class Root extends PureComponent {
             };
         }
 
+        if (screen === 'SelectTeam') {
+            passProps = {
+                ...passProps,
+                currentUrl,
+                userWithoutTeams: true,
+            };
+        }
+
         navigator.resetTo({
-            screen: 'SelectTeam',
+            screen,
             title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
             animated: false,
             backButtonTitle: '',
@@ -105,13 +127,9 @@ export default class Root extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg,
             },
             navigatorButtons,
-            passProps: {
-                currentUrl,
-                userWithoutTeams: true,
-                theme,
-            },
+            passProps,
         });
-    };
+    }
 
     handleNotificationTapped = async () => {
         const {navigator} = this.props;

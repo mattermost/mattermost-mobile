@@ -7,6 +7,7 @@ import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/c
 import {ChannelTypes, TeamTypes} from 'mattermost-redux/action_types';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 import {NavigationTypes} from 'app/constants';
 
@@ -56,6 +57,8 @@ export function selectDefaultTeam() {
 
         if (defaultTeam) {
             handleTeamChange(defaultTeam.id)(dispatch, getState);
+        } else if (state.requests.teams.getTeams.status === RequestStatus.FAILURE || state.requests.teams.getMyTeams.status === RequestStatus.FAILURE) {
+            EventEmitter.emit(NavigationTypes.NAVIGATION_ERROR_TEAMS);
         } else {
             EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
         }
