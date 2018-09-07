@@ -4,7 +4,7 @@
 import {createSelector} from 'reselect';
 
 import {General} from 'mattermost-redux/constants';
-import {getMyChannels, getOtherChannels, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
+import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {
     getCurrentUser, getCurrentUserId, getProfilesInCurrentChannel,
     getProfilesNotInCurrentChannel, getProfilesInCurrentTeam,
@@ -251,13 +251,11 @@ export const getDeletedPublicChannelsIds = createSelector(
             return (c.type === General.OPEN_CHANNEL);
         }).concat(otherChannels);
 
-        return new Set(channels.filter((c) => c.delete_at !== 0).map((c) => c.id));
-    }
-);
-
-export const getMyChannelIdMemberships = createSelector(
-    getMyChannelMemberships,
-    (myMembers) => {
-        return new Set(Object.keys(myMembers));
+        return new Set(channels.reduce((acc, c) => {
+            if (c.delete_at !== 0) {
+                acc.push(c.id);
+            }
+            return acc;
+        }, []));
     }
 );

@@ -24,7 +24,7 @@ export default class ChannelMention extends PureComponent {
         listHeight: PropTypes.number,
         matchTerm: PropTypes.string,
         myChannels: PropTypes.array,
-        myMembers: PropTypes.instanceOf(Set),
+        myMembers: PropTypes.object,
         otherChannels: PropTypes.array,
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
@@ -85,7 +85,7 @@ export default class ChannelMention extends PureComponent {
                     sections.push({
                         id: 'suggestion.search.public',
                         defaultMessage: 'Public Channels',
-                        data: publicChannels.filter((cId) => !deletedPublicChannels.has(cId) || myMembers.has(cId)),
+                        data: publicChannels.filter((cId) => !deletedPublicChannels.has(cId) || myMembers[cId]),
                         key: 'publicChannels',
                     });
                 }
