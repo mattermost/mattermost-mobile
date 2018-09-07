@@ -301,9 +301,11 @@ public class CustomPushNotification extends PushNotification {
                     .setAllowGeneratedReplies(true)
                     .build();
 
+            // notification
+            //         .setShowWhen(true)
+            //         .addAction(replyAction);
             notification
-                    .setShowWhen(true)
-                    .addAction(replyAction);
+                    .setShowWhen(true);
         }
 
         Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
