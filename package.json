@@ -16,7 +16,7 @@
     "intl": "1.2.5",
     "jail-monkey": "1.0.0",
     "jsc-android": "216113.0.3",
-    "mattermost-redux": "github:mattermost/mattermost-redux#45ae4849c2810b56cb5a420fb7d49d2621145969",
+    "mattermost-redux": "github:WAUIO/mattermost-redux#MM-rebrand-wau",
     "mime-db": "1.33.0",
     "prop-types": "15.6.1",
     "react": "16.3.2",
