@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {configure, shallow} from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+import {shallow} from 'enzyme';
+
 import {RequestStatus} from 'mattermost-redux/constants';
-configure({adapter: new Adapter()});
 
 import SelectTeam from './select_team.js';
 

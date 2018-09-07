@@ -2,9 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {configure, shallow} from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-configure({adapter: new Adapter()});
+import {shallow} from 'enzyme';
 
 import AnnouncementBanner from './announcement_banner.js';
 

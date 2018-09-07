@@ -5,13 +5,13 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 1`] = `
   action={[Function]}
   actionType="default"
   description={
-    <InjectIntl(FormattedText)
+    <FormattedText
       defaultMessage="Immediately"
       id="user.settings.notifications.email.immediately"
     />
   }
   label={
-    <InjectIntl(FormattedText)
+    <FormattedText
       defaultMessage="Send email notifications"
       id="user.settings.notifications.email.send"
     />
@@ -45,7 +45,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
         <Component
           style={Object {}}
         >
-          <InjectIntl(FormattedText)
+          <FormattedText
             defaultMessage="Send email notifications"
             id="user.settings.notifications.email.send"
             style={Object {}}
@@ -69,7 +69,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
             ]
           }
         />
-        <InjectIntl(FormattedText)
+        <FormattedText
           defaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes."
           id="user.settings.notifications.emailInfo"
           style={Object {}}
@@ -94,7 +94,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
             onPress={[Function]}
             style={Object {}}
           >
-            <InjectIntl(FormattedText)
+            <FormattedText
               defaultMessage="CANCEL"
               id="mobile.notification_settings.modal_cancel"
               style={Object {}}
@@ -113,7 +113,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
               onPress={[Function]}
               style={Object {}}
             >
-              <InjectIntl(FormattedText)
+              <FormattedText
                 defaultMessage="SAVE"
                 id="mobile.notification_settings.modal_save"
                 style={Object {}}

@@ -3,9 +3,7 @@
 
 import React from 'react';
 import {TouchableOpacity} from 'react-native';
-import {configure, shallow} from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-configure({adapter: new Adapter()});
+import {shallow} from 'enzyme';
 
 import LinearGradient from 'react-native-linear-gradient';
 
