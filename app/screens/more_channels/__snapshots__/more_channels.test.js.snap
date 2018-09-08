@@ -49,6 +49,7 @@ ShallowWrapper {
     "batchedUpdates": [Function],
     "getNode": [Function],
     "render": [Function],
+    "simulateError": [Function],
     "simulateEvent": [Function],
     "unmount": [Function],
   },
@@ -59,7 +60,7 @@ ShallowWrapper {
     "props": Object {
       "children": Array [
         <Connect(StatusBar) />,
-        <UNDEFINED>
+        <React.Fragment>
           <Component
             style={
               Object {
@@ -130,7 +131,7 @@ ShallowWrapper {
               }
             }
           />
-        </UNDEFINED>,
+        </React.Fragment>,
       ],
     },
     "ref": null,
@@ -346,7 +347,7 @@ ShallowWrapper {
       "props": Object {
         "children": Array [
           <Connect(StatusBar) />,
-          <UNDEFINED>
+          <React.Fragment>
             <Component
               style={
                 Object {
@@ -417,7 +418,7 @@ ShallowWrapper {
                 }
               }
             />
-          </UNDEFINED>,
+          </React.Fragment>,
         ],
       },
       "ref": null,
