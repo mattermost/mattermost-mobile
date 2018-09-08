@@ -213,23 +213,23 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
 exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage 2`] = `
 <Component
   style={
-    Object {
-      "alignItems": "center",
-      "borderColor": "rgba(61,60,64,0.2)",
-      "borderRadius": 3,
-      "borderWidth": 1,
-      "marginTop": 5,
-    }
+    Array [
+      Object {
+        "alignItems": "center",
+        "borderColor": "rgba(61,60,64,0.2)",
+        "borderRadius": 3,
+        "borderWidth": 1,
+        "marginTop": 5,
+      },
+      Object {
+        "height": 112.56666666666666,
+        "width": 307,
+      },
+    ]
   }
 >
   <TouchableWithoutFeedback
     onPress={[Function]}
-    style={
-      Object {
-        "height": 150,
-        "width": 307,
-      }
-    }
   >
     <Component
       resizeMode="contain"
@@ -239,7 +239,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
             "borderRadius": 3,
           },
           Object {
-            "height": 150,
+            "height": 112.56666666666666,
             "width": 307,
           },
         ]
