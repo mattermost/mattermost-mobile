@@ -27,6 +27,18 @@ export default class OptionsContext extends PureComponent {
         };
     }
 
+    beforeShow = (additionalAction) => {
+        const nextActions = this.props.getPostActions();
+        if (additionalAction && additionalAction.text && !additionalAction.nativeEvent) {
+            const copyPostIndex = nextActions.findIndex((action) => action.copyPost);
+            nextActions.splice(copyPostIndex + 1, 0, additionalAction);
+        }
+
+        this.setState({
+            actions: nextActions,
+        });
+    };
+
     handleHide = () => {
         this.isShowing = false;
         this.props.toggleSelected(false);
@@ -39,7 +51,7 @@ export default class OptionsContext extends PureComponent {
     };
 
     handleShowUnderlay = () => {
-        this.show();
+        this.beforeShow();
         this.props.toggleSelected(true);
         this.isShowing = this.state.actions.length > 0;
     };
@@ -57,25 +69,18 @@ export default class OptionsContext extends PureComponent {
         this.props.toggleSelected(false);
     };
 
-    show = (additionalAction) => {
-        const nextActions = this.props.getPostActions();
-        if (additionalAction && additionalAction.text && !additionalAction.nativeEvent) {
-            const copyPostIndex = nextActions.findIndex((action) => action.copyPost);
-            nextActions.splice(copyPostIndex + 1, 0, additionalAction);
-        }
+    handlePress = () => {
+        this.props.toggleSelected(false);
+        this.props.onPress();
+    };
 
-        this.setState({
-            actions: nextActions,
-        });
+    show = (additionalAction) => {
+        this.props.toggleSelected(true);
+        this.beforeShow(additionalAction);
 
         if (this.refs.toolTip) {
             this.refs.toolTip.showMenu();
         }
-    };
-
-    handlePress = () => {
-        this.props.toggleSelected(false);
-        this.props.onPress();
     };
 
     render() {
