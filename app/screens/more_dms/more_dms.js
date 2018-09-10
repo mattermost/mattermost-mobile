@@ -7,6 +7,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
     Platform,
+    StyleSheet,
     View,
 } from 'react-native';
 
@@ -18,12 +19,13 @@ import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/util
 import CustomFlatList from 'app/components/custom_flat_list';
 import CustomSectionList from 'app/components/custom_section_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
+import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {loadingText} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, setNavigatorStyles} from 'app/utils/theme';
 
 import SelectedUsers from './selected_users';
 
@@ -445,7 +447,6 @@ class MoreDirectMessages extends PureComponent {
         const isLoading = (
             getRequest.status === RequestStatus.STARTED) || (getRequest.status === RequestStatus.NOT_STARTED) ||
             (searchRequest.status === RequestStatus.STARTED);
-        const style = getStyleFromTheme(theme);
 
         if (loadingChannel) {
             return (
@@ -501,7 +502,7 @@ class MoreDirectMessages extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <KeyboardLayout>
                 <StatusBar/>
                 <View style={style.searchContainer}>
                     <SearchBar
@@ -531,21 +532,15 @@ class MoreDirectMessages extends PureComponent {
                     />
                 </View>
                 {listComponent}
-            </View>
+            </KeyboardLayout>
         );
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        searchContainer: {
-            marginVertical: 5,
-        },
-    };
+const style = StyleSheet.create({
+    searchContainer: {
+        marginVertical: 5,
+    },
 });
 
 export default injectIntl(MoreDirectMessages);
