@@ -71,6 +71,8 @@ const ViewTypes = keyMirror({
     SET_DEEP_LINK_URL: null,
 
     SET_PROFILE_IMAGE_URI: null,
+
+    SELECTED_ACTION_MENU: null,
 });
 
 export default {

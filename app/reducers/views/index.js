@@ -17,6 +17,7 @@ import team from './team';
 import thread from './thread';
 import user from './user';
 import emoji from './emoji';
+import post from './post';
 
 export default combineReducers({
     announcement,
@@ -33,4 +34,5 @@ export default combineReducers({
     thread,
     user,
     emoji,
+    post,
 });

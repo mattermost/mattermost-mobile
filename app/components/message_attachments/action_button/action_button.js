@@ -9,7 +9,7 @@ import Button from 'react-native-button';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class InteractiveAction extends PureComponent {
+export default class ActionButton extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             doPostAction: PropTypes.func.isRequired,

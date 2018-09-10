@@ -4,6 +4,8 @@
 import {Posts} from 'mattermost-redux/constants';
 import {PostTypes} from 'mattermost-redux/action_types';
 
+import {ViewTypes} from 'app/constants';
+
 import {generateId} from 'app/utils/file';
 
 export function sendAddToChannelEphemeralPost(user, addedUsername, message, channelId, postRootId = '') {
@@ -34,6 +36,19 @@ export function sendAddToChannelEphemeralPost(user, addedUsername, message, chan
                 },
             },
             channelId,
+        });
+    };
+}
+
+export function setMenuActionSelector(dataSource, onSelect, options) {
+    return async (dispatch) => {
+        dispatch({
+            type: ViewTypes.SELECTED_ACTION_MENU,
+            data: {
+                dataSource,
+                onSelect,
+                options,
+            },
         });
     };
 }

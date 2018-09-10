@@ -20,6 +20,7 @@ export default class CustomListRow extends React.PureComponent {
         selectable: PropTypes.bool,
         selected: PropTypes.bool,
         children: CustomPropTypes.Children,
+        item: PropTypes.object,
     };
 
     static defaultProps = {

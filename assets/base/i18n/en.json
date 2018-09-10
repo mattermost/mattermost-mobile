@@ -21,6 +21,8 @@
   "about.title": "About Mattermost",
   "about.version": "Mattermost Version:",
   "access_history.title": "Access History",
+  "action_menu.select": "Select an option",
+  "action_menu.submitted": "Submitted",
   "activity_log.activeSessions": "Active Sessions",
   "activity_log.browser": "Browser: {browser}",
   "activity_log.firstTime": "First time active: {date}, {time}",
