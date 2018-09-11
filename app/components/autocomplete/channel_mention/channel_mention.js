@@ -5,8 +5,9 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {SectionList} from 'react-native';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {RequestStatus} from 'mattermost-redux/constants';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+import {debounce} from 'mattermost-redux/actions/helpers';
 
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
@@ -52,6 +53,15 @@ export default class ChannelMention extends PureComponent {
         };
     }
 
+    runSearch = debounce((currentTeamId, matchTerm) => {
+        if (!isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+            this.props.actions.searchChannels(currentTeamId, matchTerm);
+            return;
+        }
+
+        this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
+    }, 200);
+
     componentWillReceiveProps(nextProps) {
         const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, requestStatus, myMembers, deletedPublicChannels} = nextProps;
 
@@ -73,49 +83,7 @@ export default class ChannelMention extends PureComponent {
         if (matchTerm !== this.props.matchTerm) {
             // if the term changed and we haven't made the request do that first
             const {currentTeamId} = this.props;
-            if (!isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
-                this.props.actions.searchChannels(currentTeamId, matchTerm);
-                return;
-            }
-            this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm).then((response) => {
-                if (isSearch) {
-                    const completePublicChannels = response.data.reduce((acc, val) => {
-                        if (val.type === General.OPEN_CHANNEL) {
-                            acc.push(val.id);
-                        }
-                        return acc;
-                    }, []);
-                    const completePrivateChannels = response.data.reduce((acc, val) => {
-                        if (val.type === General.PRIVATE_CHANNEL) {
-                            acc.push(val.id);
-                        }
-                        return acc;
-                    }, []);
-                    const sections = [];
-                    if (completePublicChannels.length) {
-                        sections.push({
-                            id: 'suggestion.search.public',
-                            defaultMessage: 'Public Channels',
-                            data: completePublicChannels,
-                            key: 'publicChannels',
-                        });
-                    }
-
-                    if (completePrivateChannels.length) {
-                        sections.push({
-                            id: 'suggestion.search.private',
-                            defaultMessage: 'Private Channels',
-                            data: completePrivateChannels,
-                            key: 'privateChannels',
-                        });
-                    }
-                    this.setState({
-                        sections,
-                    });
-
-                    this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
-                }
-            });
+            this.runSearch(currentTeamId, matchTerm);
             return;
         }
 
@@ -126,29 +94,22 @@ export default class ChannelMention extends PureComponent {
             // if the request is complete and the term is not null we show the autocomplete
             const sections = [];
             if (isSearch) {
-                if (!isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
-                    if (publicChannels.length) {
-                        sections.push({
-                            id: 'suggestion.search.public',
-                            defaultMessage: 'Public Channels',
-                            data: publicChannels.filter((cId) => !deletedPublicChannels.has(cId) || myMembers[cId]),
-                            key: 'publicChannels',
-                        });
-                    }
-
-                    if (privateChannels.length) {
-                        sections.push({
-                            id: 'suggestion.search.private',
-                            defaultMessage: 'Private Channels',
-                            data: privateChannels,
-                            key: 'privateChannels',
-                        });
-                    }
-                    this.setState({
-                        sections,
+                if (publicChannels.length) {
+                    sections.push({
+                        id: 'suggestion.search.public',
+                        defaultMessage: 'Public Channels',
+                        data: publicChannels.filter((cId) => myMembers[cId]),
+                        key: 'publicChannels',
                     });
+                }
 
-                    this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
+                if (privateChannels.length) {
+                    sections.push({
+                        id: 'suggestion.search.private',
+                        defaultMessage: 'Private Channels',
+                        data: privateChannels,
+                        key: 'privateChannels',
+                    });
                 }
             } else {
                 if (myChannels.length) {
@@ -168,13 +129,13 @@ export default class ChannelMention extends PureComponent {
                         key: 'otherChannels',
                     });
                 }
-
-                this.setState({
-                    sections,
-                });
-
-                this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
             }
+
+            this.setState({
+                sections,
+            });
+
+            this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
         }
     }
 
