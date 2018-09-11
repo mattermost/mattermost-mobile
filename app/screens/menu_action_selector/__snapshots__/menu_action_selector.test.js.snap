@@ -1,0 +1,1153 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MenuActionSelector should match snapshot for channels 1`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
+    actions={
+      Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      }
+    }
+    currentTeamId="someId"
+    data={
+      Array [
+        Object {
+          "display_name": "display_name",
+          "id": "id",
+          "name": "name",
+        },
+        Object {
+          "display_name": "display_name2",
+          "id": "id2",
+          "name": "name2",
+        },
+      ]
+    }
+    dataSource="channels"
+    navigator={
+      Object {
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+    onSelect={[MockFunction]}
+    theme={Object {}}
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": undefined,
+    "nodeType": "class",
+    "props": Object {
+      "actions": Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      },
+      "currentTeamId": "someId",
+      "data": Array [
+        Object {
+          "display_name": "display_name",
+          "id": "id",
+          "name": "name",
+        },
+        Object {
+          "display_name": "display_name2",
+          "id": "id2",
+          "name": "name2",
+        },
+      ],
+      "dataSource": "channels",
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+      "navigator": Object {
+        "setOnNavigatorEvent": [MockFunction],
+      },
+      "onSelect": [MockFunction],
+      "theme": Object {},
+    },
+    "ref": null,
+    "rendered": null,
+    "type": [Function],
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "actions": Object {
+          "getChannels": [Function],
+          "getProfiles": [Function],
+          "searchChannels": [Function],
+          "searchProfiles": [Function],
+        },
+        "currentTeamId": "someId",
+        "data": Array [
+          Object {
+            "display_name": "display_name",
+            "id": "id",
+            "name": "name",
+          },
+          Object {
+            "display_name": "display_name2",
+            "id": "id2",
+            "name": "name2",
+          },
+        ],
+        "dataSource": "channels",
+        "intl": Object {
+          "defaultFormats": Object {},
+          "defaultLocale": "en",
+          "formatDate": [Function],
+          "formatHTMLMessage": [Function],
+          "formatMessage": [Function],
+          "formatNumber": [Function],
+          "formatPlural": [Function],
+          "formatRelative": [Function],
+          "formatTime": [Function],
+          "formats": Object {},
+          "formatters": Object {
+            "getDateTimeFormat": [Function],
+            "getMessageFormat": [Function],
+            "getNumberFormat": [Function],
+            "getPluralFormat": [Function],
+            "getRelativeFormat": [Function],
+          },
+          "locale": "en",
+          "messages": Object {},
+          "now": [Function],
+          "textComponent": "span",
+        },
+        "navigator": Object {
+          "setOnNavigatorEvent": [MockFunction],
+        },
+        "onSelect": [MockFunction],
+        "theme": Object {},
+      },
+      "ref": null,
+      "rendered": null,
+      "type": [Function],
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+    "context": Object {
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+    },
+  },
+}
+`;
+
+exports[`MenuActionSelector should match snapshot for channels 2`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
+    actions={
+      Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      }
+    }
+    currentTeamId="someId"
+    data={
+      Array [
+        Object {
+          "display_name": "display_name",
+          "id": "id",
+          "name": "name",
+        },
+        Object {
+          "display_name": "display_name2",
+          "id": "id2",
+          "name": "name2",
+        },
+      ]
+    }
+    dataSource="channels"
+    navigator={
+      Object {
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+    onSelect={[MockFunction]}
+    theme={Object {}}
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": undefined,
+    "nodeType": "class",
+    "props": Object {
+      "actions": Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      },
+      "currentTeamId": "someId",
+      "data": Array [
+        Object {
+          "display_name": "display_name",
+          "id": "id",
+          "name": "name",
+        },
+        Object {
+          "display_name": "display_name2",
+          "id": "id2",
+          "name": "name2",
+        },
+      ],
+      "dataSource": "channels",
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+      "navigator": Object {
+        "setOnNavigatorEvent": [MockFunction],
+      },
+      "onSelect": [MockFunction],
+      "theme": Object {},
+    },
+    "ref": null,
+    "rendered": null,
+    "type": [Function],
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "actions": Object {
+          "getChannels": [Function],
+          "getProfiles": [Function],
+          "searchChannels": [Function],
+          "searchProfiles": [Function],
+        },
+        "currentTeamId": "someId",
+        "data": Array [
+          Object {
+            "display_name": "display_name",
+            "id": "id",
+            "name": "name",
+          },
+          Object {
+            "display_name": "display_name2",
+            "id": "id2",
+            "name": "name2",
+          },
+        ],
+        "dataSource": "channels",
+        "intl": Object {
+          "defaultFormats": Object {},
+          "defaultLocale": "en",
+          "formatDate": [Function],
+          "formatHTMLMessage": [Function],
+          "formatMessage": [Function],
+          "formatNumber": [Function],
+          "formatPlural": [Function],
+          "formatRelative": [Function],
+          "formatTime": [Function],
+          "formats": Object {},
+          "formatters": Object {
+            "getDateTimeFormat": [Function],
+            "getMessageFormat": [Function],
+            "getNumberFormat": [Function],
+            "getPluralFormat": [Function],
+            "getRelativeFormat": [Function],
+          },
+          "locale": "en",
+          "messages": Object {},
+          "now": [Function],
+          "textComponent": "span",
+        },
+        "navigator": Object {
+          "setOnNavigatorEvent": [MockFunction],
+        },
+        "onSelect": [MockFunction],
+        "theme": Object {},
+      },
+      "ref": null,
+      "rendered": null,
+      "type": [Function],
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+    "context": Object {
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+    },
+  },
+}
+`;
+
+exports[`MenuActionSelector should match snapshot for explicit options 1`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
+    actions={
+      Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      }
+    }
+    currentTeamId="someId"
+    data={
+      Array [
+        Object {
+          "text": "text",
+          "value": "value",
+        },
+      ]
+    }
+    dataSource={null}
+    navigator={
+      Object {
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+    onSelect={[MockFunction]}
+    theme={Object {}}
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": undefined,
+    "nodeType": "class",
+    "props": Object {
+      "actions": Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      },
+      "currentTeamId": "someId",
+      "data": Array [
+        Object {
+          "text": "text",
+          "value": "value",
+        },
+      ],
+      "dataSource": null,
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+      "navigator": Object {
+        "setOnNavigatorEvent": [MockFunction],
+      },
+      "onSelect": [MockFunction],
+      "theme": Object {},
+    },
+    "ref": null,
+    "rendered": null,
+    "type": [Function],
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "actions": Object {
+          "getChannels": [Function],
+          "getProfiles": [Function],
+          "searchChannels": [Function],
+          "searchProfiles": [Function],
+        },
+        "currentTeamId": "someId",
+        "data": Array [
+          Object {
+            "text": "text",
+            "value": "value",
+          },
+        ],
+        "dataSource": null,
+        "intl": Object {
+          "defaultFormats": Object {},
+          "defaultLocale": "en",
+          "formatDate": [Function],
+          "formatHTMLMessage": [Function],
+          "formatMessage": [Function],
+          "formatNumber": [Function],
+          "formatPlural": [Function],
+          "formatRelative": [Function],
+          "formatTime": [Function],
+          "formats": Object {},
+          "formatters": Object {
+            "getDateTimeFormat": [Function],
+            "getMessageFormat": [Function],
+            "getNumberFormat": [Function],
+            "getPluralFormat": [Function],
+            "getRelativeFormat": [Function],
+          },
+          "locale": "en",
+          "messages": Object {},
+          "now": [Function],
+          "textComponent": "span",
+        },
+        "navigator": Object {
+          "setOnNavigatorEvent": [MockFunction],
+        },
+        "onSelect": [MockFunction],
+        "theme": Object {},
+      },
+      "ref": null,
+      "rendered": null,
+      "type": [Function],
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+    "context": Object {
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+    },
+  },
+}
+`;
+
+exports[`MenuActionSelector should match snapshot for searching 1`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
+    actions={
+      Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      }
+    }
+    currentTeamId="someId"
+    data={
+      Array [
+        Object {
+          "display_name": "display_name",
+          "id": "id",
+          "name": "name",
+        },
+        Object {
+          "display_name": "display_name2",
+          "id": "id2",
+          "name": "name2",
+        },
+      ]
+    }
+    dataSource="channels"
+    navigator={
+      Object {
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+    onSelect={[MockFunction]}
+    theme={Object {}}
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": undefined,
+    "nodeType": "class",
+    "props": Object {
+      "actions": Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      },
+      "currentTeamId": "someId",
+      "data": Array [
+        Object {
+          "display_name": "display_name",
+          "id": "id",
+          "name": "name",
+        },
+        Object {
+          "display_name": "display_name2",
+          "id": "id2",
+          "name": "name2",
+        },
+      ],
+      "dataSource": "channels",
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+      "navigator": Object {
+        "setOnNavigatorEvent": [MockFunction],
+      },
+      "onSelect": [MockFunction],
+      "theme": Object {},
+    },
+    "ref": null,
+    "rendered": null,
+    "type": [Function],
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "actions": Object {
+          "getChannels": [Function],
+          "getProfiles": [Function],
+          "searchChannels": [Function],
+          "searchProfiles": [Function],
+        },
+        "currentTeamId": "someId",
+        "data": Array [
+          Object {
+            "display_name": "display_name",
+            "id": "id",
+            "name": "name",
+          },
+          Object {
+            "display_name": "display_name2",
+            "id": "id2",
+            "name": "name2",
+          },
+        ],
+        "dataSource": "channels",
+        "intl": Object {
+          "defaultFormats": Object {},
+          "defaultLocale": "en",
+          "formatDate": [Function],
+          "formatHTMLMessage": [Function],
+          "formatMessage": [Function],
+          "formatNumber": [Function],
+          "formatPlural": [Function],
+          "formatRelative": [Function],
+          "formatTime": [Function],
+          "formats": Object {},
+          "formatters": Object {
+            "getDateTimeFormat": [Function],
+            "getMessageFormat": [Function],
+            "getNumberFormat": [Function],
+            "getPluralFormat": [Function],
+            "getRelativeFormat": [Function],
+          },
+          "locale": "en",
+          "messages": Object {},
+          "now": [Function],
+          "textComponent": "span",
+        },
+        "navigator": Object {
+          "setOnNavigatorEvent": [MockFunction],
+        },
+        "onSelect": [MockFunction],
+        "theme": Object {},
+      },
+      "ref": null,
+      "rendered": null,
+      "type": [Function],
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+    "context": Object {
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+    },
+  },
+}
+`;
+
+exports[`MenuActionSelector should match snapshot for users 1`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
+    actions={
+      Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      }
+    }
+    currentTeamId="someId"
+    data={
+      Array [
+        Object {
+          "id": "id",
+          "username": "username",
+        },
+        Object {
+          "id": "id2",
+          "username": "username2",
+        },
+      ]
+    }
+    dataSource="users"
+    navigator={
+      Object {
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+    onSelect={[MockFunction]}
+    theme={Object {}}
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": undefined,
+    "nodeType": "class",
+    "props": Object {
+      "actions": Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      },
+      "currentTeamId": "someId",
+      "data": Array [
+        Object {
+          "id": "id",
+          "username": "username",
+        },
+        Object {
+          "id": "id2",
+          "username": "username2",
+        },
+      ],
+      "dataSource": "users",
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+      "navigator": Object {
+        "setOnNavigatorEvent": [MockFunction],
+      },
+      "onSelect": [MockFunction],
+      "theme": Object {},
+    },
+    "ref": null,
+    "rendered": null,
+    "type": [Function],
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "actions": Object {
+          "getChannels": [Function],
+          "getProfiles": [Function],
+          "searchChannels": [Function],
+          "searchProfiles": [Function],
+        },
+        "currentTeamId": "someId",
+        "data": Array [
+          Object {
+            "id": "id",
+            "username": "username",
+          },
+          Object {
+            "id": "id2",
+            "username": "username2",
+          },
+        ],
+        "dataSource": "users",
+        "intl": Object {
+          "defaultFormats": Object {},
+          "defaultLocale": "en",
+          "formatDate": [Function],
+          "formatHTMLMessage": [Function],
+          "formatMessage": [Function],
+          "formatNumber": [Function],
+          "formatPlural": [Function],
+          "formatRelative": [Function],
+          "formatTime": [Function],
+          "formats": Object {},
+          "formatters": Object {
+            "getDateTimeFormat": [Function],
+            "getMessageFormat": [Function],
+            "getNumberFormat": [Function],
+            "getPluralFormat": [Function],
+            "getRelativeFormat": [Function],
+          },
+          "locale": "en",
+          "messages": Object {},
+          "now": [Function],
+          "textComponent": "span",
+        },
+        "navigator": Object {
+          "setOnNavigatorEvent": [MockFunction],
+        },
+        "onSelect": [MockFunction],
+        "theme": Object {},
+      },
+      "ref": null,
+      "rendered": null,
+      "type": [Function],
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+    "context": Object {
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+    },
+  },
+}
+`;
+
+exports[`MenuActionSelector should match snapshot for users 2`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
+    actions={
+      Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      }
+    }
+    currentTeamId="someId"
+    data={
+      Array [
+        Object {
+          "id": "id",
+          "username": "username",
+        },
+        Object {
+          "id": "id2",
+          "username": "username2",
+        },
+      ]
+    }
+    dataSource="users"
+    navigator={
+      Object {
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+    onSelect={[MockFunction]}
+    theme={Object {}}
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": undefined,
+    "nodeType": "class",
+    "props": Object {
+      "actions": Object {
+        "getChannels": [Function],
+        "getProfiles": [Function],
+        "searchChannels": [Function],
+        "searchProfiles": [Function],
+      },
+      "currentTeamId": "someId",
+      "data": Array [
+        Object {
+          "id": "id",
+          "username": "username",
+        },
+        Object {
+          "id": "id2",
+          "username": "username2",
+        },
+      ],
+      "dataSource": "users",
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+      "navigator": Object {
+        "setOnNavigatorEvent": [MockFunction],
+      },
+      "onSelect": [MockFunction],
+      "theme": Object {},
+    },
+    "ref": null,
+    "rendered": null,
+    "type": [Function],
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "actions": Object {
+          "getChannels": [Function],
+          "getProfiles": [Function],
+          "searchChannels": [Function],
+          "searchProfiles": [Function],
+        },
+        "currentTeamId": "someId",
+        "data": Array [
+          Object {
+            "id": "id",
+            "username": "username",
+          },
+          Object {
+            "id": "id2",
+            "username": "username2",
+          },
+        ],
+        "dataSource": "users",
+        "intl": Object {
+          "defaultFormats": Object {},
+          "defaultLocale": "en",
+          "formatDate": [Function],
+          "formatHTMLMessage": [Function],
+          "formatMessage": [Function],
+          "formatNumber": [Function],
+          "formatPlural": [Function],
+          "formatRelative": [Function],
+          "formatTime": [Function],
+          "formats": Object {},
+          "formatters": Object {
+            "getDateTimeFormat": [Function],
+            "getMessageFormat": [Function],
+            "getNumberFormat": [Function],
+            "getPluralFormat": [Function],
+            "getRelativeFormat": [Function],
+          },
+          "locale": "en",
+          "messages": Object {},
+          "now": [Function],
+          "textComponent": "span",
+        },
+        "navigator": Object {
+          "setOnNavigatorEvent": [MockFunction],
+        },
+        "onSelect": [MockFunction],
+        "theme": Object {},
+      },
+      "ref": null,
+      "rendered": null,
+      "type": [Function],
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+    "context": Object {
+      "intl": Object {
+        "defaultFormats": Object {},
+        "defaultLocale": "en",
+        "formatDate": [Function],
+        "formatHTMLMessage": [Function],
+        "formatMessage": [Function],
+        "formatNumber": [Function],
+        "formatPlural": [Function],
+        "formatRelative": [Function],
+        "formatTime": [Function],
+        "formats": Object {},
+        "formatters": Object {
+          "getDateTimeFormat": [Function],
+          "getMessageFormat": [Function],
+          "getNumberFormat": [Function],
+          "getPluralFormat": [Function],
+          "getRelativeFormat": [Function],
+        },
+        "locale": "en",
+        "messages": Object {},
+        "now": [Function],
+        "textComponent": "span",
+      },
+    },
+  },
+}
+`;
