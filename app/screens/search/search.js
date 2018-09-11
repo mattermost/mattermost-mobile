@@ -20,6 +20,7 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
+import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import DateHeader from 'app/components/post_list/date_header';
 import {isDateLine} from 'app/components/post_list/date_header/utils';
 import FormattedText from 'app/components/formatted_text';
@@ -647,7 +648,7 @@ export default class Search extends PureComponent {
                 excludeHeader={isLandscape && this.isX}
                 forceTop={44}
             >
-                <View style={style.container}>
+                <KeyboardLayout>
                     <StatusBar/>
                     <View style={style.header}>
                         <SearchBar
@@ -688,7 +689,7 @@ export default class Search extends PureComponent {
                         value={value}
                         enableDateSuggestion={this.props.enableDateSuggestion}
                     />
-                </View>
+                </KeyboardLayout>
             </SafeAreaView>
         );
     }
@@ -696,9 +697,6 @@ export default class Search extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
-            flex: 1,
-        },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             width: '100%',

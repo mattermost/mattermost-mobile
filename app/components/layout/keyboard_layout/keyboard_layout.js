@@ -73,7 +73,7 @@ export default class KeyboardLayout extends PureComponent {
 
         return (
             <View
-                style={[style.keyboardLayout, {bottom: this.state.bottom}]}
+                style={[style.keyboardLayout, {marginBottom: this.state.bottom}]}
             >
                 {children}
             </View>
