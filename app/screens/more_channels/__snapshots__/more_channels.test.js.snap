@@ -60,13 +60,7 @@ ShallowWrapper {
     "props": Object {
       "children": Array [
         <Connect(StatusBar) />,
-        <Component
-          style={
-            Object {
-              "flex": 1,
-            }
-          }
-        >
+        <UNDEFINED>
           <Component
             style={
               Object {
@@ -139,12 +133,8 @@ ShallowWrapper {
               }
             }
           />
-        </Component>,
+        </UNDEFINED>,
       ],
-      "style": Object {
-        "backgroundColor": "#aaa",
-        "flex": 1,
-      },
     },
     "ref": null,
     "rendered": Array [
@@ -160,7 +150,7 @@ ShallowWrapper {
       Object {
         "instance": null,
         "key": undefined,
-        "nodeType": "class",
+        "nodeType": "function",
         "props": Object {
           "children": Array [
             <Component
@@ -236,9 +226,6 @@ ShallowWrapper {
               }
             />,
           ],
-          "style": Object {
-            "flex": 1,
-          },
         },
         "ref": null,
         "rendered": Array [
@@ -353,7 +340,7 @@ ShallowWrapper {
             "type": [Function],
           },
         ],
-        "type": [Function],
+        "type": Symbol(react.fragment),
       },
     ],
     "type": [Function],
@@ -366,13 +353,7 @@ ShallowWrapper {
       "props": Object {
         "children": Array [
           <Connect(StatusBar) />,
-          <Component
-            style={
-              Object {
-                "flex": 1,
-              }
-            }
-          >
+          <UNDEFINED>
             <Component
               style={
                 Object {
@@ -445,12 +426,8 @@ ShallowWrapper {
                 }
               }
             />
-          </Component>,
+          </UNDEFINED>,
         ],
-        "style": Object {
-          "backgroundColor": "#aaa",
-          "flex": 1,
-        },
       },
       "ref": null,
       "rendered": Array [
@@ -466,7 +443,7 @@ ShallowWrapper {
         Object {
           "instance": null,
           "key": undefined,
-          "nodeType": "class",
+          "nodeType": "function",
           "props": Object {
             "children": Array [
               <Component
@@ -542,9 +519,6 @@ ShallowWrapper {
                 }
               />,
             ],
-            "style": Object {
-              "flex": 1,
-            },
           },
           "ref": null,
           "rendered": Array [
@@ -659,7 +633,7 @@ ShallowWrapper {
               "type": [Function],
             },
           ],
-          "type": [Function],
+          "type": Symbol(react.fragment),
         },
       ],
       "type": [Function],
