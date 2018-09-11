@@ -102,7 +102,13 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                 ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
             } else {
-                const shortenedLink = await this.props.actions.getRedirectLocation(link);
+                const {data} = await this.props.actions.getRedirectLocation(link);
+
+                let shortenedLink;
+                if (data && data.location) {
+                    shortenedLink = data.location;
+                }
+
                 if (shortenedLink) {
                     if (isImageLink(shortenedLink)) {
                         imageUrl = shortenedLink;
