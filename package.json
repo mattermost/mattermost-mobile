@@ -9,8 +9,8 @@
   "dependencies": {
     "@types/react-native-calendars": "1.20.2",
     "analytics-react-native": "1.2.0",
-    "commonmark": "github:mattermost/commonmark.js#80cb0f1883038929673879bf9b7c0cc386926bfa",
-    "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#86fa63f898802953842526c2030f3b63c5d1ae7a",
+    "commonmark": "github:mattermost/commonmark.js#c2a087044b1bf542b148020de2bd8160e6fa30f2",
+    "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#b560513b93357ee5fd33489fe311bc65d4658870",
     "deep-equal": "1.0.1",
     "fuse.js": "^3.2.0",
     "intl": "1.2.5",

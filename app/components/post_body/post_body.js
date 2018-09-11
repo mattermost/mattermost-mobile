@@ -62,6 +62,7 @@ export default class PostBody extends PureComponent {
         onCopyPermalink: PropTypes.func,
         onCopyText: PropTypes.func,
         onFailedPostPress: PropTypes.func,
+        onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostDelete: PropTypes.func,
         onPostEdit: PropTypes.func,
@@ -201,7 +202,15 @@ export default class PostBody extends PureComponent {
     };
 
     openLongPost = preventDoubleTap(() => {
-        const {managedConfig, navigator, onAddReaction, onPermalinkPress, postId} = this.props;
+        const {
+            managedConfig,
+            navigator,
+            onAddReaction,
+            onHashtagPress,
+            onPermalinkPress,
+            postId,
+        } = this.props;
+
         const options = {
             screen: 'LongPost',
             animationType: 'none',
@@ -216,6 +225,7 @@ export default class PostBody extends PureComponent {
                 postId,
                 managedConfig,
                 onAddReaction,
+                onHashtagPress,
                 onPermalinkPress,
             },
         };
@@ -235,7 +245,7 @@ export default class PostBody extends PureComponent {
     };
 
     renderAddChannelMember = (style, messageStyle, textStyles) => {
-        const {onPermalinkPress, onPress, postProps} = this.props;
+        const {onPress, postProps} = this.props;
 
         if (!PostAddChannelMember) {
             PostAddChannelMember = require('app/components/post_add_channel_member').default;
@@ -248,7 +258,6 @@ export default class PostBody extends PureComponent {
                         baseTextStyle={messageStyle}
                         navigator={navigator}
                         onLongPress={this.showOptionsContext}
-                        onPermalinkPress={onPermalinkPress}
                         onPostPress={onPress}
                         textStyles={textStyles}
                         postId={postProps.add_channel_member.post_id}
@@ -296,7 +305,7 @@ export default class PostBody extends PureComponent {
     }
 
     renderPostAdditionalContent = (blockStyles, messageStyle, textStyles) => {
-        const {isReplyPost, message, navigator, onPermalinkPress, postId, postProps} = this.props;
+        const {isReplyPost, message, navigator, onHashtagPress, onPermalinkPress, postId, postProps} = this.props;
 
         if (!PostBodyAdditionalContent) {
             PostBodyAdditionalContent = require('app/components/post_body_additional_content').default;
@@ -311,8 +320,9 @@ export default class PostBody extends PureComponent {
                 postId={postId}
                 postProps={postProps}
                 textStyles={textStyles}
-                onLongPress={this.showOptionsContext}
                 isReplyPost={isReplyPost}
+                onHashtagPress={onHashtagPress}
+                onLongPress={this.showOptionsContext}
                 onPermalinkPress={onPermalinkPress}
             />
         );
@@ -352,6 +362,7 @@ export default class PostBody extends PureComponent {
             message,
             navigator,
             onFailedPostPress,
+            onHashtagPress,
             onPermalinkPress,
             onPress,
             postProps,
@@ -422,6 +433,7 @@ export default class PostBody extends PureComponent {
                             isReplyPost={isReplyPost}
                             isSearchResult={isSearchResult}
                             navigator={navigator}
+                            onHashtagPress={onHashtagPress}
                             onLongPress={this.showOptionsContext}
                             onPermalinkPress={onPermalinkPress}
                             onPostPress={onPress}

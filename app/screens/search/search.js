@@ -56,6 +56,7 @@ export default class Search extends PureComponent {
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
+        initialValue: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
         postIds: PropTypes.array,
@@ -68,6 +69,7 @@ export default class Search extends PureComponent {
     };
 
     static defaultProps = {
+        initialValue: '',
         postIds: [],
         recent: [],
         archivedPostIds: [],
@@ -85,7 +87,7 @@ export default class Search extends PureComponent {
         this.state = {
             channelName: '',
             cursorPosition: 0,
-            value: '',
+            value: props.initialValue,
             managedConfig: {},
         };
     }
@@ -96,9 +98,14 @@ export default class Search extends PureComponent {
 
     componentDidMount() {
         this.setManagedConfig();
-        if (this.refs.searchBar) {
+
+        if (this.props.initialValue) {
+            this.search(this.props.initialValue);
+        } else {
             setTimeout(() => {
-                this.refs.searchBar.focus();
+                if (this.refs.searchBar) {
+                    this.refs.searchBar.focus();
+                }
             }, 150);
         }
     }
@@ -116,10 +123,12 @@ export default class Search extends PureComponent {
         if (shouldScroll) {
             setTimeout(() => {
                 const modifiersCount = enableDateSuggestion ? 5 : 2;
-                this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
-                    animated: true,
-                    offset: SECTION_HEIGHT + (modifiersCount * MODIFIER_LABEL_HEIGHT) + (recentLength * RECENT_LABEL_HEIGHT) + ((recentLength + 1) * RECENT_SEPARATOR_HEIGHT),
-                });
+                if (this.refs.list) {
+                    this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+                        animated: true,
+                        offset: SECTION_HEIGHT + (modifiersCount * MODIFIER_LABEL_HEIGHT) + (recentLength * RECENT_LABEL_HEIGHT) + ((recentLength + 1) * RECENT_SEPARATOR_HEIGHT),
+                    });
+                }
             }, 100);
         }
     }
@@ -160,6 +169,20 @@ export default class Search extends PureComponent {
         };
 
         navigator.push(options);
+    };
+
+    handleHashtagPress = (hashtag) => {
+        if (this.showingPermalink) {
+            this.props.navigator.dismissModal();
+            this.handleClosePermalink();
+        }
+
+        const terms = '#' + hashtag;
+
+        this.handleTextChanged(terms);
+        this.search(terms, false);
+
+        Keyboard.dismiss();
     };
 
     handleClosePermalink = () => {
@@ -250,6 +273,7 @@ export default class Search extends PureComponent {
                 passProps: {
                     isPermalink,
                     onClose: this.handleClosePermalink,
+                    onHashtagPress: this.handleHashtagPress,
                     onPermalinkPress: this.handlePermalinkPress,
                 },
             };
@@ -359,6 +383,7 @@ export default class Search extends PureComponent {
                     previewPost={this.previewPost}
                     goToThread={this.goToThread}
                     navigator={this.props.navigator}
+                    onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={managedConfig}
                 />
