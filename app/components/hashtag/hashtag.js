@@ -43,9 +43,11 @@ export default class Hashtag extends React.PureComponent {
             },
         };
 
+        // Close thread view, permalink view, etc
         this.props.navigator.dismissAllModals();
         this.props.navigator.popToRoot();
-        this.props.navigator.push(options);
+
+        this.props.navigator.showModal(options);
     };
 
     render() {
