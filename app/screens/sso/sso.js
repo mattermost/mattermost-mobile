@@ -235,7 +235,7 @@ class SSO extends PureComponent {
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     renderLoading={this.renderLoading}
-                    onMessage={this.onMessage}
+                    onMessage={jsCode ? this.onMessage : null}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                 />
