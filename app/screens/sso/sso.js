@@ -79,6 +79,7 @@ class SSO extends PureComponent {
             error: null,
             renderWebView: false,
             jsCode: '',
+            onMessage: null,
             scalePagesToFit: false,
         };
 
@@ -157,7 +158,9 @@ class SSO extends PureComponent {
 
     onNavigationStateChange = (navState) => {
         const {url} = navState;
-        const nextState = {};
+        const nextState = {
+            onMessage: this.onMessage,
+        };
         const parsed = urlParse(url);
         const serverUrl = urlParse(this.props.serverUrl);
 
@@ -168,6 +171,7 @@ class SSO extends PureComponent {
             nextState.jsCode = postMessageJS;
         } else {
             nextState.jsCode = '';
+            nextState.onMessage = null;
         }
 
         if (Object.keys(nextState).length) {
@@ -235,7 +239,7 @@ class SSO extends PureComponent {
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     renderLoading={this.renderLoading}
-                    onMessage={this.onMessage}
+                    onMessage={this.state.onMessage}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                 />
