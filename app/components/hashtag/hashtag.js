@@ -29,16 +29,13 @@ export default class Hashtag extends React.PureComponent {
 
         const options = {
             screen: 'Search',
-            title: this.context.intl.formatMessage({id: 'mobile.routes.search', defaultMessage: 'Search'}),
             animated: true,
             backButtonTitle: '',
             passProps: {
                 initialValue: '#' + this.props.hashtag,
             },
             navigatorStyle: {
-                navBarTextColor: this.props.theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: this.props.theme.sidebarHeaderBg,
-                navBarButtonColor: this.props.theme.sidebarHeaderTextColor,
+                navBarHidden: true,
                 screenBackgroundColor: this.props.theme.centerChannelBg,
             },
         };
