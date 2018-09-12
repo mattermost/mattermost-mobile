@@ -11,7 +11,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 export default class Hashtag extends React.PureComponent {
     static propTypes = {
         hashtag: PropTypes.string.isRequired,
-        linkStyle: CustomPropTypes.Style,
+        linkStyle: CustomPropTypes.Style.isRequired,
         onHashtagPress: PropTypes.func,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
