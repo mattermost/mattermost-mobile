@@ -15,7 +15,7 @@
 ### Bug Fixes
 - Fixed an issue where Okta was not able to login in some deployments.
 - Fixed an issue where messages in Direct Message channels did not show when clicking "Jump To".
-- Fixed an issue where `Show More` on a post with an attachment displayed a blank where content should have been.
+- Fixed an issue where `Show More` on a post with a message attachment displayed a blank where content should have been.
 - Prevent downloading of files when disallowed in the System Console.
 - Fixed an issue where users could not click on attachment filenames to open them.
 - Fixed an issue where email notification settings did not save from mobile.
