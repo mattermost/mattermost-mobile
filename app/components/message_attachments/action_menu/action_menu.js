@@ -10,6 +10,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {ViewTypes} from 'app/constants';
 
 export default class ActionMenu extends PureComponent {
     static propTypes = {
@@ -47,10 +48,10 @@ export default class ActionMenu extends PureComponent {
 
         let selectedText;
         let selectedValue;
-        if (dataSource === 'users') {
+        if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
             selectedText = selected.username;
             selectedValue = selected.id;
-        } else if (dataSource === 'channels') {
+        } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
             selectedText = selected.display_name;
             selectedValue = selected.id;
         } else {
@@ -65,14 +66,14 @@ export default class ActionMenu extends PureComponent {
 
     goToMenuActionSelector = preventDoubleTap(() => {
         const {intl} = this.context;
-        const {navigator, theme, actions, dataSource, options} = this.props;
+        const {navigator, theme, actions, dataSource, options, name} = this.props;
 
         actions.setMenuActionSelector(dataSource, this.handleSelect, options);
 
         navigator.push({
             backButtonTitle: '',
             screen: 'MenuActionSelector',
-            title: intl.formatMessage({id: 'action_menu.select', defaultMessage: 'Select an option'}),
+            title: name || intl.formatMessage({id: 'action_menu.select', defaultMessage: 'Select an option'}),
             animated: true,
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -95,20 +96,22 @@ export default class ActionMenu extends PureComponent {
         if (selectedText) {
             text = selectedText;
             selectedStyle = style.dropdownSelected;
-            submitted = [
-                <Icon
-                    key={id + 'check'}
-                    name='check'
-                    color={theme.centerChannelColor}
-                    style={style.submittedIcon}
-                />,
-                <FormattedText
-                    key={id + 'submitted'}
-                    id='action_menu.submitted'
-                    defaultMessage='Submitted'
-                    style={style.submittedText}
-                />,
-            ];
+            submitted = (
+                <React.Fragment>
+                    <Icon
+                        key={id + 'check'}
+                        name='check'
+                        color={theme.centerChannelColor}
+                        style={style.submittedIcon}
+                    />
+                    <FormattedText
+                        key={id + 'submitted'}
+                        id='action_menu.submitted'
+                        defaultMessage='Submitted'
+                        style={style.submittedText}
+                    />
+                </React.Fragment>
+            );
         }
 
         return (
@@ -134,6 +137,9 @@ export default class ActionMenu extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            width: '100%',
+        },
         dropdown: {
             position: 'relative',
             borderWidth: 1,

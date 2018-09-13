@@ -11,6 +11,8 @@ import {getProfiles} from 'mattermost-redux/selectors/entities/users';
 import {getProfiles as getProfilesAction, searchProfiles} from 'mattermost-redux/actions/users';
 import {getChannels, searchChannels} from 'mattermost-redux/actions/channels';
 
+import {ViewTypes} from 'app/constants';
+
 import MenuActionSelector from './menu_action_selector';
 
 function mapStateToProps(state) {
@@ -19,11 +21,11 @@ function mapStateToProps(state) {
     let data;
     let loadMoreRequestStatus;
     let searchRequestStatus;
-    if (menuAction.dataSource === 'users') {
+    if (menuAction.dataSource === ViewTypes.DATA_SOURCE_USERS) {
         data = getProfiles(state);
         loadMoreRequestStatus = state.requests.users.getProfiles.status;
         searchRequestStatus = state.requests.users.searchProfiles.status;
-    } else if (menuAction.dataSource === 'channels') {
+    } else if (menuAction.dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
         data = getChannelsInCurrentTeam(state);
         loadMoreRequestStatus = state.requests.channels.getChannels.status;
         searchRequestStatus = state.requests.channels.getChannels.status;

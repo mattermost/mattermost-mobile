@@ -18,6 +18,7 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {loadingText} from 'app/utils/member_list';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {ViewTypes} from 'app/constants';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
@@ -53,7 +54,7 @@ class MenuActionSelector extends PureComponent {
             data = props.data;
         }
 
-        const needsLoading = props.dataSource === 'users' || props.dataSource === 'channels';
+        const needsLoading = props.dataSource === ViewTypes.DATA_SOURCE_USERS || props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS;
 
         this.state = {
             next: needsLoading,
@@ -71,9 +72,9 @@ class MenuActionSelector extends PureComponent {
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => {
-            if (this.props.dataSource === 'users') {
+            if (this.props.dataSource === ViewTypes.DATA_SOURCE_USERS) {
                 this.props.actions.getProfiles().then(() => this.setState({isLoading: false}));
-            } else if (this.props.dataSource === 'channels') {
+            } else if (this.props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
                 this.props.actions.getChannels(this.props.currentTeamId).then(() => this.setState({isLoading: false}));
             }
         });
@@ -113,9 +114,9 @@ class MenuActionSelector extends PureComponent {
             page = page + 1;
 
             let results;
-            if (dataSource === 'users') {
+            if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
                 results = await actions.getProfiles(page, General.PROFILE_CHUNK_SIZE);
-            } else if (dataSource === 'channels') {
+            } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
                 results = await actions.getChannels(currentTeamId, page, General.PROFILE_CHUNK_SIZE);
             } else {
                 return;
@@ -149,9 +150,9 @@ class MenuActionSelector extends PureComponent {
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(async () => {
-                if (dataSource === 'users') {
+                if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
                     await actions.searchProfiles(term.toLowerCase());
-                } else if (dataSource === 'channels') {
+                } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
                     await actions.searchChannels(currentTeamId, term.toLowerCase());
                 }
                 this.setState({isLoading: false});
@@ -180,9 +181,9 @@ class MenuActionSelector extends PureComponent {
         };
 
         let rowComponent;
-        if (dataSource === 'users') {
+        if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
             rowComponent = UserListRow;
-        } else if (dataSource === 'channels') {
+        } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
             rowComponent = ChannelListRow;
         } else {
             rowComponent = OptionListRow;
@@ -199,7 +200,7 @@ class MenuActionSelector extends PureComponent {
             <View style={style.container}>
                 <StatusBar/>
                 <View
-                    style={{marginVertical: 5}}
+                    style={style.searchContainer}
                 >
                     <SearchBar
                         ref='search_bar'
@@ -244,6 +245,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
+        searchContainer: {
+            marginVertical: 5,
+        },
     };
 });
 
@@ -256,9 +260,9 @@ const filterSearchData = memoizeResult((dataSource, data, term) => {
         return [];
     }
 
-    if (dataSource === 'users') {
+    if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
         return filterProfilesMatchingTerm(data, term);
-    } else if (dataSource === 'channels') {
+    } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
         return filterChannelsMatchingTerm(data, term);
     }
 

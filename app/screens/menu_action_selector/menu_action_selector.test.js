@@ -22,14 +22,6 @@ jest.mock('rn-fetch-blob/fs', () => ({
     },
 }));
 
-jest.mock('app/utils/theme', () => {
-    const original = require.requireActual('app/utils/theme');
-    return {
-        ...original,
-        changeOpacity: jest.fn(),
-    };
-});
-
 const user1 = {id: 'id', username: 'username'};
 const user2 = {id: 'id2', username: 'username2'};
 

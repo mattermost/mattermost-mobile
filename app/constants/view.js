@@ -90,4 +90,6 @@ export default {
     IOSX_TOP_PORTRAIT: 88,
     STATUS_BAR_HEIGHT: 20,
     PROFILE_PICTURE_SIZE: 32,
+    DATA_SOURCE_USERS: 'users',
+    DATA_SOURCE_CHANNELS: 'channels',
 };

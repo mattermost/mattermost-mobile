@@ -41,14 +41,12 @@ export function sendAddToChannelEphemeralPost(user, addedUsername, message, chan
 }
 
 export function setMenuActionSelector(dataSource, onSelect, options) {
-    return async (dispatch) => {
-        dispatch({
-            type: ViewTypes.SELECTED_ACTION_MENU,
-            data: {
-                dataSource,
-                onSelect,
-                options,
-            },
-        });
+    return {
+        type: ViewTypes.SELECTED_ACTION_MENU,
+        data: {
+            dataSource,
+            onSelect,
+            options,
+        },
     };
 }
