@@ -164,7 +164,7 @@ export default class ChannelSidebar extends Component {
         }
     };
 
-    selectChannel = (channel, currentChannelId) => {
+    selectChannel = (channel, currentChannelId, closeDrawer = true) => {
         const {
             actions,
         } = this.props;
@@ -176,7 +176,10 @@ export default class ChannelSidebar extends Component {
 
         tracker.channelSwitch = Date.now();
 
-        this.closeChannelDrawer();
+        if (closeDrawer) {
+            this.closeChannelDrawer();
+            setChannelLoading(channel.id !== currentChannelId);
+        }
 
         if (!channel) {
             const utils = require('app/utils/general');
@@ -189,15 +192,15 @@ export default class ChannelSidebar extends Component {
             const erroMessage = {};
 
             utils.alertErrorWithFallback(intl, erroMessage, unableToJoinMessage);
+            setChannelLoading(false);
             return;
         }
 
-        setChannelLoading(channel.id !== currentChannelId);
         setChannelDisplayName(channel.display_name);
         EventEmitter.emit('switch_channel', channel, currentChannelId);
     };
 
-    joinChannel = async (channel, currentChannelId) => {
+    joinChannel = (channel, currentChannelId) => {
         const {intl} = this.context;
         const {
             actions,
@@ -210,37 +213,45 @@ export default class ChannelSidebar extends Component {
             makeDirectChannel,
         } = actions;
 
-        const displayValue = {displayName: channel.display_name};
-        const utils = require('app/utils/general');
+        this.closeChannelDrawer();
+        actions.setChannelLoading(channel.id !== currentChannelId);
 
-        let result;
-        if (channel.type === General.DM_CHANNEL) {
-            result = await makeDirectChannel(channel.id, false);
+        setTimeout(async () => {
+            const displayValue = {displayName: channel.display_name};
+            const utils = require('app/utils/general');
 
-            if (result.error) {
-                const dmFailedMessage = {
-                    id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
-                };
-                utils.alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
+            let result;
+            if (channel.type === General.DM_CHANNEL) {
+                result = await makeDirectChannel(channel.id, false);
+
+                if (result.error) {
+                    const dmFailedMessage = {
+                        id: 'mobile.open_dm.error',
+                        defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
+                    };
+                    utils.alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
+                }
+            } else {
+                result = await joinChannel(currentUserId, currentTeamId, channel.id);
+
+                if (result.error || !result.data || !result.data.channel) {
+                    const joinFailedMessage = {
+                        id: 'mobile.join_channel.error',
+                        defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
+                    };
+                    utils.alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
+                }
             }
-        } else {
-            result = await joinChannel(currentUserId, currentTeamId, channel.id);
 
-            if (result.error || !result.data || !result.data.channel) {
-                const joinFailedMessage = {
-                    id: 'mobile.join_channel.error',
-                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
-                };
-                utils.alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
+            if (result.error || (!result.data && !result.data.channel)) {
+                actions.setChannelLoading(false);
+                return;
             }
-        }
 
-        if (result.error) {
-            return;
-        }
-
-        this.selectChannel(result.data.channel || result.data, currentChannelId);
+            requestAnimationFrame(() => {
+                this.selectChannel(result.data.channel || result.data, currentChannelId, false);
+            });
+        }, 200);
     };
 
     onPageSelected = (index) => {
