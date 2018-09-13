@@ -97,12 +97,11 @@ export default class ActionMenu extends PureComponent {
             text = selectedText;
             selectedStyle = style.dropdownSelected;
             submitted = (
-                <React.Fragment>
+                <View style={style.submittedContainer}>
                     <Icon
                         key={id + 'check'}
                         name='check'
                         color={theme.centerChannelColor}
-                        style={style.submittedIcon}
                     />
                     <FormattedText
                         key={id + 'submitted'}
@@ -110,25 +109,29 @@ export default class ActionMenu extends PureComponent {
                         defaultMessage='Submitted'
                         style={style.submittedText}
                     />
-                </React.Fragment>
+                </View>
             );
+        } else {
+            submitted = <View style={style.blankSubmittedContainer}/>;
         }
 
         return (
-            <View>
-                <Text
-                    style={[style.dropdown, selectedStyle]}
-                    onPress={this.goToMenuActionSelector}
-                    numberOfLines={1}
-                >
-                    {text}
-                </Text>
-                <Icon
-                    name='chevron-down'
-                    onPress={this.goToMenuActionSelector}
-                    color={changeOpacity(theme.centerChannelColor, 0.5)}
-                    style={style.icon}
-                />
+            <View style={style.container}>
+                <View style={style.input}>
+                    <Text
+                        style={selectedStyle}
+                        onPress={this.goToMenuActionSelector}
+                        numberOfLines={1}
+                    >
+                        {text}
+                    </Text>
+                    <Icon
+                        name='chevron-down'
+                        onPress={this.goToMenuActionSelector}
+                        color={changeOpacity(theme.centerChannelColor, 0.5)}
+                        style={style.icon}
+                    />
+                </View>
                 {submitted}
             </View>
         );
@@ -139,21 +142,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             width: '100%',
+            flex: 1,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
         },
-        dropdown: {
+        input: {
+            flex: 1,
             position: 'relative',
             borderWidth: 1,
             borderRadius: 5,
             borderColor: changeOpacity(theme.centerChannelColor, 0.1),
             backgroundColor: changeOpacity(theme.centerChannelBg, 0.9),
-            alignItems: 'center',
             marginBottom: 2,
-            marginRight: 5,
+            marginRight: 8,
             marginTop: 10,
             paddingLeft: 10,
-            paddingRight: 20,
+            paddingRight: 30,
             paddingVertical: 7,
-            width: 150,
         },
         dropdownPlaceholder: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
@@ -163,18 +169,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         icon: {
             position: 'absolute',
-            right: 15,
-            top: 21,
+            top: 10,
+            right: 12,
         },
-        submittedIcon: {
-            position: 'absolute',
-            left: 160,
-            top: 21,
+        blankSubmittedContainer: {
+            width: 80,
+            height: 23,
+        },
+        submittedContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginTop: 10,
+            marginBottom: 2,
         },
         submittedText: {
-            position: 'absolute',
-            left: 175,
-            top: 17,
+            marginLeft: 5,
         },
     };
 });
