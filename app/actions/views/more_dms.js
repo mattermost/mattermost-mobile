@@ -23,7 +23,7 @@ export function makeDirectChannel(otherUserId, switchToChannel = true) {
 
             dispatch(toggleDMChannel(otherUserId, 'true', channel.id));
         } else {
-            result = await createDirectChannel(currentUserId, otherUserId)(dispatch, getState);
+            result = await dispatch(createDirectChannel(currentUserId, otherUserId));
             channel = result.data;
         }
 
