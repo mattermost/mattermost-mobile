@@ -37,6 +37,8 @@ const TEXT_PREVIEW_FORMATS = [
     'text/plain',
 ];
 
+const circularProgressWidth = 4;
+
 export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
         canDownloadFiles: PropTypes.bool.isRequired,
@@ -280,18 +282,11 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     renderProgress = () => {
-        const {iconHeight, iconWidth, file, theme, wrapperWidth} = this.props;
+        const {wrapperWidth} = this.props;
 
         return (
             <View style={[style.circularProgressContent, {width: wrapperWidth}]}>
-                <FileAttachmentIcon
-                    file={file.data}
-                    iconHeight={iconHeight}
-                    iconWidth={iconWidth}
-                    theme={theme}
-                    wrapperHeight={iconHeight}
-                    wrapperWidth={iconWidth}
-                />
+                {this.renderFileAttachmentIcon()}
             </View>
         );
     };
@@ -338,8 +333,23 @@ export default class FileAttachmentDocument extends PureComponent {
         );
     };
 
-    render() {
+    renderFileAttachmentIcon = () => {
         const {iconHeight, iconWidth, file, theme, wrapperHeight, wrapperWidth} = this.props;
+
+        return (
+            <FileAttachmentIcon
+                file={file.data}
+                theme={theme}
+                iconHeight={iconHeight}
+                iconWidth={iconWidth}
+                wrapperHeight={wrapperHeight}
+                wrapperWidth={wrapperWidth}
+            />
+        );
+    }
+
+    render() {
+        const {theme, wrapperHeight} = this.props;
         const {downloading, progress} = this.state;
 
         let fileAttachmentComponent;
@@ -348,7 +358,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 <CircularProgress
                     size={wrapperHeight}
                     fill={progress}
-                    width={4}
+                    width={circularProgressWidth}
                     backgroundColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     tintColor={theme.linkColor}
                     rotation={0}
@@ -357,21 +367,14 @@ export default class FileAttachmentDocument extends PureComponent {
                 </CircularProgress>
             );
         } else {
-            fileAttachmentComponent = (
-                <FileAttachmentIcon
-                    file={file.data}
-                    theme={theme}
-                    iconHeight={iconHeight}
-                    iconWidth={iconWidth}
-                    wrapperHeight={wrapperHeight}
-                    wrapperWidth={wrapperWidth}
-                />
-            );
+            fileAttachmentComponent = this.renderFileAttachmentIcon();
         }
 
         return (
             <TouchableOpacity onPress={this.handlePreviewPress}>
-                {fileAttachmentComponent}
+                <View style={{backgroundColor: '#fff'}}>
+                    {fileAttachmentComponent}
+                </View>
             </TouchableOpacity>
         );
     }
@@ -382,7 +385,7 @@ const style = StyleSheet.create({
         alignItems: 'center',
         height: '100%',
         justifyContent: 'center',
-        left: 0,
+        left: parseInt(`-${circularProgressWidth}`, 10),
         position: 'absolute',
         top: 0,
     },

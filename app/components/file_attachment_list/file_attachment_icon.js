@@ -88,7 +88,6 @@ const styles = StyleSheet.create({
     fileIconWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#fff',
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
     },
