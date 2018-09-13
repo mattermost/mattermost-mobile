@@ -11,13 +11,12 @@
 
 ### Improvements
 - Added notification support for Android O and P.
-- Added ability to open channels via the new message indicator.
 
 ### Bug Fixes
 - Fixed an issue where Okta was not able to login in some deployments.
 - Fixed an issue where messages in Direct Message channels did not show when clicking "Jump To".
-- Fixed an issue where `Show More` on a JIRA post displayed a blank where content should have been.
-- Fixed an issue where downloading all file types on mobile apps should be disallowed when disallowed in System Console.
+- Fixed an issue where `Show More` on a post with an attachment displayed a blank where content should have been.
+- Prevent downloading of files when disallowed in the System Console.
 - Fixed an issue where users could not click on attachment filenames to open them.
 - Fixed an issue where email notification settings did not save from mobile.
 - Fixed an issue where the share extension allowed users to select and attempt to share content to channels that had been archived.
