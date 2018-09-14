@@ -222,6 +222,7 @@ export default class UserProfile extends PureComponent {
                         {enableTimezone && this.buildTimezoneBlock()}
                         {this.buildDisplayBlock('username')}
                         {config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                        {this.buildDisplayBlock('nickname')}
                         {this.buildDisplayBlock('position')}
                     </View>
                     <UserProfileRow
