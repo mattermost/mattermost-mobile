@@ -11,13 +11,16 @@ import {
 import Emoji from 'app/components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class Reaction extends PureComponent {
+import FormattedText from 'app/components/formatted_text';
+
+import {ALL_EMOJIS} from 'app/constants/emoji';
+
+export default class ReactionHeaderItem extends PureComponent {
     static propTypes = {
         count: PropTypes.number.isRequired,
         emojiName: PropTypes.string.isRequired,
         highlight: PropTypes.bool.isRequired,
         onPress: PropTypes.func.isRequired,
-        onLongPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     }
 
@@ -26,28 +29,37 @@ export default class Reaction extends PureComponent {
         onPress(emojiName, highlight);
     }
 
+    renderEmoji = (emojiName, styles) => {
+        if (emojiName === ALL_EMOJIS) {
+            return (
+                <FormattedText
+                    id='mobile.reaction_header.all_emojis'
+                    defaultMessage={'All'}
+                    style={styles.text}
+                />
+            );
+        }
+
+        return (
+            <Emoji
+                emojiName={emojiName}
+                size={25}
+                padding={5}
+            />
+        );
+    }
+
     render() {
-        const {
-            count,
-            emojiName,
-            highlight,
-            onLongPress,
-            theme,
-        } = this.props;
+        const {count, emojiName, highlight, theme} = this.props;
         const styles = getStyleSheet(theme);
 
         return (
             <TouchableOpacity
                 onPress={this.handlePress}
-                onLongPress={onLongPress}
                 style={[styles.reaction, (highlight && styles.highlight)]}
             >
-                <Emoji
-                    emojiName={emojiName}
-                    size={20}
-                    padding={5}
-                />
-                <Text style={styles.count}>{count}</Text>
+                {this.renderEmoji(emojiName, styles)}
+                <Text style={styles.text}>{count}</Text>
             </TouchableOpacity>
         );
     }
@@ -55,20 +67,19 @@ export default class Reaction extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        count: {
+        text: {
             color: theme.linkColor,
-            marginLeft: 6,
+            marginLeft: 3,
+            fontSize: 20,
         },
         highlight: {
-            backgroundColor: changeOpacity(theme.linkColor, 0.1),
+            borderColor: changeOpacity(theme.linkColor, 1),
+            borderBottomWidth: 2,
         },
         reaction: {
             alignItems: 'center',
-            borderRadius: 2,
-            borderColor: changeOpacity(theme.linkColor, 0.4),
-            borderWidth: 1,
             flexDirection: 'row',
-            height: 30,
+            height: 40,
             marginRight: 6,
             marginBottom: 5,
             marginTop: 10,

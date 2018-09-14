@@ -329,6 +329,7 @@
   "mobile.post.failed_title": "Unable to send your message",
   "mobile.post.retry": "Refresh",
   "mobile.posts_view.moreMsg": "More New Messages Above",
+  "mobile.reaction_list.title": "Reactions",
   "mobile.recent_mentions.empty_description": "Messages containing your username and other words that trigger mentions will appear here.",
   "mobile.recent_mentions.empty_title": "No Recent Mentions",
   "mobile.rename_channel.display_name_maxLength": "Channel name must be less than {maxLength, number} characters",
