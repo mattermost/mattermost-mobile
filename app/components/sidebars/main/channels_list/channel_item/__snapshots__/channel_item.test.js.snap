@@ -934,6 +934,7 @@ ShallowWrapper {
               membersCount={1}
               size={16}
               status="online"
+              teammateDeletedAt={100}
               theme={
                 Object {
                   "sidebarText": "#aaa",
@@ -1012,6 +1013,7 @@ ShallowWrapper {
               membersCount={1}
               size={16}
               status="online"
+              teammateDeletedAt={100}
               theme={
                 Object {
                   "sidebarText": "#aaa",
@@ -1082,6 +1084,7 @@ ShallowWrapper {
                 membersCount={1}
                 size={16}
                 status="online"
+                teammateDeletedAt={100}
                 theme={
                   Object {
                     "sidebarText": "#aaa",
@@ -1144,6 +1147,7 @@ ShallowWrapper {
                   membersCount={1}
                   size={16}
                   status="online"
+                  teammateDeletedAt={100}
                   theme={
                     Object {
                       "sidebarText": "#aaa",
@@ -1204,6 +1208,7 @@ ShallowWrapper {
                   "membersCount": 1,
                   "size": 16,
                   "status": "online",
+                  "teammateDeletedAt": 100,
                   "theme": Object {
                     "sidebarText": "#aaa",
                     "sidebarTextActiveBorder": "#aaa",
@@ -1304,6 +1309,7 @@ ShallowWrapper {
                 membersCount={1}
                 size={16}
                 status="online"
+                teammateDeletedAt={100}
                 theme={
                   Object {
                     "sidebarText": "#aaa",
@@ -1382,6 +1388,7 @@ ShallowWrapper {
                 membersCount={1}
                 size={16}
                 status="online"
+                teammateDeletedAt={100}
                 theme={
                   Object {
                     "sidebarText": "#aaa",
@@ -1452,6 +1459,7 @@ ShallowWrapper {
                   membersCount={1}
                   size={16}
                   status="online"
+                  teammateDeletedAt={100}
                   theme={
                     Object {
                       "sidebarText": "#aaa",
@@ -1514,6 +1522,7 @@ ShallowWrapper {
                     membersCount={1}
                     size={16}
                     status="online"
+                    teammateDeletedAt={100}
                     theme={
                       Object {
                         "sidebarText": "#aaa",
@@ -1574,6 +1583,7 @@ ShallowWrapper {
                     "membersCount": 1,
                     "size": 16,
                     "status": "online",
+                    "teammateDeletedAt": 100,
                     "theme": Object {
                       "sidebarText": "#aaa",
                       "sidebarTextActiveBorder": "#aaa",
@@ -1645,15 +1655,6 @@ ShallowWrapper {
               },
               Object {
                 "displayname": "display_name",
-              },
-            ],
-            Array [
-              Object {
-                "defaultMessage": "{displayname} - Deactivated",
-                "id": "more_direct_channels.directchannel.deactivated",
-              },
-              Object {
-                "displayname": undefined,
               },
             ],
           ],

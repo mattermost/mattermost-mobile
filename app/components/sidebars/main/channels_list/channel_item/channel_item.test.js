@@ -50,12 +50,10 @@ describe('ChannelItem', () => {
             teammateDeletedAt: 100,
             type: 'D',
         };
-
         const wrapper = shallow(
             <ChannelItem {...newProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
-
         expect(wrapper).toMatchSnapshot();
     });
 });

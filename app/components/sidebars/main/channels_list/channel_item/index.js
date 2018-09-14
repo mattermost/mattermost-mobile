@@ -10,9 +10,10 @@ import {
     getMyChannelMember,
     shouldHideDefaultChannel,
 } from 'mattermost-redux/selectors/entities/channels';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getTheme, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isChannelMuted} from 'mattermost-redux/utils/channel_utils';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ChannelItem from './channel_item';
 
@@ -26,13 +27,22 @@ function makeMapStateToProps() {
 
         let isMyUser = false;
         let teammateDeletedAt = 0;
+        let displayName = channel.display_name;
         let isArchived = false;
-        const displayName = channel.display_name;
         if (channel.type === General.DM_CHANNEL) {
-            isMyUser = channel.id === currentUserId;
-            teammateDeletedAt = channel.delete_at;
-        } else {
-            isArchived = channel.delete_at > 0;
+            if (ownProps.isSearchResult) {
+                isMyUser = channel.id === currentUserId;
+                teammateDeletedAt = channel.delete_at;
+            } else {
+                isMyUser = channel.teammate_id === currentUserId;
+                const teammate = getUser(state, channel.teammate_id);
+                if (teammate && teammate.delete_at) {
+                    teammateDeletedAt = teammate.delete_at;
+                }
+                const teammateNameDisplay = getTeammateNameDisplaySetting(state);
+                displayName = displayUsername(teammate, teammateNameDisplay, false);
+                isArchived = channel.delete_at > 0;
+            }
         }
 
         const currentChannelId = getCurrentChannelId(state);
