@@ -638,7 +638,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 38,
         },
         video: {
-            backgroundColor: theme.centerChannelBg,
             alignItems: 'center',
             height: 48,
             justifyContent: 'center',
