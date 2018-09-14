@@ -11,13 +11,6 @@ import {
     handlePasswordChanged,
 } from 'app/actions/views/login';
 
-jest.mock('rn-fetch-blob/fs', () => ({
-    dirs: {
-        DocumentDir: () => jest.fn(),
-        CacheDir: () => jest.fn(),
-    },
-}));
-
 jest.mock('app/mattermost', () => ({
     app: {
         setAppCredentials: () => jest.fn(),

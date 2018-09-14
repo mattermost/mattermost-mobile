@@ -11,13 +11,6 @@ import {
     handleCommentDraftSelectionChanged,
 } from 'app/actions/views/thread';
 
-jest.mock('rn-fetch-blob/fs', () => ({
-    dirs: {
-        DocumentDir: () => jest.fn(),
-        CacheDir: () => jest.fn(),
-    },
-}));
-
 const mockStore = configureStore([thunk]);
 
 describe('Actions.Views.Thread', () => {
