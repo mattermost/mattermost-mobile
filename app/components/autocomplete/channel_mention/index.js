@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import {searchChannels, autocompleteChannelsForSearch} from 'mattermost-redux/actions/channels';
 import {getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {Client4} from 'mattermost-redux/client';
 
 import {
     filterMyChannels,
@@ -50,7 +49,7 @@ function mapStateToProps(state, ownProps) {
         matchTerm,
         requestStatus: state.requests.channels.getChannels.status,
         theme: getTheme(state),
-        serverVersion: state.entities.general.serverVersion || Client4.getServerVersion(),
+        serverVersion: state.entities.general.serverVersion,
     };
 }
 
