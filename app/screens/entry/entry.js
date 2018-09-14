@@ -62,7 +62,7 @@ export default class Entry extends PureComponent {
         isLandscape: PropTypes.bool,
         enableTimezone: PropTypes.bool,
         deviceTimezone: PropTypes.string,
-        initializeModules: PropTypes.func.isRequired,
+        initializeModules: PropTypes.func,
         actions: PropTypes.shape({
             autoUpdateTimezone: PropTypes.func.isRequired,
             setDeviceToken: PropTypes.func.isRequired,
