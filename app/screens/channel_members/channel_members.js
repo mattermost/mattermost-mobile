@@ -13,12 +13,13 @@ import {injectIntl, intlShape} from 'react-intl';
 
 import Loading from 'app/components/loading';
 import CustomList from 'app/components/custom_list';
+import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorIfInvalidPermissions} from 'app/utils/general';
 import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, setNavigatorStyles} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
@@ -275,14 +276,13 @@ class ChannelMembers extends PureComponent {
         const isLoading = (requestStatus === RequestStatus.STARTED) || (requestStatus.status === RequestStatus.NOT_STARTED) ||
             (searchRequestStatus === RequestStatus.STARTED);
         const more = searching ? () => true : this.loadMoreMembers;
-        const style = getStyleFromTheme(theme);
 
         if (removing) {
             return (
-                <View style={style.container}>
+                <KeyboardLayout>
                     <StatusBar/>
                     <Loading/>
-                </View>
+                </KeyboardLayout>
             );
         }
 
@@ -298,7 +298,7 @@ class ChannelMembers extends PureComponent {
         };
 
         return (
-            <View style={style.container}>
+            <KeyboardLayout>
                 <StatusBar/>
                 <View
                     style={{marginVertical: 5}}
@@ -334,18 +334,9 @@ class ChannelMembers extends PureComponent {
                     createSections={createMembersSections}
                     showNoResults={showNoResults}
                 />
-            </View>
+            </KeyboardLayout>
         );
     }
 }
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-    };
-});
 
 export default injectIntl(ChannelMembers);

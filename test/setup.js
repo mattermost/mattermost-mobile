@@ -41,3 +41,19 @@ afterEach(() => {
         throw new Error('Unexpected console logs' + logs + warns + errors);
     }
 });
+
+jest.mock('rn-fetch-blob', () => ({
+    fs: {
+        dirs: {
+            DocumentDir: () => jest.fn(),
+            CacheDir: () => jest.fn(),
+        },
+    },
+}));
+
+jest.mock('rn-fetch-blob/fs', () => ({
+    dirs: {
+        DocumentDir: () => jest.fn(),
+        CacheDir: () => jest.fn(),
+    },
+}));

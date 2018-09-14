@@ -149,7 +149,7 @@ export default class MarkdownImage extends React.Component {
     };
 
     handleLinkCopy = () => {
-        Clipboard.setString(this.props.linkDestination);
+        Clipboard.setString(this.props.linkDestination || this.props.source);
     };
 
     handlePreviewImage = () => {

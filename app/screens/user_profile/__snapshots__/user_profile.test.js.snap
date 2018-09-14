@@ -1,0 +1,995 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`user_profile should match snapshot 1`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <UserProfile
+    actions={
+      Object {
+        "makeDirectChannel": [MockFunction],
+        "setChannelDisplayName": [MockFunction],
+      }
+    }
+    config={
+      Object {
+        "ShowEmailAddress": true,
+      }
+    }
+    enableTimezone={false}
+    militaryTime={false}
+    navigator={
+      Object {
+        "resetTo": [MockFunction],
+      }
+    }
+    teammateNameDisplay="username"
+    teams={Array []}
+    theme={
+      Object {
+        "centerChannelBg": "#aaa",
+        "centerChannelColor": "#aaa",
+        "color": "#aaa",
+      }
+    }
+    user={
+      Object {
+        "email": "test@test.com",
+        "first_name": "test",
+        "id": "4hzdnk6mg7gepe7yze6m3domnc",
+        "last_name": "fake",
+        "nickname": "nick",
+      }
+    }
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): Object {
+    "instance": null,
+    "key": undefined,
+    "nodeType": "class",
+    "props": Object {
+      "children": Array [
+        <Connect(StatusBar) />,
+        <ScrollView
+          style={
+            Object {
+              "backgroundColor": "#aaa",
+              "flex": 1,
+            }
+          }
+        >
+          <Component
+            style={
+              Object {
+                "alignItems": "center",
+                "justifyContent": "center",
+                "padding": 25,
+              }
+            }
+          >
+            <Connect(ProfilePicture)
+              size={150}
+              statusBorderWidth={6}
+              statusSize={40}
+              userId="4hzdnk6mg7gepe7yze6m3domnc"
+            />
+            <Text
+              accessible={true}
+              allowFontScaling={true}
+              ellipsizeMode="tail"
+              style={
+                Object {
+                  "color": "#aaa",
+                  "fontSize": 15,
+                  "marginTop": 15,
+                }
+              }
+            >
+              @undefined
+            </Text>
+          </Component>
+          <Component
+            style={
+              Object {
+                "marginBottom": 25,
+                "marginHorizontal": 15,
+              }
+            }
+          >
+            <Component>
+              <Text
+                accessible={true}
+                allowFontScaling={true}
+                ellipsizeMode="tail"
+                style={
+                  Object {
+                    "color": undefined,
+                    "fontSize": 13,
+                    "fontWeight": "600",
+                    "marginBottom": 10,
+                    "marginTop": 25,
+                  }
+                }
+              >
+                NICKNAME
+              </Text>
+              <Text
+                accessible={true}
+                allowFontScaling={true}
+                ellipsizeMode="tail"
+                style={
+                  Object {
+                    "color": "#aaa",
+                    "fontSize": 15,
+                  }
+                }
+              >
+                nick
+              </Text>
+            </Component>
+          </Component>
+          <userProfileRow
+            action={[Function]}
+            defaultMessage="Send Message"
+            icon="paper-plane-o"
+            iconColor="rgba(0, 0, 0, 0.7)"
+            iconSize={15}
+            iconType="fontawesome"
+            textColor="#000"
+            textId="mobile.routes.user_profile.send_message"
+            theme={
+              Object {
+                "centerChannelBg": "#aaa",
+                "centerChannelColor": "#aaa",
+                "color": "#aaa",
+              }
+            }
+            togglable={false}
+          />
+        </ScrollView>,
+      ],
+      "style": Object {
+        "flex": 1,
+      },
+    },
+    "ref": null,
+    "rendered": Array [
+      Object {
+        "instance": null,
+        "key": undefined,
+        "nodeType": "class",
+        "props": Object {},
+        "ref": null,
+        "rendered": null,
+        "type": [Function],
+      },
+      Object {
+        "instance": null,
+        "key": undefined,
+        "nodeType": "class",
+        "props": Object {
+          "children": Array [
+            <Component
+              style={
+                Object {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "padding": 25,
+                }
+              }
+            >
+              <Connect(ProfilePicture)
+                size={150}
+                statusBorderWidth={6}
+                statusSize={40}
+                userId="4hzdnk6mg7gepe7yze6m3domnc"
+              />
+              <Text
+                accessible={true}
+                allowFontScaling={true}
+                ellipsizeMode="tail"
+                style={
+                  Object {
+                    "color": "#aaa",
+                    "fontSize": 15,
+                    "marginTop": 15,
+                  }
+                }
+              >
+                @undefined
+              </Text>
+            </Component>,
+            <Component
+              style={
+                Object {
+                  "marginBottom": 25,
+                  "marginHorizontal": 15,
+                }
+              }
+            >
+              <Component>
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  style={
+                    Object {
+                      "color": undefined,
+                      "fontSize": 13,
+                      "fontWeight": "600",
+                      "marginBottom": 10,
+                      "marginTop": 25,
+                    }
+                  }
+                >
+                  NICKNAME
+                </Text>
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  style={
+                    Object {
+                      "color": "#aaa",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  nick
+                </Text>
+              </Component>
+            </Component>,
+            <userProfileRow
+              action={[Function]}
+              defaultMessage="Send Message"
+              icon="paper-plane-o"
+              iconColor="rgba(0, 0, 0, 0.7)"
+              iconSize={15}
+              iconType="fontawesome"
+              textColor="#000"
+              textId="mobile.routes.user_profile.send_message"
+              theme={
+                Object {
+                  "centerChannelBg": "#aaa",
+                  "centerChannelColor": "#aaa",
+                  "color": "#aaa",
+                }
+              }
+              togglable={false}
+            />,
+            null,
+          ],
+          "style": Object {
+            "backgroundColor": "#aaa",
+            "flex": 1,
+          },
+        },
+        "ref": null,
+        "rendered": Array [
+          Object {
+            "instance": null,
+            "key": undefined,
+            "nodeType": "class",
+            "props": Object {
+              "children": Array [
+                <Connect(ProfilePicture)
+                  size={150}
+                  statusBorderWidth={6}
+                  statusSize={40}
+                  userId="4hzdnk6mg7gepe7yze6m3domnc"
+                />,
+                null,
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  style={
+                    Object {
+                      "color": "#aaa",
+                      "fontSize": 15,
+                      "marginTop": 15,
+                    }
+                  }
+                >
+                  @undefined
+                </Text>,
+              ],
+              "style": Object {
+                "alignItems": "center",
+                "justifyContent": "center",
+                "padding": 25,
+              },
+            },
+            "ref": null,
+            "rendered": Array [
+              Object {
+                "instance": null,
+                "key": undefined,
+                "nodeType": "class",
+                "props": Object {
+                  "size": 150,
+                  "statusBorderWidth": 6,
+                  "statusSize": 40,
+                  "userId": "4hzdnk6mg7gepe7yze6m3domnc",
+                },
+                "ref": null,
+                "rendered": null,
+                "type": [Function],
+              },
+              null,
+              Object {
+                "instance": null,
+                "key": undefined,
+                "nodeType": "class",
+                "props": Object {
+                  "accessible": true,
+                  "allowFontScaling": true,
+                  "children": "@undefined",
+                  "ellipsizeMode": "tail",
+                  "style": Object {
+                    "color": "#aaa",
+                    "fontSize": 15,
+                    "marginTop": 15,
+                  },
+                },
+                "ref": null,
+                "rendered": "@undefined",
+                "type": [Function],
+              },
+            ],
+            "type": [Function],
+          },
+          Object {
+            "instance": null,
+            "key": undefined,
+            "nodeType": "class",
+            "props": Object {
+              "children": Array [
+                false,
+                null,
+                false,
+                <Component>
+                  <Text
+                    accessible={true}
+                    allowFontScaling={true}
+                    ellipsizeMode="tail"
+                    style={
+                      Object {
+                        "color": undefined,
+                        "fontSize": 13,
+                        "fontWeight": "600",
+                        "marginBottom": 10,
+                        "marginTop": 25,
+                      }
+                    }
+                  >
+                    NICKNAME
+                  </Text>
+                  <Text
+                    accessible={true}
+                    allowFontScaling={true}
+                    ellipsizeMode="tail"
+                    style={
+                      Object {
+                        "color": "#aaa",
+                        "fontSize": 15,
+                      }
+                    }
+                  >
+                    nick
+                  </Text>
+                </Component>,
+                null,
+              ],
+              "style": Object {
+                "marginBottom": 25,
+                "marginHorizontal": 15,
+              },
+            },
+            "ref": null,
+            "rendered": Array [
+              false,
+              null,
+              false,
+              Object {
+                "instance": null,
+                "key": undefined,
+                "nodeType": "class",
+                "props": Object {
+                  "children": Array [
+                    <Text
+                      accessible={true}
+                      allowFontScaling={true}
+                      ellipsizeMode="tail"
+                      style={
+                        Object {
+                          "color": undefined,
+                          "fontSize": 13,
+                          "fontWeight": "600",
+                          "marginBottom": 10,
+                          "marginTop": 25,
+                        }
+                      }
+                    >
+                      NICKNAME
+                    </Text>,
+                    <Text
+                      accessible={true}
+                      allowFontScaling={true}
+                      ellipsizeMode="tail"
+                      style={
+                        Object {
+                          "color": "#aaa",
+                          "fontSize": 15,
+                        }
+                      }
+                    >
+                      nick
+                    </Text>,
+                  ],
+                },
+                "ref": null,
+                "rendered": Array [
+                  Object {
+                    "instance": null,
+                    "key": undefined,
+                    "nodeType": "class",
+                    "props": Object {
+                      "accessible": true,
+                      "allowFontScaling": true,
+                      "children": "NICKNAME",
+                      "ellipsizeMode": "tail",
+                      "style": Object {
+                        "color": undefined,
+                        "fontSize": 13,
+                        "fontWeight": "600",
+                        "marginBottom": 10,
+                        "marginTop": 25,
+                      },
+                    },
+                    "ref": null,
+                    "rendered": "NICKNAME",
+                    "type": [Function],
+                  },
+                  Object {
+                    "instance": null,
+                    "key": undefined,
+                    "nodeType": "class",
+                    "props": Object {
+                      "accessible": true,
+                      "allowFontScaling": true,
+                      "children": "nick",
+                      "ellipsizeMode": "tail",
+                      "style": Object {
+                        "color": "#aaa",
+                        "fontSize": 15,
+                      },
+                    },
+                    "ref": null,
+                    "rendered": "nick",
+                    "type": [Function],
+                  },
+                ],
+                "type": [Function],
+              },
+              null,
+            ],
+            "type": [Function],
+          },
+          Object {
+            "instance": null,
+            "key": undefined,
+            "nodeType": "function",
+            "props": Object {
+              "action": [Function],
+              "defaultMessage": "Send Message",
+              "icon": "paper-plane-o",
+              "iconColor": "rgba(0, 0, 0, 0.7)",
+              "iconSize": 15,
+              "iconType": "fontawesome",
+              "textColor": "#000",
+              "textId": "mobile.routes.user_profile.send_message",
+              "theme": Object {
+                "centerChannelBg": "#aaa",
+                "centerChannelColor": "#aaa",
+                "color": "#aaa",
+              },
+              "togglable": false,
+            },
+            "ref": null,
+            "rendered": null,
+            "type": [Function],
+          },
+          null,
+        ],
+        "type": [MockFunction],
+      },
+    ],
+    "type": [Function],
+  },
+  Symbol(enzyme.__nodes__): Array [
+    Object {
+      "instance": null,
+      "key": undefined,
+      "nodeType": "class",
+      "props": Object {
+        "children": Array [
+          <Connect(StatusBar) />,
+          <ScrollView
+            style={
+              Object {
+                "backgroundColor": "#aaa",
+                "flex": 1,
+              }
+            }
+          >
+            <Component
+              style={
+                Object {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "padding": 25,
+                }
+              }
+            >
+              <Connect(ProfilePicture)
+                size={150}
+                statusBorderWidth={6}
+                statusSize={40}
+                userId="4hzdnk6mg7gepe7yze6m3domnc"
+              />
+              <Text
+                accessible={true}
+                allowFontScaling={true}
+                ellipsizeMode="tail"
+                style={
+                  Object {
+                    "color": "#aaa",
+                    "fontSize": 15,
+                    "marginTop": 15,
+                  }
+                }
+              >
+                @undefined
+              </Text>
+            </Component>
+            <Component
+              style={
+                Object {
+                  "marginBottom": 25,
+                  "marginHorizontal": 15,
+                }
+              }
+            >
+              <Component>
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  style={
+                    Object {
+                      "color": undefined,
+                      "fontSize": 13,
+                      "fontWeight": "600",
+                      "marginBottom": 10,
+                      "marginTop": 25,
+                    }
+                  }
+                >
+                  NICKNAME
+                </Text>
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  style={
+                    Object {
+                      "color": "#aaa",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  nick
+                </Text>
+              </Component>
+            </Component>
+            <userProfileRow
+              action={[Function]}
+              defaultMessage="Send Message"
+              icon="paper-plane-o"
+              iconColor="rgba(0, 0, 0, 0.7)"
+              iconSize={15}
+              iconType="fontawesome"
+              textColor="#000"
+              textId="mobile.routes.user_profile.send_message"
+              theme={
+                Object {
+                  "centerChannelBg": "#aaa",
+                  "centerChannelColor": "#aaa",
+                  "color": "#aaa",
+                }
+              }
+              togglable={false}
+            />
+          </ScrollView>,
+        ],
+        "style": Object {
+          "flex": 1,
+        },
+      },
+      "ref": null,
+      "rendered": Array [
+        Object {
+          "instance": null,
+          "key": undefined,
+          "nodeType": "class",
+          "props": Object {},
+          "ref": null,
+          "rendered": null,
+          "type": [Function],
+        },
+        Object {
+          "instance": null,
+          "key": undefined,
+          "nodeType": "class",
+          "props": Object {
+            "children": Array [
+              <Component
+                style={
+                  Object {
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "padding": 25,
+                  }
+                }
+              >
+                <Connect(ProfilePicture)
+                  size={150}
+                  statusBorderWidth={6}
+                  statusSize={40}
+                  userId="4hzdnk6mg7gepe7yze6m3domnc"
+                />
+                <Text
+                  accessible={true}
+                  allowFontScaling={true}
+                  ellipsizeMode="tail"
+                  style={
+                    Object {
+                      "color": "#aaa",
+                      "fontSize": 15,
+                      "marginTop": 15,
+                    }
+                  }
+                >
+                  @undefined
+                </Text>
+              </Component>,
+              <Component
+                style={
+                  Object {
+                    "marginBottom": 25,
+                    "marginHorizontal": 15,
+                  }
+                }
+              >
+                <Component>
+                  <Text
+                    accessible={true}
+                    allowFontScaling={true}
+                    ellipsizeMode="tail"
+                    style={
+                      Object {
+                        "color": undefined,
+                        "fontSize": 13,
+                        "fontWeight": "600",
+                        "marginBottom": 10,
+                        "marginTop": 25,
+                      }
+                    }
+                  >
+                    NICKNAME
+                  </Text>
+                  <Text
+                    accessible={true}
+                    allowFontScaling={true}
+                    ellipsizeMode="tail"
+                    style={
+                      Object {
+                        "color": "#aaa",
+                        "fontSize": 15,
+                      }
+                    }
+                  >
+                    nick
+                  </Text>
+                </Component>
+              </Component>,
+              <userProfileRow
+                action={[Function]}
+                defaultMessage="Send Message"
+                icon="paper-plane-o"
+                iconColor="rgba(0, 0, 0, 0.7)"
+                iconSize={15}
+                iconType="fontawesome"
+                textColor="#000"
+                textId="mobile.routes.user_profile.send_message"
+                theme={
+                  Object {
+                    "centerChannelBg": "#aaa",
+                    "centerChannelColor": "#aaa",
+                    "color": "#aaa",
+                  }
+                }
+                togglable={false}
+              />,
+              null,
+            ],
+            "style": Object {
+              "backgroundColor": "#aaa",
+              "flex": 1,
+            },
+          },
+          "ref": null,
+          "rendered": Array [
+            Object {
+              "instance": null,
+              "key": undefined,
+              "nodeType": "class",
+              "props": Object {
+                "children": Array [
+                  <Connect(ProfilePicture)
+                    size={150}
+                    statusBorderWidth={6}
+                    statusSize={40}
+                    userId="4hzdnk6mg7gepe7yze6m3domnc"
+                  />,
+                  null,
+                  <Text
+                    accessible={true}
+                    allowFontScaling={true}
+                    ellipsizeMode="tail"
+                    style={
+                      Object {
+                        "color": "#aaa",
+                        "fontSize": 15,
+                        "marginTop": 15,
+                      }
+                    }
+                  >
+                    @undefined
+                  </Text>,
+                ],
+                "style": Object {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "padding": 25,
+                },
+              },
+              "ref": null,
+              "rendered": Array [
+                Object {
+                  "instance": null,
+                  "key": undefined,
+                  "nodeType": "class",
+                  "props": Object {
+                    "size": 150,
+                    "statusBorderWidth": 6,
+                    "statusSize": 40,
+                    "userId": "4hzdnk6mg7gepe7yze6m3domnc",
+                  },
+                  "ref": null,
+                  "rendered": null,
+                  "type": [Function],
+                },
+                null,
+                Object {
+                  "instance": null,
+                  "key": undefined,
+                  "nodeType": "class",
+                  "props": Object {
+                    "accessible": true,
+                    "allowFontScaling": true,
+                    "children": "@undefined",
+                    "ellipsizeMode": "tail",
+                    "style": Object {
+                      "color": "#aaa",
+                      "fontSize": 15,
+                      "marginTop": 15,
+                    },
+                  },
+                  "ref": null,
+                  "rendered": "@undefined",
+                  "type": [Function],
+                },
+              ],
+              "type": [Function],
+            },
+            Object {
+              "instance": null,
+              "key": undefined,
+              "nodeType": "class",
+              "props": Object {
+                "children": Array [
+                  false,
+                  null,
+                  false,
+                  <Component>
+                    <Text
+                      accessible={true}
+                      allowFontScaling={true}
+                      ellipsizeMode="tail"
+                      style={
+                        Object {
+                          "color": undefined,
+                          "fontSize": 13,
+                          "fontWeight": "600",
+                          "marginBottom": 10,
+                          "marginTop": 25,
+                        }
+                      }
+                    >
+                      NICKNAME
+                    </Text>
+                    <Text
+                      accessible={true}
+                      allowFontScaling={true}
+                      ellipsizeMode="tail"
+                      style={
+                        Object {
+                          "color": "#aaa",
+                          "fontSize": 15,
+                        }
+                      }
+                    >
+                      nick
+                    </Text>
+                  </Component>,
+                  null,
+                ],
+                "style": Object {
+                  "marginBottom": 25,
+                  "marginHorizontal": 15,
+                },
+              },
+              "ref": null,
+              "rendered": Array [
+                false,
+                null,
+                false,
+                Object {
+                  "instance": null,
+                  "key": undefined,
+                  "nodeType": "class",
+                  "props": Object {
+                    "children": Array [
+                      <Text
+                        accessible={true}
+                        allowFontScaling={true}
+                        ellipsizeMode="tail"
+                        style={
+                          Object {
+                            "color": undefined,
+                            "fontSize": 13,
+                            "fontWeight": "600",
+                            "marginBottom": 10,
+                            "marginTop": 25,
+                          }
+                        }
+                      >
+                        NICKNAME
+                      </Text>,
+                      <Text
+                        accessible={true}
+                        allowFontScaling={true}
+                        ellipsizeMode="tail"
+                        style={
+                          Object {
+                            "color": "#aaa",
+                            "fontSize": 15,
+                          }
+                        }
+                      >
+                        nick
+                      </Text>,
+                    ],
+                  },
+                  "ref": null,
+                  "rendered": Array [
+                    Object {
+                      "instance": null,
+                      "key": undefined,
+                      "nodeType": "class",
+                      "props": Object {
+                        "accessible": true,
+                        "allowFontScaling": true,
+                        "children": "NICKNAME",
+                        "ellipsizeMode": "tail",
+                        "style": Object {
+                          "color": undefined,
+                          "fontSize": 13,
+                          "fontWeight": "600",
+                          "marginBottom": 10,
+                          "marginTop": 25,
+                        },
+                      },
+                      "ref": null,
+                      "rendered": "NICKNAME",
+                      "type": [Function],
+                    },
+                    Object {
+                      "instance": null,
+                      "key": undefined,
+                      "nodeType": "class",
+                      "props": Object {
+                        "accessible": true,
+                        "allowFontScaling": true,
+                        "children": "nick",
+                        "ellipsizeMode": "tail",
+                        "style": Object {
+                          "color": "#aaa",
+                          "fontSize": 15,
+                        },
+                      },
+                      "ref": null,
+                      "rendered": "nick",
+                      "type": [Function],
+                    },
+                  ],
+                  "type": [Function],
+                },
+                null,
+              ],
+              "type": [Function],
+            },
+            Object {
+              "instance": null,
+              "key": undefined,
+              "nodeType": "function",
+              "props": Object {
+                "action": [Function],
+                "defaultMessage": "Send Message",
+                "icon": "paper-plane-o",
+                "iconColor": "rgba(0, 0, 0, 0.7)",
+                "iconSize": 15,
+                "iconType": "fontawesome",
+                "textColor": "#000",
+                "textId": "mobile.routes.user_profile.send_message",
+                "theme": Object {
+                  "centerChannelBg": "#aaa",
+                  "centerChannelColor": "#aaa",
+                  "color": "#aaa",
+                },
+                "togglable": false,
+              },
+              "ref": null,
+              "rendered": null,
+              "type": [Function],
+            },
+            null,
+          ],
+          "type": [MockFunction],
+        },
+      ],
+      "type": [Function],
+    },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+    "context": Object {
+      "intl": Object {
+        "formatMessage": [MockFunction],
+      },
+    },
+  },
+}
+`;

@@ -17,22 +17,6 @@ jest.mock('app/utils/theme', () => {
     };
 });
 
-jest.mock('rn-fetch-blob', () => ({
-    fs: {
-        dirs: {
-            DocumentDir: () => jest.fn(),
-            CacheDir: () => jest.fn(),
-        },
-    },
-}));
-
-jest.mock('rn-fetch-blob/fs', () => ({
-    dirs: {
-        DocumentDir: () => jest.fn(),
-        CacheDir: () => jest.fn(),
-    },
-}));
-
 describe('UserListRow', () => {
     const formatMessage = jest.fn();
     const baseProps = {

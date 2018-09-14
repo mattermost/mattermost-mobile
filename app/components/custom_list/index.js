@@ -216,7 +216,7 @@ export default class CustomList extends PureComponent {
         }
 
         return (
-            <View style={{flex: 1}}>
+            <View style={style.container}>
                 <ListView
                     style={style.listView}
                     dataSource={dataSource}
@@ -239,6 +239,9 @@ export default class CustomList extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            flex: 1,
+        },
         listView: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,

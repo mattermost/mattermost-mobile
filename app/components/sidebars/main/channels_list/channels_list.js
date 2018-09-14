@@ -56,14 +56,14 @@ export default class ChannelsList extends PureComponent {
     }
 
     onSelectChannel = (channel, currentChannelId) => {
-        if (this.refs.search_bar) {
-            this.refs.search_bar.cancel();
-        }
-
         if (channel.fake) {
             this.props.onJoinChannel(channel, currentChannelId);
         } else {
             this.props.onSelectChannel(channel, currentChannelId);
+        }
+
+        if (this.refs.search_bar) {
+            this.refs.search_bar.cancel();
         }
     };
 

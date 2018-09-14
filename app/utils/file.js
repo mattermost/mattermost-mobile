@@ -88,9 +88,20 @@ export async function getFileCacheSize() {
 }
 
 export async function deleteFileCache() {
-    await RNFetchBlob.fs.unlink(DOCUMENTS_PATH);
-    await RNFetchBlob.fs.unlink(IMAGES_PATH);
-    await RNFetchBlob.fs.unlink(VIDEOS_PATH);
+    const isDocsDir = await RNFetchBlob.fs.isDir(DOCUMENTS_PATH);
+    const isImagesDir = await RNFetchBlob.fs.isDir(IMAGES_PATH);
+    const isVideosDir = await RNFetchBlob.fs.isDir(VIDEOS_PATH);
+    if (isDocsDir) {
+        await RNFetchBlob.fs.unlink(DOCUMENTS_PATH);
+    }
+
+    if (isImagesDir) {
+        await RNFetchBlob.fs.unlink(IMAGES_PATH);
+    }
+
+    if (isVideosDir) {
+        await RNFetchBlob.fs.unlink(VIDEOS_PATH);
+    }
     return true;
 }
 

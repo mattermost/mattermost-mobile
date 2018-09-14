@@ -15,6 +15,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import CustomList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
+import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
@@ -317,7 +318,7 @@ export default class MoreChannels extends PureComponent {
             };
 
             content = (
-                <View style={style.flex}>
+                <React.Fragment>
                     <View style={style.wrapper}>
                         <SearchBar
                             ref='search_bar'
@@ -350,24 +351,21 @@ export default class MoreChannels extends PureComponent {
                         loadingText={{id: 'mobile.loading_channels', defaultMessage: 'Loading Channels...'}}
                         showNoResults={this.state.showNoResults}
                     />
-                </View>
+                </React.Fragment>
             );
         }
 
         return (
-            <View style={style.container}>
+            <KeyboardLayout>
                 <StatusBar/>
                 {content}
-            </View>
+            </KeyboardLayout>
         );
     }
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
         wrapper: {
             marginVertical: 5,
         },

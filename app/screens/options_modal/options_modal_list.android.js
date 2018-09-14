@@ -43,20 +43,24 @@ export default class OptionsModalList extends PureComponent {
             }
 
             return (
-                <TouchableOpacity
+                <View
                     key={index}
-                    onPress={preventDoubleTap(item.action)}
-                    style={[style.option, style.optionBorder]}
+                    style={style.optionBorder}
                 >
-                    {textComponent}
-                    {item.icon &&
+                    <TouchableOpacity
+                        onPress={preventDoubleTap(item.action)}
+                        style={style.option}
+                    >
+                        {textComponent}
+                        {item.icon &&
                         <IconFont
                             name={item.icon}
                             size={18}
                             style={style.optionIcon}
                         />
-                    }
-                </TouchableOpacity>
+                        }
+                    </TouchableOpacity>
+                </View>
             );
         });
 
