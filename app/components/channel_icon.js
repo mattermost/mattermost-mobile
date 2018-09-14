@@ -22,6 +22,7 @@ export default class ChannelIcon extends React.PureComponent {
         membersCount: PropTypes.number,
         size: PropTypes.number,
         status: PropTypes.string,
+        teammateDeletedAt: PropTypes.number,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
@@ -43,6 +44,7 @@ export default class ChannelIcon extends React.PureComponent {
             size,
             status,
             theme,
+            teammateDeletedAt,
             type,
             isArchived,
         } = this.props;
@@ -104,6 +106,13 @@ export default class ChannelIcon extends React.PureComponent {
                         {membersCount}
                     </Text>
                 </View>
+            );
+        } else if (type === General.DM_CHANNEL && teammateDeletedAt) {
+            icon = (
+                <Image
+                    source={require('assets/images/status/archive_avatar.png')}
+                    style={{width: size, height: size, tintColor: offlineColor}}
+                />
             );
         } else if (type === General.DM_CHANNEL) {
             switch (status) {
