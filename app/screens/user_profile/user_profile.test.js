@@ -5,21 +5,6 @@ import {shallow} from 'enzyme';
 jest.mock('react-intl');
 
 import UserProfile from './user_profile.js';
-jest.mock('rn-fetch-blob', () => ({
-    fs: {
-        dirs: {
-            DocumentDir: () => jest.fn(),
-            CacheDir: () => jest.fn(),
-        },
-    },
-}));
-
-jest.mock('rn-fetch-blob/fs', () => ({
-    dirs: {
-        DocumentDir: () => jest.fn(),
-        CacheDir: () => jest.fn(),
-    },
-}));
 
 jest.mock('app/utils/theme', () => {
     const original = require.requireActual('app/utils/theme');
