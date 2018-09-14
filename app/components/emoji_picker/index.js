@@ -9,7 +9,6 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getCustomEmojis, searchCustomEmojis} from 'mattermost-redux/actions/emojis';
-import {Client4} from 'mattermost-redux/client';
 
 import {incrementEmojiPickerPage} from 'app/actions/views/emoji';
 import {getDimensions, isLandscape} from 'app/selectors/device';
@@ -160,7 +159,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         customEmojisEnabled: getConfig(state).EnableCustomEmoji === 'true',
         customEmojiPage: state.views.emoji.emojiPickerCustomPage,
-        serverVersion: state.entities.general.serverVersion || Client4.getServerVersion(),
+        serverVersion: state.entities.general.serverVersion,
     };
 }
 

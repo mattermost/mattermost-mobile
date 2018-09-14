@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {searchChannels} from 'mattermost-redux/actions/channels';
+import {searchChannels, autocompleteChannelsForSearch} from 'mattermost-redux/actions/channels';
 import {getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
@@ -49,6 +49,7 @@ function mapStateToProps(state, ownProps) {
         matchTerm,
         requestStatus: state.requests.channels.getChannels.status,
         theme: getTheme(state),
+        serverVersion: state.entities.general.serverVersion,
     };
 }
 
@@ -56,6 +57,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             searchChannels,
+            autocompleteChannelsForSearch,
         }, dispatch),
     };
 }

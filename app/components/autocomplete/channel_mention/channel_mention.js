@@ -6,6 +6,8 @@ import PropTypes from 'prop-types';
 import {SectionList} from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+import {debounce} from 'mattermost-redux/actions/helpers';
 
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
@@ -17,6 +19,7 @@ export default class ChannelMention extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             searchChannels: PropTypes.func.isRequired,
+            autocompleteChannelsForSearch: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
@@ -34,6 +37,7 @@ export default class ChannelMention extends PureComponent {
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
+        serverVersion: PropTypes.string,
     };
 
     static defaultProps = {
@@ -48,6 +52,15 @@ export default class ChannelMention extends PureComponent {
             sections: [],
         };
     }
+
+    runSearch = debounce((currentTeamId, matchTerm) => {
+        if (!isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+            this.props.actions.searchChannels(currentTeamId, matchTerm);
+            return;
+        }
+
+        this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
+    }, 200);
 
     componentWillReceiveProps(nextProps) {
         const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, requestStatus, myMembers, deletedPublicChannels} = nextProps;
@@ -70,7 +83,7 @@ export default class ChannelMention extends PureComponent {
         if (matchTerm !== this.props.matchTerm) {
             // if the term changed and we haven't made the request do that first
             const {currentTeamId} = this.props;
-            this.props.actions.searchChannels(currentTeamId, matchTerm);
+            this.runSearch(currentTeamId, matchTerm);
             return;
         }
 
@@ -85,7 +98,7 @@ export default class ChannelMention extends PureComponent {
                     sections.push({
                         id: 'suggestion.search.public',
                         defaultMessage: 'Public Channels',
-                        data: publicChannels.filter((cId) => !deletedPublicChannels.has(cId) || myMembers[cId]),
+                        data: publicChannels.filter((cId) => myMembers[cId]),
                         key: 'publicChannels',
                     });
                 }
