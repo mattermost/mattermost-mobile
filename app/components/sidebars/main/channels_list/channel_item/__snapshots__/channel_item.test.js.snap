@@ -83,6 +83,7 @@ exports[`ChannelItem should match snapshot 1`] = `
               membersCount={1}
               size={16}
               status="online"
+              teammateDeletedAt={0}
               theme={
                 Object {
                   "sidebarText": "#aaa",
@@ -161,6 +162,7 @@ exports[`ChannelItem should match snapshot 1`] = `
               membersCount={1}
               size={16}
               status="online"
+              teammateDeletedAt={0}
               theme={
                 Object {
                   "sidebarText": "#aaa",
@@ -231,6 +233,7 @@ exports[`ChannelItem should match snapshot 1`] = `
                 membersCount={1}
                 size={16}
                 status="online"
+                teammateDeletedAt={0}
                 theme={
                   Object {
                     "sidebarText": "#aaa",
@@ -299,6 +302,7 @@ exports[`ChannelItem should match snapshot 1`] = `
                   membersCount={1}
                   size={16}
                   status="online"
+                  teammateDeletedAt={0}
                   theme={
                     Object {
                       "sidebarText": "#aaa",
@@ -359,6 +363,7 @@ exports[`ChannelItem should match snapshot 1`] = `
                   "membersCount": 1,
                   "size": 16,
                   "status": "online",
+                  "teammateDeletedAt": 0,
                   "theme": Object {
                     "sidebarText": "#aaa",
                     "sidebarTextActiveBorder": "#aaa",
@@ -459,6 +464,7 @@ exports[`ChannelItem should match snapshot 1`] = `
                 membersCount={1}
                 size={16}
                 status="online"
+                teammateDeletedAt={0}
                 theme={
                   Object {
                     "sidebarText": "#aaa",
@@ -537,6 +543,7 @@ exports[`ChannelItem should match snapshot 1`] = `
                 membersCount={1}
                 size={16}
                 status="online"
+                teammateDeletedAt={0}
                 theme={
                   Object {
                     "sidebarText": "#aaa",
@@ -607,6 +614,7 @@ exports[`ChannelItem should match snapshot 1`] = `
                   membersCount={1}
                   size={16}
                   status="online"
+                  teammateDeletedAt={0}
                   theme={
                     Object {
                       "sidebarText": "#aaa",
@@ -698,6 +706,7 @@ exports[`ChannelItem should match snapshot 1`] = `
                     membersCount={1}
                     size={16}
                     status="online"
+                    teammateDeletedAt={0}
                     theme={
                       Object {
                         "sidebarText": "#aaa",
@@ -758,6 +767,7 @@ exports[`ChannelItem should match snapshot 1`] = `
                     "membersCount": 1,
                     "size": 16,
                     "status": "online",
+                    "teammateDeletedAt": 0,
                     "theme": Object {
                       "sidebarText": "#aaa",
                       "sidebarTextActiveBorder": "#aaa",
