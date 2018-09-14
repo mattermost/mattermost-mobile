@@ -1,5 +1,30 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.12.0 Release
+- Release Date: September 16, 2018
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+#### Search Date Filters
+- Search for messages before, on, or after a specified date.
+
+### Improvements
+- Added notification support for Android O and P.
+
+### Bug Fixes
+- Fixed an issue where Okta was not able to login in some deployments.
+- Fixed an issue where messages in Direct Message channels did not show when clicking "Jump To".
+- Fixed an issue where `Show More` on a post with a message attachment displayed a blank where content should have been.
+- Prevent downloading of files when disallowed in the System Console.
+- Fixed an issue where users could not click on attachment filenames to open them.
+- Fixed an issue where email notification settings did not save from mobile.
+- Fixed an issue where the share extension allowed users to select and attempt to share content to channels that had been archived.
+- Fixed an issue where reacting to an existing emoji in an archived channel was allowed.
+- Fixed an issue where archived channels sometimes remained in the drawer.
+- Fixed an issue where deactivated users were not marked as such in Direct Message search.
+
+
 ## v1.11.0 Release
 - Release Date: August 16, 2018
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
