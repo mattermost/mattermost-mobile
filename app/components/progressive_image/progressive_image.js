@@ -24,6 +24,10 @@ export default class ProgressiveImage extends PureComponent {
         tintDefaultSource: PropTypes.bool,
     };
 
+    static defaultProps = {
+        style: {},
+    };
+
     constructor(props) {
         super(props);
 
@@ -63,10 +67,10 @@ export default class ProgressiveImage extends PureComponent {
 
     load = (props) => {
         const {filename, imageUri, style, thumbnailUri} = props;
-        this.style = [
-            StyleSheet.absoluteFill,
-            ...style,
-        ];
+        this.computedStyle = StyleSheet.absoluteFill;
+        if (Object.keys(style).length) {
+            this.style = Object.assign({}, StyleSheet.absoluteFill, style);
+        }
 
         if (thumbnailUri) {
             ImageCacheManager.cache(filename, thumbnailUri, this.setThumbnail);
@@ -105,8 +109,7 @@ export default class ProgressiveImage extends PureComponent {
     };
 
     render() {
-        const {style, defaultSource, isBackgroundImage, theme, tintDefaultSource, ...otherProps} = this.props;
-        const {style: computedStyle} = this;
+        const {style, defaultSource, isBackgroundImage, theme, tintDefaultSource, onError, resizeMode, resizeMethod} = this.props;
         const {uri, intensity, thumb} = this.state;
         const hasDefaultSource = Boolean(defaultSource);
         const hasPreview = Boolean(thumb);
@@ -132,10 +135,11 @@ export default class ProgressiveImage extends PureComponent {
             defaultImage = (
                 <View style={styles.defaultImageContainer}>
                     <DefaultComponent
-                        {...otherProps}
                         source={defaultSource}
                         style={{flex: 1, tintColor: changeOpacity(theme.centerChannelColor, 0.2)}}
                         resizeMode='center'
+                        resizeMethod={resizeMethod}
+                        onError={onError}
                     >
                         {this.props.children}
                     </DefaultComponent>
@@ -144,9 +148,11 @@ export default class ProgressiveImage extends PureComponent {
         } else {
             defaultImage = (
                 <DefaultComponent
-                    {...otherProps}
+                    resizeMode={resizeMode}
+                    resizeMethod={resizeMethod}
+                    onError={onError}
                     source={defaultSource}
-                    style={computedStyle}
+                    style={this.computedStyle}
                 >
                     {this.props.children}
                 </DefaultComponent>
@@ -158,9 +164,11 @@ export default class ProgressiveImage extends PureComponent {
                 {(hasDefaultSource && !hasPreview && !hasURI) && defaultImage}
                 {hasPreview && !isImageReady &&
                 <ImageComponent
-                    {...otherProps}
+                    resizeMode={resizeMode}
+                    resizeMethod={resizeMethod}
+                    onError={onError}
                     source={{uri: thumb}}
-                    style={computedStyle}
+                    style={this.computedStyle}
                     blurRadius={5}
                 >
                     {this.props.children}
@@ -168,15 +176,17 @@ export default class ProgressiveImage extends PureComponent {
                 }
                 {isImageReady &&
                 <ImageComponent
-                    {...otherProps}
+                    resizeMode={resizeMode}
+                    resizeMethod={resizeMethod}
+                    onError={onError}
                     source={{uri}}
-                    style={computedStyle}
+                    style={this.computedStyle}
                 >
                     {this.props.children}
                 </ImageComponent>
                 }
                 {hasPreview &&
-                <Animated.View style={[computedStyle, {backgroundColor: theme.centerChannelBg, opacity}]}/>
+                <Animated.View style={[this.computedStyle, {backgroundColor: theme.centerChannelBg, opacity}]}/>
                 }
             </View>
         );

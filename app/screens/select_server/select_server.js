@@ -14,6 +14,7 @@ import {
     StatusBar,
     StyleSheet,
     Text,
+    TextInput,
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
@@ -24,7 +25,6 @@ import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import QuickTextInput from 'app/components/quick_text_input';
 import {UpgradeTypes} from 'app/constants/view';
 import fetchConfig from 'app/fetch_preconfig';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -457,7 +457,7 @@ export default class SelectServer extends PureComponent {
                                 defaultMessage='Enter Server URL'
                             />
                         </View>
-                        <QuickTextInput
+                        <TextInput
                             ref={this.inputRef}
                             value={url}
                             editable={!inputDisabled}

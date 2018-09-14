@@ -43,10 +43,7 @@ ShallowWrapper {
           }
         >
           <Component>
-            <Text
-              accessible={true}
-              allowFontScaling={true}
-              ellipsizeMode="tail"
+            <Component
               style={
                 Object {
                   "color": undefined,
@@ -55,12 +52,10 @@ ShallowWrapper {
               }
             >
               user
-            </Text>
+            </Component>
           </Component>
           <Component>
-            <Text
-              accessible={true}
-              allowFontScaling={true}
+            <Component
               ellipsizeMode="tail"
               numberOfLines={1}
               style={
@@ -72,7 +67,7 @@ ShallowWrapper {
               }
             >
               (@user)
-            </Text>
+            </Component>
           </Component>
         </Component>,
       ],
@@ -104,10 +99,7 @@ ShallowWrapper {
         "props": Object {
           "children": Array [
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": undefined,
@@ -116,12 +108,10 @@ ShallowWrapper {
                 }
               >
                 user
-              </Text>
+              </Component>
             </Component>,
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
+              <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -133,7 +123,7 @@ ShallowWrapper {
                 }
               >
                 (@user)
-              </Text>
+              </Component>
             </Component>,
           ],
           "style": Object {
@@ -148,10 +138,7 @@ ShallowWrapper {
             "key": undefined,
             "nodeType": "class",
             "props": Object {
-              "children": <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              "children": <Component
                 style={
                   Object {
                     "color": undefined,
@@ -160,7 +147,7 @@ ShallowWrapper {
                 }
               >
                 user
-              </Text>,
+              </Component>,
             },
             "ref": null,
             "rendered": Object {
@@ -168,10 +155,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "accessible": true,
-                "allowFontScaling": true,
                 "children": "user",
-                "ellipsizeMode": "tail",
                 "style": Object {
                   "color": undefined,
                   "fontSize": 15,
@@ -188,9 +172,7 @@ ShallowWrapper {
             "key": undefined,
             "nodeType": "class",
             "props": Object {
-              "children": <Text
-                accessible={true}
-                allowFontScaling={true}
+              "children": <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -202,7 +184,7 @@ ShallowWrapper {
                 }
               >
                 (@user)
-              </Text>,
+              </Component>,
             },
             "ref": null,
             "rendered": Object {
@@ -210,8 +192,6 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "accessible": true,
-                "allowFontScaling": true,
                 "children": "(@user)",
                 "ellipsizeMode": "tail",
                 "numberOfLines": 1,
@@ -253,10 +233,7 @@ ShallowWrapper {
             }
           >
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": undefined,
@@ -265,12 +242,10 @@ ShallowWrapper {
                 }
               >
                 user
-              </Text>
+              </Component>
             </Component>
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
+              <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -282,7 +257,7 @@ ShallowWrapper {
                 }
               >
                 (@user)
-              </Text>
+              </Component>
             </Component>
           </Component>,
         ],
@@ -314,10 +289,7 @@ ShallowWrapper {
           "props": Object {
             "children": Array [
               <Component>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": undefined,
@@ -326,12 +298,10 @@ ShallowWrapper {
                   }
                 >
                   user
-                </Text>
+                </Component>
               </Component>,
               <Component>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
+                <Component
                   ellipsizeMode="tail"
                   numberOfLines={1}
                   style={
@@ -343,7 +313,7 @@ ShallowWrapper {
                   }
                 >
                   (@user)
-                </Text>
+                </Component>
               </Component>,
             ],
             "style": Object {
@@ -358,10 +328,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "children": <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                "children": <Component
                   style={
                     Object {
                       "color": undefined,
@@ -370,7 +337,7 @@ ShallowWrapper {
                   }
                 >
                   user
-                </Text>,
+                </Component>,
               },
               "ref": null,
               "rendered": Object {
@@ -378,10 +345,7 @@ ShallowWrapper {
                 "key": undefined,
                 "nodeType": "class",
                 "props": Object {
-                  "accessible": true,
-                  "allowFontScaling": true,
                   "children": "user",
-                  "ellipsizeMode": "tail",
                   "style": Object {
                     "color": undefined,
                     "fontSize": 15,
@@ -398,9 +362,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "children": <Text
-                  accessible={true}
-                  allowFontScaling={true}
+                "children": <Component
                   ellipsizeMode="tail"
                   numberOfLines={1}
                   style={
@@ -412,7 +374,7 @@ ShallowWrapper {
                   }
                 >
                   (@user)
-                </Text>,
+                </Component>,
               },
               "ref": null,
               "rendered": Object {
@@ -420,8 +382,6 @@ ShallowWrapper {
                 "key": undefined,
                 "nodeType": "class",
                 "props": Object {
-                  "accessible": true,
-                  "allowFontScaling": true,
                   "children": "(@user)",
                   "ellipsizeMode": "tail",
                   "numberOfLines": 1,
@@ -514,10 +474,7 @@ ShallowWrapper {
           }
         >
           <Component>
-            <Text
-              accessible={true}
-              allowFontScaling={true}
-              ellipsizeMode="tail"
+            <Component
               style={
                 Object {
                   "color": undefined,
@@ -526,12 +483,10 @@ ShallowWrapper {
               }
             >
               user
-            </Text>
+            </Component>
           </Component>
           <Component>
-            <Text
-              accessible={true}
-              allowFontScaling={true}
+            <Component
               ellipsizeMode="tail"
               numberOfLines={1}
               style={
@@ -573,10 +528,7 @@ ShallowWrapper {
         "props": Object {
           "children": Array [
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": undefined,
@@ -585,12 +537,10 @@ ShallowWrapper {
                 }
               >
                 user
-              </Text>
+              </Component>
             </Component>,
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
+              <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -615,10 +565,7 @@ ShallowWrapper {
             "key": undefined,
             "nodeType": "class",
             "props": Object {
-              "children": <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              "children": <Component
                 style={
                   Object {
                     "color": undefined,
@@ -627,7 +574,7 @@ ShallowWrapper {
                 }
               >
                 user
-              </Text>,
+              </Component>,
             },
             "ref": null,
             "rendered": Object {
@@ -635,10 +582,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "accessible": true,
-                "allowFontScaling": true,
                 "children": "user",
-                "ellipsizeMode": "tail",
                 "style": Object {
                   "color": undefined,
                   "fontSize": 15,
@@ -655,9 +599,7 @@ ShallowWrapper {
             "key": undefined,
             "nodeType": "class",
             "props": Object {
-              "children": <Text
-                accessible={true}
-                allowFontScaling={true}
+              "children": <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -675,8 +617,6 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "accessible": true,
-                "allowFontScaling": true,
                 "children": undefined,
                 "ellipsizeMode": "tail",
                 "numberOfLines": 1,
@@ -718,10 +658,7 @@ ShallowWrapper {
             }
           >
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": undefined,
@@ -730,12 +667,10 @@ ShallowWrapper {
                 }
               >
                 user
-              </Text>
+              </Component>
             </Component>
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
+              <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -777,10 +712,7 @@ ShallowWrapper {
           "props": Object {
             "children": Array [
               <Component>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": undefined,
@@ -789,12 +721,10 @@ ShallowWrapper {
                   }
                 >
                   user
-                </Text>
+                </Component>
               </Component>,
               <Component>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
+                <Component
                   ellipsizeMode="tail"
                   numberOfLines={1}
                   style={
@@ -819,10 +749,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "children": <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                "children": <Component
                   style={
                     Object {
                       "color": undefined,
@@ -831,7 +758,7 @@ ShallowWrapper {
                   }
                 >
                   user
-                </Text>,
+                </Component>,
               },
               "ref": null,
               "rendered": Object {
@@ -839,10 +766,7 @@ ShallowWrapper {
                 "key": undefined,
                 "nodeType": "class",
                 "props": Object {
-                  "accessible": true,
-                  "allowFontScaling": true,
                   "children": "user",
-                  "ellipsizeMode": "tail",
                   "style": Object {
                     "color": undefined,
                     "fontSize": 15,
@@ -859,9 +783,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "children": <Text
-                  accessible={true}
-                  allowFontScaling={true}
+                "children": <Component
                   ellipsizeMode="tail"
                   numberOfLines={1}
                   style={
@@ -879,8 +801,6 @@ ShallowWrapper {
                 "key": undefined,
                 "nodeType": "class",
                 "props": Object {
-                  "accessible": true,
-                  "allowFontScaling": true,
                   "children": undefined,
                   "ellipsizeMode": "tail",
                   "numberOfLines": 1,
@@ -991,10 +911,7 @@ ShallowWrapper {
           }
         >
           <Component>
-            <Text
-              accessible={true}
-              allowFontScaling={true}
-              ellipsizeMode="tail"
+            <Component
               style={
                 Object {
                   "color": undefined,
@@ -1003,12 +920,10 @@ ShallowWrapper {
               }
             >
               user
-            </Text>
+            </Component>
           </Component>
           <Component>
-            <Text
-              accessible={true}
-              allowFontScaling={true}
+            <Component
               ellipsizeMode="tail"
               numberOfLines={1}
               style={
@@ -1050,10 +965,7 @@ ShallowWrapper {
         "props": Object {
           "children": Array [
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": undefined,
@@ -1062,12 +974,10 @@ ShallowWrapper {
                 }
               >
                 user
-              </Text>
+              </Component>
             </Component>,
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
+              <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -1092,10 +1002,7 @@ ShallowWrapper {
             "key": undefined,
             "nodeType": "class",
             "props": Object {
-              "children": <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              "children": <Component
                 style={
                   Object {
                     "color": undefined,
@@ -1104,7 +1011,7 @@ ShallowWrapper {
                 }
               >
                 user
-              </Text>,
+              </Component>,
             },
             "ref": null,
             "rendered": Object {
@@ -1112,10 +1019,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "accessible": true,
-                "allowFontScaling": true,
                 "children": "user",
-                "ellipsizeMode": "tail",
                 "style": Object {
                   "color": undefined,
                   "fontSize": 15,
@@ -1132,9 +1036,7 @@ ShallowWrapper {
             "key": undefined,
             "nodeType": "class",
             "props": Object {
-              "children": <Text
-                accessible={true}
-                allowFontScaling={true}
+              "children": <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -1152,8 +1054,6 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "accessible": true,
-                "allowFontScaling": true,
                 "children": undefined,
                 "ellipsizeMode": "tail",
                 "numberOfLines": 1,
@@ -1195,10 +1095,7 @@ ShallowWrapper {
             }
           >
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": undefined,
@@ -1207,12 +1104,10 @@ ShallowWrapper {
                 }
               >
                 user
-              </Text>
+              </Component>
             </Component>
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
+              <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -1254,10 +1149,7 @@ ShallowWrapper {
           "props": Object {
             "children": Array [
               <Component>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": undefined,
@@ -1266,12 +1158,10 @@ ShallowWrapper {
                   }
                 >
                   user
-                </Text>
+                </Component>
               </Component>,
               <Component>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
+                <Component
                   ellipsizeMode="tail"
                   numberOfLines={1}
                   style={
@@ -1296,10 +1186,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "children": <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                "children": <Component
                   style={
                     Object {
                       "color": undefined,
@@ -1308,7 +1195,7 @@ ShallowWrapper {
                   }
                 >
                   user
-                </Text>,
+                </Component>,
               },
               "ref": null,
               "rendered": Object {
@@ -1316,10 +1203,7 @@ ShallowWrapper {
                 "key": undefined,
                 "nodeType": "class",
                 "props": Object {
-                  "accessible": true,
-                  "allowFontScaling": true,
                   "children": "user",
-                  "ellipsizeMode": "tail",
                   "style": Object {
                     "color": undefined,
                     "fontSize": 15,
@@ -1336,9 +1220,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "children": <Text
-                  accessible={true}
-                  allowFontScaling={true}
+                "children": <Component
                   ellipsizeMode="tail"
                   numberOfLines={1}
                   style={
@@ -1356,8 +1238,6 @@ ShallowWrapper {
                 "key": undefined,
                 "nodeType": "class",
                 "props": Object {
-                  "accessible": true,
-                  "allowFontScaling": true,
                   "children": undefined,
                   "ellipsizeMode": "tail",
                   "numberOfLines": 1,

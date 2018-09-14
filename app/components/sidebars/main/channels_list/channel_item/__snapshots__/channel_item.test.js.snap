@@ -99,9 +99,7 @@ ShallowWrapper {
               }
               type="O"
             />
-            <Text
-              accessible={true}
-              allowFontScaling={true}
+            <Component
               ellipsizeMode="tail"
               numberOfLines={1}
               style={
@@ -178,9 +176,7 @@ ShallowWrapper {
               }
               type="O"
             />
-            <Text
-              accessible={true}
-              allowFontScaling={true}
+            <Component
               ellipsizeMode="tail"
               numberOfLines={1}
               style={
@@ -249,9 +245,7 @@ ShallowWrapper {
                 }
                 type="O"
               />
-              <Text
-                accessible={true}
-                allowFontScaling={true}
+              <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -312,9 +306,7 @@ ShallowWrapper {
                   }
                   type="O"
                 />,
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
+                <Component
                   ellipsizeMode="tail"
                   numberOfLines={1}
                   style={
@@ -380,8 +372,6 @@ ShallowWrapper {
                 "key": undefined,
                 "nodeType": "class",
                 "props": Object {
-                  "accessible": true,
-                  "allowFontScaling": true,
                   "children": undefined,
                   "ellipsizeMode": "tail",
                   "numberOfLines": 1,
@@ -474,9 +464,7 @@ ShallowWrapper {
                 }
                 type="O"
               />
-              <Text
-                accessible={true}
-                allowFontScaling={true}
+              <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -553,9 +541,7 @@ ShallowWrapper {
                 }
                 type="O"
               />
-              <Text
-                accessible={true}
-                allowFontScaling={true}
+              <Component
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={
@@ -624,9 +610,7 @@ ShallowWrapper {
                   }
                   type="O"
                 />
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
+                <Component
                   ellipsizeMode="tail"
                   numberOfLines={1}
                   style={
@@ -687,9 +671,7 @@ ShallowWrapper {
                     }
                     type="O"
                   />,
-                  <Text
-                    accessible={true}
-                    allowFontScaling={true}
+                  <Component
                     ellipsizeMode="tail"
                     numberOfLines={1}
                     style={
@@ -755,8 +737,6 @@ ShallowWrapper {
                   "key": undefined,
                   "nodeType": "class",
                   "props": Object {
-                    "accessible": true,
-                    "allowFontScaling": true,
                     "children": undefined,
                     "ellipsizeMode": "tail",
                     "numberOfLines": 1,

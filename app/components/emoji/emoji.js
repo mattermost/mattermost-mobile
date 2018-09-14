@@ -5,7 +5,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Image,
-    PixelRatio,
     Platform,
     StyleSheet,
     Text,
@@ -107,7 +106,7 @@ export default class Emoji extends React.PureComponent {
         if (!size && textStyle) {
             const flatten = StyleSheet.flatten(textStyle);
             fontSize = flatten.fontSize;
-            size = fontSize * (Platform.OS === 'android' ? PixelRatio.get() : 1);
+            size = fontSize;
         }
 
         if (displayTextOnly) {

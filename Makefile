@@ -60,8 +60,6 @@ clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleanup finished
 
 post-install:
-	@./node_modules/.bin/remotedev-debugger --hostname localhost --port 5678 --injectserver
-	@# Must remove the .babelrc for 0.42.0 to work correctly
 	@# Need to copy custom ImagePickerModule.java that implements correct permission checks for android
 	@rm node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
 	@cp ./native_modules/ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker

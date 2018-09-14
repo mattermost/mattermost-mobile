@@ -74,8 +74,9 @@ import com.android.build.OutputFile
 
 project.ext.react = [
     entryFile: "index.js",
-    bundleCommand: "unbundle",
-    bundleConfig: "packager/config.js"
+    bundleCommand: "ram-bundle",
+    bundleConfig: "packager-config.js",
+    extraPackagerArgs: ["--max-workers=4"]
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -111,8 +112,8 @@ android {
 
     defaultConfig {
         applicationId "com.mattermost.rnbeta"
-        minSdkVersion 21
-        targetSdkVersion 26
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 142
         versionName "1.13.0"
         multiDexEnabled = true
@@ -188,7 +189,7 @@ configurations.all {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "com.android.support:appcompat-v7:27.1.1"
+    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:percent:27.1.1'
     implementation "com.facebook.react:react-native:+"  // From node_modules

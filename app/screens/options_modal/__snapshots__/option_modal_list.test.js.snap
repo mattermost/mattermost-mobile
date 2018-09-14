@@ -1316,10 +1316,7 @@ ShallowWrapper {
               ]
             }
           >
-            <Text
-              accessible={true}
-              allowFontScaling={true}
-              ellipsizeMode="tail"
+            <Component
               style={
                 Object {
                   "color": "#7f8180",
@@ -1329,7 +1326,7 @@ ShallowWrapper {
               }
             >
               test
-            </Text>
+            </Component>
           </Component>
           <Component
             style={
@@ -1493,10 +1490,7 @@ ShallowWrapper {
                 ]
               }
             >
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": "#7f8180",
@@ -1506,7 +1500,7 @@ ShallowWrapper {
                 }
               >
                 test
-              </Text>
+              </Component>
             </Component>,
             <Component
               style={
@@ -1615,10 +1609,7 @@ ShallowWrapper {
             "key": "2",
             "nodeType": "class",
             "props": Object {
-              "children": <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              "children": <Component
                 style={
                   Object {
                     "color": "#7f8180",
@@ -1628,7 +1619,7 @@ ShallowWrapper {
                 }
               >
                 test
-              </Text>,
+              </Component>,
               "style": Array [
                 Object {
                   "alignItems": "center",
@@ -1649,10 +1640,7 @@ ShallowWrapper {
               "key": undefined,
               "nodeType": "class",
               "props": Object {
-                "accessible": true,
-                "allowFontScaling": true,
                 "children": "test",
-                "ellipsizeMode": "tail",
                 "style": Object {
                   "color": "#7f8180",
                   "flex": 1,
@@ -2065,10 +2053,7 @@ ShallowWrapper {
                 ]
               }
             >
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": "#7f8180",
@@ -2078,7 +2063,7 @@ ShallowWrapper {
                 }
               >
                 test
-              </Text>
+              </Component>
             </Component>
             <Component
               style={
@@ -2242,10 +2227,7 @@ ShallowWrapper {
                   ]
                 }
               >
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": "#7f8180",
@@ -2255,7 +2237,7 @@ ShallowWrapper {
                   }
                 >
                   test
-                </Text>
+                </Component>
               </Component>,
               <Component
                 style={
@@ -2364,10 +2346,7 @@ ShallowWrapper {
               "key": "2",
               "nodeType": "class",
               "props": Object {
-                "children": <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                "children": <Component
                   style={
                     Object {
                       "color": "#7f8180",
@@ -2377,7 +2356,7 @@ ShallowWrapper {
                   }
                 >
                   test
-                </Text>,
+                </Component>,
                 "style": Array [
                   Object {
                     "alignItems": "center",
@@ -2398,10 +2377,7 @@ ShallowWrapper {
                 "key": undefined,
                 "nodeType": "class",
                 "props": Object {
-                  "accessible": true,
-                  "allowFontScaling": true,
                   "children": "test",
-                  "ellipsizeMode": "tail",
                   "style": Object {
                     "color": "#7f8180",
                     "flex": 1,

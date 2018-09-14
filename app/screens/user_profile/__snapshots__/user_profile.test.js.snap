@@ -79,10 +79,7 @@ ShallowWrapper {
               statusSize={40}
               userId="4hzdnk6mg7gepe7yze6m3domnc"
             />
-            <Text
-              accessible={true}
-              allowFontScaling={true}
-              ellipsizeMode="tail"
+            <Component
               style={
                 Object {
                   "color": "#aaa",
@@ -92,7 +89,7 @@ ShallowWrapper {
               }
             >
               @undefined
-            </Text>
+            </Component>
           </Component>
           <Component
             style={
@@ -103,10 +100,7 @@ ShallowWrapper {
             }
           >
             <Component>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": undefined,
@@ -118,11 +112,8 @@ ShallowWrapper {
                 }
               >
                 NICKNAME
-              </Text>
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              </Component>
+              <Component
                 style={
                   Object {
                     "color": "#aaa",
@@ -131,7 +122,7 @@ ShallowWrapper {
                 }
               >
                 nick
-              </Text>
+              </Component>
             </Component>
           </Component>
           <userProfileRow
@@ -190,10 +181,7 @@ ShallowWrapper {
                 statusSize={40}
                 userId="4hzdnk6mg7gepe7yze6m3domnc"
               />
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": "#aaa",
@@ -203,7 +191,7 @@ ShallowWrapper {
                 }
               >
                 @undefined
-              </Text>
+              </Component>
             </Component>,
             <Component
               style={
@@ -214,10 +202,7 @@ ShallowWrapper {
               }
             >
               <Component>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": undefined,
@@ -229,11 +214,8 @@ ShallowWrapper {
                   }
                 >
                   NICKNAME
-                </Text>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                </Component>
+                <Component
                   style={
                     Object {
                       "color": "#aaa",
@@ -242,7 +224,7 @@ ShallowWrapper {
                   }
                 >
                   nick
-                </Text>
+                </Component>
               </Component>
             </Component>,
             <userProfileRow
@@ -285,10 +267,7 @@ ShallowWrapper {
                   userId="4hzdnk6mg7gepe7yze6m3domnc"
                 />,
                 null,
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": "#aaa",
@@ -298,7 +277,7 @@ ShallowWrapper {
                   }
                 >
                   @undefined
-                </Text>,
+                </Component>,
               ],
               "style": Object {
                 "alignItems": "center",
@@ -328,10 +307,7 @@ ShallowWrapper {
                 "key": undefined,
                 "nodeType": "class",
                 "props": Object {
-                  "accessible": true,
-                  "allowFontScaling": true,
                   "children": "@undefined",
-                  "ellipsizeMode": "tail",
                   "style": Object {
                     "color": "#aaa",
                     "fontSize": 15,
@@ -355,10 +331,7 @@ ShallowWrapper {
                 null,
                 false,
                 <Component>
-                  <Text
-                    accessible={true}
-                    allowFontScaling={true}
-                    ellipsizeMode="tail"
+                  <Component
                     style={
                       Object {
                         "color": undefined,
@@ -370,11 +343,8 @@ ShallowWrapper {
                     }
                   >
                     NICKNAME
-                  </Text>
-                  <Text
-                    accessible={true}
-                    allowFontScaling={true}
-                    ellipsizeMode="tail"
+                  </Component>
+                  <Component
                     style={
                       Object {
                         "color": "#aaa",
@@ -383,7 +353,7 @@ ShallowWrapper {
                     }
                   >
                     nick
-                  </Text>
+                  </Component>
                 </Component>,
                 null,
               ],
@@ -403,10 +373,7 @@ ShallowWrapper {
                 "nodeType": "class",
                 "props": Object {
                   "children": Array [
-                    <Text
-                      accessible={true}
-                      allowFontScaling={true}
-                      ellipsizeMode="tail"
+                    <Component
                       style={
                         Object {
                           "color": undefined,
@@ -418,11 +385,8 @@ ShallowWrapper {
                       }
                     >
                       NICKNAME
-                    </Text>,
-                    <Text
-                      accessible={true}
-                      allowFontScaling={true}
-                      ellipsizeMode="tail"
+                    </Component>,
+                    <Component
                       style={
                         Object {
                           "color": "#aaa",
@@ -431,7 +395,7 @@ ShallowWrapper {
                       }
                     >
                       nick
-                    </Text>,
+                    </Component>,
                   ],
                 },
                 "ref": null,
@@ -441,10 +405,7 @@ ShallowWrapper {
                     "key": undefined,
                     "nodeType": "class",
                     "props": Object {
-                      "accessible": true,
-                      "allowFontScaling": true,
                       "children": "NICKNAME",
-                      "ellipsizeMode": "tail",
                       "style": Object {
                         "color": undefined,
                         "fontSize": 13,
@@ -462,10 +423,7 @@ ShallowWrapper {
                     "key": undefined,
                     "nodeType": "class",
                     "props": Object {
-                      "accessible": true,
-                      "allowFontScaling": true,
                       "children": "nick",
-                      "ellipsizeMode": "tail",
                       "style": Object {
                         "color": "#aaa",
                         "fontSize": 15,
@@ -544,10 +502,7 @@ ShallowWrapper {
                 statusSize={40}
                 userId="4hzdnk6mg7gepe7yze6m3domnc"
               />
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": "#aaa",
@@ -557,7 +512,7 @@ ShallowWrapper {
                 }
               >
                 @undefined
-              </Text>
+              </Component>
             </Component>
             <Component
               style={
@@ -568,10 +523,7 @@ ShallowWrapper {
               }
             >
               <Component>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": undefined,
@@ -583,11 +535,8 @@ ShallowWrapper {
                   }
                 >
                   NICKNAME
-                </Text>
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                </Component>
+                <Component
                   style={
                     Object {
                       "color": "#aaa",
@@ -596,7 +545,7 @@ ShallowWrapper {
                   }
                 >
                   nick
-                </Text>
+                </Component>
               </Component>
             </Component>
             <userProfileRow
@@ -655,10 +604,7 @@ ShallowWrapper {
                   statusSize={40}
                   userId="4hzdnk6mg7gepe7yze6m3domnc"
                 />
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": "#aaa",
@@ -668,7 +614,7 @@ ShallowWrapper {
                   }
                 >
                   @undefined
-                </Text>
+                </Component>
               </Component>,
               <Component
                 style={
@@ -679,10 +625,7 @@ ShallowWrapper {
                 }
               >
                 <Component>
-                  <Text
-                    accessible={true}
-                    allowFontScaling={true}
-                    ellipsizeMode="tail"
+                  <Component
                     style={
                       Object {
                         "color": undefined,
@@ -694,11 +637,8 @@ ShallowWrapper {
                     }
                   >
                     NICKNAME
-                  </Text>
-                  <Text
-                    accessible={true}
-                    allowFontScaling={true}
-                    ellipsizeMode="tail"
+                  </Component>
+                  <Component
                     style={
                       Object {
                         "color": "#aaa",
@@ -707,7 +647,7 @@ ShallowWrapper {
                     }
                   >
                     nick
-                  </Text>
+                  </Component>
                 </Component>
               </Component>,
               <userProfileRow
@@ -750,10 +690,7 @@ ShallowWrapper {
                     userId="4hzdnk6mg7gepe7yze6m3domnc"
                   />,
                   null,
-                  <Text
-                    accessible={true}
-                    allowFontScaling={true}
-                    ellipsizeMode="tail"
+                  <Component
                     style={
                       Object {
                         "color": "#aaa",
@@ -763,7 +700,7 @@ ShallowWrapper {
                     }
                   >
                     @undefined
-                  </Text>,
+                  </Component>,
                 ],
                 "style": Object {
                   "alignItems": "center",
@@ -793,10 +730,7 @@ ShallowWrapper {
                   "key": undefined,
                   "nodeType": "class",
                   "props": Object {
-                    "accessible": true,
-                    "allowFontScaling": true,
                     "children": "@undefined",
-                    "ellipsizeMode": "tail",
                     "style": Object {
                       "color": "#aaa",
                       "fontSize": 15,
@@ -820,10 +754,7 @@ ShallowWrapper {
                   null,
                   false,
                   <Component>
-                    <Text
-                      accessible={true}
-                      allowFontScaling={true}
-                      ellipsizeMode="tail"
+                    <Component
                       style={
                         Object {
                           "color": undefined,
@@ -835,11 +766,8 @@ ShallowWrapper {
                       }
                     >
                       NICKNAME
-                    </Text>
-                    <Text
-                      accessible={true}
-                      allowFontScaling={true}
-                      ellipsizeMode="tail"
+                    </Component>
+                    <Component
                       style={
                         Object {
                           "color": "#aaa",
@@ -848,7 +776,7 @@ ShallowWrapper {
                       }
                     >
                       nick
-                    </Text>
+                    </Component>
                   </Component>,
                   null,
                 ],
@@ -868,10 +796,7 @@ ShallowWrapper {
                   "nodeType": "class",
                   "props": Object {
                     "children": Array [
-                      <Text
-                        accessible={true}
-                        allowFontScaling={true}
-                        ellipsizeMode="tail"
+                      <Component
                         style={
                           Object {
                             "color": undefined,
@@ -883,11 +808,8 @@ ShallowWrapper {
                         }
                       >
                         NICKNAME
-                      </Text>,
-                      <Text
-                        accessible={true}
-                        allowFontScaling={true}
-                        ellipsizeMode="tail"
+                      </Component>,
+                      <Component
                         style={
                           Object {
                             "color": "#aaa",
@@ -896,7 +818,7 @@ ShallowWrapper {
                         }
                       >
                         nick
-                      </Text>,
+                      </Component>,
                     ],
                   },
                   "ref": null,
@@ -906,10 +828,7 @@ ShallowWrapper {
                       "key": undefined,
                       "nodeType": "class",
                       "props": Object {
-                        "accessible": true,
-                        "allowFontScaling": true,
                         "children": "NICKNAME",
-                        "ellipsizeMode": "tail",
                         "style": Object {
                           "color": undefined,
                           "fontSize": 13,
@@ -927,10 +846,7 @@ ShallowWrapper {
                       "key": undefined,
                       "nodeType": "class",
                       "props": Object {
-                        "accessible": true,
-                        "allowFontScaling": true,
                         "children": "nick",
-                        "ellipsizeMode": "tail",
                         "style": Object {
                           "color": "#aaa",
                           "fontSize": 15,
