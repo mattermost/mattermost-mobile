@@ -15,6 +15,7 @@ import AtMention from 'app/components/at_mention';
 import ChannelLink from 'app/components/channel_link';
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
+import Hashtag from 'app/components/hashtag';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getScheme} from 'app/utils/url';
@@ -41,6 +42,7 @@ export default class Markdown extends PureComponent {
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
         onChannelLinkPress: PropTypes.func,
+        onHashtagPress: PropTypes.func,
         onLongPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
@@ -88,6 +90,7 @@ export default class Markdown extends PureComponent {
                 atMention: this.renderAtMention,
                 channelLink: this.renderChannelLink,
                 emoji: this.renderEmoji,
+                hashtag: this.renderHashtag,
 
                 paragraph: this.renderParagraph,
                 heading: this.renderHeading,
@@ -209,6 +212,18 @@ export default class Markdown extends PureComponent {
                 emojiName={emojiName}
                 literal={literal}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+            />
+        );
+    }
+
+    renderHashtag = ({hashtag}) => {
+        return (
+            <Hashtag
+                hashtag={hashtag}
+                linkStyle={this.props.textStyles.link}
+                onHashtagPress={this.props.onHashtagPress}
+                navigator={this.props.navigator}
+                theme={this.props.theme}
             />
         );
     }

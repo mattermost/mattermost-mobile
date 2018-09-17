@@ -58,6 +58,7 @@ export default class Post extends PureComponent {
         canEdit: PropTypes.bool.isRequired,
         canEditUntil: PropTypes.number.isRequired,
         canDelete: PropTypes.bool.isRequired,
+        onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         shouldRenderReplyButton: PropTypes.bool,
         showAddReaction: PropTypes.bool,
@@ -349,6 +350,7 @@ export default class Post extends PureComponent {
             highlight,
             isLastReply,
             isSearchResult,
+            onHashtagPress,
             onPermalinkPress,
             post,
             renderReplies,
@@ -448,6 +450,7 @@ export default class Post extends PureComponent {
                             onCopyPermalink={this.handleCopyPermalink}
                             onCopyText={this.handleCopyText}
                             onFailedPostPress={this.handleFailedPostPress}
+                            onHashtagPress={onHashtagPress}
                             onPermalinkPress={onPermalinkPress}
                             onPostDelete={this.handlePostDelete}
                             onPostEdit={this.handlePostEdit}
