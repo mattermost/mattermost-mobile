@@ -42,10 +42,6 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
     };
 
     onKeywordsChangeText = (keywords) => {
-        if (keywords.endsWith('\n')) {
-            return this.handleSubmit();
-        }
-
         return this.setState({keywords});
     };
 
@@ -77,8 +73,9 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                             autoFocus={true}
                             ref={this.keywordsRef}
                             value={keywords}
-                            blurOnSubmit={false}
+                            blurOnSubmit={true}
                             onChangeText={this.onKeywordsChangeText}
+                            onSubmitEditing={this.handleSubmit}
                             multiline={true}
                             numberOfLines={1}
                             style={style.input}

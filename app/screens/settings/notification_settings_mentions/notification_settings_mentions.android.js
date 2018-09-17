@@ -64,8 +64,9 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                             <TextInputWithLocalizedPlaceholder
                                 autoFocus={true}
                                 value={this.keywords}
-                                blurOnSubmit={false}
+                                blurOnSubmit={true}
                                 onChangeText={this.onKeywordsChangeText}
+                                onSubmitEditing={this.saveMentionKeys}
                                 multiline={false}
                                 style={style.input}
                                 autoCapitalize='none'
@@ -73,6 +74,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                                 placeholder={{id: 'mobile.notification_settings_mentions.keywordsDescription', defaultMessage: 'Other words that trigger a mention'}}
                                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                                 returnKeyType='done'
+                                returnKeyLabel={this.props.intl.formatMessage({id: 'mobile.notification_settings.modal_save'})}
                                 underlineColorAndroid={theme.linkColor}
                             />
                             <FormattedText

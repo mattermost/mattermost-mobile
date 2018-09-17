@@ -50,10 +50,14 @@ export default class OptionsContext extends PureComponent {
         }
     };
 
+    handleShow = () => {
+        this.isShowing = true;
+        this.props.toggleSelected(true);
+    }
+
     handleShowUnderlay = () => {
         this.beforeShow();
         this.props.toggleSelected(true);
-        this.isShowing = this.state.actions.length > 0;
     };
 
     hide = () => {
@@ -93,6 +97,7 @@ export default class OptionsContext extends PureComponent {
                 arrowDirection='down'
                 longPress={true}
                 onHide={this.handleHide}
+                onShow={this.handleShow}
                 onPress={this.handlePress}
                 underlayColor='transparent'
             >
