@@ -73,7 +73,7 @@ export default class SelectServer extends PureComponent {
             connected: false,
             connecting: false,
             error: null,
-            url: props.serverUrl ? props.serverUrl : 'http://chat.cluster.cloudworks.asia',
+            url: props.serverUrl ? props.serverUrl : 'https://chat.cluster.cloudworks.asia',
         };
 
         this.cancelPing = null;
