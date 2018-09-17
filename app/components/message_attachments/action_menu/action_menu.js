@@ -73,7 +73,7 @@ export default class ActionMenu extends PureComponent {
         navigator.push({
             backButtonTitle: '',
             screen: 'MenuActionSelector',
-            title: name || intl.formatMessage({id: 'action_menu.select', defaultMessage: 'Select an option'}),
+            title: name || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'}),
             animated: true,
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -90,7 +90,7 @@ export default class ActionMenu extends PureComponent {
         const {selectedText} = this.state;
         const style = getStyleSheet(theme);
 
-        let text = name || intl.formatMessage({id: 'action_menu.select', defaultMessage: 'Select an option'});
+        let text = name || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
         let selectedStyle = style.dropdownPlaceholder;
         let submitted;
         if (selectedText) {
@@ -105,7 +105,7 @@ export default class ActionMenu extends PureComponent {
                     />
                     <FormattedText
                         key={id + 'submitted'}
-                        id='action_menu.submitted'
+                        id='mobile.action_menu.submitted'
                         defaultMessage='Submitted'
                         style={style.submittedText}
                     />

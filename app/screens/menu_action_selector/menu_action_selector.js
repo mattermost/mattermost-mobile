@@ -71,6 +71,7 @@ class MenuActionSelector extends PureComponent {
     }
 
     componentDidMount() {
+        this.mounted = true;
         InteractionManager.runAfterInteractions(() => {
             if (this.props.dataSource === ViewTypes.DATA_SOURCE_USERS) {
                 this.props.actions.getProfiles().then(() => this.setState({isLoading: false}));
@@ -78,6 +79,10 @@ class MenuActionSelector extends PureComponent {
                 this.props.actions.getChannels(this.props.currentTeamId).then(() => this.setState({isLoading: false}));
             }
         });
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     componentDidUpdate(prevProps) {
@@ -122,6 +127,10 @@ class MenuActionSelector extends PureComponent {
                 return;
             }
 
+            if (!this.mounted) {
+                return;
+            }
+
             if (results.data && results.data.length) {
                 this.setState({
                     isLoading: false,
@@ -155,6 +164,11 @@ class MenuActionSelector extends PureComponent {
                 } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
                     await actions.searchChannels(currentTeamId, term.toLowerCase());
                 }
+
+                if (!this.mounted) {
+                    return;
+                }
+
                 this.setState({isLoading: false});
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
