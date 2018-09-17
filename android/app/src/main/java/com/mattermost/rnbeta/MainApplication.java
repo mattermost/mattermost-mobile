@@ -2,6 +2,7 @@ package com.mattermost.rnbeta;
 
 import com.mattermost.share.SharePackage;
 
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.os.Bundle;
@@ -96,7 +97,7 @@ public class MainApplication extends NavigationApplication implements INotificat
   }
 
   @Override
-  public boolean clearHostOnActivityDestroy() {
+  public boolean clearHostOnActivityDestroy(Activity activity) {
     // This solves the issue where the splash screen does not go away
     // after the app is killed by the OS cause of memory or a long time in the background
     return false;

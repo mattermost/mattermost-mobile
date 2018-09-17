@@ -272,7 +272,7 @@ export default class SettingsDrawer extends PureComponent {
                             <DrawerItem
                                 defaultMessage='Recent Mentions'
                                 i18nId='search_header.title2'
-                                iconName='ios-at-outline'
+                                iconName='ios-at'
                                 iconType='ion'
                                 onPress={this.goToMentions}
                                 separator={true}
@@ -281,7 +281,7 @@ export default class SettingsDrawer extends PureComponent {
                             <DrawerItem
                                 defaultMessage='Flagged Posts'
                                 i18nId='search_header.title3'
-                                iconName='ios-flag-outline'
+                                iconName='ios-flag'
                                 iconType='ion'
                                 onPress={this.goToFlagged}
                                 separator={false}

@@ -33,9 +33,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
   transparent={true}
   visible={false}
 >
-  <Component
-    style={undefined}
-  >
+  <Component>
     <Component
       style={Object {}}
     >
