@@ -13,6 +13,7 @@ import {
     filterOtherChannels,
     filterPublicChannels,
     filterPrivateChannels,
+    filterDirectAndGroupMessages,
     getDeletedPublicChannelsIds,
     getMatchTermForChannelMention,
 } from 'app/selectors/autocomplete';
@@ -30,9 +31,11 @@ function mapStateToProps(state, ownProps) {
     let otherChannels;
     let publicChannels;
     let privateChannels;
+    let directAndGroupMessages;
     if (isSearch) {
         publicChannels = filterPublicChannels(state, matchTerm);
         privateChannels = filterPrivateChannels(state, matchTerm);
+        directAndGroupMessages = filterDirectAndGroupMessages(state, matchTerm);
     } else {
         myChannels = filterMyChannels(state, matchTerm);
         otherChannels = filterOtherChannels(state, matchTerm);
@@ -45,6 +48,7 @@ function mapStateToProps(state, ownProps) {
         publicChannels,
         deletedPublicChannels: getDeletedPublicChannelsIds(state),
         privateChannels,
+        directAndGroupMessages,
         currentTeamId: getCurrentTeamId(state),
         matchTerm,
         requestStatus: state.requests.channels.getChannels.status,
