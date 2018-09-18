@@ -70,6 +70,7 @@ export default class Permalink extends PureComponent {
         myMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         onClose: PropTypes.func,
+        onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPress: PropTypes.func,
         postIds: PropTypes.array,
@@ -321,6 +322,7 @@ export default class Permalink extends PureComponent {
             currentUserId,
             focusedPostId,
             navigator,
+            onHashtagPress,
             onPermalinkPress,
             postIds,
             theme,
@@ -354,6 +356,7 @@ export default class Permalink extends PureComponent {
                     isSearchResult={false}
                     shouldRenderReplyButton={false}
                     renderReplies={true}
+                    onHashtagPress={onHashtagPress}
                     onPermalinkPress={onPermalinkPress}
                     onPostPress={this.goToThread}
                     postIds={postIds}

@@ -32,6 +32,7 @@ export default class PostListBase extends PureComponent {
         navigator: PropTypes.object,
         onLoadMoreDown: PropTypes.func,
         onLoadMoreUp: PropTypes.func,
+        onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
@@ -158,6 +159,7 @@ export default class PostListBase extends PureComponent {
             highlightPostId,
             isSearchResult,
             navigator,
+            onHashtagPress,
             onPostPress,
             renderReplies,
             shouldRenderReplyButton,
@@ -175,6 +177,8 @@ export default class PostListBase extends PureComponent {
                 renderReplies={renderReplies}
                 isSearchResult={isSearchResult}
                 shouldRenderReplyButton={shouldRenderReplyButton}
+                onHashtagPress={onHashtagPress}
+                onPermalinkPress={this.handlePermalinkPress}
                 onPress={onPostPress}
                 navigator={navigator}
                 managedConfig={managedConfig}
@@ -196,7 +200,11 @@ export default class PostListBase extends PureComponent {
     };
 
     showPermalinkView = (postId) => {
-        const {actions, navigator} = this.props;
+        const {
+            actions,
+            navigator,
+            onHashtagPress,
+        } = this.props;
 
         actions.selectFocusedPostId(postId);
 
@@ -214,6 +222,7 @@ export default class PostListBase extends PureComponent {
                 passProps: {
                     isPermalink: true,
                     onClose: this.handleClosePermalink,
+                    onHashtagPress,
                     onPermalinkPress: this.handlePermalinkPress,
                 },
             };
