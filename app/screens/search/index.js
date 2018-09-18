@@ -18,6 +18,7 @@ import {isLandscape} from 'app/selectors/device';
 import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
 import {handleSearchDraftChanged} from 'app/actions/views/search';
 import {getDeviceUtcOffset, getUtcOffsetForTimeZone, isTimezoneEnabled} from 'app/utils/timezone';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 import Search from './search';
 
@@ -26,7 +27,17 @@ function makeMapStateToProps() {
     const filterPostIdsByDeletedChannels = filterPostIds((c) => c && c.delete_at !== 0);
 
     return (state) => {
-        const postIds = preparePostIds(state, state.entities.search.results);
+        const config = getConfig(state);
+        let results = state.entities.search.results;
+
+        const archivedPostIds = filterPostIdsByDeletedChannels(state, results || []);
+        const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
+
+        if (!viewArchivedChannels && results && results.length > 0) {
+            results = results.filter((id) => !archivedPostIds.includes(id));
+        }
+
+        const postIds = preparePostIds(state, results);
 
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
@@ -46,7 +57,7 @@ function makeMapStateToProps() {
             currentChannelId,
             isLandscape: isLandscape(state),
             postIds,
-            archivedPostIds: filterPostIdsByDeletedChannels(state, postIds),
+            archivedPostIds,
             recent: recent[currentTeamId],
             searchingStatus: searchRequest.status,
             theme: getTheme(state),
