@@ -372,7 +372,7 @@ export default class FileAttachmentDocument extends PureComponent {
 
         return (
             <TouchableOpacity onPress={this.handlePreviewPress}>
-                <View style={{backgroundColor: '#fff'}}>
+                <View style={style.whiteBackgroud}>
                     {fileAttachmentComponent}
                 </View>
             </TouchableOpacity>
@@ -385,8 +385,11 @@ const style = StyleSheet.create({
         alignItems: 'center',
         height: '100%',
         justifyContent: 'center',
-        left: parseInt(`-${circularProgressWidth}`, 10),
+        left: -circularProgressWidth,
         position: 'absolute',
         top: 0,
+    },
+    whiteBackgroud: {
+        backgroundColor: '#fff',
     },
 });
