@@ -46,7 +46,13 @@ export const getMatchTermForChannelMention = (() => {
             lastValue = value;
             lastIsSearch = isSearch;
             if (match) {
-                lastMatchTerm = isSearch ? match[1] : match[2];
+                if (isSearch) {
+                    lastMatchTerm = match[1];
+                } else if (match.index > 0 && value[match.index - 1] === '~') {
+                    lastMatchTerm = null;
+                } else {
+                    lastMatchTerm = match[2];
+                }
             } else {
                 lastMatchTerm = null;
             }
