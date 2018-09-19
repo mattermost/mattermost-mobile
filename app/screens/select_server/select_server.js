@@ -177,7 +177,7 @@ export default class SelectServer extends PureComponent {
             this.setState({
                 error: {
                     intl: {
-                        id: 'mobile.server_url.invalid_format',
+                        id: t('mobile.server_url.invalid_format'),
                         defaultMessage: 'URL must start with http:// or https://',
                     },
                 },
