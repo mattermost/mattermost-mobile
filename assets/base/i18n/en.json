@@ -500,6 +500,7 @@
   "user.settings.modal.notifications": "Notifications",
   "user.settings.notifications.allActivity": "For all activity",
   "user.settings.notifications.comments": "Reply notifications",
+  "user.settings.notifications.email.disabled": "Email notifications are not enabled",
   "user.settings.notifications.email.everyHour": "Every hour",
   "user.settings.notifications.email.immediately": "Immediately",
   "user.settings.notifications.email.never": "Never",
