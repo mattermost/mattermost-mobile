@@ -122,6 +122,16 @@ class PushNotification {
         }
     }
 
+    localNotification(notification) {
+        const deviceNotification = {
+            alertBody: notification.message,
+            alertAction: '',
+            userInfo: notification.userInfo,
+        };
+
+        NotificationsIOS.localNotification(deviceNotification);
+    }
+
     cancelAllLocalNotifications() {
         NotificationsIOS.cancelAllLocalNotifications();
     }

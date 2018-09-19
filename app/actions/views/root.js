@@ -105,7 +105,7 @@ export function purgeOfflineStore() {
 // A non-optimistic version of the createPost action in mattermost-redux with the file handling
 // removed since it's not needed.
 export function createPostForNotificationReply(post) {
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const state = getState();
         const currentUserId = state.entities.users.currentUserId;
 
@@ -119,18 +119,23 @@ export function createPostForNotificationReply(post) {
             update_at: timestamp,
         };
 
-        return Client4.createPost({...newPost, create_at: 0}).then((payload) => {
+        try {
+            const data = await Client4.createPost({...newPost, create_at: 0});
             dispatch({
                 type: PostTypes.RECEIVED_POSTS,
                 data: {
                     order: [],
                     posts: {
-                        [payload.id]: payload,
+                        [data.id]: data,
                     },
                 },
-                channelId: payload.channel_id,
+                channelId: data.channel_id,
             });
-        });
+
+            return {data};
+        } catch (error) {
+            return {error};
+        }
     };
 }
 

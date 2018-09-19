@@ -2573,6 +2573,7 @@
   "mobile.rename_channel.name_maxLength": "URL must be less than {maxLength, number} characters",
   "mobile.rename_channel.name_minLength": "URL must be {minLength, number} or more characters",
   "mobile.rename_channel.name_required": "URL is required",
+  "mobile.reply_post.failed": "Message failed to send.",
   "mobile.request.invalid_response": "Received invalid response from the server.",
   "mobile.reset_status.alert_cancel": "Cancel",
   "mobile.reset_status.alert_ok": "Ok",
