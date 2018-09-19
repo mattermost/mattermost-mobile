@@ -24,9 +24,23 @@ export default class ReactionHeader extends PureComponent {
         this.props.onSelectReaction(emoji);
     };
 
-    render() {
+    renderReactionHeaderItems = () => {
         const {selected, reactions, theme} = this.props;
 
+        return reactions.map((reaction) => (
+            <ReactionHeaderItem
+                key={reaction.name}
+                count={reaction.count}
+                emojiName={reaction.name}
+                highlight={selected === reaction.name}
+                onPress={this.handleOnPress}
+                theme={theme}
+            />
+        ));
+    }
+
+    render() {
+        const {theme} = this.props;
         const styles = getStyleSheet(theme);
 
         return (
@@ -36,16 +50,7 @@ export default class ReactionHeader extends PureComponent {
                     horizontal={true}
                     overScrollMode='never'
                 >
-                    {reactions.map((reaction) => (
-                        <ReactionHeaderItem
-                            key={reaction.name}
-                            count={reaction.count}
-                            emojiName={reaction.name}
-                            highlight={selected === reaction.name}
-                            onPress={this.handleOnPress}
-                            theme={theme}
-                        />
-                    ))}
+                    {this.renderReactionHeaderItems()}
                 </ScrollView>
             </View>
         );
@@ -56,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
-            height: 50,
+            height: 37,
             paddingHorizontal: 10,
         },
     };

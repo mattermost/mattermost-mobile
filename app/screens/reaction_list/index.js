@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getMissingProfilesByIds} from 'mattermost-redux/actions/users';
-import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
+import {getUserIdsFromReactions, makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, makeGetProfilesByIdsAndUsernames} from 'mattermost-redux/selectors/entities/users';
 import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -16,17 +16,12 @@ function makeMapStateToProps() {
     const getProfilesByIdsAndUsernames = makeGetProfilesByIdsAndUsernames();
 
     return function mapStateToProps(state, ownProps) {
-        const reactions = getReactionsForPostSelector(state, ownProps.postId) || [];
-
-        const allUserIds = reactions.reduce((acc, reaction) => {
-            acc.push(reaction.user_id);
-            return acc;
-        }, []);
+        const allUserIds = getUserIdsFromReactions(state, ownProps.postId);
 
         return {
             allUserIds,
             currentUserId: getCurrentUserId(state),
-            reactions,
+            reactions: getReactionsForPostSelector(state, ownProps.postId),
             teammateNameDisplay: getTeammateNameDisplaySetting(state),
             theme: getTheme(state),
             userProfiles: getProfilesByIdsAndUsernames(state, {allUserIds}) || [],

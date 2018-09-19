@@ -5,7 +5,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
-    Platform,
     Text,
     TouchableOpacity,
     View,
@@ -17,7 +16,6 @@ import ProfilePicture from 'app/components/profile_picture';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-import CustomListRow from 'app/components/custom_list/custom_list_row';
 import Emoji from 'app/components/emoji';
 
 export default class ReactionRow extends React.PureComponent {
@@ -57,11 +55,7 @@ export default class ReactionRow extends React.PureComponent {
             },
         };
 
-        if (Platform.OS === 'ios') {
-            navigator.push(options);
-        } else {
-            navigator.showModal(options);
-        }
+        navigator.push(options);
     };
 
     render() {
@@ -82,49 +76,37 @@ export default class ReactionRow extends React.PureComponent {
 
         return (
             <View style={style.container}>
-                <CustomListRow
-                    id={id}
-                    theme={theme}
-                    onPress={this.onPress}
-                    enabled={true}
-                    selectable={false}
-                    selected={false}
-                >
-                    <View style={style.profile}>
-                        <TouchableOpacity
-                            key={user.id}
-                            onPress={preventDoubleTap(() => this.goToUserProfile(user.id))}
-                        >
-                            <ProfilePicture
-                                userId={id}
-                                showStatus={false}
-                                size={32}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={style.textContainer}>
-                        <View>
-                            <Text style={style.username}>
-                                {usernameDisplay}
-                            </Text>
-                        </View>
-                        <View>
-                            <Text
-                                style={style.displayName}
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                            >
-                                {displayUsername(user, teammateNameDisplay)}
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={style.emoji}>
-                        <Emoji
-                            emojiName={emojiName}
-                            size={32}
+                <View style={style.profile}>
+                    <TouchableOpacity
+                        key={user.id}
+                        onPress={preventDoubleTap(() => this.goToUserProfile(user.id))}
+                    >
+                        <ProfilePicture
+                            userId={id}
+                            showStatus={false}
+                            size={24}
                         />
-                    </View>
-                </CustomListRow>
+                    </TouchableOpacity>
+                </View>
+                <Text
+                    style={style.textContainer}
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
+                >
+                    <Text style={style.username}>
+                        {usernameDisplay}
+                    </Text>
+                    <Text>{'  '}</Text>
+                    <Text style={style.displayName}>
+                        {displayUsername(user, teammateNameDisplay)}
+                    </Text>
+                </Text>
+                <View style={style.emoji}>
+                    <Emoji
+                        emojiName={emojiName}
+                        size={26}
+                    />
+                </View>
             </View>
         );
     }
@@ -136,31 +118,33 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            height: 65,
+            height: 44,
             width: '100%',
-            zIndex: 10,
+            alignItems: 'center',
         },
         profile: {
             alignItems: 'center',
-            width: '10%',
+            width: '15%',
         },
         textContainer: {
-            width: '80%',
+            width: '70%',
             flexDirection: 'row',
             marginLeft: 5,
         },
         username: {
-            fontSize: 15,
+            fontSize: 14,
             color: theme.centerChannelColor,
+            paddingRight: 5,
         },
         displayName: {
             marginLeft: 5,
-            fontSize: 15,
+            fontSize: 14,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         emoji: {
             alignItems: 'center',
-            width: '10%',
+            width: '15%',
+            justifyContent: 'center',
         },
     };
 });

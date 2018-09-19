@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ReactionHeader should match snapshot 1`] = `
+<Component
+  style={
+    Object {
+      "backgroundColor": "#aaa",
+      "height": 37,
+      "paddingHorizontal": 10,
+    }
+  }
+>
+  <ScrollView
+    alwaysBounceHorizontal={false}
+    horizontal={true}
+    overScrollMode="never"
+  >
+    <ReactionHeaderItem
+      count={2}
+      emojiName="smile"
+      highlight={true}
+      onPress={[Function]}
+      theme={
+        Object {
+          "centerChannelBg": "#aaa",
+        }
+      }
+    />
+    <ReactionHeaderItem
+      count={1}
+      emojiName="+1"
+      highlight={false}
+      onPress={[Function]}
+      theme={
+        Object {
+          "centerChannelBg": "#aaa",
+        }
+      }
+    />
+  </ScrollView>
+</Component>
+`;
+
+exports[`ReactionHeader should match snapshot, renderContent 1`] = `
+Array [
+  <ReactionHeaderItem
+    count={2}
+    emojiName="smile"
+    highlight={true}
+    onPress={[Function]}
+    theme={
+      Object {
+        "centerChannelBg": "#aaa",
+      }
+    }
+  />,
+  <ReactionHeaderItem
+    count={1}
+    emojiName="+1"
+    highlight={false}
+    onPress={[Function]}
+    theme={
+      Object {
+        "centerChannelBg": "#aaa",
+      }
+    }
+  />,
+]
+`;

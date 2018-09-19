@@ -24,42 +24,50 @@ export default class ReactionHeaderItem extends PureComponent {
         theme: PropTypes.object.isRequired,
     }
 
-    handlePress = () => {
+    handleOnPress = () => {
         const {emojiName, highlight, onPress} = this.props;
         onPress(emojiName, highlight);
     }
 
-    renderEmoji = (emojiName, styles) => {
+    renderContent = () => {
+        const {count, emojiName, theme} = this.props;
+        const styles = getStyleSheet(theme);
+
         if (emojiName === ALL_EMOJIS) {
             return (
-                <FormattedText
-                    id='mobile.reaction_header.all_emojis'
-                    defaultMessage={'All'}
-                    style={styles.text}
-                />
+                <React.Fragment>
+                    <FormattedText
+                        id='mobile.reaction_header.all_emojis'
+                        defaultMessage={'All'}
+                        style={styles.text}
+                    />
+                    <Text style={styles.text}>{count}</Text>
+                </React.Fragment>
             );
         }
 
         return (
-            <Emoji
-                emojiName={emojiName}
-                size={25}
-                padding={5}
-            />
+            <React.Fragment>
+                <Emoji
+                    emojiName={emojiName}
+                    size={16}
+                    padding={5}
+                />
+                <Text style={styles.text}>{count}</Text>
+            </React.Fragment>
         );
     }
 
     render() {
-        const {count, emojiName, highlight, theme} = this.props;
+        const {highlight, theme} = this.props;
         const styles = getStyleSheet(theme);
 
         return (
             <TouchableOpacity
-                onPress={this.handlePress}
+                onPress={this.handleOnPress}
                 style={[styles.reaction, (highlight && styles.highlight)]}
             >
-                {this.renderEmoji(emojiName, styles)}
-                <Text style={styles.text}>{count}</Text>
+                {this.renderContent()}
             </TouchableOpacity>
         );
     }
@@ -70,7 +78,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         text: {
             color: theme.linkColor,
             marginLeft: 3,
-            fontSize: 20,
+            fontSize: 16,
         },
         highlight: {
             borderColor: changeOpacity(theme.linkColor, 1),
@@ -79,10 +87,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         reaction: {
             alignItems: 'center',
             flexDirection: 'row',
-            height: 40,
+            height: 35,
             marginRight: 6,
             marginBottom: 5,
-            marginTop: 10,
+            marginTop: 3,
             paddingVertical: 2,
             paddingHorizontal: 6,
         },

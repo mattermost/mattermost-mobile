@@ -1,0 +1,99 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ReactionRow should match snapshot, renderContent 1`] = `
+<Component
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": undefined,
+      "flexDirection": "row",
+      "height": 44,
+      "justifyContent": "flex-start",
+      "width": "100%",
+    }
+  }
+>
+  <Component
+    style={
+      Object {
+        "alignItems": "center",
+        "width": "15%",
+      }
+    }
+  >
+    <TouchableOpacity
+      activeOpacity={0.2}
+      onPress={[Function]}
+    >
+      <Connect(ProfilePicture)
+        showStatus={false}
+        size={24}
+        userId="user_id"
+      />
+    </TouchableOpacity>
+  </Component>
+  <Text
+    accessible={true}
+    allowFontScaling={true}
+    ellipsizeMode="tail"
+    numberOfLines={1}
+    style={
+      Object {
+        "flexDirection": "row",
+        "marginLeft": 5,
+        "width": "70%",
+      }
+    }
+  >
+    <Text
+      accessible={true}
+      allowFontScaling={true}
+      ellipsizeMode="tail"
+      style={
+        Object {
+          "color": "#aaa",
+          "fontSize": 14,
+          "paddingRight": 5,
+        }
+      }
+    >
+      @username
+    </Text>
+    <Text
+      accessible={true}
+      allowFontScaling={true}
+      ellipsizeMode="tail"
+    >
+        
+    </Text>
+    <Text
+      accessible={true}
+      allowFontScaling={true}
+      ellipsizeMode="tail"
+      style={
+        Object {
+          "color": "rgba(170,170,170,0.5)",
+          "fontSize": 14,
+          "marginLeft": 5,
+        }
+      }
+    >
+      username
+    </Text>
+  </Text>
+  <Component
+    style={
+      Object {
+        "alignItems": "center",
+        "justifyContent": "center",
+        "width": "15%",
+      }
+    }
+  >
+    <Connect(Emoji)
+      emojiName="smile"
+      size={26}
+    />
+  </Component>
+</Component>
+`;

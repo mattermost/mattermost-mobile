@@ -8,6 +8,13 @@ import {intlShape} from 'react-intl';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    generateUserProfilesById,
+    getMissingUserIds,
+    getReactionsByName,
+    getSortedReactionsForHeader,
+    sortReactions,
+} from 'app/utils/reaction';
 
 import ReactionHeader from './reaction_header';
 import ReactionRow from './reaction_row';
@@ -35,17 +42,17 @@ export default class ReactionList extends PureComponent {
         super(props);
         const {allUserIds, reactions, userProfiles} = props;
 
-        this.userProfilesById = ReactionList.generateUserProfilesById(userProfiles);
+        this.userProfilesById = generateUserProfilesById(userProfiles);
         this.getMissingProfiles(allUserIds, userProfiles);
 
-        const reactionsByName = ReactionList.getReactionsByName(reactions);
+        const reactionsByName = getReactionsByName(reactions);
 
         this.state = {
             selected: ALL_EMOJIS,
             reactions,
             reactionsByName,
-            sortedReactions: ReactionList.sortReactions(reactionsByName),
-            sortedReactionsForHeader: ReactionList.getSortedReactionsForHeader(reactionsByName),
+            sortedReactions: sortReactions(reactionsByName),
+            sortedReactionsForHeader: getSortedReactionsForHeader(reactionsByName),
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
@@ -55,13 +62,13 @@ export default class ReactionList extends PureComponent {
         if (!nextProps.reactions.length !== prevState.reactions.length) {
             const {reactions} = nextProps;
 
-            const reactionsByName = ReactionList.getReactionsByName(reactions);
+            const reactionsByName = getReactionsByName(reactions);
 
             return {
                 reactions,
                 reactionsByName,
-                sortedReactions: ReactionList.sortReactions(reactionsByName),
-                sortedReactionsForHeader: ReactionList.getSortedReactionsForHeader(reactionsByName),
+                sortedReactions: sortReactions(reactionsByName),
+                sortedReactionsForHeader: getSortedReactionsForHeader(reactionsByName),
             };
         }
 
@@ -70,7 +77,7 @@ export default class ReactionList extends PureComponent {
 
     componentDidUpdate(prevProps) {
         if (prevProps.userProfiles.length !== this.props.userProfiles.length) {
-            this.userProfilesById = ReactionList.generateUserProfilesById(this.props.userProfiles);
+            this.userProfilesById = generateUserProfilesById(this.props.userProfiles);
         }
 
         if (prevProps.allUserIds.length !== this.props.allUserIds.length) {
@@ -90,7 +97,7 @@ export default class ReactionList extends PureComponent {
 
     getMissingProfiles = (allUserIds, userProfiles) => {
         if (userProfiles.length !== allUserIds.length) {
-            const missingUserIds = ReactionList.getMissingUserIds(this.userProfilesById, allUserIds);
+            const missingUserIds = getMissingUserIds(this.userProfilesById, allUserIds);
 
             if (missingUserIds.length > 0) {
                 this.props.actions.getMissingProfilesByIds(missingUserIds);
@@ -106,7 +113,7 @@ export default class ReactionList extends PureComponent {
         this.setState({selected: emoji});
     }
 
-    render() {
+    renderReactionRows = () => {
         const {
             navigator,
             teammateNameDisplay,
@@ -116,11 +123,36 @@ export default class ReactionList extends PureComponent {
             reactionsByName,
             selected,
             sortedReactions,
-            sortedReactionsForHeader,
         } = this.state;
-
         const style = getStyleSheet(theme);
         const reactions = selected === ALL_EMOJIS ? sortedReactions : reactionsByName[selected];
+
+        return reactions.map(({emoji_name: emojiName, user_id: userId}) => (
+            <View
+                key={emojiName + userId}
+                style={style.rowContainer}
+            >
+                <ReactionRow
+                    emojiName={emojiName}
+                    navigator={navigator}
+                    teammateNameDisplay={teammateNameDisplay}
+                    theme={theme}
+                    user={this.userProfilesById[userId]}
+                />
+                <View style={style.separator}/>
+            </View>
+        ));
+    }
+
+    render() {
+        const {
+            theme,
+        } = this.props;
+        const {
+            selected,
+            sortedReactionsForHeader,
+        } = this.state;
+        const style = getStyleSheet(theme);
 
         return (
             <View style={style.flex}>
@@ -136,82 +168,10 @@ export default class ReactionList extends PureComponent {
                     bounces={true}
                     innerRef={this.scrollViewRef}
                 >
-                    {reactions.map(({emoji_name: emojiName, user_id: userId}) => (
-                        <View
-                            key={emojiName + userId}
-                            style={style.rowContainer}
-                        >
-                            <ReactionRow
-                                emojiName={emojiName}
-                                navigator={navigator}
-                                teammateNameDisplay={teammateNameDisplay}
-                                theme={theme}
-                                user={this.userProfilesById[userId]}
-                            />
-                        </View>
-                    ))}
+                    {this.renderReactionRows()}
                 </KeyboardAwareScrollView>
             </View>
         );
-    }
-
-    static generateUserProfilesById = (userProfiles = []) => {
-        return userProfiles.reduce((acc, userProfile) => {
-            acc[userProfile.id] = userProfile;
-
-            return acc;
-        }, []);
-    }
-
-    static getMissingUserIds = (userProfilesById = {}, allUserIds = []) => {
-        return allUserIds.reduce((acc, userId) => {
-            if (userProfilesById[userId]) {
-                acc.push(userId);
-            }
-
-            return acc;
-        }, []);
-    }
-
-    static compareReactions(a, b) {
-        if (a.count !== b.count) {
-            return b.count - a.count;
-        }
-
-        return a.name.localeCompare(b.name);
-    }
-
-    static getReactionsByName(reactions = []) {
-        return reactions.reduce((acc, reaction) => {
-            const byName = acc[reaction.emoji_name] || [];
-            acc[reaction.emoji_name] = [...byName, reaction];
-
-            return acc;
-        }, {});
-    }
-
-    static sortReactionsByName(reactionsByName = {}) {
-        return Object.entries(reactionsByName).
-            map(([name, reactions]) => ({name, reactions, count: reactions.length})).
-            sort(ReactionList.compareReactions);
-    }
-
-    static sortReactions(reactionsByName = {}) {
-        return ReactionList.sortReactionsByName(reactionsByName).
-            reduce((acc, {reactions}) => {
-                reactions.forEach((r) => acc.push(r));
-                return acc;
-            }, []);
-    }
-
-    static getSortedReactionsForHeader(reactionsByName = {}) {
-        const sortedReactionsForHeader = ReactionList.sortReactionsByName(reactionsByName);
-
-        const totalCount = sortedReactionsForHeader.reduce((acc, reaction) => {
-            return acc + reaction.count;
-        }, 0);
-
-        return [{name: ALL_EMOJIS, count: totalCount}, ...sortedReactionsForHeader];
     }
 }
 
@@ -222,20 +182,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         headerContainer: {
-            height: 51,
+            height: 38,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderBottomWidth: 1,
         },
         rowContainer: {
-            alignItems: 'center',
-            width: '100%',
-            height: 66,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 1,
+            justifyContent: 'center',
+            height: 45,
         },
         separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
     };
 });
