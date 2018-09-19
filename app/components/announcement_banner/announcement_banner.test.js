@@ -24,9 +24,9 @@ describe('AnnouncementBanner', () => {
             <AnnouncementBanner {...baseProps}/>
         );
 
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
 
         wrapper.setProps({bannerEnabled: false});
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

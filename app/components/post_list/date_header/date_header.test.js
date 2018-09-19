@@ -25,7 +25,7 @@ describe('DateHeader', () => {
                 {context: {intl: {formatMessage: jest.fn()}}},
             );
 
-            expect(wrapper).toMatchSnapshot();
+            expect(wrapper.getElement()).toMatchSnapshot();
         });
 
         it('with suffix', () => {
@@ -39,7 +39,7 @@ describe('DateHeader', () => {
                 {context: {intl: {formatMessage: jest.fn()}}},
             );
 
-            expect(wrapper).toMatchSnapshot();
+            expect(wrapper.getElement()).toMatchSnapshot();
         });
     });
 });

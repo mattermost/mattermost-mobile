@@ -25,7 +25,7 @@ describe('ForgotPassword', () => {
             {context: {intl: {formatMessage}}},
         );
 
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('snapshot for error on failure of email regex', () => {
@@ -37,7 +37,7 @@ describe('ForgotPassword', () => {
         wrapper.setState({email: 'bar'});
         wrapper.instance().submitResetPassword();
         wrapper.update();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('Should call sendPasswordResetEmail', () => {
@@ -71,6 +71,6 @@ describe('ForgotPassword', () => {
         wrapper.setState({email: 'test@test.com'});
         wrapper.instance().submitResetPassword();
         await sendPasswordResetEmail();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

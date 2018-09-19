@@ -54,7 +54,7 @@ describe('SelectTeam', () => {
         await getTeams();
         expect(wrapper.state('loading')).toEqual(false);
         wrapper.update();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for teams', async () => {
@@ -75,6 +75,6 @@ describe('SelectTeam', () => {
         );
         await getTeams();
         wrapper.update();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

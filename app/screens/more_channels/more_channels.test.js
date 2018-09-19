@@ -48,7 +48,7 @@ describe('MoreChannels', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should call props.navigator.dismissModal on close', () => {

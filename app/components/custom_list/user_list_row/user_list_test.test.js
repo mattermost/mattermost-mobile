@@ -36,7 +36,7 @@ describe('UserListRow', () => {
             <UserListRow {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for deactivated user', () => {
@@ -55,7 +55,7 @@ describe('UserListRow', () => {
             <UserListRow {...newProps}/>,
             {context: {intl: {formatMessage}}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for  currentUser with (you) populated in list', () => {
@@ -68,6 +68,6 @@ describe('UserListRow', () => {
             <UserListRow {...newProps}/>,
             {context: {intl: {formatMessage}}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });
