@@ -216,7 +216,7 @@ export default class ImagePreview extends PureComponent {
     };
 
     renderAttachmentDocument = (file) => {
-        const {theme, navigator} = this.props;
+        const {canDownloadFiles, theme, navigator} = this.props;
 
         return (
             <View style={[style.flex, style.center]}>
@@ -224,6 +224,7 @@ export default class ImagePreview extends PureComponent {
                     ref={(ref) => {
                         this.documents[this.state.index] = ref;
                     }}
+                    canDownloadFiles={canDownloadFiles}
                     file={file}
                     theme={theme}
                     navigator={navigator}
