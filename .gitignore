@@ -33,7 +33,6 @@ xcshareddata/
 
 # Android/IntelliJ
 #
-build/
 .idea
 .gradle
 local.properties
@@ -69,10 +68,11 @@ tags
 # For more information about the recommended setup visit:
 # https://docs.fastlane.tools/best-practices/source-control/
 
-fastlane/report.xml
-fastlane/Preview.html
+*/fastlane/report.xml
+*/fastlane/Preview.html
 */fastlane/screenshots
 fastlane/.env
+fastlane/report.xml
 
 # Sentry
 android/sentry.properties
@@ -85,6 +85,8 @@ ios/sentry.properties
 .podinstall
 ios/Pods/
 
+# Bundle artifact
+*.jsbundle
+
 #editor-settings
 .vscode
-

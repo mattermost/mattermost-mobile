@@ -12,6 +12,7 @@ import {
     NativeModules,
     ScrollView,
     Text,
+    TextInput,
     TouchableHighlight,
     View,
 } from 'react-native';
@@ -26,7 +27,6 @@ import {getChannel, getDefaultChannel} from 'mattermost-redux/selectors/entities
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
-import QuickTextInput from 'app/components/quick_text_input';
 import mattermostBucket from 'app/mattermost_bucket';
 import {generateId, getAllowedServerMaxFileSize} from 'app/utils/file';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -363,7 +363,7 @@ export default class ExtensionPost extends PureComponent {
                     contentContainerStyle={styles.scrollView}
                     style={styles.flex}
                 >
-                    <QuickTextInput
+                    <TextInput
                         ref={this.getInputRef}
                         maxLength={MAX_MESSAGE_LENGTH}
                         multiline={true}

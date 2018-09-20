@@ -255,10 +255,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
       }
     }
   >
-    <Text
-      accessible={true}
-      allowFontScaling={true}
-      ellipsizeMode="tail"
+    <Component
       style={
         Object {
           "color": "#aaa",
@@ -267,7 +264,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
       }
     >
       section_id
-    </Text>
+    </Component>
   </Component>
 </Component>
 `;

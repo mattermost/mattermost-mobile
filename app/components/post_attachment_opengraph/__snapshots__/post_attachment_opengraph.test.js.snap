@@ -21,9 +21,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       }
     }
   >
-    <Text
-      accessible={true}
-      allowFontScaling={true}
+    <Component
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
@@ -35,7 +33,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       }
     >
       Mattermost
-    </Text>
+    </Component>
   </Component>
   <Component
     style={
@@ -54,9 +52,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
         }
       }
     >
-      <Text
-        accessible={true}
-        allowFontScaling={true}
+      <Component
         ellipsizeMode="tail"
         numberOfLines={3}
         style={
@@ -73,7 +69,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
         }
       >
         Title
-      </Text>
+      </Component>
     </TouchableOpacity>
   </Component>
 </Component>
@@ -89,9 +85,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderDescr
     }
   }
 >
-  <Text
-    accessible={true}
-    allowFontScaling={true}
+  <Component
     ellipsizeMode="tail"
     numberOfLines={5}
     style={
@@ -103,7 +97,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderDescr
     }
   >
     Description
-  </Text>
+  </Component>
 </Component>
 `;
 
@@ -126,7 +120,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
       }
     }
   >
-    <Image
+    <Component
       resizeMode="contain"
       style={
         Array [

@@ -36,9 +36,7 @@ ShallowWrapper {
           }
         }
       >
-        <Text
-          accessible={true}
-          allowFontScaling={true}
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -57,7 +55,7 @@ ShallowWrapper {
           <RemoveMarkdown
             value="Banner Text"
           />
-        </Text>
+        </Component>
         <Icon
           allowFontScaling={false}
           color="#fff"
@@ -87,9 +85,7 @@ ShallowWrapper {
       "props": Object {
         "activeOpacity": 0.2,
         "children": Array [
-          <Text
-            accessible={true}
-            allowFontScaling={true}
+          <Component
             ellipsizeMode="tail"
             numberOfLines={1}
             style={
@@ -108,7 +104,7 @@ ShallowWrapper {
             <RemoveMarkdown
               value="Banner Text"
             />
-          </Text>,
+          </Component>,
           <Icon
             allowFontScaling={false}
             color="#fff"
@@ -130,8 +126,6 @@ ShallowWrapper {
           "key": undefined,
           "nodeType": "class",
           "props": Object {
-            "accessible": true,
-            "allowFontScaling": true,
             "children": <RemoveMarkdown
               value="Banner Text"
             />,
@@ -198,9 +192,7 @@ ShallowWrapper {
             }
           }
         >
-          <Text
-            accessible={true}
-            allowFontScaling={true}
+          <Component
             ellipsizeMode="tail"
             numberOfLines={1}
             style={
@@ -219,7 +211,7 @@ ShallowWrapper {
             <RemoveMarkdown
               value="Banner Text"
             />
-          </Text>
+          </Component>
           <Icon
             allowFontScaling={false}
             color="#fff"
@@ -249,9 +241,7 @@ ShallowWrapper {
         "props": Object {
           "activeOpacity": 0.2,
           "children": Array [
-            <Text
-              accessible={true}
-              allowFontScaling={true}
+            <Component
               ellipsizeMode="tail"
               numberOfLines={1}
               style={
@@ -270,7 +260,7 @@ ShallowWrapper {
               <RemoveMarkdown
                 value="Banner Text"
               />
-            </Text>,
+            </Component>,
             <Icon
               allowFontScaling={false}
               color="#fff"
@@ -292,8 +282,6 @@ ShallowWrapper {
             "key": undefined,
             "nodeType": "class",
             "props": Object {
-              "accessible": true,
-              "allowFontScaling": true,
               "children": <RemoveMarkdown
                 value="Banner Text"
               />,

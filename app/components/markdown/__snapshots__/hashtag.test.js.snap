@@ -26,10 +26,7 @@ ShallowWrapper {
     "key": undefined,
     "nodeType": "class",
     "props": Object {
-      "accessible": true,
-      "allowFontScaling": true,
       "children": "#test",
-      "ellipsizeMode": "tail",
       "onPress": [Function],
       "style": Object {
         "color": "red",
@@ -45,10 +42,7 @@ ShallowWrapper {
       "key": undefined,
       "nodeType": "class",
       "props": Object {
-        "accessible": true,
-        "allowFontScaling": true,
         "children": "#test",
-        "ellipsizeMode": "tail",
         "onPress": [Function],
         "style": Object {
           "color": "red",

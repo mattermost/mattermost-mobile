@@ -12,7 +12,6 @@ import {
     StyleSheet,
     Text,
     TouchableHighlight,
-    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
@@ -226,7 +225,7 @@ export default class MarkdownImage extends React.Component {
                 }
 
                 image = (
-                    <TouchableWithoutFeedback
+                    <TouchableHighlight
                         onLongPress={this.handleLinkLongPress}
                         onPress={this.handlePreviewImage}
                         style={{width, height}}
@@ -237,7 +236,7 @@ export default class MarkdownImage extends React.Component {
                             resizeMode='contain'
                             style={{width, height}}
                         />
-                    </TouchableWithoutFeedback>
+                    </TouchableHighlight>
                 );
             }
         } else if (this.state.failed) {

@@ -4,14 +4,11 @@ exports[`ShowMoreButton should match, button snapshot 1`] = `
 <Component
   style={Object {}}
 >
-  <Text
-    accessible={true}
-    allowFontScaling={true}
-    ellipsizeMode="tail"
+  <Component
     style={Object {}}
   >
     +
-  </Text>
+  </Component>
   <FormattedText
     defaultMessage="Show More"
     id="post_info.message.show_more"
@@ -24,14 +21,11 @@ exports[`ShowMoreButton should match, button snapshot 2`] = `
 <Component
   style={Object {}}
 >
-  <Text
-    accessible={true}
-    allowFontScaling={true}
-    ellipsizeMode="tail"
+  <Component
     style={Object {}}
   >
     -
-  </Text>
+  </Component>
   <FormattedText
     defaultMessage="Show Less"
     id="post_info.message.show_less"
@@ -151,10 +145,7 @@ ShallowWrapper {
                 }
               }
             >
-              <Text
-                accessible={true}
-                allowFontScaling={true}
-                ellipsizeMode="tail"
+              <Component
                 style={
                   Object {
                     "color": undefined,
@@ -165,7 +156,7 @@ ShallowWrapper {
                 }
               >
                 +
-              </Text>
+              </Component>
               <FormattedText
                 defaultMessage="Show More"
                 id="post_info.message.show_more"
@@ -268,10 +259,7 @@ ShallowWrapper {
                   }
                 }
               >
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": undefined,
@@ -282,7 +270,7 @@ ShallowWrapper {
                   }
                 >
                   +
-                </Text>
+                </Component>
                 <FormattedText
                   defaultMessage="Show More"
                   id="post_info.message.show_more"
@@ -350,10 +338,7 @@ ShallowWrapper {
                   }
                 }
               >
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": undefined,
@@ -364,7 +349,7 @@ ShallowWrapper {
                   }
                 >
                   +
-                </Text>
+                </Component>
                 <FormattedText
                   defaultMessage="Show More"
                   id="post_info.message.show_more"
@@ -394,10 +379,7 @@ ShallowWrapper {
               "nodeType": "class",
               "props": Object {
                 "children": Array [
-                  <Text
-                    accessible={true}
-                    allowFontScaling={true}
-                    ellipsizeMode="tail"
+                  <Component
                     style={
                       Object {
                         "color": undefined,
@@ -408,7 +390,7 @@ ShallowWrapper {
                     }
                   >
                     +
-                  </Text>,
+                  </Component>,
                   <FormattedText
                     defaultMessage="Show More"
                     id="post_info.message.show_more"
@@ -434,10 +416,7 @@ ShallowWrapper {
                   "key": undefined,
                   "nodeType": "class",
                   "props": Object {
-                    "accessible": true,
-                    "allowFontScaling": true,
                     "children": "+",
-                    "ellipsizeMode": "tail",
                     "style": Object {
                       "color": undefined,
                       "fontSize": 16,
@@ -583,10 +562,7 @@ ShallowWrapper {
                   }
                 }
               >
-                <Text
-                  accessible={true}
-                  allowFontScaling={true}
-                  ellipsizeMode="tail"
+                <Component
                   style={
                     Object {
                       "color": undefined,
@@ -597,7 +573,7 @@ ShallowWrapper {
                   }
                 >
                   +
-                </Text>
+                </Component>
                 <FormattedText
                   defaultMessage="Show More"
                   id="post_info.message.show_more"
@@ -700,10 +676,7 @@ ShallowWrapper {
                     }
                   }
                 >
-                  <Text
-                    accessible={true}
-                    allowFontScaling={true}
-                    ellipsizeMode="tail"
+                  <Component
                     style={
                       Object {
                         "color": undefined,
@@ -714,7 +687,7 @@ ShallowWrapper {
                     }
                   >
                     +
-                  </Text>
+                  </Component>
                   <FormattedText
                     defaultMessage="Show More"
                     id="post_info.message.show_more"
@@ -782,10 +755,7 @@ ShallowWrapper {
                     }
                   }
                 >
-                  <Text
-                    accessible={true}
-                    allowFontScaling={true}
-                    ellipsizeMode="tail"
+                  <Component
                     style={
                       Object {
                         "color": undefined,
@@ -796,7 +766,7 @@ ShallowWrapper {
                     }
                   >
                     +
-                  </Text>
+                  </Component>
                   <FormattedText
                     defaultMessage="Show More"
                     id="post_info.message.show_more"
@@ -826,10 +796,7 @@ ShallowWrapper {
                 "nodeType": "class",
                 "props": Object {
                   "children": Array [
-                    <Text
-                      accessible={true}
-                      allowFontScaling={true}
-                      ellipsizeMode="tail"
+                    <Component
                       style={
                         Object {
                           "color": undefined,
@@ -840,7 +807,7 @@ ShallowWrapper {
                       }
                     >
                       +
-                    </Text>,
+                    </Component>,
                     <FormattedText
                       defaultMessage="Show More"
                       id="post_info.message.show_more"
@@ -866,10 +833,7 @@ ShallowWrapper {
                     "key": undefined,
                     "nodeType": "class",
                     "props": Object {
-                      "accessible": true,
-                      "allowFontScaling": true,
                       "children": "+",
-                      "ellipsizeMode": "tail",
                       "style": Object {
                         "color": undefined,
                         "fontSize": 16,

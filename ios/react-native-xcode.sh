@@ -169,6 +169,7 @@ $NODE_BINARY "$CLI_PATH" bundle \
   --reset-cache \
   --bundle-output "$BUNDLE_FILE" \
   --assets-dest "$DEST"
+  --max-workers=8
 
 if [[ $DEV != true && ! -f "$BUNDLE_FILE" ]]; then
   echo "error: File $BUNDLE_FILE does not exist. This must be a bug with" >&2

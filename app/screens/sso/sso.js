@@ -79,7 +79,6 @@ class SSO extends PureComponent {
             error: null,
             renderWebView: false,
             jsCode: '',
-            scalePagesToFit: false,
         };
 
         switch (props.ssoType) {
@@ -99,7 +98,7 @@ class SSO extends PureComponent {
     }
 
     clearPreviousCookies = () => {
-        CookieManager.clearAll().then(() => {
+        CookieManager.clearAll(true).then(() => {
             this.setState({renderWebView: true});
         });
     };
@@ -163,7 +162,6 @@ class SSO extends PureComponent {
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
-            nextState.scalePagesToFit = true;
         } else if (serverUrl.host === parsed.host) {
             nextState.jsCode = postMessageJS;
         } else {
@@ -177,9 +175,8 @@ class SSO extends PureComponent {
 
     onLoadEnd = (event) => {
         const url = event.nativeEvent.url;
-
         if (url.includes(this.completedUrl)) {
-            CookieManager.get(urlParse(url).origin).then((res) => {
+            CookieManager.get(urlParse(url).origin, true).then((res) => {
                 const token = res.MMAUTHTOKEN;
 
                 if (token) {
@@ -212,7 +209,7 @@ class SSO extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const {error, renderWebView, jsCode, scalePagesToFit} = this.state;
+        const {error, renderWebView, jsCode} = this.state;
         const style = getStyleSheet(theme);
 
         let content;
@@ -230,14 +227,14 @@ class SSO extends PureComponent {
                     source={{uri: this.loginUrl, headers: HEADERS}}
                     javaScriptEnabledAndroid={true}
                     automaticallyAdjustContentInsets={false}
-                    scalesPageToFit={scalePagesToFit}
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     renderLoading={this.renderLoading}
-                    onMessage={jsCode ? this.onMessage : null}
+                    onMessage={this.onMessage}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
+                    useWebKit={true}
                 />
             );
         }

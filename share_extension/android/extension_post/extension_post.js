@@ -13,6 +13,7 @@ import {
     PermissionsAndroid,
     ScrollView,
     Text,
+    TextInput,
     View,
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -23,7 +24,6 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Preferences} from 'mattermost-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
-import QuickTextInput from 'app/components/quick_text_input';
 import PaperPlane from 'app/components/paper_plane';
 import mattermostManaged from 'app/mattermost_managed';
 import {getExtensionFromMime} from 'app/utils/file';
@@ -352,7 +352,7 @@ export default class ExtensionPost extends PureComponent {
                 contentContainerStyle={styles.scrollView}
                 style={styles.flex}
             >
-                <QuickTextInput
+                <TextInput
                     ref={this.getInputRef}
                     autoCapitalize='sentences'
                     maxLength={MAX_MESSAGE_LENGTH}

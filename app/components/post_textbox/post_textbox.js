@@ -12,7 +12,6 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
-import QuickTextInput from 'app/components/quick_text_input';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -550,8 +549,6 @@ export default class PostTextbox extends PureComponent {
             inputContainerStyle.push(style.inputContainerWithoutFileUpload);
         }
 
-        const InputComponent = Platform.OS === 'android' ? TextInput : QuickTextInput;
-
         return (
             <View>
                 <Typing/>
@@ -572,7 +569,7 @@ export default class PostTextbox extends PureComponent {
                 {!channelIsArchived && <View style={style.inputWrapper}>
                     {!channelIsReadOnly && attachmentButton}
                     <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
-                        <InputComponent
+                        <TextInput
                             ref='input'
                             value={textValue}
                             onChangeText={this.handleTextChange}
