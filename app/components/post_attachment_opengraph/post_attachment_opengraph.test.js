@@ -67,7 +67,10 @@ describe('PostAttachmentOpenGraph', () => {
 
     test('should match state and snapshot, on renderDescription', () => {
         const wrapper = shallow(
-            <PostAttachmentOpenGraph {...baseProps}/>
+            <PostAttachmentOpenGraph
+                {...baseProps}
+                openGraphData={openGraphData}
+            />
         );
 
         // should return null

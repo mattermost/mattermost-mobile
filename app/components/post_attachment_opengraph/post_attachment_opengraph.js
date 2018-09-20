@@ -171,7 +171,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     renderDescription = () => {
         const {openGraphData} = this.props;
-        if (!openGraphData || !openGraphData.description) {
+        if (!openGraphData.description) {
             return null;
         }
 
