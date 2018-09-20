@@ -1,0 +1,145 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostAttachmentOpenGraph should match snapshot, without image and description 1`] = `null`;
+
+exports[`PostAttachmentOpenGraph should match snapshot, without image and description 2`] = `
+<Component
+  style={
+    Object {
+      "borderColor": "rgba(170,170,170,0.2)",
+      "borderWidth": 1,
+      "flex": 1,
+      "marginTop": 10,
+      "padding": 10,
+    }
+  }
+>
+  <Component
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+  >
+    <Text
+      accessible={true}
+      allowFontScaling={true}
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        Object {
+          "color": "rgba(170,170,170,0.5)",
+          "fontSize": 12,
+          "marginBottom": 10,
+        }
+      }
+    >
+      Mattermost
+    </Text>
+  </Component>
+  <Component
+    style={
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+  >
+    <TouchableOpacity
+      activeOpacity={0.2}
+      onPress={[Function]}
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    >
+      <Text
+        accessible={true}
+        allowFontScaling={true}
+        ellipsizeMode="tail"
+        numberOfLines={3}
+        style={
+          Array [
+            Object {
+              "color": undefined,
+              "fontSize": 14,
+              "marginBottom": 10,
+            },
+            Object {
+              "marginRight": 0,
+            },
+          ]
+        }
+      >
+        Title
+      </Text>
+    </TouchableOpacity>
+  </Component>
+</Component>
+`;
+
+exports[`PostAttachmentOpenGraph should match state and snapshot, on renderDescription 1`] = `null`;
+
+exports[`PostAttachmentOpenGraph should match state and snapshot, on renderDescription 2`] = `
+<Component
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Text
+    accessible={true}
+    allowFontScaling={true}
+    ellipsizeMode="tail"
+    numberOfLines={5}
+    style={
+      Object {
+        "color": "rgba(170,170,170,0.7)",
+        "fontSize": 13,
+        "marginBottom": 10,
+      }
+    }
+  >
+    Description
+  </Text>
+</Component>
+`;
+
+exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage 1`] = `null`;
+
+exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage 2`] = `
+<Component
+  style={
+    Object {
+      "alignItems": "center",
+    }
+  }
+>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+    style={
+      Object {
+        "height": 150,
+        "width": 312,
+      }
+    }
+  >
+    <Image
+      resizeMode="contain"
+      style={
+        Array [
+          Object {
+            "borderRadius": 3,
+          },
+          Object {
+            "height": 150,
+            "width": 312,
+          },
+        ]
+      }
+    />
+  </TouchableWithoutFeedback>
+</Component>
+`;

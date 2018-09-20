@@ -169,17 +169,34 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         previewImageAtIndex(this.props.navigator, [this.refs.item], 0, files);
     };
 
-    render() {
-        const {isReplyPost, openGraphData, theme} = this.props;
-        const {hasImage, height, imageUrl, width} = this.state;
-
-        if (!openGraphData) {
+    renderDescription = () => {
+        const {openGraphData} = this.props;
+        if (!openGraphData.description) {
             return null;
         }
 
-        const style = getStyleSheet(theme);
+        const style = getStyleSheet(this.props.theme);
 
-        let description = null;
+        return (
+            <View style={style.flex}>
+                <Text
+                    style={style.siteDescription}
+                    numberOfLines={5}
+                    ellipsizeMode='tail'
+                >
+                    {openGraphData.description}
+                </Text>
+            </View>
+        );
+    }
+
+    renderImage = () => {
+        if (!this.state.hasImage) {
+            return null;
+        }
+
+        const {height, imageUrl, width} = this.state;
+
         let source;
         if (imageUrl) {
             source = {
@@ -187,19 +204,36 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             };
         }
 
-        if (openGraphData.description) {
-            description = (
-                <View style={style.flex}>
-                    <Text
-                        style={style.siteDescription}
-                        numberOfLines={5}
-                        ellipsizeMode='tail'
-                    >
-                        {openGraphData.description}
-                    </Text>
-                </View>
-            );
+        const style = getStyleSheet(this.props.theme);
+
+        return (
+            <View
+                ref='item'
+                style={style.imageContainer}
+            >
+                <TouchableWithoutFeedback
+                    onPress={this.handlePreviewImage}
+                    style={{width, height}}
+                >
+                    <Image
+                        ref='image'
+                        style={[style.image, {width, height}]}
+                        source={source}
+                        resizeMode='contain'
+                    />
+                </TouchableWithoutFeedback>
+            </View>
+        );
+    }
+
+    render() {
+        const {isReplyPost, openGraphData, theme} = this.props;
+
+        if (!openGraphData) {
+            return null;
         }
+
+        const style = getStyleSheet(theme);
 
         return (
             <View style={style.container}>
@@ -226,25 +260,8 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         </Text>
                     </TouchableOpacity>
                 </View>
-                {description}
-                {hasImage &&
-                <View
-                    ref='item'
-                    style={style.imageContainer}
-                >
-                    <TouchableWithoutFeedback
-                        onPress={this.handlePreviewImage}
-                        style={{width, height}}
-                    >
-                        <Image
-                            ref='image'
-                            style={[style.image, {width, height}]}
-                            source={source}
-                            resizeMode='contain'
-                        />
-                    </TouchableWithoutFeedback>
-                </View>
-                }
+                {this.renderDescription()}
+                {this.renderImage()}
             </View>
         );
     }
