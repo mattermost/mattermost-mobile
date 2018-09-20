@@ -29,37 +29,29 @@ export function addListItemIndices(ast) {
     return ast;
 }
 
-// Take all images, that aren't inside of tables, and move them to be children of the root document node.
+// Take all images that aren't inside of tables and move them to be children of the root document node.
 // When this happens, their parent nodes are split into two, if necessary, with the version that follows
 // the image having its "continue" field set to true to indicate that things like bullet points don't
 // need to be rendered.
 export function pullOutImages(ast) {
-    for (let block = ast.firstChild; block !== null; block = block.next) {
-        // Skip tables because we'll render images inside of those as links
-        if (block.type === 'table') {
+    const walker = ast.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
             continue;
         }
 
-        let node = block.firstChild;
+        const node = e.node;
 
-        let cameFromChild = false;
+        // Skip tables because we'll render images inside of those as links
+        if (node.type === 'table') {
+            walker.resumeAt(node, false);
+            continue;
+        }
 
-        while (node && node !== block) {
-            if (node.type === 'image' && node.parent.type !== 'document') {
-                pullOutImage(node);
-            }
-
-            // Walk through tree to next node
-            if (node.firstChild && !cameFromChild) {
-                node = node.firstChild;
-                cameFromChild = false;
-            } else if (node.next) {
-                node = node.next;
-                cameFromChild = false;
-            } else {
-                node = node.parent;
-                cameFromChild = true;
-            }
+        if (node.type === 'image' && node.parent.type !== 'document') {
+            pullOutImage(node);
         }
     }
 
