@@ -7,7 +7,9 @@ import {connect} from 'react-redux';
 import {doPostAction} from 'mattermost-redux/actions/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import InteractiveAction from './interactive_action';
+import {setMenuActionSelector} from 'app/actions/views/post';
+
+import ActionMenu from './action_menu';
 
 function mapStateToProps(state) {
     return {
@@ -19,8 +21,9 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             doPostAction,
+            setMenuActionSelector,
         }, dispatch),
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(InteractiveAction);
+export default connect(mapStateToProps, mapDispatchToProps)(ActionMenu);

@@ -29,7 +29,7 @@ export default class UserListRow extends React.PureComponent {
 
     onPress = () => {
         if (this.props.onPress) {
-            this.props.onPress(this.props.id);
+            this.props.onPress(this.props.id, this.props.item);
         }
     };
 

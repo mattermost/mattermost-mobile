@@ -21,7 +21,7 @@ export default class ChannelListRow extends React.PureComponent {
     };
 
     onPress = () => {
-        this.props.onPress(this.props.id);
+        this.props.onPress(this.props.id, this.props.item);
     };
 
     render() {

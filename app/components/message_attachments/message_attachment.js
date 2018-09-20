@@ -22,7 +22,8 @@ import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import InteractiveAction from './interactive_action';
+import ActionButton from './action_button';
+import ActionMenu from './action_menu';
 
 const VIEWPORT_IMAGE_CONTAINER_OFFSET = 10;
 const VIEWPORT_IMAGE_OFFSET = 32;
@@ -70,32 +71,51 @@ export default class MessageAttachment extends PureComponent {
     }
 
     getActionView = (style) => {
-        const {attachment, postId} = this.props;
+        const {attachment, postId, navigator} = this.props;
         const {actions} = attachment;
 
         if (!actions || !actions.length) {
             return null;
         }
 
-        const buttons = [];
+        const content = [];
 
         actions.forEach((action) => {
             if (!action.id || !action.name) {
                 return;
             }
-            buttons.push(
-                <InteractiveAction
-                    key={action.id}
-                    id={action.id}
-                    name={action.name}
-                    postId={postId}
-                />
-            );
+
+            switch (action.type) {
+            case 'select':
+                content.push(
+                    <ActionMenu
+                        key={action.id}
+                        id={action.id}
+                        name={action.name}
+                        dataSource={action.data_source}
+                        options={action.options}
+                        postId={postId}
+                        navigator={navigator}
+                    />
+                );
+                break;
+            case 'button':
+            default:
+                content.push(
+                    <ActionButton
+                        key={action.id}
+                        id={action.id}
+                        name={action.name}
+                        postId={postId}
+                    />
+                );
+                break;
+            }
         });
 
         return (
             <View style={style.actionsContainer}>
-                {buttons}
+                {content}
             </View>
         );
     };
