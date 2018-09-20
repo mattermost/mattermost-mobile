@@ -101,7 +101,7 @@ export default class ActionMenu extends PureComponent {
                     <Icon
                         key={id + 'check'}
                         name='check'
-                        color={theme.centerChannelColor}
+                        color={'#287B39'}
                     />
                     <FormattedText
                         key={id + 'submitted'}
@@ -184,6 +184,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         submittedText: {
             marginLeft: 5,
+            color: '#287B39',
         },
     };
 });
