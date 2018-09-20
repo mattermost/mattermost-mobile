@@ -89,3 +89,9 @@ export function getTranslations(locale) {
     }
     return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];
 }
+
+export function getLocalizedMessage(locale, id) {
+    const translations = getTranslations(locale);
+
+    return translations[id] || TRANSLATIONS[DEFAULT_LOCALE][id];
+}
