@@ -44,14 +44,16 @@ class PushNotification {
         const replyAction = new NotificationAction({
             activationMode: 'background',
             title: 'Reply',
-            behavior: 'textInput',
+            // behavior: 'textInput',
+            behavior: 'default',
             authenticationRequired: true,
             identifier: REPLY_ACTION,
         }, this.handleReply);
 
         replyCategory = new NotificationCategory({
             identifier: CATEGORY,
-            actions: [replyAction],
+            // actions: [replyAction],
+            actions: [],
             context: 'default',
         });
     }

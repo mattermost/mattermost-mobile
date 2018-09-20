@@ -1,89 +1,27 @@
 {
   "project_info": {
-    "project_number": "184930218130",
-    "firebase_url": "https://api-7231322553409637977-752355.firebaseio.com",
-    "project_id": "api-7231322553409637977-752355",
-    "storage_bucket": "api-7231322553409637977-752355.appspot.com"
+    "project_number": "882380235809",
+    "firebase_url": "https://owschat-8c8f7.firebaseio.com",
+    "project_id": "owschat-8c8f7",
+    "storage_bucket": "owschat-8c8f7.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:184930218130:android:a0e553d1a1f043b5",
-        "android_client_info": {
-          "package_name": "com.mattermost.react.native"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "184930218130-8nahrspll1opff0uogtkh2qsv8coqngo.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCkZkU2ECVg-mmdCG5OoHHQXtKiENuvWPE"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:184930218130:android:c7debfa7ea3f75a7",
+        "mobilesdk_app_id": "1:882380235809:android:c7debfa7ea3f75a7",
         "android_client_info": {
           "package_name": "com.mattermost.rnbeta"
         }
       },
       "oauth_client": [
         {
-          "client_id": "184930218130-8nahrspll1opff0uogtkh2qsv8coqngo.apps.googleusercontent.com",
+          "client_id": "882380235809-1f3qsaipqcflj4b79khg5n9mvacdcebs.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCkZkU2ECVg-mmdCG5OoHHQXtKiENuvWPE"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:184930218130:android:2db4058a5b5d6506",
-        "android_client_info": {
-          "package_name": "com.mattermost.rn"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "184930218130-8nahrspll1opff0uogtkh2qsv8coqngo.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCkZkU2ECVg-mmdCG5OoHHQXtKiENuvWPE"
+          "current_key": "AIzaSyCCxrcPvV3VVG9ou-vGVd5FWFDhPKAh56E"
         }
       ],
       "services": {

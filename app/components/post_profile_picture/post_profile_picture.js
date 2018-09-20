@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Image, TouchableOpacity, View} from 'react-native';
 
-import AppIcon from 'app/components/app_icon';
+import AppIcon from 'app/components/ows_app_icon';
 import ProfilePicture from 'app/components/profile_picture';
 import {emptyFunction} from 'app/utils/general';
 import webhookIcon from 'assets/images/icons/webhook.jpg';
