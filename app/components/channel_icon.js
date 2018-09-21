@@ -43,8 +43,8 @@ export default class ChannelIcon extends React.PureComponent {
             membersCount,
             size,
             status,
-            teammateDeletedAt,
             theme,
+            teammateDeletedAt,
             type,
             isArchived,
         } = this.props;

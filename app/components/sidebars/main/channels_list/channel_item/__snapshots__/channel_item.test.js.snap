@@ -80,3 +80,84 @@ exports[`ChannelItem should match snapshot 1`] = `
   </TouchableHighlight>
 </AnimatedComponent>
 `;
+
+exports[`ChannelItem should match snapshot for deactivated user 1`] = `
+<AnimatedComponent>
+  <TouchableHighlight
+    activeOpacity={0.85}
+    delayPressOut={100}
+    onLongPress={[Function]}
+    onPress={[Function]}
+    underlayColor="rgba(170,170,170,0.5)"
+  >
+    <Component
+      style={
+        Array [
+          Object {
+            "flex": 1,
+            "flexDirection": "row",
+            "height": 44,
+          },
+          undefined,
+        ]
+      }
+    >
+      <Component
+        style={
+          Array [
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+              "paddingLeft": 16,
+            },
+            undefined,
+          ]
+        }
+      >
+        <ChannelIcon
+          channelId="channel_id"
+          isActive={false}
+          isArchived={false}
+          isInfo={false}
+          isUnread={true}
+          membersCount={1}
+          size={16}
+          status="online"
+          teammateDeletedAt={100}
+          theme={
+            Object {
+              "sidebarText": "#aaa",
+              "sidebarTextActiveBorder": "#aaa",
+              "sidebarTextActiveColor": "#aaa",
+              "sidebarTextHoverBg": "#aaa",
+            }
+          }
+          type="D"
+        />
+        <Component
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Array [
+              Object {
+                "color": "rgba(170,170,170,0.4)",
+                "flex": 1,
+                "fontSize": 14,
+                "fontWeight": "600",
+                "height": "100%",
+                "lineHeight": 44,
+                "paddingRight": 40,
+                "textAlignVertical": "center",
+              },
+              Object {
+                "color": undefined,
+              },
+            ]
+          }
+        />
+      </Component>
+    </Component>
+  </TouchableHighlight>
+</AnimatedComponent>
+`;

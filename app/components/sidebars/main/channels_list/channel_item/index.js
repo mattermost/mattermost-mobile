@@ -28,14 +28,21 @@ function makeMapStateToProps() {
         let isMyUser = false;
         let teammateDeletedAt = 0;
         let displayName = channel.display_name;
-        if (channel.type === General.DM_CHANNEL && channel.teammate_id) {
-            isMyUser = channel.teammate_id === currentUserId;
-            const teammate = getUser(state, channel.teammate_id);
-            if (teammate && teammate.delete_at) {
-                teammateDeletedAt = teammate.delete_at;
+        let isArchived = false;
+        if (channel.type === General.DM_CHANNEL) {
+            if (ownProps.isSearchResult) {
+                isMyUser = channel.id === currentUserId;
+                teammateDeletedAt = channel.delete_at;
+            } else {
+                isMyUser = channel.teammate_id === currentUserId;
+                const teammate = getUser(state, channel.teammate_id);
+                if (teammate && teammate.delete_at) {
+                    teammateDeletedAt = teammate.delete_at;
+                }
+                const teammateNameDisplay = getTeammateNameDisplaySetting(state);
+                displayName = displayUsername(teammate, teammateNameDisplay, false);
+                isArchived = channel.delete_at > 0;
             }
-            const teammateNameDisplay = getTeammateNameDisplaySetting(state);
-            displayName = displayUsername(teammate, teammateNameDisplay, false);
         }
 
         const currentChannelId = getCurrentChannelId(state);
@@ -62,6 +69,7 @@ function makeMapStateToProps() {
             showUnreadForMsgs = member.notify_props.mark_unread !== General.MENTION;
         }
         return {
+            channel,
             currentChannelId,
             displayName,
             fake: channel.fake,
@@ -75,7 +83,7 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             type: channel.type,
             unreadMsgs,
-            isArchived: channel.delete_at > 0,
+            isArchived,
         };
     };
 }
