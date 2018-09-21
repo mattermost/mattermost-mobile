@@ -118,6 +118,7 @@ export default class FileUploadItem extends PureComponent {
 
         const headers = {
             Authorization: `Bearer ${Client4.getToken()}`,
+            'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'multipart/form-data',
         };
 
