@@ -26,6 +26,14 @@ export const getCurrentChannelDraft = createSelector(
     }
 );
 
+export const getDraftForChannel = createSelector(
+    getChannelDrafts,
+    (state, channelId) => channelId,
+    (drafts, channelId) => {
+        return drafts[channelId] || emptyDraft;
+    }
+);
+
 export const getThreadDraft = createSelector(
     getThreadDrafts,
     (state, rootId) => rootId,

@@ -4,6 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import ChannelItem from './channel_item.js';
 
 jest.mock('react-intl');
@@ -17,6 +19,7 @@ describe('ChannelItem', () => {
         isChannelMuted: false,
         isMyUser: true,
         isUnread: true,
+        hasDraft: false,
         mentions: 0,
         navigator: {push: () => {}}, // eslint-disable-line no-empty-function
         onSelectChannel: () => {}, // eslint-disable-line no-empty-function
@@ -25,12 +28,7 @@ describe('ChannelItem', () => {
         status: 'online',
         teammateDeletedAt: 0,
         type: 'O',
-        theme: {
-            sidebarText: '#aaa',
-            sidebarTextActiveBorder: '#aaa',
-            sidebarTextActiveColor: '#aaa',
-            sidebarTextHoverBg: '#aaa',
-        },
+        theme: Preferences.THEMES.default,
         unreadMsgs: 1,
         isArchived: false,
     };
@@ -54,6 +52,18 @@ describe('ChannelItem', () => {
             <ChannelItem {...newProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with draft', () => {
+        const wrapper = shallow(
+            <ChannelItem
+                {...baseProps}
+                hasDraft={true}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

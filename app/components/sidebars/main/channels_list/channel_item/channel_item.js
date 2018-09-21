@@ -28,6 +28,7 @@ export default class ChannelItem extends PureComponent {
         isChannelMuted: PropTypes.bool,
         isMyUser: PropTypes.bool,
         isUnread: PropTypes.bool,
+        hasDraft: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
@@ -92,6 +93,7 @@ export default class ChannelItem extends PureComponent {
             isChannelMuted,
             isMyUser,
             isUnread,
+            hasDraft,
             mentions,
             shouldHideChannel,
             status,
@@ -167,6 +169,7 @@ export default class ChannelItem extends PureComponent {
                 isActive={isActive}
                 channelId={channelId}
                 isUnread={isUnread}
+                hasDraft={hasDraft && channelId !== currentChannelId}
                 membersCount={displayName.split(',').length}
                 size={16}
                 status={status}
