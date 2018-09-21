@@ -32,10 +32,7 @@ exports[`user_profile should match snapshot 1`] = `
         statusSize={40}
         userId="4hzdnk6mg7gepe7yze6m3domnc"
       />
-      <Text
-        accessible={true}
-        allowFontScaling={true}
-        ellipsizeMode="tail"
+      <Component
         style={
           Object {
             "color": "#aaa",
@@ -45,7 +42,7 @@ exports[`user_profile should match snapshot 1`] = `
         }
       >
         @undefined
-      </Text>
+      </Component>
     </Component>
     <Component
       style={
@@ -56,10 +53,7 @@ exports[`user_profile should match snapshot 1`] = `
       }
     >
       <Component>
-        <Text
-          accessible={true}
-          allowFontScaling={true}
-          ellipsizeMode="tail"
+        <Component
           style={
             Object {
               "color": undefined,
@@ -71,11 +65,8 @@ exports[`user_profile should match snapshot 1`] = `
           }
         >
           NICKNAME
-        </Text>
-        <Text
-          accessible={true}
-          allowFontScaling={true}
-          ellipsizeMode="tail"
+        </Component>
+        <Component
           style={
             Object {
               "color": "#aaa",
@@ -84,7 +75,7 @@ exports[`user_profile should match snapshot 1`] = `
           }
         >
           nick
-        </Text>
+        </Component>
       </Component>
     </Component>
     <userProfileRow

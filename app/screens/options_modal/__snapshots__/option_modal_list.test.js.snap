@@ -181,10 +181,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
         ]
       }
     >
-      <Text
-        accessible={true}
-        allowFontScaling={true}
-        ellipsizeMode="tail"
+      <Component
         style={
           Object {
             "color": "#7f8180",
@@ -194,7 +191,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
         }
       >
         test
-      </Text>
+      </Component>
     </Component>
     <Component
       style={

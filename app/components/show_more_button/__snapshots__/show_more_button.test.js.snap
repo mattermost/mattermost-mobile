@@ -119,10 +119,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
           }
         }
       >
-        <Text
-          accessible={true}
-          allowFontScaling={true}
-          ellipsizeMode="tail"
+        <Component
           style={
             Object {
               "color": undefined,
@@ -133,7 +130,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
           }
         >
           +
-        </Text>
+        </Component>
         <FormattedText
           defaultMessage="Show More"
           id="post_info.message.show_more"

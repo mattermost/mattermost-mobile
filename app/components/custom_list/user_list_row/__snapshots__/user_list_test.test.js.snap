@@ -20,10 +20,7 @@ exports[`UserListRow should match snapshot 1`] = `
     }
   >
     <Component>
-      <Text
-        accessible={true}
-        allowFontScaling={true}
-        ellipsizeMode="tail"
+      <Component
         style={
           Object {
             "color": undefined,
@@ -32,12 +29,10 @@ exports[`UserListRow should match snapshot 1`] = `
         }
       >
         user
-      </Text>
+      </Component>
     </Component>
     <Component>
-      <Text
-        accessible={true}
-        allowFontScaling={true}
+      <Component
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
@@ -49,7 +44,7 @@ exports[`UserListRow should match snapshot 1`] = `
         }
       >
         (@user)
-      </Text>
+      </Component>
     </Component>
   </Component>
 </CustomListRow>
@@ -75,10 +70,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
     }
   >
     <Component>
-      <Text
-        accessible={true}
-        allowFontScaling={true}
-        ellipsizeMode="tail"
+      <Component
         style={
           Object {
             "color": undefined,
@@ -87,12 +79,10 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
         }
       >
         user
-      </Text>
+      </Component>
     </Component>
     <Component>
-      <Text
-        accessible={true}
-        allowFontScaling={true}
+      <Component
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
@@ -128,10 +118,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
     }
   >
     <Component>
-      <Text
-        accessible={true}
-        allowFontScaling={true}
-        ellipsizeMode="tail"
+      <Component
         style={
           Object {
             "color": undefined,
@@ -140,12 +127,10 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
         }
       >
         user
-      </Text>
+      </Component>
     </Component>
     <Component>
-      <Text
-        accessible={true}
-        allowFontScaling={true}
+      <Component
         ellipsizeMode="tail"
         numberOfLines={1}
         style={

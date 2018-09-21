@@ -54,9 +54,7 @@ exports[`ChannelItem should match snapshot 1`] = `
           }
           type="O"
         />
-        <Text
-          accessible={true}
-          allowFontScaling={true}
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
