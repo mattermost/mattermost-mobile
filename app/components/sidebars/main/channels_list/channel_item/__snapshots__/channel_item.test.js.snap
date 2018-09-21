@@ -82,114 +82,6 @@ exports[`ChannelItem should match snapshot 1`] = `
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user 1`] = `
-ShallowWrapper {
-  "length": 1,
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <ChannelItem
-    channelId="channel_id"
-    currentChannelId="current_channel_id"
-    displayName="display_name"
-    fake={false}
-    isArchived={false}
-    isChannelMuted={false}
-    isMyUser={true}
-    isUnread={true}
-    mentions={0}
-    navigator={
-      Object {
-        "push": [Function],
-      }
-    }
-    onSelectChannel={[Function]}
-    shouldHideChannel={false}
-    showUnreadForMsgs={true}
-    status="online"
-    teammateDeletedAt={100}
-    theme={
-      Object {
-        "sidebarText": "#aaa",
-        "sidebarTextActiveBorder": "#aaa",
-        "sidebarTextActiveColor": "#aaa",
-        "sidebarTextHoverBg": "#aaa",
-      }
-    }
-    type="D"
-    unreadMsgs={1}
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "children": <TouchableHighlight
-        activeOpacity={0.85}
-        delayPressOut={100}
-        onLongPress={[Function]}
-        onPress={[Function]}
-        underlayColor="rgba(170,170,170,0.5)"
-              "paddingLeft": 16,
-            },
-            undefined,
-          ]
-        }
-      >
-        <ChannelIcon
-          channelId="channel_id"
-          isActive={false}
-          isArchived={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          teammateDeletedAt={0}
-          theme={
-            Object {
-              "sidebarText": "#aaa",
-              "sidebarTextActiveBorder": "#aaa",
-              "sidebarTextActiveColor": "#aaa",
-              "sidebarTextHoverBg": "#aaa",
-            }
-          }
-          type="O"
-        />
-        <Text
-          accessible={true}
-          allowFontScaling={true}
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "color": "rgba(170,170,170,0.4)",
-                "flex": 1,
-                "fontSize": 14,
-                "fontWeight": "600",
-                "height": "100%",
-                "lineHeight": 44,
-                "paddingRight": 40,
-                "textAlignVertical": "center",
-              },
-              Object {
-                "color": undefined,
-              },
-            ]
-          }
-        />
-      </Component>
-    </Component>
-  </TouchableHighlight>
-</AnimatedComponent>
-`;
-
-exports[`ChannelItem should match snapshot for deactivated user 1`] = `
 <AnimatedComponent>
   <TouchableHighlight
     activeOpacity={0.85}
@@ -243,9 +135,7 @@ exports[`ChannelItem should match snapshot for deactivated user 1`] = `
           }
           type="D"
         />
-        <Text
-          accessible={true}
-          allowFontScaling={true}
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
