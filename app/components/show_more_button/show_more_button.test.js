@@ -25,7 +25,7 @@ describe('ShowMoreButton', () => {
             <ShowMoreButton {...baseProps}/>
         );
 
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match, button snapshot', () => {

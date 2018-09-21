@@ -41,6 +41,6 @@ describe('ChannelItem', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

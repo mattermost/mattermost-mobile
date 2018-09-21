@@ -31,13 +31,13 @@ describe('OptionModalList', () => {
         const wrapper = shallow(
             <OptionModalListIOS {...baseProps}/>,
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for Android', async () => {
         const wrapper = shallow(
             <OptionModalListAndroid {...baseProps}/>,
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

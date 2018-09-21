@@ -35,7 +35,7 @@ describe('ErrorTeamsList', () => {
         const wrapper = shallow(
             <ErrorTeamsList {...baseProps}/>
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should call for userInfo on retry', async () => {

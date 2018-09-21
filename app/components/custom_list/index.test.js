@@ -35,7 +35,7 @@ describe('CustomList', () => {
         const wrapper = shallow(
             <CustomList {...baseProps}/>
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.state('data')).toEqual({U: baseProps.data});
 
         // on componentWillReceiveProps

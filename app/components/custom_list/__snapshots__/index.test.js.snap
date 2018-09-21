@@ -1,216 +1,38 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`CustomList should match snapshot 1`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <CustomList
-    createSections={[Function]}
-    data={
-      Array [
-        Object {
-          "username": "username_1",
-        },
-        Object {
-          "username": "username_2",
-        },
-      ]
-    }
-    listInitialSize={0}
-    listPageSize={0}
-    listScrollRenderAheadDistance={0}
-    loading={false}
-    loadingText={
-      Object {
-        "defaultMessage": "Loading Members...",
-        "id": "mobile.loading_members",
-      }
-    }
-    onListEndReached={[Function]}
-    onListEndReachedThreshold={0}
-    onRowPress={[Function]}
-    onRowSelect={[Function]}
-    renderRow={[Function]}
-    searching={false}
-    selectable={true}
-    showNoResults={false}
-    showSections={true}
-    theme={
-      Object {
-        "centerChannelBg": "#aaa",
-        "centerChannelColor": "#aaa",
-      }
-    }
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateError": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "children": Array [
-        <ListViewMock
-          dataSource={
-            ListViewDataSource {
-              "items": 2,
-            }
-          }
-          enableEmptySections={true}
-          initialListSize={0}
-          onEndReached={[Function]}
-          onEndReachedThreshold={0}
-          pageSize={0}
-          renderFooter={[Function]}
-          renderRow={[Function]}
-          renderScrollComponent={[Function]}
-          renderSectionHeader={[Function]}
-          renderSeparator={[Function]}
-          scrollRenderAheadDistance={0}
-          style={
-            Object {
-              "backgroundColor": "#aaa",
-              "flex": 1,
-            }
-          }
-        />,
-        undefined,
-      ],
-      "style": Object {
-        "flex": 1,
-      },
-    },
-    "ref": null,
-    "rendered": Array [
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "class",
-        "props": Object {
-          "dataSource": ListViewDataSource {
-            "items": 2,
-          },
-          "enableEmptySections": true,
-          "initialListSize": 0,
-          "onEndReached": [Function],
-          "onEndReachedThreshold": 0,
-          "pageSize": 0,
-          "renderFooter": [Function],
-          "renderRow": [Function],
-          "renderScrollComponent": [Function],
-          "renderSectionHeader": [Function],
-          "renderSeparator": [Function],
-          "scrollRenderAheadDistance": 0,
-          "style": Object {
-            "backgroundColor": "#aaa",
-            "flex": 1,
-          },
-        },
-        "ref": null,
-        "rendered": null,
-        "type": [Function],
-      },
-      undefined,
-    ],
-    "type": [Function],
-  },
-  Symbol(enzyme.__nodes__): Array [
+<Component
+  style={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "class",
-      "props": Object {
-        "children": Array [
-          <ListViewMock
-            dataSource={
-              ListViewDataSource {
-                "items": 2,
-              }
-            }
-            enableEmptySections={true}
-            initialListSize={0}
-            onEndReached={[Function]}
-            onEndReachedThreshold={0}
-            pageSize={0}
-            renderFooter={[Function]}
-            renderRow={[Function]}
-            renderScrollComponent={[Function]}
-            renderSectionHeader={[Function]}
-            renderSeparator={[Function]}
-            scrollRenderAheadDistance={0}
-            style={
-              Object {
-                "backgroundColor": "#aaa",
-                "flex": 1,
-              }
-            }
-          />,
-          undefined,
-        ],
-        "style": Object {
-          "flex": 1,
-        },
-      },
-      "ref": null,
-      "rendered": Array [
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "class",
-          "props": Object {
-            "dataSource": ListViewDataSource {
-              "items": 2,
-            },
-            "enableEmptySections": true,
-            "initialListSize": 0,
-            "onEndReached": [Function],
-            "onEndReachedThreshold": 0,
-            "pageSize": 0,
-            "renderFooter": [Function],
-            "renderRow": [Function],
-            "renderScrollComponent": [Function],
-            "renderSectionHeader": [Function],
-            "renderSeparator": [Function],
-            "scrollRenderAheadDistance": 0,
-            "style": Object {
-              "backgroundColor": "#aaa",
-              "flex": 1,
-            },
-          },
-          "ref": null,
-          "rendered": null,
-          "type": [Function],
-        },
-        undefined,
-      ],
-      "type": [Function],
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getDerivedStateFromProps": true,
-          "getSnapshotBeforeUpdate": true,
-          "setState": Object {
-            "skipsComponentDidUpdateOnNullish": true,
-          },
-        },
-      },
-    },
-    "attachTo": undefined,
-    "hydrateIn": undefined,
-  },
-}
+      "flex": 1,
+    }
+  }
+>
+  <ListViewMock
+    dataSource={
+      ListViewDataSource {
+        "items": 2,
+      }
+    }
+    enableEmptySections={true}
+    initialListSize={0}
+    onEndReached={[Function]}
+    onEndReachedThreshold={0}
+    pageSize={0}
+    renderFooter={[Function]}
+    renderRow={[Function]}
+    renderScrollComponent={[Function]}
+    renderSectionHeader={[Function]}
+    renderSeparator={[Function]}
+    scrollRenderAheadDistance={0}
+    style={
+      Object {
+        "backgroundColor": "#aaa",
+        "flex": 1,
+      }
+    }
+  />
+</Component>
 `;
 
 exports[`CustomList should match snapshot, renderFooter 1`] = `null`;
