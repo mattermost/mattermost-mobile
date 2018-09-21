@@ -17,6 +17,7 @@ import Permissions from 'react-native-permissions';
 
 import {PermissionTypes} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 const ShareExtension = NativeModules.MattermostShare;
 
@@ -314,14 +315,14 @@ export default class AttachmentButton extends PureComponent {
             items: [{
                 action: () => this.handleFileAttachmentOption(this.attachFileFromCamera),
                 text: {
-                    id: 'mobile.file_upload.camera',
+                    id: t('mobile.file_upload.camera'),
                     defaultMessage: 'Take Photo or Video',
                 },
                 icon: 'camera',
             }, {
                 action: () => this.handleFileAttachmentOption(this.attachFileFromLibrary),
                 text: {
-                    id: 'mobile.file_upload.library',
+                    id: t('mobile.file_upload.library'),
                     defaultMessage: 'Photo Library',
                 },
                 icon: 'photo',
@@ -332,7 +333,7 @@ export default class AttachmentButton extends PureComponent {
             options.items.push({
                 action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
                 text: {
-                    id: 'mobile.file_upload.video',
+                    id: t('mobile.file_upload.video'),
                     defaultMessage: 'Video Library',
                 },
                 icon: 'file-video-o',
@@ -342,7 +343,7 @@ export default class AttachmentButton extends PureComponent {
         options.items.push({
             action: () => this.handleFileAttachmentOption(this.attachFileFromFiles),
             text: {
-                id: 'mobile.file_upload.browse',
+                id: t('mobile.file_upload.browse'),
                 defaultMessage: 'Browse Files',
             },
             icon: 'file',

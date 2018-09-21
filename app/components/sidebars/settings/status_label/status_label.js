@@ -8,6 +8,7 @@ import {General} from 'mattermost-redux/constants';
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 export default class UserInfo extends PureComponent {
     static propTypes = {
@@ -23,25 +24,25 @@ export default class UserInfo extends PureComponent {
         const {status, theme} = this.props;
         const style = getStyleSheet(theme);
 
-        let i18nId = 'status_dropdown.set_offline';
+        let i18nId = t('status_dropdown.set_offline');
         let defaultMessage = 'Offline';
         switch (status) {
         case General.AWAY:
-            i18nId = 'status_dropdown.set_away';
+            i18nId = t('status_dropdown.set_away');
             defaultMessage = 'Away';
             break;
         case General.DND:
-            i18nId = 'status_dropdown.set_dnd';
+            i18nId = t('status_dropdown.set_dnd');
             defaultMessage = 'Do Not Disturb';
             break;
         case General.ONLINE:
-            i18nId = 'status_dropdown.set_online';
+            i18nId = t('status_dropdown.set_online');
             defaultMessage = 'Online';
             break;
         }
 
         if (status === General.OUT_OF_OFFICE) {
-            i18nId = 'status_dropdown.set_ooo';
+            i18nId = t('status_dropdown.set_ooo');
             defaultMessage = 'Out Of Office';
         }
 

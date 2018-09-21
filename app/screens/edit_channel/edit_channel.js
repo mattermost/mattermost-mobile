@@ -16,34 +16,35 @@ import EditChannelInfo from 'app/components/edit_channel_info';
 import {ViewTypes} from 'app/constants';
 import {setNavigatorStyles} from 'app/utils/theme';
 import {cleanUpUrlable} from 'app/utils/url';
+import {t} from 'app/utils/i18n';
 
 const messages = {
     display_name_required: {
-        id: 'mobile.rename_channel.display_name_required',
+        id: t('mobile.rename_channel.display_name_required'),
         defaultMessage: 'Channel name is required',
     },
     display_name_maxLength: {
-        id: 'mobile.rename_channel.display_name_maxLength',
+        id: t('mobile.rename_channel.display_name_maxLength'),
         defaultMessage: 'Channel name must be less than {maxLength, number} characters',
     },
     display_name_minLength: {
-        id: 'mobile.rename_channel.display_name_minLength',
+        id: t('mobile.rename_channel.display_name_minLength'),
         defaultMessage: 'Channel name must be {minLength, number} or more characters',
     },
     name_required: {
-        id: 'mobile.rename_channel.name_required',
+        id: t('mobile.rename_channel.name_required'),
         defaultMessage: 'URL is required',
     },
     name_maxLength: {
-        id: 'mobile.rename_channel.name_maxLength',
+        id: t('mobile.rename_channel.name_maxLength'),
         defaultMessage: 'URL must be less than {maxLength, number} characters',
     },
     name_minLength: {
-        id: 'mobile.rename_channel.name_minLength',
+        id: t('mobile.rename_channel.name_minLength'),
         defaultMessage: 'URL must be {minLength, number} or more characters',
     },
     name_lowercase: {
-        id: 'mobile.rename_channel.name_lowercase',
+        id: t('mobile.rename_channel.name_lowercase'),
         defaultMessage: 'URL be lowercase alphanumeric characters',
     },
 };

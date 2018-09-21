@@ -14,6 +14,7 @@ import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import NotificationSettingsMentionsBase from './notification_settings_mention_base';
 
@@ -57,7 +58,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
 
         return (
             <Section
-                headerId='mobile.notification_settings_mentions.wordsTrigger'
+                headerId={t('mobile.notification_settings_mentions.wordsTrigger')}
                 headerDefaultMessage='WORDS THAT TRIGGER MENTIONS'
                 theme={theme}
             >
@@ -140,7 +141,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
 
         return (
             <Section
-                headerId='mobile.account_notifications.reply.header'
+                headerId={t('mobile.account_notifications.reply.header')}
                 headerDefaultMessage='SEND REPLY NOTIFICATIONS FOR'
                 theme={theme}
             >

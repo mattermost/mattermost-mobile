@@ -26,6 +26,7 @@ import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {loadingText} from 'app/utils/member_list';
 import {changeOpacity, setNavigatorStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import SelectedUsers from './selected_users';
 
@@ -366,7 +367,7 @@ class MoreDirectMessages extends PureComponent {
                 intl,
                 result.error,
                 {
-                    id: 'mobile.open_gm.error',
+                    id: t('mobile.open_gm.error'),
                     defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
                 }
             );
@@ -525,9 +526,9 @@ class MoreDirectMessages extends PureComponent {
                     <SelectedUsers
                         selectedIds={this.state.selectedIds}
                         warnCount={5}
-                        warnMessage={{id: 'mobile.more_dms.add_more', defaultMessage: 'You can add {remaining, number} more users'}}
+                        warnMessage={{id: t('mobile.more_dms.add_more'), defaultMessage: 'You can add {remaining, number} more users'}}
                         maxCount={7}
-                        maxMessage={{id: 'mobile.more_dms.cannot_add_more', defaultMessage: 'You cannot add more users'}}
+                        maxMessage={{id: t('mobile.more_dms.cannot_add_more'), defaultMessage: 'You cannot add more users'}}
                         onRemove={this.handleRemoveUser}
                     />
                 </View>

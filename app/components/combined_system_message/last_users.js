@@ -12,37 +12,39 @@ import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 
+import {t} from 'app/utils/i18n';
+
 const typeMessage = {
     [Posts.POST_TYPES.ADD_TO_CHANNEL]: {
-        id: 'last_users_message.added_to_channel.type',
+        id: t('last_users_message.added_to_channel.type'),
         defaultMessage: 'were **added to the channel** by {actor}.',
     },
     [Posts.POST_TYPES.JOIN_CHANNEL]: {
-        id: 'last_users_message.joined_channel.type',
+        id: t('last_users_message.joined_channel.type'),
         defaultMessage: '**joined the channel**.',
     },
     [Posts.POST_TYPES.LEAVE_CHANNEL]: {
-        id: 'last_users_message.left_channel.type',
+        id: t('last_users_message.left_channel.type'),
         defaultMessage: '**left the channel**.',
     },
     [Posts.POST_TYPES.REMOVE_FROM_CHANNEL]: {
-        id: 'last_users_message.removed_from_channel.type',
+        id: t('last_users_message.removed_from_channel.type'),
         defaultMessage: 'were **removed from the channel**.',
     },
     [Posts.POST_TYPES.ADD_TO_TEAM]: {
-        id: 'last_users_message.added_to_team.type',
+        id: t('last_users_message.added_to_team.type'),
         defaultMessage: 'were **added to the team** by {actor}.',
     },
     [Posts.POST_TYPES.JOIN_TEAM]: {
-        id: 'last_users_message.joined_team.type',
+        id: t('last_users_message.joined_team.type'),
         defaultMessage: '**joined the team**.',
     },
     [Posts.POST_TYPES.LEAVE_TEAM]: {
-        id: 'last_users_message.left_team.type',
+        id: t('last_users_message.left_team.type'),
         defaultMessage: '**left the team**.',
     },
     [Posts.POST_TYPES.REMOVE_FROM_TEAM]: {
-        id: 'last_users_message.removed_from_team.type',
+        id: t('last_users_message.removed_from_team.type'),
         defaultMessage: 'were **removed from the team**.',
     },
 };

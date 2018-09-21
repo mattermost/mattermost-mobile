@@ -20,6 +20,7 @@ import SettingsItem from 'app/screens/settings/settings_item';
 import {getNotificationProps} from 'app/utils/notify_props';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 class NotificationSettings extends PureComponent {
     static propTypes = {
@@ -210,7 +211,7 @@ class NotificationSettings extends PureComponent {
             autoResponder = (
                 <SettingsItem
                     defaultMessage='Automatic Direct Message Replies'
-                    i18nId='mobile.notification_settings.ooo_auto_responder'
+                    i18nId={t('mobile.notification_settings.ooo_auto_responder')}
                     iconName='beach-access'
                     iconType='material'
                     onPress={() => this.handlePress(this.goToNotificationSettingsAutoResponder)}
@@ -231,7 +232,7 @@ class NotificationSettings extends PureComponent {
                     <View style={style.divider}/>
                     <SettingsItem
                         defaultMessage='Mentions and Replies'
-                        i18nId='mobile.notification_settings.mentions_replies'
+                        i18nId={t('mobile.notification_settings.mentions_replies')}
                         iconName='md-at'
                         iconType='ion'
                         onPress={() => this.handlePress(this.goToNotificationSettingsMentions)}
@@ -241,7 +242,7 @@ class NotificationSettings extends PureComponent {
                     />
                     <SettingsItem
                         defaultMessage='Mobile'
-                        i18nId='mobile.notification_settings.mobile'
+                        i18nId={t('mobile.notification_settings.mobile')}
                         iconName='md-phone-portrait'
                         iconType='ion'
                         onPress={() => this.handlePress(this.goToNotificationSettingsMobile)}
@@ -251,7 +252,7 @@ class NotificationSettings extends PureComponent {
                     />
                     <SettingsItem
                         defaultMessage='Email'
-                        i18nId='mobile.notification_settings.email'
+                        i18nId={t('mobile.notification_settings.email')}
                         iconName='ios-mail'
                         iconType='ion'
                         onPress={() => this.handlePress(this.goToNotificationSettingsEmail)}

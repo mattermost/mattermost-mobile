@@ -45,6 +45,7 @@ import {loadConfigAndLicense, startDataCleanup} from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {deleteFileCache} from 'app/utils/file';
 import avoidNativeBridge from 'app/utils/avoid_native_bridge';
+import {t} from 'app/utils/i18n';
 import LocalConfig from 'assets/config';
 
 import App from './app';
@@ -161,10 +162,10 @@ const handleServerVersionChanged = async (serverVersion) => {
     if (serverVersion) {
         if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
             Alert.alert(
-                translations['mobile.server_upgrade.title'],
-                translations['mobile.server_upgrade.description'],
+                translations[t('mobile.server_upgrade.title')],
+                translations[t('mobile.server_upgrade.description')],
                 [{
-                    text: translations['mobile.server_upgrade.button'],
+                    text: translations[t('mobile.server_upgrade.button')],
                     onPress: handleServerVersionUpgradeNeeded,
                 }],
                 {cancelable: false}
@@ -265,10 +266,10 @@ export const handleManagedConfig = async (eventFromEmmServer = false) => {
                 if (!isTrusted) {
                     const translations = app.getTranslations();
                     Alert.alert(
-                        translations['mobile.managed.blocked_by'].replace('{vendor}', vendor),
-                        translations['mobile.managed.jailbreak'].replace('{vendor}', vendor),
+                        translations[t('mobile.managed.blocked_by')].replace('{vendor}', vendor),
+                        translations[t('mobile.managed.jailbreak')].replace('{vendor}', vendor),
                         [{
-                            text: translations['mobile.managed.exit'],
+                            text: translations[t('mobile.managed.exit')],
                             style: 'destructive',
                             onPress: () => {
                                 mattermostManaged.quitApp();
@@ -315,7 +316,7 @@ const handleAuthentication = async (vendor) => {
         try {
             mattermostBucket.setPreference('emm', vendor, LocalConfig.AppGroupId);
             await mattermostManaged.authenticate({
-                reason: translations['mobile.managed.secured_by'].replace('{vendor}', vendor),
+                reason: translations[t('mobile.managed.secured_by')].replace('{vendor}', vendor),
                 fallbackToPasscode: true,
                 suppressEnterPassword: true,
             });

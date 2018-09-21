@@ -23,6 +23,7 @@ import {NavigationTypes} from 'app/constants';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
@@ -107,25 +108,25 @@ export default class SettingsDrawer extends PureComponent {
         const items = [{
             action: () => this.setStatus(General.ONLINE),
             text: {
-                id: 'mobile.set_status.online',
+                id: t('mobile.set_status.online'),
                 defaultMessage: 'Online',
             },
         }, {
             action: () => this.setStatus(General.AWAY),
             text: {
-                id: 'mobile.set_status.away',
+                id: t('mobile.set_status.away'),
                 defaultMessage: 'Away',
             },
         }, {
             action: () => this.setStatus(General.DND),
             text: {
-                id: 'mobile.set_status.dnd',
+                id: t('mobile.set_status.dnd'),
                 defaultMessage: 'Do Not Disturb',
             },
         }, {
             action: () => this.setStatus(General.OFFLINE),
             text: {
-                id: 'mobile.set_status.offline',
+                id: t('mobile.set_status.offline'),
                 defaultMessage: 'Offline',
             },
         }];

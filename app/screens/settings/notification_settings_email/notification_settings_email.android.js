@@ -13,6 +13,7 @@ import {
 import {Preferences} from 'mattermost-redux/constants';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import FormattedText from 'app/components/formatted_text';
 import RadioButtonGroup from 'app/components/radio_button';
@@ -52,25 +53,25 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
         if (sendEmailNotifications) {
             switch (interval) {
             case Preferences.INTERVAL_IMMEDIATE.toString():
-                i18nId = 'user.settings.notifications.email.immediately';
+                i18nId = t('user.settings.notifications.email.immediately');
                 i18nMessage = 'Immediately';
                 break;
             case Preferences.INTERVAL_HOUR.toString():
-                i18nId = 'user.settings.notifications.email.everyHour';
+                i18nId = t('user.settings.notifications.email.everyHour');
                 i18nMessage = 'Every hour';
                 break;
             case Preferences.INTERVAL_FIFTEEN_MINUTES.toString():
-                i18nId = 'mobile.user.settings.notifications.email.fifteenMinutes';
+                i18nId = t('mobile.user.settings.notifications.email.fifteenMinutes');
                 i18nMessage = 'Every 15 minutes';
                 break;
             case Preferences.INTERVAL_NEVER.toString():
             default:
-                i18nId = 'user.settings.notifications.email.never';
+                i18nId = t('user.settings.notifications.email.never');
                 i18nMessage = 'Never';
                 break;
             }
         } else {
-            i18nId = 'user.settings.notifications.email.disabled';
+            i18nId = t('user.settings.notifications.email.disabled');
             i18nMessage = 'Email notifications are not enabled';
         }
 

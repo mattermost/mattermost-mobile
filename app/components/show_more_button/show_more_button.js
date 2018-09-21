@@ -7,6 +7,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import FormattedText from 'app/components/formatted_text';
+import {t} from 'app/utils/i18n';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -24,11 +25,11 @@ export default class ShowMoreButton extends PureComponent {
 
     renderButton(showMore, style) {
         let sign = '+';
-        let textId = 'post_info.message.show_more';
+        let textId = t('post_info.message.show_more');
         let textMessage = 'Show More';
         if (!showMore) {
             sign = '-';
-            textId = 'post_info.message.show_less';
+            textId = t('post_info.message.show_less');
             textMessage = 'Show Less';
         }
 

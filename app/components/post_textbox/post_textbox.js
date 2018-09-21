@@ -15,6 +15,7 @@ import FileUploadPreview from 'app/components/file_upload_preview';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
 
@@ -524,11 +525,11 @@ export default class PostTextbox extends PureComponent {
 
         let placeholder;
         if (channelIsReadOnly) {
-            placeholder = {id: 'mobile.create_post.read_only', defaultMessage: 'This channel is read-only.'};
+            placeholder = {id: t('mobile.create_post.read_only'), defaultMessage: 'This channel is read-only.'};
         } else if (rootId) {
-            placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
+            placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
         } else {
-            placeholder = {id: 'create_post.write', defaultMessage: 'Write a message...'};
+            placeholder = {id: t('create_post.write'), defaultMessage: 'Write a message...'};
         }
 
         let attachmentButton = null;
