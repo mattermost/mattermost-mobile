@@ -127,6 +127,9 @@
     "setupTestFrameworkScriptFile": "<rootDir>/test/setup.js",
     "testPathIgnorePatterns": [
       "/node_modules/"
-    ]
+    ],
+    "moduleNameMapper": {
+      "assets/images/video_player/(.*).png": "<rootDir>/dist/assets/images/video_player/$1@2x.png"
+    }
   }
 }
