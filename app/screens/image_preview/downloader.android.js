@@ -134,6 +134,7 @@ export default class Downloader extends PureComponent {
                     },
                 }).fetch('GET', imageUrl, {
                     Authorization: `Bearer ${Client4.token}`,
+                    'X-Requested-With': 'XMLHttpRequest',
                 });
 
                 await task;
