@@ -23,6 +23,7 @@ export default class ChannelPeek extends PureComponent {
     };
 
     static defaultProps = {
+        postIds: [],
         postVisibility: 15,
     };
 
