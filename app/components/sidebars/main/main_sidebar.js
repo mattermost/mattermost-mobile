@@ -392,6 +392,5 @@ export default class ChannelSidebar extends Component {
 const style = StyleSheet.create({
     swiperContent: {
         flex: 1,
-        marginBottom: 10,
     },
 });
