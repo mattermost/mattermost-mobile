@@ -10,7 +10,7 @@
     "@babel/polyfill": "7.0.0",
     "@babel/runtime": "7.0.0",
     "analytics-react-native": "1.2.0",
-    "commonmark": "github:mattermost/commonmark.js#971456e6d3f07b14effac73718d1de768586876a",
+    "commonmark": "github:mattermost/commonmark.js#95999d9",
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#b560513b93357ee5fd33489fe311bc65d4658870",
     "deep-equal": "1.0.1",
     "fuse.js": "3.2.1",
