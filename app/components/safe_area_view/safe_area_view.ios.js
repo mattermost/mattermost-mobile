@@ -31,7 +31,7 @@ export default class SafeAreaIos extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.isX = DeviceInfo.getModel() === 'iPhone X';
+        this.isX = DeviceInfo.getModel().includes('iPhone X');
 
         if (props.navigator) {
             props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
