@@ -19,6 +19,7 @@ export default class ChannelIcon extends React.PureComponent {
         isActive: PropTypes.bool,
         isInfo: PropTypes.bool,
         isUnread: PropTypes.bool,
+        hasDraft: PropTypes.bool,
         membersCount: PropTypes.number,
         size: PropTypes.number,
         status: PropTypes.string,
@@ -40,6 +41,7 @@ export default class ChannelIcon extends React.PureComponent {
             isActive,
             isUnread,
             isInfo,
+            hasDraft,
             membersCount,
             size,
             status,
@@ -82,6 +84,13 @@ export default class ChannelIcon extends React.PureComponent {
             icon = (
                 <Icon
                     name='archive'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                />
+            );
+        } else if (hasDraft) {
+            icon = (
+                <Icon
+                    name='pencil'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
                 />
             );
