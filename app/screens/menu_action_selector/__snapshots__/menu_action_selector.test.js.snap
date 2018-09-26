@@ -1,1705 +1,525 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`MenuActionSelector should match snapshot for channels 1`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
-    actions={
-      Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      }
-    }
-    currentTeamId="someId"
-    data={
-      Array [
-        Object {
-          "display_name": "display_name",
-          "id": "id",
-          "name": "name",
-        },
-        Object {
-          "display_name": "display_name2",
-          "id": "id2",
-          "name": "name2",
-        },
-      ]
-    }
-    dataSource="channels"
-    navigator={
-      Object {
-        "setOnNavigatorEvent": [MockFunction],
-      }
-    }
-    onSelect={[MockFunction]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateError": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "actions": Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      },
-      "currentTeamId": "someId",
-      "data": Array [
-        Object {
-          "display_name": "display_name",
-          "id": "id",
-          "name": "name",
-        },
-        Object {
-          "display_name": "display_name2",
-          "id": "id2",
-          "name": "name2",
-        },
-      ],
-      "dataSource": "channels",
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
-      },
-      "navigator": Object {
-        "setOnNavigatorEvent": [MockFunction],
-      },
-      "onSelect": [MockFunction],
-      "theme": Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      },
-    },
-    "ref": null,
-    "rendered": null,
-    "type": [Function],
-  },
-  Symbol(enzyme.__nodes__): Array [
+<MenuActionSelector
+  actions={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "class",
-      "props": Object {
-        "actions": Object {
-          "getChannels": [Function],
-          "getProfiles": [Function],
-          "searchChannels": [Function],
-          "searchProfiles": [Function],
-        },
-        "currentTeamId": "someId",
-        "data": Array [
-          Object {
-            "display_name": "display_name",
-            "id": "id",
-            "name": "name",
-          },
-          Object {
-            "display_name": "display_name2",
-            "id": "id2",
-            "name": "name2",
-          },
-        ],
-        "dataSource": "channels",
-        "intl": Object {
-          "defaultFormats": Object {},
-          "defaultLocale": "en",
-          "formatDate": [Function],
-          "formatHTMLMessage": [Function],
-          "formatMessage": [Function],
-          "formatNumber": [Function],
-          "formatPlural": [Function],
-          "formatRelative": [Function],
-          "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
-            "getDateTimeFormat": [Function],
-            "getMessageFormat": [Function],
-            "getNumberFormat": [Function],
-            "getPluralFormat": [Function],
-            "getRelativeFormat": [Function],
-          },
-          "locale": "en",
-          "messages": Object {},
-          "now": [Function],
-          "textComponent": "span",
-          "timeZone": null,
-        },
-        "navigator": Object {
-          "setOnNavigatorEvent": [MockFunction],
-        },
-        "onSelect": [MockFunction],
-        "theme": Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        },
+      "getChannels": [Function],
+      "getProfiles": [Function],
+      "searchChannels": [Function],
+      "searchProfiles": [Function],
+    }
+  }
+  currentTeamId="someId"
+  data={
+    Array [
+      Object {
+        "display_name": "display_name",
+        "id": "id",
+        "name": "name",
       },
-      "ref": null,
-      "rendered": null,
-      "type": [Function],
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getDerivedStateFromProps": true,
-          "getSnapshotBeforeUpdate": true,
-          "setState": Object {
-            "skipsComponentDidUpdateOnNullish": true,
-          },
-        },
+      Object {
+        "display_name": "display_name2",
+        "id": "id2",
+        "name": "name2",
       },
-    },
-    "attachTo": undefined,
-    "context": Object {
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
+    ]
+  }
+  dataSource="channels"
+  intl={
+    Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
       },
-    },
-    "hydrateIn": undefined,
-  },
-}
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    }
+  }
+  navigator={
+    Object {
+      "setOnNavigatorEvent": [MockFunction],
+    }
+  }
+  onSelect={[MockFunction]}
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
 `;
 
 exports[`MenuActionSelector should match snapshot for channels 2`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
-    actions={
-      Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      }
-    }
-    currentTeamId="someId"
-    data={
-      Array [
-        Object {
-          "display_name": "display_name",
-          "id": "id",
-          "name": "name",
-        },
-        Object {
-          "display_name": "display_name2",
-          "id": "id2",
-          "name": "name2",
-        },
-      ]
-    }
-    dataSource="channels"
-    navigator={
-      Object {
-        "setOnNavigatorEvent": [MockFunction],
-      }
-    }
-    onSelect={[MockFunction]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateError": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "actions": Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      },
-      "currentTeamId": "someId",
-      "data": Array [
-        Object {
-          "display_name": "display_name",
-          "id": "id",
-          "name": "name",
-        },
-        Object {
-          "display_name": "display_name2",
-          "id": "id2",
-          "name": "name2",
-        },
-      ],
-      "dataSource": "channels",
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
-      },
-      "navigator": Object {
-        "setOnNavigatorEvent": [MockFunction],
-      },
-      "onSelect": [MockFunction],
-      "theme": Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      },
-    },
-    "ref": null,
-    "rendered": null,
-    "type": [Function],
-  },
-  Symbol(enzyme.__nodes__): Array [
+<MenuActionSelector
+  actions={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "class",
-      "props": Object {
-        "actions": Object {
-          "getChannels": [Function],
-          "getProfiles": [Function],
-          "searchChannels": [Function],
-          "searchProfiles": [Function],
-        },
-        "currentTeamId": "someId",
-        "data": Array [
-          Object {
-            "display_name": "display_name",
-            "id": "id",
-            "name": "name",
-          },
-          Object {
-            "display_name": "display_name2",
-            "id": "id2",
-            "name": "name2",
-          },
-        ],
-        "dataSource": "channels",
-        "intl": Object {
-          "defaultFormats": Object {},
-          "defaultLocale": "en",
-          "formatDate": [Function],
-          "formatHTMLMessage": [Function],
-          "formatMessage": [Function],
-          "formatNumber": [Function],
-          "formatPlural": [Function],
-          "formatRelative": [Function],
-          "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
-            "getDateTimeFormat": [Function],
-            "getMessageFormat": [Function],
-            "getNumberFormat": [Function],
-            "getPluralFormat": [Function],
-            "getRelativeFormat": [Function],
-          },
-          "locale": "en",
-          "messages": Object {},
-          "now": [Function],
-          "textComponent": "span",
-          "timeZone": null,
-        },
-        "navigator": Object {
-          "setOnNavigatorEvent": [MockFunction],
-        },
-        "onSelect": [MockFunction],
-        "theme": Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        },
+      "getChannels": [Function],
+      "getProfiles": [Function],
+      "searchChannels": [Function],
+      "searchProfiles": [Function],
+    }
+  }
+  currentTeamId="someId"
+  data={
+    Array [
+      Object {
+        "display_name": "display_name",
+        "id": "id",
+        "name": "name",
       },
-      "ref": null,
-      "rendered": null,
-      "type": [Function],
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getDerivedStateFromProps": true,
-          "getSnapshotBeforeUpdate": true,
-          "setState": Object {
-            "skipsComponentDidUpdateOnNullish": true,
-          },
-        },
+      Object {
+        "display_name": "display_name2",
+        "id": "id2",
+        "name": "name2",
       },
-    },
-    "attachTo": undefined,
-    "context": Object {
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
+    ]
+  }
+  dataSource="channels"
+  intl={
+    Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
       },
-    },
-    "hydrateIn": undefined,
-  },
-}
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    }
+  }
+  navigator={
+    Object {
+      "setOnNavigatorEvent": [MockFunction],
+    }
+  }
+  onSelect={[MockFunction]}
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
 `;
 
 exports[`MenuActionSelector should match snapshot for explicit options 1`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
-    actions={
-      Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      }
-    }
-    currentTeamId="someId"
-    data={
-      Array [
-        Object {
-          "text": "text",
-          "value": "value",
-        },
-      ]
-    }
-    dataSource={null}
-    navigator={
-      Object {
-        "setOnNavigatorEvent": [MockFunction],
-      }
-    }
-    onSelect={[MockFunction]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateError": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "actions": Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      },
-      "currentTeamId": "someId",
-      "data": Array [
-        Object {
-          "text": "text",
-          "value": "value",
-        },
-      ],
-      "dataSource": null,
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
-      },
-      "navigator": Object {
-        "setOnNavigatorEvent": [MockFunction],
-      },
-      "onSelect": [MockFunction],
-      "theme": Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      },
-    },
-    "ref": null,
-    "rendered": null,
-    "type": [Function],
-  },
-  Symbol(enzyme.__nodes__): Array [
+<MenuActionSelector
+  actions={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "class",
-      "props": Object {
-        "actions": Object {
-          "getChannels": [Function],
-          "getProfiles": [Function],
-          "searchChannels": [Function],
-          "searchProfiles": [Function],
-        },
-        "currentTeamId": "someId",
-        "data": Array [
-          Object {
-            "text": "text",
-            "value": "value",
-          },
-        ],
-        "dataSource": null,
-        "intl": Object {
-          "defaultFormats": Object {},
-          "defaultLocale": "en",
-          "formatDate": [Function],
-          "formatHTMLMessage": [Function],
-          "formatMessage": [Function],
-          "formatNumber": [Function],
-          "formatPlural": [Function],
-          "formatRelative": [Function],
-          "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
-            "getDateTimeFormat": [Function],
-            "getMessageFormat": [Function],
-            "getNumberFormat": [Function],
-            "getPluralFormat": [Function],
-            "getRelativeFormat": [Function],
-          },
-          "locale": "en",
-          "messages": Object {},
-          "now": [Function],
-          "textComponent": "span",
-          "timeZone": null,
-        },
-        "navigator": Object {
-          "setOnNavigatorEvent": [MockFunction],
-        },
-        "onSelect": [MockFunction],
-        "theme": Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        },
+      "getChannels": [Function],
+      "getProfiles": [Function],
+      "searchChannels": [Function],
+      "searchProfiles": [Function],
+    }
+  }
+  currentTeamId="someId"
+  data={
+    Array [
+      Object {
+        "text": "text",
+        "value": "value",
       },
-      "ref": null,
-      "rendered": null,
-      "type": [Function],
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getDerivedStateFromProps": true,
-          "getSnapshotBeforeUpdate": true,
-          "setState": Object {
-            "skipsComponentDidUpdateOnNullish": true,
-          },
-        },
+    ]
+  }
+  dataSource={null}
+  intl={
+    Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
       },
-    },
-    "attachTo": undefined,
-    "context": Object {
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
-      },
-    },
-    "hydrateIn": undefined,
-  },
-}
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    }
+  }
+  navigator={
+    Object {
+      "setOnNavigatorEvent": [MockFunction],
+    }
+  }
+  onSelect={[MockFunction]}
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
 `;
 
 exports[`MenuActionSelector should match snapshot for searching 1`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
-    actions={
-      Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      }
-    }
-    currentTeamId="someId"
-    data={
-      Array [
-        Object {
-          "display_name": "display_name",
-          "id": "id",
-          "name": "name",
-        },
-        Object {
-          "display_name": "display_name2",
-          "id": "id2",
-          "name": "name2",
-        },
-      ]
-    }
-    dataSource="channels"
-    navigator={
-      Object {
-        "setOnNavigatorEvent": [MockFunction],
-      }
-    }
-    onSelect={[MockFunction]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateError": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "actions": Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      },
-      "currentTeamId": "someId",
-      "data": Array [
-        Object {
-          "display_name": "display_name",
-          "id": "id",
-          "name": "name",
-        },
-        Object {
-          "display_name": "display_name2",
-          "id": "id2",
-          "name": "name2",
-        },
-      ],
-      "dataSource": "channels",
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
-      },
-      "navigator": Object {
-        "setOnNavigatorEvent": [MockFunction],
-      },
-      "onSelect": [MockFunction],
-      "theme": Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      },
-    },
-    "ref": null,
-    "rendered": null,
-    "type": [Function],
-  },
-  Symbol(enzyme.__nodes__): Array [
+<MenuActionSelector
+  actions={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "class",
-      "props": Object {
-        "actions": Object {
-          "getChannels": [Function],
-          "getProfiles": [Function],
-          "searchChannels": [Function],
-          "searchProfiles": [Function],
-        },
-        "currentTeamId": "someId",
-        "data": Array [
-          Object {
-            "display_name": "display_name",
-            "id": "id",
-            "name": "name",
-          },
-          Object {
-            "display_name": "display_name2",
-            "id": "id2",
-            "name": "name2",
-          },
-        ],
-        "dataSource": "channels",
-        "intl": Object {
-          "defaultFormats": Object {},
-          "defaultLocale": "en",
-          "formatDate": [Function],
-          "formatHTMLMessage": [Function],
-          "formatMessage": [Function],
-          "formatNumber": [Function],
-          "formatPlural": [Function],
-          "formatRelative": [Function],
-          "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
-            "getDateTimeFormat": [Function],
-            "getMessageFormat": [Function],
-            "getNumberFormat": [Function],
-            "getPluralFormat": [Function],
-            "getRelativeFormat": [Function],
-          },
-          "locale": "en",
-          "messages": Object {},
-          "now": [Function],
-          "textComponent": "span",
-          "timeZone": null,
-        },
-        "navigator": Object {
-          "setOnNavigatorEvent": [MockFunction],
-        },
-        "onSelect": [MockFunction],
-        "theme": Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        },
+      "getChannels": [Function],
+      "getProfiles": [Function],
+      "searchChannels": [Function],
+      "searchProfiles": [Function],
+    }
+  }
+  currentTeamId="someId"
+  data={
+    Array [
+      Object {
+        "display_name": "display_name",
+        "id": "id",
+        "name": "name",
       },
-      "ref": null,
-      "rendered": null,
-      "type": [Function],
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getDerivedStateFromProps": true,
-          "getSnapshotBeforeUpdate": true,
-          "setState": Object {
-            "skipsComponentDidUpdateOnNullish": true,
-          },
-        },
+      Object {
+        "display_name": "display_name2",
+        "id": "id2",
+        "name": "name2",
       },
-    },
-    "attachTo": undefined,
-    "context": Object {
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
+    ]
+  }
+  dataSource="channels"
+  intl={
+    Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
       },
-    },
-    "hydrateIn": undefined,
-  },
-}
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    }
+  }
+  navigator={
+    Object {
+      "setOnNavigatorEvent": [MockFunction],
+    }
+  }
+  onSelect={[MockFunction]}
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
 `;
 
 exports[`MenuActionSelector should match snapshot for users 1`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
-    actions={
-      Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      }
-    }
-    currentTeamId="someId"
-    data={
-      Array [
-        Object {
-          "id": "id",
-          "username": "username",
-        },
-        Object {
-          "id": "id2",
-          "username": "username2",
-        },
-      ]
-    }
-    dataSource="users"
-    navigator={
-      Object {
-        "setOnNavigatorEvent": [MockFunction],
-      }
-    }
-    onSelect={[MockFunction]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateError": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "actions": Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      },
-      "currentTeamId": "someId",
-      "data": Array [
-        Object {
-          "id": "id",
-          "username": "username",
-        },
-        Object {
-          "id": "id2",
-          "username": "username2",
-        },
-      ],
-      "dataSource": "users",
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
-      },
-      "navigator": Object {
-        "setOnNavigatorEvent": [MockFunction],
-      },
-      "onSelect": [MockFunction],
-      "theme": Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      },
-    },
-    "ref": null,
-    "rendered": null,
-    "type": [Function],
-  },
-  Symbol(enzyme.__nodes__): Array [
+<MenuActionSelector
+  actions={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "class",
-      "props": Object {
-        "actions": Object {
-          "getChannels": [Function],
-          "getProfiles": [Function],
-          "searchChannels": [Function],
-          "searchProfiles": [Function],
-        },
-        "currentTeamId": "someId",
-        "data": Array [
-          Object {
-            "id": "id",
-            "username": "username",
-          },
-          Object {
-            "id": "id2",
-            "username": "username2",
-          },
-        ],
-        "dataSource": "users",
-        "intl": Object {
-          "defaultFormats": Object {},
-          "defaultLocale": "en",
-          "formatDate": [Function],
-          "formatHTMLMessage": [Function],
-          "formatMessage": [Function],
-          "formatNumber": [Function],
-          "formatPlural": [Function],
-          "formatRelative": [Function],
-          "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
-            "getDateTimeFormat": [Function],
-            "getMessageFormat": [Function],
-            "getNumberFormat": [Function],
-            "getPluralFormat": [Function],
-            "getRelativeFormat": [Function],
-          },
-          "locale": "en",
-          "messages": Object {},
-          "now": [Function],
-          "textComponent": "span",
-          "timeZone": null,
-        },
-        "navigator": Object {
-          "setOnNavigatorEvent": [MockFunction],
-        },
-        "onSelect": [MockFunction],
-        "theme": Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        },
+      "getChannels": [Function],
+      "getProfiles": [Function],
+      "searchChannels": [Function],
+      "searchProfiles": [Function],
+    }
+  }
+  currentTeamId="someId"
+  data={
+    Array [
+      Object {
+        "id": "id",
+        "username": "username",
       },
-      "ref": null,
-      "rendered": null,
-      "type": [Function],
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getDerivedStateFromProps": true,
-          "getSnapshotBeforeUpdate": true,
-          "setState": Object {
-            "skipsComponentDidUpdateOnNullish": true,
-          },
-        },
+      Object {
+        "id": "id2",
+        "username": "username2",
       },
-    },
-    "attachTo": undefined,
-    "context": Object {
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
+    ]
+  }
+  dataSource="users"
+  intl={
+    Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
       },
-    },
-    "hydrateIn": undefined,
-  },
-}
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    }
+  }
+  navigator={
+    Object {
+      "setOnNavigatorEvent": [MockFunction],
+    }
+  }
+  onSelect={[MockFunction]}
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
 `;
 
 exports[`MenuActionSelector should match snapshot for users 2`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <InjectIntl(MenuActionSelector)
-    actions={
-      Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      }
-    }
-    currentTeamId="someId"
-    data={
-      Array [
-        Object {
-          "id": "id",
-          "username": "username",
-        },
-        Object {
-          "id": "id2",
-          "username": "username2",
-        },
-      ]
-    }
-    dataSource="users"
-    navigator={
-      Object {
-        "setOnNavigatorEvent": [MockFunction],
-      }
-    }
-    onSelect={[MockFunction]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateError": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "actions": Object {
-        "getChannels": [Function],
-        "getProfiles": [Function],
-        "searchChannels": [Function],
-        "searchProfiles": [Function],
-      },
-      "currentTeamId": "someId",
-      "data": Array [
-        Object {
-          "id": "id",
-          "username": "username",
-        },
-        Object {
-          "id": "id2",
-          "username": "username2",
-        },
-      ],
-      "dataSource": "users",
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
-      },
-      "navigator": Object {
-        "setOnNavigatorEvent": [MockFunction],
-      },
-      "onSelect": [MockFunction],
-      "theme": Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      },
-    },
-    "ref": null,
-    "rendered": null,
-    "type": [Function],
-  },
-  Symbol(enzyme.__nodes__): Array [
+<MenuActionSelector
+  actions={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "class",
-      "props": Object {
-        "actions": Object {
-          "getChannels": [Function],
-          "getProfiles": [Function],
-          "searchChannels": [Function],
-          "searchProfiles": [Function],
-        },
-        "currentTeamId": "someId",
-        "data": Array [
-          Object {
-            "id": "id",
-            "username": "username",
-          },
-          Object {
-            "id": "id2",
-            "username": "username2",
-          },
-        ],
-        "dataSource": "users",
-        "intl": Object {
-          "defaultFormats": Object {},
-          "defaultLocale": "en",
-          "formatDate": [Function],
-          "formatHTMLMessage": [Function],
-          "formatMessage": [Function],
-          "formatNumber": [Function],
-          "formatPlural": [Function],
-          "formatRelative": [Function],
-          "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
-            "getDateTimeFormat": [Function],
-            "getMessageFormat": [Function],
-            "getNumberFormat": [Function],
-            "getPluralFormat": [Function],
-            "getRelativeFormat": [Function],
-          },
-          "locale": "en",
-          "messages": Object {},
-          "now": [Function],
-          "textComponent": "span",
-          "timeZone": null,
-        },
-        "navigator": Object {
-          "setOnNavigatorEvent": [MockFunction],
-        },
-        "onSelect": [MockFunction],
-        "theme": Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        },
+      "getChannels": [Function],
+      "getProfiles": [Function],
+      "searchChannels": [Function],
+      "searchProfiles": [Function],
+    }
+  }
+  currentTeamId="someId"
+  data={
+    Array [
+      Object {
+        "id": "id",
+        "username": "username",
       },
-      "ref": null,
-      "rendered": null,
-      "type": [Function],
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getDerivedStateFromProps": true,
-          "getSnapshotBeforeUpdate": true,
-          "setState": Object {
-            "skipsComponentDidUpdateOnNullish": true,
-          },
-        },
+      Object {
+        "id": "id2",
+        "username": "username2",
       },
-    },
-    "attachTo": undefined,
-    "context": Object {
-      "intl": Object {
-        "defaultFormats": Object {},
-        "defaultLocale": "en",
-        "formatDate": [Function],
-        "formatHTMLMessage": [Function],
-        "formatMessage": [Function],
-        "formatNumber": [Function],
-        "formatPlural": [Function],
-        "formatRelative": [Function],
-        "formatTime": [Function],
-        "formats": Object {},
-        "formatters": Object {
-          "getDateTimeFormat": [Function],
-          "getMessageFormat": [Function],
-          "getNumberFormat": [Function],
-          "getPluralFormat": [Function],
-          "getRelativeFormat": [Function],
-        },
-        "locale": "en",
-        "messages": Object {},
-        "now": [Function],
-        "textComponent": "span",
-        "timeZone": null,
+    ]
+  }
+  dataSource="users"
+  intl={
+    Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
       },
-    },
-    "hydrateIn": undefined,
-  },
-}
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    }
+  }
+  navigator={
+    Object {
+      "setOnNavigatorEvent": [MockFunction],
+    }
+  }
+  onSelect={[MockFunction]}
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
 `;

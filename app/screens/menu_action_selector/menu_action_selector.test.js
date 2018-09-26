@@ -86,7 +86,7 @@ describe('MenuActionSelector', () => {
             <MenuActionSelector {...baseProps}/>,
             {context: {intl}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for users', async () => {
@@ -100,10 +100,10 @@ describe('MenuActionSelector', () => {
             <MenuActionSelector {...props}/>,
             {context: {intl}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
         wrapper.setState({isLoading: false});
         wrapper.update();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for channels', async () => {
@@ -117,10 +117,10 @@ describe('MenuActionSelector', () => {
             <MenuActionSelector {...props}/>,
             {context: {intl}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
         wrapper.setState({isLoading: false});
         wrapper.update();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for searching', async () => {
@@ -136,6 +136,6 @@ describe('MenuActionSelector', () => {
         );
         wrapper.setState({isLoading: false, searching: true, term: 'name2'});
         wrapper.update();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });
