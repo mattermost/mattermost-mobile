@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {selectFocusedPostId, selectPost} from 'mattermost-redux/actions/posts';
-import {clearSearch, removeSearchTerms, searchPostsWithParams} from 'mattermost-redux/actions/search';
+import {clearSearch, removeSearchTerms, searchPostsWithParams, getMorePostsForSearch} from 'mattermost-redux/actions/search';
 import {getCurrentChannelId, filterPostIds} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -52,6 +52,8 @@ function makeMapStateToProps() {
         const serverVersion = state.entities.general.serverVersion;
         const enableDateSuggestion = isMinimumServerVersion(serverVersion, 5, 3);
 
+        const isSearchGettingMore = state.entities.search.isSearchGettingMore;
+
         return {
             currentTeamId,
             currentChannelId,
@@ -60,6 +62,7 @@ function makeMapStateToProps() {
             archivedPostIds,
             recent: recent[currentTeamId],
             searchingStatus: searchRequest.status,
+            isSearchGettingMore,
             theme: getTheme(state),
             enableDateSuggestion,
             timezoneOffsetInSeconds,
@@ -77,6 +80,7 @@ function mapDispatchToProps(dispatch) {
             removeSearchTerms,
             selectFocusedPostId,
             searchPostsWithParams,
+            getMorePostsForSearch,
             selectPost,
         }, dispatch),
     };
