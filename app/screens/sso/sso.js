@@ -26,7 +26,7 @@ const HEADERS = {
     'X-Mobile-App': 'mattermost',
 };
 
-const postMessageJS = "setTimeout(function() { postMessage(document.body.innerText, '*')}, 0);";
+const postMessageJS = "postMessage(document.body.innerText, '*');";
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -158,14 +158,9 @@ class SSO extends PureComponent {
         const {url} = navState;
         const nextState = {};
         const parsed = urlParse(url);
-        const serverUrl = urlParse(this.props.serverUrl);
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
-        } else if (serverUrl.host === parsed.host) {
-            nextState.jsCode = postMessageJS;
-        } else {
-            nextState.jsCode = '';
         }
 
         if (Object.keys(nextState).length) {
@@ -193,6 +188,8 @@ class SSO extends PureComponent {
                         then(getSession).
                         then(this.goToLoadTeam).
                         catch(this.onLoadEndError);
+                } else if (this.webView && !this.state.error) {
+                    this.webView.injectJavaScript(postMessageJS);
                 }
             });
         }
@@ -205,6 +202,10 @@ class SSO extends PureComponent {
 
     renderLoading = () => {
         return <Loading/>;
+    };
+
+    webViewRef = (ref) => {
+        this.webView = ref;
     };
 
     render() {
@@ -224,6 +225,7 @@ class SSO extends PureComponent {
         } else {
             content = (
                 <WebView
+                    ref={this.webViewRef}
                     source={{uri: this.loginUrl, headers: HEADERS}}
                     javaScriptEnabledAndroid={true}
                     automaticallyAdjustContentInsets={false}
