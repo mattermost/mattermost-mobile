@@ -3,6 +3,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import ReactionRow from './reaction_row';
 
 describe('ReactionRow', () => {
@@ -10,9 +12,7 @@ describe('ReactionRow', () => {
         emojiName: 'smile',
         navigator: {},
         teammateNameDisplay: 'username',
-        theme: {
-            centerChannelColor: '#aaa',
-        },
+        theme: Preferences.THEMES.default,
         user: {id: 'user_id', username: 'username'},
     };
 

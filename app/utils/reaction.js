@@ -61,3 +61,7 @@ export function getSortedReactionsForHeader(reactionsByName = {}) {
 
     return [{name: ALL_EMOJIS, count: totalCount}, ...sortedReactionsForHeader];
 }
+
+export function getUniqueUserIds(reactions = []) {
+    return reactions.map((reaction) => reaction.user_id).filter((id, index, arr) => arr.indexOf(id) === index);
+}

@@ -35,8 +35,8 @@ export default class ReactionRow extends React.PureComponent {
         intl: intlShape,
     };
 
-    goToUserProfile = (userId) => {
-        const {navigator, theme} = this.props;
+    goToUserProfile = () => {
+        const {navigator, theme, user} = this.props;
         const {formatMessage} = this.context.intl;
 
         const options = {
@@ -45,7 +45,7 @@ export default class ReactionRow extends React.PureComponent {
             animated: true,
             backButtonTitle: '',
             passProps: {
-                userId,
+                userId: user.id,
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -76,16 +76,18 @@ export default class ReactionRow extends React.PureComponent {
 
         return (
             <View style={style.container}>
-                <View style={style.profile}>
+                <View style={style.profileContainer}>
                     <TouchableOpacity
                         key={user.id}
-                        onPress={preventDoubleTap(() => this.goToUserProfile(user.id))}
+                        onPress={preventDoubleTap(this.goToUserProfile)}
                     >
-                        <ProfilePicture
-                            userId={id}
-                            showStatus={false}
-                            size={24}
-                        />
+                        <View style={style.profile}>
+                            <ProfilePicture
+                                userId={id}
+                                showStatus={false}
+                                size={24}
+                            />
+                        </View>
                     </TouchableOpacity>
                 </View>
                 <Text
@@ -104,7 +106,7 @@ export default class ReactionRow extends React.PureComponent {
                 <View style={style.emoji}>
                     <Emoji
                         emojiName={emojiName}
-                        size={26}
+                        size={24}
                     />
                 </View>
             </View>
@@ -122,14 +124,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             width: '100%',
             alignItems: 'center',
         },
-        profile: {
+        profileContainer: {
             alignItems: 'center',
-            width: '15%',
+            width: '13%',
+        },
+        profile: {
+            paddingTop: 3,
         },
         textContainer: {
-            width: '70%',
+            width: '74%',
             flexDirection: 'row',
-            marginLeft: 5,
         },
         username: {
             fontSize: 14,
@@ -137,13 +141,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingRight: 5,
         },
         displayName: {
-            marginLeft: 5,
             fontSize: 14,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         emoji: {
             alignItems: 'center',
-            width: '15%',
+            width: '13%',
             justifyContent: 'center',
         },
     };

@@ -5,7 +5,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
   style={
     Object {
       "alignItems": "center",
-      "backgroundColor": undefined,
+      "backgroundColor": "#ffffff",
       "flexDirection": "row",
       "height": 44,
       "justifyContent": "flex-start",
@@ -17,7 +17,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
     style={
       Object {
         "alignItems": "center",
-        "width": "15%",
+        "width": "13%",
       }
     }
   >
@@ -25,74 +25,68 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
       activeOpacity={0.2}
       onPress={[Function]}
     >
-      <Connect(ProfilePicture)
-        showStatus={false}
-        size={24}
-        userId="user_id"
-      />
+      <Component
+        style={
+          Object {
+            "paddingTop": 3,
+          }
+        }
+      >
+        <Connect(ProfilePicture)
+          showStatus={false}
+          size={24}
+          userId="user_id"
+        />
+      </Component>
     </TouchableOpacity>
   </Component>
-  <Text
-    accessible={true}
-    allowFontScaling={true}
+  <Component
     ellipsizeMode="tail"
     numberOfLines={1}
     style={
       Object {
         "flexDirection": "row",
-        "marginLeft": 5,
-        "width": "70%",
+        "width": "74%",
       }
     }
   >
-    <Text
-      accessible={true}
-      allowFontScaling={true}
-      ellipsizeMode="tail"
+    <Component
       style={
         Object {
-          "color": "#aaa",
+          "color": "#3d3c40",
           "fontSize": 14,
           "paddingRight": 5,
         }
       }
     >
       @username
-    </Text>
-    <Text
-      accessible={true}
-      allowFontScaling={true}
-      ellipsizeMode="tail"
-    >
+    </Component>
+    <Component>
         
-    </Text>
-    <Text
-      accessible={true}
-      allowFontScaling={true}
-      ellipsizeMode="tail"
+    </Component>
+    <Component
       style={
         Object {
-          "color": "rgba(170,170,170,0.5)",
+          "color": "rgba(61,60,64,0.5)",
           "fontSize": 14,
-          "marginLeft": 5,
         }
       }
     >
       username
-    </Text>
-  </Text>
+    </Component>
+  </Component>
   <Component
     style={
       Object {
         "alignItems": "center",
         "justifyContent": "center",
-        "width": "15%",
+        "width": "13%",
       }
     }
   >
     <Connect(Emoji)
       emojiName="smile"
-      size={26}
+      size={24}
     />
   </Component>
 </Component>

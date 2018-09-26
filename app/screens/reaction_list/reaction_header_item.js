@@ -59,13 +59,13 @@ export default class ReactionHeaderItem extends PureComponent {
     }
 
     render() {
-        const {highlight, theme} = this.props;
+        const {emojiName, highlight, theme} = this.props;
         const styles = getStyleSheet(theme);
 
         return (
             <TouchableOpacity
                 onPress={this.handleOnPress}
-                style={[styles.reaction, (highlight && styles.highlight)]}
+                style={[styles.reaction, (highlight ? styles.highlight : styles.regular), (emojiName === ALL_EMOJIS && styles.allText)]}
             >
                 {this.renderContent()}
             </TouchableOpacity>
@@ -75,13 +75,20 @@ export default class ReactionHeaderItem extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        allText: {
+            marginLeft: 7,
+        },
         text: {
             color: theme.linkColor,
-            marginLeft: 3,
+            marginLeft: 4,
             fontSize: 16,
         },
         highlight: {
             borderColor: changeOpacity(theme.linkColor, 1),
+            borderBottomWidth: 2,
+        },
+        regular: {
+            borderColor: theme.centerChannelBg,
             borderBottomWidth: 2,
         },
         reaction: {

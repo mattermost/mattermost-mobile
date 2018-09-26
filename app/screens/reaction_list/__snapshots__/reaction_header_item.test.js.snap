@@ -16,6 +16,10 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
         "paddingHorizontal": 6,
         "paddingVertical": 2,
       },
+      Object {
+        "borderBottomWidth": 2,
+        "borderColor": "#ffffff",
+      },
       false,
     ]
   }
@@ -26,20 +30,17 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       padding={5}
       size={16}
     />
-    <Text
-      accessible={true}
-      allowFontScaling={true}
-      ellipsizeMode="tail"
+    <Component
       style={
         Object {
-          "color": "#aaa",
+          "color": "#2389d7",
           "fontSize": 16,
-          "marginLeft": 3,
+          "marginLeft": 4,
         }
       }
     >
       3
-    </Text>
+    </Component>
   </React.Fragment>
 </TouchableOpacity>
 `;
@@ -51,20 +52,17 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
     padding={5}
     size={16}
   />
-  <Text
-    accessible={true}
-    allowFontScaling={true}
-    ellipsizeMode="tail"
+  <Component
     style={
       Object {
-        "color": "#aaa",
+        "color": "#2389d7",
         "fontSize": 16,
-        "marginLeft": 3,
+        "marginLeft": 4,
       }
     }
   >
     3
-  </Text>
+  </Component>
 </React.Fragment>
 `;
 
@@ -75,25 +73,22 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
     id="mobile.reaction_header.all_emojis"
     style={
       Object {
-        "color": "#aaa",
+        "color": "#2389d7",
         "fontSize": 16,
-        "marginLeft": 3,
+        "marginLeft": 4,
       }
     }
   />
-  <Text
-    accessible={true}
-    allowFontScaling={true}
-    ellipsizeMode="tail"
+  <Component
     style={
       Object {
-        "color": "#aaa",
+        "color": "#2389d7",
         "fontSize": 16,
-        "marginLeft": 3,
+        "marginLeft": 4,
       }
     }
   >
     3
-  </Text>
+  </Component>
 </React.Fragment>
 `;

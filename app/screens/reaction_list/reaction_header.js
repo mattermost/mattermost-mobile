@@ -62,7 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
             height: 37,
-            paddingHorizontal: 10,
+            paddingHorizontal: 2,
         },
     };
 });

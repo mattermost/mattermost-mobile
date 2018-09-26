@@ -13,6 +13,7 @@ import {
     getMissingUserIds,
     getReactionsByName,
     getSortedReactionsForHeader,
+    getUniqueUserIds,
     sortReactions,
 } from 'app/utils/reaction';
 
@@ -26,7 +27,6 @@ export default class ReactionList extends PureComponent {
         actions: PropTypes.shape({
             getMissingProfilesByIds: PropTypes.func.isRequired,
         }).isRequired,
-        allUserIds: PropTypes.array,
         navigator: PropTypes.object,
         reactions: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
@@ -40,48 +40,56 @@ export default class ReactionList extends PureComponent {
 
     constructor(props) {
         super(props);
-        const {allUserIds, reactions, userProfiles} = props;
-
-        this.userProfilesById = generateUserProfilesById(userProfiles);
-        this.getMissingProfiles(allUserIds, userProfiles);
+        const {reactions, userProfiles} = props;
 
         const reactionsByName = getReactionsByName(reactions);
 
         this.state = {
-            selected: ALL_EMOJIS,
+            allUserIds: getUniqueUserIds(reactions),
             reactions,
             reactionsByName,
+            selected: ALL_EMOJIS,
             sortedReactions: sortReactions(reactionsByName),
             sortedReactionsForHeader: getSortedReactionsForHeader(reactionsByName),
+            userProfiles,
+            userProfilesById: generateUserProfilesById(userProfiles),
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
+        let hasNewState = false;
+        const newState = {};
         if (!nextProps.reactions.length !== prevState.reactions.length) {
             const {reactions} = nextProps;
-
             const reactionsByName = getReactionsByName(reactions);
 
-            return {
-                reactions,
-                reactionsByName,
-                sortedReactions: sortReactions(reactionsByName),
-                sortedReactionsForHeader: getSortedReactionsForHeader(reactionsByName),
-            };
+            newState.allUserIds = getUniqueUserIds(reactions);
+            newState.reactions = reactions;
+            newState.reactionsByName = reactionsByName;
+            newState.sortedReactions = sortReactions(reactionsByName);
+            newState.sortedReactionsForHeader = getSortedReactionsForHeader(reactionsByName);
+
+            hasNewState = true;
         }
 
-        return null;
+        if (nextProps.userProfiles !== prevState.userProfiles) {
+            newState.userProfilesById = generateUserProfilesById(nextProps.userProfiles);
+
+            hasNewState = true;
+        }
+
+        return hasNewState ? newState : null;
     }
 
-    componentDidUpdate(prevProps) {
-        if (prevProps.userProfiles.length !== this.props.userProfiles.length) {
-            this.userProfilesById = generateUserProfilesById(this.props.userProfiles);
-        }
+    componentDidMount() {
+        this.getMissingProfiles();
+    }
 
-        if (prevProps.allUserIds.length !== this.props.allUserIds.length) {
-            this.getMissingProfiles(this.props.allUserIds, this.props.userProfiles);
+    componentDidUpdate(_, prevState) {
+        if (prevState.allUserIds !== this.state.allUserIds) {
+            this.getMissingProfiles();
         }
     }
 
@@ -95,9 +103,10 @@ export default class ReactionList extends PureComponent {
         }
     };
 
-    getMissingProfiles = (allUserIds, userProfiles) => {
+    getMissingProfiles = () => {
+        const {allUserIds, userProfiles, userProfilesById} = this.state;
         if (userProfiles.length !== allUserIds.length) {
-            const missingUserIds = getMissingUserIds(this.userProfilesById, allUserIds);
+            const missingUserIds = getMissingUserIds(userProfilesById, allUserIds);
 
             if (missingUserIds.length > 0) {
                 this.props.actions.getMissingProfilesByIds(missingUserIds);
@@ -123,6 +132,7 @@ export default class ReactionList extends PureComponent {
             reactionsByName,
             selected,
             sortedReactions,
+            userProfilesById,
         } = this.state;
         const style = getStyleSheet(theme);
         const reactions = selected === ALL_EMOJIS ? sortedReactions : reactionsByName[selected];
@@ -137,7 +147,7 @@ export default class ReactionList extends PureComponent {
                     navigator={navigator}
                     teammateNameDisplay={teammateNameDisplay}
                     theme={theme}
-                    user={this.userProfilesById[userId]}
+                    user={userProfilesById[userId]}
                 />
                 <View style={style.separator}/>
             </View>

@@ -4,7 +4,7 @@ exports[`ReactionList should match snapshot 1`] = `
 <Component
   style={
     Object {
-      "backgroundColor": "#aaa",
+      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
@@ -13,7 +13,7 @@ exports[`ReactionList should match snapshot 1`] = `
     style={
       Object {
         "borderBottomWidth": 1,
-        "borderColor": "rgba(238,238,238,0.2)",
+        "borderColor": "rgba(61,60,64,0.2)",
         "height": 38,
       }
     }
@@ -51,8 +51,30 @@ exports[`ReactionList should match snapshot 1`] = `
       selected="all_emojis"
       theme={
         Object {
-          "centerChannelBg": "#aaa",
-          "centerChannelColor": "#eee",
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
         }
       }
     />
@@ -98,8 +120,30 @@ exports[`ReactionList should match snapshot 1`] = `
         teammateNameDisplay="username"
         theme={
           Object {
-            "centerChannelBg": "#aaa",
-            "centerChannelColor": "#eee",
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
           }
         }
         user={
@@ -112,7 +156,7 @@ exports[`ReactionList should match snapshot 1`] = `
       <Component
         style={
           Object {
-            "backgroundColor": "rgba(238,238,238,0.2)",
+            "backgroundColor": "rgba(61,60,64,0.2)",
             "height": 1,
           }
         }
@@ -148,8 +192,30 @@ exports[`ReactionList should match snapshot 1`] = `
         teammateNameDisplay="username"
         theme={
           Object {
-            "centerChannelBg": "#aaa",
-            "centerChannelColor": "#eee",
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
           }
         }
         user={
@@ -162,7 +228,7 @@ exports[`ReactionList should match snapshot 1`] = `
       <Component
         style={
           Object {
-            "backgroundColor": "rgba(238,238,238,0.2)",
+            "backgroundColor": "rgba(61,60,64,0.2)",
             "height": 1,
           }
         }
@@ -204,8 +270,30 @@ Array [
       teammateNameDisplay="username"
       theme={
         Object {
-          "centerChannelBg": "#aaa",
-          "centerChannelColor": "#eee",
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
         }
       }
       user={
@@ -218,7 +306,7 @@ Array [
     <Component
       style={
         Object {
-          "backgroundColor": "rgba(238,238,238,0.2)",
+          "backgroundColor": "rgba(61,60,64,0.2)",
           "height": 1,
         }
       }
@@ -254,8 +342,30 @@ Array [
       teammateNameDisplay="username"
       theme={
         Object {
-          "centerChannelBg": "#aaa",
-          "centerChannelColor": "#eee",
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
         }
       }
       user={
@@ -268,7 +378,7 @@ Array [
     <Component
       style={
         Object {
-          "backgroundColor": "rgba(238,238,238,0.2)",
+          "backgroundColor": "rgba(61,60,64,0.2)",
           "height": 1,
         }
       }

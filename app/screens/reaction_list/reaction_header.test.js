@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {shallow} from 'enzyme';
-
 import {ScrollView} from 'react-native';
+
+import Preferences from 'mattermost-redux/constants/preferences';
 
 import ReactionHeader from './reaction_header';
 
@@ -12,9 +13,7 @@ describe('ReactionHeader', () => {
         selected: 'smile',
         onSelectReaction: jest.fn(),
         reactions: [{name: 'smile', count: 2}, {name: '+1', count: 1}],
-        theme: {
-            centerChannelBg: '#aaa',
-        },
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot', () => {

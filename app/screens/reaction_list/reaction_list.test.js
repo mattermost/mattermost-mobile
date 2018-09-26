@@ -4,6 +4,8 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import ReactionList from './reaction_list';
 
 jest.mock('react-intl');
@@ -16,10 +18,7 @@ describe('ReactionList', () => {
         allUserIds: ['user_id_1', 'user_id_2'],
         navigator: {setOnNavigatorEvent: jest.fn()},
         reactions: [{emoji_name: 'smile', user_id: 'user_id_1'}, {emoji_name: '+1', user_id: 'user_id_2'}],
-        theme: {
-            centerChannelBg: '#aaa',
-            centerChannelColor: '#eee',
-        },
+        theme: Preferences.THEMES.default,
         teammateNameDisplay: 'username',
         userProfiles: [{id: 'user_id_1', username: 'username_1'}, {id: 'user_id_2', username: 'username_2'}],
     };

@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {shallow} from 'enzyme';
-
 import {TouchableOpacity} from 'react-native';
+
+import Preferences from 'mattermost-redux/constants/preferences';
 
 import ReactionHeaderItem from './reaction_header_item';
 
@@ -15,9 +16,7 @@ describe('ReactionHeaderItem', () => {
         emojiName: 'smile',
         highlight: false,
         onPress: jest.fn(),
-        theme: {
-            linkColor: '#aaa',
-        },
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot', () => {
