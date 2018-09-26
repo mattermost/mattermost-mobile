@@ -102,13 +102,13 @@ export default class Search extends PureComponent {
 
         if (this.props.initialValue) {
             this.search(this.props.initialValue);
-        } else {
-            setTimeout(() => {
-                if (this.refs.searchBar) {
-                    this.refs.searchBar.focus();
-                }
-            }, 150);
         }
+
+        setTimeout(() => {
+            if (this.refs.searchBar) {
+                this.refs.searchBar.focus();
+            }
+        }, 150);
     }
 
     componentDidUpdate(prevProps) {
