@@ -44,7 +44,7 @@ SOFTWARE.
 
 ## commonmark
 
-This product contains 'commonmark' by John MacFarlane.
+This product contains a modified version of 'commonmark' by John MacFarlane.
 
 a strongly specified, highly compatible variant of Markdown
 
@@ -173,7 +173,7 @@ Released under the Creative Commons CC-BY-SA 4.0 license:
 
 ## commonmark-react-renderer
 
-This product contains 'commonmark-react-renderer' by Espen Hovlandsdal.
+This product contains a modified version of 'commonmark-react-renderer' by Espen Hovlandsdal.
 
 React renderer for CommonMark (rationalized Markdown)
 
@@ -610,7 +610,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 This product contains 'mattermost-redux' by Mattermost.
 
-The project purpose is consolidating the storage, web utilities and logic of the webapp and React Native mobile clients into a single driver. We encourage you to use mattermost-redux to power your own Mattermost clients or integrations.
+Common code (API client, Redux stores, logic, utility functions) for building a Mattermost client
 
 * HOMEPAGE:
   * https://github.com/mattermost/mattermost-redux
@@ -1006,7 +1006,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## react-native
 
-This product contains 'react-native' by Facebook.
+This product contains a modified version of 'react-native' by Facebook.
 
 A framework for building native apps using React
 
@@ -1146,7 +1146,7 @@ SOFTWARE.
 
 ## react-native-calendars
 
-This product contains 'react-native-calendars' by Wix.com.
+This product contains a modified version of 'react-native-calendars' by Wix.com.
 
 React Native Calendar Components
 
@@ -1256,7 +1256,7 @@ SOFTWARE.
 
 ## react-native-device-info
 
-This product contains 'react-native-device-info' by Rebecca Hughes.
+This product contains a modified version of 'react-native-device-info' by Rebecca Hughes.
 
 Get device information using react-native
 
@@ -1421,7 +1421,7 @@ SOFTWARE.
 
 ## react-native-image-gallery
 
-This product contains 'react-native-image-gallery' by Archriss.
+This product contains a modified version of 'react-native-image-gallery' by Archriss.
 
 Pure JavaScript image gallery component for iOS and Android
 
@@ -1585,7 +1585,7 @@ SOFTWARE.
 
 ## react-native-local-auth
 
-This product contains 'react-native-local-auth' by Mark Vayngrib.
+This product contains a modified version of 'react-native-local-auth' by Mark Vayngrib.
 
 React Native local authentication with touch id or passcode
 
@@ -1638,7 +1638,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## react-native-notifications
 
-This product contains 'react-native-notifications' by Lidan Hifi.
+This product contains a modified version of 'react-native-notifications' by Lidan Hifi.
 
 Advanced Push Notifications (Silent, interactive notifications) for iOS & Android
 
@@ -2076,7 +2076,7 @@ SOFTWARE.
 
 ## react-native-youtube
 
-This product contains 'react-native-youtube' by Param Aggarwal.
+This product contains a modified version of 'react-native-youtube' by Param Aggarwal.
 
 A <YouTube/> component for React Native.
 
@@ -2396,7 +2396,7 @@ SOFTWARE.
 
 ## rn-fetch-blob
 
-This product contains 'rn-fetch-blob' by Joltup.
+This product contains a modified version of 'rn-fetch-blob' by Joltup.
 
 A module provides upload, download, and files access API. Supports file stream read/write for process large files.
 
@@ -2431,7 +2431,7 @@ SOFTWARE.
 
 ## rn-placeholder
 
-This product contains 'rn-placeholder' by Marvin FRACHET.
+This product contains a modified version of 'rn-placeholder' by Marvin FRACHET.
 
 Display some placeholder stuff before rendering your text or media content in React Native
 
