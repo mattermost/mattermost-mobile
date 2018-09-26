@@ -156,8 +156,12 @@ export default class Downloader extends PureComponent {
     render() {
         const {show} = this.props;
 
+        if (!show) {
+            return null;
+        }
+
         return (
-            <View style={[styles.wrapper, {opacity: show ? 1 : 0}]}>
+            <View style={styles.wrapper}>
                 <TouchableOpacity
                     style={styles.downloadButton}
                     onPress={this.handleDownload}
