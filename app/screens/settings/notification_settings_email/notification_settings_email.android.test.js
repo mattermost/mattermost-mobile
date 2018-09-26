@@ -3,6 +3,8 @@
 
 import React from 'react';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import {shallowWithIntl} from 'test/intl-test-helper';
 import {emptyFunction} from 'app/utils/general';
 
@@ -22,10 +24,7 @@ describe('NotificationSettingsEmailAndroid', () => {
         },
         sendEmailNotifications: true,
         siteName: 'Mattermost',
-        theme: {
-            centerChannelBg: '#aaa',
-            centerChannelColor: '#aaa',
-        },
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot', () => {

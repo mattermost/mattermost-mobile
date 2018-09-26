@@ -1,12 +1,36 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UserListRow should match snapshot 1`] = `
-<Component
-  style={
+<CustomListRow
+  enabled={true}
+  id="21345"
+  onPress={[Function]}
+  theme={
     Object {
-      "flex": 1,
-      "flexDirection": "row",
-      "marginLeft": 10,
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
     }
   }
 >
@@ -43,12 +67,13 @@ exports[`UserListRow should match snapshot 1`] = `
       }
     }
   >
-    <Component
-      style={
-        Object {
-          "color": "#3d3c40",
-          "flexDirection": "row",
-          "marginLeft": 10,
+    <Component>
+      <Component
+        style={
+          Object {
+            "color": "#3d3c40",
+            "fontSize": 15,
+          }
         }
       }
     >
@@ -96,12 +121,36 @@ exports[`UserListRow should match snapshot 1`] = `
 `;
 
 exports[`UserListRow should match snapshot for  currentUser with (you) populated in list 1`] = `
-<Component
-  style={
+<CustomListRow
+  enabled={true}
+  id="21345"
+  onPress={[Function]}
+  theme={
     Object {
-      "flex": 1,
-      "flexDirection": "row",
-      "marginLeft": 10,
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
     }
   }
 >
@@ -138,12 +187,13 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
       }
     }
   >
-    <Component
-      style={
-        Object {
-          "color": "#3d3c40",
-          "flexDirection": "row",
-          "marginLeft": 10,
+    <Component>
+      <Component
+        style={
+          Object {
+            "color": "#3d3c40",
+            "fontSize": 15,
+          }
         }
       }
     >
@@ -189,12 +239,36 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
 `;
 
 exports[`UserListRow should match snapshot for deactivated user 1`] = `
-<Component
-  style={
+<CustomListRow
+  enabled={true}
+  id="21345"
+  onPress={[Function]}
+  theme={
     Object {
-      "flex": 1,
-      "flexDirection": "row",
-      "marginLeft": 10,
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
     }
   }
 >
@@ -231,12 +305,13 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
       }
     }
   >
-    <Component
-      style={
-        Object {
-          "color": "#3d3c40",
-          "flexDirection": "row",
-          "marginLeft": 10,
+    <Component>
+      <Component
+        style={
+          Object {
+            "color": "#3d3c40",
+            "fontSize": 15,
+          }
         }
       }
     >

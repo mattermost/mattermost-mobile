@@ -3,6 +3,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import SelectTeam from './select_team.js';
@@ -40,7 +42,7 @@ describe('SelectTeam', () => {
         },
         userWithoutTeams: false,
         teams: [],
-        theme: {},
+        theme: Preferences.THEMES.default,
         teamsRequest: {
             status: RequestStatus.FAILURE,
         },

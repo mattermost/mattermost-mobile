@@ -4,6 +4,8 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {IntlProvider} from 'react-intl';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import MenuActionSelector from './menu_action_selector.js';
 
 jest.mock('rn-fetch-blob', () => ({
@@ -76,7 +78,7 @@ describe('MenuActionSelector', () => {
         onSelect: jest.fn(),
         data: [{text: 'text', value: 'value'}],
         dataSource: null,
-        theme: {},
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot for explicit options', async () => {

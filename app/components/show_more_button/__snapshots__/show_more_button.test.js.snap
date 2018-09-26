@@ -39,9 +39,9 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
   <LinearGradient
     colors={
       Array [
-        "rgba(47,62,78,0)",
-        "rgba(47,62,78,0.75)",
-        "#2f3e4e",
+        "rgba(255,255,255,0)",
+        "rgba(255,255,255,0.75)",
+        "#ffffff",
       ]
     }
     end={
@@ -89,7 +89,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
     <Component
       style={
         Object {
-          "backgroundColor": "rgba(221,221,221,0.2)",
+          "backgroundColor": "rgba(61,60,64,0.2)",
           "flex": 1,
           "height": 1,
           "marginRight": 10,
@@ -101,8 +101,8 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
       onPress={[MockFunction]}
       style={
         Object {
-          "backgroundColor": "#2f3e4e",
-          "borderColor": "rgba(221,221,221,0.2)",
+          "backgroundColor": "#ffffff",
+          "borderColor": "rgba(61,60,64,0.2)",
           "borderRadius": 4,
           "borderWidth": 1,
           "height": 37,
@@ -122,7 +122,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
         <Component
           style={
             Object {
-              "color": undefined,
+              "color": "#2389d7",
               "fontSize": 16,
               "fontWeight": "600",
               "marginRight": 8,
@@ -136,7 +136,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
           id="post_info.message.show_more"
           style={
             Object {
-              "color": undefined,
+              "color": "#2389d7",
               "fontSize": 13,
               "fontWeight": "600",
             }
@@ -147,7 +147,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
     <Component
       style={
         Object {
-          "backgroundColor": "rgba(221,221,221,0.2)",
+          "backgroundColor": "rgba(61,60,64,0.2)",
           "flex": 1,
           "height": 1,
           "marginLeft": 10,
