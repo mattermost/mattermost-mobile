@@ -20,6 +20,7 @@ import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 import {
     getChannelByName,
@@ -262,6 +263,38 @@ export function selectInitialChannel(teamId) {
         if (
             myMembers[lastChannelId] &&
             lastChannel &&
+            (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
+        ) {
+            handleSelectChannel(lastChannelId)(dispatch, getState);
+            markChannelAsRead(lastChannelId)(dispatch, getState);
+            return;
+        }
+
+        dispatch(selectDefaultChannel(teamId));
+    };
+}
+
+export function selectPenultimateChannel(teamId) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const {channels, myMembers} = state.entities.channels;
+        const {currentUserId} = state.entities.users;
+        const {myPreferences} = state.entities.preferences;
+        const viewArchivedChannels = getConfig(state).ExperimentalViewArchivedChannels === 'true';
+        const lastChannelForTeam = state.views.team.lastChannelForTeam[teamId];
+        const lastChannelId = lastChannelForTeam && lastChannelForTeam.length > 1 ? lastChannelForTeam[1] : '';
+        const lastChannel = channels[lastChannelId];
+
+        const isDMVisible = lastChannel && lastChannel.type === General.DM_CHANNEL &&
+            isDirectChannelVisible(currentUserId, myPreferences, lastChannel);
+
+        const isGMVisible = lastChannel && lastChannel.type === General.GM_CHANNEL &&
+            isGroupChannelVisible(myPreferences, lastChannel);
+
+        if (
+            myMembers[lastChannelId] &&
+            lastChannel &&
+            (lastChannel.delete_at === 0 || viewArchivedChannels) &&
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
         ) {
             handleSelectChannel(lastChannelId)(dispatch, getState);
