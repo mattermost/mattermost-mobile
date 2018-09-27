@@ -38,7 +38,10 @@ export default class ChannelInfo extends PureComponent {
             getCustomEmojisInText: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             updateChannelNotifyProps: PropTypes.func.isRequired,
+            selectPenultimateChannel: PropTypes.func.isRequired,
+            handleSelectChannel: PropTypes.func.isRequired,
         }),
+        viewArchivedChannels: PropTypes.bool.isRequired,
         canDeleteChannel: PropTypes.bool.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -90,8 +93,10 @@ export default class ChannelInfo extends PureComponent {
         this.setState({isFavorite, isMuted});
     }
 
-    close = () => {
-        EventEmitter.emit(General.DEFAULT_CHANNEL, '');
+    close = (redirect = true) => {
+        if (redirect) {
+            EventEmitter.emit(General.DEFAULT_CHANNEL, '');
+        }
         if (Platform.OS === 'android') {
             this.props.navigator.dismissModal({animated: true});
         } else {
@@ -207,8 +212,12 @@ export default class ChannelInfo extends PureComponent {
                     if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
                         this.props.actions.getChannel(channel.id);
                     }
+                } else if (this.props.viewArchivedChannels) {
+                    this.props.actions.handleSelectChannel(channel.id);
+                    this.close(false);
                 } else {
-                    this.close();
+                    this.props.actions.selectPenultimateChannel(channel.team_id);
+                    this.close(false);
                 }
             };
         }
