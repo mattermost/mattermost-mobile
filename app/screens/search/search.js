@@ -534,7 +534,9 @@ export default class Search extends PureComponent {
     });
 
     onEndReached = debounce(() => {
-        this.props.actions.getMorePostsForSearch();
+        if (this.state.value) {
+            this.props.actions.getMorePostsForSearch();
+        }
     }, 100);
 
     render() {
