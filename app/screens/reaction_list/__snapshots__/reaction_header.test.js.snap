@@ -6,7 +6,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
     Object {
       "backgroundColor": "#ffffff",
       "height": 37,
-      "paddingHorizontal": 2,
+      "paddingHorizontal": 0,
     }
   }
 >

@@ -59,28 +59,30 @@ export default class ReactionList extends PureComponent {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        let hasNewState = false;
-        const newState = {};
-        if (!nextProps.reactions.length !== prevState.reactions.length) {
+        let newState = null;
+        if (nextProps.reactions !== prevState.reactions) {
             const {reactions} = nextProps;
             const reactionsByName = getReactionsByName(reactions);
 
-            newState.allUserIds = getUniqueUserIds(reactions);
-            newState.reactions = reactions;
-            newState.reactionsByName = reactionsByName;
-            newState.sortedReactions = sortReactions(reactionsByName);
-            newState.sortedReactionsForHeader = getSortedReactionsForHeader(reactionsByName);
-
-            hasNewState = true;
+            newState = {
+                allUserIds: getUniqueUserIds(reactions),
+                reactions,
+                reactionsByName,
+                sortedReactions: sortReactions(reactionsByName),
+                sortedReactionsForHeader: getSortedReactionsForHeader(reactionsByName),
+            };
         }
 
         if (nextProps.userProfiles !== prevState.userProfiles) {
-            newState.userProfilesById = generateUserProfilesById(nextProps.userProfiles);
-
-            hasNewState = true;
+            const userProfilesById = generateUserProfilesById(nextProps.userProfiles);
+            if (newState) {
+                newState.userProfilesById = userProfilesById;
+            } else {
+                newState = {userProfilesById};
+            }
         }
 
-        return hasNewState ? newState : null;
+        return newState;
     }
 
     componentDidMount() {
