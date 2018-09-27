@@ -3,8 +3,10 @@
 
 import {connect} from 'react-redux';
 
-import {makeGetMatchTermForDateMention} from 'app/selectors/autocomplete';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
+import {makeGetMatchTermForDateMention} from 'app/selectors/autocomplete';
+import {getCurrentLocale} from 'app/selectors/i18n';
 
 import DateSuggestion from './date_suggestion';
 
@@ -19,6 +21,7 @@ function makeMapStateToProps() {
 
         return {
             matchTerm,
+            locale: getCurrentLocale(state),
             theme: getTheme(state),
         };
     };

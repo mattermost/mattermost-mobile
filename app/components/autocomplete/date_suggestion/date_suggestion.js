@@ -4,7 +4,8 @@
 import React, {PureComponent} from 'react';
 import {Dimensions, Platform, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
-import {CalendarList} from 'react-native-calendars';
+import {CalendarList, LocaleConfig} from 'react-native-calendars';
+import {intlShape} from 'react-intl';
 
 import {memoizeResult} from 'mattermost-redux/utils/helpers';
 
@@ -15,6 +16,7 @@ export default class DateSuggestion extends PureComponent {
     static propTypes = {
         cursorPosition: PropTypes.number.isRequired,
         listHeight: PropTypes.number,
+        locale: PropTypes.string.isRequired,
         matchTerm: PropTypes.string,
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
@@ -27,6 +29,10 @@ export default class DateSuggestion extends PureComponent {
         value: '',
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     constructor(props) {
         super(props);
 
@@ -34,6 +40,10 @@ export default class DateSuggestion extends PureComponent {
             mentionComplete: false,
             sections: [],
         };
+    }
+
+    componentDidMount() {
+        this.setCalendarLocale();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -47,6 +57,10 @@ export default class DateSuggestion extends PureComponent {
             });
 
             this.props.onResultCountChange(0);
+        }
+
+        if (this.props.locale !== nextProps.locale) {
+            this.setCalendarLocale(nextProps);
         }
     }
 
@@ -65,6 +79,31 @@ export default class DateSuggestion extends PureComponent {
         onChangeText(completedDraft, true);
         this.props.onResultCountChange(1);
         this.setState({mentionComplete: true});
+    };
+
+    setCalendarLocale = (props = this.props) => {
+        const {formatMessage} = this.context.intl;
+
+        LocaleConfig.locales[props.locale] = {
+            monthNames: formatMessage({
+                id: 'mobile.calendar.monthNames',
+                defaultMessage: 'January,February,March,April,May,June,July,August,September,October,November,December',
+            }).split(','),
+            monthNamesShort: formatMessage({
+                id: 'mobile.calendar.monthNamesShort',
+                defaultMessage: 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec',
+            }).split(','),
+            dayNames: formatMessage({
+                id: 'mobile.calendar.dayNames',
+                defaultMessage: 'Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
+            }).split(','),
+            dayNamesShort: formatMessage({
+                id: 'mobile.calendar.dayNamesShort',
+                defaultMessage: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat',
+            }).split(','),
+        };
+
+        LocaleConfig.defaultLocale = props.locale;
     };
 
     render() {
