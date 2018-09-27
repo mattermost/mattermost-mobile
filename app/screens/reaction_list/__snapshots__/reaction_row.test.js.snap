@@ -1,0 +1,93 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ReactionRow should match snapshot, renderContent 1`] = `
+<Component
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "#ffffff",
+      "flexDirection": "row",
+      "height": 44,
+      "justifyContent": "flex-start",
+      "width": "100%",
+    }
+  }
+>
+  <Component
+    style={
+      Object {
+        "alignItems": "center",
+        "width": "13%",
+      }
+    }
+  >
+    <TouchableOpacity
+      activeOpacity={0.2}
+      onPress={[Function]}
+    >
+      <Component
+        style={
+          Object {
+            "paddingTop": 3,
+          }
+        }
+      >
+        <Connect(ProfilePicture)
+          showStatus={false}
+          size={24}
+          userId="user_id"
+        />
+      </Component>
+    </TouchableOpacity>
+  </Component>
+  <Component
+    ellipsizeMode="tail"
+    numberOfLines={1}
+    style={
+      Object {
+        "flexDirection": "row",
+        "width": "74%",
+      }
+    }
+  >
+    <Component
+      style={
+        Object {
+          "color": "#3d3c40",
+          "fontSize": 14,
+          "paddingRight": 5,
+        }
+      }
+    >
+      @username
+    </Component>
+    <Component>
+        
+    </Component>
+    <Component
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.5)",
+          "fontSize": 14,
+        }
+      }
+    >
+      username
+    </Component>
+  </Component>
+  <Component
+    style={
+      Object {
+        "alignItems": "center",
+        "justifyContent": "center",
+        "width": "13%",
+      }
+    }
+  >
+    <Connect(Emoji)
+      emojiName="smile"
+      size={24}
+    />
+  </Component>
+</Component>
+`;

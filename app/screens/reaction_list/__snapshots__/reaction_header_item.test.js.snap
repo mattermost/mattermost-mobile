@@ -1,0 +1,94 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ReactionHeaderItem should match snapshot 1`] = `
+<TouchableOpacity
+  activeOpacity={0.2}
+  onPress={[Function]}
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "height": 35,
+        "marginBottom": 5,
+        "marginRight": 6,
+        "marginTop": 3,
+        "paddingHorizontal": 6,
+        "paddingVertical": 2,
+      },
+      Object {
+        "borderBottomWidth": 2,
+        "borderColor": "#ffffff",
+      },
+      false,
+    ]
+  }
+>
+  <React.Fragment>
+    <Connect(Emoji)
+      emojiName="smile"
+      padding={5}
+      size={16}
+    />
+    <Component
+      style={
+        Object {
+          "color": "#2389d7",
+          "fontSize": 16,
+          "marginLeft": 4,
+        }
+      }
+    >
+      3
+    </Component>
+  </React.Fragment>
+</TouchableOpacity>
+`;
+
+exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
+<React.Fragment>
+  <Connect(Emoji)
+    emojiName="smile"
+    padding={5}
+    size={16}
+  />
+  <Component
+    style={
+      Object {
+        "color": "#2389d7",
+        "fontSize": 16,
+        "marginLeft": 4,
+      }
+    }
+  >
+    3
+  </Component>
+</React.Fragment>
+`;
+
+exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
+<React.Fragment>
+  <FormattedText
+    defaultMessage="All"
+    id="mobile.reaction_header.all_emojis"
+    style={
+      Object {
+        "color": "#2389d7",
+        "fontSize": 16,
+        "marginLeft": 4,
+      }
+    }
+  />
+  <Component
+    style={
+      Object {
+        "color": "#2389d7",
+        "fontSize": 16,
+        "marginLeft": 4,
+      }
+    }
+  >
+    3
+  </Component>
+</React.Fragment>
+`;

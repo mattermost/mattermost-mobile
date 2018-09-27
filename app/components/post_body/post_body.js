@@ -329,7 +329,14 @@ export default class PostBody extends PureComponent {
     };
 
     renderReactions = () => {
-        const {hasReactions, isSearchResult, postId, onAddReaction, showLongPost} = this.props;
+        const {
+            hasReactions,
+            isSearchResult,
+            navigator,
+            onAddReaction,
+            postId,
+            showLongPost,
+        } = this.props;
 
         if (!hasReactions || isSearchResult || showLongPost) {
             return null;
@@ -343,6 +350,7 @@ export default class PostBody extends PureComponent {
             <Reactions
                 postId={postId}
                 onAddReaction={onAddReaction}
+                navigator={navigator}
             />
         );
     };

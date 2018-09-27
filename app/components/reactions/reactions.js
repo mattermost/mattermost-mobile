@@ -9,6 +9,9 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import {intlShape} from 'react-intl';
+
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import addReactionIcon from 'assets/images/icons/reaction.png';
@@ -23,6 +26,7 @@ export default class Reactions extends PureComponent {
             removeReaction: PropTypes.func.isRequired,
         }).isRequired,
         highlightedReactions: PropTypes.array.isRequired,
+        navigator: PropTypes.object.isRequired,
         onAddReaction: PropTypes.func.isRequired,
         position: PropTypes.oneOf(['right', 'left']),
         postId: PropTypes.string.isRequired,
@@ -35,6 +39,18 @@ export default class Reactions extends PureComponent {
     static defaultProps = {
         position: 'right',
     };
+
+    static contextTypes = {
+        intl: intlShape,
+    };
+
+    constructor(props) {
+        super(props);
+
+        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
+            this.closeButton = source;
+        });
+    }
 
     componentDidMount() {
         const {actions, postId} = this.props;
@@ -50,8 +66,37 @@ export default class Reactions extends PureComponent {
         }
     };
 
+    showReactionList = () => {
+        const {navigator, postId, theme} = this.props;
+        const {formatMessage} = this.context.intl;
+        const options = {
+            screen: 'ReactionList',
+            title: formatMessage({id: 'mobile.reaction_list.title', defaultMessage: 'Reactions'}),
+            animationType: 'slide-up',
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            navigatorButtons: {
+                leftButtons: [{
+                    id: 'close-reaction-list',
+                    icon: this.closeButton,
+                }],
+            },
+            passProps: {
+                postId,
+            },
+        };
+
+        navigator.showModal(options);
+    }
+
     renderReactions = () => {
-        const {highlightedReactions, reactions, theme} = this.props;
+        const {highlightedReactions, navigator, reactions, theme, postId} = this.props;
 
         return Array.from(reactions.keys()).map((r) => {
             return (
@@ -60,7 +105,10 @@ export default class Reactions extends PureComponent {
                     count={reactions.get(r).length}
                     emojiName={r}
                     highlight={highlightedReactions.includes(r)}
+                    navigator={navigator}
                     onPress={this.handleReactionPress}
+                    onLongPress={this.showReactionList}
+                    postId={postId}
                     theme={theme}
                 />
             );

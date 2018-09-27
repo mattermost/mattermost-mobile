@@ -17,6 +17,7 @@ export default class Reaction extends PureComponent {
         emojiName: PropTypes.string.isRequired,
         highlight: PropTypes.bool.isRequired,
         onPress: PropTypes.func.isRequired,
+        onLongPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     }
 
@@ -26,12 +27,19 @@ export default class Reaction extends PureComponent {
     }
 
     render() {
-        const {count, emojiName, highlight, theme} = this.props;
+        const {
+            count,
+            emojiName,
+            highlight,
+            onLongPress,
+            theme,
+        } = this.props;
         const styles = getStyleSheet(theme);
 
         return (
             <TouchableOpacity
                 onPress={this.handlePress}
+                onLongPress={onLongPress}
                 style={[styles.reaction, (highlight && styles.highlight)]}
             >
                 <Emoji
