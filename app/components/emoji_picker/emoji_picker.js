@@ -75,7 +75,7 @@ export default class EmojiPicker extends PureComponent {
         const emojis = this.renderableEmojis(props.emojisBySection, props.deviceWidth);
         const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
-        this.isX = DeviceInfo.getModel() === 'iPhone X';
+        this.isX = DeviceInfo.getModel().includes('iPhone X');
         this.scrollToSectionTries = 0;
         this.state = {
             emojis,

@@ -55,7 +55,7 @@ export default class OfflineIndicator extends Component {
     constructor(props) {
         super(props);
 
-        this.isX = DeviceInfo.getModel() === 'iPhone X';
+        this.isX = DeviceInfo.getModel().includes('iPhone X');
         const navBar = this.getNavBarHeight(props.isLandscape);
 
         this.state = {

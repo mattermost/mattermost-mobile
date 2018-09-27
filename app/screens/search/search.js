@@ -88,7 +88,7 @@ export default class Search extends PureComponent {
         super(props);
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        this.isX = DeviceInfo.getModel() === 'iPhone X';
+        this.isX = DeviceInfo.getModel().includes('iPhone X');
         this.state = {
             channelName: '',
             cursorPosition: 0,
