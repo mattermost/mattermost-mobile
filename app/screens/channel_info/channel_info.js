@@ -93,8 +93,10 @@ export default class ChannelInfo extends PureComponent {
         this.setState({isFavorite, isMuted});
     }
 
-    close = () => {
-        EventEmitter.emit(General.DEFAULT_CHANNEL, '');
+    close = (redirect = true) => {
+        if (redirect) {
+            EventEmitter.emit(General.DEFAULT_CHANNEL, '');
+        }
         if (Platform.OS === 'android') {
             this.props.navigator.dismissModal({animated: true});
         } else {
@@ -212,18 +214,10 @@ export default class ChannelInfo extends PureComponent {
                     }
                 } else if (this.props.viewArchivedChannels) {
                     this.props.actions.handleSelectChannel(channel.id);
-                    if (Platform.OS === 'android') {
-                        this.props.navigator.dismissModal({animated: true});
-                    } else {
-                        this.props.navigator.pop({animated: true});
-                    }
+                    this.close(false);
                 } else {
                     this.props.actions.selectPenultimateChannel(channel.team_id);
-                    if (Platform.OS === 'android') {
-                        this.props.navigator.dismissModal({animated: true});
-                    } else {
-                        this.props.navigator.pop({animated: true});
-                    }
+                    this.close(false);
                 }
             };
         }
