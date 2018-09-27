@@ -233,8 +233,9 @@ export const filterPrivateChannels = createSelector(
 
 export const filterDirectAndGroupMessages = createSelector(
     getMyChannels,
+    (state) => state.entities.channels.channels,
     (state, matchTerm) => matchTerm,
-    (myChannels, matchTerm) => {
+    (myChannels, originalChannels, matchTerm) => {
         if (matchTerm === null) {
             return null;
         }
@@ -242,7 +243,10 @@ export const filterDirectAndGroupMessages = createSelector(
         let channels;
         if (matchTerm) {
             channels = myChannels.filter((c) => {
-                if ((c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL) && (c.name.startsWith(matchTerm) || c.display_name.replace(/ /g, '').startsWith(matchTerm))) {
+                if (c.type === General.DM_CHANNEL && (originalChannels[c.id].display_name.startsWith(matchTerm))) {
+                    return true;
+                }
+                if (c.type === General.GM_CHANNEL && (c.name.startsWith(matchTerm) || c.display_name.replace(/ /g, '').startsWith(matchTerm))) {
                     return true;
                 }
                 return false;

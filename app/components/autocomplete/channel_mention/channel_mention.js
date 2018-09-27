@@ -56,12 +56,11 @@ export default class ChannelMention extends PureComponent {
     }
 
     runSearch = debounce((currentTeamId, matchTerm) => {
-        if (!isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
-            this.props.actions.searchChannels(currentTeamId, matchTerm);
+        if (isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+            this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
             return;
         }
-
-        this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
+        this.props.actions.searchChannels(currentTeamId, matchTerm);
     }, 200);
 
     componentWillReceiveProps(nextProps) {
@@ -115,7 +114,7 @@ export default class ChannelMention extends PureComponent {
                     });
                 }
 
-                if (directAndGroupMessages.length) {
+                if (directAndGroupMessages.length && isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
                     sections.push({
                         id: t('suggestion.search.direct'),
                         defaultMessage: 'Direct Messages',
