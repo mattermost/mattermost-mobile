@@ -1,3 +1,4 @@
+require 'json'
 fastlane_version '2.71.0'
 
 fastlane_require 'aws-sdk-s3'
@@ -25,21 +26,21 @@ platform :ios do
 
   desc 'Build iOS app'
   lane :build do
-    update_identifiers()
+    update_identifiers
 
     if ENV['SYNC_IOS_PROVISIONING_PROFILES'] == 'true'
       match(type: ENV['MATCH_TYPE'] || 'adhoc')
     end
 
-    configure_from_env()
+    configure_from_env
 
-    build_ios()
+    build_ios
 
     if ENV['SUBMIT_IOS_TO_TESTFLIGHT'] == 'true'
       pilot
     end
 
-    git_actions()
+    git_actions
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       pretext = '#### New iOS beta published to TestFlight -> @qateam'
@@ -60,20 +61,13 @@ platform :ios do
 
   desc 'Build an unsigned ipa'
   lane :unsigned do
-    unless ENV['SEGMENT_API_KEY'].nil? || ENV['SEGMENT_API_KEY'].empty?
-      find_replace_string(
-          path_to_file: './dist/assets/config.json',
-          old_string: '"SegmentApiKey": "oPPT2MA24VYZTBGDyXtUDa7u50lkPIE4"',
-          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
-      )
-    end
-
-    update_identifiers()
-    replace_ios_assets()
+    configure_from_env
+    update_identifiers
+    replace_ios_asset
   end
 
   lane :build_qa do
-    update_identifiers()
+    update_identifiers
     match(type: 'adhoc')
     build_ios
 
@@ -146,11 +140,15 @@ platform :ios do
             app_group_identifiers: [ENV['IOS_APP_GROUP']]
         )
 
-        find_replace_string(
-            path_to_file: './dist/assets/config.json',
-            old_string: 'group.com.mattermost.rnbeta',
-            new_string: ENV['IOS_APP_GROUP']
-        )
+        config_path = '../dist/assets/config.json'
+        config_file = File.read(config_path)
+        config_json = JSON.parse(config_file)
+
+        config_json['AppGroupId'] = ENV['IOS_APP_GROUP']
+
+        File.open(config_path, 'w') do |f|
+          f.write(JSON.pretty_generate(config_json))
+        end
       end
 
       unless ENV['IOS_EXTENSION_APP_IDENTIFIER'].nil? || ENV['IOS_EXTENSION_APP_IDENTIFIER'].empty? || ENV['IOS_EXTENSION_APP_IDENTIFIER'] == 'com.mattermost.rnbeta.MattermostShare'
@@ -200,7 +198,7 @@ platform :ios do
       commit_version_bump(commit_version_options)
     end
 
-    replace_ios_assets()
+    replace_ios_assets
 
     unless ENV['FASTLANE_TEAM_ID'].nil? || ENV['FASTLANE_TEAM_ID'].empty?
       update_project_team(
@@ -269,9 +267,9 @@ platform :android do
 
   after_all do |lane|
     if ENV['RESET_GIT_BRANCH'] == 'true'
-      packageId = ENV['ANDROID_PACKAGE_ID'] || 'com.mattermost.rnbeta'
+      package_id = ENV['ANDROID_PACKAGE_ID'] || 'com.mattermost.rnbeta'
       beta_dir = '../android/app/src/main/java/com/mattermost/rnbeta'
-      release_dir = "../android/app/src/main/java/#{packageId.gsub '.', '/'}"
+      release_dir = "../android/app/src/main/java/#{package_id.gsub '.', '/'}"
 
       if beta_dir != release_dir
         sh "rm -rf #{release_dir}"
@@ -288,10 +286,10 @@ platform :android do
 
   desc 'Build Android app'
   lane :build do
-    configure_from_env()
-    link_sentry_android()
+    configure_from_env
+    link_sentry_android
 
-    build_android()
+    build_android
 
     apk_path = "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}"
 
@@ -304,7 +302,7 @@ platform :android do
 
     sh "mv #{apk_path} ../Mattermost.apk"
 
-    git_actions()
+    git_actions
 
     if ENV['MATTERMOST_WEBHOOK_URL'] && !ENV['MATTERMOST_WEBHOOK_URL'].nil? && !ENV['MATTERMOST_WEBHOOK_URL'].empty?
       pretext = '#### New Android beta published to Google Play -> @qateam'
@@ -325,7 +323,7 @@ platform :android do
 
   desc 'Build an unsigned apk'
   lane :unsigned do
-    prepare_release()
+    prepare_release
 
     gradle(
         task: 'assemble',
@@ -361,18 +359,18 @@ platform :android do
   end
 
   def prepare_release
-    packageId = ENV['ANDROID_PACKAGE_ID'] || 'com.mattermost.rnbeta'
+    package_id = ENV['ANDROID_PACKAGE_ID'] || 'com.mattermost.rnbeta'
     beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
-    release_dir = "./android/app/src/main/java/#{packageId.gsub '.', '/'}/"
+    release_dir = "./android/app/src/main/java/#{package_id.gsub '.', '/'}/"
 
     if ENV['ANDROID_REPLACE_ASSETS'] == 'true'
       sh 'cp -R ../dist/assets/release/icons/android/* ../android/app/src/main/res/'
       sh 'cp -R ../dist/assets/release/splash_screen/android/* ../android/app/src/main/res/'
     end
 
-    if packageId != 'com.mattermost.rnbeta'
-      android_change_package_identifier(newIdentifier: packageId, manifest: './android/app/src/main/AndroidManifest.xml')
-      android_update_application_id(app_folder_name: 'android/app', application_id: packageId)
+    if package_id != 'com.mattermost.rnbeta'
+      android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
+      android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
     end
 
     unless ENV['ANDROID_APP_NAME'].nil? || ENV['ANDROID_APP_NAME'].empty? || ENV['ANDROID_APP_NAME'] == 'Mattermost Beta'
@@ -406,14 +404,14 @@ platform :android do
       find_replace_string(
           path_to_file: './android/app/BUCK',
           old_string: 'package com.mattermost.rnbeta;',
-          new_string: "package #{packageId};"
+          new_string: "package #{package_id};"
       )
 
       Dir.glob(".#{release_dir}*.java") do |item|
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta;',
-            new_string: "package #{packageId};"
+            new_string: "package #{package_id};"
         )
       end
 
@@ -422,7 +420,7 @@ platform :android do
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'import com.mattermost.rnbeta.MainApplication;',
-            new_string: "import #{packageId}.MainApplication;"
+            new_string: "import #{package_id}.MainApplication;"
         )
       end
     end
@@ -448,7 +446,7 @@ platform :android do
       android_commit_version_bump(commit_version_options)
     end
 
-    prepare_release()
+    prepare_release
 
     config_mode = ENV['ANDROID_BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
 
@@ -468,8 +466,8 @@ platform :android do
         file = File.new(path, 'r')
         while (line = file.gets)
           if line.include? 'versionCode'
-            versionComponents = line.strip.split(' ')
-            version_code = versionComponents[1].tr("\"",'')
+            version_components = line.strip.split(' ')
+            version_code = version_components[1].tr("\"",'')
             break
           end
         end
@@ -499,8 +497,8 @@ platform :android do
         file = File.new(path, 'r')
         while (line = file.gets)
           if line.include? 'versionName'
-            versionComponents = line.strip.split(' ')
-            version_name = versionComponents[1].tr("\"",'')
+            version_components = line.strip.split(' ')
+            version_name = version_components[1].tr("\"",'')
             break
           end
         end
@@ -574,60 +572,40 @@ platform :android do
 end
 
 def configure_from_env
+  config_path = '../dist/assets/config.json'
+  config_file = File.read(config_path)
+  config_json = JSON.parse(config_file)
+
   unless ENV['SEGMENT_API_KEY'].nil? || ENV['SEGMENT_API_KEY'].empty?
-    find_replace_string(
-        path_to_file: './dist/assets/config.json',
-        old_string: '"SegmentApiKey": "oPPT2MA24VYZTBGDyXtUDa7u50lkPIE4"',
-        new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
-    )
+    config_json['SegmentApiKey'] =  ENV['SEGMENT_API_KEY']
   end
 
   if ENV['SENTRY_ENABLED'] == 'true'
-    find_replace_string(
-        path_to_file: './dist/assets/config.json',
-        old_string: '"SentryEnabled": false',
-        new_string: "\"SentryEnabled\": #{ENV['SENTRY_ENABLED']}"
-    )
+    config_json['SentryEnabled'] = true
   end
 
   unless ENV['SENTRY_ORG'].nil? || ENV['SENTRY_ORG'].empty?
-    find_replace_string(
-        path_to_file: './dist/assets/config.json',
-        old_string: '"SentryOrg": ""',
-        new_string: "\"SentryOrg\": \"#{ENV['SENTRY_ORG']}\""
-    )
+    config_json['SentryOrg'] = ENV['SENTRY_ORG']
   end
 
   unless ENV['SENTRY_PROJECT_IOS'].nil? || ENV['SENTRY_PROJECT_IOS'].empty?
-    find_replace_string(
-        path_to_file: './dist/assets/config.json',
-        old_string: '"SentryProjectIos": ""',
-        new_string: "\"SentryProjectIos\": \"#{ENV['SENTRY_PROJECT_IOS']}\""
-    )
+    config_json['SentryProjectIos'] = ENV['SENTRY_PROJECT_IOS']
   end
 
   unless ENV['SENTRY_PROJECT_ANDROID'].nil? || ENV['SENTRY_PROJECT_ANDROID'].empty?
-    find_replace_string(
-        path_to_file: './dist/assets/config.json',
-        old_string: '"SentryProjectAndroid": ""',
-        new_string: "\"SentryProjectAndroid\": \"#{ENV['SENTRY_PROJECT_ANDROID']}\""
-    )
+    config_json['SentryProjectAndroid'] = ENV['SENTRY_PROJECT_ANDROID']
   end
 
   unless ENV['SENTRY_DSN_IOS'].nil? || ENV['SENTRY_DSN_IOS'].empty?
-    find_replace_string(
-        path_to_file: './dist/assets/config.json',
-        old_string: '"SentryDsnIos": ""',
-        new_string: "\"SentryDsnIos\": \"#{ENV['SENTRY_DSN_IOS']}\""
-    )
+    config_json['SentryDsnIos'] = ENV['SENTRY_DSN_IOS']
   end
 
   unless ENV['SENTRY_DSN_ANDROID'].nil? || ENV['SENTRY_DSN_ANDROID'].empty?
-    find_replace_string(
-        path_to_file: './dist/assets/config.json',
-        old_string: '"SentryDsnAndroid": ""',
-        new_string: "\"SentryDsnAndroid\": \"#{ENV['SENTRY_DSN_ANDROID']}\""
-    )
+    config_json['SentryDsnAndroid'] = ENV['SENTRY_DSN_ANDROID']
+  end
+
+  File.open(config_path, 'w') do |f|
+    f.write(JSON.pretty_generate(config_json))
   end
 end
 
