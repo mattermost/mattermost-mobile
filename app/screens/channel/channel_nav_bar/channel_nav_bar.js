@@ -35,7 +35,7 @@ export default class ChannelNavBar extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.isX = DeviceInfo.getModel() === 'iPhone X';
+        this.isX = DeviceInfo.getModel().includes('iPhone X');
     }
 
     render() {

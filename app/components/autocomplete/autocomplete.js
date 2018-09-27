@@ -86,7 +86,7 @@ export default class Autocomplete extends PureComponent {
 
     listHeight() {
         let offset = Platform.select({ios: 65, android: 75});
-        if (DeviceInfo.getModel() === 'iPhone X') {
+        if (DeviceInfo.getModel().includes('iPhone X')) {
             offset = 90;
         }
         return this.props.deviceHeight - offset - this.state.keyboardOffset;

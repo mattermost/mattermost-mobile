@@ -47,7 +47,7 @@ export default class ClientUpgradeListener extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.isX = DeviceInfo.getModel() === 'iPhone X';
+        this.isX = DeviceInfo.getModel().includes('iPhone X');
 
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;

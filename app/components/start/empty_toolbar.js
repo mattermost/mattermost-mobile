@@ -28,7 +28,7 @@ export default class EmptyToolbar extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.isX = DeviceInfo.getModel() === 'iPhone X';
+        this.isX = DeviceInfo.getModel().includes('iPhone X');
     }
 
     render() {
