@@ -270,7 +270,7 @@
   "mobile.more_dms.cannot_add_more": "You cannot add more users",
   "mobile.more_dms.start": "Start",
   "mobile.more_dms.title": "New Conversation",
-  "mobile.more_dms.you": "(@{username} - you)",
+  "mobile.more_dms.you": "@{username} - you",
   "mobile.notice_mobile_link": "mobile apps",
   "mobile.notice_platform_link": "server",
   "mobile.notice_text": "Mattermost is made possible by the open source software used in our {platform} and {mobile}.",
