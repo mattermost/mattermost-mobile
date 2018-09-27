@@ -274,6 +274,7 @@ const styles = StyleSheet.create({
     progressCirclePercentage: {
         alignItems: 'center',
         flex: 1,
+        justifyContent: 'center',
     },
     progressContent: {
         alignItems: 'center',
@@ -281,7 +282,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         left: 0,
         position: 'absolute',
-        top: 40,
         width: '100%',
     },
     progressText: {
