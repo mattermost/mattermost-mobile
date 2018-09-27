@@ -231,6 +231,36 @@ export const filterPrivateChannels = createSelector(
     }
 );
 
+export const filterDirectAndGroupMessages = createSelector(
+    getMyChannels,
+    (state) => state.entities.channels.channels,
+    (state, matchTerm) => matchTerm,
+    (myChannels, originalChannels, matchTerm) => {
+        if (matchTerm === null) {
+            return null;
+        }
+
+        let channels;
+        if (matchTerm) {
+            channels = myChannels.filter((c) => {
+                if (c.type === General.DM_CHANNEL && (originalChannels[c.id].display_name.startsWith(matchTerm))) {
+                    return true;
+                }
+                if (c.type === General.GM_CHANNEL && (c.name.startsWith(matchTerm) || c.display_name.replace(/ /g, '').startsWith(matchTerm))) {
+                    return true;
+                }
+                return false;
+            });
+        } else {
+            channels = myChannels.filter((c) => {
+                return c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL;
+            });
+        }
+
+        return channels.map((c) => c.id);
+    }
+);
+
 export const makeGetMatchTermForDateMention = () => {
     let lastMatchTerm = null;
     let lastValue;

@@ -27,3 +27,13 @@ export const getChannelMembersForDm = createSelector(
         return [otherUser];
     }
 );
+
+export const getChannelNameForSearchAutocomplete = createSelector(
+    (state, channelId) => state.entities.channels.channels[channelId],
+    (channel) => {
+        if (channel && channel.display_name) {
+            return channel.display_name;
+        }
+        return '';
+    }
+);

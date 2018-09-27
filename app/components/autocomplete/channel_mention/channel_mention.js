@@ -34,6 +34,7 @@ export default class ChannelMention extends PureComponent {
         onResultCountChange: PropTypes.func.isRequired,
         privateChannels: PropTypes.array,
         publicChannels: PropTypes.array,
+        directAndGroupMessages: PropTypes.array,
         deletedPublicChannels: PropTypes.instanceOf(Set),
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -55,16 +56,15 @@ export default class ChannelMention extends PureComponent {
     }
 
     runSearch = debounce((currentTeamId, matchTerm) => {
-        if (!isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
-            this.props.actions.searchChannels(currentTeamId, matchTerm);
+        if (isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+            this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
             return;
         }
-
-        this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
+        this.props.actions.searchChannels(currentTeamId, matchTerm);
     }, 200);
 
     componentWillReceiveProps(nextProps) {
-        const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, requestStatus, myMembers, deletedPublicChannels} = nextProps;
+        const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, directAndGroupMessages, requestStatus, myMembers, deletedPublicChannels} = nextProps;
 
         if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
             // if the term changes but is null or the mention has been completed we render this component as null
@@ -91,6 +91,7 @@ export default class ChannelMention extends PureComponent {
         if (requestStatus !== RequestStatus.STARTED &&
             (myChannels !== this.props.myChannels || otherChannels !== this.props.otherChannels ||
                 privateChannels !== this.props.privateChannels || publicChannels !== this.props.publicChannels ||
+                directAndGroupMessages !== this.props.directAndGroupMessages ||
                 myMembers !== this.props.myMembers || deletedPublicChannels !== this.props.deletedPublicChannels)) {
             // if the request is complete and the term is not null we show the autocomplete
             const sections = [];
@@ -110,6 +111,15 @@ export default class ChannelMention extends PureComponent {
                         defaultMessage: 'Private Channels',
                         data: privateChannels,
                         key: 'privateChannels',
+                    });
+                }
+
+                if (directAndGroupMessages.length && isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+                    sections.push({
+                        id: t('suggestion.search.direct'),
+                        defaultMessage: 'Direct Messages',
+                        data: directAndGroupMessages,
+                        key: 'directAndGroupMessages',
                     });
                 }
             } else {

@@ -481,6 +481,7 @@
   "suggestion.mention.morechannels": "Other Channels",
   "suggestion.mention.nonmembers": "Not in Channel",
   "suggestion.mention.special": "Special Mentions",
+  "suggestion.search.direct": "Direct Messages",
   "suggestion.search.private": "Private Channels",
   "suggestion.search.public": "Public Channels",
   "user.settings.display.clockDisplay": "Clock Display",
