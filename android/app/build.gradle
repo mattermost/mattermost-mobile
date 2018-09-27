@@ -75,8 +75,7 @@ import com.android.build.OutputFile
 project.ext.react = [
     entryFile: "index.js",
     bundleCommand: "ram-bundle",
-    bundleConfig: "packager-config.js",
-    extraPackagerArgs: ["--max-workers=4"]
+    bundleConfig: "packager-config.js"
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
