@@ -38,11 +38,11 @@ export default class PostTextbox extends PureComponent {
             userTyping: PropTypes.func.isRequired,
             handleCommentDraftSelectionChanged: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
+            selectPenultimateChannel: PropTypes.func.isRequired,
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
+        channelTeamId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
@@ -56,7 +56,6 @@ export default class PostTextbox extends PureComponent {
         value: PropTypes.string.isRequired,
         userIsOutOfOffice: PropTypes.bool.isRequired,
         channelIsArchived: PropTypes.bool,
-        defaultChannel: PropTypes.object,
         onCloseChannel: PropTypes.func,
     };
 
@@ -460,11 +459,8 @@ export default class PostTextbox extends PureComponent {
     };
 
     onCloseChannelPress = () => {
-        const {defaultChannel, channelId, onCloseChannel} = this.props;
-        const {setChannelDisplayName, setChannelLoading} = this.props.actions;
-        setChannelLoading(true);
-        setChannelDisplayName(defaultChannel.display_name);
-        EventEmitter.emit('switch_channel', defaultChannel, channelId);
+        const {onCloseChannel, channelTeamId} = this.props;
+        this.props.actions.selectPenultimateChannel(channelTeamId);
         if (onCloseChannel) {
             onCloseChannel();
         }

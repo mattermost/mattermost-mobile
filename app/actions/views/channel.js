@@ -297,6 +297,8 @@ export function selectPenultimateChannel(teamId) {
             (lastChannel.delete_at === 0 || viewArchivedChannels) &&
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
         ) {
+            dispatch(setChannelLoading(true));
+            dispatch(setChannelDisplayName(lastChannel.display_name));
             dispatch(handleSelectChannel(lastChannelId));
             dispatch(markChannelAsRead(lastChannelId));
             return;
