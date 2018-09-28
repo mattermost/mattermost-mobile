@@ -106,7 +106,7 @@ export default class UserListRow extends React.PureComponent {
                         </View>
                         }
                     </View>
-                    <View style={{width: 25}}/>
+                    <View style={style.rightFiller}/>
                 </CustomListRow>
             </View>
         );
@@ -119,10 +119,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             marginLeft: 10,
-        },
-        displayName: {
-            fontSize: 15,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         profileContainer: {
             flexDirection: 'row',
@@ -139,9 +135,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         hideTeammateDisplay: {
             justifyContent: 'center',
         },
+        displayName: {
+            fontSize: 15,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
         username: {
             fontSize: 15,
             color: theme.centerChannelColor,
+        },
+        rightFiller: {
+            width: 25,
         },
     };
 });
