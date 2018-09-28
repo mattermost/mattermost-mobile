@@ -125,6 +125,7 @@ export default class ChannelMention extends PureComponent {
                         defaultMessage: 'My Channels',
                         data: myChannels,
                         key: 'myChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
@@ -174,7 +175,7 @@ export default class ChannelMention extends PureComponent {
             <AutocompleteSectionHeader
                 id={section.id}
                 defaultMessage={section.defaultMessage}
-                loading={this.props.requestStatus === RequestStatus.STARTED}
+                loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
             />
         );
