@@ -126,7 +126,7 @@ class Thread extends PureComponent {
         } = this.props;
         const style = getStyle(theme);
         let content;
-        if (this.props.threadLoadingStatus.status === RequestStatus.STARTED) {
+        if (this.props.threadLoadingStatus.status === RequestStatus.STARTED && !this.hasRootPost()) {
             content = (
                 <Loading/>
             );
