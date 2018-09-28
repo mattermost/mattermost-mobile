@@ -44,6 +44,20 @@ describe('PostAttachmentOpenGraph', () => {
         expect(wrapper.find(TouchableOpacity).exists()).toEqual(true);
     });
 
+    test('should match snapshot, without site_name', () => {
+        const newOpenGraphData = {
+            title: 'Title',
+            url: 'https://mattermost.com/',
+        };
+        const wrapper = shallow(
+            <PostAttachmentOpenGraph
+                {...baseProps}
+                openGraphData={newOpenGraphData}
+            />
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should match state and snapshot, on renderImage', () => {
         const wrapper = shallow(
             <PostAttachmentOpenGraph {...baseProps}/>
