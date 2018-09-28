@@ -5,3 +5,4 @@
 gem 'fastlane-plugin-android_change_package_identifier'
 gem 'fastlane-plugin-android_change_string_app_name'
 gem 'fastlane-plugin-find_replace_string'
+gem 'fastlane-plugin-versioning_android'
