@@ -9,6 +9,8 @@ import {
     TouchableOpacity,
 } from 'react-native';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import PostAttachmentOpenGraph from './post_attachment_opengraph';
 
 describe('PostAttachmentOpenGraph', () => {
@@ -26,9 +28,7 @@ describe('PostAttachmentOpenGraph', () => {
         isReplyPost: false,
         link: 'https://mattermost.com/',
         navigator: {},
-        theme: {
-            centerChannelColor: '#aaa',
-        },
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot, without image and description', () => {
