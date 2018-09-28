@@ -131,6 +131,7 @@ class Thread extends PureComponent {
         } = this.props;
         const style = getStyle(theme);
         let content;
+        let postTextBox;
         if (this.hasRootPost()) {
             content = (
                 <PostList
@@ -142,13 +143,7 @@ class Thread extends PureComponent {
                     navigator={navigator}
                 />
             );
-        } else {
-            content = (
-                <Loading/>
-            );
-        }
-        let postTextBox;
-        if (this.hasRootPost()) {
+
             postTextBox = (
                 <PostTextbox
                     channelIsArchived={channelIsArchived}
@@ -157,6 +152,10 @@ class Thread extends PureComponent {
                     navigator={navigator}
                     onCloseChannel={this.onCloseChannel}
                 />
+            );
+        } else {
+            content = (
+                <Loading/>
             );
         }
 
