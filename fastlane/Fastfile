@@ -8,6 +8,10 @@ skip_docs
 
 platform :ios do
   before_all do |lane|
+    unless ENV['BRANCH_TO_BUILD'].nil? || ENV['BRANCH_TO_BUILD'].empty?
+      sh "git checkout #{ENV['BRANCH_TO_BUILD']}"
+    end
+
     unless ENV['GIT_LOCAL_BRANCH'].nil? || ENV['GIT_LOCAL_BRANCH'].empty?
         sh "git checkout -b #{ENV['GIT_LOCAL_BRANCH']}"
     end
@@ -20,7 +24,9 @@ platform :ios do
           skip_clean: true
       )
 
-      sh 'git checkout master'
+      branch = ENV['BRANCH_TO_BUILD'] || 'master'
+
+      sh "git checkout #{branch}"
     end
   end
 
@@ -260,6 +266,10 @@ end
 
 platform :android do
   before_all do |lane|
+    unless ENV['BRANCH_TO_BUILD'].nil? || ENV['BRANCH_TO_BUILD'].empty?
+      sh "git checkout #{ENV['BRANCH_TO_BUILD']}"
+    end
+
     unless ENV['GIT_LOCAL_BRANCH'].nil? || ENV['GIT_LOCAL_BRANCH'].empty?
       sh "git checkout -b #{ENV['GIT_LOCAL_BRANCH']}"
     end
@@ -280,7 +290,9 @@ platform :android do
           skip_clean: true
       )
 
-      sh 'git checkout master'
+      branch = ENV['BRANCH_TO_BUILD'] || 'master'
+
+      sh "git checkout #{branch}"
     end
   end
 
