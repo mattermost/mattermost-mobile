@@ -86,16 +86,21 @@ class Thread extends PureComponent {
 
     hasRootPost = () => {
         return this.props.postIds.includes(this.props.rootId);
-    }
+    };
 
     renderFooter = () => {
         if (!this.hasRootPost() && this.props.threadLoadingStatus.status !== RequestStatus.STARTED) {
             return (
                 <DeletedPost theme={this.props.theme}/>
             );
+        } else if (this.props.threadLoadingStatus.status === RequestStatus.STARTED) {
+            return (
+                <Loading/>
+            );
         }
+
         return null;
-    }
+    };
 
     onCloseChannel = () => {
         this.props.navigator.resetTo({
@@ -112,7 +117,7 @@ class Thread extends PureComponent {
                 screenBackgroundColor: 'transparent',
             },
         });
-    }
+    };
 
     render() {
         const {
@@ -126,11 +131,8 @@ class Thread extends PureComponent {
         } = this.props;
         const style = getStyle(theme);
         let content;
-        if (this.props.threadLoadingStatus.status === RequestStatus.STARTED) {
-            content = (
-                <Loading/>
-            );
-        } else {
+        let postTextBox;
+        if (this.hasRootPost()) {
             content = (
                 <PostList
                     renderFooter={this.renderFooter}
@@ -141,9 +143,7 @@ class Thread extends PureComponent {
                     navigator={navigator}
                 />
             );
-        }
-        let postTextBox;
-        if (this.hasRootPost() && this.props.threadLoadingStatus.status !== RequestStatus.STARTED) {
+
             postTextBox = (
                 <PostTextbox
                     channelIsArchived={channelIsArchived}
@@ -152,6 +152,10 @@ class Thread extends PureComponent {
                     navigator={navigator}
                     onCloseChannel={this.onCloseChannel}
                 />
+            );
+        } else {
+            content = (
+                <Loading/>
             );
         }
 
