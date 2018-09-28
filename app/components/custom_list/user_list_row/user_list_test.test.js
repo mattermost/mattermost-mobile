@@ -4,6 +4,9 @@
 import React from 'react';
 import {configure, shallow} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
+
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import UserListRow from './user_list_row';
 
 configure({adapter: new Adapter()});
@@ -27,7 +30,7 @@ describe('UserListRow', () => {
             username: 'user',
             delete_at: 0,
         },
-        theme: {},
+        theme: Preferences.THEMES.default,
         teammateNameDisplay: 'test',
     };
 

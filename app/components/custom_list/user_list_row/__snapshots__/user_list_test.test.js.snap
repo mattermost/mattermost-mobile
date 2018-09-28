@@ -1,147 +1,282 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UserListRow should match snapshot 1`] = `
-<CustomListRow
-  enabled={true}
-  id="21345"
-  onPress={[Function]}
-  theme={Object {}}
+<Component
+  style={
+    Object {
+      "flex": 1,
+      "flexDirection": "row",
+      "marginLeft": 10,
+    }
+  }
 >
-  <Connect(ProfilePicture)
-    size={32}
-    userId="21345"
-  />
-  <Component
-    style={
+  <CustomListRow
+    enabled={true}
+    id="21345"
+    onPress={[Function]}
+    theme={
       Object {
-        "flexDirection": "row",
-        "marginLeft": 5,
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
     }
   >
-    <Component>
-      <Component
-        style={
-          Object {
-            "color": undefined,
-            "fontSize": 15,
-          }
+    <Component
+      style={
+        Object {
+          "color": "#3d3c40",
+          "flexDirection": "row",
+          "marginLeft": 10,
         }
-      >
-        user
-      </Component>
+      }
+    >
+      <Connect(ProfilePicture)
+        size={32}
+        userId="21345"
+      />
     </Component>
-    <Component>
-      <Component
-        ellipsizeMode="tail"
-        numberOfLines={1}
-        style={
+    <Component
+      style={
+        Array [
           Object {
-            "color": undefined,
-            "fontSize": 15,
             "marginLeft": 5,
+          },
+          Object {
+            "justifyContent": "center",
+          },
+        ]
+      }
+    >
+      <Component>
+        <Component
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Object {
+              "color": "#3d3c40",
+              "fontSize": 15,
+            }
           }
-        }
-      >
-        (@user)
+        >
+          @user
+        </Component>
       </Component>
     </Component>
-  </Component>
-</CustomListRow>
+    <Component
+      style={
+        Object {
+          "width": 25,
+        }
+      }
+    />
+  </CustomListRow>
+</Component>
 `;
 
 exports[`UserListRow should match snapshot for  currentUser with (you) populated in list 1`] = `
-<CustomListRow
-  enabled={true}
-  id="21345"
-  onPress={[Function]}
-  theme={Object {}}
+<Component
+  style={
+    Object {
+      "flex": 1,
+      "flexDirection": "row",
+      "marginLeft": 10,
+    }
+  }
 >
-  <Connect(ProfilePicture)
-    size={32}
-    userId="21345"
-  />
-  <Component
-    style={
+  <CustomListRow
+    enabled={true}
+    id="21345"
+    onPress={[Function]}
+    theme={
       Object {
-        "flexDirection": "row",
-        "marginLeft": 5,
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
     }
   >
-    <Component>
-      <Component
-        style={
-          Object {
-            "color": undefined,
-            "fontSize": 15,
-          }
+    <Component
+      style={
+        Object {
+          "color": "#3d3c40",
+          "flexDirection": "row",
+          "marginLeft": 10,
         }
-      >
-        user
-      </Component>
-    </Component>
-    <Component>
-      <Component
-        ellipsizeMode="tail"
-        numberOfLines={1}
-        style={
-          Object {
-            "color": undefined,
-            "fontSize": 15,
-            "marginLeft": 5,
-          }
-        }
+      }
+    >
+      <Connect(ProfilePicture)
+        size={32}
+        userId="21345"
       />
     </Component>
-  </Component>
-</CustomListRow>
+    <Component
+      style={
+        Array [
+          Object {
+            "marginLeft": 5,
+          },
+          Object {
+            "justifyContent": "center",
+          },
+        ]
+      }
+    >
+      <Component>
+        <Component
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Object {
+              "color": "#3d3c40",
+              "fontSize": 15,
+            }
+          }
+        />
+      </Component>
+    </Component>
+    <Component
+      style={
+        Object {
+          "width": 25,
+        }
+      }
+    />
+  </CustomListRow>
+</Component>
 `;
 
 exports[`UserListRow should match snapshot for deactivated user 1`] = `
-<CustomListRow
-  enabled={true}
-  id="21345"
-  onPress={[Function]}
-  theme={Object {}}
+<Component
+  style={
+    Object {
+      "flex": 1,
+      "flexDirection": "row",
+      "marginLeft": 10,
+    }
+  }
 >
-  <Connect(ProfilePicture)
-    size={32}
-    userId="21345"
-  />
-  <Component
-    style={
+  <CustomListRow
+    enabled={true}
+    id="21345"
+    onPress={[Function]}
+    theme={
       Object {
-        "flexDirection": "row",
-        "marginLeft": 5,
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
     }
   >
-    <Component>
-      <Component
-        style={
-          Object {
-            "color": undefined,
-            "fontSize": 15,
-          }
+    <Component
+      style={
+        Object {
+          "color": "#3d3c40",
+          "flexDirection": "row",
+          "marginLeft": 10,
         }
-      >
-        user
-      </Component>
-    </Component>
-    <Component>
-      <Component
-        ellipsizeMode="tail"
-        numberOfLines={1}
-        style={
-          Object {
-            "color": undefined,
-            "fontSize": 15,
-            "marginLeft": 5,
-          }
-        }
+      }
+    >
+      <Connect(ProfilePicture)
+        size={32}
+        userId="21345"
       />
     </Component>
-  </Component>
-</CustomListRow>
+    <Component
+      style={
+        Array [
+          Object {
+            "marginLeft": 5,
+          },
+          Object {
+            "justifyContent": "center",
+          },
+        ]
+      }
+    >
+      <Component>
+        <Component
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Object {
+              "color": "#3d3c40",
+              "fontSize": 15,
+            }
+          }
+        />
+      </Component>
+    </Component>
+    <Component
+      style={
+        Object {
+          "width": 25,
+        }
+      }
+    />
+  </CustomListRow>
+</Component>
 `;
