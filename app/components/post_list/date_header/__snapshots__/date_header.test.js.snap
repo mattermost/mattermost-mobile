@@ -17,7 +17,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
   <Component
     style={
       Object {
-        "backgroundColor": "#aaa",
+        "backgroundColor": "#3d3c40",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -36,7 +36,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
       month="short"
       style={
         Object {
-          "color": "#aaa",
+          "color": "#3d3c40",
           "fontSize": 14,
           "fontWeight": "600",
         }
@@ -49,7 +49,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
   <Component
     style={
       Object {
-        "backgroundColor": "#aaa",
+        "backgroundColor": "#3d3c40",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -76,7 +76,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
   <Component
     style={
       Object {
-        "backgroundColor": "#aaa",
+        "backgroundColor": "#3d3c40",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -95,7 +95,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
       month="short"
       style={
         Object {
-          "color": "#aaa",
+          "color": "#3d3c40",
           "fontSize": 14,
           "fontWeight": "600",
         }
@@ -108,7 +108,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
   <Component
     style={
       Object {
-        "backgroundColor": "#aaa",
+        "backgroundColor": "#3d3c40",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,

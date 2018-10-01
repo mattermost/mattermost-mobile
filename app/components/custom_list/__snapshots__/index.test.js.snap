@@ -27,7 +27,7 @@ exports[`CustomList should match snapshot 1`] = `
     scrollRenderAheadDistance={0}
     style={
       Object {
-        "backgroundColor": "#aaa",
+        "backgroundColor": "#ffffff",
         "flex": 1,
       }
     }
@@ -42,7 +42,7 @@ exports[`CustomList should match snapshot, renderFooter 2`] = `
   style={
     Object {
       "alignItems": "center",
-      "backgroundColor": "#aaa",
+      "backgroundColor": "#ffffff",
       "height": 70,
       "justifyContent": "center",
     }
@@ -53,7 +53,7 @@ exports[`CustomList should match snapshot, renderFooter 2`] = `
     id="mobile.loading_members"
     style={
       Object {
-        "color": "rgba(170,170,170,0.6)",
+        "color": "rgba(61,60,64,0.6)",
       }
     }
   />
@@ -64,14 +64,14 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
 <Component
   style={
     Object {
-      "backgroundColor": "#aaa",
+      "backgroundColor": "#ffffff",
     }
   }
 >
   <Component
     style={
       Object {
-        "backgroundColor": "rgba(170,170,170,0.07)",
+        "backgroundColor": "rgba(61,60,64,0.07)",
         "paddingLeft": 10,
         "paddingVertical": 2,
       }
@@ -80,7 +80,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
     <Component
       style={
         Object {
-          "color": "#aaa",
+          "color": "#3d3c40",
           "fontWeight": "600",
         }
       }
@@ -95,7 +95,7 @@ exports[`CustomList should match snapshot, renderSeparator 1`] = `
 <Component
   style={
     Object {
-      "backgroundColor": "rgba(170,170,170,0.1)",
+      "backgroundColor": "rgba(61,60,64,0.1)",
       "flex": 1,
       "height": 1,
     }

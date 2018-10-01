@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {configure, shallow} from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+import {shallow} from 'enzyme';
+
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import FailedNetworkAction from 'app/components/failed_network_action';
 import ErrorTeamsList from './error_teams_list';
-
-configure({adapter: new Adapter()});
 
 describe('ErrorTeamsList', () => {
     const navigator = {
@@ -27,7 +27,7 @@ describe('ErrorTeamsList', () => {
             logout: () => {}, // eslint-disable-line no-empty-function
             selectDefaultTeam: () => {}, // eslint-disable-line no-empty-function
         },
-        theme: {},
+        theme: Preferences.THEMES.default,
         navigator,
     };
 

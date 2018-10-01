@@ -14,8 +14,30 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
   headerId="mobile.notification_settings.email.send"
   theme={
     Object {
-      "centerChannelBg": "#aaa",
-      "centerChannelColor": "#aaa",
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
     }
   }
 >
@@ -33,8 +55,30 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       selected={true}
       theme={
         Object {
-          "centerChannelBg": "#aaa",
-          "centerChannelColor": "#aaa",
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
         }
       }
     />
@@ -61,8 +105,30 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       selected={false}
       theme={
         Object {
-          "centerChannelBg": "#aaa",
-          "centerChannelColor": "#aaa",
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
         }
       }
     />
