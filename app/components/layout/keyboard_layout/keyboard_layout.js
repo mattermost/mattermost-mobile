@@ -3,34 +3,33 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Keyboard, Platform, View} from 'react-native';
+import {
+    Keyboard,
+    Platform,
+    StyleSheet,
+    View,
+} from 'react-native';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import * as CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class KeyboardLayout extends PureComponent {
     static propTypes = {
         children: PropTypes.node,
-        statusBarHeight: PropTypes.number,
-        theme: PropTypes.object.isRequired,
-    };
-
-    static defaultProps = {
-        keyboardVerticalOffset: 0,
+        style: CustomPropTypes.Style,
     };
 
     constructor(props) {
         super(props);
         this.subscriptions = [];
-        this.count = 0;
         this.state = {
-            bottom: 0,
+            keyboardHeight: 0,
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         if (Platform.OS === 'ios') {
             this.subscriptions = [
-                Keyboard.addListener('keyboardWillChangeFrame', this.onKeyboardChange),
+                Keyboard.addListener('keyboardWillShow', this.onKeyboardWillShow),
                 Keyboard.addListener('keyboardWillHide', this.onKeyboardWillHide),
             ];
         }
@@ -41,52 +40,36 @@ export default class KeyboardLayout extends PureComponent {
     }
 
     onKeyboardWillHide = () => {
-        this.setState({bottom: 0});
+        this.setState({
+            keyboardHeight: 0,
+        });
     };
 
-    onKeyboardChange = (e) => {
-        if (!e) {
-            this.setState({bottom: 0});
-            return;
-        }
-
-        const {endCoordinates} = e;
-        const {height} = endCoordinates;
-
-        this.setState({bottom: height});
+    onKeyboardWillShow = (e) => {
+        this.setState({
+            keyboardHeight: e?.endCoordinates?.height || 0,
+        });
     };
 
     render() {
-        const {children, theme, ...otherProps} = this.props;
-        const style = getStyleFromTheme(theme);
+        const layoutStyle = [this.props.style, style.keyboardLayout];
 
-        if (Platform.OS === 'android') {
-            return (
-                <View
-                    style={style.keyboardLayout}
-                    {...otherProps}
-                >
-                    {children}
-                </View>
-            );
+        if (Platform.OS === 'ios') {
+            // iOS doesn't resize the app automatically
+            layoutStyle.push({paddingBottom: this.state.keyboardHeight});
         }
 
         return (
-            <View
-                style={[style.keyboardLayout, {marginBottom: this.state.bottom}]}
-            >
-                {children}
+            <View style={layoutStyle}>
+                {this.props.children}
             </View>
         );
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        keyboardLayout: {
-            position: 'relative',
-            backgroundColor: theme.centerChannelBg,
-            flex: 1,
-        },
-    };
+const style = StyleSheet.create({
+    keyboardLayout: {
+        position: 'relative',
+        flex: 1,
+    },
 });

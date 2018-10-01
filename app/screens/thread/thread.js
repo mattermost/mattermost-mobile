@@ -165,11 +165,7 @@ class Thread extends PureComponent {
                 keyboardOffset={20}
             >
                 <StatusBar/>
-                <KeyboardLayout
-                    behavior='padding'
-                    style={style.container}
-                    keyboardVerticalOffset={65}
-                >
+                <KeyboardLayout style={style.container}>
                     {content}
                     {postTextBox}
                 </KeyboardLayout>
