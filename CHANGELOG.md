@@ -2,18 +2,23 @@
 
 ## v1.13.0 Release
 - Release Date: October 16, 2018
-- Server Versions Supported: Server v5.4+ is required, Self-Signed SSL Certificates are not supported
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
+- Mobile Versions Supported: Mobile app version 1.13+ is required for servers 5.4+
 
 ### Highlights
 
-#### 
+#### View Reactions
+- Added ability to view who reacted to a post.
+
+#### Dropdown menus
+- Added support for message dropdown menus.
+
+#### Hashtags
+- Added support for hashtags.
 
 ### Improvements
-- Added support for message dropdowns.
-- Added support for hashtags.
 - Added support for nicknames on user profile.
-- Added ability to view emoji reactions.
-- Added support for searching in direct and group message channels using the "in:" modifier.
+- On servers 5.4+, added support for searching in direct and group message channels using the "in:" modifier.
 - Channel autocomplete is closed if multiple tildes are typed.
 - Added a draft icon in sidebar and channel switcher for channels with unsent messages.
 - Added support for iPhone XR, XS and XS Max.
@@ -26,6 +31,8 @@
 - Fixed an issue where users got a permission error when trying to open a file from within the Image preview screen.
 - Refactored postlist to include Android Pie fixes and smoother scrolling.
 - Fixed an issue where session expiry notifications were not being sent on Android.
+- Fixed an issue where the file upload loading progress indicator was not centered.
+- Fixed an issue where the "DM More..." list cut off user info.
 
 
 ## v1.12.0 Release
