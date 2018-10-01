@@ -30,7 +30,7 @@ function makeMapStateToProps() {
             requestStatus: state.requests.users.getProfilesInChannel.status,
             searchRequestStatus: state.requests.users.searchProfiles.status,
             removeMembersStatus: state.requests.channels.removeChannelMember.status,
-            canManageUsers: canManageChannelMembers(state),
+            canManageUsers: canManageChannelMembers(state) && currentChannel.delete_at === 0,
         };
     };
 }
