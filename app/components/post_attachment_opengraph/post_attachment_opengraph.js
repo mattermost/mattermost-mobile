@@ -19,7 +19,7 @@ import {getNearestPoint} from 'app/utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_IMAGE_HEIGHT = 150;
-const VIEWPORT_IMAGE_OFFSET = 88;
+const VIEWPORT_IMAGE_OFFSET = 93;
 const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
 export default class PostAttachmentOpenGraph extends PureComponent {
@@ -216,7 +216,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                     style={{width, height}}
                 >
                     <Image
-                        ref='image'
                         style={[style.image, {width, height}]}
                         source={source}
                         resizeMode='contain'
@@ -273,6 +272,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderWidth: 1,
+            borderRadius: 3,
             marginTop: 10,
             padding: 10,
         },
@@ -300,6 +300,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         imageContainer: {
             alignItems: 'center',
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderWidth: 1,
+            borderRadius: 3,
+            marginTop: 5,
         },
         image: {
             borderRadius: 3,
