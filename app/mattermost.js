@@ -10,6 +10,7 @@ import {
     Keyboard,
     NativeModules,
     Platform,
+    YellowBox,
 } from 'react-native';
 const {StatusBarManager, MattermostShare, Initialization} = NativeModules;
 
@@ -52,6 +53,9 @@ import App from './app';
 import './fetch_preconfig';
 
 const AUTHENTICATION_TIMEOUT = 5 * 60 * 1000;
+
+// Hide warnings caused by React Native (https://github.com/facebook/react-native/issues/20841)
+YellowBox.ignoreWarnings(['Require cycle: node_modules/react-native/Libraries/Network/fetch.js']);
 
 export const app = new App();
 export const store = configureStore(initialState);
