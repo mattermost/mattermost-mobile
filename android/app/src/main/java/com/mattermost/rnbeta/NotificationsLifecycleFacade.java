@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.ArraySet;
+import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.content.res.Configuration;
 
@@ -69,8 +70,12 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
             activity.getWindow().setFlags(LayoutParams.FLAG_SECURE,
                     LayoutParams.FLAG_SECURE);
         }
-        if (managedConfig!= null && managedConfig.size() > 0 && activity != null) {
+        if (managedConfig != null && managedConfig.size() > 0 && activity != null) {
             activity.registerReceiver(restrictionsReceiver, restrictionsFilter);
+        }
+
+        if (activity != null) {
+            activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
     }
 
