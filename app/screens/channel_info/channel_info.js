@@ -361,6 +361,7 @@ export default class ChannelInfo extends PureComponent {
                         textId={t('channel_header.viewMembers')}
                         theme={theme}
                     />
+                    <View style={style.separator}/>
                 </View>);
         }
 
