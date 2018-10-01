@@ -4,6 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import {emptyFunction} from 'app/utils/general';
 
 import SectionItem from 'app/screens/settings/section_item';
@@ -30,10 +32,7 @@ describe('NotificationSettingsEmailIos', () => {
         },
         sendEmailNotifications: true,
         siteName: 'Mattermost',
-        theme: {
-            centerChannelBg: '#aaa',
-            centerChannelColor: '#aaa',
-        },
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot, renderEmailSection', () => {

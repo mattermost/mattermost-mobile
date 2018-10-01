@@ -6,11 +6,13 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import DateHeader from './date_header.js';
 
 describe('DateHeader', () => {
     const baseProps = {
-        theme: {centerChannelBg: '#aaa', centerChannelColor: '#aaa'},
+        theme: Preferences.THEMES.default,
     };
 
     describe('component should match snapshot', () => {

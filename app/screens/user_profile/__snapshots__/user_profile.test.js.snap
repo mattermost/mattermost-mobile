@@ -12,7 +12,7 @@ exports[`user_profile should match snapshot 1`] = `
   <ScrollView
     style={
       Object {
-        "backgroundColor": "#aaa",
+        "backgroundColor": "#ffffff",
         "flex": 1,
       }
     }
@@ -35,7 +35,7 @@ exports[`user_profile should match snapshot 1`] = `
       <Component
         style={
           Object {
-            "color": "#aaa",
+            "color": "#3d3c40",
             "fontSize": 15,
             "marginTop": 15,
           }
@@ -69,7 +69,7 @@ exports[`user_profile should match snapshot 1`] = `
         <Component
           style={
             Object {
-              "color": "#aaa",
+              "color": "#3d3c40",
               "fontSize": 15,
             }
           }
@@ -89,9 +89,30 @@ exports[`user_profile should match snapshot 1`] = `
       textId="mobile.routes.user_profile.send_message"
       theme={
         Object {
-          "centerChannelBg": "#aaa",
-          "centerChannelColor": "#aaa",
-          "color": "#aaa",
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
         }
       }
       togglable={false}

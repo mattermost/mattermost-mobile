@@ -4,6 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import {createMembersSections, loadingText} from 'app/utils/member_list';
 
 import CustomList from './index';
@@ -13,7 +15,7 @@ describe('CustomList', () => {
 
     const baseProps = {
         data: [{username: 'username_1'}, {username: 'username_2'}],
-        theme: {centerChannelBg: '#aaa', centerChannelColor: '#aaa'},
+        theme: Preferences.THEMES.default,
         searching: false,
         onListEndReached: emptyFunc,
         onListEndReachedThreshold: 0,

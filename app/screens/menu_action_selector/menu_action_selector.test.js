@@ -4,6 +4,8 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {IntlProvider} from 'react-intl';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import MenuActionSelector from './menu_action_selector.js';
 
 jest.mock('rn-fetch-blob', () => ({
@@ -76,7 +78,7 @@ describe('MenuActionSelector', () => {
         onSelect: jest.fn(),
         data: [{text: 'text', value: 'value'}],
         dataSource: null,
-        theme: {},
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot for explicit options', async () => {
@@ -84,7 +86,7 @@ describe('MenuActionSelector', () => {
             <MenuActionSelector {...baseProps}/>,
             {context: {intl}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for users', async () => {
@@ -98,10 +100,10 @@ describe('MenuActionSelector', () => {
             <MenuActionSelector {...props}/>,
             {context: {intl}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
         wrapper.setState({isLoading: false});
         wrapper.update();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for channels', async () => {
@@ -115,10 +117,10 @@ describe('MenuActionSelector', () => {
             <MenuActionSelector {...props}/>,
             {context: {intl}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
         wrapper.setState({isLoading: false});
         wrapper.update();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for searching', async () => {
@@ -134,6 +136,6 @@ describe('MenuActionSelector', () => {
         );
         wrapper.setState({isLoading: false, searching: true, term: 'name2'});
         wrapper.update();
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });
