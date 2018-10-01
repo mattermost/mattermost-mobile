@@ -234,8 +234,9 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         const style = getStyleSheet(theme);
 
-        return (
-            <View style={style.container}>
+        let siteTitle;
+        if (openGraphData.site_name) {
+            siteTitle = (
                 <View style={style.flex}>
                     <Text
                         style={style.siteTitle}
@@ -245,6 +246,12 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         {openGraphData.site_name}
                     </Text>
                 </View>
+            );
+        }
+
+        return (
+            <View style={style.container}>
+                {siteTitle}
                 <View style={style.wrapper}>
                     <TouchableOpacity
                         style={style.flex}
