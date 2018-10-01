@@ -13,7 +13,7 @@ export function generateUserProfilesById(userProfiles = []) {
 
 export function getMissingUserIds(userProfilesById = {}, allUserIds = []) {
     return allUserIds.reduce((acc, userId) => {
-        if (userProfilesById[userId]) {
+        if (!userProfilesById[userId]) {
             acc.push(userId);
         }
 
