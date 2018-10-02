@@ -395,6 +395,7 @@ export default class Channel extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         postList: {
+            backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
         loading: {
