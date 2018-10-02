@@ -49,8 +49,8 @@ export default class FileAttachmentImage extends PureComponent {
         loading: false,
         resizeMode: 'cover',
         resizeMethod: 'resize',
-        wrapperHeight: 80,
-        wrapperWidth: 80,
+        wrapperHeight: 100,
+        wrapperWidth: 100,
     };
 
     constructor(props) {
