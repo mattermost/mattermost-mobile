@@ -73,6 +73,7 @@ const ViewTypes = keyMirror({
     SET_PROFILE_IMAGE_URI: null,
 
     SELECTED_ACTION_MENU: null,
+    SUBMIT_ATTACHMENT_MENU_ACTION: null,
 });
 
 export default {

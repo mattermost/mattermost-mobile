@@ -3,6 +3,7 @@
 
 import {Posts} from 'mattermost-redux/constants';
 import {PostTypes} from 'mattermost-redux/action_types';
+import {doPostAction} from 'mattermost-redux/actions/posts';
 
 import {ViewTypes} from 'app/constants';
 
@@ -48,5 +49,17 @@ export function setMenuActionSelector(dataSource, onSelect, options) {
             onSelect,
             options,
         },
+    };
+}
+
+export function selectAttachmentMenuAction(postId, actionId, dataSource, displayText, value) {
+    return async (dispatch) => {
+        dispatch({
+            type: ViewTypes.SUBMIT_ATTACHMENT_MENU_ACTION,
+            postId,
+            data: {displayText, value},
+        });
+
+        dispatch(doPostAction(postId, actionId, value));
     };
 }
