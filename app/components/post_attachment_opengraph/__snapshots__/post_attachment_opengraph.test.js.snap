@@ -6,7 +6,8 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
 <Component
   style={
     Object {
-      "borderColor": "rgba(170,170,170,0.2)",
+      "borderColor": "rgba(61,60,64,0.2)",
+      "borderRadius": 3,
       "borderWidth": 1,
       "flex": 1,
       "marginTop": 10,
@@ -21,21 +22,19 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       }
     }
   >
-    <Text
-      accessible={true}
-      allowFontScaling={true}
+    <Component
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
         Object {
-          "color": "rgba(170,170,170,0.5)",
+          "color": "rgba(61,60,64,0.5)",
           "fontSize": 12,
           "marginBottom": 10,
         }
       }
     >
       Mattermost
-    </Text>
+    </Component>
   </Component>
   <Component
     style={
@@ -54,15 +53,13 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
         }
       }
     >
-      <Text
-        accessible={true}
-        allowFontScaling={true}
+      <Component
         ellipsizeMode="tail"
         numberOfLines={3}
         style={
           Array [
             Object {
-              "color": undefined,
+              "color": "#2389d7",
               "fontSize": 14,
               "marginBottom": 10,
             },
@@ -73,7 +70,60 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
         }
       >
         Title
-      </Text>
+      </Component>
+    </TouchableOpacity>
+  </Component>
+</Component>
+`;
+
+exports[`PostAttachmentOpenGraph should match snapshot, without site_name 1`] = `
+<Component
+  style={
+    Object {
+      "borderColor": "rgba(61,60,64,0.2)",
+      "borderRadius": 3,
+      "borderWidth": 1,
+      "flex": 1,
+      "marginTop": 10,
+      "padding": 10,
+    }
+  }
+>
+  <Component
+    style={
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+  >
+    <TouchableOpacity
+      activeOpacity={0.2}
+      onPress={[Function]}
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    >
+      <Component
+        ellipsizeMode="tail"
+        numberOfLines={3}
+        style={
+          Array [
+            Object {
+              "color": "#2389d7",
+              "fontSize": 14,
+              "marginBottom": 10,
+            },
+            Object {
+              "marginRight": 0,
+            },
+          ]
+        }
+      >
+        Title
+      </Component>
     </TouchableOpacity>
   </Component>
 </Component>
@@ -89,21 +139,19 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderDescr
     }
   }
 >
-  <Text
-    accessible={true}
-    allowFontScaling={true}
+  <Component
     ellipsizeMode="tail"
     numberOfLines={5}
     style={
       Object {
-        "color": "rgba(170,170,170,0.7)",
+        "color": "rgba(61,60,64,0.7)",
         "fontSize": 13,
         "marginBottom": 10,
       }
     }
   >
     Description
-  </Text>
+  </Component>
 </Component>
 `;
 
@@ -114,6 +162,10 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
   style={
     Object {
       "alignItems": "center",
+      "borderColor": "rgba(61,60,64,0.2)",
+      "borderRadius": 3,
+      "borderWidth": 1,
+      "marginTop": 5,
     }
   }
 >
@@ -122,11 +174,11 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
     style={
       Object {
         "height": 150,
-        "width": 312,
+        "width": 307,
       }
     }
   >
-    <Image
+    <Component
       resizeMode="contain"
       style={
         Array [
@@ -135,7 +187,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
           },
           Object {
             "height": 150,
-            "width": 312,
+            "width": 307,
           },
         ]
       }

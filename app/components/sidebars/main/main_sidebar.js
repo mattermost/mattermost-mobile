@@ -17,6 +17,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
 import tracker from 'app/utils/time_tracker';
+import {t} from 'app/utils/i18n';
 
 import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swipper';
@@ -186,7 +187,7 @@ export default class ChannelSidebar extends Component {
             const {intl} = this.context;
 
             const unableToJoinMessage = {
-                id: 'mobile.open_unknown_channel.error',
+                id: t('mobile.open_unknown_channel.error'),
                 defaultMessage: "We couldn't join the channel. Please reset the cache and try again.",
             };
             const erroMessage = {};
@@ -226,7 +227,7 @@ export default class ChannelSidebar extends Component {
 
                 if (result.error) {
                     const dmFailedMessage = {
-                        id: 'mobile.open_dm.error',
+                        id: t('mobile.open_dm.error'),
                         defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
                     };
                     utils.alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
@@ -236,7 +237,7 @@ export default class ChannelSidebar extends Component {
 
                 if (result.error || !result.data || !result.data.channel) {
                     const joinFailedMessage = {
-                        id: 'mobile.join_channel.error',
+                        id: t('mobile.join_channel.error'),
                         defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
                     };
                     utils.alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
@@ -391,6 +392,5 @@ export default class ChannelSidebar extends Component {
 const style = StyleSheet.create({
     swiperContent: {
         flex: 1,
-        marginBottom: 10,
     },
 });

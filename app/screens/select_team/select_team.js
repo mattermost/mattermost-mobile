@@ -22,6 +22,7 @@ import StatusBar from 'app/components/status_bar';
 import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import TeamIcon from 'app/components/team_icon';
 
@@ -30,12 +31,12 @@ const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 const TEAMS_PER_PAGE = 200;
 
 const errorTitle = {
-    id: 'error.team_not_found.title',
+    id: t('error.team_not_found.title'),
     defaultMessage: 'Team Not Found',
 };
 
 const errorDescription = {
-    id: 'mobile.failed_network_action.shortDescription',
+    id: t('mobile.failed_network_action.shortDescription'),
     defaultMessage: 'Make sure you have an active connection and try again.',
 };
 
@@ -100,7 +101,7 @@ export default class SelectTeam extends PureComponent {
             this.setState({teams: props.teams});
         } else {
             const teams = [{
-                id: 'mobile.select_team.no_teams',
+                id: t('mobile.select_team.no_teams'),
                 defaultMessage: 'There are no available teams for you to join.',
             }];
             this.setState({teams});

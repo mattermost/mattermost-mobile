@@ -4,6 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import AnnouncementBanner from './announcement_banner.js';
 
 jest.useFakeTimers();
@@ -16,7 +18,7 @@ describe('AnnouncementBanner', () => {
         bannerText: 'Banner Text',
         bannerTextColor: '#fff',
         navigator: {},
-        theme: {},
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot', () => {
@@ -24,9 +26,9 @@ describe('AnnouncementBanner', () => {
             <AnnouncementBanner {...baseProps}/>
         );
 
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
 
         wrapper.setProps({bannerEnabled: false});
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

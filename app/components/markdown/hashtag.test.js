@@ -18,7 +18,7 @@ describe('Hashtag', () => {
     test('should match snapshot', () => {
         const wrapper = shallow(<Hashtag {...baseProps}/>);
 
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should open hashtag search on click', () => {

@@ -15,6 +15,7 @@ import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -37,7 +38,10 @@ export default class ChannelInfo extends PureComponent {
             getCustomEmojisInText: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             updateChannelNotifyProps: PropTypes.func.isRequired,
+            selectPenultimateChannel: PropTypes.func.isRequired,
+            handleSelectChannel: PropTypes.func.isRequired,
         }),
+        viewArchivedChannels: PropTypes.bool.isRequired,
         canDeleteChannel: PropTypes.bool.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -89,8 +93,10 @@ export default class ChannelInfo extends PureComponent {
         this.setState({isFavorite, isMuted});
     }
 
-    close = () => {
-        EventEmitter.emit(General.DEFAULT_CHANNEL, '');
+    close = (redirect = true) => {
+        if (redirect) {
+            EventEmitter.emit(General.DEFAULT_CHANNEL, '');
+        }
         if (Platform.OS === 'android') {
             this.props.navigator.dismissModal({animated: true});
         } else {
@@ -118,7 +124,7 @@ export default class ChannelInfo extends PureComponent {
     goToChannelMembers = preventDoubleTap(() => {
         const {intl} = this.context;
         const {canManageUsers, navigator, theme} = this.props;
-        const id = canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers';
+        const id = canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers');
         const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
 
         navigator.push({
@@ -138,7 +144,7 @@ export default class ChannelInfo extends PureComponent {
     handleChannelEdit = preventDoubleTap(() => {
         const {intl} = this.context;
         const {navigator, theme} = this.props;
-        const id = 'mobile.channel_info.edit';
+        const id = t('mobile.channel_info.edit');
         const defaultMessage = 'Edit Channel';
 
         navigator.push({
@@ -173,9 +179,9 @@ export default class ChannelInfo extends PureComponent {
         let message;
         let onPressAction;
         if (eventType === 'leave') {
-            title = {id: 'mobile.channel_info.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'};
+            title = {id: t('mobile.channel_info.alertTitleLeaveChannel'), defaultMessage: 'Leave {term}'};
             message = {
-                id: 'mobile.channel_info.alertMessageLeaveChannel',
+                id: t('mobile.channel_info.alertMessageLeaveChannel'),
                 defaultMessage: 'Are you sure you want to leave the {term} {name}?',
             };
             onPressAction = () => {
@@ -184,9 +190,9 @@ export default class ChannelInfo extends PureComponent {
                 });
             };
         } else if (eventType === 'delete') {
-            title = {id: 'mobile.channel_info.alertTitleDeleteChannel', defaultMessage: 'Archive {term}'};
+            title = {id: t('mobile.channel_info.alertTitleDeleteChannel'), defaultMessage: 'Archive {term}'};
             message = {
-                id: 'mobile.channel_info.alertMessageDeleteChannel',
+                id: t('mobile.channel_info.alertMessageDeleteChannel'),
                 defaultMessage: 'Are you sure you want to archive the {term} {name}?',
             };
             onPressAction = async () => {
@@ -196,7 +202,7 @@ export default class ChannelInfo extends PureComponent {
                         this.context.intl,
                         result.error,
                         {
-                            id: 'mobile.channel_info.delete_failed',
+                            id: t('mobile.channel_info.delete_failed'),
                             defaultMessage: "We couldn't archive the channel {displayName}. Please check your connection and try again.",
                         },
                         {
@@ -206,8 +212,12 @@ export default class ChannelInfo extends PureComponent {
                     if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
                         this.props.actions.getChannel(channel.id);
                     }
+                } else if (this.props.viewArchivedChannels) {
+                    this.props.actions.handleSelectChannel(channel.id);
+                    this.close(false);
                 } else {
-                    this.close();
+                    this.props.actions.selectPenultimateChannel(channel.team_id);
+                    this.close(false);
                 }
             };
         }
@@ -350,7 +360,7 @@ export default class ChannelInfo extends PureComponent {
                 defaultMessage='Favorite'
                 detail={this.state.isFavorite}
                 icon='star-o'
-                textId='mobile.routes.channelInfo.favorite'
+                textId={t('mobile.routes.channelInfo.favorite')}
                 togglable={true}
                 theme={theme}
             />
@@ -360,7 +370,7 @@ export default class ChannelInfo extends PureComponent {
                 defaultMessage='Mute channel'
                 detail={this.state.isMuted}
                 icon='bell-slash-o'
-                textId='channel_notifications.muteChannel.settings'
+                textId={t('channel_notifications.muteChannel.settings')}
                 togglable={true}
                 theme={theme}
             />
@@ -385,7 +395,7 @@ export default class ChannelInfo extends PureComponent {
                         defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
                         detail={currentChannelMemberCount}
                         icon='users'
-                        textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
+                        textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
                         theme={theme}
                     />
                 </View>
@@ -397,7 +407,7 @@ export default class ChannelInfo extends PureComponent {
                         action={this.goToChannelAddMembers}
                         defaultMessage='Add Members'
                         icon='user-plus'
-                        textId='channel_header.addMembers'
+                        textId={t('channel_header.addMembers')}
                         theme={theme}
                     />
                 </View>
@@ -409,7 +419,7 @@ export default class ChannelInfo extends PureComponent {
                         action={this.handleChannelEdit}
                         defaultMessage='Edit Channel'
                         icon='edit'
-                        textId='mobile.channel_info.edit'
+                        textId={t('mobile.channel_info.edit')}
                         theme={theme}
                     />
                 </View>
@@ -436,11 +446,11 @@ export default class ChannelInfo extends PureComponent {
         let defaultMessage;
         switch (currentChannel.type) {
         case General.DM_CHANNEL:
-            i18nId = 'mobile.channel_list.closeDM';
+            i18nId = t('mobile.channel_list.closeDM');
             defaultMessage = 'Close Direct Message';
             break;
         case General.GM_CHANNEL:
-            i18nId = 'mobile.channel_list.closeGM';
+            i18nId = t('mobile.channel_list.closeGM');
             defaultMessage = 'Close Group Message';
             break;
         }
@@ -474,7 +484,7 @@ export default class ChannelInfo extends PureComponent {
                                     action={this.handleLeave}
                                     defaultMessage='Leave Channel'
                                     icon='sign-out'
-                                    textId='navbar.leave'
+                                    textId={t('navbar.leave')}
                                     theme={theme}
                                 />
                             </View>
@@ -487,7 +497,7 @@ export default class ChannelInfo extends PureComponent {
                                 defaultMessage='Archive Channel'
                                 iconColor='#CA3B27'
                                 icon='archive'
-                                textId='mobile.routes.channelInfo.delete_channel'
+                                textId={t('mobile.routes.channelInfo.delete_channel')}
                                 textColor='#CA3B27'
                                 theme={theme}
                             />

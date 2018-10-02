@@ -11,6 +11,7 @@ import SectionItem from 'app/screens/settings/section_item';
 import FormattedText from 'app/components/formatted_text';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import ClockDisplayBase from './clock_display_base';
 
@@ -26,7 +27,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                 <View style={style.wrapper}>
                     <Section
                         disableHeader={true}
-                        footerId='user.settings.display.preferTime'
+                        footerId={t('user.settings.display.preferTime')}
                         footerDefaultMessage='Select how you prefer time displayed.'
                         theme={theme}
                     >

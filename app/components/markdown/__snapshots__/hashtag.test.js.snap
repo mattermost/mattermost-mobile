@@ -1,82 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Hashtag should match snapshot 1`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <Hashtag
-    hashtag="test"
-    linkStyle={
-      Object {
-        "color": "red",
-      }
-    }
-    navigator={Object {}}
-    theme={Object {}}
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateError": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "accessible": true,
-      "allowFontScaling": true,
-      "children": "#test",
-      "ellipsizeMode": "tail",
-      "onPress": [Function],
-      "style": Object {
-        "color": "red",
-      },
-    },
-    "ref": null,
-    "rendered": "#test",
-    "type": [Function],
-  },
-  Symbol(enzyme.__nodes__): Array [
+<Component
+  onPress={[Function]}
+  style={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "class",
-      "props": Object {
-        "accessible": true,
-        "allowFontScaling": true,
-        "children": "#test",
-        "ellipsizeMode": "tail",
-        "onPress": [Function],
-        "style": Object {
-          "color": "red",
-        },
-      },
-      "ref": null,
-      "rendered": "#test",
-      "type": [Function],
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getDerivedStateFromProps": true,
-          "getSnapshotBeforeUpdate": true,
-          "setState": Object {
-            "skipsComponentDidUpdateOnNullish": true,
-          },
-        },
-      },
-    },
-    "attachTo": undefined,
-    "hydrateIn": undefined,
-  },
-}
+      "color": "red",
+    }
+  }
+>
+  #test
+</Component>
 `;

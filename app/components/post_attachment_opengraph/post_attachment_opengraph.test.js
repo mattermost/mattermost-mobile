@@ -9,6 +9,8 @@ import {
     TouchableOpacity,
 } from 'react-native';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import PostAttachmentOpenGraph from './post_attachment_opengraph';
 
 describe('PostAttachmentOpenGraph', () => {
@@ -26,9 +28,7 @@ describe('PostAttachmentOpenGraph', () => {
         isReplyPost: false,
         link: 'https://mattermost.com/',
         navigator: {},
-        theme: {
-            centerChannelColor: '#aaa',
-        },
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot, without image and description', () => {
@@ -42,6 +42,20 @@ describe('PostAttachmentOpenGraph', () => {
         wrapper.setProps({openGraphData});
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find(TouchableOpacity).exists()).toEqual(true);
+    });
+
+    test('should match snapshot, without site_name', () => {
+        const newOpenGraphData = {
+            title: 'Title',
+            url: 'https://mattermost.com/',
+        };
+        const wrapper = shallow(
+            <PostAttachmentOpenGraph
+                {...baseProps}
+                openGraphData={newOpenGraphData}
+            />
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match state and snapshot, on renderImage', () => {

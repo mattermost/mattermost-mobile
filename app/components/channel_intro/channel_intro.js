@@ -16,6 +16,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import ProfilePicture from 'app/components/profile_picture';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 class ChannelIntro extends PureComponent {
     static propTypes = {
@@ -166,7 +167,7 @@ class ChannelIntro extends PureComponent {
             };
         } else {
             mainMessageIntl = {
-                id: 'intro_messages.noCreator',
+                id: t('intro_messages.noCreator'),
                 defaultMessage: 'This is the start of the {name} {type}, created on {date}.',
                 values: {
                     name: currentChannel.display_name,

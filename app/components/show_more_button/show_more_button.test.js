@@ -5,6 +5,8 @@ import React from 'react';
 import {TouchableOpacity} from 'react-native';
 import {shallow} from 'enzyme';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import LinearGradient from 'react-native-linear-gradient';
 
 import ShowMoreButton from './show_more_button';
@@ -14,10 +16,7 @@ describe('ShowMoreButton', () => {
         highlight: false,
         onPress: jest.fn(),
         showMore: true,
-        theme: {
-            centerChannelBg: '#2f3e4e',
-            centerChannelColor: '#dddddd',
-        },
+        theme: Preferences.THEMES.default,
     };
 
     test('should match, full snapshot', () => {
@@ -25,7 +24,7 @@ describe('ShowMoreButton', () => {
             <ShowMoreButton {...baseProps}/>
         );
 
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match, button snapshot', () => {

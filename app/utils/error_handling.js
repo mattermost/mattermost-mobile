@@ -23,6 +23,8 @@ import {
 
 import {app, store} from 'app/mattermost';
 
+import {t} from 'app/utils/i18n';
+
 const errorHandler = (e, isFatal) => {
     if (__DEV__ && !e && !isFatal) {
         // react-native-exception-handler redirects console.error to call this, and React calls
@@ -46,10 +48,10 @@ const errorHandler = (e, isFatal) => {
         const translations = app.getTranslations();
 
         Alert.alert(
-            translations['mobile.error_handler.title'],
-            translations['mobile.error_handler.description'],
+            translations[t('mobile.error_handler.title')],
+            translations[t('mobile.error_handler.description')],
             [{
-                text: translations['mobile.error_handler.button'],
+                text: translations[t('mobile.error_handler.button')],
                 onPress: () => {
                     // purge the store
                     dispatch(purgeOfflineStore());

@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {t} from 'app/utils/i18n';
+
 export const loadingText = {
-    id: 'mobile.loading_members',
+    id: t('mobile.loading_members'),
     defaultMessage: 'Loading Members...',
 };
 

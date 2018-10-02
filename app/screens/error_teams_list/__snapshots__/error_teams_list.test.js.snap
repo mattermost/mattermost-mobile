@@ -1,178 +1,57 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ErrorTeamsList should match snapshot 1`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <ErrorTeamsList
-    actions={
-      Object {
-        "connection": [Function],
-        "loadMe": [Function],
-        "logout": [Function],
-        "selectDefaultTeam": [Function],
-      }
-    }
-    navigator={
-      Object {
-        "setOnNavigatorEvent": [Function],
-      }
-    }
-    theme={Object {}}
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateError": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "class",
-    "props": Object {
-      "children": Array [
-        <Connect(StatusBar) />,
-        <FailedNetworkAction
-          errorDescription={
-            Object {
-              "defaultMessage": "Make sure you have an active connection and try again.",
-              "id": "mobile.failed_network_action.shortDescription",
-            }
-          }
-          errorTitle={
-            Object {
-              "defaultMessage": "Team Not Found",
-              "id": "error.team_not_found.title",
-            }
-          }
-          onRetry={[Function]}
-          theme={Object {}}
-        />,
-      ],
-      "style": Object {
-        "backgroundColor": undefined,
-        "flex": 1,
-      },
-    },
-    "ref": null,
-    "rendered": Array [
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "class",
-        "props": Object {},
-        "ref": null,
-        "rendered": null,
-        "type": [Function],
-      },
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "class",
-        "props": Object {
-          "errorDescription": Object {
-            "defaultMessage": "Make sure you have an active connection and try again.",
-            "id": "mobile.failed_network_action.shortDescription",
-          },
-          "errorTitle": Object {
-            "defaultMessage": "Team Not Found",
-            "id": "error.team_not_found.title",
-          },
-          "onRetry": [Function],
-          "theme": Object {},
-        },
-        "ref": null,
-        "rendered": null,
-        "type": [Function],
-      },
-    ],
-    "type": [Function],
-  },
-  Symbol(enzyme.__nodes__): Array [
+<Component
+  style={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "class",
-      "props": Object {
-        "children": Array [
-          <Connect(StatusBar) />,
-          <FailedNetworkAction
-            errorDescription={
-              Object {
-                "defaultMessage": "Make sure you have an active connection and try again.",
-                "id": "mobile.failed_network_action.shortDescription",
-              }
-            }
-            errorTitle={
-              Object {
-                "defaultMessage": "Team Not Found",
-                "id": "error.team_not_found.title",
-              }
-            }
-            onRetry={[Function]}
-            theme={Object {}}
-          />,
-        ],
-        "style": Object {
-          "backgroundColor": undefined,
-          "flex": 1,
-        },
-      },
-      "ref": null,
-      "rendered": Array [
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "class",
-          "props": Object {},
-          "ref": null,
-          "rendered": null,
-          "type": [Function],
-        },
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "class",
-          "props": Object {
-            "errorDescription": Object {
-              "defaultMessage": "Make sure you have an active connection and try again.",
-              "id": "mobile.failed_network_action.shortDescription",
-            },
-            "errorTitle": Object {
-              "defaultMessage": "Team Not Found",
-              "id": "error.team_not_found.title",
-            },
-            "onRetry": [Function],
-            "theme": Object {},
-          },
-          "ref": null,
-          "rendered": null,
-          "type": [Function],
-        },
-      ],
-      "type": [Function],
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getDerivedStateFromProps": true,
-          "getSnapshotBeforeUpdate": true,
-          "setState": Object {
-            "skipsComponentDidUpdateOnNullish": true,
-          },
-        },
-      },
-    },
-    "attachTo": undefined,
-    "hydrateIn": undefined,
-  },
-}
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <FailedNetworkAction
+    errorDescription={
+      Object {
+        "defaultMessage": "Make sure you have an active connection and try again.",
+        "id": "mobile.failed_network_action.shortDescription",
+      }
+    }
+    errorTitle={
+      Object {
+        "defaultMessage": "Team Not Found",
+        "id": "error.team_not_found.title",
+      }
+    }
+    onRetry={[Function]}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+  />
+</Component>
 `;

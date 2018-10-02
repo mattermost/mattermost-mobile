@@ -2,28 +2,29 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
-
-import PushNotifications from 'app/push_notifications';
 import DeviceInfo from 'react-native-device-info';
-import {Client4} from 'mattermost-redux/client';
 
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {setDeviceToken} from 'mattermost-redux/actions/general';
 import {getPosts} from 'mattermost-redux/actions/posts';
+import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {ViewTypes} from 'app/constants';
 import {retryGetPostsAction} from 'app/actions/views/channel';
 import {
     createPostForNotificationReply,
     loadFromPushNotification,
 } from 'app/actions/views/root';
-
+import {ViewTypes} from 'app/constants';
+import {DEFAULT_LOCALE, getLocalizedMessage} from 'app/i18n';
+import {t} from 'app/utils/i18n';
 import {
     app,
     store,
 } from 'app/mattermost';
+import PushNotifications from 'app/push_notifications';
 
 const onRegisterDevice = (data) => {
     app.setIsNotificationsConfigured(true);
@@ -105,14 +106,14 @@ const onPushNotification = async (deviceNotification) => {
     }
 };
 
-export const onPushNotificationReply = (data, text, badge, completed) => {
+export const onPushNotificationReply = async (data, text, badge, completed) => {
     const {dispatch, getState} = store;
     const state = getState();
-    const {currentUserId: reduxCurrentUserId} = state.entities.users;
+    const reduxCurrentUser = getCurrentUser(state);
     const reduxCredentialsUrl = state.entities.general.credentials.url;
     const reduxCredentialsToken = state.entities.general.credentials.token;
 
-    const currentUserId = reduxCurrentUserId || app.currentUserId;
+    const currentUserId = reduxCurrentUser ? reduxCurrentUser.id : app.currentUserId;
     const url = reduxCredentialsUrl || app.url;
     const token = reduxCredentialsToken || app.token;
 
@@ -138,20 +139,28 @@ export const onPushNotificationReply = (data, text, badge, completed) => {
         }
 
         retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
-        dispatch(createPostForNotificationReply(post)).
-            then(() => {
-                dispatch(markChannelAsRead(data.channel_id));
-
-                if (badge >= 0) {
-                    PushNotifications.setApplicationIconBadgeNumber(badge);
-                }
-
-                app.setReplyNotificationData(null);
-            }).
-            then(completed).
-            catch((e) => {
-                console.warn('Failed to send reply to push notification', e); // eslint-disable-line no-console
+        const result = await dispatch(createPostForNotificationReply(post));
+        if (result.error) {
+            const locale = reduxCurrentUser ? reduxCurrentUser.locale : DEFAULT_LOCALE;
+            PushNotifications.localNotification({
+                message: getLocalizedMessage(locale, t('mobile.reply_post.failed')),
+                userInfo: {
+                    localNotification: true,
+                    localTest: true,
+                },
             });
+            console.warn('Failed to send reply to push notification', result.error); // eslint-disable-line no-console
+            completed();
+            return;
+        }
+
+        if (badge >= 0) {
+            PushNotifications.setApplicationIconBadgeNumber(badge);
+        }
+
+        dispatch(markChannelAsRead(data.channel_id));
+        app.setReplyNotificationData(null);
+        completed();
     } else {
         app.setReplyNotificationData({
             data,

@@ -12,6 +12,7 @@ import {
     Keyboard,
     StyleSheet,
     Text,
+    TextInput,
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
@@ -20,12 +21,12 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import QuickTextInput from 'app/components/quick_text_input';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
+import {t} from 'app/utils/i18n';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -178,7 +179,7 @@ export default class Login extends PureComponent {
                     isLoading: false,
                     error: {
                         intl: {
-                            id: 'login.noPassword',
+                            id: t('login.noPassword'),
                             defaultMessage: 'Please enter your password',
                         },
                     },
@@ -262,7 +263,7 @@ export default class Login extends PureComponent {
         ) {
             return {
                 intl: {
-                    id: 'login.userNotFound',
+                    id: t('login.userNotFound'),
                     defaultMessage: "We couldn't find an account matching your login credentials.",
                 },
             };
@@ -272,7 +273,7 @@ export default class Login extends PureComponent {
         ) {
             return {
                 intl: {
-                    id: 'login.invalidPassword',
+                    id: t('login.invalidPassword'),
                     defaultMessage: 'Your password is incorrect.',
                 },
             };
@@ -381,7 +382,7 @@ export default class Login extends PureComponent {
                             />
                         </View>
                         <ErrorText error={this.getLoginErrorMessage()}/>
-                        <QuickTextInput
+                        <TextInput
                             ref={this.loginRef}
                             value={this.props.loginId}
                             onChangeText={this.props.actions.handleLoginIdChanged}
@@ -396,7 +397,7 @@ export default class Login extends PureComponent {
                             blurOnSubmit={false}
                             disableFullscreenUI={true}
                         />
-                        <QuickTextInput
+                        <TextInput
                             ref={this.passwordRef}
                             value={this.props.password}
                             onChangeText={this.props.actions.handlePasswordChanged}

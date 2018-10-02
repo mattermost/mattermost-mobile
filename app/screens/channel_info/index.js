@@ -34,6 +34,8 @@ import {
     closeGMChannel,
     leaveChannel,
     loadChannelsByTeamName,
+    selectPenultimateChannel,
+    handleSelectChannel,
 } from 'app/actions/views/channel';
 
 import ChannelInfo from './channel_info';
@@ -66,9 +68,11 @@ function mapStateToProps(state) {
 
     const channelIsReadOnly = isCurrentChannelReadOnly(state);
     const canEditChannel = !channelIsReadOnly && showManagementOptions(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin);
+    const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
+        viewArchivedChannels,
         canEditChannel,
         currentChannel,
         currentChannelCreatorName,
@@ -98,6 +102,8 @@ function mapDispatchToProps(dispatch) {
             getCustomEmojisInText,
             selectFocusedPostId,
             updateChannelNotifyProps,
+            selectPenultimateChannel,
+            handleSelectChannel,
         }, dispatch),
     };
 }

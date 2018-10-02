@@ -159,7 +159,6 @@ export default class PostListBase extends PureComponent {
             highlightPostId,
             isSearchResult,
             navigator,
-            onHashtagPress,
             onPostPress,
             renderReplies,
             shouldRenderReplyButton,
@@ -177,8 +176,6 @@ export default class PostListBase extends PureComponent {
                 renderReplies={renderReplies}
                 isSearchResult={isSearchResult}
                 shouldRenderReplyButton={shouldRenderReplyButton}
-                onHashtagPress={onHashtagPress}
-                onPermalinkPress={this.handlePermalinkPress}
                 onPress={onPostPress}
                 navigator={navigator}
                 managedConfig={managedConfig}

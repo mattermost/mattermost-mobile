@@ -20,6 +20,7 @@ export default class CustomListRow extends React.PureComponent {
         selectable: PropTypes.bool,
         selected: PropTypes.bool,
         children: CustomPropTypes.Children,
+        item: PropTypes.object,
     };
 
     static defaultProps = {
@@ -48,7 +49,9 @@ export default class CustomListRow extends React.PureComponent {
                             </View>
                         </View>
                     }
-                    {this.props.children}
+                    <View style={style.children}>
+                        {this.props.children}
+                    </View>
                 </View>
             </ConditionalTouchable>
         );
@@ -64,9 +67,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
         },
-        displayName: {
-            fontSize: 15,
-            color: theme.centerChannelColor,
+        children: {
+            flexDirection: 'row',
         },
         selector: {
             height: 28,
@@ -78,6 +80,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         selectorContainer: {
+            flex: 1,
             height: 50,
             paddingRight: 15,
             alignItems: 'center',

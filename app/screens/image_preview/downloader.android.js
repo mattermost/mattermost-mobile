@@ -22,8 +22,8 @@ import {emptyFunction} from 'app/utils/general';
 
 const {DOCUMENTS_PATH, VIDEOS_PATH} = DeviceTypes;
 const EXTERNAL_STORAGE_PERMISSION = 'android.permission.WRITE_EXTERNAL_STORAGE';
-const HEADER_HEIGHT = 64;
-const OPTION_LIST_WIDTH = 39;
+const HEADER_HEIGHT = 46;
+const OPTION_LIST_HEIGHT = 39;
 
 export default class Downloader extends PureComponent {
     static propTypes = {
@@ -134,6 +134,7 @@ export default class Downloader extends PureComponent {
                     },
                 }).fetch('GET', imageUrl, {
                     Authorization: `Bearer ${Client4.token}`,
+                    'X-Requested-With': 'XMLHttpRequest',
                 });
 
                 await task;
@@ -155,8 +156,12 @@ export default class Downloader extends PureComponent {
     render() {
         const {show} = this.props;
 
+        if (!show) {
+            return null;
+        }
+
         return (
-            <View style={[styles.wrapper, {height: show ? OPTION_LIST_WIDTH : 0}]}>
+            <View style={styles.wrapper}>
                 <TouchableOpacity
                     style={styles.downloadButton}
                     onPress={this.handleDownload}
@@ -185,8 +190,10 @@ const styles = StyleSheet.create({
     wrapper: {
         position: 'absolute',
         backgroundColor: '#575757',
+        height: OPTION_LIST_HEIGHT,
         top: HEADER_HEIGHT,
         right: 0,
         width: 150,
+        marginRight: 5,
     },
 });

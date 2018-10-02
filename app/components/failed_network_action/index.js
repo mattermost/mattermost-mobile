@@ -7,6 +7,7 @@ import {TouchableOpacity, View} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import Cloud from './cloud';
 
@@ -20,11 +21,11 @@ export default class FailedNetworkAction extends PureComponent {
 
     static defaultProps = {
         errorTitle: {
-            id: 'mobile.failed_network_action.title',
+            id: t('mobile.failed_network_action.title'),
             defaultMessage: 'No internet connection',
         },
         errorDescription: {
-            id: 'mobile.failed_network_action.description',
+            id: t('mobile.failed_network_action.description'),
             defaultMessage: 'There seems to be a problem with your internet connection. Make sure you have an active connection and try again.',
         },
     };

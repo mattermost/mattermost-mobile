@@ -4,13 +4,12 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Image,
     View,
     StyleSheet,
 } from 'react-native';
 
 import * as Utils from 'mattermost-redux/utils/file_utils';
-
-import ProgressiveImage from 'app/components/progressive_image';
 
 import audioIcon from 'assets/images/icons/audio.png';
 import codeIcon from 'assets/images/icons/code.png';
@@ -75,9 +74,9 @@ export default class FileAttachmentIcon extends PureComponent {
                 ref={this.handleCaptureRef}
                 style={[styles.fileIconWrapper, {height: wrapperHeight, width: wrapperWidth}]}
             >
-                <ProgressiveImage
+                <Image
                     style={[styles.icon, {height: iconHeight, width: iconWidth}]}
-                    defaultSource={source}
+                    source={source}
                 />
             </View>
         );

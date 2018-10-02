@@ -56,4 +56,10 @@ describe('Images calculateDimensions', () => {
         const {height} = calculateDimensions(1920, 1080, PORTRAIT_VIEWPORT, 340);
         expect(height).toEqual(340);
     });
+
+    it('images with height below 50 but setting to 50 will make the width exceed the view port width should remain as is', () => {
+        const {height, width} = calculateDimensions(45, 310, PORTRAIT_VIEWPORT);
+        expect(height).toEqual(45);
+        expect(width).toEqual(310);
+    });
 });

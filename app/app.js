@@ -55,7 +55,7 @@ export default class App {
         if (Platform.OS === 'ios') {
             const majorVersionIOS = parseInt(Platform.Version, 10);
             if (majorVersionIOS < 10) {
-                require('babel-polyfill');
+                require('@babel/polyfill');
             }
         }
 

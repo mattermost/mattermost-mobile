@@ -8,7 +8,9 @@ import {
     Text,
     View,
 } from 'react-native';
+
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
+
 import ProfilePicture from 'app/components/profile_picture';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import CustomListRow from 'app/components/custom_list/custom_list_row';
@@ -29,7 +31,7 @@ export default class UserListRow extends React.PureComponent {
 
     onPress = () => {
         if (this.props.onPress) {
-            this.props.onPress(this.props.id);
+            this.props.onPress(this.props.id, this.props.item);
         }
     };
 
@@ -48,11 +50,11 @@ export default class UserListRow extends React.PureComponent {
         const {id, username} = user;
         const style = getStyleFromTheme(theme);
 
-        let usernameDisplay = `(@${username})`;
+        let usernameDisplay = `@${username}`;
         if (isMyUser) {
             usernameDisplay = formatMessage({
                 id: 'mobile.more_dms.you',
-                defaultMessage: '(@{username} - you)',
+                defaultMessage: '@{username} - you',
             }, {username});
         }
 
@@ -63,36 +65,50 @@ export default class UserListRow extends React.PureComponent {
             }, {displayname: usernameDisplay});
         }
 
+        const teammateDisplay = displayUsername(user, teammateNameDisplay);
+        const showTeammateDisplay = teammateDisplay !== username;
+
         return (
-            <CustomListRow
-                id={id}
-                theme={theme}
-                onPress={this.onPress}
-                enabled={enabled}
-                selectable={selectable}
-                selected={selected}
-            >
-                <ProfilePicture
-                    userId={id}
-                    size={32}
-                />
-                <View style={style.textContainer}>
-                    <View>
-                        <Text style={style.displayName}>
-                            {displayUsername(user, teammateNameDisplay)}
-                        </Text>
+            <View style={style.container}>
+                <CustomListRow
+                    id={id}
+                    theme={theme}
+                    onPress={this.onPress}
+                    enabled={enabled}
+                    selectable={selectable}
+                    selected={selected}
+                >
+                    <View style={style.profileContainer}>
+                        <ProfilePicture
+                            userId={id}
+                            size={32}
+                        />
                     </View>
-                    <View>
-                        <Text
-                            style={style.username}
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                        >
-                            {usernameDisplay}
-                        </Text>
+                    <View style={[style.textContainer, (showTeammateDisplay ? style.showTeammateDisplay : style.hideTeammateDisplay)]}>
+                        <View>
+                            <Text
+                                style={style.username}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            >
+                                {usernameDisplay}
+                            </Text>
+                        </View>
+                        {showTeammateDisplay &&
+                        <View>
+                            <Text
+                                style={style.displayName}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            >
+                                {teammateDisplay}
+                            </Text>
+                        </View>
+                        }
                     </View>
-                </View>
-            </CustomListRow>
+                    <View style={style.rightFiller}/>
+                </CustomListRow>
+            </View>
         );
     }
 }
@@ -100,50 +116,35 @@ export default class UserListRow extends React.PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
+            flex: 1,
             flexDirection: 'row',
-            height: 65,
-            paddingHorizontal: 15,
-            alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
+            marginLeft: 10,
         },
-        displayName: {
-            fontSize: 15,
-            color: theme.centerChannelColor,
-        },
-        icon: {
-            fontSize: 20,
+        profileContainer: {
+            flexDirection: 'row',
+            marginLeft: 10,
             color: theme.centerChannelColor,
         },
         textContainer: {
-            flexDirection: 'row',
             marginLeft: 5,
         },
-        username: {
-            marginLeft: 5,
+        showTeammateDisplay: {
+            flexDirection: 'column',
+            flex: 1,
+        },
+        hideTeammateDisplay: {
+            justifyContent: 'center',
+        },
+        displayName: {
             fontSize: 15,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
-        selector: {
-            height: 28,
-            width: 28,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: '#888',
-            alignItems: 'center',
-            justifyContent: 'center',
+        username: {
+            fontSize: 15,
+            color: theme.centerChannelColor,
         },
-        selectorContainer: {
-            height: 50,
-            paddingRight: 15,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        selectorDisabled: {
-            backgroundColor: '#888',
-        },
-        selectorFilled: {
-            backgroundColor: '#378FD2',
-            borderWidth: 0,
+        rightFiller: {
+            width: 25,
         },
     };
 });

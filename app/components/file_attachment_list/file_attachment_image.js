@@ -115,7 +115,7 @@ export default class FileAttachmentImage extends PureComponent {
         const imageProps = {};
         if (file.localPath) {
             imageProps.defaultSource = {uri: file.localPath};
-        } else {
+        } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
             imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
         }

@@ -5,9 +5,9 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 
-import {General} from 'mattermost-redux/constants';
-
+import Loading from 'app/components/loading';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
@@ -31,6 +31,7 @@ class Thread extends PureComponent {
         theme: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
         channelIsArchived: PropTypes.bool,
+        threadLoadingStatus: PropTypes.object,
     };
 
     state = {};
@@ -85,16 +86,21 @@ class Thread extends PureComponent {
 
     hasRootPost = () => {
         return this.props.postIds.includes(this.props.rootId);
-    }
+    };
 
     renderFooter = () => {
-        if (!this.hasRootPost()) {
+        if (!this.hasRootPost() && this.props.threadLoadingStatus.status !== RequestStatus.STARTED) {
             return (
                 <DeletedPost theme={this.props.theme}/>
             );
+        } else if (this.props.threadLoadingStatus.status === RequestStatus.STARTED) {
+            return (
+                <Loading/>
+            );
         }
+
         return null;
-    }
+    };
 
     onCloseChannel = () => {
         this.props.navigator.resetTo({
@@ -111,7 +117,7 @@ class Thread extends PureComponent {
                 screenBackgroundColor: 'transparent',
             },
         });
-    }
+    };
 
     render() {
         const {
@@ -124,6 +130,34 @@ class Thread extends PureComponent {
             channelIsArchived,
         } = this.props;
         const style = getStyle(theme);
+        let content;
+        let postTextBox;
+        if (this.hasRootPost()) {
+            content = (
+                <PostList
+                    renderFooter={this.renderFooter}
+                    indicateNewMessages={true}
+                    postIds={postIds}
+                    currentUserId={myMember.user_id}
+                    lastViewedAt={this.state.lastViewedAt}
+                    navigator={navigator}
+                />
+            );
+
+            postTextBox = (
+                <PostTextbox
+                    channelIsArchived={channelIsArchived}
+                    rootId={rootId}
+                    channelId={channelId}
+                    navigator={navigator}
+                    onCloseChannel={this.onCloseChannel}
+                />
+            );
+        } else {
+            content = (
+                <Loading/>
+            );
+        }
 
         return (
             <SafeAreaView
@@ -136,22 +170,8 @@ class Thread extends PureComponent {
                     style={style.container}
                     keyboardVerticalOffset={65}
                 >
-                    <PostList
-                        renderFooter={this.renderFooter}
-                        indicateNewMessages={true}
-                        postIds={postIds}
-                        currentUserId={myMember.user_id}
-                        lastViewedAt={this.state.lastViewedAt}
-                        navigator={navigator}
-                    />
-                    {this.hasRootPost() &&
-                    <PostTextbox
-                        channelIsArchived={channelIsArchived}
-                        rootId={rootId}
-                        channelId={channelId}
-                        navigator={navigator}
-                        onCloseChannel={this.onCloseChannel}
-                    />}
+                    {content}
+                    {postTextBox}
                 </KeyboardLayout>
             </SafeAreaView>
         );

@@ -4,6 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import MoreChannels from './more_channels.js';
 
 jest.mock('react-intl');
@@ -29,12 +31,7 @@ describe('MoreChannels', () => {
         currentUserId: 'current_user_id',
         currentTeamId: 'current_team_id',
         navigator,
-        theme: {
-            centerChannelBg: '#aaa',
-            centerChannelColor: '#aaa',
-            sidebarHeaderBg: '#aaa',
-            sidebarHeaderTextColor: '#aaa',
-        },
+        theme: Preferences.THEMES.default,
         canCreateChannels: true,
         channels: [{id: 'id', name: 'name', display_name: 'display_name'}],
         closeButton: {},
@@ -48,7 +45,7 @@ describe('MoreChannels', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should call props.navigator.dismissModal on close', () => {

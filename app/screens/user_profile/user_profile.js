@@ -20,6 +20,7 @@ import FormattedTime from 'app/components/formatted_time';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import UserProfileRow from './user_profile_row';
 import Config from 'assets/config';
@@ -141,7 +142,7 @@ export default class UserProfile extends PureComponent {
                 intl,
                 result.error,
                 {
-                    id: 'mobile.open_dm.error',
+                    id: t('mobile.open_dm.error'),
                     defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
                 },
                 {
@@ -230,7 +231,7 @@ export default class UserProfile extends PureComponent {
                         defaultMessage='Send Message'
                         icon='paper-plane-o'
                         iconType='fontawesome'
-                        textId='mobile.routes.user_profile.send_message'
+                        textId={t('mobile.routes.user_profile.send_message')}
                         theme={theme}
                     />
                     {this.renderAdditionalOptions()}

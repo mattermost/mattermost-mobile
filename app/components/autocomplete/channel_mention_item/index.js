@@ -7,14 +7,18 @@ import {getChannel} from 'mattermost-redux/selectors/entities/channels';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {getChannelNameForSearchAutocomplete} from 'app/selectors/channel';
+
 import ChannelMentionItem from './channel_mention_item';
 
 function mapStateToProps(state, ownProps) {
     const channel = getChannel(state, ownProps.channelId);
+    const displayName = getChannelNameForSearchAutocomplete(state, ownProps.channelId);
 
     return {
-        displayName: channel.display_name,
+        displayName,
         name: channel.name,
+        type: channel.type,
         theme: getTheme(state),
     };
 }

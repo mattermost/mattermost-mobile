@@ -28,6 +28,7 @@ function makeMapStateToProps() {
             postIds: getPostIdsForThread(state, ownProps.rootId),
             theme: getTheme(state),
             channelIsArchived: channel ? channel.delete_at !== 0 : false,
+            threadLoadingStatus: state.requests.posts.getPostThread,
         };
     };
 }

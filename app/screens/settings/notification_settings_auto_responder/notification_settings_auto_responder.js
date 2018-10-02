@@ -15,6 +15,7 @@ import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {getNotificationProps} from 'app/utils/notify_props';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
@@ -119,7 +120,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                     </Section>
                     {autoResponderActive === 'true' && (
                         <Section
-                            headerId='mobile.notification_settings.auto_responder.message_title'
+                            headerId={t('mobile.notification_settings.auto_responder.message_title')}
                             headerDefaultMessage='CUSTOM MESSAGE'
                             theme={theme}
                         >
@@ -134,7 +135,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                                     style={style.input}
                                     autoCapitalize='none'
                                     autoCorrect={false}
-                                    placeholder={{id: 'mobile.notification_settings.auto_responder.message_placeholder', defaultMessage: 'Message'}}
+                                    placeholder={{id: t('mobile.notification_settings.auto_responder.message_placeholder'), defaultMessage: 'Message'}}
                                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                                     textAlignVertical='top'
                                     underlineColorAndroid='transparent'

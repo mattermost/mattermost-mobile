@@ -8,6 +8,8 @@ import {
     TouchableOpacity,
 } from 'react-native';
 
+import {General} from 'mattermost-redux/constants';
+
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelMentionItem extends PureComponent {
@@ -15,13 +17,20 @@ export default class ChannelMentionItem extends PureComponent {
         channelId: PropTypes.string.isRequired,
         displayName: PropTypes.string,
         name: PropTypes.string,
+        type: PropTypes.string,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
     completeMention = () => {
-        const {onPress, name} = this.props;
-        onPress(name);
+        const {onPress, displayName, name, type} = this.props;
+        if (type === General.DM_CHANNEL) {
+            onPress('@' + displayName.replace(/ /g, ''));
+        } else if (type === General.DM_CHANNEL) {
+            onPress('@' + displayName.replace(/ /g, ''));
+        } else {
+            onPress(name);
+        }
     };
 
     render() {
@@ -30,10 +39,22 @@ export default class ChannelMentionItem extends PureComponent {
             displayName,
             name,
             theme,
+            type,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
 
+        if (type === General.DM_CHANNEL || type === General.GM_CHANNEL) {
+            return (
+                <TouchableOpacity
+                    key={channelId}
+                    onPress={this.completeMention}
+                    style={style.row}
+                >
+                    <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
+                </TouchableOpacity>
+            );
+        }
         return (
             <TouchableOpacity
                 key={channelId}

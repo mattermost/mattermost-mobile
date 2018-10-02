@@ -19,6 +19,8 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
+import {debounce} from 'mattermost-redux/actions/helpers';
+
 import Autocomplete from 'app/components/autocomplete';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import DateHeader from 'app/components/post_list/date_header';
@@ -53,6 +55,7 @@ export default class Search extends PureComponent {
             loadThreadIfNecessary: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPostsWithParams: PropTypes.func.isRequired,
+            getMorePostsForSearch: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
@@ -64,6 +67,7 @@ export default class Search extends PureComponent {
         archivedPostIds: PropTypes.arrayOf(PropTypes.string),
         recent: PropTypes.array.isRequired,
         searchingStatus: PropTypes.string,
+        isSearchGettingMore: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         enableDateSuggestion: PropTypes.bool,
         timezoneOffsetInSeconds: PropTypes.number.isRequired,
@@ -84,7 +88,7 @@ export default class Search extends PureComponent {
         super(props);
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        this.isX = DeviceInfo.getModel() === 'iPhone X';
+        this.isX = DeviceInfo.getModel().includes('iPhone X');
         this.state = {
             channelName: '',
             cursorPosition: 0,
@@ -102,20 +106,20 @@ export default class Search extends PureComponent {
 
         if (this.props.initialValue) {
             this.search(this.props.initialValue);
-        } else {
-            setTimeout(() => {
-                if (this.refs.searchBar) {
-                    this.refs.searchBar.focus();
-                }
-            }, 150);
         }
+
+        setTimeout(() => {
+            if (this.refs.searchBar) {
+                this.refs.searchBar.focus();
+            }
+        }, 150);
     }
 
     componentDidUpdate(prevProps) {
         const {searchingStatus: status, recent, enableDateSuggestion} = this.props;
         const {searchingStatus: prevStatus} = prevProps;
         const recentLength = recent.length;
-        const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED);
+        const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED) && !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore;
 
         if (this.props.isLandscape !== prevProps.isLandscape) {
             this.refs.searchBar.blur();
@@ -205,11 +209,11 @@ export default class Search extends PureComponent {
     };
 
     handleTextChanged = (value, selectionChanged) => {
-        const {actions, searchingStatus} = this.props;
+        const {actions, searchingStatus, isSearchGettingMore} = this.props;
         this.setState({value});
         actions.handleSearchDraftChanged(value);
 
-        if (!value && searchingStatus === RequestStatus.SUCCESS) {
+        if (!value && searchingStatus === RequestStatus.SUCCESS && !isSearchGettingMore) {
             actions.clearSearch();
             this.scrollToTop();
         }
@@ -496,7 +500,7 @@ export default class Search extends PureComponent {
         });
 
         // timezone offset in seconds
-        actions.searchPostsWithParams(currentTeamId, {terms: terms.trim(), is_or_search: isOrSearch, time_zone_offset: this.props.timezoneOffsetInSeconds}, true);
+        actions.searchPostsWithParams(currentTeamId, {terms: terms.trim(), is_or_search: isOrSearch, time_zone_offset: this.props.timezoneOffsetInSeconds, page: 0, per_page: 20}, true);
     };
 
     handleSearchButtonPress = preventDoubleTap((text) => {
@@ -529,6 +533,12 @@ export default class Search extends PureComponent {
         Keyboard.dismiss();
     });
 
+    onEndReached = debounce(() => {
+        if (this.state.value) {
+            this.props.actions.getMorePostsForSearch();
+        }
+    }, 100);
+
     render() {
         const {
             isLandscape,
@@ -536,6 +546,7 @@ export default class Search extends PureComponent {
             recent,
             searchingStatus,
             theme,
+            isSearchGettingMore,
         } = this.props;
 
         const {intl} = this.context;
@@ -612,14 +623,18 @@ export default class Search extends PureComponent {
         let results;
         switch (searchingStatus) {
         case RequestStatus.STARTED:
-            results = [{
-                id: SEARCHING,
-                component: (
-                    <View style={style.searching}>
-                        <Loading/>
-                    </View>
-                ),
-            }];
+            if (isSearchGettingMore) {
+                results = postIds;
+            } else {
+                results = [{
+                    id: SEARCHING,
+                    component: (
+                        <View style={style.searching}>
+                            <Loading/>
+                        </View>
+                    ),
+                }];
+            }
             break;
         case RequestStatus.SUCCESS:
             if (postIds.length) {
@@ -706,6 +721,8 @@ export default class Search extends PureComponent {
                         keyboardShouldPersistTaps='always'
                         keyboardDismissMode='interactive'
                         stickySectionHeadersEnabled={Platform.OS === 'ios'}
+                        onEndReached={this.onEndReached}
+                        onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
                     />
                     <Autocomplete
                         cursorPosition={cursorPosition}

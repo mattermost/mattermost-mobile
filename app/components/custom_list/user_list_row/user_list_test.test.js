@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {configure, shallow} from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-import UserListRow from './user_list_row';
+import {shallow} from 'enzyme';
 
-configure({adapter: new Adapter()});
+import Preferences from 'mattermost-redux/constants/preferences';
+
+import UserListRow from './user_list_row';
 
 jest.mock('react-intl');
 jest.mock('app/utils/theme', () => {
@@ -27,7 +27,7 @@ describe('UserListRow', () => {
             username: 'user',
             delete_at: 0,
         },
-        theme: {},
+        theme: Preferences.THEMES.default,
         teammateNameDisplay: 'test',
     };
 
@@ -36,7 +36,7 @@ describe('UserListRow', () => {
             <UserListRow {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for deactivated user', () => {
@@ -55,7 +55,7 @@ describe('UserListRow', () => {
             <UserListRow {...newProps}/>,
             {context: {intl: {formatMessage}}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for  currentUser with (you) populated in list', () => {
@@ -68,6 +68,6 @@ describe('UserListRow', () => {
             <UserListRow {...newProps}/>,
             {context: {intl: {formatMessage}}},
         );
-        expect(wrapper).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

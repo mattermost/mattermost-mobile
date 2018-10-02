@@ -210,7 +210,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
                             resizeMode='cover'
                             onError={this.handleLinkLoadError}
                         >
-                            <TouchableOpacity onPress={this.playYouTubeVideo}>
+                            <TouchableOpacity
+                                style={styles.playButton}
+                                onPress={this.playYouTubeVideo}
+                            >
                                 <Image
                                     source={require('assets/images/icons/youtube-play-icon.png')}
                                     onPress={this.playYouTubeVideo}
@@ -467,5 +470,10 @@ const styles = StyleSheet.create({
         borderRadius: 3,
         justifyContent: 'center',
         marginVertical: 1,
+    },
+    playButton: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });

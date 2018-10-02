@@ -13,8 +13,8 @@ export default class RadioButtonGroup extends PureComponent {
         onSelect: PropTypes.func,
     };
 
-    static defaultProps: {
-        options: []
+    static defaultProps = {
+        options: [],
     };
 
     constructor(props) {

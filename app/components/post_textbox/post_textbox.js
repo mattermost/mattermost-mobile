@@ -12,10 +12,10 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
-import QuickTextInput from 'app/components/quick_text_input';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
 
@@ -38,11 +38,11 @@ export default class PostTextbox extends PureComponent {
             userTyping: PropTypes.func.isRequired,
             handleCommentDraftSelectionChanged: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
+            selectPenultimateChannel: PropTypes.func.isRequired,
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
+        channelTeamId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
@@ -56,7 +56,6 @@ export default class PostTextbox extends PureComponent {
         value: PropTypes.string.isRequired,
         userIsOutOfOffice: PropTypes.bool.isRequired,
         channelIsArchived: PropTypes.bool,
-        defaultChannel: PropTypes.object,
         onCloseChannel: PropTypes.func,
     };
 
@@ -460,11 +459,8 @@ export default class PostTextbox extends PureComponent {
     };
 
     onCloseChannelPress = () => {
-        const {defaultChannel, channelId, onCloseChannel} = this.props;
-        const {setChannelDisplayName, setChannelLoading} = this.props.actions;
-        setChannelLoading(true);
-        setChannelDisplayName(defaultChannel.display_name);
-        EventEmitter.emit('switch_channel', defaultChannel, channelId);
+        const {onCloseChannel, channelTeamId} = this.props;
+        this.props.actions.selectPenultimateChannel(channelTeamId);
         if (onCloseChannel) {
             onCloseChannel();
         }
@@ -525,11 +521,11 @@ export default class PostTextbox extends PureComponent {
 
         let placeholder;
         if (channelIsReadOnly) {
-            placeholder = {id: 'mobile.create_post.read_only', defaultMessage: 'This channel is read-only.'};
+            placeholder = {id: t('mobile.create_post.read_only'), defaultMessage: 'This channel is read-only.'};
         } else if (rootId) {
-            placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
+            placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
         } else {
-            placeholder = {id: 'create_post.write', defaultMessage: 'Write a message...'};
+            placeholder = {id: t('create_post.write'), defaultMessage: 'Write a message...'};
         }
 
         let attachmentButton = null;
@@ -549,8 +545,6 @@ export default class PostTextbox extends PureComponent {
         } else {
             inputContainerStyle.push(style.inputContainerWithoutFileUpload);
         }
-
-        const InputComponent = Platform.OS === 'android' ? TextInput : QuickTextInput;
 
         return (
             <View>
@@ -572,7 +566,7 @@ export default class PostTextbox extends PureComponent {
                 {!channelIsArchived && <View style={style.inputWrapper}>
                     {!channelIsReadOnly && attachmentButton}
                     <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
-                        <InputComponent
+                        <TextInput
                             ref='input'
                             value={textValue}
                             onChangeText={this.handleTextChange}

@@ -21,6 +21,7 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 export default class MoreChannels extends PureComponent {
     static propTypes = {
@@ -348,7 +349,7 @@ export default class MoreChannels extends PureComponent {
                         showSections={false}
                         renderRow={ChannelListRow}
                         onRowPress={this.onSelectChannel}
-                        loadingText={{id: 'mobile.loading_channels', defaultMessage: 'Loading Channels...'}}
+                        loadingText={{id: t('mobile.loading_channels'), defaultMessage: 'Loading Channels...'}}
                         showNoResults={this.state.showNoResults}
                     />
                 </React.Fragment>

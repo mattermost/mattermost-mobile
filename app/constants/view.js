@@ -71,6 +71,8 @@ const ViewTypes = keyMirror({
     SET_DEEP_LINK_URL: null,
 
     SET_PROFILE_IMAGE_URI: null,
+
+    SELECTED_ACTION_MENU: null,
 });
 
 export default {
@@ -88,4 +90,6 @@ export default {
     IOSX_TOP_PORTRAIT: 88,
     STATUS_BAR_HEIGHT: 20,
     PROFILE_PICTURE_SIZE: 32,
+    DATA_SOURCE_USERS: 'users',
+    DATA_SOURCE_CHANNELS: 'channels',
 };

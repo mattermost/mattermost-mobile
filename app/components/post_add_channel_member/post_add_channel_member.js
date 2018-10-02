@@ -10,6 +10,7 @@ import {Text} from 'react-native';
 import {General} from 'mattermost-redux/constants';
 
 import {concatStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 import AtMention from 'app/components/at_mention';
 import FormattedText from 'app/components/formatted_text';
@@ -145,20 +146,20 @@ export default class PostAddChannelMember extends React.PureComponent {
         let linkId;
         let linkText;
         if (channelType === General.PRIVATE_CHANNEL) {
-            linkId = 'post_body.check_for_out_of_channel_mentions.link.private';
+            linkId = t('post_body.check_for_out_of_channel_mentions.link.private');
             linkText = 'add them to this private channel';
         } else if (channelType === General.OPEN_CHANNEL) {
-            linkId = 'post_body.check_for_out_of_channel_mentions.link.public';
+            linkId = t('post_body.check_for_out_of_channel_mentions.link.public');
             linkText = 'add them to the channel';
         }
 
         let messageId;
         let messageText;
         if (usernames.length === 1) {
-            messageId = 'post_body.check_for_out_of_channel_mentions.message.one';
+            messageId = t('post_body.check_for_out_of_channel_mentions.message.one');
             messageText = 'was mentioned but is not in the channel. Would you like to ';
         } else if (usernames.length > 1) {
-            messageId = 'post_body.check_for_out_of_channel_mentions.message.multiple';
+            messageId = t('post_body.check_for_out_of_channel_mentions.message.multiple');
             messageText = 'were mentioned but they are not in the channel. Would you like to ';
         }
 

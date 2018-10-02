@@ -46,7 +46,13 @@ export const getMatchTermForChannelMention = (() => {
             lastValue = value;
             lastIsSearch = isSearch;
             if (match) {
-                lastMatchTerm = isSearch ? match[1] : match[2];
+                if (isSearch) {
+                    lastMatchTerm = match[1];
+                } else if (match.index > 0 && value[match.index - 1] === '~') {
+                    lastMatchTerm = null;
+                } else {
+                    lastMatchTerm = match[2];
+                }
             } else {
                 lastMatchTerm = null;
             }
@@ -218,6 +224,36 @@ export const filterPrivateChannels = createSelector(
         } else {
             channels = myChannels.filter((c) => {
                 return c.type === General.PRIVATE_CHANNEL;
+            });
+        }
+
+        return channels.map((c) => c.id);
+    }
+);
+
+export const filterDirectAndGroupMessages = createSelector(
+    getMyChannels,
+    (state) => state.entities.channels.channels,
+    (state, matchTerm) => matchTerm,
+    (myChannels, originalChannels, matchTerm) => {
+        if (matchTerm === null) {
+            return null;
+        }
+
+        let channels;
+        if (matchTerm) {
+            channels = myChannels.filter((c) => {
+                if (c.type === General.DM_CHANNEL && (originalChannels[c.id].display_name.startsWith(matchTerm))) {
+                    return true;
+                }
+                if (c.type === General.GM_CHANNEL && (c.name.startsWith(matchTerm) || c.display_name.replace(/ /g, '').startsWith(matchTerm))) {
+                    return true;
+                }
+                return false;
+            });
+        } else {
+            channels = myChannels.filter((c) => {
+                return c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL;
             });
         }
 

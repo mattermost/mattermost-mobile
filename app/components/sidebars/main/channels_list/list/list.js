@@ -20,6 +20,7 @@ import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item
 import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -100,7 +101,7 @@ export default class List extends PureComponent {
 
         if (unreadChannelIds.length) {
             sections.push({
-                id: 'mobile.channel_list.unreads',
+                id: t('mobile.channel_list.unreads'),
                 defaultMessage: 'UNREADS',
                 data: unreadChannelIds,
                 renderItem: this.renderUnreadItem,
@@ -111,7 +112,7 @@ export default class List extends PureComponent {
 
         if (favoriteChannelIds.length) {
             sections.push({
-                id: 'sidebar.favorite',
+                id: t('sidebar.favorite'),
                 defaultMessage: 'FAVORITES',
                 data: favoriteChannelIds,
                 topSeparator: unreadChannelIds.length > 0,
@@ -121,7 +122,7 @@ export default class List extends PureComponent {
 
         sections.push({
             action: this.goToMoreChannels,
-            id: 'sidebar.channels',
+            id: t('sidebar.channels'),
             defaultMessage: 'PUBLIC CHANNELS',
             data: publicChannelIds,
             topSeparator: favoriteChannelIds.length > 0 || unreadChannelIds.length > 0,
@@ -130,7 +131,7 @@ export default class List extends PureComponent {
 
         sections.push({
             action: canCreatePrivateChannels ? this.goToCreatePrivateChannel : null,
-            id: 'sidebar.pg',
+            id: t('sidebar.pg'),
             defaultMessage: 'PRIVATE CHANNELS',
             data: privateChannelIds,
             topSeparator: true,
@@ -139,7 +140,7 @@ export default class List extends PureComponent {
 
         sections.push({
             action: this.goToDirectMessages,
-            id: 'sidebar.direct',
+            id: t('sidebar.direct'),
             defaultMessage: 'DIRECT MESSAGES',
             data: directChannelIds,
             topSeparator: true,
