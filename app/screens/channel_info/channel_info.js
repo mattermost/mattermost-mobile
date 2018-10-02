@@ -355,10 +355,10 @@ export default class ChannelInfo extends PureComponent {
                 <View>
                     <ChannelInfoRow
                         action={this.goToChannelMembers}
-                        defaultMessage={'View Members'}
+                        defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
                         detail={currentChannelMemberCount}
                         icon='users'
-                        textId={t('channel_header.viewMembers')}
+                        textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
                         theme={theme}
                     />
                     <View style={style.separator}/>
