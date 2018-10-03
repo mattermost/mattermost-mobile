@@ -1,18 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {connect} from 'react-redux';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {GlobalStyles} from 'app/styles';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-class ErrorText extends PureComponent {
+export default class ErrorText extends PureComponent {
     static propTypes = {
         error: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
         textStyle: CustomPropTypes.Style,
@@ -54,12 +52,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-function mapStateToProps(state, ownProps) {
-    return {
-        ...ownProps,
-        theme: getTheme(state),
-    };
-}
-
-export default connect(mapStateToProps)(ErrorText);
