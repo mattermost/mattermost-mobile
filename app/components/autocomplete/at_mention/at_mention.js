@@ -26,7 +26,6 @@ export default class AtMention extends PureComponent {
         defaultChannel: PropTypes.object,
         inChannel: PropTypes.array,
         isSearch: PropTypes.bool,
-        listHeight: PropTypes.number,
         matchTerm: PropTypes.string,
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
@@ -204,7 +203,7 @@ export default class AtMention extends PureComponent {
     };
 
     render() {
-        const {isSearch, listHeight, theme} = this.props;
+        const {theme} = this.props;
         const {mentionComplete, sections} = this.state;
 
         if (sections.length === 0 || mentionComplete) {
@@ -219,7 +218,7 @@ export default class AtMention extends PureComponent {
             <SectionList
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
-                style={[style.listView, isSearch ? [style.search, {height: listHeight}] : null]}
+                style={style.listView}
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
@@ -234,9 +233,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
             backgroundColor: theme.centerChannelBg,
-        },
-        search: {
-            minHeight: 125,
         },
     };
 });
