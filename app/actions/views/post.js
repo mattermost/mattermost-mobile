@@ -53,7 +53,7 @@ export function setMenuActionSelector(dataSource, onSelect, options) {
 }
 
 export function selectAttachmentMenuAction(postId, actionId, dataSource, displayText, value) {
-    return async (dispatch) => {
+    return (dispatch) => {
         dispatch({
             type: ViewTypes.SUBMIT_ATTACHMENT_MENU_ACTION,
             postId,
