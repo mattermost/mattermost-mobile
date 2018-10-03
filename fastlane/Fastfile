@@ -422,7 +422,7 @@ platform :android do
       )
     end
 
-    sh "mv #{apk_path} ../#{app_name}.apk"
+    sh "mv #{apk_path} \"./#{app_name}.apk\""
   end
 
   desc 'Build an unsigned apk'
@@ -461,7 +461,7 @@ platform :android do
   lane :update_identifiers do
     # Set the name for the app
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
-    sh "echo '#{app_name}' >> ../fastlane/metadata/android/en-US/title.txt"
+    sh "echo '#{app_name}' > ../fastlane/metadata/android/en-US/title.txt"
     android_change_string_app_name(
         newName: app_name,
         stringsFile: './android/app/src/main/res/values/strings.xml'
