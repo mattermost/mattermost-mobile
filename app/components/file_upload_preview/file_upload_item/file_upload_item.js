@@ -177,8 +177,6 @@ export default class FileUploadItem extends PureComponent {
                     file={file}
                     imageHeight={100}
                     imageWidth={100}
-                    wrapperHeight={100}
-                    wrapperWidth={100}
                 />
             );
         } else {

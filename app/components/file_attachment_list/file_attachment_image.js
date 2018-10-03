@@ -37,8 +37,6 @@ export default class FileAttachmentImage extends PureComponent {
         onCaptureRef: PropTypes.func,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
-        wrapperHeight: PropTypes.number,
-        wrapperWidth: PropTypes.number,
     };
 
     static defaultProps = {
@@ -49,8 +47,6 @@ export default class FileAttachmentImage extends PureComponent {
         loading: false,
         resizeMode: 'cover',
         resizeMethod: 'resize',
-        wrapperHeight: 80,
-        wrapperWidth: 80,
     };
 
     constructor(props) {
@@ -99,8 +95,6 @@ export default class FileAttachmentImage extends PureComponent {
             imageSize,
             resizeMethod,
             resizeMode,
-            wrapperHeight,
-            wrapperWidth,
         } = this.props;
 
         let height = imageHeight;
@@ -123,7 +117,7 @@ export default class FileAttachmentImage extends PureComponent {
         return (
             <View
                 ref={this.handleCaptureRef}
-                style={[style.fileImageWrapper, {height: wrapperHeight, width: wrapperWidth, overflow: 'hidden'}]}
+                style={style.fileImageWrapper}
             >
                 <ProgressiveImage
                     style={imageStyle}
@@ -145,6 +139,9 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         borderBottomLeftRadius: 2,
         borderTopLeftRadius: 2,
+        height: 100,
+        width: 100,
+        overflow: 'hidden',
     },
     loaderContainer: {
         position: 'absolute',
