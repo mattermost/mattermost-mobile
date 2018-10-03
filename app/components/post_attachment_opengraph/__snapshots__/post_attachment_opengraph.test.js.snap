@@ -129,6 +129,59 @@ exports[`PostAttachmentOpenGraph should match snapshot, without site_name 1`] = 
 </Component>
 `;
 
+exports[`PostAttachmentOpenGraph should match snapshot, without title and url 1`] = `
+<Component
+  style={
+    Object {
+      "borderColor": "rgba(61,60,64,0.2)",
+      "borderRadius": 3,
+      "borderWidth": 1,
+      "flex": 1,
+      "marginTop": 10,
+      "padding": 10,
+    }
+  }
+>
+  <Component
+    style={
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+  >
+    <TouchableOpacity
+      activeOpacity={0.2}
+      onPress={[Function]}
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    >
+      <Component
+        ellipsizeMode="tail"
+        numberOfLines={3}
+        style={
+          Array [
+            Object {
+              "color": "#2389d7",
+              "fontSize": 14,
+              "marginBottom": 10,
+            },
+            Object {
+              "marginRight": 0,
+            },
+          ]
+        }
+      >
+        https://mattermost.com/
+      </Component>
+    </TouchableOpacity>
+  </Component>
+</Component>
+`;
+
 exports[`PostAttachmentOpenGraph should match state and snapshot, on renderDescription 1`] = `null`;
 
 exports[`PostAttachmentOpenGraph should match state and snapshot, on renderDescription 2`] = `
