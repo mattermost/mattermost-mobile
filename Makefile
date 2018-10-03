@@ -3,6 +3,7 @@
 .PHONY: start stop
 .PHONY: run run-ios run-android
 .PHONY: build-ios build-android unsigned-ios unsigned-android
+.PHONY: build
 .PHONY: test help
 
 POD := $(shell which pod 2> /dev/null)
@@ -169,6 +170,15 @@ run-android: | check-device-android pre-run prepare-android-build ## Runs the ap
 			react-native run-android --no-packager; \
 		fi; \
     fi
+
+build: | pre-run check-style
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
+		echo Starting React Native packager server; \
+		npm start & echo; \
+	fi
+	@echo "Building App"
+	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane build
+	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
 
 build-ios: | pre-run check-style ## Creates an iOS build
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
