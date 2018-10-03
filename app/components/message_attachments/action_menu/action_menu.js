@@ -15,7 +15,7 @@ import {ViewTypes} from 'app/constants';
 export default class ActionMenu extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            doPostAction: PropTypes.func.isRequired,
+            selectAttachmentMenuAction: PropTypes.func.isRequired,
             setMenuActionSelector: PropTypes.func.isRequired,
         }).isRequired,
         id: PropTypes.string.isRequired,
@@ -23,6 +23,7 @@ export default class ActionMenu extends PureComponent {
         dataSource: PropTypes.string,
         options: PropTypes.arrayOf(PropTypes.object),
         postId: PropTypes.string.isRequired,
+        selected: PropTypes.object,
         theme: PropTypes.object.isRequired,
         navigator: PropTypes.object,
     };
@@ -37,6 +38,17 @@ export default class ActionMenu extends PureComponent {
         this.state = {
             selectedText: null,
         };
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        if (props.selected && props.selected !== state.selected) {
+            return {
+                selectedText: props.selected.displayText,
+                selected: props.selected,
+            };
+        }
+
+        return null;
     }
 
     handleSelect = (selected) => {
@@ -61,7 +73,7 @@ export default class ActionMenu extends PureComponent {
 
         this.setState({selectedText});
 
-        actions.doPostAction(postId, id, selectedValue);
+        actions.selectAttachmentMenuAction(postId, id, dataSource, selectedText, selectedValue);
     }
 
     goToMenuActionSelector = preventDoubleTap(() => {

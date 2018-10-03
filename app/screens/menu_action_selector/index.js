@@ -16,7 +16,7 @@ import {ViewTypes} from 'app/constants';
 import MenuActionSelector from './menu_action_selector';
 
 function mapStateToProps(state) {
-    const menuAction = state.views.post.menuAction || {};
+    const menuAction = state.views.post.selectedMenuAction || {};
 
     let data;
     let loadMoreRequestStatus;
