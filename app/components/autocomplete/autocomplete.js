@@ -85,7 +85,7 @@ export default class Autocomplete extends PureComponent {
         this.setState({keyboardOffset: 0});
     };
 
-    listMaxHeight() {
+    maxListHeight() {
         let maxHeight;
         if (this.props.maxHeight) {
             maxHeight = this.props.maxHeight;
@@ -124,28 +124,28 @@ export default class Autocomplete extends PureComponent {
             }
         }
 
-        const maxHeight = this.listMaxHeight();
-        containerStyle.push({
-            maxHeight: Math.min(maxHeight, 200),
-            backgroundColor: 'blue',
-        });
+        const maxListHeight = this.maxListHeight();
 
         return (
             <View style={wrapperStyle}>
                 <View style={containerStyle}>
                     <AtMention
+                        maxListHeight={maxListHeight}
                         onResultCountChange={this.handleAtMentionCountChange}
                         {...this.props}
                     />
                     <ChannelMention
+                        maxListHeight={maxListHeight}
                         onResultCountChange={this.handleChannelMentionCountChange}
                         {...this.props}
                     />
                     <EmojiSuggestion
+                        maxListHeight={maxListHeight}
                         onResultCountChange={this.handleEmojiCountChange}
                         {...this.props}
                     />
                     <SlashSuggestion
+                        maxListHeight={maxListHeight}
                         onResultCountChange={this.handleCommandCountChange}
                         {...this.props}
                     />
@@ -180,7 +180,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         container: {
             bottom: 0,
-            maxHeight: 200,
         },
         content: {
             flex: 1,
