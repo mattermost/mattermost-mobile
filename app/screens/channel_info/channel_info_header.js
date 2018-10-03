@@ -8,7 +8,7 @@ import {
     View,
 } from 'react-native';
 
-import ChanneIcon from 'app/components/channel_icon';
+import ChannelIcon from 'app/components/channel_icon';
 import FormattedDate from 'app/components/formatted_date';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
@@ -28,6 +28,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
+        isArchived: PropTypes.bool.isRequired,
     };
 
     render() {
@@ -43,6 +44,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             status,
             theme,
             type,
+            isArchived,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -52,13 +54,14 @@ export default class ChannelInfoHeader extends React.PureComponent {
         return (
             <View style={style.container}>
                 <View style={style.channelNameContainer}>
-                    <ChanneIcon
+                    <ChannelIcon
                         isInfo={true}
                         membersCount={memberCount - 1}
                         size={16}
                         status={status}
                         theme={theme}
                         type={type}
+                        isArchived={isArchived}
                     />
                     <Text
                         ellipsizeMode='tail'
