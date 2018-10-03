@@ -17,11 +17,9 @@ export default class FileUploadPreview extends PureComponent {
     static propTypes = {
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
-        createPostRequestStatus: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         files: PropTypes.array.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
-        inputHeight: PropTypes.number.isRequired,
         rootId: PropTypes.string,
         showFileMaxWarning: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,

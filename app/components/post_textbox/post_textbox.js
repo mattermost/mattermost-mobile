@@ -109,10 +109,6 @@ export default class PostTextbox extends PureComponent {
         }
     }
 
-    attachAutocomplete = (c) => {
-        this.autocomplete = c;
-    };
-
     blur = () => {
         if (this.refs.input) {
             this.refs.input.blur();
@@ -568,12 +564,10 @@ export default class PostTextbox extends PureComponent {
                 <FileUploadPreview
                     channelId={channelId}
                     files={files}
-                    inputHeight={textInputHeight}
                     rootId={rootId}
                     showFileMaxWarning={showFileMaxWarning}
                 />
                 <Autocomplete
-                    ref={this.attachAutocomplete}
                     cursorPosition={cursorPosition}
                     maxHeight={Math.min(top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
                     onChangeText={this.handleTextChange}
