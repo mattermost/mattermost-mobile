@@ -37,6 +37,8 @@ export default class FileAttachmentImage extends PureComponent {
         onCaptureRef: PropTypes.func,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
+        wrapperHeight: PropTypes.number,
+        wrapperWidth: PropTypes.number,
     };
 
     static defaultProps = {
@@ -47,6 +49,8 @@ export default class FileAttachmentImage extends PureComponent {
         loading: false,
         resizeMode: 'cover',
         resizeMethod: 'resize',
+        wrapperHeight: 80,
+        wrapperWidth: 80,
     };
 
     constructor(props) {
@@ -95,14 +99,16 @@ export default class FileAttachmentImage extends PureComponent {
             imageSize,
             resizeMethod,
             resizeMode,
+            wrapperHeight,
+            wrapperWidth,
         } = this.props;
 
         let height = imageHeight;
         let width = imageWidth;
         let imageStyle = {height, width};
         if (imageSize === IMAGE_SIZE.Preview) {
-            height = 100;
-            width = this.calculateNeededWidth(file.height, file.width, height) || 100;
+            height = 80;
+            width = this.calculateNeededWidth(file.height, file.width, height) || 80;
             imageStyle = {height, width, position: 'absolute', top: 0, left: 0, borderBottomLeftRadius: 2, borderTopLeftRadius: 2};
         }
 
@@ -117,7 +123,7 @@ export default class FileAttachmentImage extends PureComponent {
         return (
             <View
                 ref={this.handleCaptureRef}
-                style={style.fileImageWrapper}
+                style={[style.fileImageWrapper, {height: wrapperHeight, width: wrapperWidth, overflow: 'hidden'}]}
             >
                 <ProgressiveImage
                     style={imageStyle}
@@ -139,9 +145,6 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         borderBottomLeftRadius: 2,
         borderTopLeftRadius: 2,
-        height: 100,
-        width: 100,
-        overflow: 'hidden',
     },
     loaderContainer: {
         position: 'absolute',
