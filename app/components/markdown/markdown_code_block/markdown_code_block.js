@@ -3,7 +3,7 @@
 
 import {PropTypes} from 'prop-types';
 import React from 'react';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Clipboard,
     StyleSheet,
@@ -21,9 +21,8 @@ import mattermostManaged from 'app/mattermost_managed';
 
 const MAX_LINES = 4;
 
-class MarkdownCodeBlock extends React.PureComponent {
+export default class MarkdownCodeBlock extends React.PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         language: PropTypes.string,
@@ -36,8 +35,13 @@ class MarkdownCodeBlock extends React.PureComponent {
         language: '',
     };
 
+    static contextTypes = {
+        intl: intlShape,
+    };
+
     handlePress = preventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
 
         const languageDisplayName = getDisplayNameForLanguage(this.props.language);
         let title;
@@ -76,7 +80,7 @@ class MarkdownCodeBlock extends React.PureComponent {
     });
 
     handleLongPress = async () => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
 
         const config = await mattermostManaged.getLocalConfig();
 
@@ -238,5 +242,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-export default injectIntl(MarkdownCodeBlock);

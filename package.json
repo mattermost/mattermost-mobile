@@ -131,6 +131,9 @@
     ],
     "moduleNameMapper": {
       "assets/images/video_player/(.*).png": "<rootDir>/dist/assets/images/video_player/$1@2x.png"
-    }
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!react-native|jail-monkey)"
+    ]
   }
 }
