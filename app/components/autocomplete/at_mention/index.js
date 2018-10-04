@@ -5,8 +5,9 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {autocompleteUsers} from 'mattermost-redux/actions/users';
-import {getCurrentChannelId, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannel, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {
     filterMembersInChannel,
@@ -14,13 +15,14 @@ import {
     filterMembersInCurrentTeam,
     getMatchTermForAtMention,
 } from 'app/selectors/autocomplete';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
+import {isDirectOrGroupChannel} from 'app/utils/channels';
 
 import AtMention from './at_mention';
 
 function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch} = ownProps;
-    const currentChannelId = getCurrentChannelId(state);
+    const currentChannel = getCurrentChannel(state);
 
     const value = ownProps.value.substring(0, cursorPosition);
     const matchTerm = getMatchTermForAtMention(value, isSearch);
@@ -36,8 +38,8 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
-        currentChannelId,
-        currentTeamId: getCurrentTeamId(state),
+        currentChannelId: currentChannel.id,
+        currentTeamId: (currentChannel && !isDirectOrGroupChannel(currentChannel)) || isSearch ? getCurrentTeamId(state) : '',
         defaultChannel: getDefaultChannel(state),
         matchTerm,
         teamMembers,
