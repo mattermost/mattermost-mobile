@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Preferences} from 'mattermost-redux/constants';
+import {General, Preferences} from 'mattermost-redux/constants';
 import {getUserIdFromChannelName} from 'mattermost-redux/utils/channel_utils';
 
 export function isDirectChannelVisible(userId, myPreferences, channel) {
@@ -13,4 +13,9 @@ export function isDirectChannelVisible(userId, myPreferences, channel) {
 export function isGroupChannelVisible(myPreferences, channel) {
     const gm = myPreferences[`${Preferences.CATEGORY_GROUP_CHANNEL_SHOW}--${channel.id}`];
     return gm && gm.value === 'true';
+}
+
+export function isDirectOrGroupChannel(channel) {
+    const {type} = channel;
+    return type === General.DM_CHANNEL || type === General.GM_CHANNEL;
 }
