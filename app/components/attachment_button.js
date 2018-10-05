@@ -42,11 +42,17 @@ export default class AttachmentButton extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    attachFileFromCamera = async () => {
+    attachPhotoFromCamera = () => {
+        return this.attachFileFromCamera('photo');
+    };
+
+    attachFileFromCamera = async (mediaType) => {
         const {formatMessage} = this.context.intl;
         const options = {
-            quality: 1.0,
+            quality: 1,
+            videoQuality: 'high',
             noData: true,
+            mediaType,
             storageOptions: {
                 cameraRoll: true,
                 waitUntilSaved: true,
@@ -84,7 +90,7 @@ export default class AttachmentButton extends PureComponent {
     attachFileFromLibrary = () => {
         const {formatMessage} = this.context.intl;
         const options = {
-            quality: 1.0,
+            quality: 1,
             noData: true,
             permissionDenied: {
                 title: formatMessage({
@@ -116,10 +122,14 @@ export default class AttachmentButton extends PureComponent {
         });
     };
 
+    attachVideoFromCamera = () => {
+        return this.attachFileFromCamera('video');
+    };
+
     attachVideoFromLibraryAndroid = () => {
         const {formatMessage} = this.context.intl;
         const options = {
-            quality: 1.0,
+            videoQuality: 'high',
             mediaType: 'video',
             noData: true,
             permissionDenied: {
@@ -313,12 +323,19 @@ export default class AttachmentButton extends PureComponent {
         this.props.blurTextBox();
         const options = {
             items: [{
-                action: () => this.handleFileAttachmentOption(this.attachFileFromCamera),
+                action: () => this.handleFileAttachmentOption(this.attachPhotoFromCamera),
                 text: {
-                    id: t('mobile.file_upload.camera'),
-                    defaultMessage: 'Take Photo or Video',
+                    id: t('mobile.file_upload.camera_photo'),
+                    defaultMessage: 'Take Photo',
                 },
                 icon: 'camera',
+            }, {
+                action: () => this.handleFileAttachmentOption(this.attachVideoFromCamera),
+                text: {
+                    id: t('mobile.file_upload.camera_video'),
+                    defaultMessage: 'Take Video',
+                },
+                icon: 'video-camera',
             }, {
                 action: () => this.handleFileAttachmentOption(this.attachFileFromLibrary),
                 text: {

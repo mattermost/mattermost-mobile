@@ -61,9 +61,6 @@ clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleanup finished
 
 post-install:
-	@# Need to copy custom ImagePickerModule.java that implements correct permission checks for android
-	@rm node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
-	@cp ./native_modules/ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker
 	@# Need to copy custom RNDocumentPicker.m that implements direct access to the document picker in iOS
 	@cp ./native_modules/RNDocumentPicker.m node_modules/react-native-document-picker/ios/RNDocumentPicker/RNDocumentPicker.m
 
