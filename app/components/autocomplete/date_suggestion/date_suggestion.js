@@ -15,7 +15,6 @@ import {changeOpacity} from 'app/utils/theme';
 export default class DateSuggestion extends PureComponent {
     static propTypes = {
         cursorPosition: PropTypes.number.isRequired,
-        listHeight: PropTypes.number,
         locale: PropTypes.string.isRequired,
         matchTerm: PropTypes.string,
         onChangeText: PropTypes.func.isRequired,
