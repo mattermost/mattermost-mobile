@@ -21,6 +21,9 @@ import FormattedText from 'app/components/formatted_text';
 
 import Typing from './components/typing';
 
+const AUTOCOMPLETE_MARGIN = 20;
+const AUTOCOMPLETE_MAX_HEIGHT = 200;
+
 let PaperPlane = null;
 
 export default class PostTextbox extends PureComponent {
@@ -76,6 +79,7 @@ export default class PostTextbox extends PureComponent {
             contentHeight: INITIAL_HEIGHT,
             cursorPosition: 0,
             keyboardType: 'default',
+            top: 0,
             value: props.value,
             showFileMaxWarning: false,
         };
@@ -104,10 +108,6 @@ export default class PostTextbox extends PureComponent {
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
-
-    attachAutocomplete = (c) => {
-        this.autocomplete = c;
-    };
 
     blur = () => {
         if (this.refs.input) {
@@ -487,6 +487,12 @@ export default class PostTextbox extends PureComponent {
         </View>);
     };
 
+    handleLayout = (e) => {
+        this.setState({
+            top: e.nativeEvent.layout.y,
+        });
+    };
+
     render() {
         const {intl} = this.context;
         const {
@@ -514,7 +520,13 @@ export default class PostTextbox extends PureComponent {
             );
         }
 
-        const {contentHeight, cursorPosition, showFileMaxWarning, value} = this.state;
+        const {
+            contentHeight,
+            cursorPosition,
+            showFileMaxWarning,
+            top,
+            value,
+        } = this.state;
 
         const textInputHeight = Math.min(contentHeight, MAX_CONTENT_HEIGHT);
         const textValue = channelIsLoading ? '' : value;
@@ -547,48 +559,52 @@ export default class PostTextbox extends PureComponent {
         }
 
         return (
-            <View>
+            <React.Fragment>
                 <Typing/>
                 <FileUploadPreview
                     channelId={channelId}
                     files={files}
-                    inputHeight={textInputHeight}
                     rootId={rootId}
                     showFileMaxWarning={showFileMaxWarning}
                 />
                 <Autocomplete
-                    ref={this.attachAutocomplete}
                     cursorPosition={cursorPosition}
+                    maxHeight={Math.min(top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
                     onChangeText={this.handleTextChange}
                     value={this.state.value}
                     rootId={rootId}
                 />
-                {!channelIsArchived && <View style={style.inputWrapper}>
-                    {!channelIsReadOnly && attachmentButton}
-                    <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
-                        <TextInput
-                            ref='input'
-                            value={textValue}
-                            onChangeText={this.handleTextChange}
-                            onSelectionChange={this.handlePostDraftSelectionChanged}
-                            placeholder={intl.formatMessage(placeholder)}
-                            placeholderTextColor={changeOpacity('#000', 0.5)}
-                            multiline={true}
-                            numberOfLines={5}
-                            blurOnSubmit={false}
-                            underlineColorAndroid='transparent'
-                            style={[style.input, Platform.OS === 'android' ? {height: textInputHeight} : {maxHeight: MAX_CONTENT_HEIGHT}]}
-                            onContentSizeChange={this.handleContentSizeChange}
-                            keyboardType={this.state.keyboardType}
-                            onEndEditing={this.handleEndEditing}
-                            disableFullscreenUI={true}
-                            editable={!channelIsReadOnly}
-                        />
-                        {this.renderSendButton()}
+                {!channelIsArchived && (
+                    <View
+                        style={style.inputWrapper}
+                        onLayout={this.handleLayout}
+                    >
+                        {!channelIsReadOnly && attachmentButton}
+                        <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
+                            <TextInput
+                                ref='input'
+                                value={textValue}
+                                onChangeText={this.handleTextChange}
+                                onSelectionChange={this.handlePostDraftSelectionChanged}
+                                placeholder={intl.formatMessage(placeholder)}
+                                placeholderTextColor={changeOpacity('#000', 0.5)}
+                                multiline={true}
+                                numberOfLines={5}
+                                blurOnSubmit={false}
+                                underlineColorAndroid='transparent'
+                                style={[style.input, Platform.OS === 'android' ? {height: textInputHeight} : {maxHeight: MAX_CONTENT_HEIGHT}]}
+                                onContentSizeChange={this.handleContentSizeChange}
+                                keyboardType={this.state.keyboardType}
+                                onEndEditing={this.handleEndEditing}
+                                disableFullscreenUI={true}
+                                editable={!channelIsReadOnly}
+                            />
+                            {this.renderSendButton()}
+                        </View>
                     </View>
-                </View>}
+                )}
                 {channelIsArchived && this.archivedView(theme, style)}
-            </View>
+            </React.Fragment>
         );
     }
 }

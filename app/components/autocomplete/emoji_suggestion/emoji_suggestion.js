@@ -29,6 +29,7 @@ export default class EmojiSuggestion extends Component {
         emojis: PropTypes.array.isRequired,
         isSearch: PropTypes.bool,
         fuse: PropTypes.object.isRequired,
+        maxListHeight: PropTypes.number,
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
@@ -171,18 +172,20 @@ export default class EmojiSuggestion extends Component {
     getItemLayout = ({index}) => ({length: 40, offset: 40 * index, index})
 
     render() {
+        const {maxListHeight, theme} = this.props;
+
         if (!this.state.active) {
             // If we are not in an active state return null so nothing is rendered
             // other components are not blocked.
             return null;
         }
 
-        const style = getStyleFromTheme(this.props.theme);
+        const style = getStyleFromTheme(theme);
 
         return (
             <FlatList
                 keyboardShouldPersistTaps='always'
-                style={style.listView}
+                style={[style.listView, {maxHeight: maxListHeight}]}
                 extraData={this.state}
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}

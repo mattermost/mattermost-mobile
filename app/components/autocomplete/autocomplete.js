@@ -23,6 +23,7 @@ export default class Autocomplete extends PureComponent {
         cursorPosition: PropTypes.number.isRequired,
         deviceHeight: PropTypes.number,
         onChangeText: PropTypes.func.isRequired,
+        maxHeight: PropTypes.number,
         rootId: PropTypes.string,
         isSearch: PropTypes.bool,
         theme: PropTypes.object.isRequired,
@@ -84,12 +85,21 @@ export default class Autocomplete extends PureComponent {
         this.setState({keyboardOffset: 0});
     };
 
-    listHeight() {
-        let offset = Platform.select({ios: 65, android: 75});
-        if (DeviceInfo.getModel().includes('iPhone X')) {
-            offset = 90;
+    maxListHeight() {
+        let maxHeight;
+        if (this.props.maxHeight) {
+            maxHeight = this.props.maxHeight;
+        } else {
+            // List is expanding downwards, likely from the search box
+            let offset = Platform.select({ios: 65, android: 75});
+            if (DeviceInfo.getModel().includes('iPhone X')) {
+                offset = 90;
+            }
+
+            maxHeight = this.props.deviceHeight - offset - this.state.keyboardOffset;
         }
-        return this.props.deviceHeight - offset - this.state.keyboardOffset;
+
+        return maxHeight;
     }
 
     render() {
@@ -113,26 +123,29 @@ export default class Autocomplete extends PureComponent {
                 containerStyle.push(style.borders);
             }
         }
-        const listHeight = this.listHeight();
+
+        const maxListHeight = this.maxListHeight();
 
         return (
             <View style={wrapperStyle}>
                 <View style={containerStyle}>
                     <AtMention
-                        listHeight={listHeight}
+                        maxListHeight={maxListHeight}
                         onResultCountChange={this.handleAtMentionCountChange}
                         {...this.props}
                     />
                     <ChannelMention
-                        listHeight={listHeight}
+                        maxListHeight={maxListHeight}
                         onResultCountChange={this.handleChannelMentionCountChange}
                         {...this.props}
                     />
                     <EmojiSuggestion
+                        maxListHeight={maxListHeight}
                         onResultCountChange={this.handleEmojiCountChange}
                         {...this.props}
                     />
                     <SlashSuggestion
+                        maxListHeight={maxListHeight}
                         onResultCountChange={this.handleCommandCountChange}
                         {...this.props}
                     />
@@ -167,7 +180,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         container: {
             bottom: 0,
-            maxHeight: 200,
         },
         content: {
             flex: 1,

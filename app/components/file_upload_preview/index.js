@@ -14,7 +14,6 @@ function mapStateToProps(state, ownProps) {
 
     return {
         channelIsLoading: state.views.channel.loading,
-        createPostRequestStatus: state.requests.posts.createPost.status,
         deviceHeight,
         filesUploadingForCurrentChannel: checkForFileUploadingInChannel(state, ownProps.channelId, ownProps.rootId),
         theme: getTheme(state),
