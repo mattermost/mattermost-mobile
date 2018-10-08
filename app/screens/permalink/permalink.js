@@ -113,6 +113,10 @@ export default class Permalink extends PureComponent {
             newState.loading = loading;
         }
 
+        if (Object.keys(newState).length === 0) {
+            return null;
+        }
+
         return newState;
     }
 
