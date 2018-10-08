@@ -14,11 +14,7 @@ function mapStateToProps(state) {
     const config = getConfig(state);
 
     return {
-        customTermsOfServiceId: config.CustomTermsOfServiceId,
-        privacyPolicyLink: config.PrivacyPolicyLink,
-        siteName: config.SiteName,
         termsEnabled: config.EnableCustomTermsOfService === 'true',
-        termsOfServiceLink: config.TermsOfServiceLink,
         theme: getTheme(state),
     };
 }

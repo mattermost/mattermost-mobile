@@ -12,7 +12,7 @@ import {
 import {intlShape} from 'react-intl';
 
 import {getTermsOfService} from 'app/actions/views/terms_of_service';
-import FormattedMarkdownText from 'app/components/formatted_markdown_text';
+
 import Loading from 'app/components/loading';
 import Markdown from 'app/components/markdown';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
@@ -24,12 +24,8 @@ export default class TermsOfService extends PureComponent {
             logout: PropTypes.func.isRequired,
         }),
         closeButton: PropTypes.object,
-        customTermsOfServiceId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
-        privacyPolicyLink: PropTypes.string,
-        siteName: PropTypes.string,
         termsEnabled: PropTypes.bool,
-        termsOfServiceLink: PropTypes.string,
         theme: PropTypes.object,
     };
 
@@ -38,10 +34,7 @@ export default class TermsOfService extends PureComponent {
     };
 
     static defaultProps = {
-        privacyPolicyLink: 'https://about.mattermost.com/default-privacy-policy/',
-        siteName: 'Mattermost',
         termsEnabled: true,
-        termsOfServiceLink: 'https://about.mattermost.com/default-terms/',
     };
 
     leftButton = {
@@ -157,21 +150,6 @@ export default class TermsOfService extends PureComponent {
                     textStyles={textStyles}
                     blockStyles={blockStyles}
                     value={(this.state.termsText || '')}
-                />
-                <Text>{' '}</Text>
-                <FormattedMarkdownText
-                    id={'terms_of_service.footnote'}
-                    defaultMessage={'By choosing \'I Agree\', you understand and agree to [Terms of Service]({TermsOfServiceLink}) and [Privacy Policy]({PrivacyPolicyLink}). If you do not agree, you cannot access {siteName}.'}
-                    values={{
-                        siteName: this.props.siteName,
-                        TermsOfServiceLink: this.props.termsOfServiceLink,
-                        PrivacyPolicyLink: this.props.privacyPolicyLink,
-                    }}
-                    baseTextStyle={styles.baseText}
-                    navigator={navigator}
-                    style={styles.baseText}
-                    textStyles={textStyles}
-                    theme={theme}
                 />
             </ScrollView>
         );
