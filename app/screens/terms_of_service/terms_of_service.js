@@ -24,7 +24,7 @@ export default class TermsOfService extends PureComponent {
             logout: PropTypes.func.isRequired,
         }),
         closeButton: PropTypes.object,
-        customServiceTermsId: PropTypes.string.isRequired,
+        customTermsOfServiceId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         privacyPolicyLink: PropTypes.string,
         siteName: PropTypes.string,

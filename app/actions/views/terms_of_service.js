@@ -8,7 +8,7 @@ import {store} from 'app/mattermost';
 const {dispatch, getState} = store;
 
 export async function updateTermsOfServiceStatus(termsId, accepted, success, error) {
-    const {data, error: err} = await UserActions.updateServiceTermsStatus(termsId, accepted)(dispatch, getState);
+    const {data, error: err} = await UserActions.updateTermsOfServiceStatus(termsId, accepted)(dispatch, getState);
     if (data && success) {
         success(data);
     } else if (err && error) {
@@ -17,7 +17,7 @@ export async function updateTermsOfServiceStatus(termsId, accepted, success, err
 }
 
 export async function getTermsOfService(success, error) {
-    const {data, error: err} = await UserActions.getServiceTerms()(dispatch, getState);
+    const {data, error: err} = await UserActions.getTermsOfService()(dispatch, getState);
     if (data && success) {
         success(data);
     } else if (err && error) {
