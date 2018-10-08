@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -46,6 +47,7 @@ export default class Login extends PureComponent {
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
+        showTermsOfService: PropTypes.bool,
         checkMfaRequest: PropTypes.object.isRequired,
         loginRequest: PropTypes.object.isRequired,
     };
@@ -60,6 +62,10 @@ export default class Login extends PureComponent {
         this.state = {
             error: null,
         };
+
+        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+            this.closeButton = source;
+        });
     }
 
     componentWillMount() {
@@ -96,6 +102,10 @@ export default class Login extends PureComponent {
             });
         }
 
+        if (this.props.showTermsOfService) {
+            this.showTermsOfServiceModal();
+        }
+
         navigator.resetTo({
             screen: 'Channel',
             title: '',
@@ -111,6 +121,28 @@ export default class Login extends PureComponent {
             },
         });
     };
+
+    showTermsOfServiceModal = () => {
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
+
+        navigator.showModal({
+            screen: 'TermsOfService',
+            animationType: 'slide-up',
+            title: intl.formatMessage({id: 'terms_of_service.title', defaultMessage: 'Terms of Service'}),
+            backButtonTitle: '',
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                closeButton: this.closeButton,
+            },
+        });
+    }
 
     goToMfa = () => {
         const {intl} = this.context;

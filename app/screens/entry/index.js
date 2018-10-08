@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 
 import {setDeviceToken} from 'mattermost-redux/actions/general';
 import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
+import {showCustomTerms} from 'mattermost-redux/selectors/entities/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {isLandscape} from 'app/selectors/device';
@@ -17,12 +18,14 @@ const lazyLoadEntry = () => {
 function mapStateToProps(state) {
     const enableTimezone = isTimezoneEnabled(state);
     const deviceTimezone = getDeviceTimezone();
+    const showTermsOfService = showCustomTerms(state);
 
     return {
         theme: getTheme(state),
         isLandscape: isLandscape(state),
         enableTimezone,
         deviceTimezone,
+        showTermsOfService,
     };
 }
 

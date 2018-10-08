@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import DeviceInfo from 'react-native-device-info';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {setSystemEmojis} from 'mattermost-redux/actions/emojis';
 import {Client4} from 'mattermost-redux/client';
@@ -19,6 +20,8 @@ import {
     app,
     store,
 } from 'app/mattermost';
+import {t} from 'app/utils/i18n';
+
 import {loadFromPushNotification} from 'app/actions/views/root';
 import {ViewTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
@@ -52,6 +55,7 @@ const lazyLoadReplyPushNotifications = () => {
  * With very little overhead navigate to
  *  - Login or
  *  - Channel Component
+ *  And show Terms of Service Modal, if necessary.
  *
  * The idea is to render something to the user as soon as possible
  */
@@ -60,6 +64,7 @@ export default class Entry extends PureComponent {
         theme: PropTypes.object,
         navigator: PropTypes.object,
         isLandscape: PropTypes.bool,
+        showTermsOfService: PropTypes.bool,
         enableTimezone: PropTypes.bool,
         deviceTimezone: PropTypes.string,
         initializeModules: PropTypes.func,
@@ -84,11 +89,43 @@ export default class Entry extends PureComponent {
 
         EventEmitter.on(ViewTypes.LAUNCH_LOGIN, this.handleLaunchLogin);
         EventEmitter.on(ViewTypes.LAUNCH_CHANNEL, this.handleLaunchChannel);
+
+        if (this.props.showTermsOfService) {
+            MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+                this.showTermsOfServiceModal(source);
+            });
+        }
     }
 
     componentWillUnmount() {
         EventEmitter.off(ViewTypes.LAUNCH_LOGIN, this.handleLaunchLogin);
         EventEmitter.off(ViewTypes.LAUNCH_CHANNEL, this.handleLaunchChannel);
+    }
+
+    showTermsOfServiceModal = (closeButton) => {
+        const translations = app.getTranslations();
+
+        const {
+            navigator,
+            theme,
+        } = this.props;
+
+        navigator.showModal({
+            screen: 'TermsOfService',
+            animationType: 'slide-up',
+            title: translations[t('terms_of_service.title')] || 'Terms of Service',
+            backButtonTitle: '',
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                closeButton,
+            },
+        });
     }
 
     handleLaunchLogin = (initializeModules) => {
