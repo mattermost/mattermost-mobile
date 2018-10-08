@@ -1,8 +1,8 @@
-require 'json'
 fastlane_version '2.71.0'
 
 fastlane_require 'aws-sdk-s3'
 fastlane_require 'erb'
+fastlane_require 'json'
 
 skip_docs
 
@@ -35,7 +35,11 @@ before_all do
   end
 end
 
-after_all do
+after_all do |lane|
+  if lane.to_s == 'build'
+    submit_to_store
+  end
+
   if ENV['RESET_GIT_BRANCH'] == 'true'
     branch = ENV['BRANCH_TO_BUILD'] || 'master'
     package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
@@ -195,33 +199,6 @@ platform :ios do
     update_identifiers
     replace_assets
     build_ios
-
-    # Submit to TestFlight if required
-    if ENV['SUBMIT_IOS_TO_TESTFLIGHT'] == 'true'
-      pilot
-
-      # Send a build message to Mattermost
-      pretext = '#### New iOS released ready to be published'
-      msg = 'release has been cut and is on TestFlight ready to be published.'
-
-      if ENV['BETA_BUILD'] == 'true'
-        pretext = '#### New iOS beta published to TestFlight'
-        msg = 'Sign up as a beta tester [here](https://mattermost-fastlane.herokuapp.com/)'
-      end
-
-      version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
-      build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
-
-      send_message_to_mattermost(
-          version,
-          build_number,
-          pretext,
-          '',
-          msg,
-          [],
-          true
-      )
-    end
   end
 
   desc 'Build an unsigned ipa'
@@ -385,44 +362,6 @@ platform :android do
     replace_assets
     link_sentry_android
     build_android
-
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
-    apk_path = "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}"
-
-    if ENV['SUBMIT_ANDROID_TO_GOOGLE_PLAY'] == 'true'
-      supply(
-          track: ENV['SUPPLY_TRACK'] || 'alpha',
-          apk: apk_path
-      )
-
-      build_number = android_get_version_code(
-          gradle_file: './android/app/build.gradle'
-      )
-      version_number = android_get_version_name(
-          gradle_file: './android/app/build.gradle'
-      )
-
-      # Send a build message to Mattermost
-      pretext = '#### New Android released ready to be published'
-      msg = 'release has been cut and is on the Beta track ready to be published.'
-
-      if ENV['BETA_BUILD'] == 'true'
-        pretext = '#### New Android beta published to Google Play'
-        msg = 'Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta)'
-      end
-
-      send_message_to_mattermost(
-          version_number,
-          build_number,
-          pretext,
-          '',
-          msg,
-          [],
-          true
-      )
-    end
-
-    sh "mv #{apk_path} \"./#{app_name}.apk\""
   end
 
   desc 'Build an unsigned apk'
@@ -601,5 +540,80 @@ def send_message_to_mattermost(version_number, build_number, pretext, title, msg
         },
         success: success
     )
+  end
+end
+
+def submit_to_store
+  app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+  apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
+  ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH]
+
+  # Submit to Google Play if required
+  if !apk_path.nil? && ENV['SUBMIT_ANDROID_TO_GOOGLE_PLAY'] == 'true'
+    UI.success("apk file #{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}")
+
+    supply(
+        track: ENV['SUPPLY_TRACK'] || 'alpha',
+        apk: apk_path
+    )
+
+    build_number = android_get_version_code(
+        gradle_file: './android/app/build.gradle'
+    )
+    version_number = android_get_version_name(
+        gradle_file: './android/app/build.gradle'
+    )
+
+    # Send a build message to Mattermost
+    pretext = '#### New Android released ready to be published'
+    msg = 'release has been cut and is on the Beta track ready to be published.'
+
+    if ENV['BETA_BUILD'] == 'true'
+      pretext = '#### New Android beta published to Google Play'
+      msg = 'Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta)'
+    end
+
+    send_message_to_mattermost(
+        version_number,
+        build_number,
+        pretext,
+        '',
+        msg,
+        [],
+        true
+    )
+  end
+
+  # Submit to TestFlight if required
+  if !ipa_path.nil? && ENV['SUBMIT_IOS_TO_TESTFLIGHT'] == 'true'
+    UI.success("ipa file #{lane_context[SharedValues::IPA_OUTPUT_PATH]}")
+
+    pilot
+
+    # Send a build message to Mattermost
+    pretext = '#### New iOS released ready to be published'
+    msg = 'release has been cut and is on TestFlight ready to be published.'
+
+    if ENV['BETA_BUILD'] == 'true'
+      pretext = '#### New iOS beta published to TestFlight'
+      msg = 'Sign up as a beta tester [here](https://mattermost-fastlane.herokuapp.com/)'
+    end
+
+    version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
+    build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+
+    send_message_to_mattermost(
+        version,
+        build_number,
+        pretext,
+        '',
+        msg,
+        [],
+        true
+    )
+  end
+
+  unless apk_path.nil?
+    sh "mv #{apk_path} \"../#{app_name}.apk\""
   end
 end
