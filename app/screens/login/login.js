@@ -143,6 +143,14 @@ export default class Login extends PureComponent {
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(async () => {
             if (!this.props.loginId) {
+                t('login.noEmail');
+                t('login.noEmailLdapUsername');
+                t('login.noEmailUsername');
+                t('login.noEmailUsernameLdapUsername');
+                t('login.noLdapUsername');
+                t('login.noUsername');
+                t('login.noUsernameLdapUsername');
+
                 // it's slightly weird to be constructing the message ID, but it's a bit nicer than triply nested if statements
                 let msgId = 'login.no';
                 if (this.props.config.EnableSignInWithEmail === 'true') {
