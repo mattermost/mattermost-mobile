@@ -23,8 +23,10 @@ import NotificationSettingsMentionsBase from './notification_settings_mention_ba
 
 class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBase {
     cancelMentionKeys = () => {
-        this.setState({showKeywordsModal: false});
-        this.keywords = this.state.mention_keys;
+        this.setState({
+            androidKeywords: this.state.mention_keys,
+            showKeywordsModal: false,
+        });
     };
 
     cancelReplyNotification = () => {
@@ -34,8 +36,8 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
         });
     };
 
-    onKeywordsChangeText = (value) => {
-        this.keywords = value;
+    onKeywordsChangeText = (androidKeywords) => {
+        this.setState({androidKeywords});
     };
 
     onReplyChanged = (value) => {
@@ -64,7 +66,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                             </View>
                             <TextInputWithLocalizedPlaceholder
                                 autoFocus={true}
-                                value={this.keywords}
+                                value={this.state.androidKeywords}
                                 blurOnSubmit={true}
                                 onChangeText={this.onKeywordsChangeText}
                                 onSubmitEditing={this.saveMentionKeys}
@@ -243,8 +245,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
     }
 
     saveMentionKeys = () => {
-        this.setState({showKeywordsModal: false});
-        this.updateMentionKeys(this.keywords);
+        this.updateMentionKeys(this.state.androidKeywords);
     };
 
     saveReplyNotification = () => {
