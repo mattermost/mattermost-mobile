@@ -44,7 +44,10 @@ export function makePreparePostIdsForPostList() {
             for (let i = posts.length - 1; i >= 0; i--) {
                 const post = posts[i];
 
-                if (post.type === Posts.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL && !selectedPostId) {
+                if (
+                    !post ||
+                    (post.type === Posts.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL && !selectedPostId)
+                ) {
                     continue;
                 }
 
