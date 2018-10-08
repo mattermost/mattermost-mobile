@@ -89,12 +89,6 @@ export default class Entry extends PureComponent {
 
         EventEmitter.on(ViewTypes.LAUNCH_LOGIN, this.handleLaunchLogin);
         EventEmitter.on(ViewTypes.LAUNCH_CHANNEL, this.handleLaunchChannel);
-
-        if (this.props.showTermsOfService) {
-            MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
-                this.showTermsOfServiceModal(source);
-            });
-        }
     }
 
     componentWillUnmount() {
@@ -138,6 +132,12 @@ export default class Entry extends PureComponent {
 
     handleLaunchChannel = (initializeModules) => {
         this.setState({launchChannel: true});
+
+        if (this.props.showTermsOfService) {
+            MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+                this.showTermsOfServiceModal(source);
+            });
+        }
 
         if (initializeModules) {
             this.props.initializeModules();
