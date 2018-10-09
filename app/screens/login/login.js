@@ -64,7 +64,7 @@ export default class Login extends PureComponent {
             error: null,
         };
 
-        MaterialIcon.getImageSource(Platform.OS === 'ios' ? 'arrow-back-ios' : 'arrow-back', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+        MaterialIcon.getImageSource(Platform.OS === 'ios' ? 'chevron-left' : 'arrow-back', Platform.OS === 'ios' ? 32 : 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
