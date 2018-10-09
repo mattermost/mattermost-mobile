@@ -63,7 +63,7 @@ export default class Login extends PureComponent {
             error: null,
         };
 
-        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+        MaterialIcon.getImageSource('arrow-back', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
@@ -133,10 +133,10 @@ export default class Login extends PureComponent {
             backButtonTitle: '',
             animated: true,
             navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
+                navBarTextColor: theme.centerChannelColor,
+                navBarBackgroundColor: theme.centerChannelBg,
+                navBarButtonColor: theme.buttonBg,
+                screenBackgroundColor: theme.buttonColor,
             },
             passProps: {
                 closeButton: this.closeButton,

@@ -111,10 +111,10 @@ export default class Entry extends PureComponent {
             backButtonTitle: '',
             animated: true,
             navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
+                navBarTextColor: theme.centerChannelColor,
+                navBarBackgroundColor: theme.centerChannelBg,
+                navBarButtonColor: theme.buttonBg,
+                screenBackgroundColor: theme.buttonColor,
             },
             passProps: {
                 closeButton,
@@ -134,7 +134,7 @@ export default class Entry extends PureComponent {
         this.setState({launchChannel: true});
 
         if (this.props.showTermsOfService) {
-            MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+            MaterialIcon.getImageSource('arrow-back', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
                 this.showTermsOfServiceModal(source);
             });
         }
