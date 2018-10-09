@@ -443,6 +443,7 @@ export default class SelectServer extends PureComponent {
                 behavior='padding'
                 style={style.container}
                 keyboardVerticalOffset={0}
+                enabled={Platform.OS === 'ios'}
             >
                 <StatusBar barStyle={statusStyle}/>
                 <TouchableWithoutFeedback onPress={this.blur}>
