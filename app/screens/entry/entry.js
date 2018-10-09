@@ -134,7 +134,7 @@ export default class Entry extends PureComponent {
         this.setState({launchChannel: true});
 
         if (this.props.showTermsOfService) {
-            MaterialIcon.getImageSource('arrow-back', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+            MaterialIcon.getImageSource(Platform.OS === 'ios' ? 'arrow-back-ios' : 'arrow-back', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
                 this.showTermsOfServiceModal(source);
             });
         }

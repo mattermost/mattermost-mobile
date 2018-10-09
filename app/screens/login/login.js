@@ -10,6 +10,7 @@ import {
     Image,
     InteractionManager,
     Keyboard,
+    Platform,
     StyleSheet,
     Text,
     TextInput,
@@ -63,7 +64,7 @@ export default class Login extends PureComponent {
             error: null,
         };
 
-        MaterialIcon.getImageSource('arrow-back', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+        MaterialIcon.getImageSource(Platform.OS === 'ios' ? 'arrow-back-ios' : 'arrow-back', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
