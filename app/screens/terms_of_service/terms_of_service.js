@@ -111,12 +111,12 @@ export default class TermsOfService extends PureComponent {
         });
     };
 
-    onNavigatorEvent = async (event) => {
+    onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
             const {logout} = this.props.actions;
             switch (event.id) {
             case 'close-terms-of-service':
-                await this.close();
+                this.props.navigator.dismissAllModals();
                 InteractionManager.runAfterInteractions(logout);
                 break;
 
