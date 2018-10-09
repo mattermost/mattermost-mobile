@@ -22,7 +22,6 @@
 - On servers 5.4+, added support for searching in direct and group message channels using the "in:" modifier.
 - Channel autocomplete now gets closed if multiple tildes are typed.
 - Added a draft icon in sidebar and channel switcher for channels with unsent messages.
-- Added paging for elasticsearch results.
 - Users are now redirected to the archived channel view (rather than to Town Square) when a channel is archived.
 - When closing an archived channel, users are now returned to the previously viewed channel.
 
@@ -34,10 +33,8 @@
 - Fixed an issue where post attachments failed to upload.
 - Fixed an issue where the "DM More..." list cut off user info.
 - Fixed an issue where the user would see a system message flash before the thread loaded when opening a reply thread from, e.g. Recent Mentions list.
-- Fixed an issue on Android where the download button on images did not work.
 - Fixed an issue where the error message was incorrectly formatted if the login method was set to email/password and the user tried to log in with SAML.
 - Fixed an issue on Android where the keyboard sometimes overlapped the bottom of the post textbox.
-- Fixed an issue where image thumbnails were not centered.
 - Fixed an issue where there was no option to take video via "+" > "Take Photo or Video" on iOS.
 
 ## v1.12.0 Release
