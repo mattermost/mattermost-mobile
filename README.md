@@ -1,16 +1,16 @@
 # Mattermost Mobile
 
-- **Supported Server versions:** 4.0+
-- **Supported iOS versions:** 9.3+
-- **Supported Android versions:** 5.0+
+- **Supported Server versions:** 4.10+
+- **Supported iOS versions:** 10.3+
+- **Supported Android versions:** 7.0+
 
 Mattermost is an open source Slack-alternative used by thousands of companies around the world in 14 languages. Learn more at [https://about.mattermost.com](https://about.mattermost.com).
 
-You can download our apps from the [App Store](https://about.mattermost.com/mattermost-ios-app/) or [Google Play Store](https://about.mattermost.com/mattermost-android-app/), or [build them yourself](https://about.mattermost.com/default-enterprise-app-store). 
+You can download our apps from the [App Store](https://about.mattermost.com/mattermost-ios-app/) or [Google Play Store](https://about.mattermost.com/mattermost-android-app/), or [build them yourself](https://developers.mattermost.com/contribute/mobile/build-your-own/). 
 
 We plan on releasing monthly updates with new features - check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what features are currently supported! 
 
-**Important:** If you self-compile the Mattermost Mobile apps you also need to self-compile and deploy your own [Mattermost Push Notification Service](https://github.com/mattermost/mattermost-push-proxy). 
+**Important:** If you self-compile the Mattermost Mobile apps you also need to deploy your own [Mattermost Push Notification Service](https://github.com/mattermost/mattermost-push-proxy/releases). 
 
 # How to Contribute
 
@@ -21,7 +21,7 @@ To help with testing app updates before they're released, you can:
 1. Sign up to be a beta tester
   - [Android](https://play.google.com/apps/testing/com.mattermost.rnbeta)
   - [iOS](https://mattermost-fastlane.herokuapp.com/)
-2. Install the `Mattermost Beta` app. New updates in the Beta app are released each Monday. You will receive a notification when the new updates are available.
+2. Install the `Mattermost Beta` app. New updates in the Beta app are released periodically. You will receive a notification when the new updates are available.
 3. File any bugs you find by filing a [GitHub issue](https://github.com/mattermost/mattermost-mobile/issues) with:
   - Device information
   - Repro steps
@@ -32,9 +32,9 @@ To help with testing app updates before they're released, you can:
 
 ### Contribute Code 
 
-1. Look in [GitHub issues](https://github.com/mattermost/mattermost-mobile/issues) for issues marked as [Help Wanted]
+1. Look in [GitHub issues](https://github.com/mattermost/mattermost-server/issues) for issues marked as [Help Wanted]
 2. Comment to let people know you’re working on it
-3. Follow [these instructions](https://docs.mattermost.com/developer/mobile-developer-setup.html) to set up your developer environment
+3. Follow [these instructions](https://developers.mattermost.com/contribute/mobile/developer-setup/) to set up your developer environment
 4. Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) on our team site to ask questions
 
 
