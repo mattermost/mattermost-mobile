@@ -73,6 +73,7 @@ export default class Search extends PureComponent {
         theme: PropTypes.object.isRequired,
         enableDateSuggestion: PropTypes.bool,
         timezoneOffsetInSeconds: PropTypes.number.isRequired,
+        viewArchivedChannels: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -537,7 +538,7 @@ export default class Search extends PureComponent {
     };
 
     search = (terms, isOrSearch) => {
-        const {actions, currentTeamId} = this.props;
+        const {actions, currentTeamId, viewArchivedChannels} = this.props;
 
         this.handleTextChanged(`${terms.trim()} `);
 
@@ -551,7 +552,15 @@ export default class Search extends PureComponent {
         });
 
         // timezone offset in seconds
-        actions.searchPostsWithParams(currentTeamId, {terms: terms.trim(), is_or_search: isOrSearch, time_zone_offset: this.props.timezoneOffsetInSeconds, page: 0, per_page: 20}, true);
+        const params = {
+            terms: terms.trim(),
+            is_or_search: isOrSearch,
+            time_zone_offset: this.props.timezoneOffsetInSeconds,
+            page: 0,
+            per_page: 20,
+            include_deleted_channels: viewArchivedChannels,
+        };
+        actions.searchPostsWithParams(currentTeamId, params, true);
     };
 
     setModifierValue = preventDoubleTap((modifier) => {
