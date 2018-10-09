@@ -7,6 +7,7 @@ import {intlShape} from 'react-intl';
 import {
     Platform,
     InteractionManager,
+    StyleSheet,
     View,
 } from 'react-native';
 
@@ -20,7 +21,7 @@ import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
 export default class MoreChannels extends PureComponent {
@@ -300,7 +301,6 @@ export default class MoreChannels extends PureComponent {
         const {adding, channels, searching, term} = this.state;
         const {formatMessage} = intl;
         const isLoading = requestStatus.status === RequestStatus.STARTED || requestStatus.status === RequestStatus.NOT_STARTED;
-        const style = getStyleFromTheme(theme);
         const more = searching ? () => true : this.loadMoreChannels;
 
         let content;
@@ -320,7 +320,7 @@ export default class MoreChannels extends PureComponent {
 
             content = (
                 <React.Fragment>
-                    <View style={style.wrapper}>
+                    <View style={style.searchbar}>
                         <SearchBar
                             ref='search_bar'
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -365,25 +365,8 @@ export default class MoreChannels extends PureComponent {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        wrapper: {
-            marginVertical: 5,
-        },
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        navTitle: {
-            ...Platform.select({
-                android: {
-                    fontSize: 18,
-                },
-                ios: {
-                    fontSize: 15,
-                    fontWeight: 'bold',
-                },
-            }),
-        },
-    };
+const style = StyleSheet.create({
+    searchbar: {
+        marginVertical: 5,
+    },
 });

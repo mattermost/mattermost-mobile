@@ -254,8 +254,6 @@ export default class CustomSectionList extends React.PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
             ...Platform.select({
                 android: {
                     marginBottom: 20,

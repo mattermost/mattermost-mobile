@@ -44,7 +44,6 @@ export default class OptionListRow extends React.PureComponent {
         return (
             <CustomListRow
                 id={value}
-                theme={theme}
                 onPress={this.onPress}
                 enabled={enabled}
                 selectable={selectable}
