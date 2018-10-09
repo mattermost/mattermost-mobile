@@ -58,6 +58,16 @@ describe('PostAttachmentOpenGraph', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
+    test('should match snapshot, without title and url', () => {
+        const wrapper = shallow(
+            <PostAttachmentOpenGraph
+                {...baseProps}
+                openGraphData={{}}
+            />
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should match state and snapshot, on renderImage', () => {
         const wrapper = shallow(
             <PostAttachmentOpenGraph {...baseProps}/>

@@ -107,8 +107,8 @@ export default class FileAttachmentImage extends PureComponent {
         let width = imageWidth;
         let imageStyle = {height, width};
         if (imageSize === IMAGE_SIZE.Preview) {
-            height = 100;
-            width = this.calculateNeededWidth(file.height, file.width, height) || 100;
+            height = 80;
+            width = this.calculateNeededWidth(file.height, file.width, height) || 80;
             imageStyle = {height, width, position: 'absolute', top: 0, left: 0, borderBottomLeftRadius: 2, borderTopLeftRadius: 2};
         }
 

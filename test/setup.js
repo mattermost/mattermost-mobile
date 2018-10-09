@@ -7,6 +7,16 @@ configure({adapter: new Adapter()});
 
 /* eslint-disable no-console */
 
+jest.mock('NativeModules', () => {
+    return {
+        BlurAppScreen: () => true,
+        MattermostManaged: {
+            getConfig: jest.fn(),
+        },
+    };
+});
+jest.mock('NativeEventEmitter');
+
 let logs;
 let warns;
 let errors;

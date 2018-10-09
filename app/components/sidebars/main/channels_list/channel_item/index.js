@@ -78,7 +78,7 @@ function makeMapStateToProps() {
             fake: channel.fake,
             isChannelMuted: isChannelMuted(member),
             isMyUser,
-            hasDraft: Boolean(channelDraft.draft || channelDraft.files.length),
+            hasDraft: Boolean(channelDraft.draft.trim() || channelDraft.files.length),
             mentions: member ? member.mention_count : 0,
             shouldHideChannel,
             showUnreadForMsgs,

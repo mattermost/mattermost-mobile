@@ -113,7 +113,7 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 145
+        versionCode 146
         versionName "1.13.0"
         multiDexEnabled = true
         ndk {
@@ -214,11 +214,11 @@ dependencies {
     implementation project(':react-native-recyclerview-list')
 
     // For animated GIF support
-    implementation 'com.facebook.fresco:animated-base-support:1.3.0'
+    implementation 'com.facebook.fresco:fresco:1.10.0'
+    implementation 'com.facebook.fresco:animated-gif:1.10.0'
     // For WebP support, including animated WebP
-    implementation 'com.facebook.fresco:animated-gif:1.3.0'
-    implementation 'com.facebook.fresco:animated-webp:1.3.0'
-    implementation  'com.facebook.fresco:webpsupport:1.3.0'
+    implementation 'com.facebook.fresco:animated-webp:1.10.0'
+    implementation  'com.facebook.fresco:webpsupport:1.10.0'
 }
 
 // Run this once to be able to run the application with BUCK

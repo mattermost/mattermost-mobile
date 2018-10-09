@@ -474,6 +474,7 @@ export default class ChannelInfo extends PureComponent {
                             status={status}
                             theme={theme}
                             type={currentChannel.type}
+                            isArchived={currentChannel.delete_at !== 0}
                         />
                     }
                     <View style={style.rowsContainer}>

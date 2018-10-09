@@ -17,7 +17,7 @@
     "intl": "1.2.5",
     "jail-monkey": "1.0.0",
     "jsc-android": "224109.1.0",
-    "mattermost-redux": "github:mattermost/mattermost-redux#070adc899cd3321d9370a194000aa5a009606288",
+    "mattermost-redux": "github:mattermost/mattermost-redux#e398d854724394c2c49794f18b9fb639d8875306",
     "mime-db": "1.36.0",
     "moment-timezone": "0.5.21",
     "prop-types": "15.6.2",
@@ -36,7 +36,7 @@
     "react-native-drawer-layout": "2.0.0",
     "react-native-exception-handler": "2.9.0",
     "react-native-image-gallery": "github:enahum/react-native-image-gallery#a98b1051e94f5a394541ca1ff9b15e2c9ffed84f",
-    "react-native-image-picker": "0.26.10",
+    "react-native-image-picker": "0.27.0",
     "react-native-keyboard-aware-scroll-view": "0.7.2",
     "react-native-keychain": "3.0.0",
     "react-native-linear-gradient": "2.4.2",
@@ -131,6 +131,9 @@
     ],
     "moduleNameMapper": {
       "assets/images/video_player/(.*).png": "<rootDir>/dist/assets/images/video_player/$1@2x.png"
-    }
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!react-native|jail-monkey)"
+    ]
   }
 }

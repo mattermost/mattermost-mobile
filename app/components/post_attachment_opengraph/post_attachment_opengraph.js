@@ -226,7 +226,12 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     }
 
     render() {
-        const {isReplyPost, openGraphData, theme} = this.props;
+        const {
+            isReplyPost,
+            link,
+            openGraphData,
+            theme,
+        } = this.props;
 
         if (!openGraphData) {
             return null;
@@ -234,9 +239,9 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         const style = getStyleSheet(theme);
 
-        let siteTitle;
+        let siteName;
         if (openGraphData.site_name) {
-            siteTitle = (
+            siteName = (
                 <View style={style.flex}>
                     <Text
                         style={style.siteTitle}
@@ -249,9 +254,10 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             );
         }
 
-        return (
-            <View style={style.container}>
-                {siteTitle}
+        const title = openGraphData.title || openGraphData.url || link;
+        let siteTitle;
+        if (title) {
+            siteTitle = (
                 <View style={style.wrapper}>
                     <TouchableOpacity
                         style={style.flex}
@@ -262,10 +268,17 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                             numberOfLines={3}
                             ellipsizeMode='tail'
                         >
-                            {openGraphData.title || openGraphData.url}
+                            {title}
                         </Text>
                     </TouchableOpacity>
                 </View>
+            );
+        }
+
+        return (
+            <View style={style.container}>
+                {siteName}
+                {siteTitle}
                 {this.renderDescription()}
                 {this.renderImage()}
             </View>

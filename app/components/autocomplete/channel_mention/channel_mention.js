@@ -25,8 +25,8 @@ export default class ChannelMention extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
         isSearch: PropTypes.bool,
-        listHeight: PropTypes.number,
         matchTerm: PropTypes.string,
+        maxListHeight: PropTypes.number,
         myChannels: PropTypes.array,
         myMembers: PropTypes.object,
         otherChannels: PropTypes.array,
@@ -194,7 +194,7 @@ export default class ChannelMention extends PureComponent {
     };
 
     render() {
-        const {isSearch, listHeight, theme} = this.props;
+        const {maxListHeight, theme} = this.props;
         const {mentionComplete, sections} = this.state;
 
         if (sections.length === 0 || mentionComplete) {
@@ -209,7 +209,7 @@ export default class ChannelMention extends PureComponent {
             <SectionList
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
-                style={[style.listView, isSearch ? [style.search, {height: listHeight}] : null]}
+                style={[style.listView, {maxHeight: maxListHeight}]}
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
@@ -224,9 +224,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
             backgroundColor: theme.centerChannelBg,
-        },
-        search: {
-            minHeight: 125,
         },
     };
 });

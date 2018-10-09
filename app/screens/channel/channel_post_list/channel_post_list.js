@@ -62,6 +62,10 @@ export default class ChannelPostList extends PureComponent {
             visiblePostIds = this.getVisiblePostIds(nextProps);
         }
 
+        if (this.props.channelId !== nextProps.channelId) {
+            this.isLoadingMoreTop = false;
+        }
+
         this.setState({visiblePostIds});
     }
 

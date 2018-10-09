@@ -6,7 +6,7 @@ exports[`UserListRow should match snapshot 1`] = `
     Object {
       "flex": 1,
       "flexDirection": "row",
-      "marginLeft": 10,
+      "marginHorizontal": 10,
     }
   }
 >
@@ -14,41 +14,13 @@ exports[`UserListRow should match snapshot 1`] = `
     enabled={true}
     id="21345"
     onPress={[Function]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
   >
     <Component
       style={
         Object {
+          "alignItems": "center",
           "color": "#3d3c40",
           "flexDirection": "row",
-          "marginLeft": 10,
         }
       }
     >
@@ -59,14 +31,12 @@ exports[`UserListRow should match snapshot 1`] = `
     </Component>
     <Component
       style={
-        Array [
-          Object {
-            "marginLeft": 5,
-          },
-          Object {
-            "justifyContent": "center",
-          },
-        ]
+        Object {
+          "flex": 1,
+          "flexDirection": "column",
+          "justifyContent": "center",
+          "marginLeft": 10,
+        }
       }
     >
       <Component>
@@ -84,13 +54,6 @@ exports[`UserListRow should match snapshot 1`] = `
         </Component>
       </Component>
     </Component>
-    <Component
-      style={
-        Object {
-          "width": 25,
-        }
-      }
-    />
   </CustomListRow>
 </Component>
 `;
@@ -101,7 +64,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
     Object {
       "flex": 1,
       "flexDirection": "row",
-      "marginLeft": 10,
+      "marginHorizontal": 10,
     }
   }
 >
@@ -109,41 +72,13 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
     enabled={true}
     id="21345"
     onPress={[Function]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
   >
     <Component
       style={
         Object {
+          "alignItems": "center",
           "color": "#3d3c40",
           "flexDirection": "row",
-          "marginLeft": 10,
         }
       }
     >
@@ -154,14 +89,12 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
     </Component>
     <Component
       style={
-        Array [
-          Object {
-            "marginLeft": 5,
-          },
-          Object {
-            "justifyContent": "center",
-          },
-        ]
+        Object {
+          "flex": 1,
+          "flexDirection": "column",
+          "justifyContent": "center",
+          "marginLeft": 10,
+        }
       }
     >
       <Component>
@@ -177,13 +110,6 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
         />
       </Component>
     </Component>
-    <Component
-      style={
-        Object {
-          "width": 25,
-        }
-      }
-    />
   </CustomListRow>
 </Component>
 `;
@@ -194,7 +120,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
     Object {
       "flex": 1,
       "flexDirection": "row",
-      "marginLeft": 10,
+      "marginHorizontal": 10,
     }
   }
 >
@@ -202,41 +128,13 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
     enabled={true}
     id="21345"
     onPress={[Function]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
   >
     <Component
       style={
         Object {
+          "alignItems": "center",
           "color": "#3d3c40",
           "flexDirection": "row",
-          "marginLeft": 10,
         }
       }
     >
@@ -247,14 +145,12 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
     </Component>
     <Component
       style={
-        Array [
-          Object {
-            "marginLeft": 5,
-          },
-          Object {
-            "justifyContent": "center",
-          },
-        ]
+        Object {
+          "flex": 1,
+          "flexDirection": "column",
+          "justifyContent": "center",
+          "marginLeft": 10,
+        }
       }
     >
       <Component>
@@ -267,16 +163,22 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
               "fontSize": 15,
             }
           }
+        >
+          @user
+        </Component>
+      </Component>
+      <Component>
+        <Component
+          style={
+            Object {
+              "color": undefined,
+              "fontSize": 12,
+              "marginTop": 2,
+            }
+          }
         />
       </Component>
     </Component>
-    <Component
-      style={
-        Object {
-          "width": 25,
-        }
-      }
-    />
   </CustomListRow>
 </Component>
 `;

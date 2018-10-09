@@ -2,7 +2,8 @@
 .PHONY: check-style
 .PHONY: start stop
 .PHONY: run run-ios run-android
-.PHONY: build-ios build-android unsigned-ios unsigned-android
+.PHONY: build build-ios build-android unsigned-ios unsigned-android
+.PHONY: build-pr can-build-pr prepare-pr
 .PHONY: test help
 
 POD := $(shell which pod 2> /dev/null)
@@ -60,9 +61,6 @@ clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleanup finished
 
 post-install:
-	@# Need to copy custom ImagePickerModule.java that implements correct permission checks for android
-	@rm node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
-	@cp ./native_modules/ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker
 	@# Need to copy custom RNDocumentPicker.m that implements direct access to the document picker in iOS
 	@cp ./native_modules/RNDocumentPicker.m node_modules/react-native-document-picker/ios/RNDocumentPicker/RNDocumentPicker.m
 
@@ -170,7 +168,17 @@ run-android: | check-device-android pre-run prepare-android-build ## Runs the ap
 		fi; \
     fi
 
-build-ios: | pre-run check-style ## Creates an iOS build
+build: | stop pre-run check-style ## Builds the app for Android & iOS
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
+		echo Starting React Native packager server; \
+		npm start & echo; \
+	fi
+	@echo "Building App"
+	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane build
+	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+
+
+build-ios: | stop pre-run check-style ## Builds the iOS app
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		npm start & echo; \
@@ -179,7 +187,7 @@ build-ios: | pre-run check-style ## Creates an iOS build
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios build
 	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
 
-build-android: | pre-run check-style prepare-android-build ## Creates an Android build
+build-android: | stop pre-run check-style prepare-android-build ## Build the Android app
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		npm start & echo; \
@@ -188,7 +196,7 @@ build-android: | pre-run check-style prepare-android-build ## Creates an Android
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane android build
 	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
 
-unsigned-ios: pre-run check-style
+unsigned-ios: stop pre-run check-style ## Build an unsigned version of the iOS app
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		npm start & echo; \
@@ -202,7 +210,7 @@ unsigned-ios: pre-run check-style
 	@rm -rf build-ios/
 	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
 
-unsigned-android: pre-run check-style prepare-android-build
+unsigned-android: stop pre-run check-style prepare-android-build ## Build an unsigned version of the Android app
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		npm start & echo; \
@@ -214,6 +222,25 @@ unsigned-android: pre-run check-style prepare-android-build
 
 test: | pre-run check-style ## Runs tests
 	@npm test
+
+build-pr: | can-build-pr prepare-pr stop pre-run check-style ## Build a PR from the mattermost-mobile repo
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
+		echo Starting React Native packager server; \
+		npm start & echo; \
+	fi
+	@echo "Building App from PR ${PR_ID}"
+	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane build_pr pr:PR-${PR_ID}
+	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+
+can-build-pr:
+	@if [ -z ${PR_ID} ]; then \
+		echo a PR number needs to be specified; \
+		exit 1; \
+	fi
+
+prepare-pr:
+	@git fetch origin pull/${PR_ID}/head:PR-${PR_ID}
+	@git checkout PR-${PR_ID}
 
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
