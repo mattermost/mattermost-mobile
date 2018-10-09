@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     InteractionManager,
-    Text,
     ScrollView,
 } from 'react-native';
 import {intlShape} from 'react-intl';
@@ -112,13 +111,13 @@ export default class TermsOfService extends PureComponent {
         });
     };
 
-    onNavigatorEvent = (event) => {
+    onNavigatorEvent = async (event) => {
         if (event.type === 'NavBarButtonPress') {
             const {logout} = this.props.actions;
             switch (event.id) {
             case 'close-terms-of-service':
+                await this.close();
                 InteractionManager.runAfterInteractions(logout);
-                this.close();
                 break;
 
             case 'accept-terms-of-service':
