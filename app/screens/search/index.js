@@ -66,6 +66,7 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             enableDateSuggestion,
             timezoneOffsetInSeconds,
+            viewArchivedChannels,
         };
     };
 }
