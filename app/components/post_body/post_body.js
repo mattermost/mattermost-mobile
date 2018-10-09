@@ -132,6 +132,7 @@ export default class PostBody extends PureComponent {
             isPostEphemeral,
             isSystemMessage,
             managedConfig,
+            message,
             onCopyText,
             onPostDelete,
             onPostEdit,
@@ -149,7 +150,7 @@ export default class PostBody extends PureComponent {
                 });
             }
 
-            if (managedConfig.copyAndPasteProtection !== 'true') {
+            if (managedConfig.copyAndPasteProtection !== 'true' && message) {
                 actions.push({
                     text: formatMessage({id: 'mobile.post_info.copy_post', defaultMessage: 'Copy Post'}),
                     onPress: onCopyText,
