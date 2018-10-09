@@ -21,6 +21,7 @@ import mattermostBucket from 'app/mattermost_bucket';
 import Config from 'assets/config';
 
 import {messageRetention} from './middleware';
+import {createThunkMiddleware} from './thunk';
 import {transformSet} from './utils';
 
 function getAppReducer() {
@@ -276,8 +277,14 @@ export default function configureAppStore(initialState) {
         },
     };
 
-    const additionalMiddleware = [createSentryMiddleware(), messageRetention];
-    return configureStore(initialState, appReducer, offlineOptions, getAppReducer, {
-        additionalMiddleware,
-    });
+    const clientOptions = {
+        additionalMiddleware: [
+            createThunkMiddleware(),
+            createSentryMiddleware(),
+            messageRetention,
+        ],
+        enableThunk: false, // We override the default thunk middleware
+    };
+
+    return configureStore(initialState, appReducer, offlineOptions, getAppReducer, clientOptions);
 }
