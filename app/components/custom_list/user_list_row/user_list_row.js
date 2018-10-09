@@ -58,13 +58,6 @@ export default class UserListRow extends React.PureComponent {
             }, {username});
         }
 
-        if (user.delete_at > 0) {
-            usernameDisplay = formatMessage({
-                id: 'more_direct_channels.directchannel.deactivated',
-                defaultMessage: '{displayname} - Deactivated',
-            }, {displayname: usernameDisplay});
-        }
-
         const teammateDisplay = displayUsername(user, teammateNameDisplay);
         const showTeammateDisplay = teammateDisplay !== username;
 
@@ -72,7 +65,6 @@ export default class UserListRow extends React.PureComponent {
             <View style={style.container}>
                 <CustomListRow
                     id={id}
-                    theme={theme}
                     onPress={this.onPress}
                     enabled={enabled}
                     selectable={selectable}
@@ -84,7 +76,7 @@ export default class UserListRow extends React.PureComponent {
                             size={32}
                         />
                     </View>
-                    <View style={[style.textContainer, (showTeammateDisplay ? style.showTeammateDisplay : style.hideTeammateDisplay)]}>
+                    <View style={style.textContainer}>
                         <View>
                             <Text
                                 style={style.username}
@@ -105,8 +97,16 @@ export default class UserListRow extends React.PureComponent {
                             </Text>
                         </View>
                         }
+                        {user.delete_at > 0 &&
+                        <View>
+                            <Text
+                                style={style.deactivated}
+                            >
+                                {formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}
+                            </Text>
+                        </View>
+                        }
                     </View>
-                    <View style={style.rightFiller}/>
                 </CustomListRow>
             </View>
         );
@@ -118,22 +118,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             flexDirection: 'row',
-            marginLeft: 10,
+            marginHorizontal: 10,
         },
         profileContainer: {
             flexDirection: 'row',
-            marginLeft: 10,
+            alignItems: 'center',
             color: theme.centerChannelColor,
         },
         textContainer: {
-            marginLeft: 5,
-        },
-        showTeammateDisplay: {
+            marginLeft: 10,
+            justifyContent: 'center',
             flexDirection: 'column',
             flex: 1,
-        },
-        hideTeammateDisplay: {
-            justifyContent: 'center',
         },
         displayName: {
             fontSize: 15,
@@ -143,8 +139,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             color: theme.centerChannelColor,
         },
-        rightFiller: {
-            width: 25,
+        deactivated: {
+            marginTop: 2,
+            fontSize: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
     };
 });
