@@ -6,6 +6,9 @@ import {Image} from 'react-native';
 import PropTypes from 'prop-types';
 
 import {General} from 'mattermost-redux/constants';
+
+import {changeOpacity} from 'app/utils/theme';
+
 import away from 'assets/images/status/away.png';
 import dnd from 'assets/images/status/dnd.png';
 import offline from 'assets/images/status/offline.png';
@@ -47,7 +50,7 @@ export default class UserStatus extends PureComponent {
             iconColor = theme.onlineIndicator;
             break;
         default:
-            iconColor = theme.centerChannelColor;
+            iconColor = changeOpacity(theme.centerChannelColor, 0.3);
             break;
         }
 
