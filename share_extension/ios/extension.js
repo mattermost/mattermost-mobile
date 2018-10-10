@@ -38,7 +38,7 @@ export default class SharedApp extends PureComponent {
         };
 
         mattermostBucket.readFromFile('entities', props.appGroupId).then((value) => {
-            this.entities = value || initialState;
+            this.entities = value || initialState.entities;
             this.setState({init: true});
         });
     }
