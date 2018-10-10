@@ -6,6 +6,7 @@ import {shallow} from 'enzyme';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 import {General, RequestStatus} from 'mattermost-redux/constants';
+import PostList from 'app/components/post_list';
 
 import Thread from './thread.js';
 
@@ -89,15 +90,15 @@ describe('thread', () => {
         );
 
         // return loading
-        expect(wrapper.instance().renderFooter()).toMatchSnapshot();
+        expect(wrapper.find(PostList).getElement()).toMatchSnapshot();
 
         // return null
         wrapper.setProps({threadLoadingStatus: {status: RequestStatus.SUCCESS}});
-        expect(wrapper.instance().renderFooter()).toMatchSnapshot();
+        expect(wrapper.find(PostList).getElement()).toMatchSnapshot();
 
         // return deleted post
         const newPostIds = ['post_id_1', 'post_id_2'];
         wrapper.setProps({postIds: newPostIds});
-        expect(wrapper.instance().renderFooter()).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });
