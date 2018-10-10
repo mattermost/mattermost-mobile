@@ -24,6 +24,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Preferences} from 'mattermost-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
+import Loading from 'app/components/loading';
 import PaperPlane from 'app/components/paper_plane';
 import mattermostManaged from 'app/mattermost_managed';
 import {getExtensionFromMime} from 'app/utils/file';
@@ -263,7 +264,7 @@ export default class ExtensionPost extends PureComponent {
     };
 
     loadData = async (items) => {
-        const {token, url} = this.props;
+        const {maxFileSize, token, url} = this.props;
         if (token && url) {
             const text = [];
             const files = [];
@@ -312,13 +313,13 @@ export default class ExtensionPost extends PureComponent {
 
             const value = text.join('\n');
 
-            if (!error) {
+            if (!error && files.length <= 5 && totalSize <= maxFileSize) {
                 this.props.navigation.setParams({
                     post: this.onPost,
                 });
             }
 
-            this.setState({error, files, value, hasPermission: true, totalSize});
+            this.setState({error, files, value, hasPermission: true, totalSize, loaded: true});
         }
     };
 
@@ -489,7 +490,13 @@ export default class ExtensionPost extends PureComponent {
     render() {
         const {formatMessage} = this.context.intl;
         const {maxFileSize, token, url} = this.props;
-        const {error, hasPermission, files, totalSize} = this.state;
+        const {error, hasPermission, files, totalSize, loaded} = this.state;
+
+        if (!loaded) {
+            return (
+                <Loading/>
+            );
+        }
 
         if (error) {
             return this.renderErrorMessage(error);
