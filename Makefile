@@ -223,7 +223,7 @@ unsigned-android: stop pre-run check-style prepare-android-build ## Build an uns
 test: | pre-run check-style ## Runs tests
 	@npm test
 
-build-pr: | can-build-pr prepare-pr stop pre-run check-style ## Build a PR from the mattermost-mobile repo
+build-pr: | can-build-pr stop pre-run check-style ## Build a PR from the mattermost-mobile repo
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		npm start & echo; \
@@ -237,10 +237,6 @@ can-build-pr:
 		echo a PR number needs to be specified; \
 		exit 1; \
 	fi
-
-prepare-pr:
-	@git fetch origin pull/${PR_ID}/head:PR-${PR_ID}
-	@git checkout PR-${PR_ID}
 
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
