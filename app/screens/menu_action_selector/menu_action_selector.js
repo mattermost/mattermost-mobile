@@ -116,7 +116,7 @@ class MenuActionSelector extends PureComponent {
         let {page} = this.state;
 
         if (loadMoreRequestStatus !== RequestStatus.STARTED && next && !searching) {
-            page = page + 1;
+            page += 1;
 
             let results;
             if (dataSource === ViewTypes.DATA_SOURCE_USERS) {

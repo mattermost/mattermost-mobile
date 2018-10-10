@@ -280,7 +280,7 @@ export default class ExtensionPost extends PureComponent {
                     let fileSize = {size: 0};
                     const fullPath = item.value;
                     try {
-                        fileSize = await RNFetchBlob.fs.stat(fullPath);
+                        fileSize = await RNFetchBlob.fs.stat(fullPath); // eslint-disable-line no-await-in-loop
                     } catch (e) {
                         const {formatMessage} = this.context.intl;
                         error = formatMessage({
