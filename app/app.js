@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable global-require*/
-import {AsyncStorage, Linking, NativeModules, Platform} from 'react-native';
+import {AsyncStorage, Linking, NativeModules, Platform, Text} from 'react-native';
 import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
 
 import {loadMe} from 'mattermost-redux/actions/users';
@@ -62,9 +62,36 @@ export default class App {
         // Usage deeplinking
         Linking.addEventListener('url', this.handleDeepLink);
 
+        this.setFontFamily();
         this.getStartupThemes();
         this.getAppCredentials();
     }
+
+    setFontFamily = () => {
+        // Set a global font for Android
+        if (Platform.OS === 'android') {
+            const defaultFontFamily = {
+                style: {
+                    fontFamily: 'Roboto',
+                },
+            };
+            const TextRender = Text.render;
+            const initialDefaultProps = Text.defaultProps;
+            Text.defaultProps = {
+                ...initialDefaultProps,
+                ...defaultFontFamily,
+            };
+            Text.render = function render(props, ...args) {
+                const oldProps = props;
+                let newProps = {...props, style: [defaultFontFamily.style, props.style]};
+                try {
+                    return Reflect.apply(TextRender, this, [newProps, ...args]);
+                } finally {
+                    newProps = oldProps;
+                }
+            };
+        }
+    };
 
     getTranslations = () => {
         if (this.translations) {
