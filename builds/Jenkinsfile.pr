@@ -1,0 +1,6 @@
+#!/usr/bin/groovy
+
+@Library('shared-pipelines') _
+
+mobile {
+}
