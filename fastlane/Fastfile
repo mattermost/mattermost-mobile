@@ -599,15 +599,16 @@ def upload_to_s3
     s3_bucket = ENV['AWS_BUCKET_NAME']
     s3 = Aws::S3::Resource.new(region: s3_region)
     abbreviated_commit_hash = last_git_commit[:abbreviated_commit_hash]
+    filename = ENV['BRANCH_TO_BUILD']
 
     unless apk_path.nil?
-      apk_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{abbreviated_commit_hash}.apk")
+      apk_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{filename}.apk")
       apk_obj.upload_file("#{apk_path}")
 
-      android_install_path = "https://#{s3_bucket}/#{s3_folder}/#{abbreviated_commit_hash}.apk"
+      android_install_path = "https://#{s3_bucket}/#{s3_folder}/#{filename}.apk"
 
       if ENV['MATTERMOST_WEBHOOK_URL'] && !ENV['MATTERMOST_WEBHOOK_URL'].nil? && !ENV['MATTERMOST_WEBHOOK_URL'].empty?
-        msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — Android: #{android_install_path}"
+        msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [Android APK Link](#{android_install_path})"
         mattermost(message: msg, username: 'Fastlane', icon_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300')
       else
         UI.success("PR Built for Android: #{android_install_path}")
@@ -619,16 +620,16 @@ def upload_to_s3
       plist_template = File.read('plist.erb')
       plist_body = ERB.new(plist_template).result(binding)
 
-      plist_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{abbreviated_commit_hash}.plist")
+      plist_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{filename}.plist")
       plist_obj.put(body: plist_body)
 
-      ipa_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{abbreviated_commit_hash}.ipa")
+      ipa_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{filename}.ipa")
       ipa_obj.upload_file("#{ipa_path}")
 
-      ios_install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket}/#{s3_folder}/#{abbreviated_commit_hash}.plist"
+      ios_install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket}/#{s3_folder}/#{filename}.plist"
 
       unless ENV['MATTERMOST_WEBHOOK_URL'].nil? || ENV['MATTERMOST_WEBHOOK_URL'].empty?
-        msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — iOS: #{ios_install_url}"
+        msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [iOS pList Link](#{ios_install_url})"
         mattermost(message: msg, username: 'Fastlane', icon_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png')
       else
         UI.success("PR Built for iOS: #{ios_install_url}")
