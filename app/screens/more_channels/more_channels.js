@@ -201,7 +201,7 @@ export default class MoreChannels extends PureComponent {
     loadMoreChannels = () => {
         let {page} = this.state;
         if (this.props.requestStatus.status !== RequestStatus.STARTED && this.state.next && !this.state.searching) {
-            page = page + 1;
+            page += 1;
             this.props.actions.getChannels(
                 this.props.currentTeamId,
                 page,

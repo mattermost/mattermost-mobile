@@ -87,6 +87,7 @@
     "enzyme-adapter-react-16": "1.5.0",
     "enzyme-to-json": "3.3.4",
     "eslint": "5.6.0",
+    "eslint-config-mattermost": "github:mattermost/eslint-config-mattermost",
     "eslint-plugin-header": "2.0.0",
     "eslint-plugin-jest": "21.22.0",
     "eslint-plugin-react": "7.11.1",
