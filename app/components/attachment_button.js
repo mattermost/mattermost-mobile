@@ -49,8 +49,8 @@ export default class AttachmentButton extends PureComponent {
     attachFileFromCamera = async (mediaType) => {
         const {formatMessage} = this.context.intl;
         const options = {
-            quality: 1,
-            videoQuality: 'high',
+            quality: 0.8,
+            videoQuality: 'low',
             noData: true,
             mediaType,
             storageOptions: {
@@ -90,7 +90,7 @@ export default class AttachmentButton extends PureComponent {
     attachFileFromLibrary = () => {
         const {formatMessage} = this.context.intl;
         const options = {
-            quality: 1,
+            quality: 0.8,
             noData: true,
             permissionDenied: {
                 title: formatMessage({
@@ -129,7 +129,7 @@ export default class AttachmentButton extends PureComponent {
     attachVideoFromLibraryAndroid = () => {
         const {formatMessage} = this.context.intl;
         const options = {
-            videoQuality: 'high',
+            videoQuality: 'low',
             mediaType: 'video',
             noData: true,
             permissionDenied: {
