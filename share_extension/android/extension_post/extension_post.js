@@ -24,7 +24,9 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Preferences} from 'mattermost-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
+import Loading from 'app/components/loading';
 import PaperPlane from 'app/components/paper_plane';
+import {MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import mattermostManaged from 'app/mattermost_managed';
 import {getExtensionFromMime} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
@@ -263,7 +265,7 @@ export default class ExtensionPost extends PureComponent {
     };
 
     loadData = async (items) => {
-        const {token, url} = this.props;
+        const {maxFileSize, token, url} = this.props;
         if (token && url) {
             const text = [];
             const files = [];
@@ -312,13 +314,13 @@ export default class ExtensionPost extends PureComponent {
 
             const value = text.join('\n');
 
-            if (!error) {
+            if (!error && files.length <= MAX_FILE_COUNT && totalSize <= maxFileSize) {
                 this.props.navigation.setParams({
                     post: this.onPost,
                 });
             }
 
-            this.setState({error, files, value, hasPermission: true, totalSize});
+            this.setState({error, files, value, hasPermission: true, totalSize, loaded: true});
         }
     };
 
@@ -489,7 +491,13 @@ export default class ExtensionPost extends PureComponent {
     render() {
         const {formatMessage} = this.context.intl;
         const {maxFileSize, token, url} = this.props;
-        const {error, hasPermission, files, totalSize} = this.state;
+        const {error, hasPermission, files, totalSize, loaded} = this.state;
+
+        if (!loaded) {
+            return (
+                <Loading/>
+            );
+        }
 
         if (error) {
             return this.renderErrorMessage(error);
@@ -503,7 +511,7 @@ export default class ExtensionPost extends PureComponent {
                 });
 
                 return this.renderErrorMessage(storage);
-            } else if (files.length > 5) {
+            } else if (files.length > MAX_FILE_COUNT) {
                 const fileCount = formatMessage({
                     id: 'mobile.extension.file_limit',
                     defaultMessage: 'Sharing is limited to a maximum of 5 files.',
