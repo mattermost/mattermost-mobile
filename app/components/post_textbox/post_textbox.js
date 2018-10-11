@@ -8,6 +8,7 @@ import {intlShape} from 'react-intl';
 import Button from 'react-native-button';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
@@ -51,6 +52,7 @@ export default class PostTextbox extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         deactivatedChannel: PropTypes.bool.isRequired,
         files: PropTypes.array,
+        maxFileSize: PropTypes.number.isRequired,
         maxMessageLength: PropTypes.number.isRequired,
         navigator: PropTypes.object,
         rootId: PropTypes.string,
@@ -79,6 +81,7 @@ export default class PostTextbox extends PureComponent {
             contentHeight: INITIAL_HEIGHT,
             cursorPosition: 0,
             keyboardType: 'default',
+            fileSizeWarning: null,
             top: 0,
             value: props.value,
             showFileMaxWarning: false,
@@ -458,6 +461,23 @@ export default class PostTextbox extends PureComponent {
         });
     };
 
+    onShowFileSizeWarning = (filename) => {
+        const {formatMessage} = this.context.intl;
+        const fileSizeWarning = formatMessage({
+            id: 'file_upload.fileAbove',
+            defaultMessage: 'File above {max}MB cannot be uploaded: {filename}',
+        }, {
+            max: getFormattedFileSize({size: this.props.maxFileSize}),
+            filename,
+        });
+
+        this.setState({fileSizeWarning}, () => {
+            setTimeout(() => {
+                this.setState({fileSizeWarning: null});
+            }, 3000);
+        });
+    };
+
     onCloseChannelPress = () => {
         const {onCloseChannel, channelTeamId} = this.props;
         this.props.actions.selectPenultimateChannel(channelTeamId);
@@ -502,6 +522,7 @@ export default class PostTextbox extends PureComponent {
             channelIsReadOnly,
             deactivatedChannel,
             files,
+            maxFileSize,
             navigator,
             rootId,
             theme,
@@ -523,6 +544,7 @@ export default class PostTextbox extends PureComponent {
         const {
             contentHeight,
             cursorPosition,
+            fileSizeWarning,
             showFileMaxWarning,
             top,
             value,
@@ -549,8 +571,10 @@ export default class PostTextbox extends PureComponent {
                     theme={theme}
                     navigator={navigator}
                     fileCount={files.length}
+                    maxFileSize={maxFileSize}
                     maxFileCount={MAX_FILE_COUNT}
                     onShowFileMaxWarning={this.onShowFileMaxWarning}
+                    onShowFileSizeWarning={this.onShowFileSizeWarning}
                     uploadFiles={this.handleUploadFiles}
                 />
             );
@@ -564,6 +588,7 @@ export default class PostTextbox extends PureComponent {
                 <FileUploadPreview
                     channelId={channelId}
                     files={files}
+                    fileSizeWarning={fileSizeWarning}
                     rootId={rootId}
                     showFileMaxWarning={showFileMaxWarning}
                 />

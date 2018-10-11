@@ -69,6 +69,7 @@
   "edit_post.save": "Save",
   "error.team_not_found.title": "Team Not Found",
   "file_attachment.download": "Download",
+  "file_upload.fileAbove": "File above {max}MB cannot be uploaded: {filename}",
   "get_post_link_modal.title": "Copy Permalink",
   "integrations.add": "Add",
   "intro_messages.anyMember": " Any member can join and read this channel.",
