@@ -26,6 +26,7 @@ import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_
 
 import Loading from 'app/components/loading';
 import PaperPlane from 'app/components/paper_plane';
+import {MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import mattermostManaged from 'app/mattermost_managed';
 import {getExtensionFromMime} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
@@ -313,7 +314,7 @@ export default class ExtensionPost extends PureComponent {
 
             const value = text.join('\n');
 
-            if (!error && files.length <= 5 && totalSize <= maxFileSize) {
+            if (!error && files.length <= MAX_FILE_COUNT && totalSize <= maxFileSize) {
                 this.props.navigation.setParams({
                     post: this.onPost,
                 });
@@ -510,7 +511,7 @@ export default class ExtensionPost extends PureComponent {
                 });
 
                 return this.renderErrorMessage(storage);
-            } else if (files.length > 5) {
+            } else if (files.length > MAX_FILE_COUNT) {
                 const fileCount = formatMessage({
                     id: 'mobile.extension.file_limit',
                     defaultMessage: 'Sharing is limited to a maximum of 5 files.',
