@@ -44,10 +44,10 @@ function makeMapStateToProps() {
                 }
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
                 displayName = displayUsername(teammate, teammateNameDisplay, false);
-                isArchived = channel.delete_at > 0;
             }
         }
 
+        isArchived = channel.delete_at > 0;
         const currentChannelId = getCurrentChannelId(state);
         const isActive = ownProps.channelId === currentChannelId;
 
