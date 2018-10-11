@@ -100,7 +100,7 @@ export default class Permalink extends PureComponent {
             newState.channelNameState = nextProps.channelName;
         }
 
-        if (nextProps.postIds.length > 0 && nextProps.postIds !== prevState.postIdsState) {
+        if (nextProps.postIds && nextProps.postIds.length > 0 && nextProps.postIds !== prevState.postIdsState) {
             newState.postIdsState = nextProps.postIds;
         }
 
