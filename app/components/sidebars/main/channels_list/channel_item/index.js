@@ -33,9 +33,10 @@ function makeMapStateToProps() {
         const isArchived = channel.delete_at > 0;
 
         if (channel.type === General.DM_CHANNEL) {
-            isMyUser = channel.id === currentUserId;
-
-            if (!ownProps.isSearchResult) {
+            if (ownProps.isSearchResult) {
+                isMyUser = channel.id === currentUserId;
+            } else {
+                isMyUser = channel.teammate_id === currentUserId;
                 const teammate = getUser(state, channel.teammate_id);
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
                 displayName = displayUsername(teammate, teammateNameDisplay, false);
