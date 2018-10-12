@@ -6,15 +6,11 @@ import {connect} from 'react-redux';
 
 import {logout} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 import TermsOfService from './terms_of_service.js';
 
 function mapStateToProps(state) {
-    const config = getConfig(state);
-
     return {
-        termsEnabled: config.EnableCustomTermsOfService === 'true',
         theme: getTheme(state),
     };
 }

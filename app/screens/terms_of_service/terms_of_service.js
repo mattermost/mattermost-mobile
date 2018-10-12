@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Alert,
     InteractionManager,
     ScrollView,
 } from 'react-native';
@@ -14,6 +13,7 @@ import {getTermsOfService, updateTermsOfServiceStatus} from 'app/actions/views/t
 
 import Loading from 'app/components/loading';
 import Markdown from 'app/components/markdown';
+import ErrorBanner from 'app/components/error_banner';
 import StatusBar from 'app/components/status_bar';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
@@ -25,7 +25,6 @@ export default class TermsOfService extends PureComponent {
         }),
         closeButton: PropTypes.object,
         navigator: PropTypes.object,
-        termsEnabled: PropTypes.bool,
         theme: PropTypes.object,
     };
 
@@ -68,6 +67,12 @@ export default class TermsOfService extends PureComponent {
         this.getTerms();
     }
 
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.navigator, this.props.theme);
+        }
+    }
+
     setNavigatorButtons = (enabled = true) => {
         const buttons = {
             leftButtons: [{...this.leftButton, disabled: !enabled}],
@@ -78,11 +83,15 @@ export default class TermsOfService extends PureComponent {
     };
 
     getTerms = () => {
+        const {intl} = this.context;
+
         this.setState({
             termsId: '',
             termsText: '',
             loading: true,
+            serverError: null,
         });
+
         getTermsOfService(
             (data) => {
                 this.setState({
@@ -91,13 +100,16 @@ export default class TermsOfService extends PureComponent {
                     loading: false,
                 });
             },
-            (err) => {
-                // TODO: Handle this
+            () => {
                 this.setState({
                     loading: false,
-                }, () => {
-                    Alert.alert('', err.message);
+                    serverError: intl.formatMessage({
+                        id: 'terms_of_service.api_error',
+                        defaultMessage: 'Unable to complete the request. If this issue persists, contact your System Administrator.',
+                    }),
                 });
+
+                // TODO: Show an error message on login screen
             }
         );
     };
@@ -124,13 +136,18 @@ export default class TermsOfService extends PureComponent {
                 this.setNavigatorButtons(true);
                 this.props.navigator.dismissAllModals();
                 InteractionManager.runAfterInteractions(logout);
+
+                // TODO: Show an error message on login screen
             }
         );
     };
 
     registerUserAction = (accepted, success) => {
+        const {intl} = this.context;
+
         this.setState({
             loading: true,
+            serverError: null,
         });
         updateTermsOfServiceStatus(
             this.state.termsId,
@@ -140,18 +157,14 @@ export default class TermsOfService extends PureComponent {
                 this.setNavigatorButtons(true);
                 this.setState({
                     loading: false,
+                    serverError: intl.formatMessage({
+                        id: 'terms_of_service.api_error',
+                        defaultMessage: 'Unable to complete the request. If this issue persists, contact your System Administrator.',
+                    }),
                 });
-
-                // TODO: Show Error
             },
         );
     };
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
-        }
-    }
 
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
@@ -167,8 +180,15 @@ export default class TermsOfService extends PureComponent {
         }
     };
 
+    dismissErrorBanner = () => {
+        this.setState({
+            serverError: null,
+        });
+    };
+
     render() {
         const {navigator, theme} = this.props;
+        const {serverError} = this.state;
         const styles = getStyleSheet(theme);
 
         const blockStyles = getMarkdownBlockStyles(theme);
@@ -181,6 +201,11 @@ export default class TermsOfService extends PureComponent {
         return (
             <React.Fragment>
                 <StatusBar/>
+                <ErrorBanner
+                    text={serverError}
+                    visible={Boolean(serverError)}
+                    onClose={this.dismissErrorBanner}
+                />
                 <ScrollView
                     style={styles.scrollView}
                     contentContainerStyle={styles.scrollViewContent}
@@ -190,7 +215,7 @@ export default class TermsOfService extends PureComponent {
                         navigator={navigator}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
-                        value={(this.state.termsText || '')}
+                        value={this.state.termsText}
                     />
                 </ScrollView>
             </React.Fragment>
