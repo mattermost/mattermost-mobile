@@ -300,7 +300,8 @@ export default class AttachmentButton extends PureComponent {
     uploadFiles = async (files) => {
         const file = files[0];
         if (!file.fileSize | !file.fileName) {
-            const fileInfo = await RNFetchBlob.fs.stat(file.path);
+            const path = (file.path || file.uri).replace('file://', '');
+            const fileInfo = await RNFetchBlob.fs.stat(path);
             file.fileSize = fileInfo.size;
             file.fileName = fileInfo.filename;
         }
