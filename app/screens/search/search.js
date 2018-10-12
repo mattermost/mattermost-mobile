@@ -121,11 +121,9 @@ export default class Search extends PureComponent {
 
     componentDidUpdate(prevProps) {
         const {searchingStatus: status, recent, enableDateSuggestion} = this.props;
-        const {searchingStatus: prevStatus} = prevProps;
-        const recentLength = recent.length;
-        const shouldScroll = prevStatus !== status &&
-            (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED) &&
-            !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore;
+        const shouldScroll = status === RequestStatus.SUCCESS &&
+            !this.props.isSearchGettingMore &&
+            !prevProps.isSearchGettingMore;
 
         if (this.props.isLandscape !== prevProps.isLandscape) {
             this.refs.searchBar.blur();
@@ -133,11 +131,14 @@ export default class Search extends PureComponent {
 
         if (shouldScroll) {
             setTimeout(() => {
+                const recentLabelsHeight = (recent.length + (Platform.OS === 'ios' ? 1 : 0)) * RECENT_LABEL_HEIGHT;
+                const recentSeparatorsHeight = (recent.length + (Platform.OS === 'ios' ? 0 : 2)) * RECENT_SEPARATOR_HEIGHT;
                 const modifiersCount = enableDateSuggestion ? 5 : 2;
                 if (this.refs.list) {
                     this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                         animated: true,
-                        offset: SECTION_HEIGHT + (modifiersCount * MODIFIER_LABEL_HEIGHT) + (recentLength * RECENT_LABEL_HEIGHT) + ((recentLength + 1) * RECENT_SEPARATOR_HEIGHT),
+                        offset: SECTION_HEIGHT + (modifiersCount * MODIFIER_LABEL_HEIGHT) +
+                            recentLabelsHeight + recentSeparatorsHeight,
                     });
                 }
             }, 100);
