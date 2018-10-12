@@ -10,7 +10,6 @@ import {
     Image,
     InteractionManager,
     Keyboard,
-    Platform,
     StyleSheet,
     Text,
     TextInput,
@@ -19,13 +18,13 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
+import {showTermsOfServiceModal} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
@@ -63,10 +62,6 @@ export default class Login extends PureComponent {
         this.state = {
             error: null,
         };
-
-        MaterialIcon.getImageSource(Platform.OS === 'ios' ? 'chevron-left' : 'arrow-back', Platform.OS === 'ios' ? 32 : 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
-            this.closeButton = source;
-        });
     }
 
     componentWillMount() {
@@ -87,7 +82,7 @@ export default class Login extends PureComponent {
 
     goToChannel = (expiresAt) => {
         const {intl} = this.context;
-        const {navigator} = this.props;
+        const {navigator, theme} = this.props;
         tracker.initialLoad = Date.now();
 
         if (expiresAt) {
@@ -104,7 +99,7 @@ export default class Login extends PureComponent {
         }
 
         if (this.props.showTermsOfService) {
-            this.showTermsOfServiceModal();
+            showTermsOfServiceModal(navigator, theme);
         }
 
         navigator.resetTo({
@@ -119,28 +114,6 @@ export default class Login extends PureComponent {
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'transparent',
-            },
-        });
-    };
-
-    showTermsOfServiceModal = () => {
-        const {intl} = this.context;
-        const {navigator, theme} = this.props;
-
-        navigator.showModal({
-            screen: 'TermsOfService',
-            animationType: 'slide-up',
-            title: intl.formatMessage({id: 'terms_of_service.title', defaultMessage: 'Terms of Service'}),
-            backButtonTitle: '',
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.centerChannelColor,
-                navBarBackgroundColor: theme.centerChannelBg,
-                navBarButtonColor: theme.buttonBg,
-                screenBackgroundColor: theme.buttonColor,
-            },
-            passProps: {
-                closeButton: this.closeButton,
             },
         });
     };

@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import DeviceInfo from 'react-native-device-info';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {setSystemEmojis} from 'mattermost-redux/actions/emojis';
 import {Client4} from 'mattermost-redux/client';
@@ -20,7 +19,6 @@ import {
     app,
     store,
 } from 'app/mattermost';
-import {t} from 'app/utils/i18n';
 
 import {loadFromPushNotification} from 'app/actions/views/root';
 import {ViewTypes} from 'app/constants';
@@ -33,6 +31,7 @@ import EmptyToolbar from 'app/components/start/empty_toolbar';
 import Loading from 'app/components/loading';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
+import {showTermsOfServiceModal} from 'app/utils/general';
 
 const lazyLoadSelectServer = () => {
     return require('app/screens/select_server').default;
@@ -96,32 +95,6 @@ export default class Entry extends PureComponent {
         EventEmitter.off(ViewTypes.LAUNCH_CHANNEL, this.handleLaunchChannel);
     }
 
-    showTermsOfServiceModal = (closeButton) => {
-        const translations = app.getTranslations();
-
-        const {
-            navigator,
-            theme,
-        } = this.props;
-
-        navigator.showModal({
-            screen: 'TermsOfService',
-            animationType: 'slide-up',
-            title: translations[t('terms_of_service.title')] || 'Terms of Service',
-            backButtonTitle: '',
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.centerChannelColor,
-                navBarBackgroundColor: theme.centerChannelBg,
-                navBarButtonColor: theme.buttonBg,
-                screenBackgroundColor: theme.buttonColor,
-            },
-            passProps: {
-                closeButton,
-            },
-        });
-    }
-
     handleLaunchLogin = (initializeModules) => {
         this.setState({launchLogin: true});
 
@@ -134,9 +107,7 @@ export default class Entry extends PureComponent {
         this.setState({launchChannel: true});
 
         if (this.props.showTermsOfService) {
-            MaterialIcon.getImageSource(Platform.OS === 'ios' ? 'chevron-left' : 'arrow-back', Platform.OS === 'ios' ? 32 : 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
-                this.showTermsOfServiceModal(source);
-            });
+            showTermsOfServiceModal(this.props.navigator, this.props.theme);
         }
 
         if (initializeModules) {
