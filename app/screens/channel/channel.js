@@ -163,7 +163,7 @@ export default class Channel extends PureComponent {
                 top = ANDROID_TOP_LANDSCAPE;
             } else {
                 top = ANDROID_TOP_PORTRAIT;
-                height = (height - 84);
+                height -= 84;
             }
             break;
         case 'ios':

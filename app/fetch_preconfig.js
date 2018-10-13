@@ -12,6 +12,8 @@ import LocalConfig from 'assets/config';
 
 import {t} from 'app/utils/i18n';
 
+/* eslint-disable no-throw-literal */
+
 const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
 const HEADER_TOKEN = 'Token';
 
@@ -61,6 +63,7 @@ Client4.doFetchWithResponse = async (url, options) => {
                 id: t('mobile.request.invalid_response'),
                 defaultMessage: 'Received invalid response from the server.',
             },
+            url,
         };
     }
 

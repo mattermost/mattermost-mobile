@@ -10,6 +10,8 @@ import {
     StyleSheet,
     TouchableOpacity,
 } from 'react-native';
+import RNFetchBlob from 'rn-fetch-blob';
+
 import Icon from 'react-native-vector-icons/Ionicons';
 import {DocumentPicker} from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
@@ -27,8 +29,10 @@ export default class AttachmentButton extends PureComponent {
         children: PropTypes.node,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
+        maxFileSize: PropTypes.number.isRequired,
         navigator: PropTypes.object.isRequired,
         onShowFileMaxWarning: PropTypes.func,
+        onShowFileSizeWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
         wrapper: PropTypes.bool,
@@ -293,8 +297,20 @@ export default class AttachmentButton extends PureComponent {
         return true;
     };
 
-    uploadFiles = (images) => {
-        this.props.uploadFiles(images);
+    uploadFiles = async (files) => {
+        const file = files[0];
+        if (!file.fileSize | !file.fileName) {
+            const path = (file.path || file.uri).replace('file://', '');
+            const fileInfo = await RNFetchBlob.fs.stat(path);
+            file.fileSize = fileInfo.size;
+            file.fileName = fileInfo.filename;
+        }
+
+        if (file.fileSize > this.props.maxFileSize) {
+            this.props.onShowFileSizeWarning(file.fileName);
+        } else {
+            this.props.uploadFiles(files);
+        }
     };
 
     handleFileAttachmentOption = (action) => {

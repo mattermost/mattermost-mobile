@@ -457,8 +457,9 @@ export default class EmojiPicker extends PureComponent {
             <SafeAreaView excludeHeader={true}>
                 <KeyboardAvoidingView
                     behavior='padding'
-                    style={{flex: 1}}
+                    style={styles.flex}
                     keyboardVerticalOffset={keyboardOffset}
+                    enabled={Platform.OS === 'ios'}
                 >
                     <View style={styles.searchBar}>
                         <SearchBar
@@ -496,6 +497,9 @@ export default class EmojiPicker extends PureComponent {
 
 const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {
+            flex: 1,
+        },
         bottomContent: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.3),

@@ -253,7 +253,7 @@ export default class ExtensionPost extends PureComponent {
                     default: {
                         const fullPath = item.value;
                         const filePath = decodeURIComponent(fullPath.replace('file://', ''));
-                        const fileSize = await RNFetchBlob.fs.stat(filePath);
+                        const fileSize = await RNFetchBlob.fs.stat(filePath); // eslint-disable-line no-await-in-loop
                         const filename = decodeURIComponent(fullPath.replace(/^.*[\\/]/, ''));
                         const extension = filename.split('.').pop();
 

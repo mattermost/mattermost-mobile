@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UserStatus should match snapshot, away status 1`] = `
+<Component
+  source={
+    Object {
+      "testUri": "../../../dist/assets/images/status/away.png",
+    }
+  }
+  style={
+    Object {
+      "height": 32,
+      "tintColor": "#ffbc42",
+      "width": 32,
+    }
+  }
+/>
+`;
+
+exports[`UserStatus should match snapshot, dnd status 1`] = `
+<Component
+  source={
+    Object {
+      "testUri": "../../../dist/assets/images/status/dnd.png",
+    }
+  }
+  style={
+    Object {
+      "height": 32,
+      "tintColor": "#f74343",
+      "width": 32,
+    }
+  }
+/>
+`;
+
+exports[`UserStatus should match snapshot, online status 1`] = `
+<Component
+  source={
+    Object {
+      "testUri": "../../../dist/assets/images/status/online.png",
+    }
+  }
+  style={
+    Object {
+      "height": 32,
+      "tintColor": "#06d6a0",
+      "width": 32,
+    }
+  }
+/>
+`;
+
+exports[`UserStatus should match snapshot, should default to offline status 1`] = `
+<Component
+  source={
+    Object {
+      "testUri": "../../../dist/assets/images/status/offline.png",
+    }
+  }
+  style={
+    Object {
+      "height": 32,
+      "tintColor": "rgba(61,60,64,0.3)",
+      "width": 32,
+    }
+  }
+/>
+`;

@@ -9,6 +9,7 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
+    StyleSheet,
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
@@ -130,8 +131,9 @@ export default class Mfa extends PureComponent {
         return (
             <KeyboardAvoidingView
                 behavior='padding'
-                style={{flex: 1}}
+                style={style.flex}
                 keyboardVerticalOffset={5}
+                enabled={Platform.OS === 'ios'}
             >
                 <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
@@ -168,3 +170,9 @@ export default class Mfa extends PureComponent {
         );
     }
 }
+
+const style = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+});

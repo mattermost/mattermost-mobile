@@ -350,7 +350,18 @@ export default class ChannelInfo extends PureComponent {
         } = this.props;
 
         if (channelIsArchived) {
-            return null;
+            return (this.renderViewOrManageMembersRow() &&
+                <View>
+                    <ChannelInfoRow
+                        action={this.goToChannelMembers}
+                        defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
+                        detail={currentChannelMemberCount}
+                        icon='users'
+                        textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
+                        theme={theme}
+                    />
+                    <View style={style.separator}/>
+                </View>);
         }
 
         return (<View>

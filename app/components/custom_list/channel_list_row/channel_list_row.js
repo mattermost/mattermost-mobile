@@ -43,7 +43,6 @@ export default class ChannelListRow extends React.PureComponent {
         return (
             <CustomListRow
                 id={this.props.id}
-                theme={this.props.theme}
                 onPress={this.props.onPress ? this.onPress : null}
                 enabled={this.props.enabled}
                 selectable={this.props.selectable}
@@ -84,6 +83,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             flexDirection: 'column',
+            paddingHorizontal: 15,
         },
         purpose: {
             marginTop: 7,

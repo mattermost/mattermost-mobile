@@ -1,0 +1,152 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Permalink should match snapshot 1`] = `
+<Connect(SafeAreaIos)
+  backgroundColor="transparent"
+  excludeHeader={true}
+  footerColor="transparent"
+  forceTop={44}
+>
+  <Component
+    style={
+      Object {
+        "flex": 1,
+        "marginTop": 20,
+      }
+    }
+  >
+    <withAnimatable(Component)
+      animation="zoomIn"
+      delay={0}
+      direction="normal"
+      duration={200}
+      iterationCount={1}
+      iterationDelay={0}
+      onAnimationBegin={[Function]}
+      onAnimationEnd={[Function]}
+      onTransitionBegin={[Function]}
+      onTransitionEnd={[Function]}
+      style={
+        Object {
+          "borderRadius": 6,
+          "flex": 1,
+          "margin": 10,
+          "opacity": 0,
+        }
+      }
+      useNativeDriver={true}
+    >
+      <Component
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "borderTopLeftRadius": 6,
+            "borderTopRightRadius": 6,
+            "flexDirection": "row",
+            "height": 44,
+            "paddingRight": 16,
+            "width": "100%",
+          }
+        }
+      >
+        <TouchableOpacity
+          activeOpacity={0.2}
+          onPress={[Function]}
+          style={
+            Object {
+              "height": 44,
+              "justifyContent": "center",
+              "paddingLeft": 7,
+              "width": 40,
+            }
+          }
+        >
+          <Icon
+            allowFontScaling={false}
+            color="#3d3c40"
+            name="close"
+            size={20}
+          />
+        </TouchableOpacity>
+        <Component
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "paddingRight": 40,
+            }
+          }
+        >
+          <Component
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 17,
+                "fontWeight": "600",
+              }
+            }
+          >
+            channel_name
+          </Component>
+        </Component>
+      </Component>
+      <Component
+        style={
+          Object {
+            "backgroundColor": "#ffffff",
+          }
+        }
+      >
+        <Component
+          style={
+            Object {
+              "backgroundColor": "rgba(61,60,64,0.2)",
+              "height": 1,
+            }
+          }
+        />
+      </Component>
+      <Component
+        style={
+          Array [
+            Object {
+              "backgroundColor": "#ffffff",
+              "flex": 1,
+            },
+            null,
+          ]
+        }
+      >
+        <Loading
+          color="grey"
+          size="large"
+          style={Object {}}
+        />
+      </Component>
+    </withAnimatable(Component)>
+  </Component>
+</Connect(SafeAreaIos)>
+`;
+
+exports[`Permalink should match snapshot 2`] = `
+<Component>
+  <Icon
+    allowFontScaling={false}
+    name="archive"
+    size={12}
+    style={
+      Array [
+        Object {
+          "color": "#3d3c40",
+          "fontSize": 16,
+          "paddingRight": 20,
+        },
+      ]
+    }
+  />
+   
+</Component>
+`;

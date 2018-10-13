@@ -27,6 +27,6 @@ export function executeCommand(message, channelId, rootId) {
         const cmd = msg.substring(0, cmdLength).toLowerCase();
         msg = cmd + msg.substring(cmdLength, msg.length);
 
-        return await executeCommandService(msg, args)(dispatch, getState);
+        return executeCommandService(msg, args)(dispatch, getState);
     };
 }

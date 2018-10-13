@@ -20,6 +20,7 @@ import {handleCommentDraftChanged, handleCommentDraftSelectionChanged} from 'app
 import {userTyping} from 'app/actions/views/typing';
 import {getCurrentChannelDraft, getThreadDraft} from 'app/selectors/views';
 import {getChannelMembersForDm} from 'app/selectors/channel';
+import {getAllowedServerMaxFileSize} from 'app/utils/file';
 
 import PostTextbox from './post_textbox';
 
@@ -53,6 +54,7 @@ function mapStateToProps(state, ownProps) {
         userIsOutOfOffice,
         deactivatedChannel,
         files: currentDraft.files,
+        maxFileSize: getAllowedServerMaxFileSize(config),
         maxMessageLength: (config && parseInt(config.MaxPostSize || 0, 10)) || MAX_MESSAGE_LENGTH,
         theme: getTheme(state),
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
