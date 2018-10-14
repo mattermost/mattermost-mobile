@@ -9,6 +9,7 @@ import {
     AppState,
     Dimensions,
     Platform,
+    StyleSheet,
     View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -26,7 +27,6 @@ import StatusBar from 'app/components/status_bar';
 import {ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PostTextbox from 'app/components/post_textbox';
 import networkConnectionListener from 'app/utils/network';
 import tracker from 'app/utils/time_tracker';
@@ -321,8 +321,6 @@ export default class Channel extends PureComponent {
             theme,
         } = this.props;
 
-        const style = getStyleFromTheme(theme);
-
         if (!currentChannelId) {
             if (channelsRequestFailed) {
                 const PostListRetry = require('app/components/post_list_retry').default;
@@ -337,7 +335,7 @@ export default class Channel extends PureComponent {
             const Loading = require('app/components/channel_loader').default;
             return (
                 <SafeAreaView navigator={navigator}>
-                    <View style={style.loading}>
+                    <View style={style.flex}>
                         <EmptyToolbar
                             theme={theme}
                             isLandscape={this.props.isLandscape}
@@ -372,7 +370,7 @@ export default class Channel extends PureComponent {
                             onPress={this.goToChannelInfo}
                         />
                         <KeyboardLayout>
-                            <View style={style.postList}>
+                            <View style={style.flex}>
                                 <ChannelPostList navigator={navigator}/>
                             </View>
                             <PostTextbox
@@ -392,20 +390,13 @@ export default class Channel extends PureComponent {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        postList: {
-            backgroundColor: theme.centerChannelBg,
-            flex: 1,
-        },
-        loading: {
-            backgroundColor: theme.centerChannelBg,
-            flex: 1,
-        },
-        channelLoader: {
-            position: 'absolute',
-            width: '100%',
-            flex: 1,
-        },
-    };
+const style = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+    channelLoader: {
+        position: 'absolute',
+        width: '100%',
+        flex: 1,
+    },
 });
