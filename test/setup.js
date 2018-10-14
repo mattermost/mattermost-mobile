@@ -67,3 +67,7 @@ jest.mock('rn-fetch-blob/fs', () => ({
         CacheDir: () => jest.fn(),
     },
 }));
+
+global.requestAnimationFrame = (callback) => {
+    setTimeout(callback, 0);
+};
