@@ -86,6 +86,7 @@ export default class FileAttachmentIcon extends PureComponent {
 const styles = StyleSheet.create({
     fileIconWrapper: {
         alignItems: 'center',
+        backgroundColor: '#fff',
         justifyContent: 'center',
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,

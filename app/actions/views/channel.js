@@ -210,7 +210,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 
 export async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_POST_TRIES) {
     for (let i = 0; i < maxTries; i++) {
-        const {data} = await dispatch(action);
+        const {data} = await dispatch(action); // eslint-disable-line no-await-in-loop
 
         if (data) {
             dispatch(setChannelRetryFailed(false));

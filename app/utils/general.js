@@ -44,8 +44,8 @@ export function alertErrorIfInvalidPermissions(result) {
     }
 }
 
-export function emptyFunction() {
-    return;
+export function emptyFunction() { // eslint-disable-line no-empty-function
+
 }
 
 export function throttle(fn, limit, ...args) {

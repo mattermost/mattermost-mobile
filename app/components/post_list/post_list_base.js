@@ -37,7 +37,7 @@ export default class PostListBase extends PureComponent {
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
         postIds: PropTypes.array.isRequired,
-        renderFooter: PropTypes.func,
+        renderFooter: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
         renderReplies: PropTypes.bool,
         serverURL: PropTypes.string.isRequired,
         shouldRenderReplyButton: PropTypes.bool,

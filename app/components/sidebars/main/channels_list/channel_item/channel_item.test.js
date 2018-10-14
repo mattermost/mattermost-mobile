@@ -26,7 +26,6 @@ describe('ChannelItem', () => {
         shouldHideChannel: false,
         showUnreadForMsgs: true,
         status: 'online',
-        teammateDeletedAt: 0,
         type: 'O',
         theme: Preferences.THEMES.default,
         unreadMsgs: 1,
@@ -45,8 +44,22 @@ describe('ChannelItem', () => {
     test('should match snapshot for deactivated user', () => {
         const newProps = {
             ...baseProps,
-            teammateDeletedAt: 100,
             type: 'D',
+            isArchived: true,
+        };
+        const wrapper = shallow(
+            <ChannelItem {...newProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for deactivated user and is searchResult', () => {
+        const newProps = {
+            ...baseProps,
+            type: 'D',
+            isArchived: true,
+            isSearchResult: true,
         };
         const wrapper = shallow(
             <ChannelItem {...newProps}/>,
@@ -60,6 +73,31 @@ describe('ChannelItem', () => {
             <ChannelItem
                 {...baseProps}
                 hasDraft={true}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot if channel is archived', () => {
+        const wrapper = shallow(
+            <ChannelItem
+                {...baseProps}
+                isArchived={true}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot if channel is archived and is currentChannel', () => {
+        const wrapper = shallow(
+            <ChannelItem
+                {...baseProps}
+                isArchived={true}
+                currentChannelId={'channel_id'}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
