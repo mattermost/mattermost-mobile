@@ -31,7 +31,7 @@
 - Fixed an issue where deactivated users were not marked as such in "Jump To" search.
 - Fixed an issue where users got a permission error when trying to open a file from within the image preview screen.
 - Fixed an issue where session expiry notifications were not being sent on Android.
-- On servers 5.4+, fixed an issue where post attachments failed to upload.
+- Fixed an issue where post attachments failed to upload.
 - Fixed an issue where the "DM More..." list cut off user info.
 - Fixed an issue where the user would briefly see a system message when loading a reply thread.
 - Fixed an issue where the error message was incorrectly formatted if the login method was set to email/password and the user tried to log in with SAML.
