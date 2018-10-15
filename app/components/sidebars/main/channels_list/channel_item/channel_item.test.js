@@ -3,21 +3,31 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
+import {TouchableHighlight} from 'react-native';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import ChannelItem from './channel_item.js';
 
+jest.useFakeTimers();
 jest.mock('react-intl');
 
 describe('ChannelItem', () => {
+    const channel = {
+        id: 'channel_id',
+        delete_at: 0,
+        type: 'O',
+        fake: false,
+        status: 'online',
+    };
+
     const baseProps = {
         channelId: 'channel_id',
+        channel,
         currentChannelId: 'current_channel_id',
         displayName: 'display_name',
-        fake: false,
         isChannelMuted: false,
-        isMyUser: true,
+        currentUserId: 'currentUser',
         isUnread: true,
         hasDraft: false,
         mentions: 0,
@@ -25,11 +35,9 @@ describe('ChannelItem', () => {
         onSelectChannel: () => {}, // eslint-disable-line no-empty-function
         shouldHideChannel: false,
         showUnreadForMsgs: true,
-        status: 'online',
-        type: 'O',
         theme: Preferences.THEMES.default,
         unreadMsgs: 1,
-        isArchived: false,
+        isSearchResult: false,
     };
 
     test('should match snapshot', () => {
@@ -41,12 +49,33 @@ describe('ChannelItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot for deactivated user', () => {
+    test('should match snapshot with mentions and muted', () => {
         const newProps = {
             ...baseProps,
-            type: 'D',
-            isArchived: true,
+            mentions: 1,
+            isChannelMuted: true,
         };
+
+        const wrapper = shallow(
+            <ChannelItem {...newProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for deactivated user and not searchResults or currentChannel', () => {
+        const channelObj = {
+            ...channel,
+            type: 'D',
+            delete_at: 123,
+        };
+
+        const newProps = {
+            ...baseProps,
+            channel: channelObj,
+        };
+
         const wrapper = shallow(
             <ChannelItem {...newProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
@@ -55,15 +84,96 @@ describe('ChannelItem', () => {
     });
 
     test('should match snapshot for deactivated user and is searchResult', () => {
+        const channelObj = {
+            ...channel,
+            type: 'D',
+            delete_at: 123,
+        };
+
         const newProps = {
             ...baseProps,
-            type: 'D',
-            isArchived: true,
             isSearchResult: true,
+            channel: channelObj,
         };
+
         const wrapper = shallow(
             <ChannelItem {...newProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for deactivated user and is currentChannel', () => {
+        const channelObj = {
+            ...channel,
+            type: 'D',
+            delete_at: 123,
+        };
+
+        const newProps = {
+            ...baseProps,
+            channel: channelObj,
+            currentChannelId: 'channel_id',
+        };
+
+        const wrapper = shallow(
+            <ChannelItem {...newProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for no displayName', () => {
+        const newProps = {
+            ...baseProps,
+            displayName: '',
+        };
+
+        const wrapper = shallow(
+            <ChannelItem {...newProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for current user i.e currentUser (you)', () => {
+        const channelObj = {
+            ...channel,
+            type: 'D',
+            teammate_id: 'currentUser',
+        };
+
+        const newProps = {
+            ...baseProps,
+            channel: channelObj,
+            currentChannelId: 'channel_id',
+        };
+
+        const wrapper = shallow(
+            <ChannelItem {...newProps}/>,
+            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for current user i.e currentUser (you) when isSearchResult', () => {
+        const channelObj = {
+            ...channel,
+            id: 'currentUser',
+            type: 'D',
+            teammate_id: 'somethingElse',
+        };
+
+        const newProps = {
+            ...baseProps,
+            channel: channelObj,
+            currentChannelId: 'channel_id',
+            isSearchResult: true,
+        };
+
+        const wrapper = shallow(
+            <ChannelItem {...newProps}/>,
+            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -80,11 +190,13 @@ describe('ChannelItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot if channel is archived', () => {
+    test('should match snapshot for showUnreadForMsgs', () => {
         const wrapper = shallow(
             <ChannelItem
                 {...baseProps}
-                isArchived={true}
+                hasDraft={true}
+                shouldHideChannel={true}
+                unreadMsgs={0}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
@@ -92,16 +204,21 @@ describe('ChannelItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot if channel is archived and is currentChannel', () => {
+    test('Should call onPress', () => {
+        const onSelectChannel = jest.fn();
+
         const wrapper = shallow(
             <ChannelItem
                 {...baseProps}
-                isArchived={true}
-                currentChannelId={'channel_id'}
+                onSelectChannel={onSelectChannel}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        expect(wrapper.getElement()).toMatchSnapshot();
+        wrapper.find(TouchableHighlight).simulate('press');
+        jest.runAllTimers();
+
+        const expectedChannelParams = {id: baseProps.channelId, display_name: baseProps.displayName, fake: channel.fake, type: channel.type};
+        expect(onSelectChannel).toHaveBeenCalledWith(expectedChannelParams, baseProps.currentChannelId);
     });
 });

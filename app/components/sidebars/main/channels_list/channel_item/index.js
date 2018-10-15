@@ -28,13 +28,9 @@ function makeMapStateToProps() {
         const currentUserId = getCurrentUserId(state);
         const channelDraft = getDraftForChannel(state, channel.id);
 
-        let isMyUser = false;
         let displayName = channel.display_name;
-        const isArchived = channel.delete_at > 0;
 
         if (channel.type === General.DM_CHANNEL) {
-            isMyUser = channel.id === currentUserId;
-
             if (!ownProps.isSearchResult) {
                 const teammate = getUser(state, channel.teammate_id);
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
@@ -69,18 +65,14 @@ function makeMapStateToProps() {
             channel,
             currentChannelId,
             displayName,
-            fake: channel.fake,
             isChannelMuted: isChannelMuted(member),
-            isMyUser,
+            currentUserId,
             hasDraft: Boolean(channelDraft.draft.trim() || channelDraft.files.length),
             mentions: member ? member.mention_count : 0,
             shouldHideChannel,
             showUnreadForMsgs,
-            status: channel.status,
             theme: getTheme(state),
-            type: channel.type,
             unreadMsgs,
-            isArchived,
         };
     };
 }

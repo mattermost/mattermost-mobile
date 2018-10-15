@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
+import {General} from 'mattermost-redux/constants';
+
 import PropTypes from 'prop-types';
 import {
     Animated,
@@ -22,11 +24,11 @@ const {View: AnimatedView} = Animated;
 export default class ChannelItem extends PureComponent {
     static propTypes = {
         channelId: PropTypes.string.isRequired,
+        channel: PropTypes.object,
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
-        fake: PropTypes.bool,
         isChannelMuted: PropTypes.bool,
-        isMyUser: PropTypes.bool,
+        currentUserId: PropTypes.string.isRequired,
         isUnread: PropTypes.bool,
         hasDraft: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
@@ -34,11 +36,8 @@ export default class ChannelItem extends PureComponent {
         onSelectChannel: PropTypes.func.isRequired,
         shouldHideChannel: PropTypes.bool,
         showUnreadForMsgs: PropTypes.bool.isRequired,
-        status: PropTypes.string,
-        type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         unreadMsgs: PropTypes.number.isRequired,
-        isArchived: PropTypes.bool.isRequired,
         isSearchResult: PropTypes.bool,
     };
 
@@ -51,7 +50,8 @@ export default class ChannelItem extends PureComponent {
     };
 
     onPress = preventDoubleTap(() => {
-        const {channelId, currentChannelId, displayName, fake, onSelectChannel, type} = this.props;
+        const {channelId, currentChannelId, displayName, onSelectChannel, channel} = this.props;
+        const {type, fake} = channel;
         requestAnimationFrame(() => {
             onSelectChannel({id: channelId, display_name: displayName, fake, type}, currentChannelId);
         });
@@ -91,17 +91,17 @@ export default class ChannelItem extends PureComponent {
             currentChannelId,
             displayName,
             isChannelMuted,
-            isMyUser,
+            currentUserId,
             isUnread,
             hasDraft,
             mentions,
             shouldHideChannel,
-            status,
             theme,
-            type,
-            isArchived,
             isSearchResult,
+            channel,
         } = this.props;
+
+        const isArchived = channel.delete_at > 0;
 
         // Only ever show an archived channel if it's the currently viewed channel.
         // It should disappear as soon as one navigates to another channel.
@@ -120,7 +120,16 @@ export default class ChannelItem extends PureComponent {
         const {intl} = this.context;
 
         let channelDisplayName = displayName;
-        if (isMyUser) {
+        let isCurrenUser = false;
+
+        if (channel.type === General.DM_CHANNEL) {
+            if (isSearchResult) {
+                isCurrenUser = channel.id === currentUserId;
+            } else {
+                isCurrenUser = channel.teammate_id === currentUserId;
+            }
+        }
+        if (isCurrenUser) {
             channelDisplayName = intl.formatMessage({
                 id: 'channel_header.directchannel.you',
                 defaultMessage: '{displayName} (you)',
@@ -172,9 +181,9 @@ export default class ChannelItem extends PureComponent {
                 hasDraft={hasDraft && channelId !== currentChannelId}
                 membersCount={displayName.split(',').length}
                 size={16}
-                status={status}
+                status={channel.status}
                 theme={theme}
-                type={type}
+                type={channel.type}
                 isArchived={isArchived}
             />
         );
