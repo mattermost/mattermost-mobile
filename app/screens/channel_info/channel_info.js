@@ -320,9 +320,8 @@ export default class ChannelInfo extends PureComponent {
     renderViewOrManageMembersRow = () => {
         const channel = this.props.currentChannel;
         const isDirectMessage = channel.type === General.DM_CHANNEL;
-        const isGroupMessage = channel.type === General.GM_CHANNEL;
 
-        return !isDirectMessage && !isGroupMessage;
+        return !isDirectMessage;
     };
 
     renderLeaveOrDeleteChannelRow = () => {
