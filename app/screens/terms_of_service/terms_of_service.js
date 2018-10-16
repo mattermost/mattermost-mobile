@@ -15,6 +15,7 @@ import Loading from 'app/components/loading';
 import Markdown from 'app/components/markdown';
 import StatusBar from 'app/components/status_bar';
 
+import {emptyFunction} from 'app/utils/general';
 import {t} from 'app/utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
@@ -257,6 +258,11 @@ export default class TermsOfService extends PureComponent {
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         value={this.state.termsText}
+                        onHashtagPress={emptyFunction}
+                        onPermalinkPress={emptyFunction}
+                        onLongPress={emptyFunction}
+                        onPostPress={emptyFunction}
+                        isSearchResult={true}
                     />
                 </ScrollView>
             </React.Fragment>
