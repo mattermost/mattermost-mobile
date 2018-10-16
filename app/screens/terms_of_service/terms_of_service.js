@@ -6,9 +6,11 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     ScrollView,
+    View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
+import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
 import Markdown from 'app/components/markdown';
 import StatusBar from 'app/components/status_bar';
@@ -50,7 +52,7 @@ export default class TermsOfService extends PureComponent {
         super(props);
 
         this.state = {
-            error: null,
+            getTermsError: false,
             loading: true,
             termsId: '',
             termsText: '',
@@ -90,6 +92,7 @@ export default class TermsOfService extends PureComponent {
             termsId: '',
             termsText: '',
             loading: true,
+            getTermsError: false,
         });
 
         const {data} = await actions.getTermsOfService();
@@ -104,24 +107,8 @@ export default class TermsOfService extends PureComponent {
         } else {
             this.setState({
                 loading: false,
-            }, () => {
-                this.setNavigatorButtons(true);
+                getTermsError: true,
             });
-            Alert.alert(
-                this.props.siteName,
-                intl.formatMessage({
-                    id: 'mobile.terms_of_service.get_terms_error',
-                    defaultMessage: 'Unable to load terms of service. If this issue persists, contact your System Administrator.',
-                }),
-                [{
-                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'Ok'}),
-                    onPress: async () => {
-                        await actions.logout();
-                        this.setNavigatorButtons(true);
-                        this.props.navigator.dismissAllModals();
-                    },
-                }],
-            );
         }
     };
 
@@ -132,7 +119,8 @@ export default class TermsOfService extends PureComponent {
                 this.props.navigator.dismissModal({
                     animationType: 'slide-down',
                 });
-            }
+            },
+            this.handleAcceptTerms
         );
     };
 
@@ -160,11 +148,12 @@ export default class TermsOfService extends PureComponent {
                         },
                     }],
                 );
-            }
+            },
+            this.handleRejectTerms
         );
     };
 
-    registerUserAction = async (accepted, success) => {
+    registerUserAction = async (accepted, success, retry) => {
         const {actions} = this.props;
         const {intl} = this.context;
 
@@ -188,7 +177,10 @@ export default class TermsOfService extends PureComponent {
                     defaultMessage: 'Unable to complete the request. If this issue persists, contact your System Administrator.',
                 }),
                 [{
-                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'OK'}),
+                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_retry', defaultMessage: 'Try Again'}),
+                    onPress: retry,
+                }, {
+                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_cancel', defaultMessage: 'Cancel'}),
                     onPress: async () => {
                         await actions.logout();
                         this.setNavigatorButtons(true);
@@ -218,6 +210,7 @@ export default class TermsOfService extends PureComponent {
     };
 
     render() {
+        const {intl} = this.context;
         const {navigator, theme} = this.props;
         const styles = getStyleSheet(theme);
 
@@ -226,6 +219,26 @@ export default class TermsOfService extends PureComponent {
 
         if (this.state.loading) {
             return <Loading/>;
+        }
+
+        if (this.state.getTermsError) {
+            return (
+                <View style={styles.container}>
+                    <StatusBar/>
+                    <FailedNetworkAction
+                        onRetry={this.getTerms}
+                        theme={theme}
+                        errorTitle={intl.formatMessage({
+                            id: 'mobile.terms_of_service.get_terms_error_title',
+                            defaultMessage: 'Unable to load terms of service.',
+                        })}
+                        errorDescription={intl.formatMessage({
+                            id: 'mobile.terms_of_service.get_terms_error_description',
+                            defaultMessage: 'Make sure you have an active internet connection and try again. If this issue persists, contact your System Administrator.',
+                        })}
+                    />
+                </View>
+            );
         }
 
         return (
@@ -255,6 +268,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             lineHeight: 20,
             opacity: 0.6,
+        },
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            flex: 1,
         },
         linkText: {
             color: theme.linkColor,
