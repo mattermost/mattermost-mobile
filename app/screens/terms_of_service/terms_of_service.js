@@ -14,8 +14,20 @@ import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
 import Markdown from 'app/components/markdown';
 import StatusBar from 'app/components/status_bar';
+
+import {t} from 'app/utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+
+const errorTitle = {
+    id: t('mobile.terms_of_service.get_terms_error_title'),
+    defaultMessage: 'Unable to load terms of service.',
+};
+
+const errorDescription = {
+    id: t('mobile.terms_of_service.get_terms_error_description'),
+    defaultMessage: 'Make sure you have an active internet connection and try again. If this issue persists, contact your System Administrator.',
+};
 
 export default class TermsOfService extends PureComponent {
     static propTypes = {
@@ -182,7 +194,6 @@ export default class TermsOfService extends PureComponent {
                     text: intl.formatMessage({id: 'mobile.terms_of_service.alert_cancel', defaultMessage: 'Cancel'}),
                     onPress: async () => {
                         await actions.logout();
-                        this.setNavigatorButtons(true);
                         this.props.navigator.dismissAllModals();
                     },
                 }],
@@ -209,7 +220,6 @@ export default class TermsOfService extends PureComponent {
     };
 
     render() {
-        const {intl} = this.context;
         const {navigator, theme} = this.props;
         const styles = getStyleSheet(theme);
 
@@ -227,14 +237,8 @@ export default class TermsOfService extends PureComponent {
                     <FailedNetworkAction
                         onRetry={this.getTerms}
                         theme={theme}
-                        errorTitle={intl.formatMessage({
-                            id: 'mobile.terms_of_service.get_terms_error_title',
-                            defaultMessage: 'Unable to load terms of service.',
-                        })}
-                        errorDescription={intl.formatMessage({
-                            id: 'mobile.terms_of_service.get_terms_error_description',
-                            defaultMessage: 'Make sure you have an active internet connection and try again. If this issue persists, contact your System Administrator.',
-                        })}
+                        errorTitle={errorTitle}
+                        errorDescription={errorDescription}
                     />
                 </View>
             );
