@@ -185,7 +185,7 @@ typedef void (^ProviderCallback)(NSString *content, NSString *contentType, BOOL 
           }
           
           NSURL *tempFileURL = [tempContainerURL URLByAppendingPathComponent: fileName];
-          BOOL created = [UIImageJPEGRepresentation(image, 1) writeToFile:[tempFileURL path] atomically:YES];
+          BOOL created = [UIImageJPEGRepresentation(image, 0.8) writeToFile:[tempFileURL path] atomically:YES];
           if (created) {
             return callback([tempFileURL absoluteString], @"public.image", YES, nil);
           } else {
@@ -200,7 +200,7 @@ typedef void (^ProviderCallback)(NSString *content, NSString *contentType, BOOL 
             return callback(nil, nil, NO, nil);
           }
           NSURL *tempFileURL = [tempContainerURL URLByAppendingPathComponent: fileName];
-          BOOL created = [UIImageJPEGRepresentation(image, 0.95) writeToFile:[tempFileURL path] atomically:YES];
+          BOOL created = [UIImageJPEGRepresentation(image, 0.8) writeToFile:[tempFileURL path] atomically:YES];
           if (created) {
             return callback([tempFileURL absoluteString], @"public.image", YES, nil);
           } else {
