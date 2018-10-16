@@ -86,7 +86,6 @@ export default class TermsOfService extends PureComponent {
 
     getTerms = async () => {
         const {actions} = this.props;
-        const {intl} = this.context;
 
         this.setState({
             termsId: '',
