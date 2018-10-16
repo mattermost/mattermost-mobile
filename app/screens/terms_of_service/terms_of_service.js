@@ -188,7 +188,7 @@ export default class TermsOfService extends PureComponent {
                     defaultMessage: 'Unable to complete the request. If this issue persists, contact your System Administrator.',
                 }),
                 [{
-                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'Ok'}),
+                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'OK'}),
                     onPress: async () => {
                         await actions.logout();
                         this.setNavigatorButtons(true);
