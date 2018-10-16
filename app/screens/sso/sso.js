@@ -19,6 +19,7 @@ import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
+import {showTermsOfServiceModal} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
 
@@ -64,6 +65,7 @@ class SSO extends PureComponent {
         navigator: PropTypes.object,
         theme: PropTypes.object,
         serverUrl: PropTypes.string.isRequired,
+        showTermsOfService: PropTypes.bool,
         ssoType: PropTypes.string.isRequired,
         actions: PropTypes.shape({
             getSession: PropTypes.func.isRequired,
@@ -104,7 +106,7 @@ class SSO extends PureComponent {
     };
 
     goToLoadTeam = (expiresAt) => {
-        const {intl, navigator} = this.props;
+        const {intl, navigator, theme} = this.props;
         tracker.initialLoad = Date.now();
 
         if (expiresAt) {
@@ -118,6 +120,10 @@ class SSO extends PureComponent {
                     localNotification: true,
                 },
             });
+        }
+
+        if (this.props.showTermsOfService) {
+            showTermsOfServiceModal(navigator, theme);
         }
 
         navigator.resetTo({

@@ -31,6 +31,7 @@ import mattermostBucket from 'app/mattermost_bucket';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
 import checkUpgradeType from 'app/utils/client_upgrade';
+import {showTermsOfServiceModal} from 'app/utils/general';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
@@ -60,6 +61,7 @@ export default class SelectServer extends PureComponent {
         minVersion: PropTypes.string,
         navigator: PropTypes.object,
         serverUrl: PropTypes.string.isRequired,
+        showTermsOfService: PropTypes.bool,
         theme: PropTypes.object,
     };
 
@@ -283,7 +285,7 @@ export default class SelectServer extends PureComponent {
     };
 
     loginWithCertificate = async () => {
-        const {intl, navigator} = this.props;
+        const {intl, navigator, theme} = this.props;
 
         tracker.initialLoad = Date.now();
 
@@ -302,6 +304,10 @@ export default class SelectServer extends PureComponent {
                     localNotification: true,
                 },
             });
+        }
+
+        if (this.props.showTermsOfService) {
+            showTermsOfServiceModal(navigator, theme);
         }
 
         navigator.resetTo({

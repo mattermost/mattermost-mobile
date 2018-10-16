@@ -4,16 +4,13 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    InteractionManager,
+    Alert,
     ScrollView,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {getTermsOfService, updateTermsOfServiceStatus} from 'app/actions/views/terms_of_service';
-
 import Loading from 'app/components/loading';
 import Markdown from 'app/components/markdown';
-import ErrorBanner from 'app/components/error_banner';
 import StatusBar from 'app/components/status_bar';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
@@ -22,9 +19,12 @@ export default class TermsOfService extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
-        }),
+            getTermsOfService: PropTypes.func.isRequired,
+            updateTermsOfServiceStatus: PropTypes.func.isRequired,
+        }).isRequired,
         closeButton: PropTypes.object,
         navigator: PropTypes.object,
+        siteName: PropTypes.string,
         theme: PropTypes.object,
     };
 
@@ -33,6 +33,7 @@ export default class TermsOfService extends PureComponent {
     };
 
     static defaultProps = {
+        siteName: 'Mattermost',
         termsEnabled: true,
     };
 
@@ -51,7 +52,6 @@ export default class TermsOfService extends PureComponent {
         this.state = {
             error: null,
             loading: true,
-            serverError: null,
             termsId: '',
             termsText: '',
         };
@@ -60,7 +60,7 @@ export default class TermsOfService extends PureComponent {
         this.leftButton.icon = props.closeButton;
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        this.setNavigatorButtons();
+        this.setNavigatorButtons(false);
     }
 
     componentDidMount() {
@@ -82,44 +82,49 @@ export default class TermsOfService extends PureComponent {
         this.props.navigator.setButtons(buttons);
     };
 
-    getTerms = () => {
+    getTerms = async () => {
+        const {actions} = this.props;
         const {intl} = this.context;
 
         this.setState({
             termsId: '',
             termsText: '',
             loading: true,
-            serverError: null,
         });
 
-        getTermsOfService(
-            (data) => {
-                this.setState({
-                    termsId: data.id,
-                    termsText: data.text,
-                    loading: false,
-                });
-            },
-            () => {
-                this.setState({
-                    loading: false,
-                    serverError: intl.formatMessage({
-                        id: 'terms_of_service.api_error',
-                        defaultMessage: 'Unable to complete the request. If this issue persists, contact your System Administrator.',
-                    }),
-                });
-
-                // TODO: Show an error message on login screen
-            }
-        );
+        const {data} = await actions.getTermsOfService();
+        if (data) {
+            this.setState({
+                termsId: data.id,
+                termsText: data.text,
+                loading: false,
+            });
+        } else {
+            this.setState({
+                loading: false,
+            });
+            Alert.alert(
+                this.props.siteName,
+                intl.formatMessage({
+                    id: 'mobile.terms_of_service.get_terms_error',
+                    defaultMessage: 'Unable to load terms of service. If this issue persists, contact your System Administrator.',
+                }),
+                [{
+                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'Ok'}),
+                    onPress: async () => {
+                        await actions.logout();
+                        this.setNavigatorButtons(true);
+                        this.props.navigator.dismissAllModals();
+                    },
+                }],
+            );
+        }
     };
 
-    handleAcceptTerms = () => {
-        this.setNavigatorButtons(false);
-        this.registerUserAction(
+    handleAcceptTerms = async () => {
+        await this.registerUserAction(
             true,
             () => {
-                this.setNavigatorButtons(true);
                 this.props.navigator.dismissModal({
                     animationType: 'slide-down',
                 });
@@ -127,43 +132,71 @@ export default class TermsOfService extends PureComponent {
         );
     };
 
-    handleRejectTerms = () => {
-        const {logout} = this.props.actions;
-        this.setNavigatorButtons(false);
-        this.registerUserAction(
+    handleRejectTerms = async () => {
+        const {actions, siteName} = this.props;
+        const {intl} = this.context;
+
+        await this.registerUserAction(
             false,
             () => {
-                this.setNavigatorButtons(true);
-                this.props.navigator.dismissAllModals();
-                InteractionManager.runAfterInteractions(logout);
-
-                // TODO: Show an error message on login screen
+                Alert.alert(
+                    this.props.siteName,
+                    intl.formatMessage({
+                        id: 'mobile.terms_of_service.terms_rejected',
+                        defaultMessage: 'You must agree to the terms of service before accessing {siteName}. Please contact your System Administrator for more details.',
+                    }, {
+                        siteName,
+                    }),
+                    [{
+                        text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'Ok'}),
+                        onPress: async () => {
+                            await actions.logout();
+                            this.setNavigatorButtons(true);
+                            this.props.navigator.dismissAllModals();
+                        },
+                    }],
+                );
             }
         );
     };
 
-    registerUserAction = (accepted, success) => {
+    registerUserAction = async (accepted, success) => {
+        const {actions} = this.props;
         const {intl} = this.context;
 
+        this.setNavigatorButtons(false);
         this.setState({
             loading: true,
-            serverError: null,
         });
-        updateTermsOfServiceStatus(
-            this.state.termsId,
-            accepted,
-            success,
-            () => {
-                this.setNavigatorButtons(true);
-                this.setState({
-                    loading: false,
-                    serverError: intl.formatMessage({
-                        id: 'terms_of_service.api_error',
-                        defaultMessage: 'Unable to complete the request. If this issue persists, contact your System Administrator.',
-                    }),
-                });
-            },
-        );
+
+        const {data} = await actions.updateTermsOfServiceStatus(this.state.termsId, accepted);
+        if (data) {
+            success(data);
+            this.setNavigatorButtons(true);
+            this.setState({
+                loading: false,
+            });
+        } else {
+            Alert.alert(
+                this.props.siteName,
+                intl.formatMessage({
+                    id: 'terms_of_service.api_error',
+                    defaultMessage: 'Unable to complete the request. If this issue persists, contact your System Administrator.',
+                }),
+                [{
+                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'Ok'}),
+                    onPress: async () => {
+                        await actions.logout();
+                        this.setNavigatorButtons(true);
+                        this.props.navigator.dismissAllModals();
+                    },
+                }],
+            );
+            this.setNavigatorButtons(true);
+            this.setState({
+                loading: false,
+            });
+        }
     };
 
     onNavigatorEvent = (event) => {
@@ -180,15 +213,8 @@ export default class TermsOfService extends PureComponent {
         }
     };
 
-    dismissErrorBanner = () => {
-        this.setState({
-            serverError: null,
-        });
-    };
-
     render() {
         const {navigator, theme} = this.props;
-        const {serverError} = this.state;
         const styles = getStyleSheet(theme);
 
         const blockStyles = getMarkdownBlockStyles(theme);
@@ -201,11 +227,6 @@ export default class TermsOfService extends PureComponent {
         return (
             <React.Fragment>
                 <StatusBar/>
-                <ErrorBanner
-                    text={serverError}
-                    visible={Boolean(serverError)}
-                    onClose={this.dismissErrorBanner}
-                />
                 <ScrollView
                     style={styles.scrollView}
                     contentContainerStyle={styles.scrollViewContent}
