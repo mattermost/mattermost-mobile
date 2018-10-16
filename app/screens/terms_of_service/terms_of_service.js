@@ -98,10 +98,14 @@ export default class TermsOfService extends PureComponent {
                 termsId: data.id,
                 termsText: data.text,
                 loading: false,
+            }, () => {
+                this.setNavigatorButtons(true);
             });
         } else {
             this.setState({
                 loading: false,
+            }, () => {
+                this.setNavigatorButtons(true);
             });
             Alert.alert(
                 this.props.siteName,
