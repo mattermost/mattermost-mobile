@@ -43,5 +43,5 @@
 
     "ShowSentryDebugOptions": false,
 
-    "CustomRequestHeaders": null
+    "CustomRequestHeaders": {}
 }
