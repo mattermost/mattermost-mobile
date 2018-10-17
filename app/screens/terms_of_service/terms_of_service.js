@@ -124,11 +124,11 @@ export default class TermsOfService extends PureComponent {
         this.props.navigator.setButtons(buttons);
     };
 
-    closeTermsAndLogout = async () => {
+    closeTermsAndLogout = () => {
         const {actions} = this.props;
 
-        await actions.logout();
         this.props.navigator.dismissAllModals();
+        actions.logout();
     };
 
     getTerms = async () => {
@@ -140,6 +140,7 @@ export default class TermsOfService extends PureComponent {
             loading: true,
             getTermsError: false,
         });
+        this.setNavigatorButtons(false);
 
         const {data} = await actions.getTermsOfService();
         if (data) {
@@ -206,12 +207,14 @@ export default class TermsOfService extends PureComponent {
         });
 
         const {data} = await actions.updateTermsOfServiceStatus(this.state.termsId, accepted);
+
+        this.setState({
+            loading: false,
+        });
+
         if (data) {
             success(data);
             this.setNavigatorButtons(true);
-            this.setState({
-                loading: false,
-            });
         } else {
             Alert.alert(
                 this.props.siteName,
@@ -227,10 +230,6 @@ export default class TermsOfService extends PureComponent {
                     onPress: this.closeTermsAndLogout,
                 }],
             );
-            this.setNavigatorButtons(true);
-            this.setState({
-                loading: false,
-            });
         }
     };
 
