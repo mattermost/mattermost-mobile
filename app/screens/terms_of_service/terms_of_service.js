@@ -53,7 +53,7 @@ export default class TermsOfService extends PureComponent {
     };
 
     leftButton = {
-        id: 'close-terms-of-service',
+        id: 'reject-terms-of-service',
     };
 
     rightButton = {
@@ -88,6 +88,24 @@ export default class TermsOfService extends PureComponent {
         }
     }
 
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            switch (event.id) {
+            case 'close-terms-of-service':
+                this.closeTermsAndLogout();
+                break;
+
+            case 'reject-terms-of-service':
+                this.handleRejectTerms();
+                break;
+
+            case 'accept-terms-of-service':
+                this.handleAcceptTerms();
+                break;
+            }
+        }
+    };
+
     setNavigatorButtons = (enabled = true) => {
         const buttons = {
             leftButtons: [{...this.leftButton, disabled: !enabled}],
@@ -95,6 +113,22 @@ export default class TermsOfService extends PureComponent {
         };
 
         this.props.navigator.setButtons(buttons);
+    };
+
+    enableNavigatorLogout = () => {
+        const buttons = {
+            leftButtons: [{...this.leftButton, id: 'close-terms-of-service', disabled: false}],
+            rightButtons: [{...this.rightButton, disabled: true}],
+        };
+
+        this.props.navigator.setButtons(buttons);
+    };
+
+    closeTermsAndLogout = async () => {
+        const {actions} = this.props;
+
+        await actions.logout();
+        this.props.navigator.dismissAllModals();
     };
 
     getTerms = async () => {
@@ -121,6 +155,7 @@ export default class TermsOfService extends PureComponent {
                 loading: false,
                 getTermsError: true,
             });
+            this.enableNavigatorLogout();
         }
     };
 
@@ -137,7 +172,7 @@ export default class TermsOfService extends PureComponent {
     };
 
     handleRejectTerms = async () => {
-        const {actions, siteName} = this.props;
+        const {siteName} = this.props;
         const {intl} = this.context;
 
         await this.registerUserAction(
@@ -153,11 +188,7 @@ export default class TermsOfService extends PureComponent {
                     }),
                     [{
                         text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'Ok'}),
-                        onPress: async () => {
-                            await actions.logout();
-                            this.setNavigatorButtons(true);
-                            this.props.navigator.dismissAllModals();
-                        },
+                        onPress: this.closeTermsAndLogout,
                     }],
                 );
             },
@@ -193,30 +224,13 @@ export default class TermsOfService extends PureComponent {
                     onPress: retry,
                 }, {
                     text: intl.formatMessage({id: 'mobile.terms_of_service.alert_cancel', defaultMessage: 'Cancel'}),
-                    onPress: async () => {
-                        await actions.logout();
-                        this.props.navigator.dismissAllModals();
-                    },
+                    onPress: this.closeTermsAndLogout,
                 }],
             );
             this.setNavigatorButtons(true);
             this.setState({
                 loading: false,
             });
-        }
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-terms-of-service':
-                this.handleRejectTerms();
-                break;
-
-            case 'accept-terms-of-service':
-                this.handleAcceptTerms();
-                break;
-            }
         }
     };
 
