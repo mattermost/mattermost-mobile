@@ -161,6 +161,10 @@ class SSO extends PureComponent {
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
+        } else if (parsed.host.includes(this.completedUrl)) {
+            this.webView.setNativeProps({
+                onMessage: this.onMessage,
+            });
         }
 
         if (Object.keys(nextState).length) {
@@ -233,7 +237,6 @@ class SSO extends PureComponent {
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     renderLoading={this.renderLoading}
-                    onMessage={this.onMessage}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                     useWebKit={true}
