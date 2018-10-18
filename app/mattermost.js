@@ -27,6 +27,7 @@ import {handleLoginIdChanged} from 'app/actions/views/login';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/users';
 
 import initialState from 'app/initial_state';
 import configureStore from 'app/store';
@@ -45,6 +46,7 @@ import {
 import {loadConfigAndLicense, startDataCleanup} from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {deleteFileCache} from 'app/utils/file';
+import {showTermsOfServiceModal} from 'app/utils/general';
 import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 import {t} from 'app/utils/i18n';
 import LocalConfig from 'assets/config';
@@ -359,8 +361,11 @@ const launchSelectServer = () => {
     });
 };
 
-const launchChannel = () => {
-    Navigation.startSingleScreenApp({
+const launchChannel = async () => {
+    const state = store.getState();
+    const theme = getTheme(state);
+
+    await Navigation.startSingleScreenApp({
         screen: {
             screen: 'Channel',
             navigatorStyle: {
@@ -375,6 +380,9 @@ const launchChannel = () => {
         },
         animationType: 'fade',
     });
+    if (shouldShowTermsOfService(state)) {
+        showTermsOfServiceModal(Navigation, theme);
+    }
 };
 
 const handleAppStateChange = (appState) => {
