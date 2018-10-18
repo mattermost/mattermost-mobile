@@ -38,7 +38,7 @@ Client4.doFetchWithResponse = async (url, options) => {
 
     const customHeaders = LocalConfig.CustomRequestHeaders;
     let requestOptions = Client4.getOptions(options);
-    if (customHeaders && Object.keys(customHeaders) > 0) {
+    if (customHeaders && Object.keys(customHeaders).length > 0) {
         requestOptions = {
             ...requestOptions,
             headers: {
