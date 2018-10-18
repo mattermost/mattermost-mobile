@@ -3,6 +3,8 @@
 
 import {Node} from 'commonmark';
 
+import {escapeRegex} from 'app/utils/markdown';
+
 /* eslint-disable no-underscore-dangle */
 
 // Combines adjacent text nodes into a single text node to make further transformation easier
@@ -245,4 +247,141 @@ function getLastSibling(node) {
     }
 
     return sibling;
+}
+
+export function highlightMentions(ast, mentionKeys) {
+    const walker = ast.walker();
+
+    // console.warn(mentionKeys);
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+
+        if (node.type === 'text') {
+            const {index, mention} = getFirstMention(node.literal, mentionKeys);
+
+            if (index === -1 || !mention) {
+                continue;
+            }
+
+            const mentionNode = highlightTextNode(node, index, index + mention.key.length, 'mention_highlight');
+
+            // Resume processing on the next node after the mention node which may include any remaining text
+            // that was part of this one
+            walker.resumeAt(mentionNode, false);
+        } else if (node.type === 'at_mention') {
+            const matches = mentionKeys.some((mention) => {
+                const mentionName = '@' + node.mentionName;
+
+                if (mention.caseSensitive) {
+                    return mention.key === mentionName;
+                }
+
+                return mention.key.toLowerCase() === mentionName.toLowerCase();
+            });
+
+            if (!matches) {
+                continue;
+            }
+
+            const wrapper = new Node('mention_highlight');
+            wrapNode(wrapper, node);
+
+            // Skip processing the wrapper to prevent checking this node again as its child
+            walker.resumeAt(wrapper, false);
+        }
+    }
+
+    return ast;
+}
+
+// Given a string and an array of mention keys, returns the first mention that appears and its index.
+export function getFirstMention(str, mentionKeys) {
+    let firstMention = null;
+    let firstMentionIndex = -1;
+
+    for (const mention of mentionKeys) {
+        const flags = mention.caseSensitive ? '' : 'i';
+        const pattern = new RegExp(`\\b${escapeRegex(mention.key)}_*\\b`, flags);
+
+        const match = pattern.exec(str);
+        if (!match) {
+            continue;
+        }
+
+        if (firstMentionIndex === -1 || match.index < firstMentionIndex) {
+            firstMentionIndex = match.index;
+            firstMention = mention;
+        }
+    }
+
+    return {
+        index: firstMentionIndex,
+        mention: firstMention,
+    };
+}
+
+// Given a text node, start/end indices, and a highlight node type, splits it into up to three nodes:
+// the text before the highlight (if any exists), the highlighted text, and the text after the highlight
+// the end of the highlight (if any exists). Returns a node containing the highlighted text.
+export function highlightTextNode(node, start, end, type) {
+    const literal = node.literal;
+    node.literal = literal.substring(start, end);
+
+    // Start by wrapping the node and then re-insert any non-highlighted code around it
+    const highlighted = new Node(type);
+    wrapNode(highlighted, node);
+
+    if (start !== 0) {
+        const before = new Node('text');
+        before.literal = literal.substring(0, start);
+
+        highlighted.insertBefore(before);
+    }
+
+    if (end !== literal.length) {
+        const after = new Node('text');
+        after.literal = literal.substring(end);
+
+        highlighted.insertAfter(after);
+    }
+
+    return highlighted;
+}
+
+// Wraps a given node in another node of the given type. The wrapper will take the place of
+// the node in the AST relative to its parents and siblings, and it will have the node as
+// its only child.
+function wrapNode(wrapper, node) {
+    // Set parent and update parent's children if necessary
+    wrapper._parent = node._parent;
+    if (node._parent._firstChild === node) {
+        node._parent._firstChild = wrapper;
+    }
+    if (node._parent._lastChild === node) {
+        node._parent._lastChild = wrapper;
+    }
+
+    // Set siblings and update those if necessary
+    wrapper._prev = node._prev;
+    node._prev = null;
+    if (wrapper._prev) {
+        wrapper._prev._next = wrapper;
+    }
+
+    wrapper._next = node._next;
+    node._next = null;
+    if (wrapper._next) {
+        wrapper._next._prev = wrapper;
+    }
+
+    // Make node a child of wrapper
+    wrapper._firstChild = node;
+    wrapper._lastChild = node;
+    node._parent = wrapper;
 }

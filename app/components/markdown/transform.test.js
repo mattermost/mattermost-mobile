@@ -7,10 +7,13 @@ import {Node, Parser} from 'commonmark';
 import {
     addListItemIndices,
     combineTextNodes,
+    getFirstMention,
+    highlightMentions,
+    highlightTextNode,
     pullOutImages,
 } from 'app/components/markdown/transform';
 
-/* eslint-disable max-nested-callbacks, no-console */
+/* eslint-disable no-console, no-underscore-dangle */
 
 describe('Components.Markdown.transform', () => {
     const parser = new Parser();
@@ -2225,31 +2228,678 @@ describe('Components.Markdown.transform', () => {
             assert.deepStrictEqual(actual, expected);
         });
     });
+
+    describe('highlightMentions', () => {
+        const tests = [{
+            name: 'no mentions',
+            input: 'These are words',
+            mentionKeys: [],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These are words',
+                    }],
+                }],
+            },
+        }, {
+            name: 'not an at-mention',
+            input: 'These are words',
+            mentionKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These are ',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: 'words',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'at-mention for another user',
+            input: 'This is @user',
+            mentionKeys: [{key: '@words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is ',
+                    }, {
+                        type: 'at_mention',
+                        _mentionName: 'user',
+                        children: [{
+                            type: 'text',
+                            literal: '@user',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'at-mention',
+            input: 'These are @words',
+            mentionKeys: [{key: '@words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These are ',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'at_mention',
+                            _mentionName: 'words',
+                            children: [{
+                                type: 'text',
+                                literal: '@words',
+                            }],
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'at-mention and non-at-mention for same word',
+            input: 'These are @words',
+            mentionKeys: [{key: 'words'}, {key: '@words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These are ',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'at_mention',
+                            _mentionName: 'words',
+                            children: [{
+                                type: 'text',
+                                literal: '@words',
+                            }],
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'case insensitive mentions',
+            input: 'These are Words and wORDS',
+            mentionKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These are ',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: 'Words',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' and ',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: 'wORDS',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'case sesitive mentions',
+            input: 'These are Words and wORDS',
+            mentionKeys: [{key: 'Words', caseSensitive: true}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These are ',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: 'Words',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' and wORDS',
+                    }],
+                }],
+            },
+        }, {
+            name: 'bold',
+            input: 'These are **words** in a sentence',
+            mentionKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These are ',
+                    }, {
+                        type: 'strong',
+                        children: [{
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'words',
+                            }],
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' in a sentence',
+                    }],
+                }],
+            },
+        }, {
+            name: 'italics',
+            input: 'These _are Words in_ a sentence',
+            mentionKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These ',
+                    }, {
+                        type: 'emph',
+                        children: [{
+                            type: 'text',
+                            literal: 'are ',
+                        }, {
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'Words',
+                            }],
+                        }, {
+                            type: 'text',
+                            literal: ' in',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' a sentence',
+                    }],
+                }],
+            },
+        }, {
+            name: 'code span',
+            input: 'These are `words`',
+            mentionKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These are ',
+                    }, {
+                        type: 'code',
+                        literal: 'words',
+                    }],
+                }],
+            },
+        }, {
+            name: 'code block',
+            input: '```\nThese are\nwords\n```',
+            mentionKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'code_block',
+                    literal: 'These are\nwords\n',
+                }],
+            },
+        }, {
+            name: 'link text',
+            input: 'These are [words words](https://example.com)',
+            mentionKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'These are ',
+                    }, {
+                        type: 'link',
+                        destination: 'https://example.com',
+                        title: '',
+                        children: [{
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'words',
+                            }],
+                        }, {
+                            type: 'text',
+                            literal: ' ',
+                        }, {
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'words',
+                            }],
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'link url',
+            input: 'This is [a link](https://example.com/words)',
+            mentionKeys: [{key: 'example'}, {key: 'com'}, {key: 'https'}, {key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is ',
+                    }, {
+                        type: 'link',
+                        destination: 'https://example.com/words',
+                        title: '',
+                        children: [{
+                            type: 'text',
+                            literal: 'a link',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'autolinked url',
+            input: 'https://example.com/words',
+            mentionKeys: [{key: 'example'}, {key: 'com'}, {key: 'https'}, {key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'link',
+                        destination: 'https://example.com/words',
+                        title: '',
+                        children: [{
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'https',
+                            }],
+                        }, {
+                            type: 'text',
+                            literal: '://',
+                        }, {
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'example',
+                            }],
+                        }, {
+                            type: 'text',
+                            literal: '.',
+                        }, {
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'com',
+                            }],
+                        }, {
+                            type: 'text',
+                            literal: '/',
+                        }, {
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'words',
+                            }],
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'words with punctuation',
+            input: 'words. (words) words/words/words words:words',
+            mentionKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: 'words',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: '. (',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: 'words',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ') ',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: 'words',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: '/',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: 'words',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: '/',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: 'words',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' ',
+                    }, {
+                        type: 'link',
+                        destination: 'words:words',
+                        title: '',
+                        children: [{
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'words',
+                            }],
+                        }, {
+                            type: 'text',
+                            literal: ':',
+                        }, {
+                            type: 'mention_highlight',
+                            children: [{
+                                type: 'text',
+                                literal: 'words',
+                            }],
+                        }],
+                    }],
+                }],
+            },
+        }];
+
+        for (const test of tests) {
+            it(test.name, () => {
+                const input = combineTextNodes(parser.parse(test.input));
+                const expected = makeAst(test.expected);
+                const actual = highlightMentions(input, test.mentionKeys);
+
+                assert.ok(verifyAst(actual));
+                assert.deepStrictEqual(stripUnusedFields(actual), stripUnusedFields(expected));
+            });
+        }
+    });
+
+    describe('getFirstMention', () => {
+        const tests = [{
+            name: 'no mention keys',
+            input: 'apple banana orange',
+            mentionKeys: [],
+            expected: {index: -1, mention: null},
+        }, {
+            name: 'single mention',
+            input: 'apple banana orange',
+            mentionKeys: [{key: 'banana'}],
+            expected: {index: 6, mention: {key: 'banana'}},
+        }, {
+            name: 'multiple mentions',
+            input: 'apple banana orange',
+            mentionKeys: [{key: 'apple'}, {key: 'orange'}],
+            expected: {index: 0, mention: {key: 'apple'}},
+        }, {
+            name: 'case sensitive',
+            input: 'apple APPLE Apple aPPle',
+            mentionKeys: [{key: 'Apple', caseSensitive: true}],
+            expected: {index: 12, mention: {key: 'Apple', caseSensitive: true}},
+        }, {
+            name: 'followed by period',
+            input: 'banana.',
+            mentionKeys: [{key: 'banana'}],
+            expected: {index: 0, mention: {key: 'banana'}},
+        }, {
+            name: 'followed by underscores',
+            input: 'banana__',
+            mentionKeys: [{key: 'banana'}],
+            expected: {index: 0, mention: {key: 'banana'}},
+        }, {
+            name: 'in brackets',
+            input: '(banana)',
+            mentionKeys: [{key: 'banana'}],
+            expected: {index: 1, mention: {key: 'banana'}},
+        }, {
+            name: 'following punctuation',
+            input: ':banana',
+            mentionKeys: [{key: 'banana'}],
+            expected: {index: 1, mention: {key: 'banana'}},
+        }, {
+            name: 'not part of another word',
+            input: 'pineapple',
+            mentionKeys: [{key: 'apple'}],
+            expected: {index: -1, mention: null},
+        }, {
+            name: 'no error from weird mention keys',
+            input: 'apple banana orange',
+            mentionKeys: [{key: '*\\3_.'}],
+            expected: {index: -1, mention: null},
+        }];
+
+        for (const test of tests) {
+            it(test.name, () => {
+                const actual = getFirstMention(test.input, test.mentionKeys);
+
+                assert.deepStrictEqual(actual, test.expected);
+            });
+        }
+    });
+
+    describe('highlightTextNode', () => {
+        const type = 'my_highlight';
+        const literal = 'This is a sentence';
+
+        const tests = [{
+            name: 'highlight entire text',
+            start: 0,
+            end: literal.length,
+            expected: [{
+                type,
+                children: [{
+                    type: 'text',
+                    literal,
+                }],
+            }],
+        }, {
+            name: 'highlight start of text',
+            start: 0,
+            end: 6,
+            expected: [{
+                type,
+                children: [{
+                    type: 'text',
+                    literal: 'This i',
+                }],
+            }, {
+                type: 'text',
+                literal: 's a sentence',
+            }],
+        }, {
+            name: 'highlight end of text',
+            start: 8,
+            end: literal.length,
+            expected: [{
+                type: 'text',
+                literal: 'This is ',
+            }, {
+                type,
+                children: [{
+                    type: 'text',
+                    literal: 'a sentence',
+                }],
+            }],
+        }, {
+            name: 'highlight middle of text',
+            start: 5,
+            end: 12,
+            expected: [{
+                type: 'text',
+                literal: 'This ',
+            }, {
+                type,
+                children: [{
+                    type: 'text',
+                    literal: 'is a se',
+                }],
+            }, {
+                type: 'text',
+                literal: 'ntence',
+            }],
+        }];
+
+        for (const test of tests) {
+            it(test.name + ', without siblings', () => {
+                const actual = makeAst({
+                    type: 'parent',
+                    children: [{
+                        type: 'text',
+                        literal,
+                    }],
+                });
+                const expected = makeAst({
+                    type: 'parent',
+                    children: test.expected,
+                });
+
+                const node = actual.firstChild;
+                assert.equal(node.type, 'text');
+
+                const highlighted = highlightTextNode(node, test.start, test.end, type);
+                assert.equal(highlighted.type, type);
+
+                assert.ok(verifyAst(actual));
+                assert.deepStrictEqual(actual, expected);
+            });
+
+            it(test.name + ', with siblings', () => {
+                const actual = makeAst({
+                    type: 'parent',
+                    children: [{
+                        type: 'previous',
+                    }, {
+                        type: 'text',
+                        literal,
+                    }, {
+                        type: 'next',
+                    }],
+                });
+                const expected = makeAst({
+                    type: 'parent',
+                    children: [
+                        {
+                            type: 'previous',
+                        },
+                        ...test.expected,
+                        {
+                            type: 'next',
+                        },
+                    ],
+                });
+
+                const node = actual.firstChild.next;
+                assert.equal(node.type, 'text');
+
+                const highlighted = highlightTextNode(node, test.start, test.end, type);
+                assert.equal(highlighted.type, type);
+
+                assert.ok(verifyAst(actual));
+                assert.deepStrictEqual(actual, expected);
+            });
+        }
+    });
 });
 
 // Testing and debugging functions
 
+// Confirms that all parent, child, and sibling linkages are correct and go both ways.
 function verifyAst(node) {
     if (node.prev && node.prev.next !== node) {
         console.error('node is not linked properly to prev');
+        return false;
     }
 
     if (node.next && node.next.prev !== node) {
         console.error('node is not linked properly to prev');
+        return false;
+    }
+
+    if (!node.firstChild && node.lastChild) {
+        console.error('node has children, but is not linked to first child');
+        return false;
+    }
+
+    if (node.firstChild && !node.lastChild) {
+        console.error('node has children, but is not linked to last child');
+        return false;
     }
 
     for (let child = node.firstChild; child; child = child.next) {
         if (child.parent !== node) {
             console.error('node is not linked properly to child');
+            return false;
+        }
+
+        if (!verifyAst(child)) {
+            return false;
+        }
+
+        if (!child.next && child !== node.lastChild) {
+            console.error('node children are not linked correctly');
+            return false;
         }
     }
 
     if (node.firstChild && node.firstChild.prev) {
         console.error('node\'s first child has previous sibling');
+        return false;
     }
 
     if (node.lastChild && node.lastChild.next) {
         console.error('node\'s last child has next sibling');
+        return false;
     }
 
     return true;
@@ -2371,6 +3021,26 @@ function makeAst(input) {
         for (const child of children) {
             node.appendChild(makeAst(child));
         }
+    }
+
+    return node;
+}
+
+// Remove any fields from the AST that are only used while parsing to make testing equality easier.
+function stripUnusedFields(node) {
+    const walker = node.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        e.node._open = false;
+        e.node._size = null;
+        e.node._sourcepos = null;
+
+        e.node._fenceChar = null;
+        e.node._fenceLength = 0;
+        e.node._fenceOffset = 0;
+        e.node._info = '';
+        e.node._isFenced = false;
     }
 
     return node;

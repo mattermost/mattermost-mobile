@@ -89,6 +89,9 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         table_header_row: {
             fontWeight: '700',
         },
+        mention_highlight: {
+            backgroundColor: theme.mentionHighlightBg,
+        },
     };
 });
 
