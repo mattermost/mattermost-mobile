@@ -41,5 +41,7 @@
 
     "AppGroupId": "group.com.mattermost.rnbeta",
 
-    "ShowSentryDebugOptions": false
+    "ShowSentryDebugOptions": false,
+
+    "CustomRequestHeaders": {}
 }
