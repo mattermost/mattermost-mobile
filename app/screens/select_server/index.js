@@ -14,6 +14,7 @@ import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import getClientUpgrade from 'app/selectors/client_upgrade';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/users';
 
 import SelectServer from './select_server';
 
@@ -30,6 +31,7 @@ function mapStateToProps(state) {
         latestVersion,
         license,
         minVersion,
+        showTermsOfService: shouldShowTermsOfService(state),
         theme: getTheme(state),
     };
 }
