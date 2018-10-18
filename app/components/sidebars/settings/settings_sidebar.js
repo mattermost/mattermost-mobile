@@ -358,6 +358,7 @@ export default class SettingsDrawer extends PureComponent {
                 onDrawerOpen={this.handleDrawerOpen}
                 drawerPosition='right'
                 drawerWidth={deviceWidth - DRAWER_INITIAL_OFFSET}
+                useNativeAnimations={true}
             >
                 {children}
             </DrawerLayout>
