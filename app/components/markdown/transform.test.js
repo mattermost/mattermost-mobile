@@ -6,6 +6,7 @@ import {Node, Parser} from 'commonmark';
 
 import {
     addListItemIndices,
+    combineTextNodes,
     pullOutImages,
 } from 'app/components/markdown/transform';
 
@@ -13,6 +14,174 @@ import {
 
 describe('Components.Markdown.transform', () => {
     const parser = new Parser();
+
+    describe('combineTextNodes', () => {
+        const tests = [{
+            name: 'no text nodes',
+            input: {
+                type: 'document',
+                children: [{
+                    type: 'thematic_break',
+                }],
+            },
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'thematic_break',
+                }],
+            },
+        }, {
+            name: 'one text node',
+            input: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is a sentence',
+                    }],
+                }],
+            },
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is a sentence',
+                    }],
+                }],
+            },
+        }, {
+            name: 'multiple text nodes',
+            input: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This ',
+                    }, {
+                        type: 'text',
+                        literal: 'is a',
+                    }, {
+                        type: 'text',
+                        literal: ' sen',
+                    }, {
+                        type: 'text',
+                        literal: 'tence',
+                    }],
+                }],
+            },
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is a sentence',
+                    }],
+                }],
+            },
+        }, {
+            name: 'mixed formatting',
+            input: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This ',
+                    }, {
+                        type: 'emph',
+                        children: [{
+                            type: 'text',
+                            literal: 'is a',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' sen',
+                    }, {
+                        type: 'text',
+                        literal: 'tence',
+                    }],
+                }],
+            },
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This ',
+                    }, {
+                        type: 'emph',
+                        children: [{
+                            type: 'text',
+                            literal: 'is a',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' sentence',
+                    }],
+                }],
+            },
+        }, {
+            name: 'multiple paragraphs',
+            input: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is a ',
+                    }, {
+                        type: 'text',
+                        literal: 'paragraph',
+                    }],
+                }, {
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is',
+                    }, {
+                        type: 'text',
+                        literal: ' another ',
+                    }, {
+                        type: 'text',
+                        literal: 'paragraph',
+                    }],
+                }],
+            },
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is a paragraph',
+                    }],
+                }, {
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is another paragraph',
+                    }],
+                }],
+            },
+        }];
+
+        for (const test of tests) {
+            it(test.name, () => {
+                const input = makeAst(test.input);
+                const expected = makeAst(test.expected);
+                const actual = combineTextNodes(input);
+
+                assert.ok(verifyAst(actual));
+                assert.deepStrictEqual(actual, expected);
+            });
+        }
+    });
 
     describe('addListItemIndices', () => {
         it('unordered list', () => {

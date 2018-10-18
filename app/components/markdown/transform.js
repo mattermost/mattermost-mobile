@@ -5,6 +5,41 @@ import {Node} from 'commonmark';
 
 /* eslint-disable no-underscore-dangle */
 
+// Combines adjacent text nodes into a single text node to make further transformation easier
+export function combineTextNodes(ast) {
+    const walker = ast.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+
+        if (node.type !== 'text') {
+            continue;
+        }
+
+        while (node._next && node._next.type === 'text') {
+            const next = node._next;
+
+            node.literal += next.literal;
+
+            node._next = next._next;
+            if (node._next) {
+                node._next._prev = node;
+            }
+
+            if (node._parent._lastChild === next) {
+                node._parent._lastChild = node;
+            }
+        }
+    }
+
+    return ast;
+}
+
 // Add indices to the items of every list
 export function addListItemIndices(ast) {
     const walker = ast.walker();
