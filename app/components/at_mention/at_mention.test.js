@@ -3,10 +3,11 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
-import {Clipboard, Platform} from 'react-native';
+import {Clipboard, Platform, Text} from 'react-native';
 
 import mattermostManaged from 'app/mattermost_managed';
 
+import {General} from 'mattermost-redux/constants';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import AtMention from './at_mention';
@@ -16,15 +17,15 @@ jest.mock('react-intl');
 describe('AtMention', () => {
     const baseProps = {
         isSearchResult: false,
-        mentionName: 'user-1',
+        mentionName: 'username-1',
         mentionStyle: {color: '#2389d7'},
         navigator: {push: jest.fn(), showModal: jest.fn()},
         onLongPress: jest.fn(),
         onPostPress: jest.fn(),
         textStyle: {color: '#3d3c40', fontSize: 15, lineHeight: 20},
-        teammateNameDisplay: 'username',
+        teammateNameDisplay: General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME,
         theme: Preferences.THEMES.default,
-        usersByUsername: {'user-1': {id: 'user-1', username: 'username_1'}},
+        usersByUsername: {'username-1': {id: 'user_id_1', username: 'username-1'}},
     };
 
     test('should match snapshot', () => {
@@ -33,10 +34,21 @@ describe('AtMention', () => {
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.find(Text).length).toBe(2);
+
+        const outerText = wrapper.find(Text).first();
+        expect(outerText.props().onLongPress).toBeDefined();
+        expect(outerText.props().onPress).toBeDefined();
+
+        // inner text with highlight
+        const innerText = wrapper.find(Text).last();
+        expect(innerText.props().style.color).toBe('#2389d7');
+
+        expect(innerText.props().children).toContain(baseProps.mentionName);
     });
 
-    test('should match snapshot, for user without username', () => {
-        const usersByUsername = {'user-1': {id: 'user-1'}};
+    test('should match text if mentioned name is not found on user profiles', () => {
+        const usersByUsername = {'user-2': {id: 'user_id_2', username: 'user-2'}};
         const wrapper = shallow(
             <AtMention
                 {...baseProps}
@@ -44,19 +56,53 @@ describe('AtMention', () => {
             />
         );
 
-        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.find(Text).length).toBe(1);
+
+        const outerText = wrapper.find(Text).first();
+        expect(outerText.props().onLongPress).not.toBeDefined();
+        expect(outerText.props().onPress).not.toBeDefined();
+        expect(outerText.props().children).toContain(baseProps.mentionName);
     });
 
-    test('should match snapshot, with suffix', () => {
-        const usersByUsername = {'user-1': {id: 'user-1', username: 'user'}};
+    test('should match text if mentioned name is with trailing punctuation', () => {
+        const mentionName = 'username-1.';
         const wrapper = shallow(
             <AtMention
                 {...baseProps}
+                mentionName={mentionName}
+            />
+        );
+
+        expect(wrapper.find(Text).length).toBe(2);
+
+        const outerText = wrapper.find(Text).first();
+        const innerText = wrapper.find(Text).last();
+        expect(outerText.props().children).toContain('.');
+        expect(innerText.props().children).toContain(baseProps.mentionName);
+    });
+
+    test('should match snapshot, mention name on full_name', () => {
+        const usersByUsername = {
+            'username-1': {
+                id: 'user_id_1',
+                username: 'username-1',
+                first_name: 'Firstname',
+                last_name: 'Lastname',
+            },
+        };
+        const teammateNameDisplay = General.TEAMMATE_NAME_DISPLAY.SHOW_FULLNAME;
+        const wrapper = shallow(
+            <AtMention
+                {...baseProps}
+                teammateNameDisplay={teammateNameDisplay}
                 usersByUsername={usersByUsername}
             />
         );
 
-        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.find(Text).length).toBe(2);
+
+        const innerText = wrapper.find(Text).last();
+        expect(innerText.props().children).toContain('@Firstname Lastname');
     });
 
     test('should call Clipboard.setString on handleCopyMention', () => {
@@ -65,7 +111,7 @@ describe('AtMention', () => {
             <AtMention {...baseProps}/>
         );
 
-        const username = 'user-1';
+        const username = 'username-1';
         wrapper.setState({username});
         wrapper.instance().handleCopyMention();
         expect(Clipboard.setString).toHaveBeenCalledTimes(1);
@@ -105,12 +151,48 @@ describe('AtMention', () => {
         expect(onLongPress).lastCalledWith(action);
     });
 
-    test('should match return value on getUserDetailsFromMentionName', () => {
+    describe('should match return value on getUserDetailsFromMentionName', () => {
         const wrapper = shallow(
             <AtMention {...baseProps}/>
         );
 
-        expect(wrapper.instance().getUserDetailsFromMentionName(baseProps)).toEqual({id: 'user-1', username: 'username_1'});
+        const user1 = {id: 'user_id_1', username: 'username-1'};
+        const user2 = {id: 'user_id_2', username: 'username-2'};
+
+        const testCases = [
+            {
+                name: 'regular mention',
+                input: {mentionName: 'username-1', usersByUsername: {[user1.username]: user1}},
+                output: user1,
+            },
+            {
+                name: 'another mention',
+                input: {mentionName: 'username-2', usersByUsername: {[user1.username]: user1, [user2.username]: user2}},
+                output: user2,
+            },
+            {
+                name: 'mention name with trailing punctuation',
+                input: {mentionName: 'username-1.', usersByUsername: {[user1.username]: user1, [user2.username]: user2}},
+                output: user1,
+            },
+            {
+                name: 'mention name with trailing punctuations',
+                input: {mentionName: 'username-1.-_', usersByUsername: {[user1.username]: user1, [user2.username]: user2}},
+                output: user1,
+            },
+            {
+                name: 'mention name not found in usersByUsername',
+                input: {mentionName: 'othername', usersByUsername: {[user1.username]: user1, [user2.username]: user2}},
+                output: {username: ''},
+            },
+        ];
+
+        for (const testCase of testCases) {
+            const {name, input, output} = testCase;
+            test(name, () => {
+                expect(wrapper.instance().getUserDetailsFromMentionName(input.mentionName, input.usersByUsername)).toEqual(output);
+            });
+        }
     });
 
     test('should call navigation on goToUserProfile', () => {
@@ -135,7 +217,7 @@ describe('AtMention', () => {
                 navBarTextColor: '#ffffff',
                 screenBackgroundColor: '#ffffff',
             },
-            passProps: {userId: 'user-1'},
+            passProps: {userId: 'user_id_1'},
             screen: 'UserProfile',
             title: {
                 defaultMessage: 'Profile',

@@ -38,7 +38,7 @@ export default class AtMention extends React.PureComponent {
     constructor(props) {
         super(props);
 
-        const user = this.getUserDetailsFromMentionName(props);
+        const user = this.getUserDetailsFromMentionName(props.mentionName, props.usersByUsername);
         this.state = {
             user,
         };
@@ -46,7 +46,7 @@ export default class AtMention extends React.PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.mentionName !== this.props.mentionName || nextProps.usersByUsername !== this.props.usersByUsername) {
-            const user = this.getUserDetailsFromMentionName(nextProps);
+            const user = this.getUserDetailsFromMentionName(nextProps.mentionName, nextProps.usersByUsername);
             this.setState({
                 user,
             });
@@ -79,12 +79,12 @@ export default class AtMention extends React.PureComponent {
         }
     };
 
-    getUserDetailsFromMentionName(props) {
-        let mentionName = props.mentionName.toLowerCase();
+    getUserDetailsFromMentionName(name, usersByUsername = {}) {
+        let mentionName = name.toLowerCase();
 
         while (mentionName.length > 0) {
-            if (props.usersByUsername.hasOwnProperty(mentionName)) {
-                return props.usersByUsername[mentionName];
+            if (usersByUsername.hasOwnProperty(mentionName)) {
+                return usersByUsername[mentionName];
             }
 
             // Repeatedly trim off trailing punctuation in case this is at the end of a sentence

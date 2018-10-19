@@ -19,47 +19,8 @@ exports[`AtMention should match snapshot 1`] = `
       }
     }
   >
-    @username_1
+    @username-1
   </Component>
   
-</Component>
-`;
-
-exports[`AtMention should match snapshot, for user without username 1`] = `
-<Component
-  style={
-    Object {
-      "color": "#3d3c40",
-      "fontSize": 15,
-      "lineHeight": 20,
-    }
-  }
->
-  @user-1
-</Component>
-`;
-
-exports[`AtMention should match snapshot, with suffix 1`] = `
-<Component
-  onLongPress={[Function]}
-  onPress={[Function]}
-  style={
-    Object {
-      "color": "#3d3c40",
-      "fontSize": 15,
-      "lineHeight": 20,
-    }
-  }
->
-  <Component
-    style={
-      Object {
-        "color": "#2389d7",
-      }
-    }
-  >
-    @user
-  </Component>
-  -1
 </Component>
 `;
