@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelLink should match snapshot 1`] = `
+<Component
+  style={
+    Object {
+      "color": "#3d3c40",
+      "fontSize": 15,
+      "lineHeight": 20,
+    }
+  }
+>
+  <Component
+    onPress={[Function]}
+    style={
+      Object {
+        "color": "#2389d7",
+      }
+    }
+  >
+    ~First Channel
+  </Component>
+  
+</Component>
+`;

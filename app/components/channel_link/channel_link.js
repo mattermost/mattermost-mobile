@@ -5,6 +5,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 
+import {getChannelFromChannelName} from './channel_link_utils';
+
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class ChannelLink extends React.PureComponent {
@@ -24,32 +26,14 @@ export default class ChannelLink extends React.PureComponent {
         super(props);
 
         this.state = {
-            channel: this.getChannelFromChannelName(props),
+            channel: getChannelFromChannelName(props.channelName, props.channelsByName),
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.channelName !== this.props.channelName || nextProps.channelsByName !== this.props.channelsByName) {
-            this.setState({
-                channel: this.getChannelFromChannelName(nextProps),
-            });
-        }
-    }
-
-    getChannelFromChannelName(props) {
-        let channelName = props.channelName;
-
-        while (channelName.length > 0) {
-            if (props.channelsByName[channelName]) {
-                return props.channelsByName[channelName];
-            }
-
-            // Repeatedly trim off trailing punctuation in case this is at the end of a sentence
-            if ((/[_-]$/).test(channelName)) {
-                channelName = channelName.substring(0, channelName.length - 1);
-            } else {
-                break;
-            }
+    static getDerivedStateFromProps(nextProps, prevState) {
+        const nextChannel = getChannelFromChannelName(nextProps.channelName, nextProps.channelsByName);
+        if (nextChannel !== prevState.channel) {
+            return {channel: nextChannel};
         }
 
         return null;
