@@ -1,5 +1,15 @@
 # Mattermost Mobile Apps Changelog
 
+
+## 1.13.1 Release
+- Release Date: October 18, 2018
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
+
+**Combatibility Note: Mobile App v1.13+ is required for Mattermost Server v5.4+**
+
+### Bug Fixes
+- Fixed an issue preventing some users from authenticating using OKTA
+
 ## v1.13.0 Release
 - Release Date: October 16, 2018
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
