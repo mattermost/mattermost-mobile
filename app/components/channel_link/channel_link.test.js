@@ -9,11 +9,11 @@ import ChannelLink from './channel_link';
 
 describe('ChannelLink', () => {
     const channelsByName = {
-        firstChannel: {id: 'channel_id_1', name: 'firstChannel', display_name: 'First Channel'},
-        secondChannel: {id: 'channel_id_2', name: 'secondChannel', display_name: 'Second Channel'},
+        first_channel: {id: 'channel_id_1', name: 'first_channel', display_name: 'First Channel'},
+        second_channel: {id: 'channel_id_2', name: 'second_channel', display_name: 'Second Channel'},
     };
     const baseProps = {
-        channelName: 'firstChannel',
+        channelName: 'first_channel',
         linkStyle: {color: '#2389d7'},
         onChannelLinkPress: jest.fn(),
         textStyle: {color: '#3d3c40', fontSize: 15, lineHeight: 20},
@@ -36,7 +36,7 @@ describe('ChannelLink', () => {
         let innerText = wrapper.find(Text).last();
         expect(innerText.props().onPress).toBeDefined();
         expect(innerText.props().style.color).toBe('#2389d7');
-        expect(innerText.props().children).toContain(channelsByName.firstChannel.display_name);
+        expect(innerText.props().children).toContain(channelsByName.first_channel.display_name);
 
         // text for channel name with punctuation
         const punctuation = '-_';
@@ -45,11 +45,11 @@ describe('ChannelLink', () => {
         innerText = wrapper.find(Text).last();
         const outerText = wrapper.find(Text).first();
         expect(innerText.props().onPress).toBeDefined();
-        expect(innerText.props().children).toContain(channelsByName.firstChannel.display_name);
+        expect(innerText.props().children).toContain(channelsByName.first_channel.display_name);
         expect(outerText.props().children).toContain(punctuation);
 
         // text for not found channel
-        const notFoundChannel = 'notFoundChannel';
+        const notFoundChannel = 'not_found_channel';
         wrapper.setProps({channelName: notFoundChannel});
         expect(wrapper.find(Text).length).toBe(1);
         innerText = wrapper.find(Text).first();
@@ -62,7 +62,7 @@ describe('ChannelLink', () => {
             <ChannelLink {...baseProps}/>
         );
 
-        const channel = channelsByName.firstChannel;
+        const channel = channelsByName.first_channel;
         wrapper.setState({channel});
         wrapper.instance().handlePress();
         expect(baseProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);

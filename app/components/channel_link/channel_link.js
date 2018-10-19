@@ -5,7 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 
-import {getChannelFromChannelName} from './channel_link_utils';
+import {getChannelOrUserFromMention} from 'app/utils/mention';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
@@ -26,12 +26,12 @@ export default class ChannelLink extends React.PureComponent {
         super(props);
 
         this.state = {
-            channel: getChannelFromChannelName(props.channelName, props.channelsByName),
+            channel: getChannelOrUserFromMention(props.channelName, props.channelsByName),
         };
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        const nextChannel = getChannelFromChannelName(nextProps.channelName, nextProps.channelsByName);
+        const nextChannel = getChannelOrUserFromMention(nextProps.channelName, nextProps.channelsByName);
         if (nextChannel !== prevState.channel) {
             return {channel: nextChannel};
         }

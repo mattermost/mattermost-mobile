@@ -9,6 +9,7 @@ import {intlShape} from 'react-intl';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import {emptyFunction} from 'app/utils/general';
+import {getChannelOrUserFromMention} from 'app/utils/mention';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
@@ -38,22 +39,27 @@ export default class AtMention extends React.PureComponent {
     constructor(props) {
         super(props);
 
-        const user = this.getUserDetailsFromMentionName(props.mentionName, props.usersByUsername);
+        const user = getChannelOrUserFromMention(props.mentionName, props.usersByUsername);
         this.state = {
             user,
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.mentionName !== this.props.mentionName || nextProps.usersByUsername !== this.props.usersByUsername) {
-            const user = this.getUserDetailsFromMentionName(nextProps.mentionName, nextProps.usersByUsername);
-            this.setState({
-                user,
-            });
+    static getDerivedStateFromProps(nextProps, prevState) {
+        const nextUser = getChannelOrUserFromMention(nextProps.mentionName, nextProps.usersByUsername);
+        if (nextUser !== prevState.user) {
+            return {user: nextUser};
         }
+
+        return null;
     }
 
     goToUserProfile = () => {
+        const {user} = this.state;
+        if (!user) {
+            return;
+        }
+
         const {navigator, theme} = this.props;
         const {intl} = this.context;
         const options = {
@@ -78,27 +84,6 @@ export default class AtMention extends React.PureComponent {
             navigator.showModal(options);
         }
     };
-
-    getUserDetailsFromMentionName(name, usersByUsername = {}) {
-        let mentionName = name.toLowerCase();
-
-        while (mentionName.length > 0) {
-            if (usersByUsername.hasOwnProperty(mentionName)) {
-                return usersByUsername[mentionName];
-            }
-
-            // Repeatedly trim off trailing punctuation in case this is at the end of a sentence
-            if ((/[._-]$/).test(mentionName)) {
-                mentionName = mentionName.substring(0, mentionName.length - 1);
-            } else {
-                break;
-            }
-        }
-
-        return {
-            username: '',
-        };
-    }
 
     handleLongPress = async () => {
         const {intl} = this.context;
@@ -128,7 +113,7 @@ export default class AtMention extends React.PureComponent {
         const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle} = this.props;
         const {user} = this.state;
 
-        if (!user.username) {
+        if (!user) {
             return <Text style={textStyle}>{'@' + mentionName}</Text>;
         }
 
