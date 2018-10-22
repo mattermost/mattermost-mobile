@@ -270,9 +270,9 @@ export default class TermsOfService extends PureComponent {
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         value={this.state.termsText}
-                        disableHashtags={false}
-                        disableAtMentions={false}
-                        disableChannelLink={false}
+                        disableHashtags={true}
+                        disableAtMentions={true}
+                        disableChannelLink={true}
                     />
                 </ScrollView>
             </React.Fragment>
