@@ -283,7 +283,7 @@ export default class SelectServer extends PureComponent {
     };
 
     loginWithCertificate = async () => {
-        const {intl, navigator, theme} = this.props;
+        const {intl, navigator} = this.props;
 
         tracker.initialLoad = Date.now();
 

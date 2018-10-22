@@ -80,7 +80,7 @@ export default class Login extends PureComponent {
 
     goToChannel = (expiresAt) => {
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
+        const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         if (expiresAt) {

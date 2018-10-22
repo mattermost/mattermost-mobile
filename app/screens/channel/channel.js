@@ -66,6 +66,7 @@ export default class Channel extends PureComponent {
         isLandscape: PropTypes.bool,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
+        showTermsOfService: PropTypes.bool,
         disableTermsModal: PropTypes.bool,
     };
 

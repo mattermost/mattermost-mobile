@@ -104,7 +104,7 @@ class SSO extends PureComponent {
     };
 
     goToLoadTeam = (expiresAt) => {
-        const {intl, navigator, theme} = this.props;
+        const {intl, navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         if (expiresAt) {
