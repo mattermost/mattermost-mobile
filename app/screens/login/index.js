@@ -16,7 +16,6 @@ function mapStateToProps(state) {
     const {checkMfa: checkMfaRequest, login: loginRequest} = state.requests.users;
     const config = getConfig(state);
     const license = getLicense(state);
-
     return {
         ...state.views.login,
         checkMfaRequest,

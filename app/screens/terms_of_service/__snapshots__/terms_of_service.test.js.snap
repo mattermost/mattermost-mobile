@@ -43,7 +43,9 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
         }
       }
-      isSearchResult={true}
+      disableAtMentions={true}
+      disableChannelLink={true}
+      disableHashtags={true}
       navigator={
         Object {
           "dismissAllModals": [MockFunction],
@@ -138,10 +140,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
         }
       }
-      onHashtagPress={[Function]}
-      onLongPress={[Function]}
-      onPermalinkPress={[Function]}
-      onPostPress={[Function]}
       textStyles={
         Object {
           "code": Object {
@@ -272,7 +270,9 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
         }
       }
-      isSearchResult={true}
+      disableAtMentions={true}
+      disableChannelLink={true}
+      disableHashtags={true}
       navigator={
         Object {
           "dismissAllModals": [MockFunction],
@@ -390,10 +390,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
         }
       }
-      onHashtagPress={[Function]}
-      onLongPress={[Function]}
-      onPermalinkPress={[Function]}
-      onPostPress={[Function]}
       textStyles={
         Object {
           "code": Object {
@@ -596,7 +592,9 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           },
         }
       }
-      isSearchResult={true}
+      disableAtMentions={true}
+      disableChannelLink={true}
+      disableHashtags={true}
       navigator={
         Object {
           "dismissAllModals": [MockFunction],
@@ -691,10 +689,6 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           },
         }
       }
-      onHashtagPress={[Function]}
-      onLongPress={[Function]}
-      onPermalinkPress={[Function]}
-      onPostPress={[Function]}
       textStyles={
         Object {
           "code": Object {

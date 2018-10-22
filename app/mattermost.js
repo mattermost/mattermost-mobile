@@ -359,7 +359,7 @@ const launchSelectServer = () => {
     });
 };
 
-const launchChannel = async () => {
+const launchChannel = () => {
     Navigation.startSingleScreenApp({
         screen: {
             screen: 'Channel',

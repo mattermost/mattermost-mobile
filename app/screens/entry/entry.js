@@ -19,7 +19,6 @@ import {
     app,
     store,
 } from 'app/mattermost';
-
 import {loadFromPushNotification} from 'app/actions/views/root';
 import {ViewTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';

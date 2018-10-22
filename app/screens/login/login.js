@@ -324,7 +324,7 @@ export default class Login extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg,
             },
         });
-    };
+    }
 
     render() {
         const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
