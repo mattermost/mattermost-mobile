@@ -198,7 +198,7 @@ export default class Markdown extends PureComponent {
 
     renderAtMention = ({context, mentionName}) => {
         if (this.props.disableAtMentions) {
-            return this.renderText({context, literal: mentionName});
+            return this.renderText({context, literal: `@${mentionName}`});
         }
 
         return (
@@ -216,7 +216,7 @@ export default class Markdown extends PureComponent {
 
     renderChannelLink = ({context, channelName}) => {
         if (this.props.disableChannelLink) {
-            return this.renderText({context, literal: channelName});
+            return this.renderText({context, literal: `~${channelName}`});
         }
 
         return (
@@ -241,7 +241,7 @@ export default class Markdown extends PureComponent {
 
     renderHashtag = ({context, hashtag}) => {
         if (this.props.disableHashtags) {
-            return this.renderText({context, literal: hashtag});
+            return this.renderText({context, literal: `#${hashtag}`});
         }
 
         return (
