@@ -24,7 +24,6 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
-import {showTermsOfServiceModal} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
@@ -47,7 +46,6 @@ export default class Login extends PureComponent {
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
-        showTermsOfService: PropTypes.bool,
         checkMfaRequest: PropTypes.object.isRequired,
         loginRequest: PropTypes.object.isRequired,
     };
@@ -96,10 +94,6 @@ export default class Login extends PureComponent {
                     localNotification: true,
                 },
             });
-        }
-
-        if (this.props.showTermsOfService) {
-            showTermsOfServiceModal(navigator, theme);
         }
 
         navigator.resetTo({

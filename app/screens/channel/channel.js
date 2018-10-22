@@ -27,6 +27,7 @@ import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import {preventDoubleTap} from 'app/utils/tap';
 import PostTextbox from 'app/components/post_textbox';
+import {showTermsOfServiceModal} from 'app/utils/general';
 import networkConnectionListener from 'app/utils/network';
 import tracker from 'app/utils/time_tracker';
 import LocalConfig from 'assets/config';
@@ -65,10 +66,15 @@ export default class Channel extends PureComponent {
         isLandscape: PropTypes.bool,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
+        disableTermsModal: PropTypes.bool,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
+    };
+
+    static defaultProps = {
+        disableTermsModal: false,
     };
 
     constructor(props) {
@@ -76,6 +82,10 @@ export default class Channel extends PureComponent {
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
+        }
+
+        if (props.showTermsOfService && !props.disableTermsModal) {
+            showTermsOfServiceModal(props.navigator, props.theme);
         }
     }
 

@@ -8,14 +8,12 @@ import {getSession, handleSuccessfulLogin} from 'app/actions/views/login';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
-import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/users';
 
 import SSO from './sso';
 
 function mapStateToProps(state) {
     return {
         ...state.views.selectServer,
-        showTermsOfService: shouldShowTermsOfService(state),
         theme: getTheme(state),
     };
 }
