@@ -23,7 +23,6 @@ function mapStateToProps(state) {
         loginRequest,
         config,
         license,
-        showTermsOfService,
         theme: getTheme(state),
     };
 }

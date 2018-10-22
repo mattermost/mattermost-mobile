@@ -23,7 +23,6 @@ function mapStateToProps(state) {
         isLandscape: isLandscape(state),
         enableTimezone,
         deviceTimezone,
-        showTermsOfService,
     };
 }
 

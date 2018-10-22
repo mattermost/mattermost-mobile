@@ -53,7 +53,6 @@ const lazyLoadReplyPushNotifications = () => {
  * With very little overhead navigate to
  *  - Login or
  *  - Channel Component
- *  And show Terms of Service Modal, if necessary.
  *
  * The idea is to render something to the user as soon as possible
  */
