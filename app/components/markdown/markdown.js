@@ -55,12 +55,18 @@ export default class Markdown extends PureComponent {
         textStyles: PropTypes.object,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string.isRequired,
+        disableHashtags: PropTypes.bool,
+        disableAtMentions: PropTypes.bool,
+        disableChannelLink: PropTypes.bool,
     };
 
     static defaultProps = {
         textStyles: {},
         blockStyles: {},
         onLongPress: () => true,
+        disableHashtags: false,
+        disableAtMentions: false,
+        disableChannelLink: false,
     };
 
     constructor(props) {
@@ -191,6 +197,10 @@ export default class Markdown extends PureComponent {
     }
 
     renderAtMention = ({context, mentionName}) => {
+        if (this.props.disableAtMentions) {
+            this.renderText({context, mentionName});
+        }
+
         return (
             <AtMention
                 mentionStyle={this.props.textStyles.mention}
@@ -205,6 +215,10 @@ export default class Markdown extends PureComponent {
     }
 
     renderChannelLink = ({context, channelName}) => {
+        if (this.props.disableChannelLink) {
+            this.renderText({context, channelName});
+        }
+
         return (
             <ChannelLink
                 linkStyle={this.props.textStyles.link}
@@ -225,7 +239,11 @@ export default class Markdown extends PureComponent {
         );
     }
 
-    renderHashtag = ({hashtag}) => {
+    renderHashtag = ({context, hashtag}) => {
+        if (this.props.disableHashtags) {
+            this.renderText({context, hashtag});
+        }
+
         return (
             <Hashtag
                 hashtag={hashtag}

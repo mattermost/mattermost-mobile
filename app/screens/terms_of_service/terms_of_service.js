@@ -270,11 +270,9 @@ export default class TermsOfService extends PureComponent {
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         value={this.state.termsText}
-                        onHashtagPress={emptyFunction}
-                        onPermalinkPress={emptyFunction}
-                        onLongPress={emptyFunction}
-                        onPostPress={emptyFunction}
-                        isSearchResult={true}
+                        disableHashtags={false}
+                        disableAtMentions={false}
+                        disableChannelLink={false}
                     />
                 </ScrollView>
             </React.Fragment>
