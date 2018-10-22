@@ -49,7 +49,6 @@ export default class TermsOfService extends PureComponent {
 
     static defaultProps = {
         siteName: 'Mattermost',
-        termsEnabled: true,
     };
 
     leftButton = {
