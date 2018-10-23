@@ -4,6 +4,8 @@
 import {StyleSheet} from 'react-native';
 
 import * as ThemeUtils from 'mattermost-redux/utils/theme_utils';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import Preferences from 'mattermost-redux/constants/preferences';
 
 export function makeStyleSheetFromTheme(getStyleFromTheme) {
     return ThemeUtils.makeStyleFromTheme((theme) => {
@@ -26,4 +28,18 @@ export function setNavigatorStyles(navigator, theme) {
         navBarButtonColor: theme.sidebarHeaderTextColor,
         screenBackgroundColor: theme.centerChannelBg,
     });
+}
+
+export function getAllowedThemes(state) {
+    const allowedThemeKeys = getConfig(state).AllowedThemes.split(',');
+    const allowedThemes = [];
+    allowedThemeKeys.map((key) => {
+        if (Preferences.THEMES.hasOwnProperty(key)) {
+            allowedThemes.push({
+                ...Preferences.THEMES[key],
+                key,
+            });
+        }
+    });
+    return allowedThemes;
 }
