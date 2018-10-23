@@ -5,7 +5,6 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
   style={
     Object {
       "alignItems": "center",
-      "backgroundColor": "#ffffff",
       "flexDirection": "row",
       "height": 44,
       "justifyContent": "flex-start",
@@ -53,7 +52,6 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
     <Component
       style={
         Object {
-          "color": "#3d3c40",
           "fontSize": 14,
           "paddingRight": 5,
         }
@@ -67,7 +65,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
     <Component
       style={
         Object {
-          "color": "rgba(61,60,64,0.5)",
+          "color": "rgba(0,0,0,0.5)",
           "fontSize": 14,
         }
       }

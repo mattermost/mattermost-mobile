@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {shallow} from 'enzyme';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import Preferences from 'mattermost-redux/constants/preferences';
+
+import SlideUpPanel from 'app/components/slide_up_panel';
 
 import ReactionList from './reaction_list';
 
@@ -30,7 +31,7 @@ describe('ReactionList', () => {
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
-        expect(wrapper.find(KeyboardAwareScrollView).exists()).toEqual(true);
+        expect(wrapper.find(SlideUpPanel).exists()).toEqual(true);
     });
 
     test('should match snapshot, renderReactionRows', () => {

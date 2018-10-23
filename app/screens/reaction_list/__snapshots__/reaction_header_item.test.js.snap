@@ -18,7 +18,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       },
       Object {
         "borderBottomWidth": 2,
-        "borderColor": "#ffffff",
+        "borderColor": "rgba(61,60,64,0.2)",
       },
       false,
     ]
@@ -33,7 +33,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
     <Component
       style={
         Object {
-          "color": "#2389d7",
+          "color": "#166de0",
           "fontSize": 16,
           "marginLeft": 4,
         }
@@ -55,7 +55,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
   <Component
     style={
       Object {
-        "color": "#2389d7",
+        "color": "#166de0",
         "fontSize": 16,
         "marginLeft": 4,
       }
@@ -73,7 +73,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
     id="mobile.reaction_header.all_emojis"
     style={
       Object {
-        "color": "#2389d7",
+        "color": "#166de0",
         "fontSize": 16,
         "marginLeft": 4,
       }
@@ -82,7 +82,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
   <Component
     style={
       Object {
-        "color": "#2389d7",
+        "color": "#166de0",
         "fontSize": 16,
         "marginLeft": 4,
       }

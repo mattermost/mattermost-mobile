@@ -3,10 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import {intlShape} from 'react-intl';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
+import SlideUpPanel from 'app/components/slide_up_panel';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {
     generateUserProfilesById,
@@ -98,11 +98,15 @@ export default class ReactionList extends PureComponent {
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
             if (event.id === 'close-reaction-list') {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
+                this.close();
             }
         }
+    };
+
+    close = () => {
+        this.props.navigator.dismissModal({
+            animationType: 'slide-down',
+        });
     };
 
     getMissingProfiles = () => {
@@ -168,20 +172,29 @@ export default class ReactionList extends PureComponent {
 
         return (
             <View style={style.flex}>
-                <View style={style.headerContainer}>
-                    <ReactionHeader
-                        selected={selected}
-                        onSelectReaction={this.handleOnSelectReaction}
-                        reactions={sortedReactionsForHeader}
-                        theme={theme}
-                    />
-                </View>
-                <KeyboardAwareScrollView
-                    bounces={true}
-                    innerRef={this.scrollViewRef}
-                >
-                    {this.renderReactionRows()}
-                </KeyboardAwareScrollView>
+                <SlideUpPanel
+                    onRequestClose={this.close}
+                    initialPosition={0.55}
+                    headerHeight={38}
+                    header={(
+                        <View style={style.headerContainer}>
+                            <ReactionHeader
+                                selected={selected}
+                                onSelectReaction={this.handleOnSelectReaction}
+                                reactions={sortedReactionsForHeader}
+                                theme={theme}
+                            />
+                        </View>
+                    )}
+                    content={(
+                        <ScrollView
+                            ref={this.scrollViewRef}
+                            bounces={true}
+                        >
+                            {this.renderReactionRows()}
+                        </ScrollView>
+                    )}
+                />
             </View>
         );
     }
@@ -190,7 +203,6 @@ export default class ReactionList extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
         headerContainer: {
