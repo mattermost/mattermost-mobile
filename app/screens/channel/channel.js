@@ -326,7 +326,6 @@ export default class Channel extends PureComponent {
             theme,
         } = this.props;
 
-        const style = getStyleFromTheme(theme);
         const Loading = require('app/components/channel_loader').default;
         return (
             <SafeAreaView navigator={navigator}>
@@ -351,8 +350,6 @@ export default class Channel extends PureComponent {
             showTermsOfService,
             theme,
         } = this.props;
-
-        const style = getStyleFromTheme(theme);
 
         if (showTermsOfService && !disableTermsModal) {
             return this.renderLoading();

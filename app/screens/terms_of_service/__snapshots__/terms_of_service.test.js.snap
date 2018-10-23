@@ -213,6 +213,9 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           "mention": Object {
             "color": "#2389d7",
           },
+          "mention_highlight": Object {
+            "backgroundColor": "#ffe577",
+          },
           "strong": Object {
             "fontWeight": "bold",
           },
@@ -462,6 +465,9 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "mention": Object {
             "color": "#2389d7",
+          },
+          "mention_highlight": Object {
+            "backgroundColor": "#ffe577",
           },
           "strong": Object {
             "fontWeight": "bold",
@@ -761,6 +767,9 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           },
           "mention": Object {
             "color": "#2389d7",
+          },
+          "mention_highlight": Object {
+            "backgroundColor": "#ffe577",
           },
           "strong": Object {
             "fontWeight": "bold",
