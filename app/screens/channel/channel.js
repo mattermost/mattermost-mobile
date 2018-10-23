@@ -320,14 +320,43 @@ export default class Channel extends PureComponent {
         this.loadChannels(this.props.currentTeamId);
     };
 
+    renderLoading = () => {
+        const {
+            navigator,
+            theme,
+        } = this.props;
+
+        const style = getStyleFromTheme(theme);
+        const Loading = require('app/components/channel_loader').default;
+        return (
+            <SafeAreaView navigator={navigator}>
+                <View style={style.flex}>
+                    <EmptyToolbar
+                        theme={theme}
+                        isLandscape={this.props.isLandscape}
+                    />
+                    <Loading channelIsLoading={true}/>
+                </View>
+            </SafeAreaView>
+        );
+    };
+
     render() {
         const {
             channelsRequestFailed,
             currentChannelId,
+            disableTermsModal,
             isLandscape,
             navigator,
+            showTermsOfService,
             theme,
         } = this.props;
+
+        const style = getStyleFromTheme(theme);
+
+        if (showTermsOfService && !disableTermsModal) {
+            return this.renderLoading();
+        }
 
         if (!currentChannelId) {
             if (channelsRequestFailed) {
@@ -340,18 +369,7 @@ export default class Channel extends PureComponent {
                 );
             }
 
-            const Loading = require('app/components/channel_loader').default;
-            return (
-                <SafeAreaView navigator={navigator}>
-                    <View style={style.flex}>
-                        <EmptyToolbar
-                            theme={theme}
-                            isLandscape={this.props.isLandscape}
-                        />
-                        <Loading channelIsLoading={true}/>
-                    </View>
-                </SafeAreaView>
-            );
+            return this.renderLoading();
         }
 
         const loaderDimensions = this.channelLoaderDimensions();

@@ -70,7 +70,7 @@ describe('thread', () => {
                 screenBackgroundColor: 'transparent',
             },
             passProps: {
-                disableTermsModal: true
+                disableTermsModal: true,
             },
         };
         const newNavigator = {...navigator};
