@@ -41,7 +41,7 @@ export default class ImageCacheManager {
                     };
 
                     this.downloadTask = await RNFetchBlob.config(options).fetch('GET', uri, {
-                        Authorization: `Bearer ${Client4.getToken()}`,
+                        Authorization: uri.includes(Client4.getUrl()) ? `Bearer ${Client4.getToken()}` : '',
                     });
                     if (this.downloadTask.respInfo.respType === 'text') {
                         throw new Error();
