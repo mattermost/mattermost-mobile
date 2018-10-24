@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import keyMirror from 'mattermost-redux/utils/key_mirror';
+import DeviceInfo from 'react-native-device-info';
 import RNFetchBlobFS from 'rn-fetch-blob/fs';
+import keyMirror from 'mattermost-redux/utils/key_mirror';
 
 const deviceTypes = keyMirror({
     CONNECTION_CHANGED: null,
@@ -16,5 +17,6 @@ export default {
     ...deviceTypes,
     DOCUMENTS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Documents`,
     IMAGES_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Images`,
+    IS_IPHONE_X: DeviceInfo.getModel().includes('iPhone X'),
     VIDEOS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Videos`,
 };

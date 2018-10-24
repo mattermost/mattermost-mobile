@@ -14,7 +14,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
@@ -24,6 +23,7 @@ import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
 import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
+import {DeviceTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
@@ -75,7 +75,6 @@ export default class EmojiPicker extends PureComponent {
         const emojis = this.renderableEmojis(props.emojisBySection, props.deviceWidth);
         const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
-        this.isX = DeviceInfo.getModel().includes('iPhone X');
         this.scrollToSectionTries = 0;
         this.state = {
             emojis,
@@ -436,7 +435,7 @@ export default class EmojiPicker extends PureComponent {
         let keyboardOffset = 64;
         if (Platform.OS === 'android') {
             keyboardOffset = -200;
-        } else if (this.isX) {
+        } else if (DeviceTypes.IS_IPHONE_X) {
             keyboardOffset = isLandscape ? 35 : 107;
         } else if (isLandscape) {
             keyboardOffset = 52;

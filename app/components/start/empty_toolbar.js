@@ -4,9 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 
-import {ViewTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -24,12 +23,6 @@ export default class EmptyToolbar extends PureComponent {
         isLandscape: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
     };
-
-    constructor(props) {
-        super(props);
-
-        this.isX = DeviceInfo.getModel().includes('iPhone X');
-    }
 
     render() {
         const {isLandscape, theme} = this.props;
@@ -51,7 +44,7 @@ export default class EmptyToolbar extends PureComponent {
                 height = IOS_TOP_LANDSCAPE;
             }
 
-            if (this.isX && isLandscape) {
+            if (DeviceTypes.IS_IPHONE_X && isLandscape) {
                 padding.paddingHorizontal = 10;
             }
             break;

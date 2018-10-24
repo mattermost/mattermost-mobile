@@ -11,13 +11,13 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 
-const IS_IPHONE_X = DeviceInfo.getModel().includes('iPhone X');
-const TOP_IOS_MARGIN = IS_IPHONE_X ? 84 : 64;
+import {DeviceTypes} from 'app/constants';
+
+const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_X ? 84 : 64;
 const TOP_ANDROID_MARGIN = 44;
 const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;
-const BOTTOM_MARGIN = IS_IPHONE_X ? 24 : 0;
+const BOTTOM_MARGIN = DeviceTypes.IS_IPHONE_X ? 24 : 0;
 const TOP_HEADER_HEIGHT = 36;
 
 export default class SlideUpPanel extends PureComponent {
@@ -69,6 +69,12 @@ export default class SlideUpPanel extends PureComponent {
 
     handlePressOut = () => {
         this.setState({isMoving: false});
+    };
+
+    handleTouchEnd = () => {
+        if (!this.isDragging) {
+            this.props.onRequestClose();
+        }
     };
 
     isAValidMovement = (distanceX, distanceY) => {
@@ -175,7 +181,7 @@ export default class SlideUpPanel extends PureComponent {
     };
 
     render() {
-        const {content, header, onRequestClose} = this.props;
+        const {content, header} = this.props;
         const containerPosition = {
             top: this.state.position,
         };
@@ -186,11 +192,7 @@ export default class SlideUpPanel extends PureComponent {
                     ref={this.setBackdropRef}
                     style={styles.backdrop}
                     pointerEvents='box-only'
-                    onTouchEnd={() => {
-                        if (!this.isDragging) {
-                            onRequestClose();
-                        }
-                    }}
+                    onTouchEnd={this.handleTouchEnd}
                     {...this.panGesture.panHandlers}
                 />
                 {this.renderDragIndicator(containerPosition)}

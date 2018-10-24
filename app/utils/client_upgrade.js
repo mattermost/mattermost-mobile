@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import semver from 'semver';
 
-import {UpgradeTypes} from 'app/constants/view';
+import {UpgradeTypes} from 'app/constants';
 
 import LocalConfig from 'assets/config';
 
