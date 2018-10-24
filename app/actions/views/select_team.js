@@ -3,16 +3,18 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {ChannelTypes, TeamTypes} from 'mattermost-redux/action_types';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
+import {getMyTeams} from 'mattermost-redux/actions/teams';
 import {RequestStatus} from 'mattermost-redux/constants';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes} from 'app/constants';
+import {selectFirstAvailableTeam} from 'app/utils/teams';
 
 import {setChannelDisplayName} from './channel';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 export function handleTeamChange(teamId, selectChannel = true) {
     return async (dispatch, getState) => {
@@ -46,21 +48,30 @@ export function selectDefaultTeam() {
         const {teams: allTeams, myMembers} = state.entities.teams;
         const teams = Object.keys(myMembers).map((key) => allTeams[key]);
 
-        let defaultTeam;
-        if (ExperimentalPrimaryTeam) {
-            defaultTeam = teams.find((t) => t.name === ExperimentalPrimaryTeam.toLowerCase());
-        }
-
-        if (!defaultTeam) {
-            defaultTeam = Object.values(teams).sort((a, b) => a.display_name.localeCompare(b.display_name))[0];
-        }
+        let defaultTeam = selectFirstAvailableTeam(teams, ExperimentalPrimaryTeam);
 
         if (defaultTeam) {
-            handleTeamChange(defaultTeam.id)(dispatch, getState);
+            dispatch(handleTeamChange(defaultTeam.id));
         } else if (state.requests.teams.getTeams.status === RequestStatus.FAILURE || state.requests.teams.getMyTeams.status === RequestStatus.FAILURE) {
             EventEmitter.emit(NavigationTypes.NAVIGATION_ERROR_TEAMS);
         } else {
-            EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
+            // If for some reason we reached this point cause of a failure in rehydration or something
+            // lets fetch the teams one more time to make sure the user does not belong to any team
+            const {data, error} = await dispatch(getMyTeams());
+            if (error) {
+                EventEmitter.emit(NavigationTypes.NAVIGATION_ERROR_TEAMS);
+                return;
+            }
+
+            if (data) {
+                defaultTeam = selectFirstAvailableTeam(data, ExperimentalPrimaryTeam);
+            }
+
+            if (defaultTeam) {
+                dispatch(handleTeamChange(defaultTeam.id));
+            } else {
+                EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
+            }
         }
     };
 }
