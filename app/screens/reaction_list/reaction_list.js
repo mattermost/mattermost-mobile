@@ -175,8 +175,9 @@ export default class ReactionList extends PureComponent {
                 <SlideUpPanel
                     onRequestClose={this.close}
                     initialPosition={0.55}
-                    headerHeight={38}
-                    header={(
+                    headerHeight={37.5}
+                >
+                    <React.Fragment>
                         <View style={style.headerContainer}>
                             <ReactionHeader
                                 selected={selected}
@@ -185,16 +186,14 @@ export default class ReactionList extends PureComponent {
                                 theme={theme}
                             />
                         </View>
-                    )}
-                    content={(
                         <ScrollView
                             ref={this.scrollViewRef}
                             bounces={true}
                         >
                             {this.renderReactionRows()}
                         </ScrollView>
-                    )}
-                />
+                    </React.Fragment>
+                </SlideUpPanel>
             </View>
         );
     }
@@ -206,7 +205,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         headerContainer: {
-            height: 38,
+            height: 37.5,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderBottomWidth: 1,
         },

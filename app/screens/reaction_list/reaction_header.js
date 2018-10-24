@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     ScrollView,
     StyleSheet,
     View,
@@ -56,7 +57,17 @@ export default class ReactionHeader extends PureComponent {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#FFFFFF',
-        height: 37,
+        height: 36.5,
         paddingHorizontal: 0,
+        ...Platform.select({
+            android: {
+                borderTopRightRadius: 2,
+                borderTopLeftRadius: 2,
+            },
+            ios: {
+                borderTopRightRadius: 10,
+                borderTopLeftRadius: 10,
+            },
+        }),
     },
 });

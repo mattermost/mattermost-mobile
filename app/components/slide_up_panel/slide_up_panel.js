@@ -8,23 +8,25 @@ import {
     PanResponder,
     Platform,
     StyleSheet,
-    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
 import {DeviceTypes} from 'app/constants';
 
+import SlideUpPanelIndicator from './slide_up_panel_indicator';
+
 const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_X ? 84 : 64;
 const TOP_ANDROID_MARGIN = 44;
 const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;
 const BOTTOM_MARGIN = DeviceTypes.IS_IPHONE_X ? 24 : 0;
-const TOP_HEADER_HEIGHT = 36;
 
 export default class SlideUpPanel extends PureComponent {
     static propTypes = {
         containerHeight: PropTypes.number,
-        content: PropTypes.element.isRequired,
-        header: PropTypes.element.isRequired,
+        children: PropTypes.oneOfType([
+            PropTypes.arrayOf(PropTypes.node),
+            PropTypes.node,
+        ]).isRequired,
         headerHeight: PropTypes.number,
         initialPosition: PropTypes.number,
         marginFromTop: PropTypes.number,
@@ -42,8 +44,9 @@ export default class SlideUpPanel extends PureComponent {
         super(props);
 
         const initialUsedSpace = Math.abs(props.initialPosition);
-        const initialPosition = ((props.containerHeight - (props.headerHeight + BOTTOM_MARGIN + TOP_HEADER_HEIGHT)) * (1 - initialUsedSpace));
-        this.panGesture = PanResponder.create({
+        const initialPosition = ((props.containerHeight - (props.headerHeight + BOTTOM_MARGIN)) * (1 - initialUsedSpace));
+
+        this.mainPanGesture = PanResponder.create({
             onMoveShouldSetPanResponder: (evt, gestureState) => {
                 return this.isAValidMovement(gestureState.dx, gestureState.dy);
             },
@@ -55,21 +58,25 @@ export default class SlideUpPanel extends PureComponent {
             },
         });
 
+        this.secondaryPanGesture = PanResponder.create({
+            onMoveShouldSetPanResponder: (evt, gestureState) => {
+                return this.isAValidMovement(gestureState.dx, gestureState.dy, true);
+            },
+            onPanResponderMove: (evt, gestureState) => {
+                this.moveStart(gestureState);
+            },
+            onPanResponderRelease: (evt, gestureState) => {
+                this.moveFinished(gestureState);
+            },
+        });
+
         this.state = {
-            isMoving: false,
             position: new Animated.Value(initialPosition),
             initialPosition,
             finalPosition: props.marginFromTop,
+            endPosition: 0,
         };
     }
-
-    handlePressIn = () => {
-        this.setState({isMoving: true});
-    };
-
-    handlePressOut = () => {
-        this.setState({isMoving: false});
-    };
 
     handleTouchEnd = () => {
         if (!this.isDragging) {
@@ -77,8 +84,8 @@ export default class SlideUpPanel extends PureComponent {
         }
     };
 
-    isAValidMovement = (distanceX, distanceY) => {
-        if (this.state.isMoving || this.state.finalPosition !== this.state.endPosition) {
+    isAValidMovement = (distanceX, distanceY, forceCheck = false) => {
+        if (this.state.finalPosition !== this.state.endPosition || forceCheck) {
             const moveTravelledFarEnough = Math.abs(distanceY) > Math.abs(distanceX) && Math.abs(distanceY) > 2;
             return moveTravelledFarEnough;
         }
@@ -88,7 +95,7 @@ export default class SlideUpPanel extends PureComponent {
 
     moveStart = (gestureState) => {
         if (this.viewRef && this.backdrop) {
-            const {initialPosition} = this.state;
+            const {endPosition, initialPosition} = this.state;
             const isGoingToUp = gestureState.moveY < gestureState.y0;
             let position = gestureState.moveY;
 
@@ -96,6 +103,8 @@ export default class SlideUpPanel extends PureComponent {
 
             if (isGoingToUp && position > initialPosition) {
                 position -= initialPosition;
+            } else if (!isGoingToUp && position > endPosition && position > initialPosition && initialPosition !== endPosition) {
+                position += endPosition;
             }
 
             this.backdrop.setNativeProps({pointerEvents: 'none'});
@@ -146,9 +155,11 @@ export default class SlideUpPanel extends PureComponent {
             duration: 250,
             useNativeDriver: true,
         }).start(() => {
-            this.setState({endPosition});
-            this.backdrop.setNativeProps({pointerEvents: 'box-only'});
-            this.isDragging = false;
+            if (this.viewRef && this.backdrop) {
+                this.setState({endPosition});
+                this.backdrop.setNativeProps({pointerEvents: 'box-only'});
+                this.isDragging = false;
+            }
         });
 
         position.addListener((pos) => {
@@ -164,24 +175,8 @@ export default class SlideUpPanel extends PureComponent {
         position.setValue(newPosition);
     };
 
-    renderDragIndicator = (containerPosition) => {
-        return (
-            <Animated.View
-                style={[containerPosition, styles.dragIndicatorContainer]}
-                {...this.panGesture.panHandlers}
-            >
-                <TouchableWithoutFeedback
-                    onPressIn={this.handlePressIn}
-                    onPressOut={this.handlePressOut}
-                >
-                    <View style={styles.dragIndicator}/>
-                </TouchableWithoutFeedback>
-            </Animated.View>
-        );
-    };
-
     render() {
-        const {content, header} = this.props;
+        const {children} = this.props;
         const containerPosition = {
             top: this.state.position,
         };
@@ -193,24 +188,18 @@ export default class SlideUpPanel extends PureComponent {
                     style={styles.backdrop}
                     pointerEvents='box-only'
                     onTouchEnd={this.handleTouchEnd}
-                    {...this.panGesture.panHandlers}
+                    {...this.secondaryPanGesture.panHandlers}
                 />
-                {this.renderDragIndicator(containerPosition)}
+                <SlideUpPanelIndicator
+                    containerPosition={containerPosition}
+                    panHandlers={this.secondaryPanGesture.panHandlers}
+                />
                 <Animated.View
                     ref={this.setViewRef}
                     style={[containerPosition, styles.container]}
-                    {...this.panGesture.panHandlers}
+                    {...this.mainPanGesture.panHandlers}
                 >
-                    <TouchableWithoutFeedback
-                        onPressIn={this.handlePressIn}
-                        onPressOut={this.handlePressOut}
-                    >
-                        <View>
-                            <View style={styles.topHeader}/>
-                            {header}
-                        </View>
-                    </TouchableWithoutFeedback>
-                    {content}
+                    {children}
                 </Animated.View>
             </View>
         );
@@ -224,8 +213,16 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
-        borderTopRightRadius: 10,
-        borderTopLeftRadius: 10,
+        ...Platform.select({
+            android: {
+                borderTopRightRadius: 2,
+                borderTopLeftRadius: 2,
+            },
+            ios: {
+                borderTopRightRadius: 10,
+                borderTopLeftRadius: 10,
+            },
+        }),
     },
     backdrop: {
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
@@ -234,20 +231,5 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-    },
-    topHeader: {
-        height: TOP_HEADER_HEIGHT - 20,
-    },
-    dragIndicatorContainer: {
-        marginVertical: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    dragIndicator: {
-        backgroundColor: 'white',
-        height: 5,
-        width: 62.5,
-        opacity: 0.9,
-        borderRadius: 25,
     },
 });
