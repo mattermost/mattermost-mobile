@@ -39,8 +39,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             paddingLeft: 8,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         sectionText: {
             fontSize: 12,
