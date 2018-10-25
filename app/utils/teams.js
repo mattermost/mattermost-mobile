@@ -2,9 +2,7 @@
 // See LICENSE.txt for license information.
 // @flow
 
-import type {Team} from 'mattermost-redux/types/teams';
-
-export function selectFirstAvailableTeam(teams: Array<Team>, primaryTeam: ?string): ?Team {
+export function selectFirstAvailableTeam(teams, primaryTeam) {
     let defaultTeam;
     if (primaryTeam) {
         defaultTeam = teams.find((t) => t.name === primaryTeam.toLowerCase());
