@@ -12,6 +12,8 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -84,10 +86,6 @@ export default class Channel extends PureComponent {
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
-
-        if (props.showTermsOfService && !props.disableTermsModal) {
-            showTermsOfServiceModal(props.navigator, props.theme);
-        }
     }
 
     componentWillMount() {
@@ -107,6 +105,10 @@ export default class Channel extends PureComponent {
 
         if (tracker.initialLoad) {
             this.props.actions.recordLoadTime('Start time', 'initialLoad');
+        }
+
+        if (this.props.showTermsOfService && !this.props.disableTermsModal) {
+            this.showTermsOfServiceModal();
         }
 
         EventEmitter.emit('renderDrawer');
@@ -197,6 +199,28 @@ export default class Channel extends PureComponent {
         if (ref) {
             this.settingsSidebar = ref.getWrappedInstance();
         }
+    };
+
+    showTermsOfServiceModal = async () => {
+        const {navigator, theme} = this.props;
+        const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+        await navigator.showModal({
+            screen: 'TermsOfService',
+            animationType: 'slide-up',
+            title: '',
+            backButtonTitle: '',
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.centerChannelColor,
+                navBarBackgroundColor: theme.centerChannelBg,
+                navBarButtonColor: theme.buttonBg,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            overrideBackPress: true,
+            passProps: {
+                closeButton,
+            },
+        });
     };
 
     goToChannelInfo = preventDoubleTap(() => {
