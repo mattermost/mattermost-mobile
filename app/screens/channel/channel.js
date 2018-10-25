@@ -29,7 +29,6 @@ import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import {preventDoubleTap} from 'app/utils/tap';
 import PostTextbox from 'app/components/post_textbox';
-import {showTermsOfServiceModal} from 'app/utils/general';
 import networkConnectionListener from 'app/utils/network';
 import tracker from 'app/utils/time_tracker';
 import LocalConfig from 'assets/config';
