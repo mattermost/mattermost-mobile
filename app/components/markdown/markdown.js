@@ -30,7 +30,12 @@ import MarkdownTable from './markdown_table';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow from './markdown_table_row';
 import MarkdownTableCell from './markdown_table_cell';
-import {addListItemIndices, pullOutImages} from './transform';
+import {
+    addListItemIndices,
+    combineTextNodes,
+    highlightMentions,
+    pullOutImages,
+} from './transform';
 
 export default class Markdown extends PureComponent {
     static propTypes = {
@@ -40,6 +45,7 @@ export default class Markdown extends PureComponent {
         isEdited: PropTypes.bool,
         isReplyPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
+        mentionKeys: PropTypes.array.isRequired,
         navigator: PropTypes.object.isRequired,
         onChannelLinkPress: PropTypes.func,
         onHashtagPress: PropTypes.func,
@@ -111,6 +117,8 @@ export default class Markdown extends PureComponent {
                 table_row: MarkdownTableRow,
                 table_cell: MarkdownTableCell,
 
+                mention_highlight: Renderer.forwardChildren,
+
                 editedIndicator: this.renderEditedIndicator,
             },
             renderParagraphsInLists: true,
@@ -141,9 +149,10 @@ export default class Markdown extends PureComponent {
             // If this text is displayed, it will be styled by the image component
             return <Text>{literal}</Text>;
         }
-        const style = this.computeTextStyle(this.props.baseTextStyle, context);
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
+        const style = this.computeTextStyle(this.props.baseTextStyle, context);
+
         return <Text style={style}>{literal}</Text>;
     }
 
@@ -390,8 +399,10 @@ export default class Markdown extends PureComponent {
     render() {
         let ast = this.parser.parse(this.props.value);
 
+        ast = combineTextNodes(ast);
         ast = addListItemIndices(ast);
         ast = pullOutImages(ast);
+        ast = highlightMentions(ast, this.props.mentionKeys);
 
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');

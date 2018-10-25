@@ -198,7 +198,7 @@ build-ios: | stop pre-build check-style ## Builds the iOS app
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios build
 	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
 
-build-android: | stop pre-buid check-style prepare-android-build ## Build the Android app
+build-android: | stop pre-build check-style prepare-android-build ## Build the Android app
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		npm start & echo; \
@@ -234,7 +234,7 @@ unsigned-android: stop pre-build check-style prepare-android-build ## Build an u
 test: | pre-run check-style ## Runs tests
 	@npm test
 
-build-pr: | can-build-pr stop pre-buil check-style ## Build a PR from the mattermost-mobile repo
+build-pr: | can-build-pr stop pre-build check-style ## Build a PR from the mattermost-mobile repo
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		npm start & echo; \

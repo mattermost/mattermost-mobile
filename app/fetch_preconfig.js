@@ -36,12 +36,24 @@ Client4.doFetchWithResponse = async (url, options) => {
         };
     }
 
+    const customHeaders = LocalConfig.CustomRequestHeaders;
+    let requestOptions = Client4.getOptions(options);
+    if (customHeaders && Object.keys(customHeaders).length > 0) {
+        requestOptions = {
+            ...requestOptions,
+            headers: {
+                ...requestOptions.headers,
+                ...LocalConfig.CustomRequestHeaders,
+            },
+        };
+    }
+
     let response;
     let headers;
 
     let data;
     try {
-        response = await fetch(url, Client4.getOptions(options));
+        response = await fetch(url, requestOptions);
         headers = response.headers;
         if (!url.startsWith('https') && response.rnfbRespInfo && response.rnfbRespInfo.redirects && response.rnfbRespInfo.redirects.length > 1) {
             handleRedirectProtocol(url, response);
