@@ -203,7 +203,7 @@ export default class Channel extends PureComponent {
     showTermsOfServiceModal = async () => {
         const {navigator, theme} = this.props;
         const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
-        await navigator.showModal({
+        navigator.showModal({
             screen: 'TermsOfService',
             animationType: 'slide-up',
             title: '',
