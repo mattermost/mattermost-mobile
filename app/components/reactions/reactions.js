@@ -44,8 +44,10 @@ export default class Reactions extends PureComponent {
     };
 
     componentDidMount() {
-        const {actions, postId} = this.props;
-        actions.getReactionsForPost(postId);
+        const {actions, postId, reactions} = this.props;
+        if (!reactions?.length) {
+            actions.getReactionsForPost(postId);
+        }
     }
 
     handleAddReaction = preventDoubleTap(() => {

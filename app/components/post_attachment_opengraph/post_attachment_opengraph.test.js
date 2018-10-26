@@ -18,6 +18,9 @@ describe('PostAttachmentOpenGraph', () => {
         site_name: 'Mattermost',
         title: 'Title',
         url: 'https://mattermost.com/',
+        images: [{
+            secure_url: 'https://www.mattermost.org/wp-content/uploads/2016/03/logoHorizontal_WS.png',
+        }],
     };
     const baseProps = {
         actions: {
@@ -25,6 +28,12 @@ describe('PostAttachmentOpenGraph', () => {
         },
         deviceHeight: 600,
         deviceWidth: 400,
+        imageMetadata: {
+            'https://www.mattermost.org/wp-content/uploads/2016/03/logoHorizontal_WS.png': {
+                width: 1165,
+                height: 265,
+            },
+        },
         isReplyPost: false,
         link: 'https://mattermost.com/',
         navigator: {},

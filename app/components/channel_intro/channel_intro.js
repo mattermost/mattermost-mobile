@@ -355,6 +355,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 60,
             marginHorizontal: 12,
             marginBottom: 12,
+            overflow: 'hidden',
         },
         displayName: {
             color: theme.centerChannelColor,

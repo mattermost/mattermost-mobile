@@ -73,6 +73,42 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       </Text>
     </TouchableOpacity>
   </View>
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "center",
+          "borderColor": "rgba(61,60,64,0.2)",
+          "borderRadius": 3,
+          "borderWidth": 1,
+          "marginTop": 5,
+        },
+        Object {
+          "height": 69.83261802575107,
+          "width": 307,
+        },
+      ]
+    }
+  >
+    <TouchableWithoutFeedback
+      onPress={[Function]}
+    >
+      <Component
+        resizeMode="contain"
+        style={
+          Array [
+            Object {
+              "borderRadius": 3,
+            },
+            Object {
+              "height": 69.83261802575107,
+              "width": 307,
+            },
+          ]
+        }
+      />
+    </TouchableWithoutFeedback>
+  </View>
 </View>
 `;
 
@@ -213,23 +249,23 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
 exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage 2`] = `
 <View
   style={
-    Object {
-      "alignItems": "center",
-      "borderColor": "rgba(61,60,64,0.2)",
-      "borderRadius": 3,
-      "borderWidth": 1,
-      "marginTop": 5,
-    }
+    Array [
+      Object {
+        "alignItems": "center",
+        "borderColor": "rgba(61,60,64,0.2)",
+        "borderRadius": 3,
+        "borderWidth": 1,
+        "marginTop": 5,
+      },
+      Object {
+        "height": 112.56666666666666,
+        "width": 307,
+      },
+    ]
   }
 >
   <TouchableWithoutFeedback
     onPress={[Function]}
-    style={
-      Object {
-        "height": 150,
-        "width": 307,
-      }
-    }
   >
     <Component
       resizeMode="contain"
@@ -239,7 +275,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
             "borderRadius": 3,
           },
           Object {
-            "height": 150,
+            "height": 112.56666666666666,
             "width": 307,
           },
         ]
