@@ -19,6 +19,7 @@ const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_X ? 84 : 64;
 const TOP_ANDROID_MARGIN = 44;
 const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;
 const BOTTOM_MARGIN = DeviceTypes.IS_IPHONE_X ? 24 : 0;
+const CONTAINER_MARGIN = TOP_MARGIN - 10;
 
 export default class SlideUpPanel extends PureComponent {
     static propTypes = {
@@ -48,7 +49,8 @@ export default class SlideUpPanel extends PureComponent {
 
         this.mainPanGesture = PanResponder.create({
             onMoveShouldSetPanResponder: (evt, gestureState) => {
-                return this.isAValidMovement(gestureState.dx, gestureState.dy);
+                const isGoingDown = gestureState.y0 < gestureState.dy;
+                return this.isAValidMovement(gestureState.dx, gestureState.dy, isGoingDown);
             },
             onPanResponderMove: (evt, gestureState) => {
                 this.moveStart(gestureState);
@@ -60,7 +62,8 @@ export default class SlideUpPanel extends PureComponent {
 
         this.secondaryPanGesture = PanResponder.create({
             onMoveShouldSetPanResponder: (evt, gestureState) => {
-                return this.isAValidMovement(gestureState.dx, gestureState.dy, true);
+                const isGoingDown = gestureState.y0 < gestureState.dy;
+                return this.isAValidMovement(gestureState.dx, gestureState.dy, isGoingDown, true);
             },
             onPanResponderMove: (evt, gestureState) => {
                 this.moveStart(gestureState);
@@ -70,12 +73,30 @@ export default class SlideUpPanel extends PureComponent {
             },
         });
 
+        this.previousTop = initialPosition;
+        this.canDrag = true;
+
         this.state = {
-            position: new Animated.Value(initialPosition),
+            position: new Animated.Value(props.containerHeight),
             initialPosition,
             finalPosition: props.marginFromTop,
             endPosition: 0,
         };
+    }
+
+    componentDidMount() {
+        // Animated.timing(this.state.position, {
+        //     toValue: this.state.initialPosition,
+        //     duration: 400,
+        //     useNativeDriver: true,
+        // }).start(() => {
+        //     if (this.viewRef && this.backdrop) {
+        //         this.setState({endPosition: this.state.initialPosition});
+        //         this.backdrop.setNativeProps({pointerEvents: 'box-only'});
+        //         this.isDragging = false;
+        //     }
+        // });
+        this.startAnimation(this.props.containerHeight, this.state.initialPosition, true);
     }
 
     handleTouchEnd = () => {
@@ -84,8 +105,10 @@ export default class SlideUpPanel extends PureComponent {
         }
     };
 
-    isAValidMovement = (distanceX, distanceY, forceCheck = false) => {
-        if (this.state.finalPosition !== this.state.endPosition || forceCheck) {
+    isAValidMovement = (distanceX, distanceY, isGoingDown, forceCheck = false) => {
+        const {endPosition, finalPosition} = this.state;
+
+        if (finalPosition !== endPosition || forceCheck || (isGoingDown && this.canDrag)) {
             const moveTravelledFarEnough = Math.abs(distanceY) > Math.abs(distanceX) && Math.abs(distanceY) > 2;
             return moveTravelledFarEnough;
         }
@@ -95,17 +118,9 @@ export default class SlideUpPanel extends PureComponent {
 
     moveStart = (gestureState) => {
         if (this.viewRef && this.backdrop) {
-            const {endPosition, initialPosition} = this.state;
-            const isGoingToUp = gestureState.moveY < gestureState.y0;
-            let position = gestureState.moveY;
-
+            const {endPosition} = this.state;
+            const position = endPosition - (gestureState.y0 - gestureState.moveY);
             this.isDragging = true;
-
-            if (isGoingToUp && position > initialPosition) {
-                position -= initialPosition;
-            } else if (!isGoingToUp && position > endPosition && position > initialPosition && initialPosition !== endPosition) {
-                position += endPosition;
-            }
 
             this.backdrop.setNativeProps({pointerEvents: 'none'});
             this.updatePosition(position);
@@ -123,21 +138,25 @@ export default class SlideUpPanel extends PureComponent {
         }
     };
 
-    setViewRef = (ref) => {
-        this.viewRef = ref;
-    };
-
     setBackdropRef = (ref) => {
         this.backdrop = ref;
     };
 
-    startAnimation = (initialY, positionY) => {
+    setDrag = (val) => {
+        this.canDrag = val;
+    };
+
+    setViewRef = (ref) => {
+        this.viewRef = ref;
+    };
+
+    startAnimation = (initialY, positionY, initial = false) => {
         const {containerHeight, onRequestClose} = this.props;
         const {finalPosition, initialPosition} = this.state;
         const isGoingToUp = positionY < initialY;
-        const position = new Animated.Value(positionY);
+        const position = new Animated.Value(initial ? initialY : positionY);
         const currentPosition = Math.abs(positionY / containerHeight);
-        let endPosition = (isGoingToUp ? finalPosition : positionY);
+        let endPosition = (isGoingToUp && !initial ? finalPosition : positionY);
 
         position.removeAllListeners();
 
@@ -199,7 +218,9 @@ export default class SlideUpPanel extends PureComponent {
                     style={[containerPosition, styles.container]}
                     {...this.mainPanGesture.panHandlers}
                 >
-                    {children}
+                    <View style={{maxHeight: (this.props.containerHeight - this.props.headerHeight - CONTAINER_MARGIN)}}>
+                        {children}
+                    </View>
                 </Animated.View>
             </View>
         );

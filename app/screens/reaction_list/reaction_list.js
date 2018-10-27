@@ -44,7 +44,9 @@ export default class ReactionList extends PureComponent {
 
         const reactionsByName = getReactionsByName(reactions);
 
+        this.contentOffsetY = -1;
         this.state = {
+            canDrag: true,
             allUserIds: getUniqueUserIds(reactions),
             reactions,
             reactionsByName,
@@ -120,13 +122,33 @@ export default class ReactionList extends PureComponent {
         }
     }
 
-    scrollViewRef = (ref) => {
-        this.scrollView = ref;
-    };
-
     handleOnSelectReaction = (emoji) => {
         this.setState({selected: emoji});
-    }
+        const slide = this.slideUpPanel?.getWrappedInstance();
+
+        if (slide) {
+            slide.setDrag(true);
+        }
+    };
+
+    handleScroll = (e) => {
+        const pageOffsetY = e.nativeEvent.contentOffset.y;
+        const canDrag = pageOffsetY <= 0;
+        const slide = this.slideUpPanel?.getWrappedInstance();
+
+        this.contentOffsetY = pageOffsetY;
+        if (slide) {
+            slide.setDrag(canDrag);
+        }
+    };
+
+    refSlideUpPanel = (r) => {
+        this.slideUpPanel = r;
+    };
+
+    refScrollView = (ref) => {
+        this.scrollView = ref;
+    };
 
     renderReactionRows = () => {
         const {
@@ -158,7 +180,7 @@ export default class ReactionList extends PureComponent {
                 <View style={style.separator}/>
             </View>
         ));
-    }
+    };
 
     render() {
         const {
@@ -173,6 +195,7 @@ export default class ReactionList extends PureComponent {
         return (
             <View style={style.flex}>
                 <SlideUpPanel
+                    ref={this.refSlideUpPanel}
                     onRequestClose={this.close}
                     initialPosition={0.55}
                     headerHeight={37.5}
@@ -187,8 +210,9 @@ export default class ReactionList extends PureComponent {
                             />
                         </View>
                         <ScrollView
-                            ref={this.scrollViewRef}
-                            bounces={true}
+                            ref={this.refScrollView}
+                            bounce={false}
+                            onScroll={this.handleScroll}
                         >
                             {this.renderReactionRows()}
                         </ScrollView>

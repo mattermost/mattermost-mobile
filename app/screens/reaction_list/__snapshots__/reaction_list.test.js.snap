@@ -85,7 +85,8 @@ exports[`ReactionList should match snapshot 1`] = `
         />
       </Component>
       <ScrollView
-        bounces={true}
+        bounce={false}
+        onScroll={[Function]}
       >
         <Component
           style={

@@ -56,8 +56,7 @@ export default class Reactions extends PureComponent {
 
         const options = {
             screen: 'ReactionList',
-            animationType: 'slide-up',
-            animated: true,
+            animationType: 'none',
             backButtonTitle: '',
             navigatorStyle: {
                 navBarHidden: true,
