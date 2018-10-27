@@ -129,6 +129,10 @@ export default class ReactionList extends PureComponent {
         if (slide) {
             slide.setDrag(true);
         }
+
+        if (this.scrollView) {
+            this.scrollView.scrollTo({x: 0, y: 0, animated: false});
+        }
     };
 
     handleScroll = (e) => {
