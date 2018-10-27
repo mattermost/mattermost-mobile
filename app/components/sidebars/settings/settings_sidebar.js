@@ -11,13 +11,13 @@ import {
     ScrollView,
     View,
 } from 'react-native';
-import DrawerLayout from 'react-native-drawer-layout';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
+import DrawerLayout from 'app/components/sidebars/drawer_layout';
 import UserStatus from 'app/components/user_status';
 import {NavigationTypes} from 'app/constants';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';

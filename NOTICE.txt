@@ -1433,7 +1433,7 @@ SOFTWARE.
 
 ## react-native-drawer-layout
 
-This product contains 'react-native-drawer-layout' by Brent Vatne.
+This product contains a modified version of 'react-native-drawer-layout' by Brent Vatne.
 
 A platform-agnostic drawer layout. Pure JavaScript implementation on iOS and native implementation on Android. Why? Because the drawer layout is a useful component regardless of the platform! And if you can use it without changing any code, that's perfect
 
