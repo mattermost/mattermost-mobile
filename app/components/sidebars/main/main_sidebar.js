@@ -273,10 +273,16 @@ export default class ChannelSidebar extends Component {
         if (isLandscape || isTablet) {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
         }
+        if (this.refs.drawer) {
+            this.refs.drawer.canClose = true;
+        }
         this.setState({openDrawerOffset});
     };
 
     onSearchStart = () => {
+        if (this.refs.drawer) {
+            this.refs.drawer.canClose = false;
+        }
         this.setState({openDrawerOffset: 0});
     };
 
