@@ -197,7 +197,7 @@ function cleanupState(action, keepCurrent = false) {
     const {currentChannelId} = payload.entities.channels;
 
     const {lastChannelForTeam} = resetPayload.views.team;
-    const nextEntitites = {
+    const nextEntities = {
         posts: {
             posts: {},
             postsInChannel: {},
@@ -224,14 +224,14 @@ function cleanupState(action, keepCurrent = false) {
             // we need to check that the channel id is not already included
             // the reason it can be included is cause at least one of the last channels viewed
             // in a team can be a DM or GM and the id can be duplicate
-            if (!nextEntitites.posts.postsInChannel[id] && payload.entities.posts.postsInChannel[id]) {
+            if (!nextEntities.posts.postsInChannel[id] && payload.entities.posts.postsInChannel[id]) {
                 let postIds;
                 if (keepCurrent && currentChannelId === id) {
                     postIds = payload.entities.posts.postsInChannel[id];
                 } else {
                     postIds = payload.entities.posts.postsInChannel[id].slice(0, 60);
                 }
-                nextEntitites.posts.postsInChannel[id] = postIds;
+                nextEntities.posts.postsInChannel[id] = postIds;
                 return result.concat(postIds);
             }
 
@@ -261,7 +261,7 @@ function cleanupState(action, keepCurrent = false) {
 
         if (post) {
             if (retentionPeriod && post.create_at < retentionPeriod) {
-                const postsInChannel = nextEntitites.posts.postsInChannel[post.channel_id] || [];
+                const postsInChannel = nextEntities.posts.postsInChannel[post.channel_id] || [];
                 const index = postsInChannel.indexOf(postId);
                 if (index !== -1) {
                     postsInChannel.splice(index, 1);
@@ -269,31 +269,31 @@ function cleanupState(action, keepCurrent = false) {
                 return;
             }
 
-            nextEntitites.posts.posts[postId] = post;
+            nextEntities.posts.posts[postId] = post;
 
             const reaction = payload.entities.posts.reactions[postId];
             if (reaction) {
-                nextEntitites.posts.reactions[postId] = reaction;
+                nextEntities.posts.reactions[postId] = reaction;
             }
 
             const fileIds = payload.entities.files.fileIdsByPostId[postId];
             if (fileIds) {
-                nextEntitites.files.fileIdsByPostId[postId] = fileIds;
+                nextEntities.files.fileIdsByPostId[postId] = fileIds;
                 fileIds.forEach((fileId) => {
-                    nextEntitites.files.files[fileId] = payload.entities.files.files[fileId];
+                    nextEntities.files.files[fileId] = payload.entities.files.files[fileId];
                 });
             }
 
             const postsInThread = payload.entities.posts.postsInThread[postId];
             if (postsInThread) {
-                nextEntitites.posts.postsInThread[postId] = postsInThread;
+                nextEntities.posts.postsInThread[postId] = postsInThread;
             }
         } else {
             // If the post is not in the store we need to remove it from the postsInChannel
-            const channelIds = Object.keys(nextEntitites.posts.postsInChannel);
+            const channelIds = Object.keys(nextEntities.posts.postsInChannel);
             for (let i = 0; i < channelIds.length; i++) {
                 const channelId = channelIds[i];
-                const posts = nextEntitites.posts.postsInChannel[channelId];
+                const posts = nextEntities.posts.postsInChannel[channelId];
                 const index = posts.indexOf(postId);
                 if (index !== -1) {
                     posts.splice(index, 1);
@@ -307,17 +307,17 @@ function cleanupState(action, keepCurrent = false) {
     if (payload.entities.posts && payload.entities.posts.pendingPostIds && payload.entities.posts.pendingPostIds.length) {
         const nextPendingPostIds = [...payload.entities.posts.pendingPostIds];
         payload.entities.posts.pendingPostIds.forEach((id) => {
-            const posts = nextEntitites.posts.posts;
+            const posts = nextEntities.posts.posts;
             const post = posts[id];
 
             if (post) {
-                const postsInChannel = [...nextEntitites.posts.postsInChannel[post.channel_id]] || [];
+                const postsInChannel = [...nextEntities.posts.postsInChannel[post.channel_id]] || [];
                 if (!post.failed) {
                     Reflect.deleteProperty(posts, id);
                     const index = postsInChannel.indexOf(id);
                     if (index !== -1) {
                         postsInChannel.splice(index, 1);
-                        nextEntitites.posts.postsInChannel[post.channel_id] = postsInChannel;
+                        nextEntities.posts.postsInChannel[post.channel_id] = postsInChannel;
                     }
                     removePendingPost(nextPendingPostIds, id);
                 }
@@ -326,13 +326,13 @@ function cleanupState(action, keepCurrent = false) {
             }
         });
 
-        nextEntitites.posts.pendingPostIds = nextPendingPostIds;
+        nextEntities.posts.pendingPostIds = nextPendingPostIds;
     }
 
     const nextState = {
         app: resetPayload.app,
         entities: {
-            ...nextEntitites,
+            ...nextEntities,
             channels: payload.entities.channels,
             emojis: payload.entities.emojis,
             general: resetPayload.entities.general,
