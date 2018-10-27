@@ -85,18 +85,7 @@ export default class SlideUpPanel extends PureComponent {
     }
 
     componentDidMount() {
-        // Animated.timing(this.state.position, {
-        //     toValue: this.state.initialPosition,
-        //     duration: 400,
-        //     useNativeDriver: true,
-        // }).start(() => {
-        //     if (this.viewRef && this.backdrop) {
-        //         this.setState({endPosition: this.state.initialPosition});
-        //         this.backdrop.setNativeProps({pointerEvents: 'box-only'});
-        //         this.isDragging = false;
-        //     }
-        // });
-        this.startAnimation(this.props.containerHeight, this.state.initialPosition, true);
+        this.startAnimation(this.props.containerHeight, this.state.initialPosition, false, true);
     }
 
     handleTouchEnd = () => {
@@ -129,12 +118,13 @@ export default class SlideUpPanel extends PureComponent {
 
     moveFinished = (gestureState) => {
         if (this.viewRef) {
+            const isGoingDown = gestureState.y0 < gestureState.moveY;
             let position = gestureState.moveY;
             if (this.previousTop !== position) {
                 position = this.previousTop;
             }
 
-            this.startAnimation(gestureState.y0, position);
+            this.startAnimation(gestureState.y0, position, isGoingDown);
         }
     };
 
@@ -150,18 +140,15 @@ export default class SlideUpPanel extends PureComponent {
         this.viewRef = ref;
     };
 
-    startAnimation = (initialY, positionY, initial = false) => {
+    startAnimation = (initialY, positionY, isGoingDown, initial = false) => {
         const {containerHeight, onRequestClose} = this.props;
         const {finalPosition, initialPosition} = this.state;
-        const isGoingToUp = positionY < initialY;
         const position = new Animated.Value(initial ? initialY : positionY);
-        const currentPosition = Math.abs(positionY / containerHeight);
-        let endPosition = (isGoingToUp && !initial ? finalPosition : positionY);
+        let endPosition = (!isGoingDown && !initial ? finalPosition : positionY);
 
         position.removeAllListeners();
-
-        if (!isGoingToUp) {
-            if (currentPosition <= this.props.initialPosition) {
+        if (isGoingDown) {
+            if (positionY <= this.state.initialPosition) {
                 endPosition = initialPosition;
             } else {
                 onRequestClose();
@@ -171,7 +158,7 @@ export default class SlideUpPanel extends PureComponent {
 
         Animated.timing(position, {
             toValue: endPosition,
-            duration: 250,
+            duration: 100,
             useNativeDriver: true,
         }).start(() => {
             if (this.viewRef && this.backdrop) {
