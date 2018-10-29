@@ -107,7 +107,7 @@ export default class ReactionList extends PureComponent {
 
     close = () => {
         this.props.navigator.dismissModal({
-            animationType: 'slide-down',
+            animationType: 'none',
         });
     };
 
