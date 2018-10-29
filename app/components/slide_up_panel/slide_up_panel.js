@@ -90,7 +90,7 @@ export default class SlideUpPanel extends PureComponent {
 
     handleTouchEnd = () => {
         if (!this.isDragging) {
-            this.props.onRequestClose();
+            this.startAnimation(this.state.endPosition, this.props.containerHeight, false, true);
         }
     };
 
@@ -151,20 +151,23 @@ export default class SlideUpPanel extends PureComponent {
             if (positionY <= this.state.initialPosition) {
                 endPosition = initialPosition;
             } else {
-                onRequestClose();
                 endPosition = containerHeight;
             }
         }
 
         Animated.timing(position, {
             toValue: endPosition,
-            duration: 100,
+            duration: 250,
             useNativeDriver: true,
         }).start(() => {
             if (this.viewRef && this.backdrop) {
                 this.setState({endPosition});
                 this.backdrop.setNativeProps({pointerEvents: 'box-only'});
                 this.isDragging = false;
+
+                if (endPosition === containerHeight) {
+                    onRequestClose();
+                }
             }
         });
 
