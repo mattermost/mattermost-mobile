@@ -194,7 +194,7 @@ export default class NetworkIndicator extends PureComponent {
 
         this.handleWebSocket(active);
 
-        if (Platform.OS === 'ios' && active && currentChannelId) {
+        if (active && currentChannelId) {
             PushNotifications.clearChannelNotifications(currentChannelId);
         }
     };

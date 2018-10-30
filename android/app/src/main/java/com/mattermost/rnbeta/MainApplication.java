@@ -34,6 +34,8 @@ import com.reactnativenavigation.NavigationApplication;
 import com.wix.reactnativenotifications.RNNotificationsPackage;
 import com.wix.reactnativenotifications.core.notification.INotificationsApplication;
 import com.wix.reactnativenotifications.core.notification.IPushNotification;
+import com.wix.reactnativenotifications.core.notificationdrawer.IPushNotificationsDrawer;
+import com.wix.reactnativenotifications.core.notificationdrawer.INotificationsDrawerApplication;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
@@ -41,7 +43,7 @@ import com.wix.reactnativenotifications.core.JsIOHelper;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainApplication extends NavigationApplication implements INotificationsApplication {
+public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
   public Boolean sharedExtensionIsOpened = false;
   public Boolean replyFromPushNotification = false;
@@ -116,5 +118,10 @@ public class MainApplication extends NavigationApplication implements INotificat
             defaultAppLaunchHelper,
             new JsIOHelper()
     );
+  }
+
+  @Override
+  public IPushNotificationsDrawer getPushNotificationsDrawer(Context context, AppLaunchHelper defaultAppLaunchHelper) {
+    return new CustomPushNotificationDrawer(context, defaultAppLaunchHelper);
   }
 }
