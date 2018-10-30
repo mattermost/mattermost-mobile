@@ -137,7 +137,8 @@ class PushNotification {
     }
 
     setApplicationIconBadgeNumber(number) {
-        NotificationsIOS.setBadgesCount(number);
+        const count = number < 0 ? 0 : number;
+        NotificationsIOS.setBadgesCount(count);
     }
 
     getNotification() {
@@ -146,6 +147,24 @@ class PushNotification {
 
     resetNotification() {
         this.deviceNotification = null;
+    }
+
+    clearChannelNotifications(channelId) {
+        const ids = [];
+
+        NotificationsIOS.getDeliveredNotifications((notifications) => {
+            for (let i = 0; i < notifications.length; i++) {
+                const notification = notifications[i];
+
+                if (notification.userInfo.channel_id === channelId) {
+                    ids.push(notification.identifier);
+                }
+            }
+
+            if (ids.length) {
+                NotificationsIOS.removeDeliveredNotifications(ids);
+            }
+        });
     }
 }
 
