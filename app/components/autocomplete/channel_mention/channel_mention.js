@@ -92,21 +92,23 @@ export default class ChannelMention extends PureComponent {
         myMembers !== this.props.myMembers || deletedPublicChannels !== this.props.deletedPublicChannels)) {
             const sections = [];
             if (isSearch) {
-                if (publicChannels.length || requestStatus === RequestStatus.STARTED) {
+                if (publicChannels.length) {
                     sections.push({
                         id: t('suggestion.search.public'),
                         defaultMessage: 'Public Channels',
                         data: publicChannels.filter((cId) => myMembers[cId]),
                         key: 'publicChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
-                if (privateChannels.length || requestStatus === RequestStatus.STARTED) {
+                if (privateChannels.length) {
                     sections.push({
                         id: t('suggestion.search.private'),
                         defaultMessage: 'Private Channels',
                         data: privateChannels,
                         key: 'privateChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
