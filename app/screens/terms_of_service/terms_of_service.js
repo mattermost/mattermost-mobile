@@ -158,8 +158,8 @@ export default class TermsOfService extends PureComponent {
         }
     };
 
-    handleAcceptTerms = async () => {
-        await this.registerUserAction(
+    handleAcceptTerms = () => {
+        this.registerUserAction(
             true,
             () => {
                 this.props.navigator.dismissModal({
@@ -170,11 +170,11 @@ export default class TermsOfService extends PureComponent {
         );
     };
 
-    handleRejectTerms = async () => {
+    handleRejectTerms = () => {
         const {siteName} = this.props;
         const {intl} = this.context;
 
-        await this.registerUserAction(
+        this.registerUserAction(
             false,
             () => {
                 Alert.alert(
