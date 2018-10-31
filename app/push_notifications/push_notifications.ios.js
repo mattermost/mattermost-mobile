@@ -150,9 +150,8 @@ class PushNotification {
     }
 
     clearChannelNotifications(channelId) {
-        const ids = [];
-
         NotificationsIOS.getDeliveredNotifications((notifications) => {
+            const ids = [];
             for (let i = 0; i < notifications.length; i++) {
                 const notification = notifications[i];
 

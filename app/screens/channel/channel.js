@@ -230,15 +230,6 @@ export default class Channel extends PureComponent {
         }
     });
 
-    handleAppStateChange = async (appState) => {
-        const active = appState === 'active';
-
-        this.handleWebSocket(active);
-        if (Platform.OS === 'ios' && active) {
-            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
-        }
-    };
-
     handleLeaveTeam = () => {
         this.props.actions.selectDefaultTeam();
     };
@@ -310,7 +301,6 @@ export default class Channel extends PureComponent {
 
         const loaderDimensions = this.channelLoaderDimensions();
 
-        // console.warn('height', height, Date.now())
         return (
             <MainSidebar
                 ref={this.channelSidebarRef}
@@ -324,7 +314,7 @@ export default class Channel extends PureComponent {
                 >
                     <SafeAreaView navigator={navigator}>
                         <StatusBar/>
-                        <NetworkIndicator/>
+                        <NetworkIndicator currentChannelId={currentChannelId}/>
                         <ChannelNavBar
                             navigator={navigator}
                             openChannelDrawer={this.openChannelSidebar}

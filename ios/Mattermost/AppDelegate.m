@@ -79,7 +79,6 @@ NSString* const NotificationClearAction = @"clear";
       NSMutableArray<NSString *> *notificationIds = [NSMutableArray new];
       
       for (UNNotification *prevNotification in notifications) {
-        //            [formattedNotifications addObject:RCTFormatUNNotification(notification)];
         UNNotificationRequest *notificationRequest = [prevNotification request];
         UNNotificationContent *notificationContent = [notificationRequest content];
         NSString *identifier = [notificationRequest identifier];
