@@ -1,6 +1,9 @@
 /* eslint-disable  */
-// https://github.com/react-native-community/react-native-drawer-layout
+// Original work:  https://github.com/react-native-community/react-native-drawer-layout .
+// Modified work: Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
 // @flow
+
 import React, { Component } from 'react';
 import {
     Animated,
