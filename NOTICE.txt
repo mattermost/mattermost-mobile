@@ -897,7 +897,7 @@ Copyright 2015-present Mattermost, Inc.
 
 ## mime-db
 
-This product contains 'mime-db' by GitHub user "jshttp".
+This product contains 'mime-db' by Douglas Christopher Wilson.
 
 Media Type Database
 
@@ -1522,7 +1522,7 @@ This product contains 'react-native-image-picker' by Marc Shilling.
 A React Native module that allows you to use native UI to select media from the device library or directly from the camera
 
 * HOMEPAGE:
-  * https://github.com/marcshilling/react-native-image-picker#readme
+  * https://github.com/react-community/react-native-image-picker
 
 * LICENSE: MIT
 
@@ -2263,7 +2263,7 @@ This product contains 'react-redux' by Dan Abramov.
 Official React bindings for Redux
 
 * HOMEPAGE:
-  * https://github.com/gaearon/react-redux
+  * https://github.com/reduxjs/react-redux
 
 * LICENSE: MIT
 
@@ -2468,7 +2468,7 @@ SOFTWARE.
 
 ## reselect
 
-This product contains 'reselect' by Redux.
+This product contains 'reselect' by Lee Bannard.
 
 Selectors for Redux.
 
