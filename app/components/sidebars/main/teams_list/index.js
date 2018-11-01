@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentTeamId, getMySortedTeamIds} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentTeamId, getMySortedTeamIds, getJoinableTeamIds} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {handleTeamChange} from 'app/actions/views/select_team';
@@ -20,6 +20,7 @@ function mapStateToProps(state) {
     return {
         currentTeamId: getCurrentTeamId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),
+        hasOtherJoinableTeams: getJoinableTeamIds(state).length > 0,
         teamIds: getMySortedTeamIds(state, locale),
         theme: getTheme(state),
     };

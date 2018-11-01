@@ -106,13 +106,14 @@ export default class TeamsListItem extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         teamWrapper: {
-            marginTop: 20,
+            marginTop: 10,
         },
         teamContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
             marginHorizontal: 16,
+            paddingVertical: 10,
         },
         teamNameContainer: {
             flex: 1,
