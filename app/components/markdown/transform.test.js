@@ -172,16 +172,57 @@ describe('Components.Markdown.transform', () => {
                     }],
                 }],
             },
+        }, {
+            name: 'MM-12880 merging text followed by non-text',
+            input: 'test: *italics*',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'test: ',
+                    }, {
+                        type: 'emph',
+                        children: [{
+                            type: 'text',
+                            literal: 'italics',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'MM-12880 merging text followed by image',
+            input: 'test: ![image](https://example.com/image)',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'test: ',
+                    }, {
+                        type: 'image',
+                        destination: 'https://example.com/image',
+                        title: '',
+                        children: [{
+                            type: 'text',
+                            literal: 'image',
+                        }],
+                    }],
+                }],
+            },
         }];
 
         for (const test of tests) {
             it(test.name, () => {
-                const input = makeAst(test.input);
+                const input = typeof test.input === 'string' ? parser.parse(test.input) : makeAst(test.input);
                 const expected = makeAst(test.expected);
                 const actual = combineTextNodes(input);
 
                 assert.ok(verifyAst(actual));
-                assert.deepStrictEqual(actual, expected);
+                assert.deepStrictEqual(astToString(actual), astToString(expected));
+                assert.deepStrictEqual(stripUnusedFields(actual), stripUnusedFields(expected));
             });
         }
     });
@@ -2862,7 +2903,7 @@ function verifyAst(node) {
     }
 
     if (node.next && node.next.prev !== node) {
-        console.error('node is not linked properly to prev');
+        console.error('node is not linked properly to next');
         return false;
     }
 
