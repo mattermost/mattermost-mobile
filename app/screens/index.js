@@ -20,7 +20,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('ClientUpgrade', () => wrapWithContextProvider(require('app/screens/client_upgrade').default), store, Provider);
     Navigation.registerComponent('ClockDisplay', () => wrapWithContextProvider(require('app/screens/clock_display').default), store, Provider);
     Navigation.registerComponent('Code', () => wrapWithContextProvider(require('app/screens/code').default), store, Provider);
-    Navigation.registerComponent('CreateAccountWebView', () => wrapWithContextProvider(require('app/screens/create/create').default), store, Provider);
+    Navigation.registerComponent('CreateAccountWebView', () => wrapWithContextProvider(require('app/screens/create').default), store, Provider);
     Navigation.registerComponent('CreateChannel', () => wrapWithContextProvider(require('app/screens/create_channel').default), store, Provider);
     Navigation.registerComponent('DisplaySettings', () => wrapWithContextProvider(require('app/screens/settings/display_settings').default), store, Provider);
     Navigation.registerComponent('EditChannel', () => wrapWithContextProvider(require('app/screens/edit_channel').default), store, Provider);

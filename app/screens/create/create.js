@@ -15,8 +15,8 @@ export default class CreateAccountWebView extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    _onNavigationStateChange = (webViewState) => {
-        if (webViewState.url.indexOf("select_team") !== -1) {
+    _onMessage = (event) => {
+        if (event.nativeEvent.data === "signup.success") {
             const { intl } = this.context;
             const { theme, navigator } = this.props;
             Alert.alert("Account created", "You can now log in", [{ text: "OK", onPress: () => { } }]);
@@ -40,11 +40,11 @@ export default class CreateAccountWebView extends PureComponent {
         return (
             <WebView
                 style={{ flex: 1 }}
-                source={{ uri: `https://wau.chat/signup_email` }}
+                source={{ uri: `http://a8366136.ngrok.io/signup_email` }}
                 scalesPageToFit
                 startInLoadingState
-                onNavigationStateChange={this._onNavigationStateChange.bind(this)}
-                onError={this._onNavigationStateChange.bind(this)}
+                onMessage={this._onMessage.bind(this)}
+                onError={this._onMessage.bind(this)}
             />
         );
     }
