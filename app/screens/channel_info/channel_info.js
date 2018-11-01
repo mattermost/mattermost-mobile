@@ -325,7 +325,7 @@ export default class ChannelInfo extends PureComponent {
         const {updateChannelNotifyProps} = actions;
 
         const opts = {
-            ignore_channel_mentions: ignoreChannelMentions ? 'ignore_channel_mentions_off' : 'ignore_channel_mentions_on',
+            ignore_channel_mentions: ignoreChannelMentions ? Preferences.IGNORE_CHANNEL_MENTIONS_OFF : Preferences.IGNORE_CHANNEL_MENTIONS_ON,
         };
 
         this.setState({ignoreChannelMentions: !ignoreChannelMentions});
