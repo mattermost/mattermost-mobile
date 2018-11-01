@@ -40,6 +40,22 @@ subprojects { subproject ->
             android {
                 compileSdkVersion rootProject.ext.compileSdkVersion
                 buildToolsVersion rootProject.ext.buildToolsVersion
+
+                signingConfigs {
+                    release {
+                        if (project.hasProperty('MYAPP_RELEASE_STORE_FILE')) {
+                            storeFile file(MYAPP_RELEASE_STORE_FILE)
+                            storePassword MYAPP_RELEASE_STORE_PASSWORD
+                            keyAlias MYAPP_RELEASE_KEY_ALIAS
+                            keyPassword MYAPP_RELEASE_KEY_PASSWORD
+                        }
+                    }
+                }
+                buildTypes {
+                    release {
+                        signingConfig signingConfigs.release
+                    }
+                }
             }
         }
     }
