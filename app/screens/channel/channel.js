@@ -12,7 +12,6 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -24,7 +23,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import OfflineIndicator from 'app/components/offline_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
-import {ViewTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import {preventDoubleTap} from 'app/utils/tap';
 import PostTextbox from 'app/components/post_textbox';
@@ -74,8 +73,6 @@ export default class Channel extends PureComponent {
 
     constructor(props) {
         super(props);
-
-        this.isX = DeviceInfo.getModel().includes('iPhone X');
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
@@ -170,8 +167,8 @@ export default class Channel extends PureComponent {
             if (isLandscape) {
                 top = IOS_TOP_LANDSCAPE;
             } else {
-                height = this.isX ? (height - IOSX_TOP_PORTRAIT) : (height - IOS_TOP_PORTRAIT);
-                top = this.isX ? IOSX_TOP_PORTRAIT : IOS_TOP_PORTRAIT;
+                height = DeviceTypes.IS_IPHONE_X ? (height - IOSX_TOP_PORTRAIT) : (height - IOS_TOP_PORTRAIT);
+                top = DeviceTypes.IS_IPHONE_X ? IOSX_TOP_PORTRAIT : IOS_TOP_PORTRAIT;
             }
             break;
         }

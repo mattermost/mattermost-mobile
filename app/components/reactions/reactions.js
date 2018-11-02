@@ -9,9 +9,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import {intlShape} from 'react-intl';
-
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import addReactionIcon from 'assets/images/icons/reaction.png';
@@ -34,23 +31,11 @@ export default class Reactions extends PureComponent {
         theme: PropTypes.object.isRequired,
         canAddReaction: PropTypes.bool,
         canRemoveReaction: PropTypes.bool.isRequired,
-    }
+    };
 
     static defaultProps = {
         position: 'right',
     };
-
-    static contextTypes = {
-        intl: intlShape,
-    };
-
-    constructor(props) {
-        super(props);
-
-        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
-            this.closeButton = source;
-        });
-    }
 
     componentDidMount() {
         const {actions, postId} = this.props;
@@ -67,25 +52,16 @@ export default class Reactions extends PureComponent {
     };
 
     showReactionList = () => {
-        const {navigator, postId, theme} = this.props;
-        const {formatMessage} = this.context.intl;
+        const {navigator, postId} = this.props;
+
         const options = {
             screen: 'ReactionList',
-            title: formatMessage({id: 'mobile.reaction_list.title', defaultMessage: 'Reactions'}),
-            animationType: 'slide-up',
-            animated: true,
+            animationType: 'none',
             backButtonTitle: '',
             navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            navigatorButtons: {
-                leftButtons: [{
-                    id: 'close-reaction-list',
-                    icon: this.closeButton,
-                }],
+                navBarHidden: true,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext',
             },
             passProps: {
                 postId,

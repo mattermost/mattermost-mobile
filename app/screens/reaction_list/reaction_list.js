@@ -3,10 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import {intlShape} from 'react-intl';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
+import SlideUpPanel from 'app/components/slide_up_panel';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {
     generateUserProfilesById,
@@ -44,7 +44,9 @@ export default class ReactionList extends PureComponent {
 
         const reactionsByName = getReactionsByName(reactions);
 
+        this.contentOffsetY = -1;
         this.state = {
+            canDrag: true,
             allUserIds: getUniqueUserIds(reactions),
             reactions,
             reactionsByName,
@@ -98,11 +100,15 @@ export default class ReactionList extends PureComponent {
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
             if (event.id === 'close-reaction-list') {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
+                this.close();
             }
         }
+    };
+
+    close = () => {
+        this.props.navigator.dismissModal({
+            animationType: 'none',
+        });
     };
 
     getMissingProfiles = () => {
@@ -116,13 +122,37 @@ export default class ReactionList extends PureComponent {
         }
     }
 
-    scrollViewRef = (ref) => {
-        this.scrollView = ref;
-    };
-
     handleOnSelectReaction = (emoji) => {
         this.setState({selected: emoji});
-    }
+        const slide = this.slideUpPanel?.getWrappedInstance();
+
+        if (slide) {
+            slide.setDrag(true);
+        }
+
+        if (this.scrollView) {
+            this.scrollView.scrollTo({x: 0, y: 0, animated: false});
+        }
+    };
+
+    handleScroll = (e) => {
+        const pageOffsetY = e.nativeEvent.contentOffset.y;
+        const canDrag = pageOffsetY <= 0;
+        const slide = this.slideUpPanel?.getWrappedInstance();
+
+        this.contentOffsetY = pageOffsetY;
+        if (slide) {
+            slide.setDrag(canDrag);
+        }
+    };
+
+    refSlideUpPanel = (r) => {
+        this.slideUpPanel = r;
+    };
+
+    refScrollView = (ref) => {
+        this.scrollView = ref;
+    };
 
     renderReactionRows = () => {
         const {
@@ -154,7 +184,7 @@ export default class ReactionList extends PureComponent {
                 <View style={style.separator}/>
             </View>
         ));
-    }
+    };
 
     render() {
         const {
@@ -168,20 +198,30 @@ export default class ReactionList extends PureComponent {
 
         return (
             <View style={style.flex}>
-                <View style={style.headerContainer}>
-                    <ReactionHeader
-                        selected={selected}
-                        onSelectReaction={this.handleOnSelectReaction}
-                        reactions={sortedReactionsForHeader}
-                        theme={theme}
-                    />
-                </View>
-                <KeyboardAwareScrollView
-                    bounces={true}
-                    innerRef={this.scrollViewRef}
+                <SlideUpPanel
+                    ref={this.refSlideUpPanel}
+                    onRequestClose={this.close}
+                    initialPosition={0.55}
+                    headerHeight={37.5}
                 >
-                    {this.renderReactionRows()}
-                </KeyboardAwareScrollView>
+                    <React.Fragment>
+                        <View style={style.headerContainer}>
+                            <ReactionHeader
+                                selected={selected}
+                                onSelectReaction={this.handleOnSelectReaction}
+                                reactions={sortedReactionsForHeader}
+                                theme={theme}
+                            />
+                        </View>
+                        <ScrollView
+                            ref={this.refScrollView}
+                            bounce={false}
+                            onScroll={this.handleScroll}
+                        >
+                            {this.renderReactionRows()}
+                        </ScrollView>
+                    </React.Fragment>
+                </SlideUpPanel>
             </View>
         );
     }
@@ -190,11 +230,10 @@ export default class ReactionList extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
         headerContainer: {
-            height: 38,
+            height: 37.5,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderBottomWidth: 1,
         },

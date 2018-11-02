@@ -13,7 +13,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
@@ -32,7 +31,7 @@ import PostSeparator from 'app/components/post_separator';
 import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import {ListTypes} from 'app/constants';
+import {DeviceTypes, ListTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -91,7 +90,7 @@ export default class Search extends PureComponent {
         super(props);
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        this.isX = DeviceInfo.getModel().includes('iPhone X');
+
         this.contentOffsetY = 0;
         this.state = {
             channelName: '',
@@ -736,7 +735,7 @@ export default class Search extends PureComponent {
 
         return (
             <SafeAreaView
-                excludeHeader={isLandscape && this.isX}
+                excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_X}
                 forceTop={44}
             >
                 <KeyboardLayout>

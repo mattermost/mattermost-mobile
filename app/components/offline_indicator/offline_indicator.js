@@ -11,11 +11,10 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import FormattedText from 'app/components/formatted_text';
-import {ViewTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import checkNetwork from 'app/utils/network';
 import {t} from 'app/utils/i18n';
@@ -55,7 +54,6 @@ export default class OfflineIndicator extends Component {
     constructor(props) {
         super(props);
 
-        this.isX = DeviceInfo.getModel().includes('iPhone X');
         const navBar = this.getNavBarHeight(props.isLandscape);
 
         this.state = {
@@ -154,9 +152,9 @@ export default class OfflineIndicator extends Component {
             return ANDROID_TOP_PORTRAIT;
         }
 
-        if (this.isX && isLandscape) {
+        if (DeviceTypes.IS_IPHONE_X && isLandscape) {
             return IOS_TOP_LANDSCAPE;
-        } else if (this.isX) {
+        } else if (DeviceTypes.IS_IPHONE_X) {
             return IOSX_TOP_PORTRAIT;
         } else if (isLandscape) {
             return IOS_TOP_LANDSCAPE + STATUS_BAR_HEIGHT;

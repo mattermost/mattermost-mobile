@@ -17,6 +17,14 @@ jest.mock('NativeModules', () => {
 });
 jest.mock('NativeEventEmitter');
 
+jest.mock('react-native-device-info', () => {
+    return {
+        getVersion: () => '0.0.0',
+        getBuildNumber: () => '0',
+        getModel: () => 'iPhone X',
+    };
+});
+
 let logs;
 let warns;
 let errors;

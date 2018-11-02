@@ -4,8 +4,10 @@ exports[`ReactionHeader should match snapshot 1`] = `
 <Component
   style={
     Object {
-      "backgroundColor": "#ffffff",
-      "height": 37,
+      "backgroundColor": "#FFFFFF",
+      "borderTopLeftRadius": 10,
+      "borderTopRightRadius": 10,
+      "height": 36.5,
       "paddingHorizontal": 0,
     }
   }

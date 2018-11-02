@@ -15,7 +15,7 @@ import {intlShape} from 'react-intl';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
-import {UpgradeTypes} from 'app/constants/view';
+import {UpgradeTypes} from 'app/constants';
 import logo from 'assets/images/logo.png';
 import checkUpgradeType from 'app/utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
