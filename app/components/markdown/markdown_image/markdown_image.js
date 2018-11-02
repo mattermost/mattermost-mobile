@@ -187,11 +187,7 @@ export default class MarkdownImage extends React.Component {
     };
 
     setImageUrl = (imageURL) => {
-        let uri = imageURL;
-
-        if (Platform.OS === 'android') {
-            uri = `file://${imageURL}`;
-        }
+        const uri = imageURL;
 
         this.setState({uri});
         this.loadImageSize(uri);

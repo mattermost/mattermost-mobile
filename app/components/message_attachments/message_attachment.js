@@ -267,13 +267,7 @@ export default class MessageAttachment extends PureComponent {
         }
     };
 
-    setImageUrl = (imageURL) => {
-        let imageUri = imageURL;
-
-        if (Platform.OS === 'android') {
-            imageUri = `file://${imageURL}`;
-        }
-
+    setImageUrl = (imageUri) => {
         Image.getSize(imageUri, (width, height) => {
             const dimensions = calculateDimensions(height, width, this.maxImageWidth);
             if (this.mounted) {

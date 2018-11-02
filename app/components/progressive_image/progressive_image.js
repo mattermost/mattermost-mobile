@@ -81,26 +81,14 @@ export default class ProgressiveImage extends PureComponent {
 
     setImage = (uri) => {
         if (this.subscribedToCache) {
-            let path = uri;
-
-            if (Platform.OS === 'android') {
-                path = `file://${uri}`;
-            }
-
-            this.setState({uri: path});
+            this.setState({uri});
         }
     };
 
     setThumbnail = (thumb) => {
         if (this.subscribedToCache) {
             const {filename, imageUri} = this.props;
-            let path = thumb;
-
-            if (Platform.OS === 'android') {
-                path = `file://${thumb}`;
-            }
-
-            this.setState({thumb: path}, () => {
+            this.setState({thumb}, () => {
                 setTimeout(() => {
                     ImageCacheManager.cache(filename, imageUri, this.setImage);
                 }, 300);
