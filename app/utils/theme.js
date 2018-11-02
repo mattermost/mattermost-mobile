@@ -33,13 +33,14 @@ export function setNavigatorStyles(navigator, theme) {
 export function getAllowedThemes(state) {
     const allowedThemeKeys = getConfig(state).AllowedThemes.split(',');
     const allowedThemes = [];
-    allowedThemeKeys.map((key) => {
-        if (Preferences.THEMES.hasOwnProperty(key)) {
-            allowedThemes.push({
-                ...Preferences.THEMES[key],
-                key,
-            });
+    allowedThemeKeys.forEach((key) => {
+        if (!Preferences.THEMES.hasOwnProperty(key)) {
+            return;
         }
+        allowedThemes.push({
+            ...Preferences.THEMES[key],
+            key,
+        });
     });
     return allowedThemes;
 }
