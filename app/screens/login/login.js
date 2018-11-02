@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { PureComponent } from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import { intlShape } from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
     Dimensions,
@@ -14,24 +14,20 @@ import {
     Text,
     TouchableWithoutFeedback,
     View,
-    Modal,
-    WebView,
-    TouchableOpacity,
-    Alert,
 } from 'react-native';
 import Button from 'react-native-button';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import QuickTextInput from 'app/components/quick_text_input';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
-import { GlobalStyles } from 'app/styles';
-import { preventDoubleTap } from 'app/utils/tap';
+import {GlobalStyles} from 'app/styles';
+import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 
-import { RequestStatus } from 'mattermost-redux/constants';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 export default class Login extends PureComponent {
     static propTypes = {
@@ -62,7 +58,7 @@ export default class Login extends PureComponent {
 
         this.state = {
             error: null,
-            modalVisible: false
+            modalVisible: false,
         };
     }
 
@@ -74,7 +70,7 @@ export default class Login extends PureComponent {
         if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
             this.props.actions.handleSuccessfulLogin().then(this.props.actions.getSession).then(this.goToChannel);
         } else if (this.props.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
-            this.setState({ isLoading: false });
+            this.setState({isLoading: false});
         }
     }
 
@@ -83,8 +79,8 @@ export default class Login extends PureComponent {
     }
 
     goToChannel = (expiresAt) => {
-        const { intl } = this.context;
-        const { navigator } = this.props;
+        const {intl} = this.context;
+        const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         if (expiresAt) {
@@ -117,14 +113,14 @@ export default class Login extends PureComponent {
     };
 
     goToMfa = () => {
-        const { intl } = this.context;
-        const { navigator, theme } = this.props;
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
 
-        this.setState({ isLoading: false });
+        this.setState({isLoading: false});
 
         navigator.push({
             screen: 'MFA',
-            title: intl.formatMessage({ id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication' }),
+            title: intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}),
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
@@ -143,7 +139,7 @@ export default class Login extends PureComponent {
     };
 
     preSignIn = preventDoubleTap(() => {
-        this.setState({ error: null, isLoading: true });
+        this.setState({error: null, isLoading: true});
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(async () => {
             if (!this.props.loginId) {
@@ -205,37 +201,37 @@ export default class Login extends PureComponent {
     });
 
     signIn = () => {
-        const { actions, loginId, loginRequest, password } = this.props;
+        const {actions, loginId, loginRequest, password} = this.props;
         if (loginRequest.status !== RequestStatus.STARTED) {
             actions.login(loginId.toLowerCase(), password);
         }
     };
 
     createLoginPlaceholder() {
-        const { formatMessage } = this.context.intl;
+        const {formatMessage} = this.context.intl;
         const license = this.props.license;
         const config = this.props.config;
 
         const loginPlaceholders = [];
         if (config.EnableSignInWithEmail === 'true') {
-            loginPlaceholders.push(formatMessage({ id: 'login.email', defaultMessage: 'Email' }));
+            loginPlaceholders.push(formatMessage({id: 'login.email', defaultMessage: 'Email'}));
         }
 
         if (config.EnableSignInWithUsername === 'true') {
-            loginPlaceholders.push(formatMessage({ id: 'login.username', defaultMessage: 'Username' }));
+            loginPlaceholders.push(formatMessage({id: 'login.username', defaultMessage: 'Username'}));
         }
 
         if (license.IsLicensed === 'true' && license.LDAP === 'true' && config.EnableLdap === 'true') {
             if (config.LdapLoginFieldName) {
                 loginPlaceholders.push(config.LdapLoginFieldName);
             } else {
-                loginPlaceholders.push(formatMessage({ id: 'login.ldapUsername', defaultMessage: 'AD/LDAP Username' }));
+                loginPlaceholders.push(formatMessage({id: 'login.ldapUsername', defaultMessage: 'AD/LDAP Username'}));
             }
         }
 
         if (loginPlaceholders.length >= 2) {
             return loginPlaceholders.slice(0, loginPlaceholders.length - 1).join(', ') +
-                ` ${formatMessage({ id: 'login.or', defaultMessage: 'or' })} ` +
+                ` ${formatMessage({id: 'login.or', defaultMessage: 'or'})} ` +
                 loginPlaceholders[loginPlaceholders.length - 1];
         } else if (loginPlaceholders.length === 1) {
             return loginPlaceholders[0];
@@ -253,7 +249,7 @@ export default class Login extends PureComponent {
     };
 
     getServerErrorForLogin = () => {
-        const { error } = this.props.loginRequest;
+        const {error} = this.props.loginRequest;
         if (!error) {
             return null;
         }
@@ -306,11 +302,11 @@ export default class Login extends PureComponent {
     };
 
     forgotPassword = () => {
-        const { intl } = this.context;
-        const { navigator, theme } = this.props;
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
         navigator.push({
             screen: 'ForgotPassword',
-            title: intl.formatMessage({ id: 'login.forgot', defaultMessage: 'Forgot your password' }),
+            title: intl.formatMessage({id: 'login.forgot', defaultMessage: 'Forgot your password'}),
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
@@ -322,11 +318,11 @@ export default class Login extends PureComponent {
         });
     }
     goToCreateAccount = () => {
-        const { intl } = this.context;
+        const {intl} = this.context;
         const {theme, navigator} = this.props;
         navigator.push({
             screen: 'CreateAccountWebView',
-            title: intl.formatMessage({ id: 'signup_user_completed.create', defaultMessage: 'Create an Account' }),
+            title: intl.formatMessage({id: 'signup_user_completed.create', defaultMessage: 'Create an Account'}),
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
@@ -377,10 +373,9 @@ export default class Login extends PureComponent {
             );
         }
 
-
         return (
             <View style={style.container}>
-                <StatusBar />
+                <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
@@ -402,7 +397,7 @@ export default class Login extends PureComponent {
                                 defaultMessage='All team communication in one place, searchable and accessible anywhere'
                             />
                         </View>
-                        <ErrorText error={this.getLoginErrorMessage()} />
+                        <ErrorText error={this.getLoginErrorMessage()}/>
                         <QuickTextInput
                             ref={this.loginRef}
                             value={this.props.loginId}
@@ -423,7 +418,7 @@ export default class Login extends PureComponent {
                             value={this.props.password}
                             onChangeText={this.props.actions.handlePasswordChanged}
                             style={GlobalStyles.inputBox}
-                            placeholder={this.context.intl.formatMessage({ id: 'login.password', defaultMessage: 'Password' })}
+                            placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                             secureTextEntry={true}
                             autoCorrect={false}
                             autoCapitalize='none'
@@ -482,6 +477,6 @@ const style = StyleSheet.create({
     createAccountBtn: {
         borderColor: 'transparent',
         marginTop: 15,
-        marginBottom: 30
+        marginBottom: 30,
     },
 });
