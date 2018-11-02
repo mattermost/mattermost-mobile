@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UserListRow should match snapshot 1`] = `
-<Component
+<View
   style={
     Object {
       "flex": 1,
@@ -16,7 +16,7 @@ exports[`UserListRow should match snapshot 1`] = `
     id="21345"
     onPress={[Function]}
   >
-    <Component
+    <View
       style={
         Object {
           "alignItems": "center",
@@ -29,8 +29,8 @@ exports[`UserListRow should match snapshot 1`] = `
         size={32}
         userId="21345"
       />
-    </Component>
-    <Component
+    </View>
+    <View
       style={
         Object {
           "flex": 1,
@@ -40,8 +40,8 @@ exports[`UserListRow should match snapshot 1`] = `
         }
       }
     >
-      <Component>
-        <Component
+      <View>
+        <Text
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -52,15 +52,15 @@ exports[`UserListRow should match snapshot 1`] = `
           }
         >
           @user
-        </Component>
-      </Component>
-    </Component>
+        </Text>
+      </View>
+    </View>
   </CustomListRow>
-</Component>
+</View>
 `;
 
 exports[`UserListRow should match snapshot for  currentUser with (you) populated in list 1`] = `
-<Component
+<View
   style={
     Object {
       "flex": 1,
@@ -75,7 +75,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
     id="21345"
     onPress={[Function]}
   >
-    <Component
+    <View
       style={
         Object {
           "alignItems": "center",
@@ -88,8 +88,8 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
         size={32}
         userId="21345"
       />
-    </Component>
-    <Component
+    </View>
+    <View
       style={
         Object {
           "flex": 1,
@@ -99,8 +99,8 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
         }
       }
     >
-      <Component>
-        <Component
+      <View>
+        <Text
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -110,14 +110,14 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
             }
           }
         />
-      </Component>
-    </Component>
+      </View>
+    </View>
   </CustomListRow>
-</Component>
+</View>
 `;
 
 exports[`UserListRow should match snapshot for deactivated user 1`] = `
-<Component
+<View
   style={
     Object {
       "flex": 1,
@@ -132,7 +132,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
     id="21345"
     onPress={[Function]}
   >
-    <Component
+    <View
       style={
         Object {
           "alignItems": "center",
@@ -145,8 +145,8 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
         size={32}
         userId="21345"
       />
-    </Component>
-    <Component
+    </View>
+    <View
       style={
         Object {
           "flex": 1,
@@ -156,8 +156,8 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
         }
       }
     >
-      <Component>
-        <Component
+      <View>
+        <Text
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -168,10 +168,10 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
           }
         >
           @user
-        </Component>
-      </Component>
-      <Component>
-        <Component
+        </Text>
+      </View>
+      <View>
+        <Text
           style={
             Object {
               "color": undefined,
@@ -180,8 +180,8 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
             }
           }
         />
-      </Component>
-    </Component>
+      </View>
+    </View>
   </CustomListRow>
-</Component>
+</View>
 `;

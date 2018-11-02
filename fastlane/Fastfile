@@ -333,7 +333,6 @@ platform :ios do
         export_method: method,
         skip_profile_detection: true,
         output_name: "#{app_name}.ipa",
-        xcargs: '-UseNewBuildSystem=NO',
         export_options: {
             signingStyle: 'manual',
             iCloudContainerEnvironment: 'Production'

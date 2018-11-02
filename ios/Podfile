@@ -6,7 +6,7 @@ target 'Mattermost' do
   # use_frameworks!
 
   # Pods for Mattermost
-  pod 'XCDYouTubeKit', '~> 2.5'
+  pod 'XCDYouTubeKit', '2.7.1'
 
   target 'MattermostTests' do
     inherit! :search_paths

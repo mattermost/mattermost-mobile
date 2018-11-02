@@ -96,17 +96,17 @@ exports[`CustomList should match snapshot with SectionList 1`] = `
 
 exports[`CustomList should match snapshot, renderFooter 1`] = `null`;
 
-exports[`CustomList should match snapshot, renderFooter 2`] = `<Component />`;
+exports[`CustomList should match snapshot, renderFooter 2`] = `<View />`;
 
 exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
-<Component
+<View
   style={
     Object {
       "backgroundColor": "#ffffff",
     }
   }
 >
-  <Component
+  <View
     style={
       Object {
         "backgroundColor": "rgba(61,60,64,0.07)",
@@ -115,7 +115,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
       }
     }
   >
-    <Component
+    <Text
       style={
         Object {
           "color": "#3d3c40",
@@ -124,13 +124,13 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
       }
     >
       section_id
-    </Component>
-  </Component>
-</Component>
+    </Text>
+  </View>
+</View>
 `;
 
 exports[`CustomList should match snapshot, renderSeparator 1`] = `
-<Component
+<View
   style={
     Object {
       "backgroundColor": "rgba(61,60,64,0.1)",
