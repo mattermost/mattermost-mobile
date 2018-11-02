@@ -157,7 +157,7 @@ export default class SlideUpPanel extends PureComponent {
 
         Animated.timing(position, {
             toValue: endPosition,
-            duration: 250,
+            duration: initial ? 200 : 100,
             useNativeDriver: true,
         }).start(() => {
             if (this.viewRef && this.backdrop) {
