@@ -17,8 +17,7 @@ export default class ChannelLink extends React.PureComponent {
         textStyle: CustomPropTypes.Style,
         channelsByName: PropTypes.object.isRequired,
         actions: PropTypes.shape({
-            handleSelectChannel: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
+            switchToChannel: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -40,8 +39,7 @@ export default class ChannelLink extends React.PureComponent {
     }
 
     handlePress = () => {
-        this.props.actions.setChannelDisplayName(this.state.channel.display_name);
-        this.props.actions.handleSelectChannel(this.state.channel.id);
+        this.props.actions.switchToChannel(this.state.channel.id, this.state.channel.display_name);
 
         if (this.props.onChannelLinkPress) {
             this.props.onChannelLinkPress(this.state.channel);

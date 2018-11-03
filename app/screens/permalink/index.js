@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getChannel as getChannelAction, joinChannel, markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
+import {getChannel as getChannelAction, joinChannel} from 'mattermost-redux/actions/channels';
 import {getPostsAfter, getPostsBefore, getPostThread, selectPost} from 'mattermost-redux/actions/posts';
 import {makeGetChannel, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {makeGetPostIdsAroundPost, getPost} from 'mattermost-redux/selectors/entities/posts';
@@ -12,12 +12,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
-import {
-    handleSelectChannel,
-    loadThreadIfNecessary,
-    setChannelDisplayName,
-    setChannelLoading,
-} from 'app/actions/views/channel';
+import {loadThreadIfNecessary, switchToChannel} from 'app/actions/views/channel';
 import {showSearchModal} from 'app/actions/views/search';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
@@ -64,16 +59,12 @@ function mapDispatchToProps(dispatch) {
             getPostsBefore,
             getPostThread,
             getChannel: getChannelAction,
-            handleSelectChannel,
             handleTeamChange,
             joinChannel,
             loadThreadIfNecessary,
-            markChannelAsRead,
-            markChannelAsViewed,
             selectPost,
-            setChannelDisplayName,
-            setChannelLoading,
             showSearchModal,
+            switchToChannel,
         }, dispatch),
     };
 }

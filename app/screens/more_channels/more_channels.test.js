@@ -19,11 +19,11 @@ describe('MoreChannels', () => {
     };
 
     const actions = {
-        handleSelectChannel: jest.fn(),
+        switchToChannel: jest.fn(),
         joinChannel: jest.fn(),
         getChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2'}]}),
+        removeHiddenDefaultChannel: jest.fn(),
         searchChannels: jest.fn(),
-        setChannelDisplayName: jest.fn(),
     };
 
     const baseProps = {

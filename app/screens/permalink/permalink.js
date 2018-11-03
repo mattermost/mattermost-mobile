@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    InteractionManager,
     Text,
     TouchableOpacity,
     View,
@@ -49,15 +48,11 @@ export default class Permalink extends PureComponent {
             getPostsBefore: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
-            handleSelectChannel: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
-            markChannelAsViewed: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
+            switchToChannel: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         channelIsArchived: PropTypes.bool,
@@ -229,14 +224,7 @@ export default class Permalink extends PureComponent {
         if (channelId) {
             const {actions, channelTeamId, currentTeamId, navigator, onClose, theme} = this.props;
             const currentChannelId = this.props.channelId;
-            const {
-                handleSelectChannel,
-                handleTeamChange,
-                markChannelAsRead,
-                setChannelLoading,
-                setChannelDisplayName,
-                markChannelAsViewed,
-            } = actions;
+            const {handleTeamChange, switchToChannel} = actions;
 
             actions.selectPost('');
 
@@ -269,16 +257,7 @@ export default class Permalink extends PureComponent {
                 handleTeamChange(channelTeamId, false);
             }
 
-            setChannelLoading(channelId !== currentChannelId);
-            setChannelDisplayName(channelDisplayName);
-            handleSelectChannel(channelId);
-
-            InteractionManager.runAfterInteractions(async () => {
-                markChannelAsRead(channelId, currentChannelId);
-                if (channelId !== currentChannelId) {
-                    markChannelAsViewed(currentChannelId);
-                }
-            });
+            switchToChannel(channelId, channelDisplayName);
         }
     };
 

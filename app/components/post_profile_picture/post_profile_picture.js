@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, TouchableOpacity, View} from 'react-native';
+import {Image, TouchableOpacity} from 'react-native';
 
 import AppIcon from 'app/components/app_icon';
 import ProfilePicture from 'app/components/profile_picture';
@@ -41,13 +41,11 @@ export default class PostProfilePicture extends PureComponent {
 
         if (isSystemMessage && !fromAutoResponder) {
             return (
-                <View>
-                    <AppIcon
-                        color={theme.centerChannelColor}
-                        height={ViewTypes.PROFILE_PICTURE_SIZE}
-                        width={ViewTypes.PROFILE_PICTURE_SIZE}
-                    />
-                </View>
+                <AppIcon
+                    color={theme.centerChannelColor}
+                    height={ViewTypes.PROFILE_PICTURE_SIZE}
+                    width={ViewTypes.PROFILE_PICTURE_SIZE}
+                />
             );
         }
 
@@ -55,16 +53,14 @@ export default class PostProfilePicture extends PureComponent {
             const icon = overrideIconUrl ? {uri: overrideIconUrl} : webhookIcon;
 
             return (
-                <View>
-                    <Image
-                        source={icon}
-                        style={{
-                            height: ViewTypes.PROFILE_PICTURE_SIZE,
-                            width: ViewTypes.PROFILE_PICTURE_SIZE,
-                            borderRadius: ViewTypes.PROFILE_PICTURE_SIZE / 2,
-                        }}
-                    />
-                </View>
+                <Image
+                    source={icon}
+                    style={{
+                        height: ViewTypes.PROFILE_PICTURE_SIZE,
+                        width: ViewTypes.PROFILE_PICTURE_SIZE,
+                        borderRadius: ViewTypes.PROFILE_PICTURE_SIZE / 2,
+                    }}
+                />
             );
         }
 

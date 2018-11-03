@@ -24,15 +24,11 @@ describe('Permalink', () => {
         getPostsBefore: jest.fn(),
         getPostThread: jest.fn(),
         getChannel: jest.fn(),
-        handleSelectChannel: jest.fn(),
         handleTeamChange: jest.fn(),
         joinChannel: jest.fn(),
         loadThreadIfNecessary: jest.fn(),
-        markChannelAsRead: jest.fn(),
-        markChannelAsViewed: jest.fn(),
         selectPost: jest.fn(),
-        setChannelDisplayName: jest.fn(),
-        setChannelLoading: jest.fn(),
+        switchToChannel: jest.fn(),
     };
 
     const baseProps = {

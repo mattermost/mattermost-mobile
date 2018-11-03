@@ -9,19 +9,11 @@ import {
 } from 'react-native';
 import Placeholder from 'rn-placeholder';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelLoader extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            handleSelectChannel: PropTypes.func.isRequired,
-            markChannelAsViewed: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
-        }).isRequired,
         backgroundColor: PropTypes.string,
         channelIsLoading: PropTypes.bool.isRequired,
         maxRows: PropTypes.number,
@@ -32,55 +24,6 @@ export default class ChannelLoader extends PureComponent {
     static defaultProps = {
         maxRows: 6,
     };
-
-    state = {
-        switch: false,
-    };
-
-    static getDerivedStateFromProps(nextProps, prevState) {
-        if (!nextProps.channelIsLoading && prevState.switch) {
-            return {
-                switch: false,
-                channel: null,
-                currentChannelId: null,
-            };
-        }
-
-        return null;
-    }
-
-    componentDidMount() {
-        EventEmitter.on('switch_channel', this.handleChannelSwitch);
-    }
-
-    componentWillUnmount() {
-        EventEmitter.off('switch_channel', this.handleChannelSwitch);
-    }
-
-    componentDidUpdate() {
-        if (this.state.switch) {
-            const {
-                handleSelectChannel,
-                markChannelAsRead,
-                markChannelAsViewed,
-                setChannelLoading,
-            } = this.props.actions;
-
-            const {channel, currentChannelId} = this.state;
-
-            setTimeout(() => {
-                handleSelectChannel(channel.id);
-
-                // mark the channel as viewed after all the frame has flushed
-                markChannelAsRead(channel.id, currentChannelId);
-                if (channel.id !== currentChannelId) {
-                    markChannelAsViewed(currentChannelId);
-                }
-
-                setChannelLoading(false);
-            }, 250);
-        }
-    }
 
     buildSections({key, style, bg, color}) {
         return (
@@ -101,14 +44,6 @@ export default class ChannelLoader extends PureComponent {
             </View>
         );
     }
-
-    handleChannelSwitch = (channel, currentChannelId) => {
-        if (channel.id === currentChannelId) {
-            this.props.actions.setChannelLoading(false);
-        } else {
-            this.setState({switch: true, channel, currentChannelId});
-        }
-    };
 
     render() {
         const {channelIsLoading, maxRows, style: styleProp, theme} = this.props;

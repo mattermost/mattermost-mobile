@@ -32,7 +32,7 @@ export default class ChannelSidebar extends Component {
             getTeams: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
+            switchToChannel: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
@@ -165,20 +165,10 @@ export default class ChannelSidebar extends Component {
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
         const {
-            actions,
-        } = this.props;
-
-        const {
-            setChannelLoading,
-            setChannelDisplayName,
-        } = actions;
+            switchToChannel,
+        } = this.props.actions;
 
         tracker.channelSwitch = Date.now();
-
-        if (closeDrawer) {
-            this.closeChannelDrawer();
-            setChannelLoading(channel.id !== currentChannelId);
-        }
 
         if (!channel) {
             const utils = require('app/utils/general');
@@ -191,12 +181,18 @@ export default class ChannelSidebar extends Component {
             const erroMessage = {};
 
             utils.alertErrorWithFallback(intl, erroMessage, unableToJoinMessage);
-            setChannelLoading(false);
             return;
         }
 
-        setChannelDisplayName(channel.display_name);
-        EventEmitter.emit('switch_channel', channel, currentChannelId);
+        if (closeDrawer) {
+            this.closeChannelDrawer();
+        }
+
+        requestAnimationFrame(() => {
+            if (currentChannelId !== channel.id) {
+                switchToChannel(channel.id, channel.display_name);
+            }
+        });
     };
 
     joinChannel = (channel, currentChannelId) => {

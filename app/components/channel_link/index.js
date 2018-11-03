@@ -6,7 +6,7 @@ import {bindActionCreators} from 'redux';
 
 import {getChannelsNameMapInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
 
-import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
+import {switchToChannel} from 'app/actions/views/channel';
 
 import ChannelLink from './channel_link';
 
@@ -19,8 +19,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleSelectChannel,
-            setChannelDisplayName,
+            switchToChannel,
         }, dispatch),
     };
 }

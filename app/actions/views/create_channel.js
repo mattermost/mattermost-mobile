@@ -21,10 +21,10 @@ export function handleCreateChannel(displayName, purpose, header, type) {
             type,
         };
 
-        const {data} = await createChannel(channel, currentUserId)(dispatch, getState);
+        const {data} = await dispatch(createChannel(channel, currentUserId));
         if (data && data.id) {
             dispatch(setChannelDisplayName(displayName));
-            handleSelectChannel(data.id)(dispatch, getState);
+            dispatch(handleSelectChannel(data.id));
         }
     };
 }

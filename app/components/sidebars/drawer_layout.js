@@ -232,6 +232,7 @@ export default class DrawerLayout extends Component {
             restSpeedThreshold: 0.1,
             useNativeDriver: this.props.useNativeAnimations,
             ...options,
+            isInteraction: false,
         }).start(() => {
             if (this.props.onDrawerOpen) {
                 this.props.onDrawerOpen();

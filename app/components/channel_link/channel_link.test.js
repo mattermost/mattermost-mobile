@@ -19,8 +19,7 @@ describe('ChannelLink', () => {
         textStyle: {color: '#3d3c40', fontSize: 15, lineHeight: 20},
         channelsByName,
         actions: {
-            handleSelectChannel: jest.fn(),
-            setChannelDisplayName: jest.fn(),
+            switchToChannel: jest.fn(),
         },
     };
 
@@ -65,10 +64,8 @@ describe('ChannelLink', () => {
         const channel = channelsByName.firstChannel;
         wrapper.setState({channel});
         wrapper.instance().handlePress();
-        expect(baseProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
-        expect(baseProps.actions.handleSelectChannel).toBeCalledWith(channel.id);
-        expect(baseProps.actions.setChannelDisplayName).toHaveBeenCalledTimes(1);
-        expect(baseProps.actions.setChannelDisplayName).toBeCalledWith(channel.display_name);
+        expect(baseProps.actions.switchToChannel).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.switchToChannel).toBeCalledWith(channel.id, channel.display_name);
         expect(baseProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
         expect(baseProps.onChannelLinkPress).toBeCalledWith(channel);
     });
