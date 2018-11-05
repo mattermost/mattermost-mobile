@@ -142,6 +142,8 @@ export default class App {
                         this.waitForRehydration = true;
                     }
                 }
+            } else {
+                this.waitForRehydration = false;
             }
         } catch (error) {
             return null;
