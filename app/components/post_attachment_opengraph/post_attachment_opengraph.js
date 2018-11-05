@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Image,
     Linking,
-    Platform,
     Text,
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -112,14 +111,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     };
 
     getImageSize = (imageUrl) => {
-        let prefix = '';
-        if (Platform.OS === 'android') {
-            prefix = 'file://';
-        }
-
-        const uri = `${prefix}${imageUrl}`;
-
-        Image.getSize(uri, (width, height) => {
+        Image.getSize(imageUrl, (width, height) => {
             const dimensions = calculateDimensions(height, width, this.getViewPostWidth());
 
             if (this.mounted) {
@@ -127,7 +119,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                     ...dimensions,
                     originalHeight: height,
                     originalWidth: width,
-                    imageUrl: uri,
+                    imageUrl,
                 });
             }
         }, () => null);

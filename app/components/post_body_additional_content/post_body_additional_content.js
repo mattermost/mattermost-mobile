@@ -254,13 +254,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
 
         if (link && path) {
-            let prefix = '';
-            if (Platform.OS === 'android') {
-                prefix = 'file://';
-            }
-
-            const uri = `${prefix}${path}`;
-            Image.getSize(uri, (width, height) => {
+            Image.getSize(path, (width, height) => {
                 if (!this.mounted) {
                     return;
                 }
@@ -282,7 +276,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     originalHeight: height,
                     originalWidth: width,
                     linkLoaded: true,
-                    uri,
+                    uri: path,
                 });
             }, () => this.setState({linkLoadError: true}));
         }
