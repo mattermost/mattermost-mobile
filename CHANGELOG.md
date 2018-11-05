@@ -7,6 +7,7 @@
 **Combatibility Note: Mobile App v1.13+ is required for Mattermost Server v5.4+**
 
 ### Bug Fixes
+- Fixed an issue where the Android app did not allow establishing a network connection with any server that used a self-signed certificate that had the CA certificate installed on the device.
 - Removed "Copy Post" option on long-press message menu for posts with message menus/dropdowns.
 - Fixed an issue where the "Search Results" header was not fully scrolled to top on search "from:username".
 - Fixed an issue where channel names truncated at fewer characters than necessary.
