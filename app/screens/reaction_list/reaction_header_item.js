@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import Emoji from 'app/components/emoji';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FormattedText from 'app/components/formatted_text';
 
@@ -88,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomWidth: 2,
         },
         regular: {
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderColor: 'transparent',
             borderBottomWidth: 2,
         },
         reaction: {
