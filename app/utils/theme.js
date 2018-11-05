@@ -27,3 +27,8 @@ export function setNavigatorStyles(navigator, theme) {
         screenBackgroundColor: theme.centerChannelBg,
     });
 }
+
+export function isThemeSwitchingEnabled(state) {
+    const {config} = state.entities.general;
+    return config.EnableThemeSelection === 'true';
+}

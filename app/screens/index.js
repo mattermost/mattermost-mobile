@@ -60,6 +60,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('TableImage', () => wrapWithContextProvider(require('app/screens/table_image').default), store, Provider);
     Navigation.registerComponent('TermsOfService', () => wrapWithContextProvider(require('app/screens/terms_of_service').default), store, Provider);
     Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(require('app/screens/text_preview').default), store, Provider);
+    Navigation.registerComponent('ThemeSettings', () => wrapWithContextProvider(require('app/screens/theme').default), store, Provider);
     Navigation.registerComponent('Thread', () => wrapWithContextProvider(require('app/screens/thread').default), store, Provider);
     Navigation.registerComponent('TimezoneSettings', () => wrapWithContextProvider(require('app/screens/timezone').default), store, Provider);
     Navigation.registerComponent('ErrorTeamsList', () => wrapWithContextProvider(require('app/screens/error_teams_list').default), store, Provider);

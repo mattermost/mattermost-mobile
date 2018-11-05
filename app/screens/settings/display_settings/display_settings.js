@@ -20,6 +20,7 @@ export default class DisplaySettings extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        enableTheme: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
     };
 
@@ -72,12 +73,30 @@ export default class DisplaySettings extends PureComponent {
         });
     });
 
+    goToThemeSettings = preventDoubleTap(() => {
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
+
+        navigator.push({
+            screen: 'ThemeSettings',
+            title: intl.formatMessage({id: 'mobile.display_settings.theme', defaultMessage: 'Theme'}),
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        });
+    });
+
     closeClockDisplaySettings = () => {
         this.setState({showClockDisplaySettings: false});
     };
 
     render() {
-        const {theme, enableTimezone} = this.props;
+        const {theme, enableTimezone, enableTheme} = this.props;
         const {showClockDisplaySettings} = this.state;
         const style = getStyleSheet(theme);
 
@@ -114,6 +133,18 @@ export default class DisplaySettings extends PureComponent {
                 <StatusBar/>
                 <View style={style.wrapper}>
                     <View style={style.divider}/>
+                    {enableTheme && (
+                        <SettingsItem
+                            defaultMessage='Theme'
+                            i18nId='mobile.display_settings.theme'
+                            iconName='ios-color-palette'
+                            iconType='ion'
+                            onPress={this.goToThemeSettings}
+                            separator={true}
+                            showArrow={false}
+                            theme={theme}
+                        />
+                    )}
                     <SettingsItem
                         defaultMessage='Clock Display'
                         i18nId='mobile.advanced_settings.clockDisplay'

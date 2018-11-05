@@ -201,6 +201,8 @@
   "mobile.create_channel.public": "New Public Channel",
   "mobile.create_post.read_only": "This channel is read-only",
   "mobile.custom_list.no_results": "No Results",
+  "mobile.display_settings.theme": "Theme",
+  "mobile.display_settings.custom_theme": "Custom Theme",
   "mobile.document_preview.failed_description": "An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n",
   "mobile.document_preview.failed_title": "Open Document failed",
   "mobile.downloader.android_complete": "Download complete",
