@@ -82,14 +82,8 @@ export default class Emoji extends React.PureComponent {
     }
 
     setImageUrl = (imageUrl) => {
-        let prefix = '';
-        if (Platform.OS === 'android') {
-            prefix = 'file://';
-        }
-
-        const uri = `${prefix}${imageUrl}`;
         this.setState({
-            imageUrl: uri,
+            imageUrl,
         });
     };
 
