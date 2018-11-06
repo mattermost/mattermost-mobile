@@ -9,24 +9,22 @@ import {intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
-
-import Config from 'assets/config';
-
+import BottomSheet from 'app/utils/bottom_sheet';
 import {preventDoubleTap} from 'app/utils/tap';
 import {matchPermalink, normalizeProtocol} from 'app/utils/url';
+
+import Config from 'assets/config';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
-        onLongPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         serverURL: PropTypes.string.isRequired,
         siteURL: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
-        onLongPress: () => true,
         onPermalinkPress: () => true,
     };
 
@@ -89,27 +87,30 @@ export default class MarkdownLink extends PureComponent {
                 ...otherChildProps,
             };
         });
-    }
+    };
 
     handleLongPress = async () => {
         const {formatMessage} = this.context.intl;
 
         const config = await mattermostManaged.getLocalConfig();
 
-        let action;
         if (config.copyAndPasteProtection !== 'true') {
-            action = {
-                text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
-                onPress: this.handleCopyURL,
-            };
+            const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+            const actionText = formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'});
+            BottomSheet.showBottomSheetWithOptions({
+                options: [actionText, cancelText],
+                cancelButtonIndex: 1,
+            }, (value) => {
+                if (value !== 1) {
+                    this.handleLinkCopy();
+                }
+            });
         }
-
-        this.props.onLongPress(action);
-    }
+    };
 
     handleCopyURL = () => {
         Clipboard.setString(this.props.href);
-    }
+    };
 
     render() {
         const children = Config.ExperimentalNormalizeMarkdownLinks ? this.parseChildren() : this.props.children;

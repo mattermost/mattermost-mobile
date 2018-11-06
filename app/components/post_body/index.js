@@ -2,27 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
 
-import {flagPost, unflagPost} from 'mattermost-redux/actions/posts';
-import {
-    General,
-    Posts,
-} from 'mattermost-redux/constants';
+import {General, Posts} from 'mattermost-redux/constants';
 import {getChannel, canManageChannelMembers, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {hasNewPermissions, getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import Permissions from 'mattermost-redux/constants/permissions';
 
 import {
     isEdited,
     isPostEphemeral,
     isSystemMessage,
-    canEditPost,
     canDeletePost,
 } from 'mattermost-redux/utils/post_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
@@ -34,19 +26,6 @@ const POST_TIMEOUT = 20000;
 function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId) || {};
     const channel = getChannel(state, post.channel_id) || {};
-    const channelIsArchived = channel ? channel.delete_at !== 0 : false;
-    const teamId = channel.team_id;
-
-    let canAddReaction = true;
-    if (channelIsArchived) {
-        canAddReaction = false;
-    } else if (hasNewPermissions(state)) {
-        canAddReaction = haveIChannelPermission(state, {
-            team: teamId,
-            channel: post.channel_id,
-            permission: Permissions.ADD_REACTION,
-        });
-    }
 
     let isFailed = post.failed;
     let isPending = post.id === post.pending_post_id;
@@ -69,12 +48,9 @@ function mapStateToProps(state, ownProps) {
     const isAdmin = checkIsAdmin(roles);
     const isSystemAdmin = checkIsSystemAdmin(roles);
     let canDelete = false;
-    let canEdit = false;
-    if (post) {
-        if (!channelIsArchived) {
-            canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
-            canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
-        }
+
+    if (post && !ownProps.channelIsArchived) {
+        canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
     }
 
     let isPostAddChannelMember = false;
@@ -103,19 +79,8 @@ function mapStateToProps(state, ownProps) {
         isSystemMessage: isSystemMessage(post),
         message: post.message,
         theme: getTheme(state),
-        canAddReaction,
         canDelete,
-        canEdit,
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            flagPost,
-            unflagPost,
-        }, dispatch),
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(PostBody);
+export default connect(mapStateToProps, null, null, {withRef: true})(PostBody);

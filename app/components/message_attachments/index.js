@@ -17,7 +17,6 @@ export default class MessageAttachments extends PureComponent {
         postId: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         onHashtagPress: PropTypes.func,
-        onLongPress: PropTypes.func.isRequired,
         onPermalinkPress: PropTypes.func,
         theme: PropTypes.object,
         textStyles: PropTypes.object,
@@ -30,7 +29,6 @@ export default class MessageAttachments extends PureComponent {
             blockStyles,
             navigator,
             onHashtagPress,
-            onLongPress,
             onPermalinkPress,
             postId,
             theme,
@@ -47,7 +45,6 @@ export default class MessageAttachments extends PureComponent {
                     key={'att_' + i}
                     navigator={navigator}
                     onHashtagPress={onHashtagPress}
-                    onLongPress={onLongPress}
                     onPermalinkPress={onPermalinkPress}
                     postId={postId}
                     theme={theme}

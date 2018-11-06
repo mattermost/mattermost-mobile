@@ -19,7 +19,6 @@ import {intlShape} from 'react-intl';
 import ProgressiveImage from 'app/components/progressive_image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {getYouTubeVideoId, isImageLink, isYoutubeLink} from 'app/utils/url';
@@ -45,7 +44,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
         message: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         onHashtagPress: PropTypes.func,
-        onLongPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         openGraphData: PropTypes.object,
         postId: PropTypes.string.isRequired,
@@ -53,10 +51,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
         showLinkPreviews: PropTypes.bool.isRequired,
         textStyles: PropTypes.object,
         theme: PropTypes.object.isRequired,
-    };
-
-    static defaultProps = {
-        onLongPress: emptyFunction,
     };
 
     static contextTypes = {
@@ -311,7 +305,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     textStyles={textStyles}
                     theme={theme}
                     onHashtagPress={onHashtagPress}
-                    onLongPress={this.props.onLongPress}
                     onPermalinkPress={onPermalinkPress}
                 />
             );
