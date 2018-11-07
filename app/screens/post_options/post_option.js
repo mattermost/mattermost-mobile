@@ -7,7 +7,7 @@ import {
     Image,
     StyleSheet,
     Text,
-    TouchableOpacity,
+    TouchableHighlight,
     View,
 } from 'react-native';
 
@@ -40,8 +40,12 @@ export default class PostOption extends PureComponent {
         const image = icons[icon];
 
         return (
-            <View style={style.container}>
-                <TouchableOpacity onPress={onPress}>
+            <View style={style.container} >
+                <TouchableHighlight
+                    onPress={onPress}
+                    underlayColor='rgba(0, 0, 0, 0.05)'
+                    style={style.flex}
+                >
                     <View style={style.row}>
                         <View style={style.icon}>
                             <Image source={image}/>
@@ -52,7 +56,7 @@ export default class PostOption extends PureComponent {
                             </Text>
                         </View>
                     </View>
-                </TouchableOpacity>
+                </TouchableHighlight>
                 <View style={style.footer}/>
             </View>
         );
@@ -63,6 +67,9 @@ const style = StyleSheet.create({
     container: {
         height: 51,
         width: '100%',
+    },
+    flex: {
+        flex: 1,
     },
     destructive: {
         color: '#D0021B',
@@ -81,7 +88,7 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         flex: 1,
         height: 50,
-        marginHorizontal: 5,
+        marginRight: 5,
     },
     text: {
         color: '#000000',

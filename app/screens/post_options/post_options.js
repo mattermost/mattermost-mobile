@@ -8,11 +8,12 @@ import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
-import {CONTAINER_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
+import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
 
 import PostOption from './post_option';
 
-const OPTION_HEIGHT = 51;
+const OPTION_HEIGHT = 50;
+const INITIAL_OPTION_COUNT = 6;
 
 export default class PostOptions extends PureComponent {
     static propTypes = {
@@ -44,13 +45,6 @@ export default class PostOptions extends PureComponent {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
-
-    constructor(props) {
-        super(props);
-        this.contentOffsetY = -1;
-        this.state = {
-        };
-    }
 
     close = () => {
         this.props.navigator.dismissModal({
@@ -184,11 +178,11 @@ export default class PostOptions extends PureComponent {
     getMyPostOptions = () => {
         const actions = [
             this.getEditOption(),
-            this.getDeleteOption(),
             this.getFlagOption(),
             this.getAddReactionOption(),
             this.getCopyPermalink(),
             this.getCopyText(),
+            this.getDeleteOption(),
         ];
 
         return actions.filter((a) => a !== null);
@@ -244,8 +238,9 @@ export default class PostOptions extends PureComponent {
     };
 
     handleAddReactionToPost = (emoji) => {
-        const {post} = this.props;
-        this.props.actions.addReaction(post.id, emoji);
+        const {actions, post} = this.props;
+
+        actions.addReaction(post.id, emoji);
     };
 
     handleCopyPermalink = () => {
@@ -265,6 +260,7 @@ export default class PostOptions extends PureComponent {
 
     handleFlagPost = () => {
         const {actions, post} = this.props;
+
         actions.flagPost(post.id);
         this.closeWithAnimation();
     };
@@ -324,6 +320,7 @@ export default class PostOptions extends PureComponent {
 
     handleUnflagPost = () => {
         const {actions, post} = this.props;
+
         actions.unflagPost(post.id);
         this.closeWithAnimation();
     };
@@ -335,15 +332,17 @@ export default class PostOptions extends PureComponent {
     render() {
         const {deviceHeight} = this.props;
         const options = this.getPostOptions();
-        const marginFromTop = deviceHeight - (options.length * OPTION_HEIGHT) - CONTAINER_MARGIN;
+        const initialPosition = (INITIAL_OPTION_COUNT + 1) * OPTION_HEIGHT;
+        const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT);
 
         return (
             <View style={style.flex}>
                 <SlideUpPanel
+                    alwaysCaptureContainerMove={true}
                     ref={this.refSlideUpPanel}
                     marginFromTop={marginFromTop}
                     onRequestClose={this.close}
-                    initialPosition={325}
+                    initialPosition={initialPosition}
                 >
                     {options}
                 </SlideUpPanel>
