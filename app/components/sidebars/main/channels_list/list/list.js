@@ -117,7 +117,7 @@ export default class List extends PureComponent {
             };
         case SidebarSectionTypes.RECENT_ACTIVITY:
             return {
-                action: this.goToDirectMessages,
+                action: this.showCreateChannelOptions,
                 id: 'sidebar.types.recent',
                 defaultMessage: 'RECENT ACTIVITY',
             };

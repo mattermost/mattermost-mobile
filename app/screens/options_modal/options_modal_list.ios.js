@@ -59,11 +59,10 @@ export default class OptionsModalList extends PureComponent {
             return (
                 <View
                     key={index}
-                    onPress={this.handleItemPress(item.action)}
-                    style={[style.option, (index < items.length - 1 && style.optionBorder)]}
+                    style={[(index < items.length - 1 && style.optionBorder)]}
                 >
                     <TouchableOpacity
-                        onPress={preventDoubleTap(item.action)}
+                        onPress={this.handleItemPress(item.action)}
                         style={style.option}
                     >
                         {textComponent}
