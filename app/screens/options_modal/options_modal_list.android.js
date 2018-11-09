@@ -18,12 +18,22 @@ export default class OptionsModalList extends PureComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
         onCancelPress: PropTypes.func,
+        onItemPress: PropTypes.func,
     };
 
     handleCancelPress = preventDoubleTap(() => {
         if (this.props.onCancelPress) {
             this.props.onCancelPress();
         }
+    });
+
+    handleItemPress = preventDoubleTap((action) => {
+        this.props.onItemPress();
+        setTimeout(() => {
+            if (typeof action === 'function') {
+                action();
+            }
+        }, 100);
     });
 
     renderOptions = () => {
@@ -48,7 +58,7 @@ export default class OptionsModalList extends PureComponent {
                     style={style.optionBorder}
                 >
                     <TouchableOpacity
-                        onPress={preventDoubleTap(item.action)}
+                        onPress={() => this.handleItemPress(item.action)}
                         style={style.option}
                     >
                         {textComponent}

@@ -9,6 +9,16 @@ export const UpgradeTypes = {
     NO_UPGRADE: 'no_upgrade',
 };
 
+export const SidebarSectionTypes = {
+    UNREADS: 'unreads',
+    FAVORITE: 'favorite',
+    PUBLIC: 'public',
+    PRIVATE: 'private',
+    DIRECT: 'direct',
+    RECENT_ACTIVITY: 'recent',
+    ALPHA: 'alpha',
+};
+
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
     SERVER_URL_CHANGED: null,

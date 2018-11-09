@@ -195,10 +195,12 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
     </Component>
     <Component
       style={
-        Object {
-          "borderBottomColor": "rgba(0, 0, 0, 0.1)",
-          "borderBottomWidth": 1,
-        }
+        Array [
+          Object {
+            "borderBottomColor": "rgba(0, 0, 0, 0.1)",
+            "borderBottomWidth": 1,
+          },
+        ]
       }
     >
       <TouchableOpacity
@@ -242,7 +244,11 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
       </TouchableOpacity>
     </Component>
     <Component
-      style={false}
+      style={
+        Array [
+          false,
+        ]
+      }
     >
       <TouchableOpacity
         activeOpacity={0.2}
