@@ -4,50 +4,31 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getChannelsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getProfiles} from 'mattermost-redux/selectors/entities/users';
-import {getProfiles as getProfilesAction, searchProfiles} from 'mattermost-redux/actions/users';
+import {getProfiles, searchProfiles} from 'mattermost-redux/actions/users';
 import {getChannels, searchChannels} from 'mattermost-redux/actions/channels';
-
-import {ViewTypes} from 'app/constants';
 
 import MenuActionSelector from './menu_action_selector';
 
 function mapStateToProps(state) {
     const menuAction = state.views.post.selectedMenuAction || {};
 
-    let data;
-    let loadMoreRequestStatus;
-    let searchRequestStatus;
-    if (menuAction.dataSource === ViewTypes.DATA_SOURCE_USERS) {
-        data = getProfiles(state);
-        loadMoreRequestStatus = state.requests.users.getProfiles.status;
-        searchRequestStatus = state.requests.users.searchProfiles.status;
-    } else if (menuAction.dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-        data = getChannelsInCurrentTeam(state);
-        loadMoreRequestStatus = state.requests.channels.getChannels.status;
-        searchRequestStatus = state.requests.channels.getChannels.status;
-    } else {
-        data = menuAction.options || [];
-    }
+    const data = menuAction.options || [];
 
     return {
+        currentTeamId: getCurrentTeamId(state),
         data,
         dataSource: menuAction.dataSource,
         onSelect: menuAction.onSelect,
         theme: getTheme(state),
-        currentTeamId: getCurrentTeamId(state),
-        loadMoreRequestStatus,
-        searchRequestStatus,
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getProfiles: getProfilesAction,
+            getProfiles,
             getChannels,
             searchProfiles,
             searchChannels,

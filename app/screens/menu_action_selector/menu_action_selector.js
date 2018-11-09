@@ -3,82 +3,80 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
-    InteractionManager,
     Platform,
     View,
 } from 'react-native';
 
-import CustomList from 'app/components/custom_list';
-import UserListRow from 'app/components/custom_list/user_list_row';
-import ChannelListRow from 'app/components/custom_list/channel_list_row';
-import OptionListRow from 'app/components/custom_list/option_list_row';
-import SearchBar from 'app/components/search_bar';
-import StatusBar from 'app/components/status_bar';
-import {loadingText} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-import {ViewTypes} from 'app/constants';
-
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {debounce} from 'mattermost-redux/actions/helpers';
+import {General} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 import {filterChannelsMatchingTerm} from 'mattermost-redux/utils/channel_utils';
 import {memoizeResult} from 'mattermost-redux/utils/helpers';
 
-class MenuActionSelector extends PureComponent {
+import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
+import UserListRow from 'app/components/custom_list/user_list_row';
+import ChannelListRow from 'app/components/custom_list/channel_list_row';
+import OptionListRow from 'app/components/custom_list/option_list_row';
+import FormattedText from 'app/components/formatted_text';
+import SearchBar from 'app/components/search_bar';
+import StatusBar from 'app/components/status_bar';
+import {ViewTypes} from 'app/constants';
+import {createProfilesSections, loadingText} from 'app/utils/member_list';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
+
+export default class MenuActionSelector extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
-        theme: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
-        data: PropTypes.arrayOf(PropTypes.object),
-        dataSource: PropTypes.string,
-        onSelect: PropTypes.func.isRequired,
-        currentTeamId: PropTypes.string.isRequired,
-        loadMoreRequestStatus: PropTypes.string,
-        searchRequestStatus: PropTypes.string,
         actions: PropTypes.shape({
             getProfiles: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
         }),
+        currentTeamId: PropTypes.string.isRequired,
+        data: PropTypes.arrayOf(PropTypes.object),
+        dataSource: PropTypes.string,
+        navigator: PropTypes.object,
+        onSelect: PropTypes.func.isRequired,
+        theme: PropTypes.object.isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
         super(props);
 
         this.searchTimeoutId = 0;
+        this.page = -1;
+        this.next = props.dataSource === ViewTypes.DATA_SOURCE_USERS || props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS;
 
         let data = [];
         if (!props.dataSource) {
             data = props.data;
         }
 
-        const needsLoading = props.dataSource === ViewTypes.DATA_SOURCE_USERS || props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS;
-
         this.state = {
-            next: needsLoading,
-            page: 0,
             data,
-            searching: false,
-            showNoResults: false,
+            loading: false,
+            searchResults: [],
             term: '',
-            isLoading: needsLoading,
-            prevLoadMoreRequestStatus: RequestStatus.STARTED,
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     }
 
     componentDidMount() {
+        const {dataSource} = this.props;
         this.mounted = true;
-        InteractionManager.runAfterInteractions(() => {
-            if (this.props.dataSource === ViewTypes.DATA_SOURCE_USERS) {
-                this.props.actions.getProfiles().then(() => this.setState({isLoading: false}));
-            } else if (this.props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-                this.props.actions.getChannels(this.props.currentTeamId).then(() => this.setState({isLoading: false}));
-            }
-        });
+        if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
+            this.getProfiles();
+        } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
+            this.getChannels();
+        }
     }
 
     componentWillUnmount() {
@@ -91,97 +89,199 @@ class MenuActionSelector extends PureComponent {
         }
     }
 
-    cancelSearch = () => {
-        this.setState({
-            searching: false,
-            isLoading: false,
-            term: '',
-            page: 0,
-            data: filterPageData(this.props.data, 0),
-        });
+    clearSearch = () => {
+        this.setState({term: '', searchResults: []});
     };
 
     close = () => {
         this.props.navigator.pop({animated: true});
     };
 
-    handleRowSelect = (id, selected) => {
-        this.props.onSelect(selected);
+    handleSelectItem = (id, item) => {
+        this.props.onSelect(item);
         this.close();
     };
 
-    loadMore = async () => {
-        const {actions, loadMoreRequestStatus, currentTeamId, dataSource} = this.props;
-        const {next, searching} = this.state;
-        let {page} = this.state;
+    getChannels = debounce(() => {
+        const {actions, currentTeamId} = this.props;
+        const {loading, term} = this.state;
+        if (this.next && !loading && !term) {
+            this.setState({loading: true}, () => {
+                actions.getChannels(
+                    currentTeamId,
+                    this.page += 1,
+                    General.CHANNELS_CHUNK_SIZE
+                ).then(this.loadedChannels);
+            });
+        }
+    }, 100);
 
-        if (loadMoreRequestStatus !== RequestStatus.STARTED && next && !searching) {
-            page += 1;
+    getDataResults = () => {
+        const {dataSource} = this.props;
+        const {data, searchResults, term} = this.state;
 
-            let results;
-            if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-                results = await actions.getProfiles(page, General.PROFILE_CHUNK_SIZE);
-            } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-                results = await actions.getChannels(currentTeamId, page, General.PROFILE_CHUNK_SIZE);
-            } else {
-                return;
-            }
+        const result = {
+            data,
+            listType: FLATLIST};
+        if (term) {
+            result.data = filterSearchData(dataSource, searchResults, term);
+        } else if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
+            result.data = createProfilesSections(data);
+            result.listType = SECTIONLIST;
+        }
 
-            if (!this.mounted) {
-                return;
-            }
+        return result;
+    };
 
-            if (results.data && results.data.length) {
-                this.setState({
-                    isLoading: false,
-                    page,
-                });
-            } else {
-                this.setState({
-                    isLoading: false,
-                    next: false,
-                });
-            }
+    getProfiles = debounce(() => {
+        const {loading, term} = this.state;
+        if (this.next && !loading && !term) {
+            this.setState({loading: true}, () => {
+                const {actions} = this.props;
+
+                actions.getProfiles(
+                    this.page + 1,
+                    General.PROFILE_CHUNK_SIZE
+                ).then(this.loadedProfiles);
+            });
+        }
+    }, 100);
+
+    loadedChannels = ({data: channels}) => {
+        const {data} = this.state;
+        if (channels && !channels.length) {
+            this.next = false;
+        }
+
+        this.page += 1;
+        this.setState({loading: false, data: [...channels, ...data]});
+    };
+
+    loadedProfiles = ({data: profiles}) => {
+        const {data} = this.state;
+        if (profiles && !profiles.length) {
+            this.next = false;
+        }
+
+        this.page += 1;
+        this.setState({loading: false, data: [...profiles, ...data]});
+    };
+
+    loadMore = () => {
+        const {dataSource} = this.props;
+
+        if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
+            this.getProfiles();
+        } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
+            this.getChannels();
         }
     };
 
-    searchProfiles = (text) => {
-        const term = text;
-        const {actions, currentTeamId, dataSource} = this.props;
+    onSearch = (text) => {
+        const term = text.toLowerCase();
 
         if (term) {
-            if (!dataSource) {
-                this.setState({data: filterSearchData(null, this.props.data, term.toLowerCase())});
-                return;
-            }
-
-            this.setState({searching: true, isLoading: true, term});
+            const {dataSource, data} = this.props;
+            this.setState({term});
             clearTimeout(this.searchTimeoutId);
 
-            this.searchTimeoutId = setTimeout(async () => {
-                if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-                    await actions.searchProfiles(term.toLowerCase());
-                } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-                    await actions.searchChannels(currentTeamId, term.toLowerCase());
-                }
-
-                if (!this.mounted) {
+            this.searchTimeoutId = setTimeout(() => {
+                if (!dataSource) {
+                    this.setState({searchResults: filterSearchData(null, data, term)});
                     return;
                 }
 
-                this.setState({isLoading: false});
+                if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
+                    this.searchProfiles(term);
+                } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
+                    this.searchChannels(term);
+                }
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
-            this.cancelSearch();
+            this.clearSearch();
         }
     };
 
-    render() {
-        const {intl, data, theme, dataSource} = this.props;
-        const {searching, term, page} = this.state;
-        const {formatMessage} = intl;
+    searchChannels = (term) => {
+        const {actions, currentTeamId} = this.props;
+
+        actions.searchChannels(currentTeamId, term).then(({data}) => {
+            this.setState({searchResults: data, loading: false});
+        });
+    };
+
+    searchProfiles = (term) => {
+        const {actions} = this.props;
+        this.setState({loading: true});
+
+        actions.searchProfiles(term).then(({data}) => {
+            this.setState({searchResults: data, loading: false});
+        });
+    };
+
+    renderLoading = () => {
+        const {dataSource, theme} = this.props;
+        const {loading} = this.state;
         const style = getStyleFromTheme(theme);
-        const more = searching ? () => true : this.loadMore;
+
+        if (!loading) {
+            return null;
+        }
+
+        let text;
+        switch (dataSource) {
+        case ViewTypes.DATA_SOURCE_USERS:
+            text = loadingText;
+            break;
+        case ViewTypes.DATA_SOURCE_CHANNELS:
+            text = {
+                id: t('mobile.loading_channels'),
+                defaultMessage: 'Loading Channels...',
+            };
+            break;
+        default:
+            text = {
+                id: t('mobile.loading_options'),
+                defaultMessage: 'Loading Options...',
+            };
+            break;
+        }
+
+        return (
+            <View style={style.loadingContainer}>
+                <FormattedText
+                    {...text}
+                    style={style.loadingText}
+                />
+            </View>
+        );
+    };
+
+    renderNoResults = () => {
+        const {loading} = this.state;
+        const {theme} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        if (loading || this.page === -1) {
+            return null;
+        }
+
+        return (
+            <View style={style.noResultContainer}>
+                <FormattedText
+                    id='mobile.custom_list.no_results'
+                    defaultMessage='No Results'
+                    style={style.noResultText}
+                />
+            </View>
+        );
+    };
+
+    render() {
+        const {formatMessage} = this.context.intl;
+        const {theme, dataSource} = this.props;
+        const {loading, term} = this.state;
+        const style = getStyleFromTheme(theme);
 
         const searchBarInput = {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -203,19 +303,12 @@ class MenuActionSelector extends PureComponent {
             rowComponent = OptionListRow;
         }
 
-        let filteredData;
-        if (searching) {
-            filteredData = filterSearchData(dataSource, data, term);
-        } else {
-            filteredData = filterPageData(data, page);
-        }
+        const {data, listType} = this.getDataResults();
 
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View
-                    style={style.searchContainer}
-                >
+                <View style={style.searchBar}>
                     <SearchBar
                         ref='search_bar'
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -227,26 +320,24 @@ class MenuActionSelector extends PureComponent {
                         tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
                         titleCancelColor={theme.centerChannelColor}
-                        onChangeText={this.searchProfiles}
-                        onSearchButtonPress={this.searchProfiles}
-                        onCancelButtonPress={this.cancelSearch}
+                        onChangeText={this.onSearch}
+                        onSearchButtonPress={this.onSearch}
+                        onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
                         value={term}
                     />
                 </View>
                 <CustomList
-                    data={filteredData}
+                    data={data}
+                    key='custom_list'
+                    listType={listType}
+                    loading={loading}
+                    loadingComponent={this.renderLoading()}
+                    noResults={this.renderNoResults()}
+                    onLoadMore={this.loadMore}
+                    onRowPress={this.handleSelectItem}
+                    renderItem={rowComponent}
                     theme={theme}
-                    searching={searching}
-                    onListEndReached={more}
-                    listScrollRenderAheadDistance={50}
-                    loading={this.state.isLoading}
-                    loadingText={loadingText}
-                    selectable={false}
-                    onRowPress={this.handleRowSelect}
-                    renderRow={rowComponent}
-                    showNoResults={this.state.showNoResults}
-                    showSections={false}
                 />
             </View>
         );
@@ -259,14 +350,29 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
-        searchContainer: {
+        searchBar: {
             marginVertical: 5,
         },
+        loadingContainer: {
+            alignItems: 'center',
+            backgroundColor: theme.centerChannelBg,
+            height: 70,
+            justifyContent: 'center',
+        },
+        loadingText: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+        },
+        noResultContainer: {
+            flexGrow: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        noResultText: {
+            fontSize: 26,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
     };
-});
-
-const filterPageData = memoizeResult((data, page) => {
-    return data.slice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
 });
 
 const filterSearchData = memoizeResult((dataSource, data, term) => {
@@ -282,5 +388,3 @@ const filterSearchData = memoizeResult((dataSource, data, term) => {
 
     return data.filter((option) => option.text && option.text.toLowerCase().startsWith(term));
 });
-
-export default injectIntl(MenuActionSelector);
