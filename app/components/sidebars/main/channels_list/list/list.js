@@ -21,7 +21,6 @@ import {ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
