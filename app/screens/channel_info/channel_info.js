@@ -308,7 +308,6 @@ export default class ChannelInfo extends PureComponent {
                 passProps: {
                     isPermalink: true,
                     onClose: this.handleClosePermalink,
-                    onPermalinkPress: this.handlePermalinkPress,
                 },
             };
 

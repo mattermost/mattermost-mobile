@@ -18,6 +18,7 @@ import {
     setChannelDisplayName,
     setChannelLoading,
 } from 'app/actions/views/channel';
+import {showSearchModal} from 'app/actions/views/search';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
 import Permalink from './permalink';
@@ -72,6 +73,7 @@ function mapDispatchToProps(dispatch) {
             selectPost,
             setChannelDisplayName,
             setChannelLoading,
+            showSearchModal,
         }, dispatch),
     };
 }
