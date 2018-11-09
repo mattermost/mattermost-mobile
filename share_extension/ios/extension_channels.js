@@ -14,7 +14,7 @@ import TableView from 'react-native-tableview';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {General} from 'mattermost-redux/constants';
-import {getChannelsInTeam, getDirectChannels} from 'mattermost-redux/selectors/entities/channels';
+import {getChannelsInTeam, getAllDirectChannels} from 'mattermost-redux/selectors/entities/channels';
 
 import SearchBar from 'app/components/search_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -111,7 +111,7 @@ export default class ExtensionChannels extends PureComponent {
             // get the channels for the specified team
             const channelsInTeam = getChannelsInTeam({entities});
             const channelIds = channelsInTeam[teamId] || [];
-            const direct = getDirectChannels({entities});
+            const direct = getAllDirectChannels({entities});
             const channels = channelIds.map((id) => this.props.entities.channels.channels[id]).concat(direct);
 
             const icons = await Promise.all([
