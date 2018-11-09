@@ -52,12 +52,17 @@ export function setMenuActionSelector(dataSource, onSelect, options) {
     };
 }
 
-export function selectAttachmentMenuAction(postId, actionId, dataSource, displayText, value) {
+export function selectAttachmentMenuAction(postId, actionId, displayText, value) {
     return (dispatch) => {
         dispatch({
             type: ViewTypes.SUBMIT_ATTACHMENT_MENU_ACTION,
             postId,
-            data: {displayText, value},
+            data: {
+                [actionId]: {
+                    displayText,
+                    value,
+                },
+            },
         });
 
         dispatch(doPostAction(postId, actionId, value));
