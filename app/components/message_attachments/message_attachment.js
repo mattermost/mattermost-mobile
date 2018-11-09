@@ -114,7 +114,7 @@ export default class MessageAttachment extends PureComponent {
         });
 
         return (
-            <View style={style.actionsContainer}>
+            <View style={style.bodyContainer}>
                 {content}
             </View>
         );
@@ -545,11 +545,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 2,
             marginTop: 5,
             padding: 5,
-        },
-        actionsContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            flexWrap: 'wrap',
         },
     };
 });
