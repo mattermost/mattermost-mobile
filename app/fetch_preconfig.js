@@ -31,7 +31,7 @@ const handleRedirectProtocol = (url, response) => {
 
 Client4.doFetchWithResponse = async (url, options) => {
     if (!Client4.online) {
-        throw new ClientError(this.getUrl(), {
+        throw new ClientError(Client4.getUrl(), {
             message: 'no internet connection',
             url,
         });
@@ -63,14 +63,14 @@ Client4.doFetchWithResponse = async (url, options) => {
         data = await response.json();
     } catch (err) {
         if (response && response.resp && response.resp.data && response.resp.data.includes('SSL certificate')) {
-            throw new ClientError(this.getUrl(), {
+            throw new ClientError(Client4.getUrl(), {
                 message: 'You need to use a valid client certificate in order to connect to this Mattermost server',
                 status_code: 401,
                 url,
             });
         }
 
-        throw new ClientError(this.getUrl(), {
+        throw new ClientError(Client4.getUrl(), {
             message: 'Received invalid response from the server.',
             intl: {
                 id: t('mobile.request.invalid_response'),
@@ -82,8 +82,8 @@ Client4.doFetchWithResponse = async (url, options) => {
 
     if (headers[HEADER_X_CLUSTER_ID] || headers[HEADER_X_CLUSTER_ID.toLowerCase()]) {
         const clusterId = headers[HEADER_X_CLUSTER_ID] || headers[HEADER_X_CLUSTER_ID.toLowerCase()];
-        if (clusterId && this.clusterId !== clusterId) {
-            this.clusterId = clusterId;
+        if (clusterId && Client4.clusterId !== clusterId) {
+            Client4.clusterId = clusterId;
         }
     }
 
@@ -111,7 +111,7 @@ Client4.doFetchWithResponse = async (url, options) => {
         console.error(msg); // eslint-disable-line no-console
     }
 
-    throw new ClientError(this.getUrl(), {
+    throw new ClientError(Client4.getUrl(), {
         message: msg,
         server_error_id: data.id,
         status_code: data.status_code,
