@@ -2,10 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Text, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/FontAwesome';
+
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -24,6 +26,7 @@ export default class ActionMenu extends PureComponent {
         options: PropTypes.arrayOf(PropTypes.object),
         postId: PropTypes.string.isRequired,
         selected: PropTypes.object,
+        teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         navigator: PropTypes.object,
     };
@@ -56,12 +59,18 @@ export default class ActionMenu extends PureComponent {
             return;
         }
 
-        const {dataSource, actions, postId, id} = this.props;
+        const {
+            actions,
+            dataSource,
+            id,
+            postId,
+            teammateNameDisplay,
+        } = this.props;
 
         let selectedText;
         let selectedValue;
         if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-            selectedText = selected.username;
+            selectedText = displayUsername(selected, teammateNameDisplay);
             selectedValue = selected.id;
         } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
             selectedText = selected.display_name;
@@ -73,11 +82,11 @@ export default class ActionMenu extends PureComponent {
 
         this.setState({selectedText});
 
-        actions.selectAttachmentMenuAction(postId, id, dataSource, selectedText, selectedValue);
-    }
+        actions.selectAttachmentMenuAction(postId, id, selectedText, selectedValue);
+    };
 
     goToMenuActionSelector = preventDoubleTap(() => {
-        const {intl} = this.context;
+        const {formatMessage} = this.context.intl;
         const {navigator, theme, actions, dataSource, options, name} = this.props;
 
         actions.setMenuActionSelector(dataSource, this.handleSelect, options);
@@ -85,7 +94,7 @@ export default class ActionMenu extends PureComponent {
         navigator.push({
             backButtonTitle: '',
             screen: 'MenuActionSelector',
-            title: name || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'}),
+            title: name || formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'}),
             animated: true,
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -129,21 +138,24 @@ export default class ActionMenu extends PureComponent {
 
         return (
             <View style={style.container}>
-                <View style={style.input}>
-                    <Text
-                        style={selectedStyle}
-                        onPress={this.goToMenuActionSelector}
-                        numberOfLines={1}
-                    >
-                        {text}
-                    </Text>
-                    <Icon
-                        name='chevron-down'
-                        onPress={this.goToMenuActionSelector}
-                        color={changeOpacity(theme.centerChannelColor, 0.5)}
-                        style={style.icon}
-                    />
-                </View>
+                <TouchableOpacity
+                    style={style.flex}
+                    onPress={this.goToMenuActionSelector}
+                >
+                    <View style={style.input}>
+                        <Text
+                            style={selectedStyle}
+                            numberOfLines={1}
+                        >
+                            {text}
+                        </Text>
+                        <Icon
+                            name='chevron-down'
+                            color={changeOpacity(theme.centerChannelColor, 0.5)}
+                            style={style.icon}
+                        />
+                    </View>
+                </TouchableOpacity>
                 {submitted}
             </View>
         );
@@ -152,6 +164,9 @@ export default class ActionMenu extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {
+            flex: 1,
+        },
         container: {
             width: '100%',
             flex: 1,

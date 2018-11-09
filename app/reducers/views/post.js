@@ -20,7 +20,15 @@ function submittedMenuActions(state = {}, action) {
     switch (action.type) {
     case ViewTypes.SUBMIT_ATTACHMENT_MENU_ACTION: {
         const nextState = {...state};
-        nextState[action.postId] = action.data;
+        if (nextState[action.postId]) {
+            nextState[action.postId] = {
+                ...nextState[action.postId],
+                ...action.data,
+            };
+        } else {
+            nextState[action.postId] = action.data;
+        }
+
         return nextState;
     }
     case UserTypes.LOGOUT_SUCCESS:
