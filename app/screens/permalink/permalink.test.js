@@ -48,8 +48,6 @@ describe('Permalink', () => {
         myMembers: {},
         navigator,
         onClose: jest.fn(),
-        onHashtagPress: jest.fn(),
-        onPermalinkPress: jest.fn(),
         onPress: jest.fn(),
         postIds: ['post_id_1', 'focused_post_id', 'post_id_3'],
         theme: Preferences.THEMES.default,

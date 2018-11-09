@@ -33,6 +33,7 @@ export default class RecentMentions extends PureComponent {
             getRecentMentions: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            showSearchModal: PropTypes.func.isRequired,
         }).isRequired,
         didFail: PropTypes.bool,
         isLoading: PropTypes.bool,
@@ -112,6 +113,14 @@ export default class RecentMentions extends PureComponent {
         this.showPermalinkView(postId, true);
     };
 
+    handleHashtagPress = async (hashtag) => {
+        const {actions, navigator} = this.props;
+
+        await navigator.dismissModal();
+
+        actions.showSearchModal(navigator, '#' + hashtag);
+    };
+
     keyExtractor = (item) => item;
 
     onNavigatorEvent = (event) => {
@@ -173,6 +182,7 @@ export default class RecentMentions extends PureComponent {
                     previewPost={this.previewPost}
                     goToThread={this.goToThread}
                     navigator={this.props.navigator}
+                    onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={managedConfig}
                     showFullDate={false}
@@ -212,7 +222,6 @@ export default class RecentMentions extends PureComponent {
                 passProps: {
                     isPermalink,
                     onClose: this.handleClosePermalink,
-                    onPermalinkPress: this.handlePermalinkPress,
                 },
             };
 
