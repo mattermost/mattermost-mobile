@@ -17,7 +17,7 @@
     "intl": "1.2.5",
     "jail-monkey": "1.0.0",
     "jsc-android": "224109.1.0",
-    "mattermost-redux": "github:uber-uchat/mattermost-redux#sidebar-fixed",
+    "mattermost-redux": "github:mattermost/mattermost-redux#e86e83dd44697d9a98cd5ab45be5b657340335f4",
     "mime-db": "1.36.0",
     "moment-timezone": "0.5.21",
     "prop-types": "15.6.2",
