@@ -31,7 +31,7 @@ export default class OptionsModalList extends PureComponent {
         }
     });
 
-    handleItemPress = (action) => preventDoubleTap(() => {
+    handleItemPress = preventDoubleTap((action) => {
         this.props.onItemPress();
         setTimeout(() => {
             if (typeof action === 'function') {
@@ -62,7 +62,7 @@ export default class OptionsModalList extends PureComponent {
                     style={[(index < items.length - 1 && style.optionBorder)]}
                 >
                     <TouchableOpacity
-                        onPress={this.handleItemPress(item.action)}
+                        onPress={() => this.handleItemPress(item.action)}
                         style={style.option}
                     >
                         {textComponent}
