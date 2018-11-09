@@ -5,6 +5,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     Keyboard,
+    Platform,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
@@ -100,7 +101,8 @@ export default class FileAttachmentList extends Component {
                 }
 
                 if (cache) {
-                    uri = cache.path;
+                    const prefix = Platform.OS === 'android' ? 'file://' : '';
+                    uri = `${prefix}${cache.path}`;
                 }
 
                 results.push({
