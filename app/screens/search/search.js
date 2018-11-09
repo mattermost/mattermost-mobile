@@ -519,8 +519,6 @@ export default class Search extends PureComponent {
                 passProps: {
                     isPermalink,
                     onClose: this.handleClosePermalink,
-                    onHashtagPress: this.handleHashtagPress,
-                    onPermalinkPress: this.handlePermalinkPress,
                 },
             };
 

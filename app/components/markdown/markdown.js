@@ -223,7 +223,6 @@ export default class Markdown extends PureComponent {
                 linkStyle={this.props.textStyles.link}
                 onHashtagPress={this.props.onHashtagPress}
                 navigator={this.props.navigator}
-                theme={this.props.theme}
             />
         );
     }

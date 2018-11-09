@@ -3,7 +3,6 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -14,37 +13,23 @@ export default class Hashtag extends React.PureComponent {
         linkStyle: CustomPropTypes.Style.isRequired,
         onHashtagPress: PropTypes.func,
         navigator: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired,
-    };
-
-    static contextTypes = {
-        intl: intlShape,
+        actions: PropTypes.shape({
+            showSearchModal: PropTypes.func.isRequired,
+        }).isRequired,
     };
 
     handlePress = () => {
         if (this.props.onHashtagPress) {
             this.props.onHashtagPress(this.props.hashtag);
+
             return;
         }
-
-        const options = {
-            screen: 'Search',
-            animated: true,
-            backButtonTitle: '',
-            passProps: {
-                initialValue: '#' + this.props.hashtag,
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                screenBackgroundColor: this.props.theme.centerChannelBg,
-            },
-        };
 
         // Close thread view, permalink view, etc
         this.props.navigator.dismissAllModals();
         this.props.navigator.popToRoot();
 
-        this.props.navigator.showModal(options);
+        this.props.actions.showSearchModal(this.props.navigator, '#' + this.props.hashtag);
     };
 
     render() {

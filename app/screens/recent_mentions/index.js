@@ -10,6 +10,7 @@ import {RequestStatus} from 'mattermost-redux/constants';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
+import {showSearchModal} from 'app/actions/views/search';
 import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
 
 import RecentMentions from './recent_mentions';
@@ -40,6 +41,7 @@ function mapDispatchToProps(dispatch) {
             getRecentMentions,
             selectFocusedPostId,
             selectPost,
+            showSearchModal,
         }, dispatch),
     };
 }
