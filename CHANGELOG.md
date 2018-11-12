@@ -2,7 +2,7 @@
 
 ## 1.14.0 Release
 - Release Date: November 16, 2018
-- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 **Combatibility Note: Mobile App v1.13+ is required for Mattermost Server v5.4+**
 
