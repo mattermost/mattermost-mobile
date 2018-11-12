@@ -34,7 +34,7 @@ export default class TermsOfService extends PureComponent {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             getTermsOfService: PropTypes.func.isRequired,
-            updateTermsOfServiceStatus: PropTypes.func.isRequired,
+            updateMyTermsOfServiceStatus: PropTypes.func.isRequired,
         }).isRequired,
         closeButton: PropTypes.object,
         navigator: PropTypes.object,
@@ -204,7 +204,7 @@ export default class TermsOfService extends PureComponent {
             loading: true,
         });
 
-        const {data} = await actions.updateTermsOfServiceStatus(this.state.termsId, accepted);
+        const {data} = await actions.updateMyTermsOfServiceStatus(this.state.termsId, accepted);
 
         this.setState({
             loading: false,

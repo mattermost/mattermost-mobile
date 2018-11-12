@@ -21,7 +21,7 @@ jest.mock('app/utils/theme', () => {
 describe('TermsOfService', () => {
     const actions = {
         getTermsOfService: jest.fn(),
-        updateTermsOfServiceStatus: jest.fn(),
+        updateMyTermsOfServiceStatus: jest.fn(),
         logout: jest.fn(),
     };
 

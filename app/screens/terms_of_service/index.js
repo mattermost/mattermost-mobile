@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTermsOfService, logout, updateTermsOfServiceStatus} from 'mattermost-redux/actions/users';
+import {getTermsOfService, logout, updateMyTermsOfServiceStatus} from 'mattermost-redux/actions/users';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -24,7 +24,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getTermsOfService,
             logout,
-            updateTermsOfServiceStatus,
+            updateMyTermsOfServiceStatus,
         }, dispatch),
     };
 }
