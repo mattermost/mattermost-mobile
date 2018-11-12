@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {SectionList} from 'react-native';
+import {Platform, SectionList} from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
@@ -159,7 +159,9 @@ export default class ChannelMention extends PureComponent {
             const channelOrIn = mentionPart.includes('in:') ? 'in:' : 'channel:';
             completedDraft = mentionPart.replace(CHANNEL_MENTION_SEARCH_REGEX, `${channelOrIn} ${mention} `);
         } else {
-            completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
+            // We are going to set a double ~ on iOS to prevent the auto correct from taking over and replacing it
+            // with the wrong value, this is a hack but I could not found another way to solve it
+            completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~~${mention} `);
         }
 
         if (value.length > cursorPosition) {
@@ -167,6 +169,14 @@ export default class ChannelMention extends PureComponent {
         }
 
         onChangeText(completedDraft, true);
+
+        if (Platform.OS === 'ios') {
+            // This is the second part of the hack were we replace the double ~ with just one
+            // after the auto correct vanished
+            setTimeout(() => {
+                onChangeText(completedDraft.replace(`~~${mention} `, `~${mention} `));
+            });
+        }
         this.setState({mentionComplete: true});
     };
 

@@ -5,6 +5,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
+    Platform,
     Text,
     TouchableOpacity,
     View,
@@ -133,13 +134,28 @@ export default class EmojiSuggestion extends Component {
             actions.addReactionToLatestPost(emoji, rootId);
             onChangeText('');
         } else {
-            let completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `:${emoji}: `);
+            // We are going to set a double : on iOS to prevent the auto correct from taking over and replacing it
+            // with the wrong value, this is a hack but I could not found another way to solve it
+            let completedDraft;
+            if (Platform.OS === 'ios') {
+                completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `::${emoji}: `);
+            } else {
+                completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `:${emoji}: `);
+            }
 
             if (value.length > cursorPosition) {
                 completedDraft += value.substring(cursorPosition);
             }
 
             onChangeText(completedDraft);
+
+            if (Platform.OS === 'ios') {
+                // This is the second part of the hack were we replace the double : with just one
+                // after the auto correct vanished
+                setTimeout(() => {
+                    onChangeText(completedDraft.replace(`::${emoji}: `, `:${emoji}: `));
+                });
+            }
         }
 
         this.setState({
