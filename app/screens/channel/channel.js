@@ -12,9 +12,8 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EmptyToolbar from 'app/components/start/empty_toolbar';
