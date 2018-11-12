@@ -14,11 +14,10 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import FormattedText from 'app/components/formatted_text';
-import {ViewTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import networkConnectionListener, {checkConnection} from 'app/utils/network';
 import {t} from 'app/utils/i18n';
@@ -82,7 +81,7 @@ export default class NetworkIndicator extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.isX = DeviceInfo.getModel().includes('iPhone X');
+        this.isX = DeviceTypes.IS_IPHONE_X;
         const navBar = this.getNavBarHeight(props.isLandscape);
 
         this.state = {
@@ -102,7 +101,7 @@ export default class NetworkIndicator extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {webSocketStatus} = this.props;
+        const {webSocketStatus} = prevProps;
 
         if (this.props.isOnline) {
             if (this.state.networkStatus && webSocketStatus === RequestStatus.STARTED && this.props.webSocketStatus === RequestStatus.SUCCESS) {
@@ -131,7 +130,6 @@ export default class NetworkIndicator extends PureComponent {
     }
 
     connect = () => {
-        // need to change this to use the non-listener function
         checkConnection((result) => {
             this.setLocalState({networkStatus: CONNECTING}, () => {
                 if (result) {
@@ -139,6 +137,7 @@ export default class NetworkIndicator extends PureComponent {
                     this.initializeWebSocket();
                 } else {
                     this.setLocalState({networkStatus: OFFLINE});
+                    this.handleWebSocket(false);
                 }
             });
         });
