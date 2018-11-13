@@ -11,7 +11,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
     }
     style={
       Object {
-        "backgroundColor": undefined,
+        "backgroundColor": "#ffffff",
         "flex": 1,
         "padding": 30,
       }
@@ -23,7 +23,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           "color": "#3d3c40",
           "fontSize": 15,
           "lineHeight": 20,
-          "opacity": 0.6,
         }
       }
       blockStyles={
@@ -241,7 +240,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
     }
     style={
       Object {
-        "backgroundColor": undefined,
+        "backgroundColor": "#ffffff",
         "flex": 1,
         "padding": 30,
       }
@@ -253,7 +252,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           "color": "#3d3c40",
           "fontSize": 15,
           "lineHeight": 20,
-          "opacity": 0.6,
         }
       }
       blockStyles={
@@ -566,7 +564,7 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
     }
     style={
       Object {
-        "backgroundColor": undefined,
+        "backgroundColor": "#ffffff",
         "flex": 1,
         "padding": 30,
       }
@@ -578,7 +576,6 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           "color": "#3d3c40",
           "fontSize": 15,
           "lineHeight": 20,
-          "opacity": 0.6,
         }
       }
       blockStyles={

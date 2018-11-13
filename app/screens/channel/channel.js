@@ -213,6 +213,7 @@ export default class Channel extends PureComponent {
                 navBarBackgroundColor: theme.centerChannelBg,
                 navBarButtonColor: theme.buttonBg,
                 screenBackgroundColor: theme.centerChannelBg,
+                modalPresentationStyle: 'overCurrentContext',
             },
             overrideBackPress: true,
             passProps: {

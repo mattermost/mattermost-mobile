@@ -17,7 +17,7 @@ import StatusBar from 'app/components/status_bar';
 
 import {t} from 'app/utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 const errorTitle = {
     id: t('mobile.terms_of_service.get_terms_error_title'),
@@ -285,7 +285,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 15,
             lineHeight: 20,
-            opacity: 0.6,
         },
         container: {
             backgroundColor: theme.centerChannelBg,
@@ -293,11 +292,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         linkText: {
             color: theme.linkColor,
-            opacity: 0.8,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+            backgroundColor: theme.centerChannelBg,
             padding: 30,
         },
         scrollViewContent: {
