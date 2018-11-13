@@ -37,7 +37,6 @@ exports[`MoreChannels should match snapshot 1`] = `
       />
     </Component>
     <CustomList
-      createSections={[Function]}
       data={
         Array [
           Object {
@@ -47,24 +46,58 @@ exports[`MoreChannels should match snapshot 1`] = `
           },
         ]
       }
-      listInitialSize={10}
-      listPageSize={10}
-      listScrollRenderAheadDistance={50}
+      extraData={false}
+      listType="flat"
       loading={false}
-      loadingText={
-        Object {
-          "defaultMessage": "Loading Channels...",
-          "id": "mobile.loading_channels",
-        }
+      loadingComponent={
+        <Component
+          style={
+            Object {
+              "alignItems": "center",
+              "backgroundColor": "#ffffff",
+              "height": 70,
+              "justifyContent": "center",
+            }
+          }
+        >
+          <FormattedText
+            defaultMessage="Loading Channels..."
+            id="mobile.loading_channels"
+            style={
+              Object {
+                "color": "rgba(61,60,64,0.6)",
+              }
+            }
+          />
+        </Component>
       }
-      onListEndReached={[Function]}
-      onListEndReachedThreshold={50}
+      noResults={
+        <Component
+          style={
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "flexGrow": 1,
+              "justifyContent": "center",
+            }
+          }
+        >
+          <FormattedText
+            defaultMessage="No more channels to join"
+            id="more_channels.noMore"
+            style={
+              Object {
+                "color": "rgba(61,60,64,0.5)",
+                "fontSize": 26,
+              }
+            }
+          />
+        </Component>
+      }
+      onLoadMore={[Function]}
       onRowPress={[Function]}
-      renderRow={[Function]}
-      searching={false}
-      selectable={false}
-      showNoResults={false}
-      showSections={false}
+      renderItem={[Function]}
+      showNoResults={true}
       theme={
         Object {
           "awayIndicator": "#ffbc42",
