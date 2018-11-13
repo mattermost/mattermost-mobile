@@ -26,9 +26,7 @@ import LocalConfig from 'assets/config';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 const HEIGHT = 38;
-const OFFLINE = 'offline';
-const CONNECTING = 'connecting';
-const CONNECTED = 'connected';
+const MAX_WEBSOCKET_RETRIES = 3;
 const {
     ANDROID_TOP_LANDSCAPE,
     ANDROID_TOP_PORTRAIT,
@@ -48,10 +46,10 @@ export default class NetworkIndicator extends PureComponent {
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
             stopPeriodicStatusUpdates: PropTypes.func.isRequired,
         }).isRequired,
-        isConnecting: PropTypes.bool,
         isLandscape: PropTypes.bool,
         isOnline: PropTypes.bool,
-        webSocketStatus: PropTypes.string,
+        websocketErrorCount: PropTypes.number,
+        websocketStatus: PropTypes.string,
     };
 
     static defaultProps = {
@@ -62,34 +60,11 @@ export default class NetworkIndicator extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    static getDerivedStateFromProps(nextProps, prevState) {
-        const {isLandscape, networkStatus} = prevState;
-
-        if (nextProps.isLandscape !== isLandscape && networkStatus) {
-            const navBar = this.getNavBarHeight(nextProps.isLandscape);
-            const top = new Animated.Value(navBar - HEIGHT);
-
-            return {
-                navBar,
-                top,
-            };
-        }
-
-        return null;
-    }
-
     constructor(props) {
         super(props);
 
-        this.isX = DeviceTypes.IS_IPHONE_X;
         const navBar = this.getNavBarHeight(props.isLandscape);
-
-        this.state = {
-            isLandscape: props.isLandscape,
-            networkStatus: null,
-            navBar,
-            top: new Animated.Value(navBar - HEIGHT),
-        };
+        this.top = new Animated.Value(navBar - HEIGHT);
 
         this.backgroundColor = new Animated.Value(0);
 
@@ -101,15 +76,17 @@ export default class NetworkIndicator extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {webSocketStatus} = prevProps;
+        const {websocketStatus: previousWebsocketStatus} = prevProps;
+        const {websocketErrorCount, websocketStatus} = this.props;
 
         if (this.props.isOnline) {
-            if (this.state.networkStatus && webSocketStatus === RequestStatus.STARTED && this.props.webSocketStatus === RequestStatus.SUCCESS) {
+            if (previousWebsocketStatus === RequestStatus.STARTED && websocketStatus === RequestStatus.SUCCESS) {
                 // Show the connected animation only if we had a previous network status
                 this.connected();
-            } else if (webSocketStatus === RequestStatus.STARTED && this.props.webSocketStatus === RequestStatus.FAILURE && this.props.isConnecting) {
-                // Show the connecting bar if it failed to connect at least twice
-                this.connecting();
+            } else if (previousWebsocketStatus === RequestStatus.STARTED && websocketStatus === RequestStatus.FAILURE && websocketErrorCount > MAX_WEBSOCKET_RETRIES) {
+                this.handleWebSocket(false);
+            } else if (websocketStatus === RequestStatus.FAILURE && websocketErrorCount > 1) {
+                this.show();
             }
         } else if (prevProps.isOnline && !this.props.isOnline) {
             this.offline();
@@ -129,22 +106,18 @@ export default class NetworkIndicator extends PureComponent {
         stopPeriodicStatusUpdates();
     }
 
-    connect = () => {
-        checkConnection((result) => {
-            this.setLocalState({networkStatus: CONNECTING}, () => {
-                if (result) {
-                    this.props.actions.connection(true);
-                    this.initializeWebSocket();
-                } else {
-                    this.setLocalState({networkStatus: OFFLINE});
-                    this.handleWebSocket(false);
-                }
-            });
-        });
+    connect = async () => {
+        const result = await checkConnection(this.props.isOnline);
+
+        if (result) {
+            this.props.actions.connection(true);
+            this.initializeWebSocket();
+        } else {
+            this.handleWebSocket(false);
+        }
     };
 
     connected = () => {
-        this.setState({networkStatus: CONNECTED});
         Animated.sequence([
             Animated.timing(
                 this.backgroundColor, {
@@ -153,28 +126,18 @@ export default class NetworkIndicator extends PureComponent {
                 }
             ),
             Animated.timing(
-                this.state.top, {
-                    toValue: (this.state.navBar - HEIGHT),
+                this.top, {
+                    toValue: (this.getNavBarHeight() - HEIGHT),
                     duration: 300,
                     delay: 500,
                 }
             ),
         ]).start(() => {
             this.backgroundColor.setValue(0);
-            this.setLocalState({networkStatus: null});
         });
     };
 
-    connecting = () => {
-        const prevState = this.state.networkStatus;
-        this.setLocalState({networkStatus: CONNECTING}, () => {
-            if (prevState !== OFFLINE) {
-                this.show();
-            }
-        });
-    };
-
-    getNavBarHeight = (isLandscape) => {
+    getNavBarHeight = (isLandscape = this.props.isLandscape) => {
         if (Platform.OS === 'android') {
             if (isLandscape) {
                 return ANDROID_TOP_LANDSCAPE;
@@ -183,9 +146,11 @@ export default class NetworkIndicator extends PureComponent {
             return ANDROID_TOP_PORTRAIT;
         }
 
-        if (this.isX && isLandscape) {
+        const isX = DeviceTypes.IS_IPHONE_X;
+
+        if (isX && isLandscape) {
             return IOS_TOP_LANDSCAPE;
-        } else if (this.isX) {
+        } else if (isX) {
             return IOSX_TOP_PORTRAIT;
         } else if (isLandscape) {
             return IOS_TOP_LANDSCAPE + STATUS_BAR_HEIGHT;
@@ -258,33 +223,20 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     offline = () => {
-        this.setLocalState({networkStatus: OFFLINE}, () => {
-            this.show();
-        });
-    };
-
-    setLocalState = (state, callback) => {
-        if (!this.mounted) {
-            return;
-        }
-
-        this.setState(state, callback);
+        this.show();
     };
 
     show = () => {
         Animated.timing(
-            this.state.top, {
-                toValue: this.state.navBar,
+            this.top, {
+                toValue: this.getNavBarHeight(),
                 duration: 300,
             }
         ).start();
     };
 
     render() {
-        if (!this.state.networkStatus) {
-            return null;
-        }
-
+        const {websocketErrorCount, websocketStatus} = this.props;
         const background = this.backgroundColor.interpolate({
             inputRange: [0, 1],
             outputRange: ['#939393', '#629a41'],
@@ -293,8 +245,12 @@ export default class NetworkIndicator extends PureComponent {
         let i18nId;
         let defaultMessage;
         let action;
-        switch (this.state.networkStatus) {
-        case OFFLINE:
+
+        const currentWebsocketStatus = (websocketStatus === RequestStatus.FAILURE && websocketErrorCount <= MAX_WEBSOCKET_RETRIES) ? RequestStatus.STARTED : websocketStatus;
+
+        switch (currentWebsocketStatus) {
+        case (RequestStatus.NOT_STARTED):
+        case (RequestStatus.FAILURE):
             i18nId = t('mobile.offlineIndicator.offline');
             defaultMessage = 'Cannot connect to the server';
             action = (
@@ -310,7 +266,7 @@ export default class NetworkIndicator extends PureComponent {
                 </TouchableOpacity>
             );
             break;
-        case CONNECTING:
+        case RequestStatus.STARTED:
             i18nId = t('mobile.offlineIndicator.connecting');
             defaultMessage = 'Connecting...';
             action = (
@@ -322,7 +278,7 @@ export default class NetworkIndicator extends PureComponent {
                 </View>
             );
             break;
-        case CONNECTED:
+        case RequestStatus.SUCCESS:
         default:
             i18nId = t('mobile.offlineIndicator.connected');
             defaultMessage = 'Connected';
@@ -339,7 +295,7 @@ export default class NetworkIndicator extends PureComponent {
         }
 
         return (
-            <Animated.View style={[styles.container, {top: this.state.top, backgroundColor: background}]}>
+            <Animated.View style={[styles.container, {top: this.top, backgroundColor: background}]}>
                 <Animated.View style={styles.wrapper}>
                     <FormattedText
                         defaultMessage={defaultMessage}
@@ -378,6 +334,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 1,
         borderColor: '#FFFFFF',
+        paddingRight: 0,
     },
     actionContainer: {
         alignItems: 'flex-end',

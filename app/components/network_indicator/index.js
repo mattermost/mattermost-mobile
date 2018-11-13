@@ -14,14 +14,13 @@ import NetworkIndicator from './network_indicator';
 
 function mapStateToProps(state) {
     const {websocket} = state.requests.general;
-    const webSocketStatus = websocket.status;
-    const isConnecting = websocket.error > 1;
+    const websocketStatus = websocket.status;
 
     return {
-        isConnecting,
         isLandscape: isLandscape(state),
         isOnline: getConnection(state),
-        webSocketStatus,
+        websocketErrorCount: websocket.error,
+        websocketStatus,
     };
 }
 
