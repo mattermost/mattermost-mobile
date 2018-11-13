@@ -5,6 +5,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
+    Platform,
 } from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -112,9 +113,22 @@ export default class SlashSuggestion extends Component {
     completeSuggestion = (command) => {
         const {onChangeText} = this.props;
 
-        const completedDraft = `/${command} `;
+        // We are going to set a double / on iOS to prevent the auto correct from taking over and replacing it
+        // with the wrong value, this is a hack but I could not found another way to solve it
+        let completedDraft = `/${command} `;
+        if (Platform.OS === 'ios') {
+            completedDraft = `//${command} `;
+        }
 
         onChangeText(completedDraft);
+
+        if (Platform.OS === 'ios') {
+            // This is the second part of the hack were we replace the double / with just one
+            // after the auto correct vanished
+            setTimeout(() => {
+                onChangeText(completedDraft.replace(`//${command} `, `/${command} `));
+            });
+        }
 
         this.setState({
             active: false,
