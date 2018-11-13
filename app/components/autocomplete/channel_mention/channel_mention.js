@@ -158,10 +158,12 @@ export default class ChannelMention extends PureComponent {
         if (isSearch) {
             const channelOrIn = mentionPart.includes('in:') ? 'in:' : 'channel:';
             completedDraft = mentionPart.replace(CHANNEL_MENTION_SEARCH_REGEX, `${channelOrIn} ${mention} `);
-        } else {
+        } else if (Platform.OS === 'ios') {
             // We are going to set a double ~ on iOS to prevent the auto correct from taking over and replacing it
             // with the wrong value, this is a hack but I could not found another way to solve it
             completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~~${mention} `);
+        } else {
+            completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
         }
 
         if (value.length > cursorPosition) {
