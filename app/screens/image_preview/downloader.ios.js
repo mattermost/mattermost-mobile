@@ -18,6 +18,8 @@ import {emptyFunction} from 'app/utils/general';
 
 import LocalConfig from 'assets/config';
 
+import DownloaderBottomContent from './downloader_bottom_content.js';
+
 const {View: AnimatedView} = Animated;
 
 export default class Downloader extends PureComponent {
@@ -113,57 +115,6 @@ export default class Downloader extends PureComponent {
                 friction: 5,
             }),
         ]).start();
-    };
-
-    renderBottomContent = () => {
-        const {saveToCameraRoll} = this.props;
-        const {isVideo, progress} = this.state;
-        const realFill = Number(progress.toFixed(0));
-
-        if (realFill === 0) {
-            return null;
-        }
-
-        let savedComponent;
-        if (realFill < 100 || this.state.didCancel) {
-            savedComponent = (
-                <FormattedText
-                    id='mobile.downloader.downloading'
-                    defaultMessage='Downloading...'
-                    style={styles.bottomText}
-                />
-            );
-        } else if (saveToCameraRoll && isVideo) {
-            savedComponent = (
-                <FormattedText
-                    id='mobile.downloader.video_saved'
-                    defaultMessage='Video Saved'
-                    style={styles.bottomText}
-                />
-            );
-        } else if (saveToCameraRoll) {
-            savedComponent = (
-                <FormattedText
-                    id='mobile.downloader.image_saved'
-                    defaultMessage='Image Saved'
-                    style={styles.bottomText}
-                />
-            );
-        } else {
-            savedComponent = (
-                <FormattedText
-                    id='mobile.downloader.complete'
-                    defaultMessage='Download complete'
-                    style={styles.bottomText}
-                />
-            );
-        }
-
-        return (
-            <View style={styles.bottomContent}>
-                {savedComponent}
-            </View>
-        );
     };
 
     renderProgress = (fill) => {
@@ -383,12 +334,12 @@ export default class Downloader extends PureComponent {
     };
 
     render() {
-        const {show, downloadPath} = this.props;
+        const {show, downloadPath, saveToCameraRoll} = this.props;
         if (!show && !this.state.force) {
             return null;
         }
 
-        const {progress, started} = this.state;
+        const {progress, started, isVideo} = this.state;
 
         const containerHeight = show ? '100%' : 0;
 
@@ -412,7 +363,13 @@ export default class Downloader extends PureComponent {
                         >
                             {component}
                         </CircularProgress>
-                        {this.renderBottomContent()}
+                        { !this.state.didCancel && (
+                            <DownloaderBottomContent
+                                saveToCameraRoll={saveToCameraRoll}
+                                isVideo={isVideo}
+                                progressPercent={progress}
+                            />
+                        )}
                     </View>
                 </AnimatedView>
             </View>
