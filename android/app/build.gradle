@@ -212,6 +212,7 @@ dependencies {
     implementation project(':react-native-exception-handler')
     implementation project(':rn-fetch-blob')
     implementation project(':react-native-recyclerview-list')
+    implementation project(':react-native-webview')
 
     // For animated GIF support
     implementation 'com.facebook.fresco:fresco:1.10.0'

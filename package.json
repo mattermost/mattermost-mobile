@@ -55,6 +55,7 @@
     "react-native-tooltip": "5.2.0",
     "react-native-vector-icons": "5.0.0",
     "react-native-video": "3.2.1",
+    "react-native-webview": "2.5.0",
     "react-native-youtube": "github:enahum/react-native-youtube#3f395b620ae4e05a3f1c6bdeef3a1158e78daadc",
     "react-navigation": "2.14.2",
     "react-redux": "5.0.7",
