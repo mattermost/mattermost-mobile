@@ -49,7 +49,6 @@ export default class Markdown extends PureComponent {
         navigator: PropTypes.object.isRequired,
         onChannelLinkPress: PropTypes.func,
         onHashtagPress: PropTypes.func,
-        onLongPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         textStyles: PropTypes.object,
@@ -80,13 +79,13 @@ export default class Markdown extends PureComponent {
         return new Parser({
             urlFilter: this.urlFilter,
         });
-    }
+    };
 
     urlFilter = (url) => {
         const scheme = getScheme(url);
 
         return !scheme || this.props.autolinkedUrlSchemes.indexOf(scheme) !== -1;
-    }
+    };
 
     createRenderer = () => {
         return new Renderer({
@@ -130,7 +129,7 @@ export default class Markdown extends PureComponent {
             renderParagraphsInLists: true,
             getExtraPropsForNode: this.getExtraPropsForNode,
         });
-    }
+    };
 
     getExtraPropsForNode = (node) => {
         const extraProps = {
@@ -144,11 +143,11 @@ export default class Markdown extends PureComponent {
         }
 
         return extraProps;
-    }
+    };
 
     computeTextStyle = (baseStyle, context) => {
         return concatStyles(baseStyle, context.map((type) => this.props.textStyles[type]));
-    }
+    };
 
     renderText = ({context, literal}) => {
         if (context.indexOf('image') !== -1) {
@@ -160,19 +159,17 @@ export default class Markdown extends PureComponent {
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
 
         return <Text style={style}>{literal}</Text>;
-    }
+    };
 
     renderCodeSpan = ({context, literal}) => {
         return <Text style={this.computeTextStyle([this.props.baseTextStyle, this.props.textStyles.code], context)}>{literal}</Text>;
-    }
+    };
 
     renderImage = ({linkDestination, reactChildren, context, src}) => {
         if (context.indexOf('table') !== -1) {
             // We have enough problems rendering images as is, so just render a link inside of a table
             return (
                 <MarkdownTableImage
-                    linkDestination={linkDestination}
-                    onLongPress={this.props.onLongPress}
                     source={src}
                     textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.link]}
                     navigator={this.props.navigator}
@@ -187,14 +184,13 @@ export default class Markdown extends PureComponent {
                 linkDestination={linkDestination}
                 isReplyPost={this.props.isReplyPost}
                 navigator={this.props.navigator}
-                onLongPress={this.props.onLongPress}
                 source={src}
                 errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
             >
                 {reactChildren}
             </MarkdownImage>
         );
-    }
+    };
 
     renderAtMention = ({context, mentionName}) => {
         if (this.props.disableAtMentions) {
@@ -207,12 +203,11 @@ export default class Markdown extends PureComponent {
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
                 isSearchResult={this.props.isSearchResult}
                 mentionName={mentionName}
-                onLongPress={this.props.onLongPress}
                 onPostPress={this.props.onPostPress}
                 navigator={this.props.navigator}
             />
         );
-    }
+    };
 
     renderChannelLink = ({context, channelName}) => {
         if (this.props.disableChannelLink) {
@@ -227,7 +222,7 @@ export default class Markdown extends PureComponent {
                 channelName={channelName}
             />
         );
-    }
+    };
 
     renderEmoji = ({context, emojiName, literal}) => {
         return (
@@ -237,7 +232,7 @@ export default class Markdown extends PureComponent {
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );
-    }
+    };
 
     renderHashtag = ({context, hashtag}) => {
         if (this.props.disableHashtags) {
@@ -252,7 +247,7 @@ export default class Markdown extends PureComponent {
                 navigator={this.props.navigator}
             />
         );
-    }
+    };
 
     renderParagraph = ({children, first}) => {
         if (!children || children.length === 0) {
@@ -271,7 +266,7 @@ export default class Markdown extends PureComponent {
                 </Text>
             </View>
         );
-    }
+    };
 
     renderHeading = ({children, level}) => {
         const containerStyle = [
@@ -286,7 +281,7 @@ export default class Markdown extends PureComponent {
                 </Text>
             </View>
         );
-    }
+    };
 
     renderCodeBlock = (props) => {
         // These sometimes include a trailing newline
@@ -298,10 +293,9 @@ export default class Markdown extends PureComponent {
                 content={content}
                 language={props.language}
                 textStyle={this.props.textStyles.codeBlock}
-                onLongPress={this.props.onLongPress}
             />
         );
-    }
+    };
 
     renderBlockQuote = ({children, ...otherProps}) => {
         return (
@@ -312,7 +306,7 @@ export default class Markdown extends PureComponent {
                 {children}
             </MarkdownBlockQuote>
         );
-    }
+    };
 
     renderList = ({children, start, tight, type}) => {
         return (
@@ -324,7 +318,7 @@ export default class Markdown extends PureComponent {
                 {children}
             </MarkdownList>
         );
-    }
+    };
 
     renderListItem = ({children, context, ...otherProps}) => {
         const level = context.filter((type) => type === 'list').length;
@@ -338,19 +332,19 @@ export default class Markdown extends PureComponent {
                 {children}
             </MarkdownListItem>
         );
-    }
+    };
 
     renderHardBreak = () => {
         return <Text>{'\n'}</Text>;
-    }
+    };
 
     renderThematicBreak = () => {
         return <View style={this.props.blockStyles.horizontalRule}/>;
-    }
+    };
 
     renderSoftBreak = () => {
         return <Text>{'\n'}</Text>;
-    }
+    };
 
     renderHtml = (props) => {
         let rendered = this.renderText(props);
@@ -366,7 +360,7 @@ export default class Markdown extends PureComponent {
         }
 
         return rendered;
-    }
+    };
 
     renderTable = ({children}) => {
         return (
@@ -374,19 +368,18 @@ export default class Markdown extends PureComponent {
                 {children}
             </MarkdownTable>
         );
-    }
+    };
 
     renderLink = ({children, href}) => {
         return (
             <MarkdownLink
                 href={href}
-                onLongPress={this.props.onLongPress}
                 onPermalinkPress={this.props.onPermalinkPress}
             >
                 {children}
             </MarkdownLink>
         );
-    }
+    };
 
     renderEditedIndicator = ({context}) => {
         let spacer = '';
@@ -411,7 +404,7 @@ export default class Markdown extends PureComponent {
                 />
             </Text>
         );
-    }
+    };
 
     render() {
         let ast = this.parser.parse(this.props.value);

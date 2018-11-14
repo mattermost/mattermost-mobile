@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Dimensions,
-    Platform,
     TouchableHighlight,
     TouchableOpacity,
     View,
@@ -18,7 +17,6 @@ import {Posts} from 'mattermost-redux/constants';
 import CombinedSystemMessage from 'app/components/combined_system_message';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
-import OptionsContext from 'app/components/options_context';
 import ShowMoreButton from 'app/components/show_more_button';
 
 import {emptyFunction} from 'app/utils/general';
@@ -33,14 +31,7 @@ let Reactions;
 
 export default class PostBody extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            flagPost: PropTypes.func.isRequired,
-            unflagPost: PropTypes.func.isRequired,
-        }).isRequired,
-        canAddReaction: PropTypes.bool,
         canDelete: PropTypes.bool,
-        canEdit: PropTypes.bool,
-        canEditUntil: PropTypes.number.isRequired,
         channelIsReadOnly: PropTypes.bool.isRequired,
         fileIds: PropTypes.array,
         hasBeenDeleted: PropTypes.bool,
@@ -58,14 +49,9 @@ export default class PostBody extends PureComponent {
         managedConfig: PropTypes.object,
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
-        onAddReaction: PropTypes.func,
-        onCopyPermalink: PropTypes.func,
-        onCopyText: PropTypes.func,
         onFailedPostPress: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
-        onPostDelete: PropTypes.func,
-        onPostEdit: PropTypes.func,
         onPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object,
@@ -79,12 +65,7 @@ export default class PostBody extends PureComponent {
 
     static defaultProps = {
         fileIds: [],
-        onAddReaction: emptyFunction,
-        onCopyPermalink: emptyFunction,
-        onCopyText: emptyFunction,
         onFailedPostPress: emptyFunction,
-        onPostDelete: emptyFunction,
-        onPostEdit: emptyFunction,
         onPress: emptyFunction,
         replyBarStyle: [],
         toggleSelected: emptyFunction,
@@ -98,95 +79,12 @@ export default class PostBody extends PureComponent {
         isLongPost: false,
     };
 
-    flagPost = () => {
-        const {actions, postId} = this.props;
-        actions.flagPost(postId);
-    };
-
     handleHideUnderlay = () => {
         this.props.toggleSelected(false);
     };
 
     handleShowUnderlay = () => {
         this.props.toggleSelected(true);
-    };
-
-    hideOptionsContext = () => {
-        if (Platform.OS === 'ios' && this.refs.options) {
-            this.refs.options.hide();
-        }
-    };
-
-    getPostActions = () => {
-        const {formatMessage} = this.context.intl;
-        const {
-            canEdit,
-            canEditUntil,
-            canDelete,
-            canAddReaction,
-            channelIsReadOnly,
-            hasBeenDeleted,
-            isPending,
-            isFailed,
-            isFlagged,
-            isPostEphemeral,
-            isSystemMessage,
-            managedConfig,
-            message,
-            onCopyText,
-            onPostDelete,
-            onPostEdit,
-            showAddReaction,
-        } = this.props;
-        const actions = [];
-        const isPendingOrFailedPost = isPending || isFailed;
-
-        // we should check for the user roles and permissions
-        if (!isPendingOrFailedPost && !isSystemMessage && !isPostEphemeral) {
-            if (showAddReaction && canAddReaction && !channelIsReadOnly) {
-                actions.push({
-                    text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                    onPress: this.props.onAddReaction,
-                });
-            }
-
-            if (managedConfig.copyAndPasteProtection !== 'true' && message) {
-                actions.push({
-                    text: formatMessage({id: 'mobile.post_info.copy_post', defaultMessage: 'Copy Post'}),
-                    onPress: onCopyText,
-                    copyPost: true,
-                });
-            }
-
-            if (!channelIsReadOnly) {
-                if (isFlagged) {
-                    actions.push({
-                        text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
-                        onPress: this.unflagPost,
-                    });
-                } else {
-                    actions.push({
-                        text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
-                        onPress: this.flagPost,
-                    });
-                }
-            }
-
-            if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
-                actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: onPostEdit});
-            }
-
-            actions.push({
-                text: formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'}),
-                onPress: this.props.onCopyPermalink,
-            });
-        }
-
-        if (!isPendingOrFailedPost && !isPostEphemeral && canDelete && !hasBeenDeleted) {
-            actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: onPostDelete});
-        }
-
-        return actions;
     };
 
     measurePost = (event) => {
@@ -206,7 +104,6 @@ export default class PostBody extends PureComponent {
         const {
             managedConfig,
             navigator,
-            onAddReaction,
             onHashtagPress,
             onPermalinkPress,
             postId,
@@ -225,7 +122,6 @@ export default class PostBody extends PureComponent {
             passProps: {
                 postId,
                 managedConfig,
-                onAddReaction,
                 onHashtagPress,
                 onPermalinkPress,
             },
@@ -234,15 +130,51 @@ export default class PostBody extends PureComponent {
         navigator.showModal(options);
     });
 
-    unflagPost = () => {
-        const {actions, postId} = this.props;
-        actions.unflagPost(postId);
-    };
+    showPostOptions = () => {
+        const {
+            canDelete,
+            channelIsReadOnly,
+            hasBeenDeleted,
+            isFailed,
+            isFlagged,
+            isPending,
+            isPostEphemeral,
+            isSystemMessage,
+            managedConfig,
+            navigator,
+            postId,
+            showAddReaction,
+        } = this.props;
 
-    showOptionsContext = (additionalAction) => {
-        if (this.refs.options) {
-            this.refs.options.show(additionalAction);
+        if (isSystemMessage && (!canDelete || hasBeenDeleted)) {
+            return;
         }
+
+        if (isPending || isFailed || isPostEphemeral) {
+            return;
+        }
+
+        const options = {
+            screen: 'PostOptions',
+            animationType: 'none',
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarHidden: true,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext',
+            },
+            passProps: {
+                canDelete,
+                channelIsReadOnly,
+                hasBeenDeleted,
+                isFlagged,
+                postId,
+                managedConfig,
+                showAddReaction,
+            },
+        };
+
+        navigator.showModal(options);
     };
 
     renderAddChannelMember = (style, messageStyle, textStyles) => {
@@ -258,7 +190,6 @@ export default class PostBody extends PureComponent {
                     <PostAddChannelMember
                         baseTextStyle={messageStyle}
                         navigator={navigator}
-                        onLongPress={this.showOptionsContext}
                         onPostPress={onPress}
                         textStyles={textStyles}
                         postId={postProps.add_channel_member.post_id}
@@ -293,9 +224,8 @@ export default class PostBody extends PureComponent {
             attachments = (
                 <FileAttachmentList
                     fileIds={fileIds}
-                    hideOptionsContext={this.hideOptionsContext}
                     isFailed={isFailed}
-                    onLongPress={this.showOptionsContext}
+                    onLongPress={this.showPostOptions}
                     postId={postId}
                     toggleSelected={toggleSelected}
                     navigator={navigator}
@@ -323,7 +253,6 @@ export default class PostBody extends PureComponent {
                 textStyles={textStyles}
                 isReplyPost={isReplyPost}
                 onHashtagPress={onHashtagPress}
-                onLongPress={this.showOptionsContext}
                 onPermalinkPress={onPermalinkPress}
             />
         );
@@ -334,7 +263,6 @@ export default class PostBody extends PureComponent {
             hasReactions,
             isSearchResult,
             navigator,
-            onAddReaction,
             postId,
             showLongPost,
         } = this.props;
@@ -350,14 +278,12 @@ export default class PostBody extends PureComponent {
         return (
             <Reactions
                 postId={postId}
-                onAddReaction={onAddReaction}
                 navigator={navigator}
             />
         );
     };
 
     render() {
-        const {formatMessage} = this.context.intl;
         const {
             hasBeenDeleted,
             hasBeenEdited,
@@ -378,7 +304,6 @@ export default class PostBody extends PureComponent {
             postType,
             replyBarStyle,
             theme,
-            toggleSelected,
         } = this.props;
         const {isLongPost, maxHeight} = this.state;
         const style = getStyleSheet(theme);
@@ -412,7 +337,7 @@ export default class PostBody extends PureComponent {
         } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
             const {allUserIds, allUsernames, messageData} = postProps.user_activity;
             messageComponent = (
-                <TouchableOpacity onLongPress={this.showOptionsContext}>
+                <TouchableOpacity onLongPress={this.showPostOptions}>
                     <View style={style.row}>
                         <View style={style.flex}>
                             <CombinedSystemMessage
@@ -443,7 +368,6 @@ export default class PostBody extends PureComponent {
                             isSearchResult={isSearchResult}
                             navigator={navigator}
                             onHashtagPress={onHashtagPress}
-                            onLongPress={this.showOptionsContext}
                             onPermalinkPress={onPermalinkPress}
                             onPostPress={onPress}
                             textStyles={textStyles}
@@ -456,14 +380,14 @@ export default class PostBody extends PureComponent {
 
         if (!hasBeenDeleted) {
             body = (
-                <View style={style.messageBody}>
-                    <OptionsContext
-                        getPostActions={this.getPostActions}
-                        ref='options'
-                        onPress={onPress}
-                        toggleSelected={toggleSelected}
-                        cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
-                    >
+                <TouchableHighlight
+                    onHideUnderlay={this.handleHideUnderlay}
+                    onPress={onPress}
+                    onLongPress={this.showPostOptions}
+                    onShowUnderlay={this.handleShowUnderlay}
+                    underlayColor='transparent'
+                >
+                    <View style={style.messageBody}>
                         <View onLayout={this.measurePost}>
                             {messageComponent}
                             {isLongPost &&
@@ -476,8 +400,8 @@ export default class PostBody extends PureComponent {
                         {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
                         {this.renderFileAttachments()}
                         {this.renderReactions()}
-                    </OptionsContext>
-                </View>
+                    </View>
+                </TouchableHighlight>
             );
         }
 

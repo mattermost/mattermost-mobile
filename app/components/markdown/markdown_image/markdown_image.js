@@ -19,6 +19,7 @@ import FormattedText from 'app/components/formatted_text';
 import ProgressiveImage from 'app/components/progressive_image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
+import BottomSheet from 'app/utils/bottom_sheet';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {normalizeProtocol} from 'app/utils/url';
@@ -38,7 +39,6 @@ export default class MarkdownImage extends React.Component {
         linkDestination: PropTypes.string,
         isReplyPost: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
-        onLongPress: PropTypes.func,
         serverURL: PropTypes.string.isRequired,
         source: PropTypes.string.isRequired,
         errorTextStyle: CustomPropTypes.Style,
@@ -138,15 +138,18 @@ export default class MarkdownImage extends React.Component {
 
         const config = await mattermostManaged.getLocalConfig();
 
-        let action;
         if (config.copyAndPasteProtection !== 'true') {
-            action = {
-                text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
-                onPress: this.handleLinkCopy,
-            };
+            const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+            const actionText = formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'});
+            BottomSheet.showBottomSheetWithOptions({
+                options: [actionText, cancelText],
+                cancelButtonIndex: 1,
+            }, (value) => {
+                if (value !== 1) {
+                    this.handleLinkCopy();
+                }
+            });
         }
-
-        this.props.onLongPress(action);
     };
 
     handleLinkCopy = () => {

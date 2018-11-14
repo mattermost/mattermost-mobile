@@ -330,7 +330,7 @@
   "mobile.open_gm.error": "We couldn't open a group message with those users. Please check your connection and try again.",
   "mobile.open_unknown_channel.error": "Unable to join the channel. Please reset the cache and try again.",
   "mobile.post_info.add_reaction": "Add Reaction",
-  "mobile.post_info.copy_post": "Copy Post",
+  "mobile.post_info.copy_text": "Copy Text",
   "mobile.post_textbox.empty.message": "You are trying to send an empty message.\nPlease make sure you have a message or at least one attached file.",
   "mobile.post_textbox.empty.ok": "OK",
   "mobile.post_textbox.empty.title": "Empty Message",

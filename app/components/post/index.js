@@ -4,19 +4,15 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {createPost, deletePost, removePost} from 'mattermost-redux/actions/posts';
-import {General, Posts} from 'mattermost-redux/constants';
-import {getCurrentChannelId, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
+import {createPost, removePost} from 'mattermost-redux/actions/posts';
+import {Posts} from 'mattermost-redux/constants';
+import {isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
 import {getPost, makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentTeamUrl, getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {canDeletePost, canEditPost, isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
-import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
-import {addReaction} from 'app/actions/views/emoji';
 
 import Post from './post';
 
@@ -45,13 +41,8 @@ function makeMapStateToProps() {
     const getCommentCountForPost = makeGetCommentCountForPost();
     return function mapStateToProps(state, ownProps) {
         const post = getPost(state, ownProps.postId);
-        const config = getConfig(state);
-        const license = getLicense(state);
-        const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
-        const currentTeamId = getCurrentTeamId(state);
-        const currentChannelId = getCurrentChannelId(state);
 
         let isFirstReply = true;
         let isLastReply = true;
@@ -78,28 +69,8 @@ function makeMapStateToProps() {
             }
         }
 
-        const isAdmin = checkIsAdmin(roles);
-        const isSystemAdmin = checkIsSystemAdmin(roles);
-
-        let canDelete = false;
-        let canEdit = false;
-        let canEditUntil = -1;
-        if (post) {
-            canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
-            canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
-            if (canEdit && license.IsLicensed === 'true' &&
-                (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT || (config.PostEditTimeLimit !== -1 && config.PostEditTimeLimit !== '-1'))
-            ) {
-                canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
-            }
-        }
-
         return {
             channelIsReadOnly: isCurrentChannelReadOnly(state),
-            canDelete,
-            canEdit,
-            canEditUntil,
-            currentTeamUrl: getCurrentTeamUrl(state),
             currentUserId,
             post,
             isFirstReply,
@@ -116,9 +87,7 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            addReaction,
             createPost,
-            deletePost,
             removePost,
             setPostTooltipVisible,
             insertToDraft,

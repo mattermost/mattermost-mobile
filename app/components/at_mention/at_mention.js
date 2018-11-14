@@ -8,10 +8,9 @@ import {intlShape} from 'react-intl';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
-import {emptyFunction} from 'app/utils/general';
-
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
+import BottomSheet from 'app/utils/bottom_sheet';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {
@@ -19,16 +18,11 @@ export default class AtMention extends React.PureComponent {
         mentionName: PropTypes.string.isRequired,
         mentionStyle: CustomPropTypes.Style,
         navigator: PropTypes.object.isRequired,
-        onLongPress: PropTypes.func.isRequired,
         onPostPress: PropTypes.func,
         textStyle: CustomPropTypes.Style,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         usersByUsername: PropTypes.object.isRequired,
-    };
-
-    static defaultProps = {
-        onLongPress: emptyFunction,
     };
 
     static contextTypes = {
@@ -101,26 +95,33 @@ export default class AtMention extends React.PureComponent {
     }
 
     handleLongPress = async () => {
-        const {intl} = this.context;
+        const {formatMessage} = this.context.intl;
 
         const config = await mattermostManaged.getLocalConfig();
 
-        let action;
         if (config.copyAndPasteProtection !== 'false') {
-            action = {
-                text: intl.formatMessage({
-                    id: 'mobile.mention.copy_mention',
-                    defaultMessage: 'Copy Mention',
-                }),
-                onPress: this.handleCopyMention,
-            };
-        }
+            const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+            const actionText = formatMessage({id: 'mobile.mention.copy_mention', defaultMessage: 'Copy Mention'});
 
-        this.props.onLongPress(action);
+            BottomSheet.showBottomSheetWithOptions({
+                options: [actionText, cancelText],
+                cancelButtonIndex: 1,
+            }, (value) => {
+                if (value !== 1) {
+                    this.handleCopyMention();
+                }
+            });
+        }
     };
 
     handleCopyMention = () => {
-        const {username} = this.state;
+        const {user} = this.state;
+        const {mentionName} = this.props;
+        let username = mentionName;
+        if (user.username) {
+            username = user.username;
+        }
+
         Clipboard.setString(`@${username}`);
     };
 
