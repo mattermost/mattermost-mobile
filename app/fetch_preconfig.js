@@ -6,7 +6,6 @@ import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
 
 import {Client4} from 'mattermost-redux/client';
-import {ClientError} from 'mattermost-redux/client/client4';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
@@ -29,10 +28,10 @@ const handleRedirectProtocol = (url, response) => {
 
 Client4.doFetchWithResponse = async (url, options) => {
     if (!Client4.online) {
-        throw new ClientError(Client4.getUrl(), {
+        throw {
             message: 'no internet connection',
             url,
-        });
+        };
     }
 
     let response;
@@ -49,21 +48,21 @@ Client4.doFetchWithResponse = async (url, options) => {
         data = await response.json();
     } catch (err) {
         if (response && response.resp && response.resp.data && response.resp.data.includes('SSL certificate')) {
-            throw new ClientError(Client4.getUrl(), {
+            throw {
                 message: 'You need to use a valid client certificate in order to connect to this Mattermost server',
                 status_code: 401,
                 url,
-            });
+            };
         }
 
-        throw new ClientError(Client4.getUrl(), {
+        throw {
             message: 'Received invalid response from the server.',
             intl: {
                 id: t('mobile.request.invalid_response'),
                 defaultMessage: 'Received invalid response from the server.',
             },
             url,
-        });
+        };
     }
 
     if (headers[HEADER_X_CLUSTER_ID] || headers[HEADER_X_CLUSTER_ID.toLowerCase()]) {
@@ -97,12 +96,12 @@ Client4.doFetchWithResponse = async (url, options) => {
         console.error(msg); // eslint-disable-line no-console
     }
 
-    throw new ClientError(Client4.getUrl(), {
+    throw {
         message: msg,
         server_error_id: data.id,
         status_code: data.status_code,
         url,
-    });
+    };
 };
 
 const initFetchConfig = async () => {
