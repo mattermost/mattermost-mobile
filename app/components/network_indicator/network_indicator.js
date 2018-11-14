@@ -27,6 +27,8 @@ import {RequestStatus} from 'mattermost-redux/constants';
 
 const HEIGHT = 38;
 const MAX_WEBSOCKET_RETRIES = 3;
+const CONNECTION_RETRY_SECONDS = 30;
+const CONNECTION_RETRY_TIMEOUT = 1000 * CONNECTION_RETRY_SECONDS; // 30 seconds
 const {
     ANDROID_TOP_LANDSCAPE,
     ANDROID_TOP_PORTRAIT,
@@ -73,6 +75,8 @@ export default class NetworkIndicator extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
+
+        AppState.addEventListener('change', this.handleAppStateChange);
     }
 
     componentDidUpdate(prevProps) {
@@ -83,8 +87,10 @@ export default class NetworkIndicator extends PureComponent {
             if (previousWebsocketStatus === RequestStatus.STARTED && websocketStatus === RequestStatus.SUCCESS) {
                 // Show the connected animation only if we had a previous network status
                 this.connected();
+                clearTimeout(this.connectionRetryTimeout);
             } else if (previousWebsocketStatus === RequestStatus.STARTED && websocketStatus === RequestStatus.FAILURE && websocketErrorCount > MAX_WEBSOCKET_RETRIES) {
                 this.handleWebSocket(false);
+                this.handleReconnect();
             } else if (websocketStatus === RequestStatus.FAILURE && websocketErrorCount > 1) {
                 this.show();
             }
@@ -104,9 +110,13 @@ export default class NetworkIndicator extends PureComponent {
 
         closeWebSocket();
         stopPeriodicStatusUpdates();
+
+        clearTimeout(this.connectionRetryTimeout);
     }
 
     connect = async () => {
+        clearTimeout(this.connectionRetryTimeout);
+
         const result = await checkConnection(this.props.isOnline);
 
         if (result) {
@@ -191,6 +201,16 @@ export default class NetworkIndicator extends PureComponent {
         }
     };
 
+    handleReconnect = () => {
+        clearTimeout(this.connectionRetryTimeout);
+        this.connectionRetryTimeout = setTimeout(() => {
+            const {websocketStatus} = this.props;
+            if (websocketStatus !== RequestStatus.STARTED || websocketStatus !== RequestStatus.SUCCESS) {
+                this.connect();
+            }
+        }, CONNECTION_RETRY_TIMEOUT);
+    }
+
     initializeWebSocket = async () => {
         const {formatMessage} = this.context.intl;
         const {actions} = this.props;
@@ -244,6 +264,7 @@ export default class NetworkIndicator extends PureComponent {
 
         let i18nId;
         let defaultMessage;
+        let values;
         let action;
 
         const currentWebsocketStatus = (websocketStatus === RequestStatus.FAILURE && websocketErrorCount <= MAX_WEBSOCKET_RETRIES) ? RequestStatus.STARTED : websocketStatus;
@@ -252,7 +273,8 @@ export default class NetworkIndicator extends PureComponent {
         case (RequestStatus.NOT_STARTED):
         case (RequestStatus.FAILURE):
             i18nId = t('mobile.offlineIndicator.offline');
-            defaultMessage = 'Cannot connect to the server';
+            defaultMessage = 'Cannot connect to the server. Retrying in {seconds} seconds';
+            values = {seconds: CONNECTION_RETRY_SECONDS};
             action = (
                 <TouchableOpacity
                     onPress={this.connect}
@@ -300,6 +322,7 @@ export default class NetworkIndicator extends PureComponent {
                     <FormattedText
                         defaultMessage={defaultMessage}
                         id={i18nId}
+                        values={values}
                         style={styles.message}
                     />
                     {action}
@@ -326,7 +349,7 @@ const styles = StyleSheet.create({
     },
     message: {
         color: '#FFFFFF',
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '600',
         flex: 1,
     },
