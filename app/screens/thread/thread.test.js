@@ -69,6 +69,9 @@ describe('thread', () => {
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'transparent',
             },
+            passProps: {
+                disableTermsModal: true,
+            },
         };
         const newNavigator = {...navigator};
         const wrapper = shallow(

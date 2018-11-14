@@ -13,6 +13,7 @@ import {
     View,
 } from 'react-native';
 
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EmptyToolbar from 'app/components/start/empty_toolbar';
@@ -65,10 +66,16 @@ export default class Channel extends PureComponent {
         isLandscape: PropTypes.bool,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
+        showTermsOfService: PropTypes.bool,
+        disableTermsModal: PropTypes.bool,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
+    };
+
+    static defaultProps = {
+        disableTermsModal: false,
     };
 
     constructor(props) {
@@ -96,6 +103,10 @@ export default class Channel extends PureComponent {
 
         if (tracker.initialLoad) {
             this.props.actions.recordLoadTime('Start time', 'initialLoad');
+        }
+
+        if (this.props.showTermsOfService && !this.props.disableTermsModal) {
+            this.showTermsOfServiceModal();
         }
 
         EventEmitter.emit('renderDrawer');
@@ -186,6 +197,29 @@ export default class Channel extends PureComponent {
         if (ref) {
             this.settingsSidebar = ref.getWrappedInstance();
         }
+    };
+
+    showTermsOfServiceModal = async () => {
+        const {navigator, theme} = this.props;
+        const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+        navigator.showModal({
+            screen: 'TermsOfService',
+            animationType: 'slide-up',
+            title: '',
+            backButtonTitle: '',
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.centerChannelColor,
+                navBarBackgroundColor: theme.centerChannelBg,
+                navBarButtonColor: theme.buttonBg,
+                screenBackgroundColor: theme.centerChannelBg,
+                modalPresentationStyle: 'overCurrentContext',
+            },
+            overrideBackPress: true,
+            passProps: {
+                closeButton,
+            },
+        });
     };
 
     goToChannelInfo = preventDoubleTap(() => {

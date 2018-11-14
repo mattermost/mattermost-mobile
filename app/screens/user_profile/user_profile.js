@@ -65,6 +65,9 @@ export default class UserProfile extends PureComponent {
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: theme.centerChannelBg,
             },
+            passProps: {
+                disableTermsModal: true,
+            },
         });
     };
 
