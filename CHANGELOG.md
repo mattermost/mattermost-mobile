@@ -11,14 +11,14 @@
 - Removed "Copy Post" option on long-press message menu for posts without text.
 - Fixed an issue where the "Search Results" header was not fully scrolled to top on search "from:username".
 - Fixed an issue where channel names truncated at fewer characters than necessary.
-- Fixed an issue where same uploaded photo generated a different file size.
-- Fixed an issue where the "(you)" was not displayed to the right of a user's name in the channel drawer when a user opened a Direct Message channel with theirself.
-- Fixed an issue where dark theme set from webapp broke mobile.
-- Fixed an issue where channel sidebar transition sometimes lagged.
+- Fixed an issue where the same uploaded photo generated a different file size.
+- Fixed an issue where the "(you)" was not displayed to the right of a user's name in the channel drawer when a user opened a Direct Message channel with themself.
+- Fixed an issue where a dark theme set from webapp broke mobile display.
+- Fixed an issue where channel drawer transition sometimes lagged.
 - Fixed an issue where sending photos to Mattermost created large files.
-- Fixed an issue where the apps showed "Select a Team" screen when the app was opened.
+- Fixed an issue where the apps showed "Select a Team" screen when opened.
 - Fixed an issue where at-mention, emoji, and slash command autocompletes had a double top border.
-- Allowed drawer to close when showing the team list.
+- Fixed an issue where the drawer was unasble to close when showing the team list.
 - Fixed an issue where team sidebar showed + sign even without more teams to join.
 
 
