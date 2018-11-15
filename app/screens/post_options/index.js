@@ -21,8 +21,8 @@ import {getDimensions} from 'app/selectors/device';
 import PostOptions from './post_options';
 
 function mapStateToProps(state, ownProps) {
-    const post = getPost(state, ownProps.postId);
-    const channel = getChannel(state, post.channel_id);
+    const post = getPost(state, ownProps.postId) || {};
+    const channel = getChannel(state, post.channel_id) || {};
     const config = getConfig(state);
     const license = getLicense(state);
     const currentUserId = getCurrentUserId(state);

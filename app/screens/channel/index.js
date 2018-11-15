@@ -5,7 +5,6 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates, logout} from 'mattermost-redux/actions/users';
-import {init as initWebSocket, close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
@@ -46,8 +45,6 @@ function mapDispatchToProps(dispatch) {
             logout,
             selectDefaultTeam,
             selectInitialChannel,
-            initWebSocket,
-            closeWebSocket,
             recordLoadTime,
             startPeriodicStatusUpdates,
             stopPeriodicStatusUpdates,
