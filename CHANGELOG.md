@@ -18,7 +18,7 @@
 - Fixed an issue where sending photos to Mattermost created large files.
 - Fixed an issue where the apps showed "Select a Team" screen when opened.
 - Fixed an issue where at-mention, emoji, and slash command autocompletes had a double top border.
-- Fixed an issue where the drawer was unasble to close when showing the team list.
+- Fixed an issue where the drawer was unable to close when showing the team list.
 - Fixed an issue where team sidebar showed + sign even without more teams to join.
 
 
