@@ -53,7 +53,7 @@ export default class OptionsModalList extends PureComponent {
                     />
                 );
             } else {
-                textComponent = <Text style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}>{item.text}</Text>;
+                textComponent = <Text style={[style.optionText, item.textStyle, item.iconStyle (!item.icon && {textAlign: 'center'})]}>{item.text}</Text>;
             }
 
             return (
@@ -70,7 +70,7 @@ export default class OptionsModalList extends PureComponent {
                         <IconFont
                             name={item.icon}
                             size={18}
-                            style={style.optionIcon}
+                            style={item.iconStyle}
                         />
                         }
                     </TouchableOpacity>

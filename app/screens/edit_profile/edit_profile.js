@@ -57,6 +57,7 @@ export default class EditProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             setProfileImageUri: PropTypes.func.isRequired,
+            removeProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
@@ -78,7 +79,7 @@ export default class EditProfile extends PureComponent {
     constructor(props, context) {
         super(props);
 
-        const {email, first_name: firstName, last_name: lastName, nickname, position, username} = props.currentUser;
+        const {id, email, first_name: firstName, last_name: lastName, nickname, position, username, last_picture_update} = props.currentUser;
         const buttons = {
             rightButtons: [this.rightButton],
         };
@@ -87,6 +88,8 @@ export default class EditProfile extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
 
+        const profileImageUri = null;
+
         this.state = {
             email,
             firstName,
@@ -94,7 +97,19 @@ export default class EditProfile extends PureComponent {
             nickname,
             position,
             username,
+            profileImageUri,
         };
+    }
+
+    getProfileImageUri = async (id, last_picture_update) => {
+        let uri;
+        try {
+            uri = await Client4.getProfilePictureUrl(id, last_picture_update);
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+        this.setState({ profileImageUri: uri });
     }
 
     canUpdate = (updatedField) => {
@@ -219,6 +234,13 @@ export default class EditProfile extends PureComponent {
         };
 
         return RNFetchBlob.config(options).fetch('POST', `${Client4.getUserRoute(currentUser.id)}/image`, headers, [fileInfo]);
+    };
+
+    removeProfileImage = async () => {
+        const {actions} = this.props;
+        const {currentUser} = this.props;
+        this.emitCanUpdateAccount(true);
+        actions.removeProfileImage(currentUser.id);
     };
 
     updateField = (field) => {
@@ -436,9 +458,15 @@ export default class EditProfile extends PureComponent {
         this.scrollView = ref;
     };
 
+    componentDidMount() {
+        const {id, email, first_name: firstName, last_name: lastName, nickname, position, username, last_picture_update} = this.props.currentUser;
+        this.getProfileImageUri(id, last_picture_update);
+    }
+
     render() {
         const {
             currentUser,
+            currentUserImageUri,
             theme,
             navigator,
         } = this.props;
@@ -492,6 +520,8 @@ export default class EditProfile extends PureComponent {
                                 navigator={navigator}
                                 wrapper={true}
                                 uploadFiles={this.handleUploadProfileImage}
+                                removeProfileImage={this.removeProfileImage}
+                                profileImageUri={this.state.profileImageUri}
                             >
                                 <ProfilePicture
                                     userId={currentUser.id}

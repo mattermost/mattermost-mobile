@@ -35,6 +35,8 @@ export default class AttachmentButton extends PureComponent {
         onShowFileSizeWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
+        removeProfileImage: PropTypes.func,
+        profileImageUri: PropTypes.string,
         wrapper: PropTypes.bool,
     };
 
@@ -328,6 +330,21 @@ export default class AttachmentButton extends PureComponent {
         }, 100);
     };
 
+    removeProfileImage = () => {
+        this.props.removeProfileImage();
+        this.props.navigator.dismissModal({
+            animationType: 'none',
+        });
+    };
+
+    isCustomProfileImage = () => {
+        if(this.props.profileImageUri.includes("?")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     showFileAttachmentOptions = () => {
         const {fileCount, maxFileCount, onShowFileMaxWarning} = this.props;
 
@@ -381,6 +398,26 @@ export default class AttachmentButton extends PureComponent {
             },
             icon: 'file',
         });
+
+        // Show option to remove image in edit profile screen
+        // default image will not include query string with timestamp
+        if(this.props.removeProfileImage && this.isCustomProfileImage() ) {
+
+            options.items.push({
+                action: () => this.removeProfileImage(),
+                text: {
+                    id: t('mobile.edit_profile.remove_profile_photo'),
+                    defaultMessage: 'Remove Photo',
+                },
+                textStyle: {
+                    color: '#CC3239',
+                },
+                icon: 'trash',
+                iconStyle: {
+                    color: '#CC3239',
+                }
+            });
+        }
 
         this.props.navigator.showModal({
             screen: 'OptionsModal',
