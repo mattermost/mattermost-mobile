@@ -120,6 +120,9 @@ export default class Thread extends PureComponent {
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'transparent',
             },
+            passProps: {
+                disableTermsModal: true,
+            },
         });
     };
 

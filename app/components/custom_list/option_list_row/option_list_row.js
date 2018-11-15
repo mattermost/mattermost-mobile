@@ -70,6 +70,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
         },
+        textContainer: {
+            marginLeft: 10,
+            justifyContent: 'center',
+            flexDirection: 'column',
+            flex: 1,
+        },
         optionText: {
             fontSize: 15,
             color: theme.centerChannelColor,

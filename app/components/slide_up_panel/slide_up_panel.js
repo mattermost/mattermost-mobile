@@ -15,14 +15,15 @@ import {DeviceTypes} from 'app/constants';
 
 import SlideUpPanelIndicator from './slide_up_panel_indicator';
 
+export const BOTTOM_MARGIN = DeviceTypes.IS_IPHONE_X ? 24 : 0;
 const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_X ? 84 : 64;
 const TOP_ANDROID_MARGIN = 44;
 const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;
-const BOTTOM_MARGIN = DeviceTypes.IS_IPHONE_X ? 24 : 0;
 const CONTAINER_MARGIN = TOP_MARGIN - 10;
 
 export default class SlideUpPanel extends PureComponent {
     static propTypes = {
+        alwaysCaptureContainerMove: PropTypes.bool,
         containerHeight: PropTypes.number,
         children: PropTypes.oneOfType([
             PropTypes.arrayOf(PropTypes.node),
@@ -45,14 +46,28 @@ export default class SlideUpPanel extends PureComponent {
         super(props);
 
         const initialUsedSpace = Math.abs(props.initialPosition);
-        const initialPosition = ((props.containerHeight - (props.headerHeight + BOTTOM_MARGIN)) * (1 - initialUsedSpace));
+        let initialPosition;
+        if (initialUsedSpace <= 1) {
+            initialPosition = ((props.containerHeight - (props.headerHeight + BOTTOM_MARGIN)) * (1 - initialUsedSpace));
+        } else {
+            initialPosition = ((props.containerHeight - (props.headerHeight + BOTTOM_MARGIN)) - initialUsedSpace);
+        }
 
         this.mainPanGesture = PanResponder.create({
-            onMoveShouldSetPanResponder: (evt, gestureState) => {
+            onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+                if (this.props.alwaysCaptureContainerMove) {
+                    return gestureState.dy !== 0;
+                }
                 const isGoingDown = gestureState.y0 < gestureState.dy;
                 return this.isAValidMovement(gestureState.dx, gestureState.dy, isGoingDown);
             },
             onPanResponderMove: (evt, gestureState) => {
+                const isGoingDown = gestureState.dy > 0;
+                if (this.props.alwaysCaptureContainerMove &&
+                    !this.isAValidMovement(gestureState.dx, gestureState.dy, isGoingDown)) {
+                    return;
+                }
+
                 this.moveStart(gestureState);
             },
             onPanResponderRelease: (evt, gestureState) => {

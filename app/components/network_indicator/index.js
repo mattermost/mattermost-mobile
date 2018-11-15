@@ -4,33 +4,37 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {init as initWebSocket} from 'mattermost-redux/actions/websocket';
+import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates, logout} from 'mattermost-redux/actions/users';
+import {init as initWebSocket, close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 
 import {connection} from 'app/actions/device';
 import {getConnection, isLandscape} from 'app/selectors/device';
 
-import OfflineIndicator from './offline_indicator';
+import NetworkIndicator from './network_indicator';
 
 function mapStateToProps(state) {
     const {websocket} = state.requests.general;
-    const webSocketStatus = websocket.status;
-    const isConnecting = websocket.error > 1;
+    const websocketStatus = websocket.status;
 
     return {
-        isConnecting,
         isLandscape: isLandscape(state),
         isOnline: getConnection(state),
-        webSocketStatus,
+        websocketErrorCount: websocket.error,
+        websocketStatus,
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            closeWebSocket,
             connection,
             initWebSocket,
+            logout,
+            startPeriodicStatusUpdates,
+            stopPeriodicStatusUpdates,
         }, dispatch),
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(OfflineIndicator);
+export default connect(mapStateToProps, mapDispatchToProps)(NetworkIndicator);

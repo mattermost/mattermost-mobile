@@ -126,6 +126,9 @@ export default class SelectTeam extends PureComponent {
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: theme.centerChannelBg,
             },
+            passProps: {
+                disableTermsModal: true,
+            },
         });
     };
 

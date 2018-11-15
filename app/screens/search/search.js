@@ -120,9 +120,10 @@ export default class Search extends PureComponent {
 
     componentDidUpdate(prevProps) {
         const {searchingStatus: status, recent, enableDateSuggestion} = this.props;
-        const shouldScroll = status === RequestStatus.SUCCESS &&
-            !this.props.isSearchGettingMore &&
-            !prevProps.isSearchGettingMore;
+        const {searchingStatus: prevStatus} = prevProps;
+        const shouldScroll = prevStatus !== status &&
+            (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED) &&
+            !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore;
 
         if (this.props.isLandscape !== prevProps.isLandscape) {
             this.refs.searchBar.blur();
@@ -701,17 +702,21 @@ export default class Search extends PureComponent {
             }
             break;
         case RequestStatus.FAILURE:
-            results = [{
-                id: RequestStatus.FAILURE,
-                component: (
-                    <View style={style.searching}>
-                        <PostListRetry
-                            retry={this.retry}
-                            theme={theme}
-                        />
-                    </View>
-                ),
-            }];
+            if (postIds.length) {
+                results = postIds;
+            } else {
+                results = [{
+                    id: RequestStatus.FAILURE,
+                    component: (
+                        <View style={style.searching}>
+                            <PostListRetry
+                                retry={this.retry}
+                                theme={theme}
+                            />
+                        </View>
+                    ),
+                }];
+            }
             break;
         }
 

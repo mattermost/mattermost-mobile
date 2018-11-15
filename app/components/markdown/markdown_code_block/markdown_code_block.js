@@ -14,6 +14,7 @@ import {
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';
+import BottomSheet from 'app/utils/bottom_sheet';
 import {getDisplayNameForLanguage} from 'app/utils/markdown';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -28,7 +29,6 @@ export default class MarkdownCodeBlock extends React.PureComponent {
         language: PropTypes.string,
         content: PropTypes.string.isRequired,
         textStyle: CustomPropTypes.Style,
-        onLongPress: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -84,20 +84,23 @@ export default class MarkdownCodeBlock extends React.PureComponent {
 
         const config = await mattermostManaged.getLocalConfig();
 
-        let action;
         if (config.copyAndPasteProtection !== 'true') {
-            action = {
-                text: formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'}),
-                onPress: this.handleCopyCode,
-            };
+            const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+            const actionText = formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'});
+            BottomSheet.showBottomSheetWithOptions({
+                options: [actionText, cancelText],
+                cancelButtonIndex: 1,
+            }, (value) => {
+                if (value !== 1) {
+                    this.handleCopyCode();
+                }
+            });
         }
-
-        this.props.onLongPress(action);
-    }
+    };
 
     handleCopyCode = () => {
         Clipboard.setString(this.props.content);
-    }
+    };
 
     trimContent = (content) => {
         const lines = content.split('\n');

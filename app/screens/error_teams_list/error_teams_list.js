@@ -63,6 +63,9 @@ export default class ErrorTeamsList extends PureComponent {
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: theme.centerChannelBg,
             },
+            passProps: {
+                disableTermsModal: true,
+            },
         });
     };
 

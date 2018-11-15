@@ -46,7 +46,6 @@ export default class ReactionList extends PureComponent {
 
         this.contentOffsetY = -1;
         this.state = {
-            canDrag: true,
             allUserIds: getUniqueUserIds(reactions),
             reactions,
             reactionsByName,

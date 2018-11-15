@@ -12,8 +12,6 @@ import {
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
@@ -92,7 +90,6 @@ export default class EditChannelInfo extends PureComponent {
     };
 
     close = (goBack = false) => {
-        EventEmitter.emit('closing-create-channel', false);
         if (goBack) {
             this.props.navigator.pop({animated: true});
         } else {

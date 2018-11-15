@@ -46,6 +46,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('NotificationSettingsMobile', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_mobile').default), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(require('app/screens/options_modal').default), store, Provider);
     Navigation.registerComponent('Permalink', () => wrapWithContextProvider(require('app/screens/permalink').default), store, Provider);
+    Navigation.registerComponent('PostOptions', () => wrapWithContextProvider(require('app/screens/post_options').default), store, Provider);
     Navigation.registerComponent('ReactionList', () => wrapWithContextProvider(require('app/screens/reaction_list').default), store, Provider);
     Navigation.registerComponent('RecentMentions', () => wrapWithContextProvider(require('app/screens/recent_mentions').default), store, Provider);
     Navigation.registerComponent('Root', () => require('app/screens/root').default, store, Provider);
@@ -57,6 +58,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('SSO', () => wrapWithContextProvider(require('app/screens/sso').default), store, Provider);
     Navigation.registerComponent('Table', () => wrapWithContextProvider(require('app/screens/table').default), store, Provider);
     Navigation.registerComponent('TableImage', () => wrapWithContextProvider(require('app/screens/table_image').default), store, Provider);
+    Navigation.registerComponent('TermsOfService', () => wrapWithContextProvider(require('app/screens/terms_of_service').default), store, Provider);
     Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(require('app/screens/text_preview').default), store, Provider);
     Navigation.registerComponent('Thread', () => wrapWithContextProvider(require('app/screens/thread').default), store, Provider);
     Navigation.registerComponent('TimezoneSettings', () => wrapWithContextProvider(require('app/screens/timezone').default), store, Provider);

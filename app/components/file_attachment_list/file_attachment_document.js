@@ -47,6 +47,7 @@ export default class FileAttachmentDocument extends PureComponent {
         file: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         navigator: PropTypes.object,
+        onLongPress: PropTypes.func,
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
     };
@@ -349,7 +350,7 @@ export default class FileAttachmentDocument extends PureComponent {
     }
 
     render() {
-        const {theme, wrapperHeight} = this.props;
+        const {onLongPress, theme, wrapperHeight} = this.props;
         const {downloading, progress} = this.state;
 
         let fileAttachmentComponent;
@@ -371,8 +372,11 @@ export default class FileAttachmentDocument extends PureComponent {
         }
 
         return (
-            <TouchableOpacity onPress={this.handlePreviewPress}>
-                <View style={style.whiteBackgroud}>
+            <TouchableOpacity
+                onPress={this.handlePreviewPress}
+                onLongPress={onLongPress}
+            >
+                <View style={style.whiteBackground}>
                     {fileAttachmentComponent}
                 </View>
             </TouchableOpacity>
@@ -389,7 +393,7 @@ const style = StyleSheet.create({
         position: 'absolute',
         top: 0,
     },
-    whiteBackgroud: {
+    whiteBackground: {
         backgroundColor: '#fff',
     },
 });

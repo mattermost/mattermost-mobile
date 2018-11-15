@@ -40,7 +40,6 @@ export default class MessageAttachment extends PureComponent {
         blockStyles: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         postId: PropTypes.string.isRequired,
-        onLongPress: PropTypes.func.isRequired,
         onPermalinkPress: PropTypes.func,
         theme: PropTypes.object,
         textStyles: PropTypes.object,
@@ -194,7 +193,6 @@ export default class MessageAttachment extends PureComponent {
                             blockStyles={blockStyles}
                             value={(field.value || '')}
                             navigator={navigator}
-                            onLongPress={this.props.onLongPress}
                             onPermalinkPress={onPermalinkPress}
                         />
                     </View>
@@ -317,7 +315,6 @@ export default class MessageAttachment extends PureComponent {
                         blockStyles={blockStyles}
                         value={attachment.pretext}
                         navigator={navigator}
-                        onLongPress={this.props.onLongPress}
                         onPermalinkPress={onPermalinkPress}
                     />
                 </View>
@@ -415,7 +412,6 @@ export default class MessageAttachment extends PureComponent {
                             blockStyles={blockStyles}
                             value={attachment.text}
                             navigator={navigator}
-                            onLongPress={this.props.onLongPress}
                             onPermalinkPress={onPermalinkPress}
                         />
                     </View>

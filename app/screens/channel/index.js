@@ -10,6 +10,7 @@ import {RequestStatus} from 'mattermost-redux/constants';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/users';
 
 import {
     loadChannelsIfNecessary,
@@ -32,6 +33,7 @@ function mapStateToProps(state) {
         currentChannelId: getCurrentChannelId(state),
         isLandscape: isLandscape(state),
         theme: getTheme(state),
+        showTermsOfService: shouldShowTermsOfService(state),
     };
 }
 

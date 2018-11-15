@@ -9,7 +9,10 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import {intlShape} from 'react-intl';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import addReactionIcon from 'assets/images/icons/reaction.png';
 
@@ -24,7 +27,6 @@ export default class Reactions extends PureComponent {
         }).isRequired,
         highlightedReactions: PropTypes.array.isRequired,
         navigator: PropTypes.object.isRequired,
-        onAddReaction: PropTypes.func.isRequired,
         position: PropTypes.oneOf(['right', 'left']),
         postId: PropTypes.string.isRequired,
         reactions: PropTypes.object.isRequired,
@@ -37,10 +39,42 @@ export default class Reactions extends PureComponent {
         position: 'right',
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     componentDidMount() {
         const {actions, postId} = this.props;
         actions.getReactionsForPost(postId);
     }
+
+    handleAddReaction = preventDoubleTap(() => {
+        const {formatMessage} = this.context.intl;
+        const {navigator, theme} = this.props;
+
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+            navigator.showModal({
+                screen: 'AddReaction',
+                title: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+                animated: true,
+                navigatorStyle: {
+                    navBarTextColor: theme.sidebarHeaderTextColor,
+                    navBarBackgroundColor: theme.sidebarHeaderBg,
+                    navBarButtonColor: theme.sidebarHeaderTextColor,
+                    screenBackgroundColor: theme.centerChannelBg,
+                },
+                passProps: {
+                    closeButton: source,
+                    onEmojiPress: this.handleAddReactionToPost,
+                },
+            });
+        });
+    });
+
+    handleAddReactionToPost = (emoji) => {
+        const {postId} = this.props;
+        this.props.actions.addReaction(postId, emoji);
+    };
 
     handleReactionPress = (emoji, remove) => {
         const {actions, postId} = this.props;
@@ -104,7 +138,7 @@ export default class Reactions extends PureComponent {
             addMoreReactions = (
                 <TouchableOpacity
                     key='addReaction'
-                    onPress={this.props.onAddReaction}
+                    onPress={this.handleAddReaction}
                     style={[styles.reaction]}
                 >
                     <Image
