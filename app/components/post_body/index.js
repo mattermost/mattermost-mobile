@@ -10,6 +10,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 
 import {
     isEdited,
@@ -18,6 +19,8 @@ import {
     canDeletePost,
 } from 'mattermost-redux/utils/post_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
+
+import {shouldRenderJumboEmoji} from 'app/utils/emoji_utils';
 
 import PostBody from './post_body';
 
@@ -65,6 +68,8 @@ function mapStateToProps(state, ownProps) {
         isPostAddChannelMember = true;
     }
 
+    const customEmojis = getCustomEmojisByName(state);
+
     return {
         postProps: post.props || {},
         postType: post.type || '',
@@ -78,6 +83,7 @@ function mapStateToProps(state, ownProps) {
         isPostEphemeral: isEphemeralPost,
         isSystemMessage: isSystemMessage(post),
         message: post.message,
+        shouldRenderJumboEmoji: shouldRenderJumboEmoji(post.message, customEmojis),
         theme: getTheme(state),
         canDelete,
     };

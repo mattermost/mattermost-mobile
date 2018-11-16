@@ -58,6 +58,7 @@ export default class PostBody extends PureComponent {
         replyBarStyle: PropTypes.array,
         showAddReaction: PropTypes.bool,
         showLongPost: PropTypes.bool.isRequired,
+        shouldRenderJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object,
     };
 
@@ -290,6 +291,7 @@ export default class PostBody extends PureComponent {
             postProps,
             postType,
             replyBarStyle,
+            shouldRenderJumboEmoji,
             theme,
         } = this.props;
         const {isLongPost, maxHeight} = this.state;
@@ -339,7 +341,7 @@ export default class PostBody extends PureComponent {
                         removeClippedSubviews={isLongPost}
                     >
                         <Markdown
-                            baseTextStyle={messageStyle}
+                            baseTextStyle={shouldRenderJumboEmoji ? [messageStyle, style.jumboEmoji] : messageStyle}
                             blockStyles={blockStyles}
                             isEdited={hasBeenEdited}
                             isReplyPost={isReplyPost}
@@ -430,6 +432,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         systemMessage: {
             opacity: 0.6,
+        },
+        jumboEmoji: {
+            fontSize: 30,
+            lineHeight: 40,
         },
     };
 });
