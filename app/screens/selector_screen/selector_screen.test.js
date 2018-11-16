@@ -6,7 +6,7 @@ import {IntlProvider} from 'react-intl';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
-import MenuActionSelector from './menu_action_selector.js';
+import SelectorScreen from './selector_screen.js';
 
 jest.mock('rn-fetch-blob', () => ({
     fs: {
@@ -61,7 +61,7 @@ const searchChannels = async () => {
 const intlProvider = new IntlProvider({locale: 'en'}, {});
 const {intl} = intlProvider.getChildContext();
 
-describe('MenuActionSelector', () => {
+describe('SelectorScreen', () => {
     const actions = {
         getProfiles,
         getChannels,
@@ -83,7 +83,7 @@ describe('MenuActionSelector', () => {
 
     test('should match snapshot for explicit options', async () => {
         const wrapper = shallow(
-            <MenuActionSelector {...baseProps}/>,
+            <SelectorScreen {...baseProps}/>,
             {context: {intl}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -97,7 +97,7 @@ describe('MenuActionSelector', () => {
         };
 
         const wrapper = shallow(
-            <MenuActionSelector {...props}/>,
+            <SelectorScreen {...props}/>,
             {context: {intl}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -114,7 +114,7 @@ describe('MenuActionSelector', () => {
         };
 
         const wrapper = shallow(
-            <MenuActionSelector {...props}/>,
+            <SelectorScreen {...props}/>,
             {context: {intl}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -131,7 +131,7 @@ describe('MenuActionSelector', () => {
         };
 
         const wrapper = shallow(
-            <MenuActionSelector {...props}/>,
+            <SelectorScreen {...props}/>,
             {context: {intl}},
         );
         wrapper.setState({isLoading: false, searching: true, term: 'name2'});

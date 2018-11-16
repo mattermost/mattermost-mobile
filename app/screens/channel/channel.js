@@ -14,6 +14,7 @@ import {
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import EmptyToolbar from 'app/components/start/empty_toolbar';
 import ChannelLoader from 'app/components/channel_loader';
 import MainSidebar from 'app/components/sidebars/main';
@@ -336,6 +337,10 @@ export default class Channel extends PureComponent {
                         {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
                     </SafeAreaView>
                 </SettingsSidebar>
+                <InteractiveDialogController
+                    navigator={navigator}
+                    theme={theme}
+                />
             </MainSidebar>
         );
     }

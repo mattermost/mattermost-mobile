@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {StyleSheet, View} from 'react-native';
 import PropTypes from 'prop-types';
 
 import ActionMenu from './action_menu';
@@ -61,16 +60,6 @@ export default class AttachmentActions extends PureComponent {
             }
         });
 
-        return (
-            <View style={style.container}>
-                {content}
-            </View>
-        );
+        return content;
     }
 }
-
-const style = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-});

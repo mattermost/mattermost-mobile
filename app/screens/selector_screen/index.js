@@ -9,7 +9,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getProfiles, searchProfiles} from 'mattermost-redux/actions/users';
 import {getChannels, searchChannels} from 'mattermost-redux/actions/channels';
 
-import MenuActionSelector from './menu_action_selector';
+import SelectorScreen from './selector_screen';
 
 function mapStateToProps(state) {
     const menuAction = state.views.post.selectedMenuAction || {};
@@ -36,4 +36,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MenuActionSelector);
+export default connect(mapStateToProps, mapDispatchToProps)(SelectorScreen);

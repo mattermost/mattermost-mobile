@@ -16,6 +16,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
+import TextSetting from 'app/components/widgets/settings/text_setting';
 import Loading from 'app/components/loading';
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar/index';
@@ -23,8 +24,6 @@ import ProfilePicture from 'app/components/profile_picture';
 import AttachmentButton from 'app/components/attachment_button';
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
-
-import EditProfileItem from './edit_profile_item';
 
 const holders = {
     firstName: {
@@ -221,7 +220,8 @@ export default class EditProfile extends PureComponent {
         return RNFetchBlob.config(options).fetch('POST', `${Client4.getUserRoute(currentUser.id)}/image`, headers, [fileInfo]);
     };
 
-    updateField = (field) => {
+    updateField = (id, name) => {
+        const field = {[id]: name};
         this.setState(field, () => {
             this.emitCanUpdateAccount(this.canUpdate(field));
         });
@@ -250,15 +250,15 @@ export default class EditProfile extends PureComponent {
             (service === 'saml' && config.SamlFirstNameAttributeSet === 'true');
 
         return (
-            <EditProfileItem
+            <TextSetting
                 disabled={disabled}
-                field='firstName'
-                format={holders.firstName}
-                helpText={formatMessage({
+                id='firstName'
+                label={holders.firstName}
+                disabledText={formatMessage({
                     id: 'user.settings.general.field_handled_externally',
                     defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
-                updateValue={this.updateField}
+                onChange={this.updateField}
                 theme={theme}
                 value={firstName}
             />
@@ -276,15 +276,15 @@ export default class EditProfile extends PureComponent {
 
         return (
             <View>
-                <EditProfileItem
+                <TextSetting
                     disabled={disabled}
-                    field='lastName'
-                    format={holders.lastName}
-                    helpText={formatMessage({
+                    id='lastName'
+                    label={holders.lastName}
+                    disabledText={formatMessage({
                         id: 'user.settings.general.field_handled_externally',
                         defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                     })}
-                    updateValue={this.updateField}
+                    onChange={this.updateField}
                     theme={theme}
                     value={lastName}
                 />
@@ -299,16 +299,16 @@ export default class EditProfile extends PureComponent {
         const disabled = currentUser.auth_service !== '';
 
         return (
-            <EditProfileItem
+            <TextSetting
                 disabled={disabled}
-                field='username'
-                format={holders.username}
-                helpText={formatMessage({
+                id='username'
+                label={holders.username}
+                disabledText={formatMessage({
                     id: 'user.settings.general.field_handled_externally',
                     defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
                 maxLength={22}
-                updateValue={this.updateField}
+                onChange={this.updateField}
                 theme={theme}
                 value={username}
             />
@@ -368,12 +368,12 @@ export default class EditProfile extends PureComponent {
 
         return (
             <View>
-                <EditProfileItem
+                <TextSetting
                     disabled={disabled}
-                    field='email'
-                    format={holders.email}
-                    helpText={helpText}
-                    updateValue={this.updateField}
+                    id='email'
+                    label={holders.email}
+                    disabledText={helpText}
+                    onChange={this.updateField}
                     theme={theme}
                     value={email}
                 />
@@ -391,16 +391,16 @@ export default class EditProfile extends PureComponent {
             (service === 'saml' && config.SamlNicknameAttributeSet === 'true');
 
         return (
-            <EditProfileItem
+            <TextSetting
                 disabled={disabled}
-                field='nickname'
-                format={holders.nickname}
-                helpText={formatMessage({
+                id='nickname'
+                label={holders.nickname}
+                disabledText={formatMessage({
                     id: 'user.settings.general.field_handled_externally',
                     defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
                 maxLength={22}
-                updateValue={this.updateField}
+                onChange={this.updateField}
                 theme={theme}
                 value={nickname}
             />
@@ -416,16 +416,16 @@ export default class EditProfile extends PureComponent {
         const disabled = (service === 'ldap' || service === 'saml') && config.PositionAttribute === 'true';
 
         return (
-            <EditProfileItem
+            <TextSetting
                 disabled={disabled}
-                field='position'
-                format={holders.position}
-                helpText={formatMessage({
+                id='position'
+                label={holders.position}
+                disabledText={formatMessage({
                     id: 'user.settings.general.field_handled_externally',
                     defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
                 maxLength={128}
-                updateValue={this.updateField}
+                onChange={this.updateField}
                 theme={theme}
                 value={position}
             />

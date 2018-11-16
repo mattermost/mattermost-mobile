@@ -4,9 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
-import {setMenuActionSelector, selectAttachmentMenuAction} from 'app/actions/views/post';
+import {selectAttachmentMenuAction} from 'app/actions/views/post';
 
 import ActionMenu from './action_menu';
 
@@ -16,8 +14,6 @@ function mapStateToProps(state, ownProps) {
 
     return {
         selected,
-        teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        theme: getTheme(state),
     };
 }
 
@@ -25,7 +21,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             selectAttachmentMenuAction,
-            setMenuActionSelector,
         }, dispatch),
     };
 }
