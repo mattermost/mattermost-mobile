@@ -181,12 +181,13 @@ export default class ImagePreview extends PureComponent {
                     ref={(ref) => {
                         this.documents[this.state.index] = ref;
                     }}
+                    backgroundColor='transparent'
                     canDownloadFiles={canDownloadFiles}
                     file={file}
-                    theme={theme}
+                    iconHeight={100}
+                    iconWidth={100}
                     navigator={navigator}
-                    iconHeight={120}
-                    iconWidth={120}
+                    theme={theme}
                     wrapperHeight={200}
                     wrapperWidth={200}
                 />
@@ -198,10 +199,11 @@ export default class ImagePreview extends PureComponent {
         return (
             <View style={[style.flex, style.center]}>
                 <FileAttachmentIcon
+                    backgroundColor='transparent'
                     file={file}
                     theme={this.props.theme}
-                    iconHeight={120}
-                    iconWidth={120}
+                    iconHeight={150}
+                    iconWidth={150}
                     wrapperHeight={200}
                     wrapperWidth={200}
                 />

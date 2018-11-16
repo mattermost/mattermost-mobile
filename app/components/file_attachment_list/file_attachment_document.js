@@ -30,17 +30,17 @@ import LocalConfig from 'assets/config';
 import FileAttachmentIcon from './file_attachment_icon';
 
 const {DOCUMENTS_PATH} = DeviceTypes;
-
+const DOWNLOADING_OFFSET = 28;
 const TEXT_PREVIEW_FORMATS = [
     'application/json',
     'application/x-x509-ca-cert',
     'text/plain',
 ];
-
 const circularProgressWidth = 4;
 
 export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
+        backgroundColor: PropTypes.string,
         canDownloadFiles: PropTypes.bool.isRequired,
         iconHeight: PropTypes.number,
         iconWidth: PropTypes.number,
@@ -335,16 +335,25 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     renderFileAttachmentIcon = () => {
-        const {iconHeight, iconWidth, file, theme, wrapperHeight, wrapperWidth} = this.props;
+        const {backgroundColor, iconHeight, iconWidth, file, theme, wrapperHeight, wrapperWidth} = this.props;
+        const {downloading} = this.state;
+        let height = wrapperHeight;
+        let width = wrapperWidth;
+
+        if (downloading) {
+            height -= DOWNLOADING_OFFSET;
+            width -= DOWNLOADING_OFFSET;
+        }
 
         return (
             <FileAttachmentIcon
+                backgroundColor={backgroundColor}
                 file={file.data}
                 theme={theme}
                 iconHeight={iconHeight}
                 iconWidth={iconWidth}
-                wrapperHeight={wrapperHeight}
-                wrapperWidth={wrapperWidth}
+                wrapperHeight={height}
+                wrapperWidth={width}
             />
         );
     }
@@ -376,9 +385,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 onPress={this.handlePreviewPress}
                 onLongPress={onLongPress}
             >
-                <View style={style.whiteBackground}>
-                    {fileAttachmentComponent}
-                </View>
+                {fileAttachmentComponent}
             </TouchableOpacity>
         );
     }
@@ -392,8 +399,5 @@ const style = StyleSheet.create({
         left: -circularProgressWidth,
         position: 'absolute',
         top: 0,
-    },
-    whiteBackground: {
-        backgroundColor: '#fff',
     },
 });
