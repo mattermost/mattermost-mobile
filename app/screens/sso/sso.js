@@ -8,8 +8,8 @@ import {
     InteractionManager,
     Text,
     View,
-    WebView,
 } from 'react-native';
+import {WebView} from 'react-native-webview';
 import CookieManager from 'react-native-cookies';
 import urlParse from 'url-parse';
 
@@ -26,7 +26,7 @@ const HEADERS = {
     'X-Mobile-App': 'mattermost',
 };
 
-const postMessageJS = "postMessage(document.body.innerText, '*');";
+const postMessageJS = "window.postMessage(document.body.innerText, '*');";
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -161,10 +161,6 @@ class SSO extends PureComponent {
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
-        } else if (parsed.host.includes(this.completedUrl)) {
-            this.webView.setNativeProps({
-                onMessage: this.onMessage,
-            });
         }
 
         if (Object.keys(nextState).length) {
@@ -239,6 +235,7 @@ class SSO extends PureComponent {
                     renderLoading={this.renderLoading}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
+                    onMessage={this.onMessage}
                     useWebKit={true}
                 />
             );

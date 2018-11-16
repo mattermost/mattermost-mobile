@@ -19,6 +19,7 @@ import com.RNFetchBlob.RNFetchBlobPackage;
 import com.gantix.JailMonkey.JailMonkeyPackage;
 import io.tradle.react.LocalAuthPackage;
 import com.github.godness84.RNRecyclerViewList.RNRecyclerviewListPackage;
+import com.reactnativecommunity.webview.RNCWebViewPackage;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
@@ -77,7 +78,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SharePackage(this),
             new KeychainPackage(),
             new InitializationPackage(this),
-            new RNRecyclerviewListPackage()
+            new RNRecyclerviewListPackage(),
+            new RNCWebViewPackage()
     );
   }
 
