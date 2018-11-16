@@ -82,8 +82,14 @@ export default class NetworkIndicator extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {websocketStatus: previousWebsocketStatus} = prevProps;
-        const {websocketErrorCount, websocketStatus} = this.props;
+        const {isLandscape: prevIsLandscape, websocketStatus: previousWebsocketStatus} = prevProps;
+        const {isLandscape, websocketErrorCount, websocketStatus} = this.props;
+
+        if (isLandscape !== prevIsLandscape) {
+            const navBar = this.getNavBarHeight(isLandscape);
+            const initialTop = websocketErrorCount || previousWebsocketStatus === RequestStatus.FAILURE || previousWebsocketStatus === RequestStatus.NOT_STARTED ? 0 : HEIGHT;
+            this.top.setValue(navBar - initialTop);
+        }
 
         if (this.props.isOnline) {
             if (previousWebsocketStatus === RequestStatus.STARTED && websocketStatus === RequestStatus.SUCCESS) {
@@ -98,6 +104,7 @@ export default class NetworkIndicator extends PureComponent {
             }
         } else if (prevProps.isOnline && !this.props.isOnline) {
             this.offline();
+            this.handleReconnect();
         }
     }
 
@@ -126,6 +133,7 @@ export default class NetworkIndicator extends PureComponent {
             this.initializeWebSocket();
         } else {
             this.handleWebSocket(false);
+            this.handleReconnect();
         }
     };
 
@@ -265,7 +273,7 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     render() {
-        const {websocketErrorCount, websocketStatus} = this.props;
+        const {isOnline, websocketErrorCount, websocketStatus} = this.props;
         const background = this.backgroundColor.interpolate({
             inputRange: [0, 1],
             outputRange: ['#939393', '#629a41'],
@@ -276,7 +284,7 @@ export default class NetworkIndicator extends PureComponent {
         let values;
         let action;
 
-        const currentWebsocketStatus = (websocketStatus === RequestStatus.FAILURE && websocketErrorCount <= MAX_WEBSOCKET_RETRIES) ? RequestStatus.STARTED : websocketStatus;
+        const currentWebsocketStatus = (isOnline && websocketStatus === RequestStatus.FAILURE && websocketErrorCount <= MAX_WEBSOCKET_RETRIES) ? RequestStatus.STARTED : websocketStatus;
 
         switch (currentWebsocketStatus) {
         case (RequestStatus.NOT_STARTED):
