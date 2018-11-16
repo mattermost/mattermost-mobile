@@ -415,6 +415,7 @@ export default class Search extends PureComponent {
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={managedConfig}
+                    skipPinnedHeader={true}
                 />
                 {separator}
             </View>

@@ -180,12 +180,15 @@ export default class FlaggedPosts extends PureComponent {
                 <SearchResultPost
                     postId={item}
                     previewPost={this.previewPost}
+                    highlightPinnedOrFlagged={false}
                     goToThread={this.goToThread}
                     navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={managedConfig}
                     showFullDate={false}
+                    skipFlaggedHeader={true}
+                    skipPinnedHeader={true}
                 />
                 {separator}
             </View>

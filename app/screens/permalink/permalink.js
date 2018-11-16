@@ -412,6 +412,7 @@ export default class Permalink extends PureComponent {
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     navigator={navigator}
+                    highlightPinnedOrFlagged={false}
                 />
             );
         }

@@ -1,0 +1,356 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
+<Component
+  style={
+    Array [
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 15,
+        "marginLeft": 12,
+        "marginRight": 10,
+        "marginTop": 10,
+      },
+      false,
+    ]
+  }
+>
+  <Component
+    style={
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "flex-end",
+        "marginRight": 10,
+        "width": 35,
+      }
+    }
+  >
+    <Component
+      id="flagIcon"
+      source={
+        Object {
+          "testUri": "../../../dist/assets/images/post_header/flag.png",
+        }
+      }
+      style={
+        Object {
+          "height": 11,
+          "tintColor": "#2389d7",
+          "width": 11,
+        }
+      }
+    />
+  </Component>
+  <Component
+    style={
+      Array [
+        Array [],
+      ]
+    }
+  >
+    <FormattedText
+      defaultMessage="Flagged"
+      id="mobile.post_pre_header.flagged"
+      style={
+        Object {
+          "color": "#2389d7",
+          "fontSize": 13,
+          "lineHeight": 15,
+        }
+      }
+    />
+  </Component>
+</Component>
+`;
+
+exports[`PostPreHeader should match snapshot when flagged post is set but skipFlaggedHeader is true 1`] = `null`;
+
+exports[`PostPreHeader should match snapshot when not flagged or pinned post 1`] = `null`;
+
+exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
+<Component
+  style={
+    Array [
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 15,
+        "marginLeft": 12,
+        "marginRight": 10,
+        "marginTop": 10,
+      },
+      false,
+    ]
+  }
+>
+  <Component
+    style={
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "flex-end",
+        "marginRight": 10,
+        "width": 35,
+      }
+    }
+  >
+    <Component
+      id="pinIcon"
+      source={
+        Object {
+          "testUri": "../../../dist/assets/images/post_header/pin.png",
+        }
+      }
+      style={
+        Object {
+          "height": 11,
+          "tintColor": "#2389d7",
+          "width": 11,
+        }
+      }
+    />
+    <Component
+      style={
+        Object {
+          "marginRight": 5,
+        }
+      }
+    />
+    <Component
+      id="flagIcon"
+      source={
+        Object {
+          "testUri": "../../../dist/assets/images/post_header/flag.png",
+        }
+      }
+      style={
+        Object {
+          "height": 11,
+          "tintColor": "#2389d7",
+          "width": 11,
+        }
+      }
+    />
+  </Component>
+  <Component
+    style={
+      Array [
+        Array [],
+      ]
+    }
+  >
+    <FormattedText
+      defaultMessage="Pinned and Flagged"
+      id="mobile.post_pre_header.pinned_flagged"
+      style={
+        Object {
+          "color": "#2389d7",
+          "fontSize": 13,
+          "lineHeight": 15,
+        }
+      }
+    />
+  </Component>
+</Component>
+`;
+
+exports[`PostPreHeader should match snapshot when pinned and flagged but skipping both 1`] = `null`;
+
+exports[`PostPreHeader should match snapshot when pinned and flagged but skipping flagged 1`] = `
+<Component
+  style={
+    Array [
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 15,
+        "marginLeft": 12,
+        "marginRight": 10,
+        "marginTop": 10,
+      },
+      false,
+    ]
+  }
+>
+  <Component
+    style={
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "flex-end",
+        "marginRight": 10,
+        "width": 35,
+      }
+    }
+  >
+    <Component
+      id="pinIcon"
+      source={
+        Object {
+          "testUri": "../../../dist/assets/images/post_header/pin.png",
+        }
+      }
+      style={
+        Object {
+          "height": 11,
+          "tintColor": "#2389d7",
+          "width": 11,
+        }
+      }
+    />
+  </Component>
+  <Component
+    style={
+      Array [
+        Array [],
+      ]
+    }
+  >
+    <FormattedText
+      defaultMessage="Pinned"
+      id="mobile.post_pre_header.pinned"
+      style={
+        Object {
+          "color": "#2389d7",
+          "fontSize": 13,
+          "lineHeight": 15,
+        }
+      }
+    />
+  </Component>
+</Component>
+`;
+
+exports[`PostPreHeader should match snapshot when pinned and flagged but skipping pinned 1`] = `
+<Component
+  style={
+    Array [
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 15,
+        "marginLeft": 12,
+        "marginRight": 10,
+        "marginTop": 10,
+      },
+      false,
+    ]
+  }
+>
+  <Component
+    style={
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "flex-end",
+        "marginRight": 10,
+        "width": 35,
+      }
+    }
+  >
+    <Component
+      id="flagIcon"
+      source={
+        Object {
+          "testUri": "../../../dist/assets/images/post_header/flag.png",
+        }
+      }
+      style={
+        Object {
+          "height": 11,
+          "tintColor": "#2389d7",
+          "width": 11,
+        }
+      }
+    />
+  </Component>
+  <Component
+    style={
+      Array [
+        Array [],
+      ]
+    }
+  >
+    <FormattedText
+      defaultMessage="Flagged"
+      id="mobile.post_pre_header.flagged"
+      style={
+        Object {
+          "color": "#2389d7",
+          "fontSize": 13,
+          "lineHeight": 15,
+        }
+      }
+    />
+  </Component>
+</Component>
+`;
+
+exports[`PostPreHeader should match snapshot when pinned and not flagged 1`] = `
+<Component
+  style={
+    Array [
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 15,
+        "marginLeft": 12,
+        "marginRight": 10,
+        "marginTop": 10,
+      },
+      false,
+    ]
+  }
+>
+  <Component
+    style={
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "flex-end",
+        "marginRight": 10,
+        "width": 35,
+      }
+    }
+  >
+    <Component
+      id="pinIcon"
+      source={
+        Object {
+          "testUri": "../../../dist/assets/images/post_header/pin.png",
+        }
+      }
+      style={
+        Object {
+          "height": 11,
+          "tintColor": "#2389d7",
+          "width": 11,
+        }
+      }
+    />
+  </Component>
+  <Component
+    style={
+      Array [
+        Array [],
+      ]
+    }
+  >
+    <FormattedText
+      defaultMessage="Pinned"
+      id="mobile.post_pre_header.pinned"
+      style={
+        Object {
+          "color": "#2389d7",
+          "fontSize": 13,
+          "lineHeight": 15,
+        }
+      }
+    />
+  </Component>
+</Component>
+`;
+
+exports[`PostPreHeader should match snapshot when pinned post is set but skipPinnedHeader is true 1`] = `null`;

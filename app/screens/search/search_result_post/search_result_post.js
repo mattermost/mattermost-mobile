@@ -10,6 +10,7 @@ export default class SearchResultPost extends PureComponent {
     static propTypes = {
         isDeleted: PropTypes.bool.isRequired,
         goToThread: PropTypes.func.isRequired,
+        highlightPinnedOrFlagged: PropTypes.bool,
         managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
         onHashtagPress: PropTypes.func,
@@ -17,6 +18,8 @@ export default class SearchResultPost extends PureComponent {
         postId: PropTypes.string.isRequired,
         previewPost: PropTypes.func.isRequired,
         showFullDate: PropTypes.bool,
+        skipFlaggedHeader: PropTypes.bool,
+        skipPinnedHeader: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -35,6 +38,9 @@ export default class SearchResultPost extends PureComponent {
             postComponentProps.managedConfig = this.props.managedConfig;
             postComponentProps.onHashtagPress = this.props.onHashtagPress;
             postComponentProps.onPermalinkPress = this.props.onPermalinkPress;
+            postComponentProps.highlightPinnedOrFlagged = this.props.highlightPinnedOrFlagged;
+            postComponentProps.skipFlaggedHeader = this.props.skipFlaggedHeader;
+            postComponentProps.skipPinnedHeader = this.props.skipPinnedHeader;
         }
 
         return (

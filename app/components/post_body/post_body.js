@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Dimensions,
-    TouchableHighlight,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -60,7 +59,6 @@ export default class PostBody extends PureComponent {
         showAddReaction: PropTypes.bool,
         showLongPost: PropTypes.bool.isRequired,
         theme: PropTypes.object,
-        toggleSelected: PropTypes.func,
     };
 
     static defaultProps = {
@@ -68,7 +66,6 @@ export default class PostBody extends PureComponent {
         onFailedPostPress: emptyFunction,
         onPress: emptyFunction,
         replyBarStyle: [],
-        toggleSelected: emptyFunction,
     };
 
     static contextTypes = {
@@ -77,14 +74,6 @@ export default class PostBody extends PureComponent {
 
     state = {
         isLongPost: false,
-    };
-
-    handleHideUnderlay = () => {
-        this.props.toggleSelected(false);
-    };
-
-    handleShowUnderlay = () => {
-        this.props.toggleSelected(true);
     };
 
     measurePost = (event) => {
@@ -208,7 +197,6 @@ export default class PostBody extends PureComponent {
             navigator,
             postId,
             showLongPost,
-            toggleSelected,
         } = this.props;
 
         if (showLongPost) {
@@ -227,7 +215,6 @@ export default class PostBody extends PureComponent {
                     isFailed={isFailed}
                     onLongPress={this.showPostOptions}
                     postId={postId}
-                    toggleSelected={toggleSelected}
                     navigator={navigator}
                 />
             );
@@ -316,20 +303,13 @@ export default class PostBody extends PureComponent {
         let messageComponent;
         if (hasBeenDeleted) {
             messageComponent = (
-                <TouchableHighlight
-                    onHideUnderlay={this.handleHideUnderlay}
-                    onPress={onPress}
-                    onShowUnderlay={this.handleShowUnderlay}
-                    underlayColor='transparent'
-                >
-                    <View style={style.row}>
-                        <FormattedText
-                            style={messageStyle}
-                            id='post_body.deleted'
-                            defaultMessage='(message deleted)'
-                        />
-                    </View>
-                </TouchableHighlight>
+                <View style={style.row}>
+                    <FormattedText
+                        style={messageStyle}
+                        id='post_body.deleted'
+                        defaultMessage='(message deleted)'
+                    />
+                </View>
             );
             body = (<View>{messageComponent}</View>);
         } else if (isPostAddChannelMember) {
@@ -337,21 +317,19 @@ export default class PostBody extends PureComponent {
         } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
             const {allUserIds, allUsernames, messageData} = postProps.user_activity;
             messageComponent = (
-                <TouchableOpacity onLongPress={this.showPostOptions}>
-                    <View style={style.row}>
-                        <View style={style.flex}>
-                            <CombinedSystemMessage
-                                allUserIds={allUserIds}
-                                allUsernames={allUsernames}
-                                linkStyle={textStyles.link}
-                                messageData={messageData}
-                                navigator={navigator}
-                                textStyles={textStyles}
-                                theme={theme}
-                            />
-                        </View>
+                <View style={style.row}>
+                    <View style={style.flex}>
+                        <CombinedSystemMessage
+                            allUserIds={allUserIds}
+                            allUsernames={allUsernames}
+                            linkStyle={textStyles.link}
+                            messageData={messageData}
+                            navigator={navigator}
+                            textStyles={textStyles}
+                            theme={theme}
+                        />
                     </View>
-                </TouchableOpacity>
+                </View>
             );
         } else if (message.length) {
             messageComponent = (
@@ -380,28 +358,20 @@ export default class PostBody extends PureComponent {
 
         if (!hasBeenDeleted) {
             body = (
-                <TouchableHighlight
-                    onHideUnderlay={this.handleHideUnderlay}
-                    onPress={onPress}
-                    onLongPress={this.showPostOptions}
-                    onShowUnderlay={this.handleShowUnderlay}
-                    underlayColor='transparent'
-                >
-                    <View style={style.messageBody}>
-                        <View onLayout={this.measurePost}>
-                            {messageComponent}
-                            {isLongPost &&
-                            <ShowMoreButton
-                                highlight={highlight}
-                                onPress={this.openLongPost}
-                            />
-                            }
-                        </View>
-                        {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
-                        {this.renderFileAttachments()}
-                        {this.renderReactions()}
+                <View style={style.messageBody}>
+                    <View onLayout={this.measurePost}>
+                        {messageComponent}
+                        {isLongPost &&
+                        <ShowMoreButton
+                            highlight={highlight}
+                            onPress={this.openLongPost}
+                        />
+                        }
                     </View>
-                </TouchableHighlight>
+                    {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
+                    {this.renderFileAttachments()}
+                    {this.renderReactions()}
+                </View>
             );
         }
 

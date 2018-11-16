@@ -186,6 +186,7 @@ export default class RecentMentions extends PureComponent {
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={managedConfig}
                     showFullDate={false}
+                    skipPinnedHeader={true}
                 />
                 {separator}
             </View>
