@@ -9,7 +9,6 @@ import {
     Platform,
     SectionList,
     Text,
-    TouchableHighlight,
     View,
 } from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -35,12 +34,12 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDisplayName from './channel_display_name';
+import Modifier, {MODIFIER_LABEL_HEIGHT} from './modifier';
 import RecentItem, {RECENT_LABEL_HEIGHT} from './recent_item';
 import SearchResultPost from './search_result_post';
 
 const SECTION_HEIGHT = 20;
 const RECENT_SEPARATOR_HEIGHT = 3;
-const MODIFIER_LABEL_HEIGHT = 58;
 const SCROLL_UP_MULTIPLIER = 6;
 const SEARCHING = 'searching';
 const NO_RESULTS = 'no results';
@@ -355,35 +354,13 @@ export default class Search extends PureComponent {
 
     renderModifiers = ({item}) => {
         const {theme} = this.props;
-        const style = getStyleFromTheme(theme);
 
         return (
-            <TouchableHighlight
-                key={item.modifier}
-                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                onPress={() => this.setModifierValue(item.value)}
-            >
-                <View style={style.modifierItemContainer}>
-                    <View style={style.modifierItemWrapper}>
-                        <View style={style.modifierItemLabelContainer}>
-                            <View style={style.modifierLabelIconContainer}>
-                                <AwesomeIcon
-                                    style={style.modifierLabelIcon}
-                                    name='plus-square-o'
-                                />
-                            </View>
-                            <Text
-                                style={style.modifierItemLabel}
-                            >
-                                {item.modifier}
-                            </Text>
-                        </View>
-                        <Text style={style.modifierItemDescription}>
-                            {item.description}
-                        </Text>
-                    </View>
-                </View>
-            </TouchableHighlight>
+            <Modifier
+                item={item}
+                setModifierValue={this.setModifierValue}
+                theme={theme}
+            />
         );
     };
 
@@ -823,38 +800,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 12,
             fontWeight: '600',
-        },
-        modifierItemContainer: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            height: MODIFIER_LABEL_HEIGHT,
-        },
-        modifierItemWrapper: {
-            flex: 1,
-            flexDirection: 'column',
-            paddingHorizontal: 16,
-        },
-        modifierItemLabelContainer: {
-            alignItems: 'center',
-            flexDirection: 'row',
-        },
-        modifierLabelIconContainer: {
-            alignItems: 'center',
-            marginRight: 5,
-        },
-        modifierLabelIcon: {
-            fontSize: 16,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-        modifierItemLabel: {
-            fontSize: 14,
-            color: theme.centerChannelColor,
-        },
-        modifierItemDescription: {
-            fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            marginTop: 5,
         },
         recentItemContainer: {
             alignItems: 'center',
