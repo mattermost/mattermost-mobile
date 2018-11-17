@@ -46,6 +46,7 @@
 		71F30A436B5847DF9D319D15 /* Roboto-BlackItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7F54ABFAE6CE4A6DB11D1ED7 /* Roboto-BlackItalic.ttf */; };
 		74D116AD208A8D5600CF8A79 /* libRNKeychain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74D116AA208A8D3100CF8A79 /* libRNKeychain.a */; };
 		7F2691A11EE1DC6A007574FE /* libRNNotifications.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2691A01EE1DC51007574FE /* libRNNotifications.a */; };
+		7F26C1CC219C463D00FEB42D /* libRNCWebView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F26C1CB219C463300FEB42D /* libRNCWebView.a */; };
 		7F292A711E8AB73400A450A3 /* SplashScreenResource in Resources */ = {isa = PBXBuildFile; fileRef = 7F292A701E8AB73400A450A3 /* SplashScreenResource */; };
 		7F292AA61E8ABB1100A450A3 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7F292AA41E8ABB1100A450A3 /* LaunchScreen.xib */; };
 		7F292AA71E8ABB1100A450A3 /* splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F292AA51E8ABB1100A450A3 /* splash.png */; };
@@ -405,6 +406,13 @@
 			remoteGlobalIDString = 134814201AA4EA6300B7C361;
 			remoteInfo = RNNotifications;
 		};
+		7F26C1CA219C463300FEB42D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7F26C1C6219C463300FEB42D /* RNCWebView.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 134814201AA4EA6300B7C361;
+			remoteInfo = RNCWebView;
+		};
 		7F43D5BD1F6BF882001FC614 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A2968536BEC74A4ABBB73BD9 /* RCTYouTube.xcodeproj */;
@@ -697,6 +705,7 @@
 		79CB6EBA24FE4ABFB0C155F0 /* YTPlayerView-iframe-player.html */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "YTPlayerView-iframe-player.html"; path = "../node_modules/react-native-youtube/assets/YTPlayerView-iframe-player.html"; sourceTree = "<group>"; };
 		7DCC3D826CE640AF8F491692 /* BVLinearGradient.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = BVLinearGradient.xcodeproj; path = "../node_modules/react-native-linear-gradient/BVLinearGradient.xcodeproj"; sourceTree = "<group>"; };
 		7F26919B1EE1DC51007574FE /* RNNotifications.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNNotifications.xcodeproj; path = "../node_modules/react-native-notifications/RNNotifications/RNNotifications.xcodeproj"; sourceTree = "<group>"; };
+		7F26C1C6219C463300FEB42D /* RNCWebView.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNCWebView.xcodeproj; path = "../node_modules/react-native-webview/ios/RNCWebView.xcodeproj"; sourceTree = "<group>"; };
 		7F292A701E8AB73400A450A3 /* SplashScreenResource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SplashScreenResource; sourceTree = "<group>"; };
 		7F292AA41E8ABB1100A450A3 /* LaunchScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = LaunchScreen.xib; path = SplashScreenResource/LaunchScreen.xib; sourceTree = "<group>"; };
 		7F292AA51E8ABB1100A450A3 /* splash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = splash.png; path = SplashScreenResource/splash.png; sourceTree = "<group>"; };
@@ -819,6 +828,7 @@
 				7FDB92B11F706F58006CDFD1 /* libRNImagePicker.a in Frameworks */,
 				7F5CA9A0208FE3B9004F91CE /* libRNDocumentPicker.a in Frameworks */,
 				7F43D5DE1F6BF96A001FC614 /* libRCTYouTube.a in Frameworks */,
+				7F26C1CC219C463D00FEB42D /* libRNCWebView.a in Frameworks */,
 				7F43D6061F6BF9EB001FC614 /* libPods-Mattermost.a in Frameworks */,
 				A9B746D2CFA9CEBFB8AE2B5B /* libPods-Mattermost.a in Frameworks */,
 				5A0920184BD344979BCFCD5C /* libRCTVideo.a in Frameworks */,
@@ -1144,6 +1154,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		7F26C1C7219C463300FEB42D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7F26C1CB219C463300FEB42D /* libRNCWebView.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		7F43D58F1F6BF855001FC614 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1319,6 +1337,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				7F26C1C6219C463300FEB42D /* RNCWebView.xcodeproj */,
 				7FF31C0E21330B4200680B75 /* RNFetchBlob.xcodeproj */,
 				7F5CA956208FE38F004F91CE /* RNDocumentPicker.xcodeproj */,
 				7F642DE72093530B00F3165E /* RNDeviceInfo.xcodeproj */,
@@ -1611,6 +1630,10 @@
 				{
 					ProductGroup = 372E25631F5F0E1800A2BFAB /* Products */;
 					ProjectRef = 62A58E5E984E4CF1811620B8 /* RNCookieManagerIOS.xcodeproj */;
+				},
+				{
+					ProductGroup = 7F26C1C7219C463300FEB42D /* Products */;
+					ProjectRef = 7F26C1C6219C463300FEB42D /* RNCWebView.xcodeproj */;
 				},
 				{
 					ProductGroup = 7F642DE82093530B00F3165E /* Products */;
@@ -1950,6 +1973,13 @@
 			fileType = archive.ar;
 			path = libRNNotifications.a;
 			remoteRef = 7F26919F1EE1DC51007574FE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		7F26C1CB219C463300FEB42D /* libRNCWebView.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNCWebView.a;
+			remoteRef = 7F26C1CA219C463300FEB42D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		7F43D5BE1F6BF882001FC614 /* libRCTYouTube.a */ = {
@@ -2449,6 +2479,7 @@
 					"$(SRCROOT)/../node_modules/react-native-safe-area/ios/RNSafeArea",
 					"$(SRCROOT)/../node_modules/react-native-document-picker/**",
 					"$(SRCROOT)/../node_modules/react-native-device-info/ios/**",
+					"$(SRCROOT)../node_modules/react-native-webview/ios",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
@@ -2498,6 +2529,7 @@
 					"$(SRCROOT)/../node_modules/react-native-safe-area/ios/RNSafeArea",
 					"$(SRCROOT)/../node_modules/react-native-document-picker/**",
 					"$(SRCROOT)/../node_modules/react-native-device-info/ios/**",
+					"$(SRCROOT)../node_modules/react-native-webview/ios",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
