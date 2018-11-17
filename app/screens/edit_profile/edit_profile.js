@@ -79,7 +79,7 @@ export default class EditProfile extends PureComponent {
     constructor(props, context) {
         super(props);
 
-        const {id, email, first_name: firstName, last_name: lastName, nickname, position, username, last_picture_update} = props.currentUser;
+        const {email, first_name: firstName, last_name: lastName, nickname, position, username} = props.currentUser;
         const buttons = {
             rightButtons: [this.rightButton],
         };
@@ -88,7 +88,7 @@ export default class EditProfile extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
 
-        const profileImageUri = null;
+        const profileImageUri = '';
 
         this.state = {
             email,
@@ -101,15 +101,14 @@ export default class EditProfile extends PureComponent {
         };
     }
 
-    getProfileImageUri = async (id, last_picture_update) => {
+    getProfileImageUri = async (id, lastPictureUpdate) => {
         let uri;
         try {
-            uri = await Client4.getProfilePictureUrl(id, last_picture_update);
+            uri = await Client4.getProfilePictureUrl(id, lastPictureUpdate);
         } catch (error) {
-            console.error(error);
             return null;
         }
-        this.setState({ profileImageUri: uri });
+        return this.setState({profileImageUri: uri});
     }
 
     canUpdate = (updatedField) => {
@@ -459,14 +458,13 @@ export default class EditProfile extends PureComponent {
     };
 
     componentDidMount() {
-        const {id, email, first_name: firstName, last_name: lastName, nickname, position, username, last_picture_update} = this.props.currentUser;
-        this.getProfileImageUri(id, last_picture_update);
+        const {id, last_picture_update: lastPictureUpdate} = this.props.currentUser;
+        this.getProfileImageUri(id, lastPictureUpdate);
     }
 
     render() {
         const {
             currentUser,
-            currentUserImageUri,
             theme,
             navigator,
         } = this.props;

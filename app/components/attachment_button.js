@@ -338,11 +338,10 @@ export default class AttachmentButton extends PureComponent {
     };
 
     isCustomProfileImage = () => {
-        if(this.props.profileImageUri.includes("?")) {
+        if (this.props.profileImageUri.includes('?')) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     showFileAttachmentOptions = () => {
@@ -401,8 +400,7 @@ export default class AttachmentButton extends PureComponent {
 
         // Show option to remove image in edit profile screen
         // default image will not include query string with timestamp
-        if(this.props.removeProfileImage && this.isCustomProfileImage() ) {
-
+        if (this.props.removeProfileImage && this.isCustomProfileImage()) {
             options.items.push({
                 action: () => this.removeProfileImage(),
                 text: {
@@ -415,7 +413,7 @@ export default class AttachmentButton extends PureComponent {
                 icon: 'trash',
                 iconStyle: {
                     color: '#CC3239',
-                }
+                },
             });
         }
 
