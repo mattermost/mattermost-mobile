@@ -235,11 +235,6 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
           allowFontScaling={false}
           name="camera"
           size={18}
-          style={
-            Object {
-              "color": "#4E8ACC",
-            }
-          }
         />
       </TouchableOpacity>
     </Component>
@@ -282,11 +277,6 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
           allowFontScaling={false}
           name="photo"
           size={18}
-          style={
-            Object {
-              "color": "#4E8ACC",
-            }
-          }
         />
       </TouchableOpacity>
     </Component>
