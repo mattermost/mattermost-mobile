@@ -490,7 +490,7 @@ exports[`TermsOfService should match snapshot 1`] = `
 `;
 
 exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
-<View
+<Component
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -542,7 +542,7 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
       }
     }
   />
-</View>
+</Component>
 `;
 
 exports[`TermsOfService should match snapshot for get terms 1`] = `

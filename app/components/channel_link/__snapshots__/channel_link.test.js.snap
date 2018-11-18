@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ChannelLink should match snapshot 1`] = `
-<Text
+<Component
   style={
     Object {
       "color": "#3d3c40",
@@ -10,7 +10,7 @@ exports[`ChannelLink should match snapshot 1`] = `
     }
   }
 >
-  <Text
+  <Component
     onPress={[Function]}
     style={
       Object {
@@ -19,7 +19,7 @@ exports[`ChannelLink should match snapshot 1`] = `
     }
   >
     ~First Channel
-  </Text>
+  </Component>
   
-</Text>
+</Component>
 `;

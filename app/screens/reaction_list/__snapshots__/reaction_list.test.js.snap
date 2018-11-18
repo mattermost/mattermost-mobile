@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ReactionList should match snapshot 1`] = `
-<View
+<Component
   style={
     Object {
       "flex": 1,
@@ -14,7 +14,7 @@ exports[`ReactionList should match snapshot 1`] = `
     onRequestClose={[Function]}
   >
     <React.Fragment>
-      <View
+      <Component
         style={
           Object {
             "borderBottomWidth": 1,
@@ -83,12 +83,12 @@ exports[`ReactionList should match snapshot 1`] = `
             }
           }
         />
-      </View>
+      </Component>
       <ScrollView
         bounce={false}
         onScroll={[Function]}
       >
-        <View
+        <Component
           style={
             Object {
               "height": 45,
@@ -151,7 +151,7 @@ exports[`ReactionList should match snapshot 1`] = `
               }
             }
           />
-          <View
+          <Component
             style={
               Object {
                 "backgroundColor": "rgba(61,60,64,0.2)",
@@ -159,8 +159,8 @@ exports[`ReactionList should match snapshot 1`] = `
               }
             }
           />
-        </View>
-        <View
+        </Component>
+        <Component
           style={
             Object {
               "height": 45,
@@ -223,7 +223,7 @@ exports[`ReactionList should match snapshot 1`] = `
               }
             }
           />
-          <View
+          <Component
             style={
               Object {
                 "backgroundColor": "rgba(61,60,64,0.2)",
@@ -231,16 +231,16 @@ exports[`ReactionList should match snapshot 1`] = `
               }
             }
           />
-        </View>
+        </Component>
       </ScrollView>
     </React.Fragment>
   </Connect(SlideUpPanel)>
-</View>
+</Component>
 `;
 
 exports[`ReactionList should match snapshot, renderReactionRows 1`] = `
 Array [
-  <View
+  <Component
     style={
       Object {
         "height": 45,
@@ -303,7 +303,7 @@ Array [
         }
       }
     />
-    <View
+    <Component
       style={
         Object {
           "backgroundColor": "rgba(61,60,64,0.2)",
@@ -311,8 +311,8 @@ Array [
         }
       }
     />
-  </View>,
-  <View
+  </Component>,
+  <Component
     style={
       Object {
         "height": 45,
@@ -375,7 +375,7 @@ Array [
         }
       }
     />
-    <View
+    <Component
       style={
         Object {
           "backgroundColor": "rgba(61,60,64,0.2)",
@@ -383,6 +383,6 @@ Array [
         }
       }
     />
-  </View>,
+  </Component>,
 ]
 `;

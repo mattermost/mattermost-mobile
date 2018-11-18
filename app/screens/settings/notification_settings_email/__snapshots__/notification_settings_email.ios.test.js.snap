@@ -41,7 +41,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
     }
   }
 >
-  <View>
+  <Component>
     <sectionItem
       action={[Function]}
       actionType="select"
@@ -82,7 +82,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
         }
       }
     />
-    <View
+    <Component
       style={
         Object {
           "backgroundColor": undefined,
@@ -132,6 +132,6 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
         }
       }
     />
-  </View>
+  </Component>
 </section>
 `;

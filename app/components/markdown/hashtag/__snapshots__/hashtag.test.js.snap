@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Hashtag should match snapshot 1`] = `
-<Text
+<Component
   onPress={[Function]}
   style={
     Object {
@@ -10,5 +10,5 @@ exports[`Hashtag should match snapshot 1`] = `
   }
 >
   #test
-</Text>
+</Component>
 `;

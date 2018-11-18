@@ -7,7 +7,7 @@ exports[`Permalink should match snapshot 1`] = `
   footerColor="transparent"
   forceTop={44}
 >
-  <View
+  <Component
     style={
       Object {
         "flex": 1,
@@ -15,7 +15,7 @@ exports[`Permalink should match snapshot 1`] = `
       }
     }
   >
-    <withAnimatable(View)
+    <withAnimatable(Component)
       animation="zoomIn"
       delay={0}
       direction="normal"
@@ -36,7 +36,7 @@ exports[`Permalink should match snapshot 1`] = `
       }
       useNativeDriver={true}
     >
-      <View
+      <Component
         style={
           Object {
             "alignItems": "center",
@@ -69,7 +69,7 @@ exports[`Permalink should match snapshot 1`] = `
             size={20}
           />
         </TouchableOpacity>
-        <View
+        <Component
           style={
             Object {
               "alignItems": "center",
@@ -78,7 +78,7 @@ exports[`Permalink should match snapshot 1`] = `
             }
           }
         >
-          <Text
+          <Component
             ellipsizeMode="tail"
             numberOfLines={1}
             style={
@@ -90,17 +90,17 @@ exports[`Permalink should match snapshot 1`] = `
             }
           >
             channel_name
-          </Text>
-        </View>
-      </View>
-      <View
+          </Component>
+        </Component>
+      </Component>
+      <Component
         style={
           Object {
             "backgroundColor": "#ffffff",
           }
         }
       >
-        <View
+        <Component
           style={
             Object {
               "backgroundColor": "rgba(61,60,64,0.2)",
@@ -108,8 +108,8 @@ exports[`Permalink should match snapshot 1`] = `
             }
           }
         />
-      </View>
-      <View
+      </Component>
+      <Component
         style={
           Array [
             Object {
@@ -125,14 +125,14 @@ exports[`Permalink should match snapshot 1`] = `
           size="large"
           style={Object {}}
         />
-      </View>
-    </withAnimatable(View)>
-  </View>
+      </Component>
+    </withAnimatable(Component)>
+  </Component>
 </Connect(SafeAreaIos)>
 `;
 
 exports[`Permalink should match snapshot 2`] = `
-<Text>
+<Component>
   <Icon
     allowFontScaling={false}
     name="archive"
@@ -148,5 +148,5 @@ exports[`Permalink should match snapshot 2`] = `
     }
   />
    
-</Text>
+</Component>
 `;

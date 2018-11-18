@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`MenuActionSelector should match snapshot for channels 1`] = `
-<View
+exports[`SelectorScreen should match snapshot for channels 1`] = `
+<Component
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -10,7 +10,7 @@ exports[`MenuActionSelector should match snapshot for channels 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <View
+  <Component
     style={
       Object {
         "marginVertical": 5,
@@ -43,7 +43,7 @@ exports[`MenuActionSelector should match snapshot for channels 1`] = `
       titleCancelColor="#3d3c40"
       value=""
     />
-  </View>
+  </Component>
   <CustomList
     data={Array []}
     listType="flat"
@@ -83,11 +83,11 @@ exports[`MenuActionSelector should match snapshot for channels 1`] = `
       }
     }
   />
-</View>
+</Component>
 `;
 
-exports[`MenuActionSelector should match snapshot for channels 2`] = `
-<View
+exports[`SelectorScreen should match snapshot for channels 2`] = `
+<Component
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -96,7 +96,7 @@ exports[`MenuActionSelector should match snapshot for channels 2`] = `
   }
 >
   <Connect(StatusBar) />
-  <View
+  <Component
     style={
       Object {
         "marginVertical": 5,
@@ -129,7 +129,7 @@ exports[`MenuActionSelector should match snapshot for channels 2`] = `
       titleCancelColor="#3d3c40"
       value=""
     />
-  </View>
+  </Component>
   <CustomList
     data={Array []}
     listType="flat"
@@ -169,11 +169,11 @@ exports[`MenuActionSelector should match snapshot for channels 2`] = `
       }
     }
   />
-</View>
+</Component>
 `;
 
-exports[`MenuActionSelector should match snapshot for explicit options 1`] = `
-<View
+exports[`SelectorScreen should match snapshot for explicit options 1`] = `
+<Component
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -182,7 +182,7 @@ exports[`MenuActionSelector should match snapshot for explicit options 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <View
+  <Component
     style={
       Object {
         "marginVertical": 5,
@@ -215,7 +215,7 @@ exports[`MenuActionSelector should match snapshot for explicit options 1`] = `
       titleCancelColor="#3d3c40"
       value=""
     />
-  </View>
+  </Component>
   <CustomList
     data={
       Array [
@@ -262,11 +262,11 @@ exports[`MenuActionSelector should match snapshot for explicit options 1`] = `
       }
     }
   />
-</View>
+</Component>
 `;
 
-exports[`MenuActionSelector should match snapshot for searching 1`] = `
-<View
+exports[`SelectorScreen should match snapshot for searching 1`] = `
+<Component
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -275,7 +275,7 @@ exports[`MenuActionSelector should match snapshot for searching 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <View
+  <Component
     style={
       Object {
         "marginVertical": 5,
@@ -308,7 +308,7 @@ exports[`MenuActionSelector should match snapshot for searching 1`] = `
       titleCancelColor="#3d3c40"
       value="name2"
     />
-  </View>
+  </Component>
   <CustomList
     data={Array []}
     listType="flat"
@@ -348,11 +348,11 @@ exports[`MenuActionSelector should match snapshot for searching 1`] = `
       }
     }
   />
-</View>
+</Component>
 `;
 
-exports[`MenuActionSelector should match snapshot for users 1`] = `
-<View
+exports[`SelectorScreen should match snapshot for users 1`] = `
+<Component
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -361,7 +361,7 @@ exports[`MenuActionSelector should match snapshot for users 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <View
+  <Component
     style={
       Object {
         "marginVertical": 5,
@@ -394,7 +394,7 @@ exports[`MenuActionSelector should match snapshot for users 1`] = `
       titleCancelColor="#3d3c40"
       value=""
     />
-  </View>
+  </Component>
   <CustomList
     data={Array []}
     listType="section"
@@ -434,11 +434,11 @@ exports[`MenuActionSelector should match snapshot for users 1`] = `
       }
     }
   />
-</View>
+</Component>
 `;
 
-exports[`MenuActionSelector should match snapshot for users 2`] = `
-<View
+exports[`SelectorScreen should match snapshot for users 2`] = `
+<Component
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -447,7 +447,7 @@ exports[`MenuActionSelector should match snapshot for users 2`] = `
   }
 >
   <Connect(StatusBar) />
-  <View
+  <Component
     style={
       Object {
         "marginVertical": 5,
@@ -480,7 +480,7 @@ exports[`MenuActionSelector should match snapshot for users 2`] = `
       titleCancelColor="#3d3c40"
       value=""
     />
-  </View>
+  </Component>
   <CustomList
     data={Array []}
     listType="section"
@@ -520,5 +520,5 @@ exports[`MenuActionSelector should match snapshot for users 2`] = `
       }
     }
   />
-</View>
+</Component>
 `;

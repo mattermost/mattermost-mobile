@@ -55,14 +55,14 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
   transparent={true}
   visible={false}
 >
-  <View>
-    <View
+  <Component>
+    <Component
       style={Object {}}
     >
-      <View
+      <Component
         style={Object {}}
       >
-        <View
+        <Component
           style={Object {}}
         >
           <FormattedText
@@ -70,7 +70,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
             id="user.settings.notifications.email.send"
             style={Object {}}
           />
-        </View>
+        </Component>
         <RadioButtonGroup
           name="emailSettings"
           onSelect={[Function]}
@@ -99,14 +99,14 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
             }
           }
         />
-      </View>
-      <View
+      </Component>
+      <Component
         style={Object {}}
       >
-        <View
+        <Component
           style={Object {}}
         />
-        <View
+        <Component
           style={Object {}}
         >
           <TouchableOpacity
@@ -120,8 +120,8 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
               style={Object {}}
             />
           </TouchableOpacity>
-          <View>
-            <View
+          <Component>
+            <Component
               style={
                 Object {
                   "marginRight": 10,
@@ -139,10 +139,10 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
                 style={Object {}}
               />
             </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </View>
-  </View>
+          </Component>
+        </Component>
+      </Component>
+    </Component>
+  </Component>
 </Component>
 `;

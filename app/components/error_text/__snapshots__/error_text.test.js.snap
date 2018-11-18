@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ErrorText should match snapshot 1`] = `
-<Text
+<Component
   style={
     Array [
       Object {
@@ -22,5 +22,5 @@ exports[`ErrorText should match snapshot 1`] = `
   }
 >
   Username must begin with a letter and contain between 3 and 22 characters including numbers, lowercase letters, and the symbols
-</Text>
+</Component>
 `;

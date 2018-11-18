@@ -30,7 +30,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       padding={5}
       size={16}
     />
-    <Text
+    <Component
       style={
         Object {
           "color": "#166de0",
@@ -40,7 +40,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       }
     >
       3
-    </Text>
+    </Component>
   </React.Fragment>
 </TouchableOpacity>
 `;
@@ -52,7 +52,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
     padding={5}
     size={16}
   />
-  <Text
+  <Component
     style={
       Object {
         "color": "#166de0",
@@ -62,7 +62,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
     }
   >
     3
-  </Text>
+  </Component>
 </React.Fragment>
 `;
 
@@ -79,7 +79,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
       }
     }
   />
-  <Text
+  <Component
     style={
       Object {
         "color": "#166de0",
@@ -89,6 +89,6 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
     }
   >
     3
-  </Text>
+  </Component>
 </React.Fragment>
 `;

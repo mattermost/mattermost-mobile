@@ -47,7 +47,7 @@ exports[`SelectTeam should match snapshot for fail of teams 1`] = `
 `;
 
 exports[`SelectTeam should match snapshot for teams 1`] = `
-<View
+<Component
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -56,7 +56,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <View
+  <Component
     style={
       Object {
         "alignItems": "center",
@@ -66,7 +66,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
       }
     }
   >
-    <View
+    <Component
       style={
         Object {
           "marginRight": 15,
@@ -83,8 +83,8 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
           }
         }
       />
-    </View>
-    <View
+    </Component>
+    <Component
       style={
         Object {
           "backgroundColor": undefined,
@@ -93,7 +93,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
         }
       }
     />
-  </View>
+  </Component>
   <FlatList
     data={
       Array [
@@ -122,5 +122,5 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
     }
     windowSize={21}
   />
-</View>
+</Component>
 `;

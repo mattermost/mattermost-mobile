@@ -4,7 +4,7 @@ exports[`MoreChannels should match snapshot 1`] = `
 <KeyboardLayout>
   <Connect(StatusBar) />
   <React.Fragment>
-    <View
+    <Component
       style={
         Object {
           "marginVertical": 5,
@@ -35,7 +35,7 @@ exports[`MoreChannels should match snapshot 1`] = `
         titleCancelColor="#3d3c40"
         value=""
       />
-    </View>
+    </Component>
     <CustomList
       data={
         Array [
@@ -50,7 +50,7 @@ exports[`MoreChannels should match snapshot 1`] = `
       listType="flat"
       loading={false}
       loadingComponent={
-        <View
+        <Component
           style={
             Object {
               "alignItems": "center",
@@ -69,10 +69,10 @@ exports[`MoreChannels should match snapshot 1`] = `
               }
             }
           />
-        </View>
+        </Component>
       }
       noResults={
-        <View
+        <Component
           style={
             Object {
               "alignItems": "center",
@@ -92,7 +92,7 @@ exports[`MoreChannels should match snapshot 1`] = `
               }
             }
           />
-        </View>
+        </Component>
       }
       onLoadMore={[Function]}
       onRowPress={[Function]}

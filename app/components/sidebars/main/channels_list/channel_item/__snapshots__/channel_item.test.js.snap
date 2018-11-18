@@ -9,7 +9,7 @@ exports[`ChannelItem should match snapshot 1`] = `
     onPress={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
-    <View
+    <Component
       style={
         Array [
           Object {
@@ -21,7 +21,7 @@ exports[`ChannelItem should match snapshot 1`] = `
         ]
       }
     >
-      <View
+      <Component
         style={
           Array [
             Object {
@@ -74,7 +74,7 @@ exports[`ChannelItem should match snapshot 1`] = `
           }
           type="O"
         />
-        <Text
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -96,9 +96,9 @@ exports[`ChannelItem should match snapshot 1`] = `
           }
         >
           display_name
-        </Text>
-      </View>
-    </View>
+        </Component>
+      </Component>
+    </Component>
   </TouchableHighlight>
 </AnimatedComponent>
 `;
@@ -112,7 +112,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
     onPress={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
-    <View
+    <Component
       style={
         Array [
           Object {
@@ -124,7 +124,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         ]
       }
     >
-      <View
+      <Component
         style={
           Object {
             "backgroundColor": "#579eff",
@@ -132,7 +132,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           }
         }
       />
-      <View
+      <Component
         style={
           Array [
             Object {
@@ -188,7 +188,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           }
           type="D"
         />
-        <Text
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -210,9 +210,9 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           }
         >
           {displayName} (you)
-        </Text>
-      </View>
-    </View>
+        </Component>
+      </Component>
+    </Component>
   </TouchableHighlight>
 </AnimatedComponent>
 `;
@@ -226,7 +226,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
     onPress={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
-    <View
+    <Component
       style={
         Array [
           Object {
@@ -238,7 +238,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         ]
       }
     >
-      <View
+      <Component
         style={
           Object {
             "backgroundColor": "#579eff",
@@ -246,7 +246,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           }
         }
       />
-      <View
+      <Component
         style={
           Array [
             Object {
@@ -302,7 +302,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           }
           type="D"
         />
-        <Text
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -324,9 +324,9 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           }
         >
           {displayName} (you)
-        </Text>
-      </View>
-    </View>
+        </Component>
+      </Component>
+    </Component>
   </TouchableHighlight>
 </AnimatedComponent>
 `;
@@ -340,7 +340,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
     onPress={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
-    <View
+    <Component
       style={
         Array [
           Object {
@@ -352,7 +352,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         ]
       }
     >
-      <View
+      <Component
         style={
           Object {
             "backgroundColor": "#579eff",
@@ -360,7 +360,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           }
         }
       />
-      <View
+      <Component
         style={
           Array [
             Object {
@@ -416,7 +416,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           }
           type="D"
         />
-        <Text
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -438,9 +438,9 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           }
         >
           display_name
-        </Text>
-      </View>
-    </View>
+        </Component>
+      </Component>
+    </Component>
   </TouchableHighlight>
 </AnimatedComponent>
 `;
@@ -454,7 +454,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
     onPress={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
-    <View
+    <Component
       style={
         Array [
           Object {
@@ -466,7 +466,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         ]
       }
     >
-      <View
+      <Component
         style={
           Array [
             Object {
@@ -519,7 +519,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           }
           type="D"
         />
-        <Text
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -541,9 +541,9 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           }
         >
           display_name
-        </Text>
-      </View>
-    </View>
+        </Component>
+      </Component>
+    </Component>
   </TouchableHighlight>
 </AnimatedComponent>
 `;
@@ -563,7 +563,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
     onPress={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
-    <View
+    <Component
       style={
         Array [
           Object {
@@ -575,7 +575,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         ]
       }
     >
-      <View
+      <Component
         style={
           Array [
             Object {
@@ -628,7 +628,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           }
           type="O"
         />
-        <Text
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -650,9 +650,9 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           }
         >
           display_name
-        </Text>
-      </View>
-    </View>
+        </Component>
+      </Component>
+    </Component>
   </TouchableHighlight>
 </AnimatedComponent>
 `;
@@ -666,7 +666,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
     onPress={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
-    <View
+    <Component
       style={
         Array [
           Object {
@@ -680,7 +680,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         ]
       }
     >
-      <View
+      <Component
         style={
           Array [
             Object {
@@ -733,7 +733,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           }
           type="O"
         />
-        <Text
+        <Component
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
@@ -755,7 +755,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           }
         >
           display_name
-        </Text>
+        </Component>
         <Badge
           count={1}
           countStyle={
@@ -780,8 +780,8 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             }
           }
         />
-      </View>
-    </View>
+      </Component>
+    </Component>
   </TouchableHighlight>
 </AnimatedComponent>
 `;

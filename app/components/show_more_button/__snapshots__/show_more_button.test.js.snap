@@ -1,41 +1,41 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ShowMoreButton should match, button snapshot 1`] = `
-<View
+<Component
   style={Object {}}
 >
-  <Text
+  <Component
     style={Object {}}
   >
     +
-  </Text>
+  </Component>
   <FormattedText
     defaultMessage="Show More"
     id="post_info.message.show_more"
     style={Object {}}
   />
-</View>
+</Component>
 `;
 
 exports[`ShowMoreButton should match, button snapshot 2`] = `
-<View
+<Component
   style={Object {}}
 >
-  <Text
+  <Component
     style={Object {}}
   >
     -
-  </Text>
+  </Component>
   <FormattedText
     defaultMessage="Show Less"
     id="post_info.message.show_less"
     style={Object {}}
   />
-</View>
+</Component>
 `;
 
 exports[`ShowMoreButton should match, full snapshot 1`] = `
-<View>
+<Component>
   <LinearGradient
     colors={
       Array [
@@ -73,7 +73,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
       }
     }
   />
-  <View
+  <Component
     style={
       Object {
         "alignItems": "center",
@@ -86,7 +86,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
       }
     }
   >
-    <View
+    <Component
       style={
         Object {
           "backgroundColor": "rgba(61,60,64,0.2)",
@@ -110,7 +110,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
         }
       }
     >
-      <View
+      <Component
         style={
           Object {
             "alignItems": "center",
@@ -119,7 +119,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
           }
         }
       >
-        <Text
+        <Component
           style={
             Object {
               "color": "#2389d7",
@@ -130,7 +130,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
           }
         >
           +
-        </Text>
+        </Component>
         <FormattedText
           defaultMessage="Show More"
           id="post_info.message.show_more"
@@ -142,9 +142,9 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
             }
           }
         />
-      </View>
+      </Component>
     </TouchableOpacity>
-    <View
+    <Component
       style={
         Object {
           "backgroundColor": "rgba(61,60,64,0.2)",
@@ -154,6 +154,6 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
         }
       }
     />
-  </View>
-</View>
+  </Component>
+</Component>
 `;

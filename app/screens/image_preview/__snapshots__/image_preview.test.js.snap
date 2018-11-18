@@ -73,7 +73,7 @@ exports[`ImagePreview should match snapshot 1`] = `
         ]
       }
     >
-      <View
+      <Component
         style={
           Object {
             "backgroundColor": "rgba(0, 0, 0, 0.8)",
@@ -85,7 +85,7 @@ exports[`ImagePreview should match snapshot 1`] = `
           }
         }
       >
-        <View
+        <Component
           style={
             Object {
               "alignItems": "center",
@@ -113,7 +113,7 @@ exports[`ImagePreview should match snapshot 1`] = `
               size={26}
             />
           </TouchableOpacity>
-          <Text
+          <Component
             style={
               Object {
                 "color": "white",
@@ -125,7 +125,7 @@ exports[`ImagePreview should match snapshot 1`] = `
             }
           >
             1/2
-          </Text>
+          </Component>
           <TouchableOpacity
             activeOpacity={0.2}
             onPress={[Function]}
@@ -145,8 +145,8 @@ exports[`ImagePreview should match snapshot 1`] = `
               size={26}
             />
           </TouchableOpacity>
-        </View>
-      </View>
+        </Component>
+      </Component>
     </AnimatedComponent>
     <AnimatedComponent
       style={
@@ -198,7 +198,7 @@ exports[`ImagePreview should match snapshot 1`] = `
           }
         }
       >
-        <Text
+        <Component
           style={
             Object {
               "color": "white",
@@ -208,7 +208,7 @@ exports[`ImagePreview should match snapshot 1`] = `
           }
         >
           Caption 1
-        </Text>
+        </Component>
       </LinearGradient>
     </AnimatedComponent>
   </AnimatedComponent>
