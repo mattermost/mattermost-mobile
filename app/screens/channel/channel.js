@@ -313,7 +313,7 @@ export default class Channel extends PureComponent {
                 >
                     <SafeAreaView navigator={navigator}>
                         <StatusBar/>
-                        <NetworkIndicator currentChannelId={currentChannelId}/>
+                        <NetworkIndicator/>
                         <ChannelNavBar
                             navigator={navigator}
                             openChannelDrawer={this.openChannelSidebar}
