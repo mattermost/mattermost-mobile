@@ -82,18 +82,14 @@ export default class ChannelMention extends PureComponent {
         }
 
         if (matchTerm !== this.props.matchTerm) {
-            // if the term changed and we haven't made the request do that first
             const {currentTeamId} = this.props;
             this.runSearch(currentTeamId, matchTerm);
-            return;
         }
 
-        if (requestStatus !== RequestStatus.STARTED &&
-            (myChannels !== this.props.myChannels || otherChannels !== this.props.otherChannels ||
-                privateChannels !== this.props.privateChannels || publicChannels !== this.props.publicChannels ||
-                directAndGroupMessages !== this.props.directAndGroupMessages ||
-                myMembers !== this.props.myMembers || deletedPublicChannels !== this.props.deletedPublicChannels)) {
-            // if the request is complete and the term is not null we show the autocomplete
+        if (matchTerm === '' || (myChannels !== this.props.myChannels || otherChannels !== this.props.otherChannels ||
+        privateChannels !== this.props.privateChannels || publicChannels !== this.props.publicChannels ||
+        directAndGroupMessages !== this.props.directAndGroupMessages ||
+        myMembers !== this.props.myMembers || deletedPublicChannels !== this.props.deletedPublicChannels)) {
             const sections = [];
             if (isSearch) {
                 if (publicChannels.length) {
@@ -102,6 +98,7 @@ export default class ChannelMention extends PureComponent {
                         defaultMessage: 'Public Channels',
                         data: publicChannels.filter((cId) => myMembers[cId]),
                         key: 'publicChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
@@ -111,6 +108,7 @@ export default class ChannelMention extends PureComponent {
                         defaultMessage: 'Private Channels',
                         data: privateChannels,
                         key: 'privateChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
@@ -129,10 +127,11 @@ export default class ChannelMention extends PureComponent {
                         defaultMessage: 'My Channels',
                         data: myChannels,
                         key: 'myChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
-                if (otherChannels.length) {
+                if (otherChannels.length || requestStatus === RequestStatus.STARTED) {
                     sections.push({
                         id: t('suggestion.mention.morechannels'),
                         defaultMessage: 'Other Channels',
@@ -145,7 +144,6 @@ export default class ChannelMention extends PureComponent {
             this.setState({
                 sections,
             });
-
             this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
         }
     }
@@ -191,6 +189,7 @@ export default class ChannelMention extends PureComponent {
             <AutocompleteSectionHeader
                 id={section.id}
                 defaultMessage={section.defaultMessage}
+                loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
             />
         );
