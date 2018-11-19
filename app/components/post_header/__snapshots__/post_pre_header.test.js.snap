@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
-<Component
+<View
   style={
     Array [
       Object {
@@ -16,7 +16,7 @@ exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
     ]
   }
 >
-  <Component
+  <View
     style={
       Object {
         "alignItems": "center",
@@ -42,8 +42,8 @@ exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
         }
       }
     />
-  </Component>
-  <Component
+  </View>
+  <View
     style={
       Array [
         Array [],
@@ -61,8 +61,8 @@ exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
         }
       }
     />
-  </Component>
-</Component>
+  </View>
+</View>
 `;
 
 exports[`PostPreHeader should match snapshot when flagged post is set but skipFlaggedHeader is true 1`] = `null`;
@@ -70,7 +70,7 @@ exports[`PostPreHeader should match snapshot when flagged post is set but skipFl
 exports[`PostPreHeader should match snapshot when not flagged or pinned post 1`] = `null`;
 
 exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
-<Component
+<View
   style={
     Array [
       Object {
@@ -85,7 +85,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
     ]
   }
 >
-  <Component
+  <View
     style={
       Object {
         "alignItems": "center",
@@ -111,7 +111,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
         }
       }
     />
-    <Component
+    <View
       style={
         Object {
           "marginRight": 5,
@@ -133,8 +133,8 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
         }
       }
     />
-  </Component>
-  <Component
+  </View>
+  <View
     style={
       Array [
         Array [],
@@ -152,14 +152,14 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
         }
       }
     />
-  </Component>
-</Component>
+  </View>
+</View>
 `;
 
 exports[`PostPreHeader should match snapshot when pinned and flagged but skipping both 1`] = `null`;
 
 exports[`PostPreHeader should match snapshot when pinned and flagged but skipping flagged 1`] = `
-<Component
+<View
   style={
     Array [
       Object {
@@ -174,7 +174,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
     ]
   }
 >
-  <Component
+  <View
     style={
       Object {
         "alignItems": "center",
@@ -200,8 +200,8 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
         }
       }
     />
-  </Component>
-  <Component
+  </View>
+  <View
     style={
       Array [
         Array [],
@@ -219,12 +219,12 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
         }
       }
     />
-  </Component>
-</Component>
+  </View>
+</View>
 `;
 
 exports[`PostPreHeader should match snapshot when pinned and flagged but skipping pinned 1`] = `
-<Component
+<View
   style={
     Array [
       Object {
@@ -239,7 +239,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
     ]
   }
 >
-  <Component
+  <View
     style={
       Object {
         "alignItems": "center",
@@ -265,8 +265,8 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
         }
       }
     />
-  </Component>
-  <Component
+  </View>
+  <View
     style={
       Array [
         Array [],
@@ -284,12 +284,12 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
         }
       }
     />
-  </Component>
-</Component>
+  </View>
+</View>
 `;
 
 exports[`PostPreHeader should match snapshot when pinned and not flagged 1`] = `
-<Component
+<View
   style={
     Array [
       Object {
@@ -304,7 +304,7 @@ exports[`PostPreHeader should match snapshot when pinned and not flagged 1`] = `
     ]
   }
 >
-  <Component
+  <View
     style={
       Object {
         "alignItems": "center",
@@ -330,8 +330,8 @@ exports[`PostPreHeader should match snapshot when pinned and not flagged 1`] = `
         }
       }
     />
-  </Component>
-  <Component
+  </View>
+  <View
     style={
       Array [
         Array [],
@@ -349,8 +349,8 @@ exports[`PostPreHeader should match snapshot when pinned and not flagged 1`] = `
         }
       }
     />
-  </Component>
-</Component>
+  </View>
+</View>
 `;
 
 exports[`PostPreHeader should match snapshot when pinned post is set but skipPinnedHeader is true 1`] = `null`;
