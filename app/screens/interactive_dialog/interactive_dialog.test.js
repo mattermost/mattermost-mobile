@@ -26,6 +26,7 @@ describe('InteractiveDialog', () => {
         },
         navigator: {
             setOnNavigatorEvent: jest.fn(),
+            dismissModal: jest.fn(),
         },
     };
 
@@ -80,7 +81,7 @@ describe('InteractiveDialog', () => {
             cancelled: true,
         };
 
-        wrapper.instance().onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        wrapper.instance().onNavigatorEvent({type: 'NavBarButtonPress', id: 'close-dialog'});
         expect(submitInteractiveDialog).toHaveBeenCalledTimes(1);
         expect(submitInteractiveDialog).toHaveBeenCalledWith(dialog);
     });
@@ -96,7 +97,7 @@ describe('InteractiveDialog', () => {
             {context: {intl}},
         );
 
-        wrapper.instance().onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        wrapper.instance().onNavigatorEvent({type: 'NavBarButtonPress', id: 'close-dialog'});
         expect(submitInteractiveDialog).not.toHaveBeenCalled();
     });
 });

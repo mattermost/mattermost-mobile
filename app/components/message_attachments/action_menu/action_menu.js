@@ -50,16 +50,14 @@ export default class ActionMenu extends PureComponent {
         } = this.props;
 
         return (
-            <View>
-                <AutocompleteSelector
-                    placeholder={name}
-                    dataSource={dataSource}
-                    options={options}
-                    selected={selected}
-                    navigator={navigator}
-                    onSelected={this.handleSelect}
-                />
-            </View>
+            <AutocompleteSelector
+                placeholder={name}
+                dataSource={dataSource}
+                options={options}
+                selected={selected}
+                navigator={navigator}
+                onSelected={this.handleSelect}
+            />
         );
     }
 }

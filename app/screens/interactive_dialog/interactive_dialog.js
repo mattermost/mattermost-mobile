@@ -56,14 +56,9 @@ export default class InteractiveDialog extends PureComponent {
             case 'submit-dialog':
                 this.handleSubmit();
                 break;
-            }
-            return;
-        }
-
-        if (event.type === 'ScreenChangedEvent') {
-            switch (event.id) {
-            case 'willDisappear':
+            case 'close-dialog':
                 this.notifyOnCancelIfNeeded();
+                this.handleHide();
                 break;
             }
         }
@@ -140,7 +135,9 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     handleHide = () => {
-        this.props.navigator.pop({animated: true});
+        this.props.navigator.dismissModal({
+            animationType: 'slide-down',
+        });
     }
 
     onChange = (name, value) => {

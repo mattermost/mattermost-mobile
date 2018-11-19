@@ -30,11 +30,10 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('FlaggedPosts', () => wrapWithContextProvider(require('app/screens/flagged_posts').default), store, Provider);
     Navigation.registerComponent('ForgotPassword', () => wrapWithContextProvider(require('app/screens/forgot_password').default), store, Provider);
     Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(require('app/screens/image_preview').default), store, Provider);
+    Navigation.registerComponent('InteractiveDialog', () => wrapWithContextProvider(require('app/screens/interactive_dialog').default), store, Provider);
     Navigation.registerComponent('Login', () => wrapWithContextProvider(require('app/screens/login').default), store, Provider);
     Navigation.registerComponent('LoginOptions', () => wrapWithContextProvider(require('app/screens/login_options').default), store, Provider);
     Navigation.registerComponent('LongPost', () => wrapWithContextProvider(require('app/screens/long_post').default), store, Provider);
-    Navigation.registerComponent('SelectorScreen', () => wrapWithContextProvider(require('app/screens/selector_screen').default), store, Provider);
-    Navigation.registerComponent('InteractiveDialog', () => wrapWithContextProvider(require('app/screens/interactive_dialog').default), store, Provider);
     Navigation.registerComponent('MFA', () => wrapWithContextProvider(require('app/screens/mfa').default), store, Provider);
     Navigation.registerComponent('MoreChannels', () => wrapWithContextProvider(require('app/screens/more_channels').default), store, Provider);
     Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(require('app/screens/more_dms').default), store, Provider);
@@ -52,6 +51,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('RecentMentions', () => wrapWithContextProvider(require('app/screens/recent_mentions').default), store, Provider);
     Navigation.registerComponent('Root', () => require('app/screens/root').default, store, Provider);
     Navigation.registerComponent('Search', () => wrapWithContextProvider(require('app/screens/search').default), store, Provider);
+    Navigation.registerComponent('SelectorScreen', () => wrapWithContextProvider(require('app/screens/selector_screen').default), store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);
     Navigation.registerComponent('SelectTeam', () => wrapWithContextProvider(require('app/screens/select_team').default), store, Provider);
     Navigation.registerComponent('SelectTimezone', () => wrapWithContextProvider(require('app/screens/timezone/select_timezone').default), store, Provider);

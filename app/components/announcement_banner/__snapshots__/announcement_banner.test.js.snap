@@ -29,7 +29,7 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
       }
     }
   >
-    <Component
+    <Text
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
@@ -48,7 +48,7 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
       <RemoveMarkdown
         value="Banner Text"
       />
-    </Component>
+    </Text>
     <Icon
       allowFontScaling={false}
       color="#fff"

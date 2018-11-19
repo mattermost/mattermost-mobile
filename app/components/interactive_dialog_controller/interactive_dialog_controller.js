@@ -3,6 +3,7 @@
 
 import {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 export default class InteractiveDialogController extends PureComponent {
     static propTypes = {
@@ -12,13 +13,26 @@ export default class InteractiveDialogController extends PureComponent {
         theme: PropTypes.object,
     };
 
+    constructor(props) {
+        super(props);
+
+        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
+            this.closeButton = source;
+        });
+    }
+
     componentDidUpdate(prevProps) {
         const triggerId = this.props.triggerId;
-        if (prevProps.triggerId === triggerId) {
+        if (!triggerId) {
             return;
         }
 
-        const dialogData = this.props.dialog;
+        const dialogData = this.props.dialog || {};
+        const prevDialogData = prevProps.dialog || {};
+        if (prevProps.triggerId === triggerId && dialogData.trigger_id === prevDialogData.trigger_id) {
+            return;
+        }
+
         if (dialogData.trigger_id !== triggerId) {
             return;
         }
@@ -29,7 +43,7 @@ export default class InteractiveDialogController extends PureComponent {
 
         const theme = this.props.theme;
 
-        this.props.navigator.push({
+        this.props.navigator.showModal({
             backButtonTitle: '',
             screen: 'InteractiveDialog',
             title: dialogData.dialog.title,
@@ -41,6 +55,10 @@ export default class InteractiveDialogController extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg,
             },
             navigatorButtons: {
+                leftButtons: [{
+                    id: 'close-dialog',
+                    icon: this.closeButton,
+                }],
                 rightButtons: [
                     {
                         id: 'submit-dialog',
