@@ -239,7 +239,7 @@ export default class PostTextbox extends PureComponent {
                 }),
                 intl.formatMessage({
                     id: 'mobile.post_textbox.uploadFailedDesc',
-                    defaultMessage: 'Some attachments failed to upload to the server, Are you sure you want to post the message?',
+                    defaultMessage: 'Some attachments failed to upload to the server. Are you sure you want to post the message?',
                 }),
                 [{
                     text: intl.formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
