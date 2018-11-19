@@ -16,6 +16,7 @@ import {Posts} from 'mattermost-redux/constants';
 import CombinedSystemMessage from 'app/components/combined_system_message';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
+import MarkdownEmoji from 'app/components/markdown/markdown_emoji';
 import ShowMoreButton from 'app/components/show_more_button';
 
 import {emptyFunction} from 'app/utils/general';
@@ -58,6 +59,7 @@ export default class PostBody extends PureComponent {
         replyBarStyle: PropTypes.array,
         showAddReaction: PropTypes.bool,
         showLongPost: PropTypes.bool.isRequired,
+        isEmojiOnly: PropTypes.bool.isRequired,
         shouldRenderJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object,
     };
@@ -276,6 +278,7 @@ export default class PostBody extends PureComponent {
             hasBeenDeleted,
             hasBeenEdited,
             highlight,
+            isEmojiOnly,
             isFailed,
             isPending,
             isPostAddChannelMember,
@@ -333,6 +336,17 @@ export default class PostBody extends PureComponent {
                     </View>
                 </View>
             );
+        } else if (isEmojiOnly) {
+            messageComponent = (
+                <View style={style.row}>
+                    <MarkdownEmoji
+                        baseTextStyle={messageStyle}
+                        isEdited={hasBeenEdited}
+                        shouldRenderJumboEmoji={shouldRenderJumboEmoji}
+                        value={message}
+                    />
+                </View>
+            );
         } else if (message.length) {
             messageComponent = (
                 <View style={style.row}>
@@ -341,7 +355,7 @@ export default class PostBody extends PureComponent {
                         removeClippedSubviews={isLongPost}
                     >
                         <Markdown
-                            baseTextStyle={shouldRenderJumboEmoji ? [messageStyle, style.jumboEmoji] : messageStyle}
+                            baseTextStyle={messageStyle}
                             blockStyles={blockStyles}
                             isEdited={hasBeenEdited}
                             isReplyPost={isReplyPost}
@@ -432,10 +446,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         systemMessage: {
             opacity: 0.6,
-        },
-        jumboEmoji: {
-            fontSize: 30,
-            lineHeight: 40,
         },
     };
 });

@@ -45,14 +45,15 @@ function isEmoticon(text) {
     return false;
 }
 
-export function shouldRenderJumboEmoji(message, customEmojis) {
+export function hasEmojisOnly(message, customEmojis) {
     if (!message || message.length === 0) {
-        return false;
+        return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
     }
 
     const chunks = message.trim().split(' ').filter((m) => m && m.length > 0);
-    if (chunks.length === 0 || chunks.length > MAX_JUMBO_EMOJIS) {
-        return false;
+
+    if (chunks.length === 0) {
+        return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
     }
 
     let emojiCount = 0;
@@ -82,8 +83,11 @@ export function shouldRenderJumboEmoji(message, customEmojis) {
             continue;
         }
 
-        return false;
+        return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
     }
 
-    return emojiCount > 0 && emojiCount <= MAX_JUMBO_EMOJIS;
+    return {
+        isEmojiOnly: true,
+        shouldRenderJumboEmoji: emojiCount > 0 && emojiCount <= MAX_JUMBO_EMOJIS,
+    };
 }

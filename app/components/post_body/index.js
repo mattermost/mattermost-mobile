@@ -11,6 +11,7 @@ import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
+import {memoizeResult} from 'mattermost-redux/utils/helpers';
 
 import {
     isEdited,
@@ -20,11 +21,13 @@ import {
 } from 'mattermost-redux/utils/post_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-import {shouldRenderJumboEmoji} from 'app/utils/emoji_utils';
+import {hasEmojisOnly} from 'app/utils/emoji_utils';
 
 import PostBody from './post_body';
 
 const POST_TIMEOUT = 20000;
+
+const memoizeHasEmojisOnly = memoizeResult((message, customEmojis) => hasEmojisOnly(message, customEmojis));
 
 function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId) || {};
@@ -69,6 +72,7 @@ function mapStateToProps(state, ownProps) {
     }
 
     const customEmojis = getCustomEmojisByName(state);
+    const {isEmojiOnly, shouldRenderJumboEmoji} = memoizeHasEmojisOnly(post.message, customEmojis);
 
     return {
         postProps: post.props || {},
@@ -83,7 +87,8 @@ function mapStateToProps(state, ownProps) {
         isPostEphemeral: isEphemeralPost,
         isSystemMessage: isSystemMessage(post),
         message: post.message,
-        shouldRenderJumboEmoji: shouldRenderJumboEmoji(post.message, customEmojis),
+        isEmojiOnly,
+        shouldRenderJumboEmoji,
         theme: getTheme(state),
         canDelete,
     };
