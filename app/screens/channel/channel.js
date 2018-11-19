@@ -25,6 +25,7 @@ import StatusBar from 'app/components/status_bar';
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import PostTextbox from 'app/components/post_textbox';
+import PushNotifications from 'app/push_notifications';
 import tracker from 'app/utils/time_tracker';
 import LocalConfig from 'assets/config';
 
@@ -107,6 +108,11 @@ export default class Channel extends PureComponent {
 
         if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
             this.loadChannels(nextProps.currentTeamId);
+        }
+
+        if (nextProps.currentChannelId !== this.props.currentChannelId &&
+            nextProps.currentTeamId === this.props.currentTeamId) {
+            PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
         }
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
@@ -294,7 +300,6 @@ export default class Channel extends PureComponent {
 
         const loaderDimensions = this.channelLoaderDimensions();
 
-        // console.warn('height', height, Date.now())
         return (
             <MainSidebar
                 ref={this.channelSidebarRef}

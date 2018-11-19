@@ -19,6 +19,7 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import FormattedText from 'app/components/formatted_text';
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
+import PushNotifications from 'app/push_notifications';
 import networkConnectionListener, {checkConnection} from 'app/utils/network';
 import {t} from 'app/utils/i18n';
 import LocalConfig from 'assets/config';
@@ -48,6 +49,7 @@ export default class NetworkIndicator extends PureComponent {
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
             stopPeriodicStatusUpdates: PropTypes.func.isRequired,
         }).isRequired,
+        currentChannelId: PropTypes.string,
         isLandscape: PropTypes.bool,
         isOnline: PropTypes.bool,
         websocketErrorCount: PropTypes.number,
@@ -187,7 +189,14 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     handleAppStateChange = async (appState) => {
-        this.handleWebSocket(appState === 'active');
+        const {currentChannelId} = this.props;
+        const active = appState === 'active';
+
+        this.handleWebSocket(active);
+
+        if (active && currentChannelId) {
+            PushNotifications.clearChannelNotifications(currentChannelId);
+        }
     };
 
     handleConnectionChange = (isConnected) => {
@@ -209,7 +218,7 @@ export default class NetworkIndicator extends PureComponent {
                 this.connect();
             }
         }, CONNECTION_RETRY_TIMEOUT);
-    }
+    };
 
     initializeWebSocket = async () => {
         const {formatMessage} = this.context.intl;

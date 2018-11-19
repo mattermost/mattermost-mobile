@@ -1,12 +1,15 @@
 package com.mattermost.rnbeta;
 
 import android.app.Application;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.net.Uri;
+import android.service.notification.StatusBarNotification;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.NativeModule;
@@ -104,5 +107,30 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setShouldBlink(boolean blink) {
         mNotificationPreference.setShouldBlink(blink);
+    }
+
+    @ReactMethod
+    public void getDeliveredNotifications(final Promise promise) {
+        Context context = mApplication.getApplicationContext();
+        final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        StatusBarNotification[] statusBarNotifications = notificationManager.getActiveNotifications();
+        WritableArray result = Arguments.createArray();
+        for (StatusBarNotification sbn:statusBarNotifications) {
+            WritableMap map = Arguments.createMap();
+            Notification n = sbn.getNotification();
+            Bundle bundle = n.extras;
+            int identifier = sbn.getId();
+            String channelId = bundle.getString("channel_id");
+            map.putInt("identifier", identifier);
+            map.putString("channel_id", channelId);
+            result.pushMap(map);
+        }
+        promise.resolve(result);
+    }
+
+    @ReactMethod
+    public void removeDeliveredNotifications(int identifier, String channelId) {
+        Context context = mApplication.getApplicationContext();
+        CustomPushNotification.clearNotification(context, identifier, channelId);
     }
 }

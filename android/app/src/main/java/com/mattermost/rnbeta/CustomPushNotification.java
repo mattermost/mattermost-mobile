@@ -47,31 +47,46 @@ public class CustomPushNotification extends PushNotification {
     private static LinkedHashMap<String,List<Bundle>> channelIdToNotification = new LinkedHashMap<String,List<Bundle>>();
     private static AppLifecycleFacade lifecycleFacade;
     private static Context context;
+    private static int badgeCount = 0;
 
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
         this.context = context;
     }
 
-    public static void clearNotification(int notificationId, String channelId) {
+    public static void clearNotification(Context mContext, int notificationId, String channelId) {
         if (notificationId != -1) {
+           Object objCount = channelIdToNotificationCount.get(channelId);
+            Integer count = -1;
+
+            if (objCount != null) {
+                count = (Integer)objCount;
+            }
+
             channelIdToNotificationCount.remove(channelId);
             channelIdToNotification.remove(channelId);
-            if (context != null) {
-                final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            if (mContext != null) {
+                final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.cancel(notificationId);
+
+                if (count != -1) {
+                    int total = CustomPushNotification.badgeCount - count;
+                    int badgeCount = total < 0 ? 0 : total;
+                    ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), badgeCount);
+                    CustomPushNotification.badgeCount = badgeCount;
+                }
             }
         }
     }
 
-    public static void clearNotification(Context mContext, int notificationId, String channelId) {
-        if (notificationId != -1) {
-            channelIdToNotificationCount.remove(channelId);
-            channelIdToNotification.remove(channelId);
-            if (mContext != null) {
-                final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.cancel(notificationId);
-            }
+    public static void clearAllNotifications(Context mContext) {
+        channelIdToNotificationCount.clear();
+        channelIdToNotification.clear();
+        if (mContext != null) {
+            final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.cancelAll();
+            ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), 0);
         }
     }
 
@@ -119,7 +134,6 @@ public class CustomPushNotification extends PushNotification {
         channelIdToNotificationCount.remove(channelId);
         channelIdToNotification.remove(channelId);
         digestNotification();
-        clearAllNotifications();
     }
 
     @Override
@@ -179,9 +193,11 @@ public class CustomPushNotification extends PushNotification {
         String largeIcon = bundle.getString("largeIcon");
 
         Bundle b = bundle.getBundle("userInfo");
-        if (b != null) {
-            notification.addExtras(b);
+        if (b == null) {
+            b = new Bundle();
         }
+        b.putString("channel_id", channelId);
+        notification.addExtras(b);
 
         int smallIconResId;
         int largeIconResId;
@@ -207,7 +223,8 @@ public class CustomPushNotification extends PushNotification {
         }
 
         if (numberString != null) {
-            ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), Integer.parseInt(numberString));
+            CustomPushNotification.badgeCount = Integer.parseInt(numberString);
+            ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), CustomPushNotification.badgeCount);
         }
 
         int numMessages = getMessageCountInChannel(channelId);
@@ -354,15 +371,11 @@ public class CustomPushNotification extends PushNotification {
 
     private void cancelNotification(Bundle data, int notificationId) {
         final String channelId = data.getString("channel_id");
+        final String numberString = data.getString("badge");
 
-        String numberString = data.getString("badge");
-        if (numberString != null) {
-            ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), Integer.parseInt(numberString));
-        }
+        CustomPushNotification.badgeCount = Integer.parseInt(numberString);
+        CustomPushNotification.clearNotification(mContext.getApplicationContext(), notificationId, channelId);
 
-        channelIdToNotificationCount.remove(channelId);
-        channelIdToNotification.remove(channelId);
-        final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(notificationId);
+        ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), CustomPushNotification.badgeCount);
     }
 }
