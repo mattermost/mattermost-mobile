@@ -315,7 +315,7 @@ export default class Post extends PureComponent {
                         isConsecutive={mergeMessage}
                         isFlagged={isFlagged}
                         isPinned={post.is_pinned}
-                        rightColumnStyle={rightColumnStyle}
+                        rightColumnStyle={style.rightColumn}
                         skipFlaggedHeader={skipFlaggedHeader}
                         skipPinnedHeader={skipPinnedHeader}
                         theme={theme}

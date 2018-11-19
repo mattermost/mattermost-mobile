@@ -17,7 +17,10 @@ export default class PostPreHeader extends PureComponent {
         isConsecutive: PropTypes.bool,
         isFlagged: PropTypes.bool,
         isPinned: PropTypes.bool,
-        rightColumnStyle: PropTypes.array,
+        rightColumnStyle: PropTypes.oneOfType([
+            PropTypes.array,
+            PropTypes.object,
+        ]),
         skipFlaggedHeader: PropTypes.bool,
         skipPinnedHeader: PropTypes.bool,
         theme: PropTypes.object.isRequired,
