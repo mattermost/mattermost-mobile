@@ -37,6 +37,7 @@ export default class ChannelPostList extends PureComponent {
         navigator: PropTypes.object,
         postIds: PropTypes.array.isRequired,
         postVisibility: PropTypes.number,
+        refreshing: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -165,6 +166,7 @@ export default class ChannelPostList extends PureComponent {
             loadMorePostsVisible,
             navigator,
             postIds,
+            refreshing,
             theme,
         } = this.props;
 
@@ -193,6 +195,7 @@ export default class ChannelPostList extends PureComponent {
                     channelId={channelId}
                     navigator={navigator}
                     renderFooter={this.renderFooter}
+                    refreshing={refreshing}
                 />
             );
         }
