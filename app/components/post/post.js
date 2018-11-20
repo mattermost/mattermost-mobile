@@ -62,6 +62,7 @@ export default class Post extends PureComponent {
         highlightPinnedOrFlagged: PropTypes.bool,
         skipFlaggedHeader: PropTypes.bool,
         skipPinnedHeader: PropTypes.bool,
+        isCommentMention: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -196,6 +197,7 @@ export default class Post extends PureComponent {
             isFirstReply,
             isLastReply,
             theme,
+            isCommentMention,
         } = this.props;
 
         if (!this.isReplyPost()) {
@@ -211,6 +213,10 @@ export default class Post extends PureComponent {
 
         if (isLastReply) {
             replyBarStyle.push(style.replyBarLast);
+        }
+
+        if (isCommentMention) {
+            replyBarStyle.push(style.commentMentionBgColor);
         }
 
         return replyBarStyle;
@@ -398,6 +404,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         replyBarLast: {
             paddingBottom: 10,
+        },
+        commentMentionBgColor: {
+            backgroundColor: theme.mentionHighlightBg,
+            opacity: 1,
         },
         highlight: {
             backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5),

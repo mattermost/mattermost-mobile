@@ -7,7 +7,7 @@ import {bindActionCreators} from 'redux';
 import {createPost, removePost} from 'mattermost-redux/actions/posts';
 import {Posts} from 'mattermost-redux/constants';
 import {isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
-import {getPost, makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
+import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
@@ -39,11 +39,12 @@ function isConsecutivePost(state, ownProps) {
 
 function makeMapStateToProps() {
     const getCommentCountForPost = makeGetCommentCountForPost();
+    const isPostCommentMention = makeIsPostCommentMention();
     return function mapStateToProps(state, ownProps) {
         const post = getPost(state, ownProps.postId);
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
-
+        const isCommentMention = isPostCommentMention(state, post.id);
         let isFirstReply = true;
         let isLastReply = true;
         let commentedOnPost = null;
@@ -80,6 +81,7 @@ function makeMapStateToProps() {
             commentedOnPost,
             theme: getTheme(state),
             isFlagged: isPostFlagged(post.id, myPreferences),
+            isCommentMention,
         };
     };
 }
