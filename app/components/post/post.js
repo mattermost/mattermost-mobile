@@ -409,9 +409,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.mentionHighlightBg,
             opacity: 1,
         },
-        selected: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-        },
         highlight: {
             backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5),
         },
