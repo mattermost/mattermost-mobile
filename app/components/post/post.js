@@ -405,16 +405,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         replyBarLast: {
             paddingBottom: 10,
         },
-<<<<<<< HEAD
-=======
         commentMentionBgColor: {
-            backgroundColor: theme.mentionHighlightBg || 'rgb(255, 255, 0)',
+            backgroundColor: theme.mentionHighlightBg,
             opacity: 1,
         },
         selected: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
->>>>>>> MM-12755 Add reply mention highlight for replyBar
         highlight: {
             backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5),
         },
