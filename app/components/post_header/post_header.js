@@ -14,7 +14,6 @@ import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import FormattedDate from 'app/components/formatted_date';
 import ReplyIcon from 'app/components/reply_icon';
-import FlagIcon from 'app/components/flag_icon';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -40,7 +39,6 @@ export default class PostHeader extends PureComponent {
         theme: PropTypes.object.isRequired,
         username: PropTypes.string,
         userTimezone: PropTypes.string,
-        isFlagged: PropTypes.bool,
         enableTimezone: PropTypes.bool,
     };
 
@@ -181,7 +179,6 @@ export default class PostHeader extends PureComponent {
             shouldRenderReplyButton,
             showFullDate,
             theme,
-            isFlagged,
         } = this.props;
         const style = getStyleSheet(theme);
         const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
@@ -222,15 +219,6 @@ export default class PostHeader extends PureComponent {
                         <View style={style.timeContainer}>
                             {dateComponent}
                         </View>
-                        {isFlagged &&
-                            <View style={style.flagContainer}>
-                                <FlagIcon
-                                    height={11}
-                                    width={11}
-                                    color={theme.linkColor}
-                                />
-                            </View>
-                        }
                     </View>
                     {showReply &&
                     <TouchableOpacity

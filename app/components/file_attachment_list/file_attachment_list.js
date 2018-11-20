@@ -34,7 +34,6 @@ export default class FileAttachmentList extends Component {
         onLongPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        toggleSelected: PropTypes.func.isRequired,
         filesForPostRequest: PropTypes.object.isRequired,
     };
 
@@ -122,14 +121,6 @@ export default class FileAttachmentList extends Component {
         Keyboard.dismiss();
         previewImageAtIndex(this.props.navigator, this.items, idx, this.galleryFiles);
     });
-
-    handlePressIn = () => {
-        this.props.toggleSelected(true);
-    };
-
-    handlePressOut = () => {
-        this.props.toggleSelected(false);
-    };
 
     renderItems = () => {
         const {canDownloadFiles, deviceWidth, fileIds, files, navigator} = this.props;

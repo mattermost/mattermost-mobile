@@ -25,6 +25,7 @@ export default class PostListBase extends PureComponent {
         channelId: PropTypes.string,
         deepLinkURL: PropTypes.string,
         extraData: PropTypes.any,
+        highlightPinnedOrFlagged: PropTypes.bool,
         highlightPostId: PropTypes.string,
         initialIndex: PropTypes.number,
         isSearchResult: PropTypes.bool,
@@ -154,6 +155,7 @@ export default class PostListBase extends PureComponent {
 
     renderPost = (postId, previousPostId, nextPostId) => {
         const {
+            highlightPinnedOrFlagged,
             highlightPostId,
             isSearchResult,
             navigator,
@@ -173,6 +175,7 @@ export default class PostListBase extends PureComponent {
                 onHashtagPress={onHashtagPress}
                 onPermalinkPress={this.handlePermalinkPress}
                 highlight={highlight}
+                highlightPinnedOrFlagged={highlightPinnedOrFlagged}
                 renderReplies={renderReplies}
                 isSearchResult={isSearchResult}
                 shouldRenderReplyButton={shouldRenderReplyButton}
