@@ -28,6 +28,7 @@ function mapStateToProps(state) {
         postVisibility: state.views.channel.postVisibility[channelId],
         lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
         loadMorePostsVisible: state.views.channel.loadMorePostsVisible,
+        refreshing: state.views.channel.refreshing,
         theme: getTheme(state),
     };
 }

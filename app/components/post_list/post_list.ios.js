@@ -93,11 +93,10 @@ export default class PostList extends PostListBase {
             channelId,
             highlightPostId,
             postIds,
+            refreshing,
         } = this.props;
 
-        const refreshControl = {
-            refreshing: false,
-        };
+        const refreshControl = {refreshing};
 
         if (channelId) {
             refreshControl.onRefresh = this.handleRefresh;
