@@ -46,7 +46,7 @@ function channelInfoRow(props) {
         iconElement = (
             <Image
                 source={image}
-                style={{width: 15, height: 15, tintColor: imageTintColor || changeOpacity(theme.sidebarText, 0.5)}}
+                style={{width: 15, height: 15, tintColor: imageTintColor || changeOpacity(theme.centerChannelColor, 0.5)}}
             />
         );
     }

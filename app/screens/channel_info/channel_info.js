@@ -11,14 +11,15 @@ import {
     View,
 } from 'react-native';
 
+import {General} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-
-import {General} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import pinIcon from 'assets/images/post_menu/pin.png';
 
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';
@@ -137,6 +138,29 @@ export default class ChannelInfo extends PureComponent {
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg,
+            },
+        });
+    });
+
+    goToPinnedPosts = preventDoubleTap(() => {
+        const {formatMessage} = this.context.intl;
+        const {currentChannel, navigator, theme} = this.props;
+        const id = t('channel_header.pinnedPosts');
+        const defaultMessage = 'Pinned Posts';
+
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'PinnedPosts',
+            title: formatMessage({id, defaultMessage}),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                currentChannelId: currentChannel.id,
             },
         });
     });
@@ -363,41 +387,50 @@ export default class ChannelInfo extends PureComponent {
                 </View>);
         }
 
-        return (<View>
-            <ChannelInfoRow
-                action={this.handleFavorite}
-                defaultMessage='Favorite'
-                detail={this.state.isFavorite}
-                icon='star-o'
-                textId={t('mobile.routes.channelInfo.favorite')}
-                togglable={true}
-                theme={theme}
-            />
-            <View style={style.separator}/>
-            <ChannelInfoRow
-                action={this.handleMuteChannel}
-                defaultMessage='Mute channel'
-                detail={this.state.isMuted}
-                icon='bell-slash-o'
-                textId={t('channel_notifications.muteChannel.settings')}
-                togglable={true}
-                theme={theme}
-            />
-            {
+        return (
+            <React.Fragment>
+                <ChannelInfoRow
+                    action={this.handleFavorite}
+                    defaultMessage='Favorite'
+                    detail={this.state.isFavorite}
+                    icon='star-o'
+                    textId={t('mobile.routes.channelInfo.favorite')}
+                    togglable={true}
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+                <ChannelInfoRow
+                    action={this.handleMuteChannel}
+                    defaultMessage='Mute channel'
+                    detail={this.state.isMuted}
+                    icon='bell-slash-o'
+                    textId={t('channel_notifications.muteChannel.settings')}
+                    togglable={true}
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+                <ChannelInfoRow
+                    action={this.goToPinnedPosts}
+                    defaultMessage='Pinned Posts'
+                    image={pinIcon}
+                    textId={t('channel_header.pinnedPosts')}
+                    theme={theme}
+                />
+                {
 
-                /**
-                 <ChannelInfoRow
-                 action={() => true}
-                 defaultMessage='Notification Preferences'
-                 icon='bell-o'
-                 textId='channel_header.notificationPreferences'
-                 theme={theme}
-                 />
-                 <View style={style.separator}/>
-                 **/
-            }
-            {this.renderViewOrManageMembersRow() &&
-                <View>
+                    /**
+                     <ChannelInfoRow
+                     action={() => true}
+                     defaultMessage='Notification Preferences'
+                     icon='bell-o'
+                     textId='channel_header.notificationPreferences'
+                     theme={theme}
+                     />
+                     <View style={style.separator}/>
+                     **/
+                }
+                {this.renderViewOrManageMembersRow() &&
+                <React.Fragment>
                     <View style={style.separator}/>
                     <ChannelInfoRow
                         action={this.goToChannelMembers}
@@ -407,10 +440,10 @@ export default class ChannelInfo extends PureComponent {
                         textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
                         theme={theme}
                     />
-                </View>
-            }
-            {canManageUsers &&
-                <View>
+                </React.Fragment>
+                }
+                {canManageUsers &&
+                <React.Fragment>
                     <View style={style.separator}/>
                     <ChannelInfoRow
                         action={this.goToChannelAddMembers}
@@ -419,22 +452,23 @@ export default class ChannelInfo extends PureComponent {
                         textId={t('channel_header.addMembers')}
                         theme={theme}
                     />
-                </View>
-            }
-            {canEditChannel && (
-                <View>
-                    <View style={style.separator}/>
-                    <ChannelInfoRow
-                        action={this.handleChannelEdit}
-                        defaultMessage='Edit Channel'
-                        icon='edit'
-                        textId={t('mobile.channel_info.edit')}
-                        theme={theme}
-                    />
-                </View>
-            )}
-            <View style={style.separator}/>
-        </View>);
+                </React.Fragment>
+                }
+                {canEditChannel && (
+                    <React.Fragment>
+                        <View style={style.separator}/>
+                        <ChannelInfoRow
+                            action={this.handleChannelEdit}
+                            defaultMessage='Edit Channel'
+                            icon='edit'
+                            textId={t('mobile.channel_info.edit')}
+                            theme={theme}
+                        />
+                    </React.Fragment>
+                )}
+                <View style={style.separator}/>
+            </React.Fragment>
+        );
     };
 
     render() {

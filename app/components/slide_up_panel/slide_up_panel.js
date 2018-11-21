@@ -23,6 +23,7 @@ const CONTAINER_MARGIN = TOP_MARGIN - 10;
 
 export default class SlideUpPanel extends PureComponent {
     static propTypes = {
+        allowStayMiddle: PropTypes.bool,
         alwaysCaptureContainerMove: PropTypes.bool,
         containerHeight: PropTypes.number,
         children: PropTypes.oneOfType([
@@ -36,6 +37,7 @@ export default class SlideUpPanel extends PureComponent {
     };
 
     static defaultProps = {
+        allowStayMiddle: true,
         headerHeight: 0,
         initialPosition: 0.5,
         marginFromTop: TOP_MARGIN,
@@ -156,14 +158,14 @@ export default class SlideUpPanel extends PureComponent {
     };
 
     startAnimation = (initialY, positionY, isGoingDown, initial = false) => {
-        const {containerHeight, onRequestClose} = this.props;
+        const {allowStayMiddle, containerHeight, onRequestClose} = this.props;
         const {finalPosition, initialPosition} = this.state;
         const position = new Animated.Value(initial ? initialY : positionY);
         let endPosition = (!isGoingDown && !initial ? finalPosition : positionY);
 
         position.removeAllListeners();
         if (isGoingDown) {
-            if (positionY <= this.state.initialPosition) {
+            if (positionY <= this.state.initialPosition && allowStayMiddle) {
                 endPosition = initialPosition;
             } else {
                 endPosition = containerHeight;

@@ -21,8 +21,10 @@ export default class PostOptions extends PureComponent {
             addReaction: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
             flagPost: PropTypes.func.isRequired,
+            pinPost: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired,
+            unpinPost: PropTypes.func.isRequired,
         }).isRequired,
         additionalOption: PropTypes.object,
         canAddReaction: PropTypes.bool,
@@ -159,7 +161,7 @@ export default class PostOptions extends PureComponent {
                 <PostOption
                     key='unflag'
                     icon='flag'
-                    text={formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'})}
+                    text={formatMessage({id: 'mobile.post_info.unflag', defaultMessage: 'Unflag'})}
                     onPress={this.handleUnflagPost}
                 />
             );
@@ -169,8 +171,37 @@ export default class PostOptions extends PureComponent {
             <PostOption
                 key='flagged'
                 icon='flag'
-                text={formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'})}
+                text={formatMessage({id: 'mobile.post_info.flag', defaultMessage: 'Flag'})}
                 onPress={this.handleFlagPost}
+            />
+        );
+    };
+
+    getPinOption = () => {
+        const {formatMessage} = this.context.intl;
+        const {channelIsReadOnly, post} = this.props;
+
+        if (channelIsReadOnly) {
+            return null;
+        }
+
+        if (post.is_pinned) {
+            return (
+                <PostOption
+                    key='unpin'
+                    icon='pin'
+                    text={formatMessage({id: 'mobile.post_info.unpin', defaultMessage: 'Unpin from Channel'})}
+                    onPress={this.handleUnpinPost}
+                />
+            );
+        }
+
+        return (
+            <PostOption
+                key='pin'
+                icon='pin'
+                text={formatMessage({id: 'mobile.post_info.pin', defaultMessage: 'Pin to Channel'})}
+                onPress={this.handlePinPost}
             />
         );
     };
@@ -179,6 +210,7 @@ export default class PostOptions extends PureComponent {
         const actions = [
             this.getEditOption(),
             this.getFlagOption(),
+            this.getPinOption(),
             this.getAddReactionOption(),
             this.getCopyPermalink(),
             this.getCopyText(),
@@ -192,6 +224,7 @@ export default class PostOptions extends PureComponent {
         const actions = [
             this.getFlagOption(),
             this.getAddReactionOption(),
+            this.getPinOption(),
             this.getCopyPermalink(),
             this.getCopyText(),
             this.getEditOption(),
@@ -265,6 +298,13 @@ export default class PostOptions extends PureComponent {
         this.closeWithAnimation();
     };
 
+    handlePinPost = () => {
+        const {actions, post} = this.props;
+
+        actions.pinPost(post.id);
+        this.closeWithAnimation();
+    };
+
     handlePostDelete = () => {
         const {formatMessage} = this.context.intl;
         const {actions, isMyPost, post} = this.props;
@@ -325,6 +365,13 @@ export default class PostOptions extends PureComponent {
         this.closeWithAnimation();
     };
 
+    handleUnpinPost = () => {
+        const {actions, post} = this.props;
+
+        actions.unpinPost(post.id);
+        this.closeWithAnimation();
+    };
+
     refSlideUpPanel = (r) => {
         this.slideUpPanel = r;
     };
@@ -338,6 +385,7 @@ export default class PostOptions extends PureComponent {
         return (
             <View style={style.flex}>
                 <SlideUpPanel
+                    allowStayMiddle={false}
                     alwaysCaptureContainerMove={true}
                     ref={this.refSlideUpPanel}
                     marginFromTop={marginFromTop}
