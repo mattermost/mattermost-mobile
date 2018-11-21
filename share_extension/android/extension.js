@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
 import {Alert, NativeModules} from 'react-native';
 import {intlShape} from 'react-intl';
 
@@ -15,7 +14,6 @@ const ShareExtension = NativeModules.MattermostShare;
 export default class ShareApp extends PureComponent {
     static contextTypes = {
         intl: intlShape,
-        store: PropTypes.object.isRequired,
     };
 
     constructor(props) {

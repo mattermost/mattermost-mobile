@@ -52,14 +52,18 @@ export const getExtensionSortedPublicChannels = createSelector(
         }
 
         const locale = currentUser.locale || 'en';
-        const publicChannels = teamChannelIds.filter((id) => {
+        return teamChannelIds.reduce((publicChannels, id) => {
             if (!myMembers[id]) {
-                return false;
+                return publicChannels;
             }
+
             const channel = channels[id];
-            return teamChannelIds.includes(id) && channel.type === General.OPEN_CHANNEL;
-        }).map((id) => channels[id]).sort(sortChannelsByDisplayName.bind(null, locale));
-        return publicChannels;
+            if (channel.type === General.OPEN_CHANNEL) {
+                publicChannels.push(channel);
+            }
+
+            return publicChannels;
+        }, []).sort(sortChannelsByDisplayName.bind(null, locale));
     }
 );
 
@@ -74,14 +78,18 @@ export const getExtensionSortedPrivateChannels = createSelector(
         }
 
         const locale = currentUser.locale || 'en';
-        const publicChannels = teamChannelIds.filter((id) => {
+        return teamChannelIds.reduce((privateChannels, id) => {
             if (!myMembers[id]) {
-                return false;
+                return privateChannels;
             }
+
             const channel = channels[id];
-            return teamChannelIds.includes(id) && channel.type === General.PRIVATE_CHANNEL;
-        }).map((id) => channels[id]).sort(sortChannelsByDisplayName.bind(null, locale));
-        return publicChannels;
+            if (channel.type === General.PRIVATE_CHANNEL) {
+                privateChannels.push(channel);
+            }
+
+            return privateChannels;
+        }, []).sort(sortChannelsByDisplayName.bind(null, locale));
     }
 );
 
