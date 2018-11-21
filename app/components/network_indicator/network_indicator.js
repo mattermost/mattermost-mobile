@@ -9,6 +9,7 @@ import {
     Alert,
     Animated,
     AppState,
+    NetInfo,
     Platform,
     StyleSheet,
     View,
@@ -122,26 +123,28 @@ export default class NetworkIndicator extends PureComponent {
         clearTimeout(this.connectionRetryTimeout);
     }
 
-    connect = async (displayBar = false) => {
+    connect = (displayBar = false) => {
         clearTimeout(this.connectionRetryTimeout);
 
-        const {hasInternet, serverReachable} = await checkConnection(this.props.isOnline);
+        NetInfo.isConnected.fetch().then(async (isConnected) => {
+            const {hasInternet, serverReachable} = await checkConnection(isConnected);
 
-        this.props.actions.connection(hasInternet);
-        if (serverReachable) {
-            this.initializeWebSocket();
-        } else {
-            this.handleWebSocket(false);
+            this.props.actions.connection(hasInternet);
+            if (serverReachable) {
+                this.initializeWebSocket();
+            } else {
+                this.handleWebSocket(false);
 
-            if (displayBar) {
-                this.show();
+                if (displayBar) {
+                    this.show();
+                }
+
+                if (hasInternet) {
+                    // try to reconnect cause we have internet
+                    this.handleReconnect();
+                }
             }
-
-            if (hasInternet) {
-                // try to reconnect cause we have internet
-                this.handleReconnect();
-            }
-        }
+        });
     };
 
     connected = () => {
