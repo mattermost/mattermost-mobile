@@ -45,7 +45,7 @@ export default class Reactions extends PureComponent {
 
     componentDidMount() {
         const {actions, postId, reactions} = this.props;
-        if (!reactions?.length) {
+        if (!reactions?.size) {
             actions.getReactionsForPost(postId);
         }
     }
