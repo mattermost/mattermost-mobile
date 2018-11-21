@@ -9,11 +9,8 @@ import {
     Platform,
     SectionList,
     Text,
-    TouchableHighlight,
-    TouchableOpacity,
     View,
 } from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -37,12 +34,12 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDisplayName from './channel_display_name';
+import Modifier, {MODIFIER_LABEL_HEIGHT} from './modifier';
+import RecentItem, {RECENT_LABEL_HEIGHT} from './recent_item';
 import SearchResultPost from './search_result_post';
 
 const SECTION_HEIGHT = 20;
-const RECENT_LABEL_HEIGHT = 42;
 const RECENT_SEPARATOR_HEIGHT = 3;
-const MODIFIER_LABEL_HEIGHT = 58;
 const SCROLL_UP_MULTIPLIER = 6;
 const SEARCHING = 'searching';
 const NO_RESULTS = 'no results';
@@ -97,6 +94,7 @@ export default class Search extends PureComponent {
             cursorPosition: 0,
             value: props.initialValue,
             managedConfig: {},
+            recent: props.recent,
         };
     }
 
@@ -118,12 +116,13 @@ export default class Search extends PureComponent {
         }, 150);
     }
 
-    componentDidUpdate(prevProps) {
-        const {searchingStatus: status, recent, enableDateSuggestion} = this.props;
+    componentDidUpdate(prevProps, prevState) {
+        const {searchingStatus: status, enableDateSuggestion} = this.props;
+        const {recent} = this.state;
         const {searchingStatus: prevStatus} = prevProps;
         const shouldScroll = prevStatus !== status &&
-            (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED) &&
-            !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore;
+            (status === RequestStatus.SUCCESS || status === RequestStatus.FAILURE) &&
+            !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore && prevState.recent.length === recent.length;
 
         if (this.props.isLandscape !== prevProps.isLandscape) {
             this.refs.searchBar.blur();
@@ -131,17 +130,21 @@ export default class Search extends PureComponent {
 
         if (shouldScroll) {
             setTimeout(() => {
-                const recentLabelsHeight = (recent.length + (Platform.OS === 'ios' ? 1 : 0)) * RECENT_LABEL_HEIGHT;
-                const recentSeparatorsHeight = (recent.length + (Platform.OS === 'ios' ? 0 : 2)) * RECENT_SEPARATOR_HEIGHT;
+                const recentLabelsHeight = recent.length * RECENT_LABEL_HEIGHT;
+                const recentSeparatorsHeight = (recent.length - 1) * RECENT_SEPARATOR_HEIGHT;
                 const modifiersCount = enableDateSuggestion ? 5 : 2;
+                const modifiersHeight = modifiersCount * MODIFIER_LABEL_HEIGHT;
+                const modifiersSeparatorHeight = (modifiersCount - 1) * RECENT_SEPARATOR_HEIGHT;
+                const offset = modifiersHeight + modifiersSeparatorHeight + SECTION_HEIGHT + recentLabelsHeight + recentSeparatorsHeight;
+
+                Keyboard.dismiss();
                 if (this.refs.list) {
                     this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                         animated: true,
-                        offset: SECTION_HEIGHT + (modifiersCount * MODIFIER_LABEL_HEIGHT) +
-                            recentLabelsHeight + recentSeparatorsHeight,
+                        offset,
                     });
                 }
-            }, 100);
+            }, 250);
         }
     }
 
@@ -325,6 +328,14 @@ export default class Search extends PureComponent {
 
     removeSearchTerms = preventDoubleTap((item) => {
         const {actions, currentTeamId} = this.props;
+        const recent = [...this.state.recent];
+        const index = recent.indexOf(item);
+
+        if (index !== -1) {
+            recent.splice(index, 1);
+            this.setState({recent});
+        }
+
         actions.removeSearchTerms(currentTeamId, item.terms);
     });
 
@@ -343,35 +354,13 @@ export default class Search extends PureComponent {
 
     renderModifiers = ({item}) => {
         const {theme} = this.props;
-        const style = getStyleFromTheme(theme);
 
         return (
-            <TouchableHighlight
-                key={item.modifier}
-                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                onPress={() => this.setModifierValue(item.value)}
-            >
-                <View style={style.modifierItemContainer}>
-                    <View style={style.modifierItemWrapper}>
-                        <View style={style.modifierItemLabelContainer}>
-                            <View style={style.modifierLabelIconContainer}>
-                                <AwesomeIcon
-                                    style={style.modifierLabelIcon}
-                                    name='plus-square-o'
-                                />
-                            </View>
-                            <Text
-                                style={style.modifierItemLabel}
-                            >
-                                {item.modifier}
-                            </Text>
-                        </View>
-                        <Text style={style.modifierItemDescription}>
-                            {item.description}
-                        </Text>
-                    </View>
-                </View>
-            </TouchableHighlight>
+            <Modifier
+                item={item}
+                setModifierValue={this.setModifierValue}
+                theme={theme}
+            />
         );
     };
 
@@ -455,34 +444,14 @@ export default class Search extends PureComponent {
 
     renderRecentItem = ({item}) => {
         const {theme} = this.props;
-        const style = getStyleFromTheme(theme);
 
         return (
-            <TouchableHighlight
-                key={item.terms}
-                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                onPress={() => this.setRecentValue(item)}
-            >
-                <View
-                    style={style.recentItemContainer}
-                >
-                    <Text
-                        style={style.recentItemLabel}
-                    >
-                        {item.terms}
-                    </Text>
-                    <TouchableOpacity
-                        onPress={() => this.removeSearchTerms(item)}
-                        style={style.recentRemove}
-                    >
-                        <IonIcon
-                            name='ios-close-circle-outline'
-                            size={20}
-                            color={changeOpacity(theme.centerChannelColor, 0.6)}
-                        />
-                    </TouchableOpacity>
-                </View>
-            </TouchableHighlight>
+            <RecentItem
+                item={item}
+                removeSearchTerms={this.removeSearchTerms}
+                setRecentValue={this.setRecentValue}
+                theme={theme}
+            />
         );
     };
 
@@ -537,10 +506,12 @@ export default class Search extends PureComponent {
         }
     };
 
-    search = (terms, isOrSearch) => {
+    search = (text, isOrSearch) => {
         const {actions, currentTeamId, viewArchivedChannels} = this.props;
+        const recent = [...this.state.recent];
+        const terms = text.trim();
 
-        this.handleTextChanged(`${terms.trim()} `);
+        this.handleTextChanged(`${terms} `);
 
         // Trigger onSelectionChanged Manually when submitting
         this.handleSelectionChange({
@@ -553,7 +524,7 @@ export default class Search extends PureComponent {
 
         // timezone offset in seconds
         const params = {
-            terms: terms.trim(),
+            terms,
             is_or_search: isOrSearch,
             time_zone_offset: this.props.timezoneOffsetInSeconds,
             page: 0,
@@ -561,6 +532,12 @@ export default class Search extends PureComponent {
             include_deleted_channels: viewArchivedChannels,
         };
         actions.searchPostsWithParams(currentTeamId, params, true);
+        if (!recent.find((r) => r.terms === terms)) {
+            recent.push({
+                terms,
+            });
+            this.setState({recent});
+        }
     };
 
     setModifierValue = preventDoubleTap((modifier) => {
@@ -593,7 +570,6 @@ export default class Search extends PureComponent {
         const {
             isLandscape,
             postIds,
-            recent,
             searchingStatus,
             theme,
             isSearchGettingMore,
@@ -602,6 +578,7 @@ export default class Search extends PureComponent {
         const {intl} = this.context;
         const {
             cursorPosition,
+            recent,
             value,
         } = this.state;
         const style = getStyleFromTheme(theme);
@@ -824,38 +801,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 12,
             fontWeight: '600',
-        },
-        modifierItemContainer: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            height: MODIFIER_LABEL_HEIGHT,
-        },
-        modifierItemWrapper: {
-            flex: 1,
-            flexDirection: 'column',
-            paddingHorizontal: 16,
-        },
-        modifierItemLabelContainer: {
-            alignItems: 'center',
-            flexDirection: 'row',
-        },
-        modifierLabelIconContainer: {
-            alignItems: 'center',
-            marginRight: 5,
-        },
-        modifierLabelIcon: {
-            fontSize: 16,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-        modifierItemLabel: {
-            fontSize: 14,
-            color: theme.centerChannelColor,
-        },
-        modifierItemDescription: {
-            fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            marginTop: 5,
         },
         recentItemContainer: {
             alignItems: 'center',
