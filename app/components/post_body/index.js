@@ -27,71 +27,73 @@ import PostBody from './post_body';
 
 const POST_TIMEOUT = 20000;
 
-const memoizeHasEmojisOnly = memoizeResult((message, customEmojis) => hasEmojisOnly(message, customEmojis));
+function makeMapStateToProps() {
+    const memoizeHasEmojisOnly = memoizeResult((message, customEmojis) => hasEmojisOnly(message, customEmojis));
 
-function mapStateToProps(state, ownProps) {
-    const post = getPost(state, ownProps.postId) || {};
-    const channel = getChannel(state, post.channel_id) || {};
+    return (state, ownProps) => {
+        const post = getPost(state, ownProps.postId) || {};
+        const channel = getChannel(state, post.channel_id) || {};
 
-    let isFailed = post.failed;
-    let isPending = post.id === post.pending_post_id;
-    if (isPending && Date.now() - post.create_at > POST_TIMEOUT) {
-        // Something has prevented the post from being set to failed, so it's safe to assume
-        // that it has actually failed by this point
-        isFailed = true;
-        isPending = false;
-    }
+        let isFailed = post.failed;
+        let isPending = post.id === post.pending_post_id;
+        if (isPending && Date.now() - post.create_at > POST_TIMEOUT) {
+            // Something has prevented the post from being set to failed, so it's safe to assume
+            // that it has actually failed by this point
+            isFailed = true;
+            isPending = false;
+        }
 
-    const isUserCanManageMembers = canManageChannelMembers(state);
-    const isEphemeralPost = isPostEphemeral(post);
+        const isUserCanManageMembers = canManageChannelMembers(state);
+        const isEphemeralPost = isPostEphemeral(post);
 
-    const config = getConfig(state);
-    const license = getLicense(state);
-    const currentUserId = getCurrentUserId(state);
-    const currentTeamId = getCurrentTeamId(state);
-    const currentChannelId = getCurrentChannelId(state);
-    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
-    const isAdmin = checkIsAdmin(roles);
-    const isSystemAdmin = checkIsSystemAdmin(roles);
-    let canDelete = false;
+        const config = getConfig(state);
+        const license = getLicense(state);
+        const currentUserId = getCurrentUserId(state);
+        const currentTeamId = getCurrentTeamId(state);
+        const currentChannelId = getCurrentChannelId(state);
+        const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+        const isAdmin = checkIsAdmin(roles);
+        const isSystemAdmin = checkIsSystemAdmin(roles);
+        let canDelete = false;
 
-    if (post && !ownProps.channelIsArchived) {
-        canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
-    }
+        if (post && !ownProps.channelIsArchived) {
+            canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
+        }
 
-    let isPostAddChannelMember = false;
-    if (
-        channel &&
-        (channel.type === General.PRIVATE_CHANNEL || channel.type === General.OPEN_CHANNEL) &&
-        isUserCanManageMembers &&
-        isEphemeralPost &&
-        post.props &&
-        post.props.add_channel_member
-    ) {
-        isPostAddChannelMember = true;
-    }
+        let isPostAddChannelMember = false;
+        if (
+            channel &&
+            (channel.type === General.PRIVATE_CHANNEL || channel.type === General.OPEN_CHANNEL) &&
+            isUserCanManageMembers &&
+            isEphemeralPost &&
+            post.props &&
+            post.props.add_channel_member
+        ) {
+            isPostAddChannelMember = true;
+        }
 
-    const customEmojis = getCustomEmojisByName(state);
-    const {isEmojiOnly, shouldRenderJumboEmoji} = memoizeHasEmojisOnly(post.message, customEmojis);
+        const customEmojis = getCustomEmojisByName(state);
+        const {isEmojiOnly, shouldRenderJumboEmoji} = memoizeHasEmojisOnly(post.message, customEmojis);
 
-    return {
-        postProps: post.props || {},
-        postType: post.type || '',
-        fileIds: post.file_ids,
-        hasBeenDeleted: post.state === Posts.POST_DELETED,
-        hasBeenEdited: isEdited(post),
-        hasReactions: post.has_reactions,
-        isFailed,
-        isPending,
-        isPostAddChannelMember,
-        isPostEphemeral: isEphemeralPost,
-        isSystemMessage: isSystemMessage(post),
-        message: post.message,
-        isEmojiOnly,
-        shouldRenderJumboEmoji,
-        theme: getTheme(state),
-        canDelete,
+        return {
+            postProps: post.props || {},
+            postType: post.type || '',
+            fileIds: post.file_ids,
+            hasBeenDeleted: post.state === Posts.POST_DELETED,
+            hasBeenEdited: isEdited(post),
+            hasReactions: post.has_reactions,
+            isFailed,
+            isPending,
+            isPostAddChannelMember,
+            isPostEphemeral: isEphemeralPost,
+            isSystemMessage: isSystemMessage(post),
+            message: post.message,
+            isEmojiOnly,
+            shouldRenderJumboEmoji,
+            theme: getTheme(state),
+            canDelete,
+        };
     };
 }
 
-export default connect(mapStateToProps, null, null, {withRef: true})(PostBody);
+export default connect(makeMapStateToProps, null, null, {withRef: true})(PostBody);
