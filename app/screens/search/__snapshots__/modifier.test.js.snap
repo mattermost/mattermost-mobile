@@ -7,7 +7,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
-  <Component
+  <View
     style={
       Object {
         "alignItems": "center",
@@ -17,7 +17,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
       }
     }
   >
-    <Component
+    <View
       style={
         Object {
           "flex": 1,
@@ -26,7 +26,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         }
       }
     >
-      <Component
+      <View
         style={
           Object {
             "alignItems": "center",
@@ -34,7 +34,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
           }
         }
       >
-        <Component
+        <View
           style={
             Object {
               "alignItems": "center",
@@ -53,8 +53,8 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
               }
             }
           />
-        </Component>
-        <Component
+        </View>
+        <Text
           style={
             Object {
               "color": "#3d3c40",
@@ -63,9 +63,9 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
           }
         >
           channel-name
-        </Component>
-      </Component>
-      <Component
+        </Text>
+      </View>
+      <Text
         style={
           Object {
             "color": "rgba(61,60,64,0.5)",
@@ -75,8 +75,8 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         }
       >
         to find posts in specific channels
-      </Component>
-    </Component>
-  </Component>
+      </Text>
+    </View>
+  </View>
 </TouchableHighlight>
 `;

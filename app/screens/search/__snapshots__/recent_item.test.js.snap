@@ -7,7 +7,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
-  <Component
+  <View
     style={
       Object {
         "alignItems": "center",
@@ -17,7 +17,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
       }
     }
   >
-    <Component
+    <Text
       style={
         Object {
           "color": "#3d3c40",
@@ -29,7 +29,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
       }
     >
       test
-    </Component>
+    </Text>
     <TouchableOpacity
       activeOpacity={0.2}
       onPress={[Function]}
@@ -49,6 +49,6 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         size={20}
       />
     </TouchableOpacity>
-  </Component>
+  </View>
 </TouchableHighlight>
 `;
