@@ -14,7 +14,6 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
 import {throttle} from 'app/utils/general';
-import networkConnectionListener from 'app/utils/network';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
 import mattermostBucket from 'app/mattermost_bucket';
@@ -141,7 +140,6 @@ export default function configureAppStore(initialState) {
 
             return effect();
         },
-        detectNetwork: (callback) => networkConnectionListener(callback),
         persist: (store, options) => {
             const persistor = persistStore(store, {storage: AsyncStorage, ...options}, () => {
                 store.dispatch({

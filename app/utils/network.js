@@ -10,18 +10,17 @@ import {Client4} from 'mattermost-redux/client';
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
 
-const PING_TIMEOUT = 10000;
+const PING_TIMEOUT = 3000;
 
 let certificate = '';
-let checking = false;
+let previousState;
 export async function checkConnection(isConnected) {
-    if (!Client4.getBaseRoute().startsWith('http') || checking) {
+    if (!Client4.getBaseRoute().startsWith('http')) {
         // If we don't have a server yet, return the default implementation
-        return isConnected;
+        return {hasInternet: isConnected, serverReachable: false};
     }
 
     // Ping the Mattermost server to detect if the we have network connection even if the websocket cannot connect
-    checking = true;
     const server = `${Client4.getBaseRoute()}/system/ping?time=${Date.now()}`;
 
     const config = {
@@ -36,32 +35,33 @@ export async function checkConnection(isConnected) {
 
     try {
         await RNFetchBlob.config(config).fetch('GET', server);
-        checking = false;
-        return true;
+        return {hasInternet: isConnected, serverReachable: true};
     } catch (error) {
-        checking = false;
-        return false;
+        return {hasInternet: isConnected, serverReachable: false};
     }
 }
 
 function handleConnectionChange(onChange) {
     return async (isConnected) => {
-        // Set device internet connectivity immediately
-        onChange(isConnected);
+        if (isConnected !== previousState) {
+            previousState = isConnected;
 
-        // Check if connected to server
-        const result = await checkConnection(isConnected);
-        onChange(result);
+            // Check if connected to server
+            const result = await checkConnection(isConnected);
+            onChange(result);
+        }
     };
 }
 
 export default function networkConnectionListener(onChange) {
     const connectionChanged = handleConnectionChange(onChange);
 
-    NetInfo.isConnected.addEventListener('connectionChange', connectionChanged);
-    NetInfo.isConnected.fetch().then(connectionChanged);
+    NetInfo.isConnected.fetch().then((isConnected) => {
+        NetInfo.isConnected.addEventListener('connectionChange', connectionChanged);
+        connectionChanged(isConnected);
+    });
 
-    const removeEventListener = () => NetInfo.isConnected.removeEventListener('connectionChange', connectionChanged); // eslint-disable-line
+    const removeEventListener = () => NetInfo.isConnected.removeEventListener('connectionChange', connectionChanged);
 
     return {
         removeEventListener,
