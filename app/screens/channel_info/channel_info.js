@@ -11,7 +11,7 @@ import {
     View,
 } from 'react-native';
 
-import {General} from 'mattermost-redux/constants';
+import {General, Users} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import StatusBar from 'app/components/status_bar';
@@ -325,7 +325,7 @@ export default class ChannelInfo extends PureComponent {
         const {updateChannelNotifyProps} = actions;
 
         const opts = {
-            ignore_channel_mentions: ignoreChannelMentions ? Preferences.IGNORE_CHANNEL_MENTIONS_OFF : Preferences.IGNORE_CHANNEL_MENTIONS_ON,
+            ignore_channel_mentions: ignoreChannelMentions ? Users.IGNORE_CHANNEL_MENTIONS_OFF : Users.IGNORE_CHANNEL_MENTIONS_ON,
         };
 
         this.setState({ignoreChannelMentions: !ignoreChannelMentions});
