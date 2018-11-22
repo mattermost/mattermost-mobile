@@ -10,10 +10,7 @@ import {submitInteractiveDialog} from 'mattermost-redux/actions/integrations';
 import InteractiveDialog from './interactive_dialog';
 
 function mapStateToProps(state) {
-    const data = state.entities.integrations.dialog;
-    if (!data || !data.dialog) {
-        return {};
-    }
+    const data = state.entities.integrations.dialog || {dialog: {}};
 
     return {
         url: data.url,

@@ -2,14 +2,10 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {shallow} from 'enzyme';
-import {IntlProvider} from 'react-intl';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import InteractiveDialog from './interactive_dialog';
-
-const intlProvider = new IntlProvider({locale: 'en'}, {});
-const {intl} = intlProvider.getChildContext();
 
 describe('InteractiveDialog', () => {
     const baseProps = {
@@ -35,7 +31,6 @@ describe('InteractiveDialog', () => {
             <InteractiveDialog
                 {...baseProps}
             />,
-            {context: {intl}},
         );
 
         expect(wrapper.state().values.name1).toBe('defaulttext');
@@ -48,7 +43,6 @@ describe('InteractiveDialog', () => {
                 {...baseProps}
                 actions={{submitInteractiveDialog}}
             />,
-            {context: {intl}},
         );
 
         const dialog = {
@@ -71,7 +65,6 @@ describe('InteractiveDialog', () => {
                 actions={{submitInteractiveDialog}}
                 notifyOnCancel={true}
             />,
-            {context: {intl}},
         );
 
         const dialog = {
@@ -94,7 +87,6 @@ describe('InteractiveDialog', () => {
                 actions={{submitInteractiveDialog}}
                 notifyOnCancel={false}
             />,
-            {context: {intl}},
         );
 
         wrapper.instance().onNavigatorEvent({type: 'NavBarButtonPress', id: 'close-dialog'});

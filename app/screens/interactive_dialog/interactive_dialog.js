@@ -3,7 +3,6 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
 import {ScrollView, View} from 'react-native';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
@@ -29,8 +28,9 @@ export default class InteractiveDialog extends PureComponent {
         }).isRequired,
     };
 
-    static contextTypes = {
-        intl: intlShape.isRequired,
+    static defaultProps = {
+        url: '',
+        elements: [],
     };
 
     constructor(props) {

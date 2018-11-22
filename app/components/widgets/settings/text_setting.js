@@ -140,7 +140,6 @@ export default class TextSetting extends PureComponent {
                 <View style={style.inputContainer}>
                     <View style={disabled ? style.disabled : null}>
                         <TextInput
-                            ref={this.channelNameRef}
                             value={value}
                             placeholder={placeholder}
                             onChangeText={this.onChangeText}

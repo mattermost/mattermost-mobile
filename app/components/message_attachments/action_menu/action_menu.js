@@ -3,7 +3,6 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
 
 import AutocompleteSelector from 'app/components/autocomplete_selector';
 
@@ -19,10 +18,6 @@ export default class ActionMenu extends PureComponent {
         postId: PropTypes.string.isRequired,
         selected: PropTypes.object,
         navigator: PropTypes.object,
-    };
-
-    static contextTypes = {
-        intl: intlShape,
     };
 
     handleSelect = (selected) => {

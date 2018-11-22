@@ -32,6 +32,7 @@ export default class AutocompleteSelector extends PureComponent {
         onSelected: PropTypes.func,
         helpText: PropTypes.node,
         errorText: PropTypes.node,
+        roundedBorders: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -41,6 +42,7 @@ export default class AutocompleteSelector extends PureComponent {
     static defaultProps = {
         optional: false,
         showRequiredAsterisk: false,
+        roundedBorders: true,
     };
 
     constructor(props) {
@@ -122,6 +124,7 @@ export default class AutocompleteSelector extends PureComponent {
             errorText,
             optional,
             showRequiredAsterisk,
+            roundedBorders,
         } = this.props;
         const {selectedText} = this.state;
         const style = getStyleSheet(theme);
@@ -132,6 +135,11 @@ export default class AutocompleteSelector extends PureComponent {
         if (selectedText) {
             text = selectedText;
             selectedStyle = style.dropdownSelected;
+        }
+
+        let inputStyle = style.input;
+        if (roundedBorders) {
+            inputStyle = style.roundedInput;
         }
 
         let optionalContent;
@@ -186,7 +194,7 @@ export default class AutocompleteSelector extends PureComponent {
                     style={style.flex}
                     onPress={this.goToSelectorScreen}
                 >
-                    <View style={style.input}>
+                    <View style={inputStyle}>
                         <Text
                             style={selectedStyle}
                             numberOfLines={1}
@@ -208,6 +216,16 @@ export default class AutocompleteSelector extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    const input = {
+        borderWidth: 1,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.1),
+        backgroundColor: changeOpacity(theme.centerChannelBg, 0.9),
+        paddingLeft: 10,
+        paddingRight: 30,
+        paddingVertical: 7,
+        height: 33,
+    };
+
     return {
         container: {
             width: '100%',
@@ -215,16 +233,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginRight: 8,
             marginTop: 10,
         },
-        input: {
-            borderWidth: 1,
+        roundedInput: {
+            ...input,
             borderRadius: 5,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: changeOpacity(theme.centerChannelBg, 0.9),
-            paddingLeft: 10,
-            paddingRight: 30,
-            paddingVertical: 7,
-            height: 33,
         },
+        input,
         dropdownPlaceholder: {
             marginLeft: 5,
             color: changeOpacity(theme.centerChannelColor, 0.5),

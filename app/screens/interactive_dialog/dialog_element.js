@@ -3,7 +3,6 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
 
 import TextSetting from 'app/components/widgets/settings/text_setting';
 import AutocompleteSelector from 'app/components/autocomplete_selector';
@@ -28,10 +27,6 @@ export default class DialogElement extends PureComponent {
         onChange: PropTypes.func,
         navigator: PropTypes.object,
         theme: PropTypes.object,
-    };
-
-    static contextTypes = {
-        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -134,6 +129,7 @@ export default class DialogElement extends PureComponent {
                     showRequiredAsterisk={true}
                     selected={this.state.selected}
                     navigator={navigator}
+                    roundedBorders={false}
                 />
             );
         }
