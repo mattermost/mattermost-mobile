@@ -19,7 +19,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-import pinIcon from 'assets/images/post_menu/pin.png';
+import pinIcon from 'assets/images/channel_info/pin.png';
 
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';
