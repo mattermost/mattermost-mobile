@@ -46,6 +46,7 @@ export default class NetworkIndicator extends PureComponent {
             connection: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
+            setCurrentUserStatus: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
             stopPeriodicStatusUpdates: PropTypes.func.isRequired,
         }).isRequired,
@@ -124,20 +125,24 @@ export default class NetworkIndicator extends PureComponent {
     }
 
     connect = (displayBar = false) => {
+        const {connection} = this.props.actions;
         clearTimeout(this.connectionRetryTimeout);
 
         NetInfo.isConnected.fetch().then(async (isConnected) => {
             const {hasInternet, serverReachable} = await checkConnection(isConnected);
 
-            this.props.actions.connection(hasInternet);
+            connection(hasInternet);
+            this.hasInternet = hasInternet;
+            this.serverReachable = serverReachable;
+
             if (serverReachable) {
                 this.initializeWebSocket();
             } else {
-                this.handleWebSocket(false);
-
                 if (displayBar) {
                     this.show();
                 }
+
+                this.handleWebSocket(false);
 
                 if (hasInternet) {
                     // try to reconnect cause we have internet
@@ -148,6 +153,7 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     connected = () => {
+        this.props.actions.setCurrentUserStatus(true);
         Animated.sequence([
             Animated.timing(
                 this.backgroundColor, {
@@ -299,7 +305,9 @@ export default class NetworkIndicator extends PureComponent {
                 toValue: this.getNavBarHeight(),
                 duration: 300,
             }
-        ).start();
+        ).start(() => {
+            this.props.actions.setCurrentUserStatus(false);
+        });
     };
 
     render() {
