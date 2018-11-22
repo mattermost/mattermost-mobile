@@ -226,9 +226,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 33,
         },
         dropdownPlaceholder: {
+            marginLeft: 5,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         dropdownSelected: {
+            marginLeft: 5,
             color: theme.centerChannelColor,
         },
         icon: {

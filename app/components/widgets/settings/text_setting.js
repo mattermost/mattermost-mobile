@@ -181,7 +181,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg,
+            backgroundColor: '#fff',
         },
         input: {
             ...input,
@@ -202,6 +202,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         titleContainer: {
             flexDirection: 'row',
             marginTop: 15,
+            marginBottom: 10,
         },
         optional: {
             color: changeOpacity(theme.centerChannelColor, 0.5),

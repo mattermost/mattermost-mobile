@@ -4,11 +4,11 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {ScrollView} from 'react-native';
+import {ScrollView, View} from 'react-native';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
@@ -150,32 +150,34 @@ export default class InteractiveDialog extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         return (
-            <ScrollView style={style.container}>
-                <StatusBar/>
-                {elements.map((e) => {
-                    return (
-                        <DialogElement
-                            key={'dialogelement' + e.name}
-                            displayName={e.display_name}
-                            name={e.name}
-                            type={e.type}
-                            subtype={e.subtype}
-                            helpText={e.help_text}
-                            errorText={this.state.errors[e.name]}
-                            placeholder={e.placeholder}
-                            minLength={e.min_length}
-                            maxLength={e.max_length}
-                            dataSource={e.data_source}
-                            optional={e.optional}
-                            options={e.options}
-                            value={this.state.values[e.name]}
-                            onChange={this.onChange}
-                            navigator={navigator}
-                            theme={theme}
-                        />
-                    );
-                })}
-            </ScrollView>
+            <View style={style.container}>
+                <ScrollView style={style.scrollView}>
+                    <StatusBar/>
+                    {elements.map((e) => {
+                        return (
+                            <DialogElement
+                                key={'dialogelement' + e.name}
+                                displayName={e.display_name}
+                                name={e.name}
+                                type={e.type}
+                                subtype={e.subtype}
+                                helpText={e.help_text}
+                                errorText={this.state.errors[e.name]}
+                                placeholder={e.placeholder}
+                                minLength={e.min_length}
+                                maxLength={e.max_length}
+                                dataSource={e.data_source}
+                                optional={e.optional}
+                                options={e.options}
+                                value={this.state.values[e.name]}
+                                onChange={this.onChange}
+                                navigator={navigator}
+                                theme={theme}
+                            />
+                        );
+                    })}
+                </ScrollView>
+            </View>
         );
     }
 }
@@ -183,7 +185,9 @@ export default class InteractiveDialog extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            backgroundColor: theme.centerChannelBg,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+        },
+        scrollView: {
             marginBottom: 20,
             marginTop: 10,
         },
