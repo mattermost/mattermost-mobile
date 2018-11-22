@@ -28,7 +28,7 @@ export default class FileAttachmentList extends Component {
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         fileIds: PropTypes.array.isRequired,
-        files: PropTypes.array.isRequired,
+        files: PropTypes.array,
         isFailed: PropTypes.bool,
         navigator: PropTypes.object,
         onLongPress: PropTypes.func,
@@ -49,8 +49,10 @@ export default class FileAttachmentList extends Component {
     }
 
     componentDidMount() {
-        const {postId} = this.props;
-        this.props.actions.loadFilesForPostIfNecessary(postId);
+        const {files, postId} = this.props;
+        if (!files || !files.length) {
+            this.props.actions.loadFilesForPostIfNecessary(postId);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
