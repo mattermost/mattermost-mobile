@@ -254,6 +254,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         labelContainer: {
             flexDirection: 'row',
             marginTop: 15,
+            marginBottom: 10,
         },
         label: {
             fontSize: 14,

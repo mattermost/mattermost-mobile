@@ -130,6 +130,15 @@ export default class TextSetting extends PureComponent {
             );
         }
 
+        let disabledTextContent;
+        if (disabled && disabledText) {
+            disabledTextContent = (
+                <Text style={style.helpText}>
+                    {disabledText}
+                </Text>
+            );
+        }
+
         return (
             <View>
                 <View style={style.titleContainer}>
@@ -154,12 +163,8 @@ export default class TextSetting extends PureComponent {
                             keyboardType={keyboardType}
                         />
                     </View>
-                    {disabled &&
-                    <Text style={style.helpText}>
-                        {disabledText}
-                    </Text>
-                    }
                 </View>
+                {disabledTextContent}
                 {helpTextContent}
                 {errorTextContent}
             </View>
@@ -188,7 +193,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         multiline: {
             ...input,
-            minHeight: 125,
+            height: 125,
         },
         disabled: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -212,13 +217,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginHorizontal: 15,
-            marginVertical: 10,
+            marginTop: 10,
         },
         errorText: {
             fontSize: 12,
             color: theme.errorTextColor,
             marginHorizontal: 15,
-            marginVertical: 10,
+            marginTop: 10,
         },
         asterisk: {
             color: theme.errorTextColor,
