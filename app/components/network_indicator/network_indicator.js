@@ -116,6 +116,7 @@ export default class NetworkIndicator extends PureComponent {
         AppState.removeEventListener('change', this.handleAppStateChange);
 
         clearTimeout(this.connectionRetryTimeout);
+        this.connectionRetryTimeout = null;
     }
 
     connect = (displayBar = false) => {
