@@ -291,20 +291,3 @@ export const makeGetMatchTermForDateMention = () => {
         return lastMatchTerm;
     };
 };
-
-export const getDeletedPublicChannelsIds = createSelector(
-    getMyChannels,
-    getOtherChannels,
-    (myChannels, otherChannels) => {
-        const channels = myChannels.filter((c) => {
-            return (c.type === General.OPEN_CHANNEL);
-        }).concat(otherChannels);
-
-        return new Set(channels.reduce((acc, c) => {
-            if (c.delete_at !== 0) {
-                acc.push(c.id);
-            }
-            return acc;
-        }, []));
-    }
-);

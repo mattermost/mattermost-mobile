@@ -35,7 +35,6 @@ export default class ChannelMention extends PureComponent {
         privateChannels: PropTypes.array,
         publicChannels: PropTypes.array,
         directAndGroupMessages: PropTypes.array,
-        deletedPublicChannels: PropTypes.instanceOf(Set),
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
@@ -64,7 +63,7 @@ export default class ChannelMention extends PureComponent {
     }, 200);
 
     componentWillReceiveProps(nextProps) {
-        const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, directAndGroupMessages, requestStatus, myMembers, deletedPublicChannels} = nextProps;
+        const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, directAndGroupMessages, requestStatus, myMembers} = nextProps;
 
         if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
             // if the term changes but is null or the mention has been completed we render this component as null
@@ -89,7 +88,7 @@ export default class ChannelMention extends PureComponent {
         if (matchTerm === '' || (myChannels !== this.props.myChannels || otherChannels !== this.props.otherChannels ||
         privateChannels !== this.props.privateChannels || publicChannels !== this.props.publicChannels ||
         directAndGroupMessages !== this.props.directAndGroupMessages ||
-        myMembers !== this.props.myMembers || deletedPublicChannels !== this.props.deletedPublicChannels)) {
+        myMembers !== this.props.myMembers)) {
             const sections = [];
             if (isSearch) {
                 if (publicChannels.length) {
