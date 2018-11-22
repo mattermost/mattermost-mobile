@@ -112,14 +112,8 @@ export default class NetworkIndicator extends PureComponent {
     componentWillUnmount() {
         this.mounted = false;
 
-        const {closeWebSocket, stopPeriodicStatusUpdates} = this.props.actions;
-
         this.networkListener.removeEventListener();
-
         AppState.removeEventListener('change', this.handleAppStateChange);
-
-        closeWebSocket();
-        stopPeriodicStatusUpdates();
 
         clearTimeout(this.connectionRetryTimeout);
     }
