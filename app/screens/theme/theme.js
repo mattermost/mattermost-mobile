@@ -23,15 +23,30 @@ export default class Theme extends React.PureComponent {
             savePreferences: PropTypes.func.isRequired,
         }).isRequired,
         allowedThemes: PropTypes.arrayOf(PropTypes.object),
+        customTheme: PropTypes.object,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
+    state = {
+        customTheme: null,
+    };
+
+    static getDerivedStateFromProps(props, state) {
+        if (!state.customTheme && props.customTheme) {
+            return {
+                customTheme: props.customTheme,
+            };
+        }
+        return null;
+    }
+
     setTheme = (key) => {
         const {userId, teamId, actions: {savePreferences}, allowedThemes} = this.props;
-        const selectedTheme = allowedThemes.find((theme) => theme.key === key);
+        const {customTheme} = this.state;
+        const selectedTheme = allowedThemes.concat(customTheme).find((theme) => theme.key === key);
 
         savePreferences(userId, [{
             user_id: userId,
@@ -41,7 +56,7 @@ export default class Theme extends React.PureComponent {
         }]);
     }
 
-    renderThemeRow = ({item}) => {
+    renderThemeRow = ({item, title}) => {
         const {theme} = this.props;
         const style = getStyleSheet(theme);
 
@@ -51,7 +66,7 @@ export default class Theme extends React.PureComponent {
                     label={(
                         <FormattedText
                             id={`user.settings.display.${item.type}`}
-                            defaultMessage={item.type}
+                            defaultMessage={title || item.type}
                         />
                     )}
                     action={this.setTheme}
@@ -69,6 +84,7 @@ export default class Theme extends React.PureComponent {
 
     render() {
         const {theme, allowedThemes} = this.props;
+        const {customTheme} = this.state;
         const style = getStyleSheet(theme);
         return (
             <View style={style.container}>
@@ -84,6 +100,15 @@ export default class Theme extends React.PureComponent {
                             keyExtractor={this.keyExtractor}
                         />
                     </Section>
+
+                    {customTheme &&
+                        <Section
+                            disableHeader={true}
+                            theme={theme}
+                        >
+                            {this.renderThemeRow({item: customTheme, title: 'Custom'})}
+                        </Section>
+                    }
                 </View>
             </View>
         );

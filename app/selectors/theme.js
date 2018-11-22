@@ -10,7 +10,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 export const getAllowedThemes = createSelector(
     getConfig,
     getTheme,
-    (config, activeTheme) => {
+    (config) => {
         const allThemes = Object.keys(Preferences.THEMES).map((key) => ({
             ...Preferences.THEMES[key],
             key,
@@ -20,12 +20,20 @@ export const getAllowedThemes = createSelector(
         if (allowedThemeKeys.length) {
             acceptableThemes = allThemes.filter((theme) => allowedThemeKeys.includes(theme.key));
         }
+        return acceptableThemes;
+    }
+);
+
+export const getCustomTheme = createSelector(
+    getConfig,
+    getTheme,
+    (config, activeTheme) => {
         if (config.AllowCustomThemes === 'true' && activeTheme.type === 'custom') {
-            acceptableThemes.push({
+            return {
                 ...activeTheme,
                 key: 'custom',
-            });
+            };
         }
-        return acceptableThemes;
+        return null;
     }
 );

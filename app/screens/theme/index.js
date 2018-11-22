@@ -7,7 +7,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
-import {getAllowedThemes} from 'app/selectors/theme';
+import {getAllowedThemes, getCustomTheme} from 'app/selectors/theme';
 
 import Theme from './theme';
 
@@ -16,6 +16,7 @@ const mapStateToProps = (state) => ({
     teamId: getCurrentTeamId(state),
     theme: getTheme(state),
     allowedThemes: getAllowedThemes(state),
+    customTheme: getCustomTheme(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
