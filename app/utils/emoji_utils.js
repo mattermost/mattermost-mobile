@@ -58,8 +58,7 @@ export function hasEmojisOnly(message, customEmojis) {
 
     let emojiCount = 0;
     for (const chunk of chunks) {
-        const matchNamedEmoji = chunk.match(RE_NAMED_EMOJI);
-        if (matchNamedEmoji && matchNamedEmoji[0] === chunk) {
+        if (doesMatchNamedEmoji(chunk)) {
             const emojiName = chunk.substring(1, chunk.length - 1);
             if (EmojiIndicesByAlias.has(emojiName)) {
                 emojiCount++;
@@ -90,4 +89,14 @@ export function hasEmojisOnly(message, customEmojis) {
         isEmojiOnly: true,
         shouldRenderJumboEmoji: emojiCount > 0 && emojiCount <= MAX_JUMBO_EMOJIS,
     };
+}
+
+export function doesMatchNamedEmoji(emojiName) {
+    const match = emojiName.match(RE_NAMED_EMOJI);
+
+    if (match && match[0] === emojiName) {
+        return true;
+    }
+
+    return false;
 }
