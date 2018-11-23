@@ -4,7 +4,14 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {deletePost, flagPost, unflagPost, removePost} from 'mattermost-redux/actions/posts';
+import {
+    deletePost,
+    flagPost,
+    pinPost,
+    unflagPost,
+    unpinPost,
+    removePost,
+} from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
 import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
@@ -72,8 +79,10 @@ function mapDispatchToProps(dispatch) {
             addReaction,
             deletePost,
             flagPost,
+            pinPost,
             removePost,
             unflagPost,
+            unpinPost,
         }, dispatch),
     };
 }

@@ -16,6 +16,7 @@ import edit from 'assets/images/post_menu/edit.png';
 import emoji from 'assets/images/post_menu/emoji.png';
 import flag from 'assets/images/post_menu/flag.png';
 import link from 'assets/images/post_menu/link.png';
+import pin from 'assets/images/post_menu/pin.png';
 import trash from 'assets/images/post_menu/trash.png';
 
 const icons = {
@@ -24,6 +25,7 @@ const icons = {
     emoji,
     flag,
     link,
+    pin,
     trash,
 };
 

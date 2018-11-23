@@ -46,6 +46,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('NotificationSettingsMobile', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_mobile').default), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(require('app/screens/options_modal').default), store, Provider);
     Navigation.registerComponent('Permalink', () => wrapWithContextProvider(require('app/screens/permalink').default), store, Provider);
+    Navigation.registerComponent('PinnedPosts', () => wrapWithContextProvider(require('app/screens/pinned_posts').default), store, Provider);
     Navigation.registerComponent('PostOptions', () => wrapWithContextProvider(require('app/screens/post_options').default), store, Provider);
     Navigation.registerComponent('ReactionList', () => wrapWithContextProvider(require('app/screens/reaction_list').default), store, Provider);
     Navigation.registerComponent('RecentMentions', () => wrapWithContextProvider(require('app/screens/recent_mentions').default), store, Provider);
