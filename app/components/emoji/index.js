@@ -10,6 +10,7 @@ import {Client4} from 'mattermost-redux/client';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
+import {doesMatchNamedEmoji} from 'app/utils/emoji_utils';
 
 import Emoji from './emoji';
 
@@ -29,6 +30,7 @@ function mapStateToProps(state, ownProps) {
         isCustomEmoji = true;
     } else {
         displayTextOnly = state.entities.emojis.nonExistentEmoji.has(emojiName) ||
+            (doesMatchNamedEmoji(`:${emojiName}:`) && !customEmojis.has(emojiName)) ||
             getConfig(state).EnableCustomEmoji !== 'true' ||
             getCurrentUserId(state) === '' ||
             !isMinimumServerVersion(Client4.getServerVersion(), 4, 7);

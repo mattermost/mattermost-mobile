@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {hasEmojisOnly} from './emoji_utils';
+import {doesMatchNamedEmoji, hasEmojisOnly} from './emoji_utils';
 
 describe('hasEmojisOnly with named emojis', () => {
     const testCases = [{
@@ -215,6 +215,43 @@ describe('hasEmojisOnly with empty and mixed emojis', () => {
     for (const testCase of testCases) {
         it(`${testCase.name} - ${testCase.message}`, () => {
             expect(hasEmojisOnly(testCase.message, customEmojis)).toEqual(testCase.expected);
+        });
+    }
+});
+
+describe('doesMatchNamedEmoji', () => {
+    const testCases = [{
+        input: ':named_emoji:',
+        output: true,
+    }, {
+        input: 'named_emoji',
+        output: false,
+    }, {
+        input: ':named_emoji',
+        output: false,
+    }, {
+        input: 'named_emoji:',
+        output: false,
+    }, {
+        input: '::named_emoji:',
+        output: false,
+    }, {
+        input: 'named emoji',
+        output: false,
+    }, {
+        input: ':named emoji:',
+        output: false,
+    }, {
+        input: ':named_emoji:!',
+        output: false,
+    }, {
+        input: ':named_emoji:aa',
+        output: false,
+    }];
+
+    for (const testCase of testCases) {
+        it(`test for - ${testCase.input}`, () => {
+            expect(doesMatchNamedEmoji(testCase.input)).toEqual(testCase.output);
         });
     }
 });
