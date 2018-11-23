@@ -159,9 +159,14 @@ export default class AutocompleteSelector extends PureComponent {
         let labelContent;
         if (label) {
             labelContent = (
-                <Text style={style.label}>
-                    {label}
-                </Text>
+                <View style={style.labelContainer}>
+                    <Text style={style.label}>
+                        {label}
+                    </Text>
+                    {asterisk}
+                    {optionalContent}
+                </View>
+
             );
         }
 
@@ -185,11 +190,7 @@ export default class AutocompleteSelector extends PureComponent {
 
         return (
             <View style={style.container}>
-                <View style={style.labelContainer}>
-                    {labelContent}
-                    {asterisk}
-                    {optionalContent}
-                </View>
+                {labelContent}
                 <TouchableOpacity
                     style={style.flex}
                     onPress={this.goToSelectorScreen}
