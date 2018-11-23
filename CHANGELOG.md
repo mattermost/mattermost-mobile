@@ -11,6 +11,7 @@
  - Added a sliding animation for the reaction list.
  - Added support for flagged and pinned posts.
  - Added support for jumboemojis.
+ - Added support for interactive dialogs.
 
 ### Improvements
  - Added ability to include custom headers with requests.
@@ -18,11 +19,15 @@
  - Network handling improvements.
  - Change mobile client status to offline when the app loses connection.
  - Added 'View Members' button to archived channels.
+ - Added support for keeping the postlist in place without scrolling when new content is available.
 
 ### Bug Fixes
  - Fixed an issue where clicking on a file did not show downloading progress.
  - Fixed an issue where deleting a post caused an app crash.
  - Fixed an issue on Android where on fresh install the share extension would not properly show available channels.
+ - Fixed an issue where recently archived channels remained in in: autocomplete when they had been archived.
+ - Fixed an issue where text should render when no actual custom emoji matched the named emoji pattern.
+ - Fixed an issue where attempting to create a channel with an existing name blanked the modal.
 
 
 ## 1.14.0 Release
