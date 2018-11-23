@@ -223,7 +223,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         paddingLeft: 10,
         paddingRight: 30,
         paddingVertical: 7,
-        height: 33,
+        height: 40,
     };
 
     return {
@@ -239,16 +239,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         input,
         dropdownPlaceholder: {
+            top: 3,
             marginLeft: 5,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         dropdownSelected: {
+            top: 3,
             marginLeft: 5,
             color: theme.centerChannelColor,
         },
         icon: {
             position: 'absolute',
-            top: 10,
+            top: 13,
             right: 12,
         },
         labelContainer: {

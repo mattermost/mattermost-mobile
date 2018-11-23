@@ -193,6 +193,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         multiline: {
             ...input,
+            paddingTop: 10,
+            paddingBottom: 13,
             height: 125,
         },
         disabled: {
