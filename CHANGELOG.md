@@ -1,5 +1,30 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.15.0 Release
+- Release Date: December 16, 2018
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+**Combatibility Note: Mobile App v1.13+ is required for Mattermost Server v5.4+**
+
+### Highlights
+ - Added mention and reply mention highlighting.
+ - Added a sliding animation for the reaction list.
+ - Added support for flagged and pinned posts.
+ - Added support for jumboemojis.
+
+### Improvements
+ - Added ability to include custom headers with requests.
+ - Clear notifications from a specific channel.
+ - Network handling improvements.
+ - Change mobile client status to offline when the app loses connection.
+ - Added 'View Members' button to archived channels.
+
+### Bug Fixes
+ - Fixed an issue where clicking on a file did not show downloading progress.
+ - Fixed an issue where deleting a post caused an app crash.
+ - Fixed an issue on Android where on fresh install the share extension would not properly show available channels.
+
+
 ## 1.14.0 Release
 - Release Date: November 16, 2018
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
