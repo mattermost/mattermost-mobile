@@ -12,7 +12,14 @@ import PostListBase from './post_list_base';
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_UP_MULTIPLIER = 3.5;
 const SCROLL_POSITION_CONFIG = {
+
+    // To avoid scrolling the list when new messages arrives
+    // if the user is not at the bottom
     minIndexForVisible: 0,
+
+    // If the user is at the bottom or 60px from the bottom
+    // auto scroll show the new message
+    autoscrollToTopThreshold: 60,
 };
 
 export default class PostList extends PostListBase {
