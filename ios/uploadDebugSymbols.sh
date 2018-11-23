@@ -1,7 +1,5 @@
 #!/bin/sh
 
-export SENTRY_PROPERTIES=sentry.properties
-
 if [[ "${SENTRY_ENABLED}" = "true" ]]; then
 	echo "Uploading debugging symbols to Sentry"
 
