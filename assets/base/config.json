@@ -10,7 +10,7 @@
     "AboutEnterpriseURL": "http://about.mattermost.com/",
     "PlatformNoticeURL": "https://about.mattermost.com/platform-notice-txt/",
     "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
-    "SegmentApiKey": "oPPT2MA24VYZTBGDyXtUDa7u50lkPIE4",
+    "SegmentApiKey": "",
     "ExperimentalUsernamePressIsMention": false,
 
     "HideEmailLoginExperimental": false,
