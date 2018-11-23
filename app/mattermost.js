@@ -121,7 +121,7 @@ const configureAnalytics = (config) => {
     const {
         initAnalytics,
     } = lazyLoadAnalytics();
-    if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.SegmentApiKey) {
+    if (!__DEV__ && config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.SegmentApiKey) {
         initAnalytics(config);
     } else {
         global.analytics = null;
