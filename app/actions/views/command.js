@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {IntegrationTypes} from 'mattermost-redux/action_types';
 import {executeCommand as executeCommandService} from 'mattermost-redux/actions/integrations';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
@@ -27,6 +28,12 @@ export function executeCommand(message, channelId, rootId) {
         const cmd = msg.substring(0, cmdLength).toLowerCase();
         msg = cmd + msg.substring(cmdLength, msg.length);
 
-        return executeCommandService(msg, args)(dispatch, getState);
+        const {data, error} = await dispatch(executeCommandService(msg, args));
+
+        if (data.trigger_id) {
+            dispatch({type: IntegrationTypes.RECEIVED_DIALOG_TRIGGER_ID, data: data.trigger_id});
+        }
+
+        return {data, error};
     };
 }

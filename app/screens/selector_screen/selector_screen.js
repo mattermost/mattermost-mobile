@@ -27,7 +27,7 @@ import {createProfilesSections, loadingText} from 'app/utils/member_list';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
-export default class MenuActionSelector extends PureComponent {
+export default class SelectorScreen extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getProfiles: PropTypes.func.isRequired,
