@@ -30,6 +30,16 @@ function makeGetFirstLink() {
     };
 }
 
+function getOpenGraphData(metadata, url) {
+    if (!metadata || !metadata.embeds) {
+        return null;
+    }
+
+    return metadata.embeds.find((embed) => {
+        return embed.type === 'opengraph' && embed.url === url ? embed.data : null;
+    });
+}
+
 function makeMapStateToProps() {
     const getFirstLink = makeGetFirstLink();
 
@@ -46,7 +56,7 @@ function makeMapStateToProps() {
             ...getDimensions(state),
             googleDeveloperKey: config.GoogleDeveloperKey,
             link,
-            openGraphData: getOpenGraphMetadataForUrl(state, link),
+            openGraphData: getOpenGraphMetadataForUrl(state, link) || getOpenGraphData(ownProps.metadata, link)?.data,
             showLinkPreviews: previewsEnabled && config.EnableLinkPreviews === 'true',
             theme: getTheme(state),
         };
