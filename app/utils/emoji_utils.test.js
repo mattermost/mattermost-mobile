@@ -241,6 +241,12 @@ describe('doesMatchNamedEmoji', () => {
     }, {
         input: ':named emoji:',
         output: false,
+    }, {
+        input: ':named_emoji:!',
+        output: false,
+    }, {
+        input: ':named_emoji:aa',
+        output: false,
     }];
 
     for (const testCase of testCases) {
