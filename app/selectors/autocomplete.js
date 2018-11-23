@@ -4,6 +4,7 @@
 import {createSelector} from 'reselect';
 
 import {General} from 'mattermost-redux/constants';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {
     getCurrentUser, getCurrentUserId, getProfilesInCurrentChannel,
@@ -184,7 +185,8 @@ export const filterPublicChannels = createSelector(
     getOtherChannels,
     getCurrentLocale,
     (state, matchTerm) => matchTerm,
-    (myChannels, otherChannels, locale, matchTerm) => {
+    getConfig,
+    (myChannels, otherChannels, locale, matchTerm, config) => {
         if (matchTerm === null) {
             return null;
         }
@@ -203,6 +205,11 @@ export const filterPublicChannels = createSelector(
             }).concat(otherChannels);
         }
 
+        const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
+        if (!viewArchivedChannels) {
+            channels = channels.filter((c) => c.delete_at === 0);
+        }
+
         return channels.sort(sortChannelsByDisplayName.bind(null, locale)).map((c) => c.id);
     }
 );
@@ -210,7 +217,8 @@ export const filterPublicChannels = createSelector(
 export const filterPrivateChannels = createSelector(
     getMyChannels,
     (state, matchTerm) => matchTerm,
-    (myChannels, matchTerm) => {
+    getConfig,
+    (myChannels, matchTerm, config) => {
         if (matchTerm === null) {
             return null;
         }
@@ -225,6 +233,11 @@ export const filterPrivateChannels = createSelector(
             channels = myChannels.filter((c) => {
                 return c.type === General.PRIVATE_CHANNEL;
             });
+        }
+
+        const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
+        if (!viewArchivedChannels) {
+            channels = channels.filter((c) => c.delete_at === 0);
         }
 
         return channels.map((c) => c.id);
@@ -278,20 +291,3 @@ export const makeGetMatchTermForDateMention = () => {
         return lastMatchTerm;
     };
 };
-
-export const getDeletedPublicChannelsIds = createSelector(
-    getMyChannels,
-    getOtherChannels,
-    (myChannels, otherChannels) => {
-        const channels = myChannels.filter((c) => {
-            return (c.type === General.OPEN_CHANNEL);
-        }).concat(otherChannels);
-
-        return new Set(channels.reduce((acc, c) => {
-            if (c.delete_at !== 0) {
-                acc.push(c.id);
-            }
-            return acc;
-        }, []));
-    }
-);
