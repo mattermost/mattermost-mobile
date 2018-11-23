@@ -81,6 +81,10 @@ export default class NetworkIndicator extends PureComponent {
         this.mounted = true;
 
         AppState.addEventListener('change', this.handleAppStateChange);
+
+        // Attempt to connect when this component mounts
+        // if the websocket is already connected it does not try and connect again
+        this.connect();
     }
 
     componentDidUpdate(prevProps) {
