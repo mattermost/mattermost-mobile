@@ -30,7 +30,7 @@ import {
     isGroupChannel,
 } from 'mattermost-redux/utils/channel_utils';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
+import {combineSystemPosts, getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from 'app/constants/post_textbox';
@@ -166,12 +166,14 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 
         let loadMorePostsVisible = true;
         let received;
+        let combined;
         if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
             // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
             received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
 
             if (received) {
-                loadMorePostsVisible = received.order.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+                combined = combineSystemPosts(received.order, received.posts, channelId);
+                loadMorePostsVisible = combined.postsForChannel.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
             }
         } else {
             const {lastConnectAt} = state.device.websocket;
@@ -191,7 +193,8 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
 
             if (received) {
-                loadMorePostsVisible = postsIds.length + received.order.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+                combined = combineSystemPosts(received.order, received.posts, channelId);
+                loadMorePostsVisible = postsIds.length + combined.postsForChannel.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
             }
         }
 
