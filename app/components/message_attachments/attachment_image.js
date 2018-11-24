@@ -37,7 +37,7 @@ export default class AttachmentImage extends PureComponent {
         const {imageUrl, metadata} = this.props;
 
         this.setViewPortMaxWidth();
-        if (metadata?.images[imageUrl]) {
+        if (metadata?.images && metadata.images[imageUrl]) {
             const img = metadata.images[imageUrl];
             this.setImageDimensionsFromMeta(null, img);
         }
@@ -96,7 +96,7 @@ export default class AttachmentImage extends PureComponent {
     setImageUrl = (imageURL) => {
         const {imageUrl: attachmentImageUrl, metadata} = this.props;
 
-        if (metadata?.images[attachmentImageUrl]) {
+        if (metadata?.images && metadata.images[attachmentImageUrl]) {
             this.setImageDimensionsFromMeta(imageURL, metadata.images[attachmentImageUrl]);
             return;
         }
