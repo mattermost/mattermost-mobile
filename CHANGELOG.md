@@ -4,19 +4,22 @@
 - Release Date: December 16, 2018
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
-**Combatibility Note: Mobile App v1.13+ is required for Mattermost Server v5.4+**
+### Combatibility
+
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+**
 
 ### Highlights
  - Added mention and reply mention highlighting.
  - Added a sliding animation for the reaction list.
- - Added support for flagged and pinned posts.
+ - Added support for pinned posts.
  - Added support for jumboemojis.
  - Added support for interactive dialogs.
+ - Improved UI for the long press menu and emoji reaction viewer
 
 ### Improvements
  - Added ability to include custom headers with requests.
  - Clear notifications from a specific channel.
- - Network handling improvements.
+ - Auto-reconnect when unable to reach the server.
  - Change mobile client status to offline when the app loses connection.
  - Added 'View Members' button to archived channels.
  - Added support for keeping the postlist in place without scrolling when new content is available.
