@@ -108,7 +108,7 @@ export default class EditPost extends PureComponent {
     };
 
     focus = () => {
-        this.messageInput.refs.wrappedInstance.focus();
+        this.messageInput.focus();
     };
 
     messageRef = (ref) => {
