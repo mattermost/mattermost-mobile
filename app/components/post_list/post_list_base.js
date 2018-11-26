@@ -49,6 +49,7 @@ export default class PostListBase extends PureComponent {
     static defaultProps = {
         onLoadMoreUp: () => true,
         renderFooter: () => null,
+        refreshing: false,
     };
 
     componentWillMount() {
