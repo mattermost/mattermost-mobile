@@ -8,7 +8,6 @@ import {
     Platform,
     ScrollView,
     StyleSheet,
-    View,
 } from 'react-native';
 
 import {Client4} from 'mattermost-redux/client';
@@ -167,23 +166,18 @@ export default class FileAttachmentList extends Component {
         const {fileIds, isFailed} = this.props;
 
         return (
-            <View style={styles.flex}>
-                <ScrollView
-                    horizontal={true}
-                    scrollEnabled={fileIds.length > 1}
-                    style={[styles.flex, (isFailed && styles.failed)]}
-                >
-                    {this.renderItems()}
-                </ScrollView>
-            </View>
+            <ScrollView
+                horizontal={true}
+                scrollEnabled={fileIds.length > 1}
+                style={[(isFailed && styles.failed)]}
+            >
+                {this.renderItems()}
+            </ScrollView>
         );
     }
 }
 
 const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
     failed: {
         opacity: 0.5,
     },
