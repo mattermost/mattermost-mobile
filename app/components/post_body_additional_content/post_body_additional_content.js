@@ -506,7 +506,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
 const styles = StyleSheet.create({
     imageContainer: {
         alignItems: 'flex-start',
-        flex: 1,
         justifyContent: 'flex-start',
         marginBottom: 6,
         marginTop: 10,
