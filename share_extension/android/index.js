@@ -36,17 +36,13 @@ export default class ShareApp extends PureComponent {
         const {dispatch, getState} = store;
         const state = getState();
         if (state.views.root.hydrationComplete) {
-            const {credentials} = state.entities.general;
             const {currentTeamId} = state.entities.teams;
 
             if (this.unsubscribeFromStore) {
                 this.unsubscribeFromStore();
             }
 
-            if (credentials.token && credentials.url) {
-                Client4.setToken(credentials.token);
-                Client4.setUrl(credentials.url);
-            }
+            this.setCredentialsForClient();
 
             dispatch(extensionSelectTeamId(currentTeamId));
 
@@ -55,6 +51,16 @@ export default class ShareApp extends PureComponent {
             }
         }
     };
+
+    setCredentialsForClient() {
+        const state = store.getState();
+        const {credentials} = state.entities.general;
+
+        if (credentials.token && credentials.url) {
+            Client4.setToken(credentials.token);
+            Client4.setUrl(credentials.url);
+        }
+    }
 
     render() {
         if (!this.state.init) {
