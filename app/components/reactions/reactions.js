@@ -7,7 +7,6 @@ import {
     Image,
     ScrollView,
     TouchableOpacity,
-    View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -168,24 +167,19 @@ export default class Reactions extends PureComponent {
         }
 
         return (
-            <View style={styles.container}>
-                <ScrollView
-                    alwaysBounceHorizontal={false}
-                    horizontal={true}
-                    overScrollMode='never'
-                >
-                    {reactionElements}
-                </ScrollView>
-            </View>
+            <ScrollView
+                alwaysBounceHorizontal={false}
+                horizontal={true}
+                overScrollMode='never'
+            >
+                {reactionElements}
+            </ScrollView>
         );
     }
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
-            flex: 1,
-        },
         addReaction: {
             tintColor: changeOpacity(theme.centerChannelColor, 0.5),
             width: 23,

@@ -190,17 +190,15 @@ export default class PostBody extends PureComponent {
 
         return (
             <View style={style.row}>
-                <View style={style.flex}>
-                    <PostAddChannelMember
-                        baseTextStyle={messageStyle}
-                        navigator={navigator}
-                        onPostPress={onPress}
-                        textStyles={textStyles}
-                        postId={postProps.add_channel_member.post_id}
-                        userIds={postProps.add_channel_member.user_ids}
-                        usernames={postProps.add_channel_member.usernames}
-                    />
-                </View>
+                <PostAddChannelMember
+                    baseTextStyle={messageStyle}
+                    navigator={navigator}
+                    onPostPress={onPress}
+                    textStyles={textStyles}
+                    postId={postProps.add_channel_member.post_id}
+                    userIds={postProps.add_channel_member.user_ids}
+                    usernames={postProps.add_channel_member.usernames}
+                />
             </View>
         );
     };
@@ -341,17 +339,15 @@ export default class PostBody extends PureComponent {
             const {allUserIds, allUsernames, messageData} = postProps.user_activity;
             messageComponent = (
                 <View style={style.row}>
-                    <View style={style.flex}>
-                        <CombinedSystemMessage
-                            allUserIds={allUserIds}
-                            allUsernames={allUsernames}
-                            linkStyle={textStyles.link}
-                            messageData={messageData}
-                            navigator={navigator}
-                            textStyles={textStyles}
-                            theme={theme}
-                        />
-                    </View>
+                    <CombinedSystemMessage
+                        allUserIds={allUserIds}
+                        allUsernames={allUsernames}
+                        linkStyle={textStyles.link}
+                        messageData={messageData}
+                        navigator={navigator}
+                        textStyles={textStyles}
+                        theme={theme}
+                    />
                 </View>
             );
         } else if (isEmojiOnly) {
@@ -369,7 +365,7 @@ export default class PostBody extends PureComponent {
             messageComponent = (
                 <View style={style.row}>
                     <View
-                        style={[style.flex, (isPendingOrFailedPost && style.pendingPost), (isLongPost && {maxHeight})]}
+                        style={[(isPendingOrFailedPost && style.pendingPost), (isLongPost && {maxHeight})]}
                         removeClippedSubviews={isLongPost}
                     >
                         <Markdown
@@ -413,10 +409,8 @@ export default class PostBody extends PureComponent {
         return (
             <View style={style.messageContainerWithReplyBar}>
                 <View style={replyBarStyle}/>
-                <View style={[style.flex, style.row]}>
-                    <View style={style.flex}>
-                        {body}
-                    </View>
+                <View style={[style.row]}>
+                    {body}
                     {isFailed &&
                         <TouchableOpacity
                             onPress={onFailedPostPress}
@@ -437,10 +431,6 @@ export default class PostBody extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {
-            flex: 1,
-            overflow: 'hidden',
-        },
         row: {
             flexDirection: 'row',
         },
@@ -459,7 +449,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',
-            flex: 1,
         },
         pendingPost: {
             opacity: 0.5,

@@ -311,7 +311,7 @@ export default class Post extends PureComponent {
 
         return (
             <TouchableHighlight
-                style={highlighted}
+                style={[style.postStyle, highlighted]}
                 onPress={this.handlePress}
                 onLongPress={this.showPostOptions}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
@@ -358,9 +358,11 @@ export default class Post extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        postStyle: {
+            overflow: 'hidden',
+        },
         container: {
             flexDirection: 'row',
-            overflow: 'hidden',
         },
         pendingPost: {
             opacity: 0.5,
@@ -378,13 +380,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginRight: 10,
             marginLeft: 47,
             marginTop: 10,
-        },
-        consecutivePostWithFlag: {
-            width: 11,
-            height: 11,
-            position: 'absolute',
-            top: -6,
-            left: -11,
         },
         profilePictureContainer: {
             marginBottom: 5,

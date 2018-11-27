@@ -36,7 +36,6 @@ const {
     IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
     IOSX_TOP_PORTRAIT,
-    STATUS_BAR_HEIGHT,
 } = ViewTypes;
 
 export default class NetworkIndicator extends PureComponent {
@@ -70,6 +69,7 @@ export default class NetworkIndicator extends PureComponent {
 
         const navBar = this.getNavBarHeight(props.isLandscape);
         this.top = new Animated.Value(navBar - HEIGHT);
+        this.opacity = 0;
 
         this.backgroundColor = new Animated.Value(0);
         this.firstRun = true;
@@ -169,6 +169,7 @@ export default class NetworkIndicator extends PureComponent {
             ),
         ]).start(() => {
             this.backgroundColor.setValue(0);
+            this.opacity = 0;
         });
     };
 
@@ -188,7 +189,7 @@ export default class NetworkIndicator extends PureComponent {
         } else if (isX) {
             return IOSX_TOP_PORTRAIT;
         } else if (isLandscape) {
-            return IOS_TOP_LANDSCAPE + STATUS_BAR_HEIGHT;
+            return IOS_TOP_LANDSCAPE;
         }
 
         return IOS_TOP_PORTRAIT;
@@ -299,6 +300,8 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     show = () => {
+        this.opacity = 1;
+
         Animated.timing(
             this.top, {
                 toValue: this.getNavBarHeight(),
@@ -318,7 +321,6 @@ export default class NetworkIndicator extends PureComponent {
 
         let i18nId;
         let defaultMessage;
-        let values;
         let action;
 
         if (isOnline) {
@@ -358,12 +360,11 @@ export default class NetworkIndicator extends PureComponent {
         }
 
         return (
-            <Animated.View style={[styles.container, {top: this.top, backgroundColor: background}]}>
+            <Animated.View style={[styles.container, {top: this.top, backgroundColor: background, opacity: this.opacity}]}>
                 <Animated.View style={styles.wrapper}>
                     <FormattedText
                         defaultMessage={defaultMessage}
                         id={i18nId}
-                        values={values}
                         style={styles.message}
                     />
                     {action}
@@ -393,12 +394,6 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
         flex: 1,
-    },
-    actionButton: {
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#FFFFFF',
-        paddingRight: 0,
     },
     actionContainer: {
         alignItems: 'flex-end',
