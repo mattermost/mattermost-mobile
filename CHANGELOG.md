@@ -31,6 +31,11 @@
  - Fixed an issue where recently archived channels remained in in: autocomplete when they had been archived.
  - Fixed an issue where text should render when no actual custom emoji matched the named emoji pattern.
  - Fixed an issue where attempting to create a channel with an existing name blanked the modal.
+ - Fixed an issue on iOS where text got cut-off after replying to a message.
+ - Fixed an issue on Android where the share extension did not properly show available channels on a fresh install.
+ - Fixed an issue where search modifier for channels was showing Direct Messages without usernames.
+ - Fixed an issue where "Close Channel" did not work properly when viewing two archived channels in a row.
+ - Fixed an issue with "Critical Error" screen when trying to upload a file from "+" to the left of message input box.
 
 
 ## 1.14.0 Release
