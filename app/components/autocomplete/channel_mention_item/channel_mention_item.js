@@ -24,9 +24,7 @@ export default class ChannelMentionItem extends PureComponent {
 
     completeMention = () => {
         const {onPress, displayName, name, type} = this.props;
-        if (type === General.DM_CHANNEL) {
-            onPress('@' + displayName.replace(/ /g, ''));
-        } else if (type === General.DM_CHANNEL) {
+        if (type === General.DM_CHANNEL || type === General.GM_CHANNEL) {
             onPress('@' + displayName.replace(/ /g, ''));
         } else {
             onPress(name);
@@ -45,6 +43,9 @@ export default class ChannelMentionItem extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         if (type === General.DM_CHANNEL || type === General.GM_CHANNEL) {
+            if (!displayName) {
+                return null;
+            }
             return (
                 <TouchableOpacity
                     key={channelId}
