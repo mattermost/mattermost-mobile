@@ -12,7 +12,7 @@
  - Added mention and reply mention highlighting.
  - Added a sliding animation for the reaction list.
  - Added support for pinned posts.
- - Added support for jumboemojis.
+ - Added support for jumbo emojis.
  - Added support for interactive dialogs.
  - Improved UI for the long press menu and emoji reaction viewer
 
