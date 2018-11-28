@@ -1,11 +1,15 @@
 package com.mattermost.rnbeta;
 
 import com.mattermost.share.SharePackage;
+import com.mattermost.share.RealPathUtil;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.os.Bundle;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import com.reactnativedocumentpicker.ReactNativeDocumentPicker;
 import com.oblador.keychain.KeychainPackage;
@@ -40,8 +44,7 @@ import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
 
-import java.util.Arrays;
-import java.util.List;
+import android.util.Log;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
@@ -94,6 +97,12 @@ public class MainApplication extends NavigationApplication implements INotificat
   public void onCreate() {
     super.onCreate();
     instance = this;
+
+    // Delete any previous temp files created by the app
+    File tempFolder = new File(getApplicationContext().getCacheDir(), "mmShare");
+    RealPathUtil.deleteTempFiles(tempFolder);
+    Log.i("ReactNative", "Cleaning temp cache " + tempFolder.getAbsolutePath());
+
     // Create an object of the custom facade impl
     notificationsLifecycleFacade = NotificationsLifecycleFacade.getInstance();
     // Attach it to react-native-navigation

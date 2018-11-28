@@ -45,9 +45,7 @@ public class RealPathUtil {
                         return id.replaceFirst("raw:", "");
                     }
                     try {
-                        final Uri contentUri = ContentUris.withAppendedId(
-                                Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-                        return getDataColumn(context, contentUri, null, null);
+                        return getPathFromSavingTempFile(context, uri);
                     } catch (NumberFormatException e) {
                         Log.e("ReactNative", "DownloadsProvider unexpected uri " + uri.toString());
                         return null;
