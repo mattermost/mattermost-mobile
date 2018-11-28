@@ -4,6 +4,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     Text,
     TouchableHighlight,
     View,
@@ -152,7 +153,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             padding: 3,
             position: 'absolute',
             left: 45,
-            top: -7.5,
+            ...Platform.select({
+                ios: {
+                    top: -7.5,
+                },
+                android: {
+                    top: -2,
+                },
+            }),
         },
         mention: {
             color: theme.mentionColor,
