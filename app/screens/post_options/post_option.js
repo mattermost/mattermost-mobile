@@ -7,7 +7,9 @@ import {
     Image,
     StyleSheet,
     Text,
+    Platform,
     TouchableHighlight,
+    TouchableNativeFeedback,
     View,
 } from 'react-native';
 
@@ -41,12 +43,28 @@ export default class PostOption extends PureComponent {
         const {destructive, icon, onPress, text} = this.props;
         const image = icons[icon];
 
+        const Touchable = Platform.select({
+            ios: TouchableHighlight,
+            android: TouchableNativeFeedback,
+        });
+
+        const touchableProps = Platform.select({
+            ios: {
+                underlayColor: 'rgba(0, 0, 0, 0.05)',
+            },
+            android: {
+                background: TouchableNativeFeedback.Ripple( //eslint-disable-line new-cap
+                    'rgba(0, 0, 0, 0.05)',
+                    true,
+                ),
+            },
+        });
+
         return (
             <View style={style.container} >
-                <TouchableHighlight
-                    onPress={onPress}
-                    underlayColor='rgba(0, 0, 0, 0.05)'
-                    style={style.flex}
+                <Touchable
+                    onPressOut={onPress}
+                    {...touchableProps}
                 >
                     <View style={style.row}>
                         <View style={style.icon}>
@@ -58,7 +76,7 @@ export default class PostOption extends PureComponent {
                             </Text>
                         </View>
                     </View>
-                </TouchableHighlight>
+                </Touchable>
                 <View style={style.footer}/>
             </View>
         );
@@ -69,9 +87,6 @@ const style = StyleSheet.create({
     container: {
         height: 51,
         width: '100%',
-    },
-    flex: {
-        flex: 1,
     },
     destructive: {
         color: '#D0021B',

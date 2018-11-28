@@ -13,7 +13,6 @@ import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
 import PostOption from './post_option';
 
 const OPTION_HEIGHT = 50;
-const INITIAL_OPTION_COUNT = 6;
 
 export default class PostOptions extends PureComponent {
     static propTypes = {
@@ -294,15 +293,19 @@ export default class PostOptions extends PureComponent {
     handleFlagPost = () => {
         const {actions, post} = this.props;
 
-        actions.flagPost(post.id);
         this.closeWithAnimation();
+        requestAnimationFrame(() => {
+            actions.flagPost(post.id);
+        });
     };
 
     handlePinPost = () => {
         const {actions, post} = this.props;
 
-        actions.pinPost(post.id);
         this.closeWithAnimation();
+        requestAnimationFrame(() => {
+            actions.pinPost(post.id);
+        });
     };
 
     handlePostDelete = () => {
@@ -361,15 +364,19 @@ export default class PostOptions extends PureComponent {
     handleUnflagPost = () => {
         const {actions, post} = this.props;
 
-        actions.unflagPost(post.id);
         this.closeWithAnimation();
+        requestAnimationFrame(() => {
+            actions.unflagPost(post.id);
+        });
     };
 
     handleUnpinPost = () => {
         const {actions, post} = this.props;
 
-        actions.unpinPost(post.id);
         this.closeWithAnimation();
+        requestAnimationFrame(() => {
+            actions.unpinPost(post.id);
+        });
     };
 
     refSlideUpPanel = (r) => {
@@ -379,7 +386,7 @@ export default class PostOptions extends PureComponent {
     render() {
         const {deviceHeight} = this.props;
         const options = this.getPostOptions();
-        const initialPosition = (INITIAL_OPTION_COUNT + 1) * OPTION_HEIGHT;
+        const initialPosition = (options.length + 1) * OPTION_HEIGHT;
         const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT);
 
         return (
