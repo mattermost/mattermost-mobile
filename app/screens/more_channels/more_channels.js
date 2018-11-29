@@ -80,7 +80,7 @@ export default class MoreChannels extends PureComponent {
     }
 
     componentDidMount() {
-        this.getChannels();
+        this.doGetChannels();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -92,7 +92,7 @@ export default class MoreChannels extends PureComponent {
         }
 
         if (nextProps.channels !== this.props.channels) {
-            channels = nextProps.channels.slice(0, (this.page + 1) * General.CHANNELS_CHUNK_SIZE);
+            channels = nextProps.channels;
             if (term) {
                 channels = this.filterChannels(nextProps.channels, term);
             }
@@ -116,15 +116,10 @@ export default class MoreChannels extends PureComponent {
         this.props.navigator.dismissModal({animationType: 'slide-down'});
     };
 
-    filterChannels = (channels, term) => {
-        return channels.filter((c) => {
-            return (c.name.toLowerCase().includes(term) || c.display_name.toLowerCase().includes(term));
-        });
-    };
-
-    getChannels = debounce(() => {
+    doGetChannels = () => {
         const {actions, currentTeamId} = this.props;
         const {loading, term} = this.state;
+
         if (this.next && !loading && !term) {
             this.setState({loading: true}, () => {
                 actions.getChannels(
@@ -134,7 +129,15 @@ export default class MoreChannels extends PureComponent {
                 ).then(this.loadedChannels);
             });
         }
-    }, 100);
+    };
+
+    filterChannels = (channels, term) => {
+        return channels.filter((c) => {
+            return (c.name.toLowerCase().includes(term) || c.display_name.toLowerCase().includes(term));
+        });
+    };
+
+    getChannels = debounce(this.doGetChannels, 100);
 
     headerButtons = (createEnabled) => {
         const {canCreateChannels} = this.props;
