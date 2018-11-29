@@ -46,9 +46,9 @@ exports[`MoreChannels should match snapshot 1`] = `
           },
         ]
       }
-      extraData={false}
+      extraData={true}
       listType="flat"
-      loading={false}
+      loading={true}
       loadingComponent={
         <View
           style={
@@ -71,29 +71,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           />
         </View>
       }
-      noResults={
-        <View
-          style={
-            Object {
-              "alignItems": "center",
-              "flexDirection": "row",
-              "flexGrow": 1,
-              "justifyContent": "center",
-            }
-          }
-        >
-          <FormattedText
-            defaultMessage="No more channels to join"
-            id="more_channels.noMore"
-            style={
-              Object {
-                "color": "rgba(61,60,64,0.5)",
-                "fontSize": 26,
-              }
-            }
-          />
-        </View>
-      }
+      noResults={null}
       onLoadMore={[Function]}
       onRowPress={[Function]}
       renderItem={[Function]}
