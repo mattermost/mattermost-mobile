@@ -10,6 +10,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ActionButton extends PureComponent {
+    state= {isDisabled: false};
     static propTypes = {
         actions: PropTypes.shape({
             doPostAction: PropTypes.func.isRequired,
@@ -22,6 +23,7 @@ export default class ActionButton extends PureComponent {
 
     handleActionPress = preventDoubleTap(() => {
         const {actions, id, postId} = this.props;
+        this.setState({isDisabled: true});
         actions.doPostAction(postId, id);
     });
 
@@ -33,6 +35,7 @@ export default class ActionButton extends PureComponent {
             <Button
                 containerStyle={style.button}
                 onPress={this.handleActionPress}
+                disabled={this.state.isDisabled}
             >
                 <Text style={style.text}>{name}</Text>
             </Button>
