@@ -25,6 +25,7 @@ export default class SlideUpPanel extends PureComponent {
     static propTypes = {
         allowStayMiddle: PropTypes.bool,
         alwaysCaptureContainerMove: PropTypes.bool,
+        canDrag: PropTypes.bool,
         containerHeight: PropTypes.number,
         children: PropTypes.oneOfType([
             PropTypes.arrayOf(PropTypes.node),
@@ -38,6 +39,7 @@ export default class SlideUpPanel extends PureComponent {
 
     static defaultProps = {
         allowStayMiddle: true,
+        canDrag: true,
         headerHeight: 0,
         initialPosition: 0.5,
         marginFromTop: TOP_MARGIN,
@@ -75,6 +77,7 @@ export default class SlideUpPanel extends PureComponent {
             onPanResponderRelease: (evt, gestureState) => {
                 this.moveFinished(gestureState);
             },
+            onResponderTerminationRequest: () => true,
         });
 
         this.secondaryPanGesture = PanResponder.create({
@@ -91,7 +94,7 @@ export default class SlideUpPanel extends PureComponent {
         });
 
         this.previousTop = initialPosition;
-        this.canDrag = true;
+        this.canDrag = props.canDrag;
 
         this.state = {
             position: new Animated.Value(props.containerHeight),

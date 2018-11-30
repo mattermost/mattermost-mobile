@@ -63,7 +63,7 @@ export default class PostOption extends PureComponent {
         return (
             <View style={style.container} >
                 <Touchable
-                    onPressOut={onPress}
+                    onPress={onPress}
                     {...touchableProps}
                 >
                     <View style={style.row}>

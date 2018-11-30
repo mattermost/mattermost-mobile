@@ -394,6 +394,7 @@ export default class PostOptions extends PureComponent {
                 <SlideUpPanel
                     allowStayMiddle={false}
                     alwaysCaptureContainerMove={false}
+                    canDrag={false}
                     ref={this.refSlideUpPanel}
                     marginFromTop={marginFromTop}
                     onRequestClose={this.close}
