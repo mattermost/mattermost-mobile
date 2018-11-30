@@ -189,17 +189,15 @@ export default class PostBody extends PureComponent {
         }
 
         return (
-            <View style={style.row}>
-                <PostAddChannelMember
-                    baseTextStyle={messageStyle}
-                    navigator={navigator}
-                    onPostPress={onPress}
-                    textStyles={textStyles}
-                    postId={postProps.add_channel_member.post_id}
-                    userIds={postProps.add_channel_member.user_ids}
-                    usernames={postProps.add_channel_member.usernames}
-                />
-            </View>
+            <PostAddChannelMember
+                baseTextStyle={messageStyle}
+                navigator={navigator}
+                onPostPress={onPress}
+                textStyles={textStyles}
+                postId={postProps.add_channel_member.post_id}
+                userIds={postProps.add_channel_member.user_ids}
+                usernames={postProps.add_channel_member.usernames}
+            />
         );
     };
 
@@ -323,66 +321,57 @@ export default class PostBody extends PureComponent {
         let body;
         let messageComponent;
         if (hasBeenDeleted) {
-            messageComponent = (
-                <View style={style.row}>
-                    <FormattedText
-                        style={messageStyle}
-                        id='post_body.deleted'
-                        defaultMessage='(message deleted)'
-                    />
-                </View>
+            body = (
+                <FormattedText
+                    style={messageStyle}
+                    id='post_body.deleted'
+                    defaultMessage='(message deleted)'
+                />
             );
-            body = (<View>{messageComponent}</View>);
         } else if (isPostAddChannelMember) {
             messageComponent = this.renderAddChannelMember(style, messageStyle, textStyles);
         } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
             const {allUserIds, allUsernames, messageData} = postProps.user_activity;
             messageComponent = (
-                <View style={style.row}>
-                    <CombinedSystemMessage
-                        allUserIds={allUserIds}
-                        allUsernames={allUsernames}
-                        linkStyle={textStyles.link}
-                        messageData={messageData}
-                        navigator={navigator}
-                        textStyles={textStyles}
-                        theme={theme}
-                    />
-                </View>
+                <CombinedSystemMessage
+                    allUserIds={allUserIds}
+                    allUsernames={allUsernames}
+                    linkStyle={textStyles.link}
+                    messageData={messageData}
+                    navigator={navigator}
+                    textStyles={textStyles}
+                    theme={theme}
+                />
             );
         } else if (isEmojiOnly) {
             messageComponent = (
-                <View style={style.row}>
-                    <MarkdownEmoji
-                        baseTextStyle={messageStyle}
-                        isEdited={hasBeenEdited}
-                        shouldRenderJumboEmoji={shouldRenderJumboEmoji}
-                        value={message}
-                    />
-                </View>
+                <MarkdownEmoji
+                    baseTextStyle={messageStyle}
+                    isEdited={hasBeenEdited}
+                    shouldRenderJumboEmoji={shouldRenderJumboEmoji}
+                    value={message}
+                />
             );
         } else if (message.length) {
             messageComponent = (
-                <View style={style.row}>
-                    <View
-                        style={[(isPendingOrFailedPost && style.pendingPost), (isLongPost && {maxHeight})]}
-                        removeClippedSubviews={isLongPost}
-                    >
-                        <Markdown
-                            baseTextStyle={messageStyle}
-                            blockStyles={blockStyles}
-                            imageMetadata={metadata?.images}
-                            isEdited={hasBeenEdited}
-                            isReplyPost={isReplyPost}
-                            isSearchResult={isSearchResult}
-                            navigator={navigator}
-                            onHashtagPress={onHashtagPress}
-                            onPermalinkPress={onPermalinkPress}
-                            onPostPress={onPress}
-                            textStyles={textStyles}
-                            value={message}
-                        />
-                    </View>
+                <View
+                    style={[style.messageContainer, (isPendingOrFailedPost && style.pendingPost), (isLongPost && {maxHeight})]}
+                    removeClippedSubviews={isLongPost}
+                >
+                    <Markdown
+                        baseTextStyle={messageStyle}
+                        blockStyles={blockStyles}
+                        imageMetadata={metadata?.images}
+                        isEdited={hasBeenEdited}
+                        isReplyPost={isReplyPost}
+                        isSearchResult={isSearchResult}
+                        navigator={navigator}
+                        onHashtagPress={onHashtagPress}
+                        onPermalinkPress={onPermalinkPress}
+                        onPostPress={onPress}
+                        textStyles={textStyles}
+                        value={message}
+                    />
                 </View>
             );
         }
@@ -437,6 +426,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         messageBody: {
             paddingBottom: 2,
             paddingTop: 2,
+            width: '100%',
+        },
+        messageContainer: {
+            overflow: 'hidden',
+            width: '100%',
         },
         retry: {
             justifyContent: 'center',
