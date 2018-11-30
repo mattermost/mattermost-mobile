@@ -228,8 +228,8 @@ export function loadFilesForPostIfNecessary(postId) {
         const {files} = getState().entities;
         const fileIdsForPost = files.fileIdsByPostId[postId];
 
-        if (!fileIdsForPost) {
-            await getFilesForPost(postId)(dispatch, getState);
+        if (!fileIdsForPost?.length) {
+            await dispatch(getFilesForPost(postId));
         }
     };
 }
