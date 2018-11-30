@@ -113,6 +113,7 @@ export default class MessageAttachment extends PureComponent {
                     />
                     <AttachmentActions
                         actions={attachment.actions}
+                        buttonColor={attachment.color}
                         navigator={navigator}
                         postId={postId}
                     />

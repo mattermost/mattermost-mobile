@@ -10,6 +10,7 @@ import ActionButton from './action_button';
 export default class AttachmentActions extends PureComponent {
     static propTypes = {
         actions: PropTypes.array,
+        buttonColor: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         postId: PropTypes.string.isRequired,
     };
@@ -19,6 +20,7 @@ export default class AttachmentActions extends PureComponent {
             actions,
             navigator,
             postId,
+            buttonColor,
         } = this.props;
 
         if (!actions?.length) {
@@ -53,6 +55,7 @@ export default class AttachmentActions extends PureComponent {
                         key={action.id}
                         id={action.id}
                         name={action.name}
+                        buttonColor={buttonColor}
                         postId={postId}
                     />
                 );

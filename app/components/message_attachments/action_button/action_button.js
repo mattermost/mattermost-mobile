@@ -18,6 +18,7 @@ export default class ActionButton extends PureComponent {
         name: PropTypes.string.isRequired,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        buttonColor: PropTypes.string.isRequired,
     };
 
     handleActionPress = preventDoubleTap(() => {
@@ -26,7 +27,7 @@ export default class ActionButton extends PureComponent {
     });
 
     render() {
-        const {name, theme} = this.props;
+        const {name, theme, buttonColor} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -34,7 +35,7 @@ export default class ActionButton extends PureComponent {
                 containerStyle={style.button}
                 onPress={this.handleActionPress}
             >
-                <Text style={style.text}>{name}</Text>
+                <Text style={{...style.text, color: buttonColor}}>{name}</Text>
             </Button>
         );
     }
