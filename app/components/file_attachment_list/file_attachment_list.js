@@ -133,6 +133,7 @@ export default class FileAttachmentList extends Component {
                     canDownloadFiles={canDownloadFiles}
                     deviceWidth={deviceWidth}
                     file={{loading: true}}
+                    id={id}
                     index={idx}
                     theme={this.props.theme}
                 />
@@ -151,6 +152,7 @@ export default class FileAttachmentList extends Component {
                     canDownloadFiles={canDownloadFiles}
                     deviceWidth={deviceWidth}
                     file={f}
+                    id={file.id}
                     index={idx}
                     navigator={navigator}
                     onCaptureRef={this.handleCaptureRef}
