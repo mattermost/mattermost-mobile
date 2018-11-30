@@ -331,10 +331,12 @@ export default class AttachmentButton extends PureComponent {
     };
 
     removeProfileImage = () => {
-        this.props.removeProfileImage();
-        this.props.navigator.dismissModal({
-            animationType: 'none',
-        });
+        if (this.props.removeProfileImage() !== null) { 
+            this.props.removeProfileImage();
+            this.props.navigator.dismissModal({
+                animationType: 'none',
+            });
+        }
     };
 
     isCustomProfileImage = () => {
@@ -402,7 +404,7 @@ export default class AttachmentButton extends PureComponent {
         // default image will not include query string with timestamp
         if (this.props.removeProfileImage && this.isCustomProfileImage()) {
             options.items.push({
-                action: () => this.removeProfileImage(),
+                action: this.removeProfileImage,
                 text: {
                     id: t('mobile.edit_profile.remove_profile_photo'),
                     defaultMessage: 'Remove Photo',
