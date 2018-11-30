@@ -23,6 +23,7 @@ export default class FileAttachment extends PureComponent {
         canDownloadFiles: PropTypes.bool.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         file: PropTypes.object.isRequired,
+        id: PropTypes.string.isRequired,
         index: PropTypes.number.isRequired,
         onCaptureRef: PropTypes.func,
         onLongPress: PropTypes.func,
@@ -102,6 +103,7 @@ export default class FileAttachment extends PureComponent {
         if ((data && data.has_preview_image) || file.loading || isGif(data)) {
             fileAttachmentComponent = (
                 <TouchableOpacity
+                    key={`${this.props.id}${file.loading}`}
                     onPress={this.handlePreviewPress}
                     onLongPress={onLongPress}
                 >
