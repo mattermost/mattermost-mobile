@@ -88,16 +88,13 @@ export default class EditProfile extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
 
-        const profileImageUri = '';
-
         this.state = {
             email,
             firstName,
             lastName,
             nickname,
             position,
-            username,
-            profileImageUri,
+            username
         };
     }
 
@@ -235,10 +232,9 @@ export default class EditProfile extends PureComponent {
         return RNFetchBlob.config(options).fetch('POST', `${Client4.getUserRoute(currentUser.id)}/image`, headers, [fileInfo]);
     };
 
-    removeProfileImage = async () => {
+    handleRemoveProfileImage = () => {
         const {actions} = this.props;
         const {currentUser} = this.props;
-        this.emitCanUpdateAccount(true);
         actions.removeProfileImage(currentUser.id);
     };
 
@@ -518,7 +514,7 @@ export default class EditProfile extends PureComponent {
                                 navigator={navigator}
                                 wrapper={true}
                                 uploadFiles={this.handleUploadProfileImage}
-                                removeProfileImage={this.removeProfileImage}
+                                removeProfileImage={this.handleRemoveProfileImage}
                                 profileImageUri={this.state.profileImageUri}
                             >
                                 <ProfilePicture
