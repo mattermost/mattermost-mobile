@@ -3,6 +3,7 @@
 
 import 'react-native/Libraries/Core/InitializeCore';
 import {AppRegistry, Platform} from 'react-native';
+import 'react-native-gesture-handler';
 
 import 'app/mattermost';
 import ShareExtension from 'share_extension/android';

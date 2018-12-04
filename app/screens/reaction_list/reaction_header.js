@@ -4,10 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Animated,
     Platform,
     ScrollView,
     StyleSheet,
-    View,
 } from 'react-native';
 
 import ReactionHeaderItem from './reaction_header_item';
@@ -41,7 +41,7 @@ export default class ReactionHeader extends PureComponent {
 
     render() {
         return (
-            <View style={styles.container}>
+            <Animated.View style={styles.container}>
                 <ScrollView
                     alwaysBounceHorizontal={false}
                     horizontal={true}
@@ -49,7 +49,7 @@ export default class ReactionHeader extends PureComponent {
                 >
                     {this.renderReactionHeaderItems()}
                 </ScrollView>
-            </View>
+            </Animated.View>
         );
     }
 }

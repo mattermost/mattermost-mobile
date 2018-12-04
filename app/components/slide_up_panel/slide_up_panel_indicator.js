@@ -1,32 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import {Animated, Platform, StyleSheet, View} from 'react-native';
 
-export default class SlideUpPanelIndicator extends PureComponent {
-    static propTypes = {
-        containerPosition: PropTypes.object.isRequired,
-        panHandlers: PropTypes.object.isRequired,
-    };
-
-    render() {
-        const {panHandlers, containerPosition} = this.props;
-
-        if (Platform.OS === 'android') {
-            return null;
-        }
-
-        return (
-            <Animated.View
-                style={[containerPosition, styles.dragIndicatorContainer]}
-                {...panHandlers}
-            >
-                <View style={styles.dragIndicator}/>
-            </Animated.View>
-        );
+export default function slideUpPanelIndicator() {
+    if (Platform.OS === 'android') {
+        return null;
     }
+
+    return (
+        <Animated.View
+            style={styles.dragIndicatorContainer}
+        >
+            <View style={styles.dragIndicator}/>
+        </Animated.View>
+    );
 }
 
 const styles = StyleSheet.create({

@@ -3,7 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View} from 'react-native';
+import {View} from 'react-native';
+
 import {intlShape} from 'react-intl';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
@@ -41,10 +42,8 @@ export default class ReactionList extends PureComponent {
     constructor(props) {
         super(props);
         const {reactions, userProfiles} = props;
-
         const reactionsByName = getReactionsByName(reactions);
 
-        this.contentOffsetY = -1;
         this.state = {
             allUserIds: getUniqueUserIds(reactions),
             reactions,
@@ -54,6 +53,7 @@ export default class ReactionList extends PureComponent {
             sortedReactionsForHeader: getSortedReactionsForHeader(reactionsByName),
             userProfiles,
             userProfilesById: generateUserProfilesById(userProfiles),
+            enabled: false,
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
@@ -123,34 +123,14 @@ export default class ReactionList extends PureComponent {
 
     handleOnSelectReaction = (emoji) => {
         this.setState({selected: emoji});
-        const slide = this.slideUpPanel?.getWrappedInstance();
 
-        if (slide) {
-            slide.setDrag(true);
-        }
-
-        if (this.scrollView) {
-            this.scrollView.scrollTo({x: 0, y: 0, animated: false});
-        }
-    };
-
-    handleScroll = (e) => {
-        const pageOffsetY = e.nativeEvent.contentOffset.y;
-        const canDrag = pageOffsetY <= 0;
-        const slide = this.slideUpPanel?.getWrappedInstance();
-
-        this.contentOffsetY = pageOffsetY;
-        if (slide) {
-            slide.setDrag(canDrag);
+        if (this.slideUpPanel) {
+            this.slideUpPanel.getWrappedInstance().scrollToTop();
         }
     };
 
     refSlideUpPanel = (r) => {
         this.slideUpPanel = r;
-    };
-
-    refScrollView = (ref) => {
-        this.scrollView = ref;
     };
 
     renderReactionRows = () => {
@@ -185,15 +165,22 @@ export default class ReactionList extends PureComponent {
         ));
     };
 
+    renderHeader = () => {
+        const {theme} = this.props;
+        const {selected, sortedReactionsForHeader} = this.state;
+
+        return (
+            <ReactionHeader
+                selected={selected}
+                onSelectReaction={this.handleOnSelectReaction}
+                reactions={sortedReactionsForHeader}
+                theme={theme}
+            />
+        );
+    };
+
     render() {
-        const {
-            theme,
-        } = this.props;
-        const {
-            selected,
-            sortedReactionsForHeader,
-        } = this.state;
-        const style = getStyleSheet(theme);
+        const style = getStyleSheet(this.props.theme);
 
         return (
             <View style={style.flex}>
@@ -201,25 +188,10 @@ export default class ReactionList extends PureComponent {
                     ref={this.refSlideUpPanel}
                     onRequestClose={this.close}
                     initialPosition={0.55}
+                    header={this.renderHeader()}
                     headerHeight={37.5}
                 >
-                    <React.Fragment>
-                        <View style={style.headerContainer}>
-                            <ReactionHeader
-                                selected={selected}
-                                onSelectReaction={this.handleOnSelectReaction}
-                                reactions={sortedReactionsForHeader}
-                                theme={theme}
-                            />
-                        </View>
-                        <ScrollView
-                            ref={this.refScrollView}
-                            bounce={false}
-                            onScroll={this.handleScroll}
-                        >
-                            {this.renderReactionRows()}
-                        </ScrollView>
-                    </React.Fragment>
+                    {this.renderReactionRows()}
                 </SlideUpPanel>
             </View>
         );
@@ -233,8 +205,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         headerContainer: {
             height: 37.5,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 1,
         },
         rowContainer: {
             justifyContent: 'center',

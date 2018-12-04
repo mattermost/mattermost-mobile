@@ -95,6 +95,7 @@ export default class Reactions extends PureComponent {
             backButtonTitle: '',
             navigatorStyle: {
                 navBarHidden: true,
+                navBarTransparent: true,
                 screenBackgroundColor: 'transparent',
                 modalPresentationStyle: 'overCurrentContext',
             },
