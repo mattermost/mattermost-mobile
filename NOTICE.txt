@@ -1431,31 +1431,6 @@ SOFTWARE.
 
 ---
 
-## react-native-drawer-layout
-
-This product contains a modified version of 'react-native-drawer-layout' by Brent Vatne.
-
-A platform-agnostic drawer layout. Pure JavaScript implementation on iOS and native implementation on Android. Why? Because the drawer layout is a useful component regardless of the platform! And if you can use it without changing any code, that's perfect
-
-* HOMEPAGE:
-  * https://github.com/react-native-community/react-native-drawer-layout#readme
-
-* LICENSE: MIT
-
-Note: An original license file for this dependency is not available. We determined the type of license based on the package registry entry for this project. The following text has been prepared using a template from the SPDX Workgroup (https://spdx.org) for this type of license.
-
-MIT License
-
-Copyright (c) 2018 Brent Vatne
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
----
-
 ## react-native-exception-handler
 
 This product contains 'react-native-exception-handler' by master-atul.
@@ -1624,10 +1599,10 @@ SOFTWARE.
 
 This product contains 'react-native-linear-gradient' by Brent Vatne.
 
-A <LinearGradient> element for react-native
+A <LinearGradient> element for React Native
 
 * HOMEPAGE:
-  * https://github.com/brentvatne/react-native-linear-gradient#readme
+  * https://github.com/react-native-community/react-native-linear-gradient
 
 * LICENSE: MIT
 
@@ -1676,7 +1651,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 
 ## react-native-navigation
 
-This product contains 'react-native-navigation' by Tal Kol.
+This product contains 'react-native-navigation' by Daniel Zlotin.
 
 React Native Navigation - truly native navigation for iOS and Android
 
@@ -1685,26 +1660,27 @@ React Native Navigation - truly native navigation for iOS and Android
 
 * LICENSE: MIT
 
-The MIT License (MIT)
+MIT License
 
-Copyright (c) Wix.com
+Copyright (c) 2016 Wix.com
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---
 
@@ -2148,12 +2124,12 @@ SOFTWARE.
 
 ## react-native-webview
 
-This product contains 'react-native-webview' by Facebook.
+This product contains 'react-native-webview' by Jamon Holmgren.
 
-React Native WebView is a modern, well-supported, and cross-platform WebView for React Native. It is intended to be a replacement for the built-in WebView.
+React Native WebView component for iOS, Android, and Windows 10 (coming soon)
 
 * HOMEPAGE:
-  * https://github.com/react-native-community/react-native-webview
+  * https://github.com/react-native-community/react-native-webview#readme
 
 * LICENSE: MIT
 
