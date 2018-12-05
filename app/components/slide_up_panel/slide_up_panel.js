@@ -22,6 +22,7 @@ const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;
 
 export default class SlideUpPanel extends PureComponent {
     static propTypes = {
+
         // Whether or not to allow the panel to snap to the initial position after it has been opened
         allowStayMiddle: PropTypes.bool,
 
