@@ -4,7 +4,6 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {RequestStatus} from 'mattermost-redux/constants';
 import {canDownloadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -22,7 +21,7 @@ function makeMapStateToProps() {
             canDownloadFiles: canDownloadFilesOnMobile(state),
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),
-            requestingFiles: state.requests.files.getFilesForPost.status === RequestStatus.STARTED,
+            filesForPostRequest: state.requests.files.getFilesForPost,
         };
     };
 }

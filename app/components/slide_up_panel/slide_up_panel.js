@@ -138,7 +138,7 @@ export default class SlideUpPanel extends PureComponent {
     onHandlerStateChange = ({nativeEvent}) => {
         if (nativeEvent.oldState === GestureState.ACTIVE) {
             const {translationY, velocityY} = nativeEvent;
-            const {allowStayMiddle, containerHeight} = this.props;
+            const {allowStayMiddle} = this.props;
             const {lastSnap} = this.state;
             const isGoingDown = translationY > 0;
             const translation = translationY - this.lastScrollYValue;
@@ -149,7 +149,7 @@ export default class SlideUpPanel extends PureComponent {
             if (Math.abs(translationY) < 50) {
                 destSnapPoint = lastSnap;
             } else if (isGoingDown && !allowStayMiddle) {
-                destSnapPoint = containerHeight;
+                destSnapPoint = this.snapPoints[2];
             } else if (isGoingDown) {
                 destSnapPoint = this.snapPoints.find((s) => s >= endOffsetY);
             } else {
@@ -162,7 +162,7 @@ export default class SlideUpPanel extends PureComponent {
                 this.translateYOffset.flattenOffset();
                 this.dragY.setValue(0);
 
-                if (destSnapPoint === containerHeight) {
+                if (destSnapPoint === this.snapPoints[2]) {
                     this.closeWithAnimation();
                 } else {
                     Animated.spring(this.translateYOffset, {
@@ -217,7 +217,7 @@ export default class SlideUpPanel extends PureComponent {
                 maxDeltaY={lastSnap - this.snapPoints[0]}
             >
                 <View
-                    style={StyleSheet.absoluteFillObject}
+                    style={StyleSheet.absoluteFill}
                     pointerEvents='box-none'
                 >
                     <TapGestureHandler
@@ -241,7 +241,7 @@ export default class SlideUpPanel extends PureComponent {
                             </PanGestureHandler>
                         </Animated.View>
                     </TapGestureHandler>
-                    <Animated.View style={[StyleSheet.absoluteFillObject, translateStyle]}>
+                    <Animated.View style={[StyleSheet.absoluteFill, translateStyle]}>
                         <PanGestureHandler
                             simultaneousHandlers={[this.scrollRef, this.masterRef]}
                             waitFor={this.headerRef}

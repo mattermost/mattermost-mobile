@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import {Client4} from 'mattermost-redux/client';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 import {isDocument, isGif, isVideo} from 'app/utils/file';
 import {getCacheFile} from 'app/utils/image_cache_manager';
@@ -18,8 +19,6 @@ import {previewImageAtIndex} from 'app/utils/images';
 import {preventDoubleTap} from 'app/utils/tap';
 
 import FileAttachment from './file_attachment';
-
-const loadingFile = {loading: true};
 
 export default class FileAttachmentList extends Component {
     static propTypes = {
@@ -34,7 +33,7 @@ export default class FileAttachmentList extends Component {
         onLongPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        requestingFiles: PropTypes.bool,
+        filesForPostRequest: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -50,7 +49,6 @@ export default class FileAttachmentList extends Component {
 
     componentDidMount() {
         const {files, postId} = this.props;
-
         if (!files || !files.length) {
             this.props.actions.loadFilesForPostIfNecessary(postId);
         }
@@ -65,10 +63,10 @@ export default class FileAttachmentList extends Component {
     }
 
     componentDidUpdate() {
-        const {fileIds, files, requestingFiles, postId} = this.props;
+        const {fileIds, files, filesForPostRequest, postId} = this.props;
 
         // Fixes an issue where files weren't loading with optimistic post
-        if (files.length !== fileIds.length && !requestingFiles) {
+        if (!files.length && fileIds.length > 0 && filesForPostRequest.status !== RequestStatus.STARTED) {
             this.props.actions.loadFilesForPostIfNecessary(postId);
         }
     }
@@ -128,25 +126,33 @@ export default class FileAttachmentList extends Component {
     renderItems = () => {
         const {canDownloadFiles, deviceWidth, fileIds, files, navigator} = this.props;
 
-        return fileIds.map((id, idx) => {
-            const file = files[idx];
-            let fileData = null;
-
-            if (file) {
-                fileData = {
-                    caption: file.name,
-                    data: file,
-                    loading: false,
-                };
-            }
-
-            return (
+        if (!files.length && fileIds.length > 0) {
+            return fileIds.map((id, idx) => (
                 <FileAttachment
                     key={id}
                     canDownloadFiles={canDownloadFiles}
                     deviceWidth={deviceWidth}
-                    file={fileData || loadingFile}
+                    file={{loading: true}}
                     id={id}
+                    index={idx}
+                    theme={this.props.theme}
+                />
+            ));
+        }
+
+        return files.map((file, idx) => {
+            const f = {
+                caption: file.name,
+                data: file,
+            };
+
+            return (
+                <FileAttachment
+                    key={file.id}
+                    canDownloadFiles={canDownloadFiles}
+                    deviceWidth={deviceWidth}
+                    file={f}
+                    id={file.id}
                     index={idx}
                     navigator={navigator}
                     onCaptureRef={this.handleCaptureRef}

@@ -53,7 +53,6 @@ export default class ReactionList extends PureComponent {
             sortedReactionsForHeader: getSortedReactionsForHeader(reactionsByName),
             userProfiles,
             userProfilesById: generateUserProfilesById(userProfiles),
-            enabled: false,
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
