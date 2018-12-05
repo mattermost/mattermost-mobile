@@ -10,6 +10,7 @@ POD := $(shell which pod 2> /dev/null)
 OS := $(shell sh -c 'uname -s 2>/dev/null')
 BASE_ASSETS = $(shell find assets/base -type d) $(shell find assets/base -type f -name '*')
 OVERRIDE_ASSETS = $(shell find assets/override -type d 2> /dev/null) $(shell find assets/override -type f -name '*' 2> /dev/null)
+MM_UTILITIES_DIR = ../mattermost-utilities
 
 node_modules: package.json
 	@if ! [ $(shell which npm 2> /dev/null) ]; then \
@@ -248,6 +249,11 @@ can-build-pr:
 		echo a PR number needs to be specified; \
 		exit 1; \
 	fi
+
+i18n-extract: ## Extract strings for translation from the source code
+	@[[ -d $(MM_UTILITIES_DIR) ]] || echo "You must clone github.com/mattermost/mattermost-utilities repo in .. to use this command"
+	@[[ -d $(MM_UTILITIES_DIR) ]] && cd $(MM_UTILITIES_DIR) && npm install && npm run babel && node mmjstool/build/index.js i18n extract-mobile
+
 
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
