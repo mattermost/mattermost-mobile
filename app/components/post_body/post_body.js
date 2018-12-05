@@ -164,6 +164,7 @@ export default class PostBody extends PureComponent {
             backButtonTitle: '',
             navigatorStyle: {
                 navBarHidden: true,
+                navBarTransparent: true,
                 screenBackgroundColor: 'transparent',
                 modalPresentationStyle: 'overCurrentContext',
             },

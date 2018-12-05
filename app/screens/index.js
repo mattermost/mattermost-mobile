@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Navigation} from 'react-native-navigation';
+import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
 import Channel from 'app/screens/channel';
 import Entry from 'app/screens/entry';
@@ -47,8 +48,8 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(require('app/screens/options_modal').default), store, Provider);
     Navigation.registerComponent('Permalink', () => wrapWithContextProvider(require('app/screens/permalink').default), store, Provider);
     Navigation.registerComponent('PinnedPosts', () => wrapWithContextProvider(require('app/screens/pinned_posts').default), store, Provider);
-    Navigation.registerComponent('PostOptions', () => wrapWithContextProvider(require('app/screens/post_options').default), store, Provider);
-    Navigation.registerComponent('ReactionList', () => wrapWithContextProvider(require('app/screens/reaction_list').default), store, Provider);
+    Navigation.registerComponent('PostOptions', () => gestureHandlerRootHOC(wrapWithContextProvider(require('app/screens/post_options').default)), store, Provider);
+    Navigation.registerComponent('ReactionList', () => gestureHandlerRootHOC(wrapWithContextProvider(require('app/screens/reaction_list').default)), store, Provider);
     Navigation.registerComponent('RecentMentions', () => wrapWithContextProvider(require('app/screens/recent_mentions').default), store, Provider);
     Navigation.registerComponent('Root', () => require('app/screens/root').default, store, Provider);
     Navigation.registerComponent('Search', () => wrapWithContextProvider(require('app/screens/search').default), store, Provider);

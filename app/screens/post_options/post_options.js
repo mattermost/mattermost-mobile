@@ -55,7 +55,7 @@ export default class PostOptions extends PureComponent {
 
     closeWithAnimation = () => {
         if (this.slideUpPanel) {
-            this.slideUpPanel.getWrappedInstance().handleTouchEnd();
+            this.slideUpPanel.getWrappedInstance().closeWithAnimation();
         } else {
             this.close();
         }
@@ -386,18 +386,16 @@ export default class PostOptions extends PureComponent {
     render() {
         const {deviceHeight} = this.props;
         const options = this.getPostOptions();
-        const initialPosition = (options.length + 1) * OPTION_HEIGHT;
         const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT);
 
         return (
-            <View style={style.flex}>
+            <View style={style.container}>
                 <SlideUpPanel
                     allowStayMiddle={false}
-                    alwaysCaptureContainerMove={true}
                     ref={this.refSlideUpPanel}
                     marginFromTop={marginFromTop}
                     onRequestClose={this.close}
-                    initialPosition={initialPosition}
+                    initialPosition={325}
                 >
                     {options}
                 </SlideUpPanel>
@@ -407,7 +405,7 @@ export default class PostOptions extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    flex: {
+    container: {
         flex: 1,
     },
 });

@@ -18,13 +18,16 @@ describe('Selectors.PostList', () => {
     describe('makePreparePostIdsForPostList', () => {
         it('filter join/leave posts', () => {
             const preparePostIdsForPostList = makePreparePostIdsForPostList();
+            const time = Date.now();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
             let state = {
                 entities: {
                     posts: {
                         posts: {
-                            1001: {id: '1001', create_at: 0, type: ''},
-                            1002: {id: '1002', create_at: 1, type: Posts.POST_TYPES.JOIN_CHANNEL},
+                            1001: {id: '1001', create_at: time, type: ''},
+                            1002: {id: '1002', create_at: time + 1, type: Posts.POST_TYPES.JOIN_CHANNEL},
                         },
                     },
                     preferences: {
@@ -47,7 +50,7 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1002',
                 '1001',
-                'date-0',
+                'date-' + today.getTime(),
             ]);
 
             // Show join/leave posts
@@ -73,7 +76,7 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1002',
                 '1001',
-                'date-0',
+                'date-' + today.getTime(),
             ]);
 
             // Hide join/leave posts
@@ -98,7 +101,7 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
             assert.deepEqual(now, [
                 '1001',
-                'date-0',
+                'date-' + today.getTime(),
             ]);
 
             // always show join/leave posts for the current user
@@ -110,7 +113,7 @@ describe('Selectors.PostList', () => {
                         ...state.entities.posts,
                         posts: {
                             ...state.entities.posts.posts,
-                            1002: {id: '1002', create_at: 1, type: Posts.POST_TYPES.JOIN_CHANNEL, props: {username: 'user'}},
+                            1002: {id: '1002', create_at: time + 1, type: Posts.POST_TYPES.JOIN_CHANNEL, props: {username: 'user'}},
                         },
                     },
                 },
@@ -121,20 +124,23 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1002',
                 '1001',
-                'date-0',
+                'date-' + today.getTime(),
             ]);
         });
 
         it('new messages indicator', () => {
             const preparePostIdsForPostList = makePreparePostIdsForPostList();
+            const time = Date.now();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
             const state = {
                 entities: {
                     posts: {
                         posts: {
-                            1000: {id: '1000', create_at: 1000, type: ''},
-                            1005: {id: '1005', create_at: 1005, type: ''},
-                            1010: {id: '1010', create_at: 1010, type: ''},
+                            1000: {id: '1000', create_at: time + 1000, type: ''},
+                            1005: {id: '1005', create_at: time + 1005, type: ''},
+                            1010: {id: '1010', create_at: time + 1010, type: ''},
                         },
                     },
                     preferences: {
@@ -157,7 +163,7 @@ describe('Selectors.PostList', () => {
                 '1010',
                 '1005',
                 '1000',
-                'date-1000',
+                'date-' + today.getTime(),
             ]);
 
             now = preparePostIdsForPostList(state, {postIds, indicateNewMessages: true});
@@ -165,67 +171,72 @@ describe('Selectors.PostList', () => {
                 '1010',
                 '1005',
                 '1000',
-                'date-1000',
+                'date-' + today.getTime(),
             ]);
 
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 999, indicateNewMessages: false});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: time + 999, indicateNewMessages: false});
             assert.deepEqual(now, [
                 '1010',
                 '1005',
                 '1000',
-                'date-1000',
+                'date-' + today.getTime(),
             ]);
 
             // Show new messages indicator before all posts
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 999, indicateNewMessages: true});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: time + 999, indicateNewMessages: true});
             assert.deepEqual(now, [
                 '1010',
                 '1005',
                 '1000',
                 START_OF_NEW_MESSAGES,
-                'date-1000',
+                'date-' + today.getTime(),
             ]);
 
             // Show indicator between posts
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1003, indicateNewMessages: true});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: time + 1003, indicateNewMessages: true});
             assert.deepEqual(now, [
                 '1010',
                 '1005',
                 START_OF_NEW_MESSAGES,
                 '1000',
-                'date-1000',
+                'date-' + today.getTime(),
             ]);
 
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1006, indicateNewMessages: true});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: time + 1006, indicateNewMessages: true});
             assert.deepEqual(now, [
                 '1010',
                 START_OF_NEW_MESSAGES,
                 '1005',
                 '1000',
-                'date-1000',
+                'date-' + today.getTime(),
             ]);
 
             // Don't show indicator when all posts are read
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1020});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: time + 1020});
             assert.deepEqual(now, [
                 '1010',
                 '1005',
                 '1000',
-                'date-1000',
+                'date-' + today.getTime(),
             ]);
         });
 
         it('memoization', () => {
             const preparePostIdsForPostList = makePreparePostIdsForPostList();
+            const time = Date.now();
+            const today = new Date();
+            const tomorrow = new Date((24 * 60 * 60 * 1000) + today.getTime());
+            today.setHours(0, 0, 0, 0);
+            tomorrow.setHours(0, 0, 0, 0);
 
             // Posts 7 hours apart so they should appear on multiple days
             const initialPosts = {
-                1001: {id: '1001', create_at: 1 * 60 * 60 * 1000, type: ''},
-                1002: {id: '1002', create_at: (1 * 60 * 60 * 1000) + 5, type: ''},
-                1003: {id: '1003', create_at: (1 * 60 * 60 * 1000) + 10, type: ''},
-                1004: {id: '1004', create_at: 25 * 60 * 60 * 1000, type: ''},
-                1005: {id: '1005', create_at: (25 * 60 * 60 * 1000) + 5, type: ''},
-                1006: {id: '1006', create_at: (25 * 60 * 60 * 1000) + 10, type: Posts.POST_TYPES.JOIN_CHANNEL},
+                1001: {id: '1001', create_at: time, type: ''},
+                1002: {id: '1002', create_at: time + 5, type: ''},
+                1003: {id: '1003', create_at: time + 10, type: ''},
+                1004: {id: '1004', create_at: tomorrow, type: ''},
+                1005: {id: '1005', create_at: tomorrow + 5, type: ''},
+                1006: {id: '1006', create_at: tomorrow + 10, type: Posts.POST_TYPES.JOIN_CHANNEL},
             };
             let state = {
                 entities: {
@@ -262,11 +273,11 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1006',
                 '1004',
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 START_OF_NEW_MESSAGES,
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
 
             // No changes
@@ -276,11 +287,11 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1006',
                 '1004',
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 START_OF_NEW_MESSAGES,
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
 
             // lastViewedAt changed slightly
@@ -292,15 +303,15 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1006',
                 '1004',
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 START_OF_NEW_MESSAGES,
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
 
             // lastViewedAt changed a lot
-            lastViewedAt += initialPosts['1003'].create_at + 1;
+            lastViewedAt = initialPosts['1003'].create_at + 1;
 
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
@@ -309,10 +320,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
 
             prev = now;
@@ -322,10 +333,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
 
             // postIds changed, but still shallowly equal
@@ -338,10 +349,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
 
             // Post changed, not in postIds
@@ -366,10 +377,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
 
             // Post changed, in postIds
@@ -394,10 +405,10 @@ describe('Selectors.PostList', () => {
                 '1006',
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
 
             // Filter changed
@@ -425,10 +436,10 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
 
             prev = now;
@@ -437,10 +448,10 @@ describe('Selectors.PostList', () => {
             assert.deepEqual(now, [
                 '1004',
                 START_OF_NEW_MESSAGES,
-                'date-90000000',
+                'date-' + tomorrow.getTime(),
                 '1003',
                 '1001',
-                'date-3600000',
+                'date-' + today.getTime(),
             ]);
         });
     });
