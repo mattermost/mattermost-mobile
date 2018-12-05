@@ -268,7 +268,7 @@ export default class Post extends PureComponent {
         const highlightFlagged = isFlagged && !skipFlaggedHeader;
         const hightlightPinned = post.is_pinned && !skipPinnedHeader;
 
-        let highlighted = highlight ? style.highlight : null;
+        let highlighted;
         if (highlight) {
             highlighted = style.highlight;
         } else if ((highlightFlagged || hightlightPinned) && highlightPinnedOrFlagged) {

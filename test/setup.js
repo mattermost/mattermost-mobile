@@ -9,9 +9,22 @@ configure({adapter: new Adapter()});
 
 jest.mock('NativeModules', () => {
     return {
+        UIManager: {
+            RCTView: {
+                directEventTypes: {},
+            },
+        },
         BlurAppScreen: () => true,
         MattermostManaged: {
             getConfig: jest.fn(),
+        },
+        RNGestureHandlerModule: {
+            State: {
+                BEGAN: 'BEGAN',
+                FAILED: 'FAILED',
+                ACTIVE: 'ACTIVE',
+                END: 'END',
+            },
         },
     };
 });

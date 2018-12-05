@@ -3,13 +3,13 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {Animated, Platform, StyleSheet, View} from 'react-native';
 import {
-    Animated,
-    PanResponder,
-    Platform,
-    StyleSheet,
-    View,
-} from 'react-native';
+    PanGestureHandler,
+    NativeViewGestureHandler,
+    State as GestureState,
+    TapGestureHandler,
+} from 'react-native-gesture-handler';
 
 import {DeviceTypes} from 'app/constants';
 
@@ -19,25 +19,33 @@ export const BOTTOM_MARGIN = DeviceTypes.IS_IPHONE_X ? 24 : 0;
 const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_X ? 84 : 64;
 const TOP_ANDROID_MARGIN = 44;
 const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;
-const CONTAINER_MARGIN = TOP_MARGIN - 10;
 
 export default class SlideUpPanel extends PureComponent {
     static propTypes = {
+
+        // Whether or not to allow the panel to snap to the initial position after it has been opened
         allowStayMiddle: PropTypes.bool,
-        alwaysCaptureContainerMove: PropTypes.bool,
+
         containerHeight: PropTypes.number,
         children: PropTypes.oneOfType([
             PropTypes.arrayOf(PropTypes.node),
             PropTypes.node,
         ]).isRequired,
+        header: PropTypes.func,
         headerHeight: PropTypes.number,
+
+        // The initial position of the SlideUpPanel when it's first opened. If this value is between 0 and 1,
+        // it is treated as a percentage of the containerHeight.
         initialPosition: PropTypes.number,
+
+        // The space between the top of the panel and the top of the container when the SlideUpPanel is fully open.
         marginFromTop: PropTypes.number,
         onRequestClose: PropTypes.func,
     };
 
     static defaultProps = {
         allowStayMiddle: true,
+        header: () => null,
         headerHeight: 0,
         initialPosition: 0.5,
         marginFromTop: TOP_MARGIN,
@@ -47,189 +55,244 @@ export default class SlideUpPanel extends PureComponent {
     constructor(props) {
         super(props);
 
+        const {containerHeight, headerHeight, marginFromTop} = props;
+
+        this.masterRef = React.createRef();
+        this.panRef = React.createRef();
+        this.scrollRef = React.createRef();
+        this.scrollViewRef = React.createRef();
+        this.headerRef = React.createRef();
+        this.backdropRef = React.createRef();
+
         const initialUsedSpace = Math.abs(props.initialPosition);
         let initialPosition;
         if (initialUsedSpace <= 1) {
-            initialPosition = ((props.containerHeight - (props.headerHeight + BOTTOM_MARGIN)) * (1 - initialUsedSpace));
+            initialPosition = ((containerHeight - (headerHeight + BOTTOM_MARGIN)) * (1 - initialUsedSpace));
         } else {
-            initialPosition = ((props.containerHeight - (props.headerHeight + BOTTOM_MARGIN)) - initialUsedSpace);
+            initialPosition = ((containerHeight - (headerHeight + BOTTOM_MARGIN)) - initialUsedSpace);
         }
 
-        this.mainPanGesture = PanResponder.create({
-            onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-                if (this.props.alwaysCaptureContainerMove) {
-                    return gestureState.dy !== 0;
-                }
-                const isGoingDown = gestureState.y0 < gestureState.dy;
-                return this.isAValidMovement(gestureState.dx, gestureState.dy, isGoingDown);
-            },
-            onPanResponderMove: (evt, gestureState) => {
-                const isGoingDown = gestureState.dy > 0;
-                if (this.props.alwaysCaptureContainerMove &&
-                    !this.isAValidMovement(gestureState.dx, gestureState.dy, isGoingDown)) {
-                    return;
-                }
-
-                this.moveStart(gestureState);
-            },
-            onPanResponderRelease: (evt, gestureState) => {
-                this.moveFinished(gestureState);
-            },
-        });
-
-        this.secondaryPanGesture = PanResponder.create({
-            onMoveShouldSetPanResponder: (evt, gestureState) => {
-                const isGoingDown = gestureState.y0 < gestureState.dy;
-                return this.isAValidMovement(gestureState.dx, gestureState.dy, isGoingDown, true);
-            },
-            onPanResponderMove: (evt, gestureState) => {
-                this.moveStart(gestureState);
-            },
-            onPanResponderRelease: (evt, gestureState) => {
-                this.moveFinished(gestureState);
-            },
-        });
-
-        this.previousTop = initialPosition;
-        this.canDrag = true;
+        // These values  correspond to when the panel is fully open, when it is initially opened, and when it is closed
+        this.snapPoints = [marginFromTop, initialPosition, containerHeight];
 
         this.state = {
-            position: new Animated.Value(props.containerHeight),
-            initialPosition,
-            finalPosition: props.marginFromTop,
-            endPosition: 0,
+            lastSnap: initialPosition,
         };
+
+        this.lastScrollYValue = 0;
+        this.lastScrollY = new Animated.Value(0);
+        this.onRegisterLastScroll = Animated.event(
+            [{
+                nativeEvent: {
+                    contentOffset: {
+                        y: this.lastScrollY,
+                    },
+                },
+            }],
+            {useNativeDriver: true},
+        );
+        this.lastScrollY.addListener(({value}) => {
+            this.lastScrollYValue = value;
+        });
+
+        this.dragY = new Animated.Value(0);
+        this.onGestureEvent = Animated.event(
+            [{
+                nativeEvent: {
+                    translationY: this.dragY,
+                },
+            }],
+            {useNativeDriver: true},
+        );
+
+        this.reverseLastScrollY = Animated.multiply(
+            new Animated.Value(-1),
+            this.lastScrollY
+        );
+
+        this.translateYOffset = new Animated.Value(containerHeight);
+        this.translateY = Animated.add(
+            this.translateYOffset,
+            Animated.add(this.dragY, this.reverseLastScrollY)
+        ).interpolate({
+            inputRange: [marginFromTop, containerHeight],
+            outputRange: [marginFromTop, containerHeight],
+            extrapolate: 'clamp',
+        });
     }
 
     componentDidMount() {
-        this.startAnimation(this.props.containerHeight, this.state.initialPosition, false, true);
+        Animated.timing(this.translateYOffset, {
+            duration: 200,
+            toValue: this.snapPoints[1],
+            useNativeDriver: true,
+        }).start();
     }
 
-    handleTouchEnd = () => {
-        if (!this.isDragging) {
-            this.startAnimation(this.state.endPosition, this.props.containerHeight, false, true);
-        }
-    };
-
-    isAValidMovement = (distanceX, distanceY, isGoingDown, forceCheck = false) => {
-        const {endPosition, finalPosition} = this.state;
-
-        if (finalPosition !== endPosition || forceCheck || (isGoingDown && this.canDrag)) {
-            const moveTravelledFarEnough = Math.abs(distanceY) > Math.abs(distanceX) && Math.abs(distanceY) > 2;
-            return moveTravelledFarEnough;
-        }
-
-        return false;
-    };
-
-    moveStart = (gestureState) => {
-        if (this.viewRef && this.backdrop) {
-            const {endPosition} = this.state;
-            const position = endPosition - (gestureState.y0 - gestureState.moveY);
-            this.isDragging = true;
-
-            this.backdrop.setNativeProps({pointerEvents: 'none'});
-            this.updatePosition(position);
-        }
-    };
-
-    moveFinished = (gestureState) => {
-        if (this.viewRef) {
-            const isGoingDown = gestureState.y0 < gestureState.moveY;
-            let position = gestureState.moveY;
-            if (this.previousTop !== position) {
-                position = this.previousTop;
-            }
-
-            this.startAnimation(gestureState.y0, position, isGoingDown);
-        }
-    };
-
-    setBackdropRef = (ref) => {
-        this.backdrop = ref;
-    };
-
-    setDrag = (val) => {
-        this.canDrag = val;
-    };
-
-    setViewRef = (ref) => {
-        this.viewRef = ref;
-    };
-
-    startAnimation = (initialY, positionY, isGoingDown, initial = false) => {
-        const {allowStayMiddle, containerHeight, onRequestClose} = this.props;
-        const {finalPosition, initialPosition} = this.state;
-        const position = new Animated.Value(initial ? initialY : positionY);
-        let endPosition = (!isGoingDown && !initial ? finalPosition : positionY);
-
-        position.removeAllListeners();
-        if (isGoingDown) {
-            if (positionY <= this.state.initialPosition && allowStayMiddle) {
-                endPosition = initialPosition;
-            } else {
-                endPosition = containerHeight;
-            }
-        }
-
-        Animated.timing(position, {
-            toValue: endPosition,
-            duration: initial ? 200 : 100,
+    closeWithAnimation = () => {
+        Animated.timing(this.translateYOffset, {
+            duration: 200,
+            toValue: this.snapPoints[2],
             useNativeDriver: true,
-        }).start(() => {
-            if (this.viewRef && this.backdrop) {
-                this.setState({endPosition});
-                this.backdrop.setNativeProps({pointerEvents: 'box-only'});
-                this.isDragging = false;
-
-                if (endPosition === containerHeight) {
-                    onRequestClose();
-                }
-            }
-        });
-
-        position.addListener((pos) => {
-            if (this.viewRef) {
-                this.updatePosition(pos.value);
-            }
-        });
+        }).start(() => this.props.onRequestClose());
     };
 
-    updatePosition = (newPosition) => {
-        const {position} = this.state;
-        this.previousTop = newPosition;
-        position.setValue(newPosition);
+    onHeaderHandlerStateChange = ({nativeEvent}) => {
+        if (nativeEvent.oldState === GestureState.BEGAN) {
+            this.lastScrollY.setValue(0);
+        }
+        this.onHandlerStateChange({nativeEvent});
+    };
+
+    onHandlerStateChange = ({nativeEvent}) => {
+        if (nativeEvent.oldState === GestureState.ACTIVE) {
+            const {translationY, velocityY} = nativeEvent;
+            const {allowStayMiddle} = this.props;
+            const {lastSnap} = this.state;
+            const isGoingDown = translationY > 0;
+            const translation = translationY - this.lastScrollYValue;
+
+            const endOffsetY = lastSnap + translation;
+            let destSnapPoint = this.snapPoints[0];
+
+            if (Math.abs(translationY) < 50) {
+                // Only drag the panel after moving 50 or more points
+                destSnapPoint = lastSnap;
+            } else if (isGoingDown && !allowStayMiddle) {
+                // Just close the panel if the user pans down and we can't snap to the middle
+                destSnapPoint = this.snapPoints[2];
+            } else if (isGoingDown) {
+                destSnapPoint = this.snapPoints.find((s) => s >= endOffsetY);
+            } else {
+                destSnapPoint = this.snapPoints.find((s) => s <= endOffsetY);
+            }
+
+            if (destSnapPoint) {
+                this.translateYOffset.extractOffset();
+                this.translateYOffset.setValue(translationY);
+                this.translateYOffset.flattenOffset();
+                this.dragY.setValue(0);
+
+                if (destSnapPoint === this.snapPoints[2]) {
+                    this.closeWithAnimation();
+                } else {
+                    Animated.spring(this.translateYOffset, {
+                        velocity: velocityY,
+                        tension: 68,
+                        friction: 12,
+                        toValue: destSnapPoint,
+                        useNativeDriver: true,
+                    }).start(() => {
+                        this.setState({lastSnap: destSnapPoint});
+                    });
+                }
+            } else {
+                Animated.spring(this.translateYOffset, {
+                    velocity: velocityY,
+                    tension: 68,
+                    friction: 12,
+                    toValue: lastSnap,
+                    useNativeDriver: true,
+                }).start();
+            }
+        }
+    };
+
+    onSingleTap = ({nativeEvent}) => {
+        if (nativeEvent.state === GestureState.ACTIVE) {
+            this.closeWithAnimation();
+        }
+    };
+
+    scrollToTop = () => {
+        if (this.scrollViewRef?.current) {
+            this.scrollViewRef.current._component.scrollTo({ //eslint-disable-line no-underscore-dangle
+                x: 0,
+                y: 0,
+                animated: false,
+            });
+        }
     };
 
     render() {
-        const {children} = this.props;
-        const containerPosition = {
-            top: this.state.position,
+        const {children, header} = this.props;
+        const {lastSnap} = this.state;
+        const translateStyle = {
+            transform: [{translateY: this.translateY}],
         };
 
         return (
-            <View style={styles.viewport}>
+            <TapGestureHandler
+                maxDurationMs={100000}
+                ref={this.masterRef}
+                maxDeltaY={lastSnap - this.snapPoints[0]}
+            >
                 <View
-                    ref={this.setBackdropRef}
-                    style={styles.backdrop}
-                    pointerEvents='box-only'
-                    onTouchEnd={this.handleTouchEnd}
-                    {...this.secondaryPanGesture.panHandlers}
-                />
-                <SlideUpPanelIndicator
-                    containerPosition={containerPosition}
-                    panHandlers={this.secondaryPanGesture.panHandlers}
-                />
-                <Animated.View
-                    ref={this.setViewRef}
-                    style={[containerPosition, styles.container]}
-                    {...this.mainPanGesture.panHandlers}
+                    style={StyleSheet.absoluteFill}
+                    pointerEvents='box-none'
                 >
-                    <View style={{maxHeight: (this.props.containerHeight - this.props.headerHeight - CONTAINER_MARGIN)}}>
-                        {children}
-                    </View>
-                </Animated.View>
-            </View>
+                    <TapGestureHandler
+                        waitFor={this.backdropRef}
+                        onHandlerStateChange={this.onSingleTap}
+                    >
+                        <Animated.View style={styles.viewport}>
+                            <PanGestureHandler
+                                simultaneousHandlers={[this.scrollRef, this.masterRef]}
+                                waitFor={this.headerRef}
+                                shouldCancelWhenOutside={false}
+                                onGestureEvent={this.onGestureEvent}
+                                onHandlerStateChange={this.onHandlerStateChange}
+                                ref={this.backdropRef}
+                            >
+
+                                <Animated.View
+                                    style={styles.backdrop}
+                                    pointerEvents='box-only'
+                                />
+                            </PanGestureHandler>
+                        </Animated.View>
+                    </TapGestureHandler>
+                    <Animated.View style={[StyleSheet.absoluteFill, translateStyle]}>
+                        <PanGestureHandler
+                            simultaneousHandlers={[this.scrollRef, this.masterRef]}
+                            waitFor={this.headerRef}
+                            shouldCancelWhenOutside={false}
+                            onGestureEvent={this.onGestureEvent}
+                            onHandlerStateChange={this.onHeaderHandlerStateChange}
+                        >
+                            <Animated.View>
+                                <SlideUpPanelIndicator/>
+                                {header(this.headerRef)}
+                            </Animated.View>
+                        </PanGestureHandler>
+                        <PanGestureHandler
+                            ref={this.panRef}
+                            simultaneousHandlers={[this.scrollRef, this.masterRef]}
+                            waitFor={this.headerRef}
+                            shouldCancelWhenOutside={false}
+                            onGestureEvent={this.onGestureEvent}
+                            onHandlerStateChange={this.onHandlerStateChange}
+                        >
+                            <Animated.View style={[styles.container, !header && styles.border]}>
+                                <NativeViewGestureHandler
+                                    ref={this.scrollRef}
+                                    waitFor={this.masterRef}
+                                    simultaneousHandlers={this.panRef}
+                                >
+                                    <Animated.ScrollView
+                                        ref={this.scrollViewRef}
+                                        bounces={false}
+                                        onScrollBeginDrag={this.onRegisterLastScroll}
+                                        scrollEventThrottle={1}
+                                    >
+                                        {children}
+                                    </Animated.ScrollView>
+                                </NativeViewGestureHandler>
+                            </Animated.View>
+                        </PanGestureHandler>
+                    </Animated.View>
+                </View>
+            </TapGestureHandler>
         );
     }
 }
@@ -241,6 +304,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
+    },
+    border: {
         ...Platform.select({
             android: {
                 borderTopRightRadius: 2,

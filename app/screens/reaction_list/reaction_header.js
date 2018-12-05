@@ -4,16 +4,18 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Animated,
     Platform,
     ScrollView,
     StyleSheet,
-    View,
 } from 'react-native';
+import {NativeViewGestureHandler} from 'react-native-gesture-handler';
 
 import ReactionHeaderItem from './reaction_header_item';
 
 export default class ReactionHeader extends PureComponent {
     static propTypes = {
+        forwardedRef: PropTypes.object,
         selected: PropTypes.string.isRequired,
         onSelectReaction: PropTypes.func.isRequired,
         reactions: PropTypes.array.isRequired,
@@ -41,15 +43,19 @@ export default class ReactionHeader extends PureComponent {
 
     render() {
         return (
-            <View style={styles.container}>
-                <ScrollView
-                    alwaysBounceHorizontal={false}
-                    horizontal={true}
-                    overScrollMode='never'
-                >
-                    {this.renderReactionHeaderItems()}
-                </ScrollView>
-            </View>
+            <NativeViewGestureHandler
+                ref={this.props.forwardedRef}
+            >
+                <Animated.View style={styles.container}>
+                    <ScrollView
+                        alwaysBounceHorizontal={false}
+                        horizontal={true}
+                        overScrollMode='never'
+                    >
+                        {this.renderReactionHeaderItems()}
+                    </ScrollView>
+                </Animated.View>
+            </NativeViewGestureHandler>
         );
     }
 }

@@ -39,8 +39,15 @@ export default class PostOption extends PureComponent {
         text: PropTypes.string.isRequired,
     };
 
+    handleOnPress = () => {
+        // Wait for the tap animation so that the user has some feedback
+        setTimeout(() => {
+            this.props.onPress();
+        }, 250);
+    };
+
     render() {
-        const {destructive, icon, onPress, text} = this.props;
+        const {destructive, icon, text} = this.props;
         const image = icons[icon];
 
         const Touchable = Platform.select({
@@ -50,12 +57,12 @@ export default class PostOption extends PureComponent {
 
         const touchableProps = Platform.select({
             ios: {
-                underlayColor: 'rgba(0, 0, 0, 0.05)',
+                underlayColor: 'rgba(0, 0, 0, 0.1)',
             },
             android: {
                 background: TouchableNativeFeedback.Ripple( //eslint-disable-line new-cap
-                    'rgba(0, 0, 0, 0.05)',
-                    true,
+                    'rgba(0, 0, 0, 0.1)',
+                    false,
                 ),
             },
         });
@@ -63,8 +70,9 @@ export default class PostOption extends PureComponent {
         return (
             <View style={style.container} >
                 <Touchable
-                    onPressOut={onPress}
+                    onPress={this.handleOnPress}
                     {...touchableProps}
+                    style={style.row}
                 >
                     <View style={style.row}>
                         <View style={style.icon}>
