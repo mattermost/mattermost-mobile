@@ -28,7 +28,7 @@ export default class SlideUpPanel extends PureComponent {
             PropTypes.arrayOf(PropTypes.node),
             PropTypes.node,
         ]).isRequired,
-        header: PropTypes.element,
+        header: PropTypes.func,
         headerHeight: PropTypes.number,
         initialPosition: PropTypes.number,
         marginFromTop: PropTypes.number,
@@ -37,6 +37,7 @@ export default class SlideUpPanel extends PureComponent {
 
     static defaultProps = {
         allowStayMiddle: true,
+        header: () => null,
         headerHeight: 0,
         initialPosition: 0.5,
         marginFromTop: TOP_MARGIN,
@@ -52,6 +53,7 @@ export default class SlideUpPanel extends PureComponent {
         this.panRef = React.createRef();
         this.scrollRef = React.createRef();
         this.scrollViewRef = React.createRef();
+        this.headerRef = React.createRef();
         this.backdropRef = React.createRef();
 
         const initialUsedSpace = Math.abs(props.initialPosition);
@@ -144,7 +146,9 @@ export default class SlideUpPanel extends PureComponent {
             const endOffsetY = lastSnap + translation;
             let destSnapPoint = this.snapPoints[0];
 
-            if (isGoingDown && !allowStayMiddle) {
+            if (Math.abs(translationY) < 50) {
+                destSnapPoint = lastSnap;
+            } else if (isGoingDown && !allowStayMiddle) {
                 destSnapPoint = containerHeight;
             } else if (isGoingDown) {
                 destSnapPoint = this.snapPoints.find((s) => s >= endOffsetY);
@@ -223,6 +227,7 @@ export default class SlideUpPanel extends PureComponent {
                         <Animated.View style={styles.viewport}>
                             <PanGestureHandler
                                 simultaneousHandlers={[this.scrollRef, this.masterRef]}
+                                waitFor={this.headerRef}
                                 shouldCancelWhenOutside={false}
                                 onGestureEvent={this.onGestureEvent}
                                 onHandlerStateChange={this.onHandlerStateChange}
@@ -239,18 +244,20 @@ export default class SlideUpPanel extends PureComponent {
                     <Animated.View style={[StyleSheet.absoluteFillObject, translateStyle]}>
                         <PanGestureHandler
                             simultaneousHandlers={[this.scrollRef, this.masterRef]}
+                            waitFor={this.headerRef}
                             shouldCancelWhenOutside={false}
                             onGestureEvent={this.onGestureEvent}
                             onHandlerStateChange={this.onHeaderHandlerStateChange}
                         >
                             <Animated.View>
                                 <SlideUpPanelIndicator/>
-                                {header}
+                                {header(this.headerRef)}
                             </Animated.View>
                         </PanGestureHandler>
                         <PanGestureHandler
                             ref={this.panRef}
                             simultaneousHandlers={[this.scrollRef, this.masterRef]}
+                            waitFor={this.headerRef}
                             shouldCancelWhenOutside={false}
                             onGestureEvent={this.onGestureEvent}
                             onHandlerStateChange={this.onHandlerStateChange}

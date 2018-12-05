@@ -165,7 +165,7 @@ export default class ReactionList extends PureComponent {
         ));
     };
 
-    renderHeader = () => {
+    renderHeader = (forwardedRef) => {
         const {theme} = this.props;
         const {selected, sortedReactionsForHeader} = this.state;
 
@@ -175,6 +175,7 @@ export default class ReactionList extends PureComponent {
                 onSelectReaction={this.handleOnSelectReaction}
                 reactions={sortedReactionsForHeader}
                 theme={theme}
+                forwardedRef={forwardedRef}
             />
         );
     };
@@ -188,7 +189,7 @@ export default class ReactionList extends PureComponent {
                     ref={this.refSlideUpPanel}
                     onRequestClose={this.close}
                     initialPosition={0.55}
-                    header={this.renderHeader()}
+                    header={this.renderHeader}
                     headerHeight={37.5}
                 >
                     {this.renderReactionRows()}
