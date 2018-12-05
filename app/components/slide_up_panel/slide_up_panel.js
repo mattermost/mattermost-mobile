@@ -22,7 +22,9 @@ const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;
 
 export default class SlideUpPanel extends PureComponent {
     static propTypes = {
+        // Whether or not to allow the panel to snap to the initial position after it has been opened
         allowStayMiddle: PropTypes.bool,
+
         containerHeight: PropTypes.number,
         children: PropTypes.oneOfType([
             PropTypes.arrayOf(PropTypes.node),
@@ -30,7 +32,12 @@ export default class SlideUpPanel extends PureComponent {
         ]).isRequired,
         header: PropTypes.func,
         headerHeight: PropTypes.number,
+
+        // The initial position of the SlideUpPanel when it's first opened. If this value is between 0 and 1,
+        // it is treated as a percentage of the containerHeight.
         initialPosition: PropTypes.number,
+
+        // The space between the top of the panel and the top of the container when the SlideUpPanel is fully open.
         marginFromTop: PropTypes.number,
         onRequestClose: PropTypes.func,
     };
@@ -64,6 +71,7 @@ export default class SlideUpPanel extends PureComponent {
             initialPosition = ((containerHeight - (headerHeight + BOTTOM_MARGIN)) - initialUsedSpace);
         }
 
+        // These values  correspond to when the panel is fully open, when it is initially opened, and when it is closed
         this.snapPoints = [marginFromTop, initialPosition, containerHeight];
 
         this.state = {
@@ -147,8 +155,10 @@ export default class SlideUpPanel extends PureComponent {
             let destSnapPoint = this.snapPoints[0];
 
             if (Math.abs(translationY) < 50) {
+                // Only drag the panel after moving 50 or more points
                 destSnapPoint = lastSnap;
             } else if (isGoingDown && !allowStayMiddle) {
+                // Just close the panel if the user pans down and we can't snap to the middle
                 destSnapPoint = this.snapPoints[2];
             } else if (isGoingDown) {
                 destSnapPoint = this.snapPoints.find((s) => s >= endOffsetY);

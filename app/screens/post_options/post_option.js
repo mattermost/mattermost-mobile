@@ -40,6 +40,7 @@ export default class PostOption extends PureComponent {
     };
 
     handleOnPress = () => {
+        // Wait for the tap animation so that the user has some feedback
         setTimeout(() => {
             this.props.onPress();
         }, 250);
