@@ -34,6 +34,7 @@
   "channel_modal.purpose": "Purpose",
   "channel_modal.purposeEx": "E.g.: \"A channel to file bugs and improvements\"",
   "channel_notifications.muteChannel.settings": "Mute channel",
+  "channel_notifications.ignoreChannelMentions.settings": "Ignore @channel, @here, @all",
   "combined_system_message.added_to_channel.many_expanded": "{users} and {lastUser} were **added to the channel** by {actor}.",
   "combined_system_message.added_to_channel.one": "{firstUser} **added to the channel** by {actor}.",
   "combined_system_message.added_to_channel.one_you": "You were **added to the channel** by {actor}.",
