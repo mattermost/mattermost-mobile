@@ -236,7 +236,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 OpenFile.openDoc([{
                     url: `${prefix}${path}`,
                     fileNameOptional: file.caption,
-                    fileName: data.name,
+                    fileName: encodeURI(data.name.split('.').slice(0, -1).join('.')),
                     fileType: data.extension,
                     cache: false,
                 }], (error) => {
