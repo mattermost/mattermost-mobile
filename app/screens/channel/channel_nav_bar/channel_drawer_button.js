@@ -113,8 +113,6 @@ class ChannelDrawerButton extends PureComponent {
                     style={style.badge}
                     countStyle={style.mention}
                     count={badgeCount}
-                    minHeight={20}
-                    minWidth={20}
                     onPress={this.handlePress}
                 />
             );

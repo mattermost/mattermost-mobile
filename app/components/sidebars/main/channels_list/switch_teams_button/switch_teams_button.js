@@ -53,8 +53,6 @@ export default class SwitchTeamsButton extends React.PureComponent {
                 style={styles.badge}
                 countStyle={styles.mention}
                 count={mentionCount}
-                minHeight={20}
-                minWidth={20}
             />
         );
 

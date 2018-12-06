@@ -15,8 +15,8 @@ import {
 export default class Badge extends PureComponent {
     static defaultProps = {
         extraPaddingHorizontal: 10,
-        minHeight: 0,
-        minWidth: 0,
+        minHeight: 20,
+        minWidth: 20,
     };
 
     static propTypes = {
@@ -81,7 +81,7 @@ export default class Badge extends PureComponent {
             } else {
                 width = e.nativeEvent.layout.width + this.props.extraPaddingHorizontal;
             }
-            width = Math.max(width + 10, this.props.minWidth);
+            width = Math.max(this.props.count < 10 ? width : width + 10, this.props.minWidth);
             const borderRadius = width / 2;
             this.setNativeProps({
                 style: {
@@ -105,12 +105,19 @@ export default class Badge extends PureComponent {
             extra.marginBottom = 1;
         }
         return (
-            <Text
-                style={[styles.text, this.props.countStyle, extra]}
-                onLayout={this.onLayout}
+            <View
+                ref='badgeContainer'
+                style={[styles.badge, this.props.style, {opacity: 0}]}
             >
-                {text}
-            </Text>
+                <View style={styles.wrapper}>
+                    <Text
+                        style={[styles.text, this.props.countStyle, extra]}
+                        onLayout={this.onLayout}
+                    >
+                        {text}
+                    </Text>
+                </View>
+            </View>
         );
     };
 
@@ -124,14 +131,7 @@ export default class Badge extends PureComponent {
                 {...this.panResponder.panHandlers}
                 onPress={this.handlePress}
             >
-                <View
-                    ref='badgeContainer'
-                    style={[styles.badge, this.props.style, {opacity: 0}]}
-                >
-                    <View style={styles.wrapper}>
-                        {this.renderText()}
-                    </View>
-                </View>
+                {this.renderText()}
             </TouchableWithoutFeedback>
         );
     }
