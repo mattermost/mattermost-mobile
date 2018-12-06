@@ -162,8 +162,6 @@ export default class ChannelItem extends PureComponent {
                     style={style.badge}
                     countStyle={style.mention}
                     count={mentions}
-                    minHeight={20}
-                    minWidth={20}
                     onPress={this.onPress}
                 />
             );
