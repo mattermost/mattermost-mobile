@@ -11,19 +11,20 @@ import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 import FormattedText from 'app/components/formatted_text';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 export default class Theme extends React.PureComponent {
     static propTypes = {
-        teamId: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired,
-        userId: PropTypes.string.isRequired,
         actions: PropTypes.shape({
             savePreferences: PropTypes.func.isRequired,
         }).isRequired,
         allowedThemes: PropTypes.arrayOf(PropTypes.object),
         customTheme: PropTypes.object,
+        navigator: PropTypes.object.isRequired,
+        teamId: PropTypes.string.isRequired,
+        theme: PropTypes.object.isRequired,
+        userId: PropTypes.string.isRequired,
     };
 
     static contextTypes = {
@@ -41,6 +42,12 @@ export default class Theme extends React.PureComponent {
             };
         }
         return null;
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.theme !== this.props.theme) {
+            setNavigatorStyles(this.props.navigator, this.props.theme);
+        }
     }
 
     setTheme = (key) => {
