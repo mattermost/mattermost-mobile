@@ -133,9 +133,10 @@ export default class ExtensionTeam extends PureComponent {
         }
 
         return (
-            <View>
+            <React.Fragment>
                 {this.renderSearchBar(styles)}
                 <SectionList
+                    style={styles.flex}
                     sections={sections}
                     ItemSeparatorComponent={this.renderItemSeparator}
                     renderItem={this.renderItem}
@@ -149,7 +150,7 @@ export default class ExtensionTeam extends PureComponent {
                     scrollEventThrottle={100}
                     windowSize={5}
                 />
-            </View>
+            </React.Fragment>
         );
     };
 
