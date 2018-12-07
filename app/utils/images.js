@@ -34,6 +34,9 @@ export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHe
     ) {
         imageHeight = IMAGE_MIN_DIMENSION;
         imageWidth = imageHeight * heightRatio;
+    } else if (viewPortHeight && imageHeight > viewPortHeight) {
+        imageHeight = viewPortHeight;
+        imageWidth = imageHeight * heightRatio;
     }
 
     return {
