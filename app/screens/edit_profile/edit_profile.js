@@ -21,6 +21,7 @@ import TextSetting from 'app/components/widgets/settings/text_setting';
 import Loading from 'app/components/loading';
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar/index';
+import ProfilePictureButton from 'app/components/profile_picture_button';
 import ProfilePicture from 'app/components/profile_picture';
 import AttachmentButton from 'app/components/attachment_button';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -157,6 +158,7 @@ export default class EditProfile extends PureComponent {
 
         const {
             profileImage,
+            profileImageRemove,
             firstName,
             lastName,
             username,
@@ -179,6 +181,10 @@ export default class EditProfile extends PureComponent {
             this.uploadProfileImage().catch(this.handleUploadError);
         }
 
+        if (profileImageRemove) {
+            console.log('Removing profile image!');
+        }
+
         if (this.canUpdate()) {
             const {error} = await actions.updateUser(user);
             if (error) {
@@ -195,6 +201,14 @@ export default class EditProfile extends PureComponent {
         this.setState({profileImage: image});
         this.emitCanUpdateAccount(true);
     };
+
+    handleRemoveProfileImage = () => {
+        this.setState({profileImageRemove: true});
+        this.emitCanUpdateAccount(true);
+        this.props.navigator.dismissModal({
+            animationType: 'none',
+        });
+    }
 
     uploadProfileImage = async () => {
         const {profileImage} = this.state;
@@ -461,6 +475,7 @@ export default class EditProfile extends PureComponent {
 
         const {
             profileImage,
+            profileImageRemove,
             error,
             updating,
         } = this.state;
@@ -502,7 +517,9 @@ export default class EditProfile extends PureComponent {
                     {displayError}
                     <View style={[style.scrollView]}>
                         <View style={style.top}>
-                            <AttachmentButton
+                            <ProfilePictureButton
+                                currentUser={currentUser}
+                                theme={theme}
                                 blurTextBox={emptyFunction}
                                 browseFileTypes={DocumentPickerUtil.images()}
                                 canTakeVideo={false}
@@ -512,7 +529,7 @@ export default class EditProfile extends PureComponent {
                                 navigator={navigator}
                                 wrapper={true}
                                 uploadFiles={this.handleUploadProfileImage}
-                                onShowFileSizeWarning={this.onShowFileSizeWarning}
+                                extraOptions={this.handleRemoveProfileImage}
                             >
                                 <ProfilePicture
                                     userId={currentUser.id}
@@ -521,8 +538,9 @@ export default class EditProfile extends PureComponent {
                                     statusSize={40}
                                     edit={true}
                                     imageUri={uri}
+                                    profileImageRemove={profileImageRemove}
                                 />
-                            </AttachmentButton>
+                            </ProfilePictureButton>
                         </View>
                         {this.renderFirstNameSettings()}
                         <View style={style.separator}/>

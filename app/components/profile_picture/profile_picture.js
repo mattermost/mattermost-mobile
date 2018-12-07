@@ -31,6 +31,7 @@ export default class ProfilePicture extends PureComponent {
         edit: PropTypes.bool,
         imageUri: PropTypes.string,
         profileImageUri: PropTypes.string,
+        profileImageRemove: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getStatusForId: PropTypes.func.isRequired,
@@ -49,13 +50,8 @@ export default class ProfilePicture extends PureComponent {
         pictureUrl: null,
     };
 
-    componentDidMount() {
-        const {actions, edit, imageUri, profileImageUri, user, status} = this.props;
-        this.mounted = true;
-
-        if (!status && user) {
-            actions.getStatusForId(user.id);
-        }
+    componentWillMount() {
+        const {edit, remove, imageUri, profileImageUri, user} = this.props;
 
         if (profileImageUri) {
             this.setImageURL(profileImageUri);
@@ -103,8 +99,15 @@ export default class ProfilePicture extends PureComponent {
         }
     }
 
+    componentDidUpdate(prevProps) {
+        // Remove the profile image from the UI before removing from server
+        if (this.props.profileImageRemove !== prevProps.profileImageRemove) {
+            this.setImageURL(null);
+        }
+    }
+
     render() {
-        const {edit, showStatus, theme} = this.props;
+        const {edit, showStatus, theme, profileImageRemove} = this.props;
         const {pictureUrl} = this.state;
         const style = getStyleSheet(theme);
 
