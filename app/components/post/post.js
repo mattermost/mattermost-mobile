@@ -188,7 +188,7 @@ export default class Post extends PureComponent {
 
     isReplyPost = () => {
         const {renderReplies, post} = this.props;
-        return Boolean(renderReplies && post.root_id && !isPostEphemeral(post));
+        return Boolean(renderReplies && post.root_id && (!isPostEphemeral(post) || post.state === Posts.POST_DELETED));
     };
 
     replyBarStyle = () => {
