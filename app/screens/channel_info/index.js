@@ -14,6 +14,7 @@ import {
 } from 'mattermost-redux/actions/channels';
 import {getCustomEmojisInText} from 'mattermost-redux/actions/emojis';
 import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
+import {clearPinnedPosts} from 'mattermost-redux/actions/search';
 import {General} from 'mattermost-redux/constants';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {
@@ -90,6 +91,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            clearPinnedPosts,
             closeDMChannel,
             closeGMChannel,
             deleteChannel,

@@ -27,6 +27,7 @@ import ChannelInfoRow from './channel_info_row';
 export default class ChannelInfo extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            clearPinnedPosts: PropTypes.func.isRequired,
             closeDMChannel: PropTypes.func.isRequired,
             closeGMChannel: PropTypes.func.isRequired,
             deleteChannel: PropTypes.func.isRequired,
@@ -144,10 +145,11 @@ export default class ChannelInfo extends PureComponent {
 
     goToPinnedPosts = preventDoubleTap(() => {
         const {formatMessage} = this.context.intl;
-        const {currentChannel, navigator, theme} = this.props;
+        const {actions, currentChannel, navigator, theme} = this.props;
         const id = t('channel_header.pinnedPosts');
         const defaultMessage = 'Pinned Posts';
 
+        actions.clearPinnedPosts(currentChannel.id);
         navigator.push({
             backButtonTitle: '',
             screen: 'PinnedPosts',
