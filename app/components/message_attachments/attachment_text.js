@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import PropTypes from 'prop-types';
 
 import Markdown from 'app/components/markdown';
 import ShowMoreButton from 'app/components/show_more_button';
 import CustomPropTypes from 'app/constants/custom_prop_types';
+
+const SHOW_MORE_HEIGHT = 60;
 
 export default class AttachmentText extends PureComponent {
     static propTypes = {
@@ -24,7 +26,7 @@ export default class AttachmentText extends PureComponent {
 
     static getDerivedStateFromProps(nextProps, prevState) {
         const {deviceHeight} = nextProps;
-        const maxHeight = deviceHeight * 0.4;
+        const maxHeight = Math.round((deviceHeight * 0.4) + SHOW_MORE_HEIGHT);
 
         if (maxHeight !== prevState.maxHeight) {
             return {
@@ -46,9 +48,9 @@ export default class AttachmentText extends PureComponent {
 
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
-        const {deviceHeight} = this.props;
+        const {maxHeight} = this.state;
 
-        if (height >= (deviceHeight * 0.6)) {
+        if (height >= maxHeight) {
             this.setState({
                 isLongText: true,
             });
@@ -79,20 +81,27 @@ export default class AttachmentText extends PureComponent {
 
         return (
             <View style={hasThumbnail && style.container}>
-                <View
-                    style={[(isLongText && collapsed && {maxHeight, overflow: 'hidden'})]}
-                    removeClippedSubviews={isLongText && collapsed}
+                <ScrollView
+                    style={{maxHeight: (collapsed ? maxHeight : null), overflow: 'hidden'}}
+                    scrollEnabled={false}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                 >
-                    <Markdown
-                        baseTextStyle={baseTextStyle}
-                        textStyles={textStyles}
-                        blockStyles={blockStyles}
-                        imageMetadata={metadata?.images}
-                        value={value}
-                        navigator={navigator}
-                        onPermalinkPress={onPermalinkPress}
-                    />
-                </View>
+                    <View
+                        onLayout={this.handleLayout}
+                        removeClippedSubviews={isLongText && collapsed}
+                    >
+                        <Markdown
+                            baseTextStyle={baseTextStyle}
+                            textStyles={textStyles}
+                            blockStyles={blockStyles}
+                            imageMetadata={metadata?.images}
+                            value={value}
+                            navigator={navigator}
+                            onPermalinkPress={onPermalinkPress}
+                        />
+                    </View>
+                </ScrollView>
                 {isLongText &&
                 <ShowMoreButton
                     onPress={this.toggleCollapseState}
