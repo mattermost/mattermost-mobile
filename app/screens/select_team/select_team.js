@@ -317,7 +317,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 18,
         },
         imageContainer: {
-            backgroundColor: theme.centerChannelBg,
+            backgroundColor: '#FFF',
         },
         noTeam: {
             color: theme.centerChannelColor,
