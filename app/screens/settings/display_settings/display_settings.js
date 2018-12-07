@@ -28,8 +28,6 @@ export default class DisplaySettings extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    static navigatorStyle = {};
-
     state = {
         showClockDisplaySettings: false,
     };
