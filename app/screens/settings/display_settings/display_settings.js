@@ -12,7 +12,7 @@ import {
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 import ClockDisplay from 'app/screens/clock_display';
 
@@ -28,8 +28,19 @@ export default class DisplaySettings extends PureComponent {
         intl: intlShape.isRequired,
     };
 
+    static navigatorStyle = {};
+
     state = {
         showClockDisplaySettings: false,
+    };
+
+    constructor(props) {
+        super(props);
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    }
+
+    closeClockDisplaySettings = () => {
+        this.setState({showClockDisplaySettings: false});
     };
 
     goToClockDisplaySettings = preventDoubleTap(() => {
@@ -91,8 +102,10 @@ export default class DisplaySettings extends PureComponent {
         });
     });
 
-    closeClockDisplaySettings = () => {
-        this.setState({showClockDisplaySettings: false});
+    onNavigatorEvent = (event) => {
+        if (event.id === 'willAppear') {
+            setNavigatorStyles(this.props.navigator, this.props.theme);
+        }
     };
 
     render() {

@@ -14,13 +14,16 @@ jest.mock('react-intl');
 
 describe('Theme', () => {
     const baseProps = {
-        teamId: 'test-team',
-        theme: Preferences.THEMES.default,
-        userId: 'test-user',
         actions: {
             savePreferences: jest.fn(),
         },
         allowedThemes,
+        navigator: {
+            setOnNavigatorEvent: jest.fn(),
+        },
+        teamId: 'test-team',
+        theme: Preferences.THEMES.default,
+        userId: 'test-user',
     };
 
     test('should match snapshot', () => {
