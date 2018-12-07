@@ -140,6 +140,7 @@ export default class SlideUpPanel extends PureComponent {
     onHeaderHandlerStateChange = ({nativeEvent}) => {
         if (nativeEvent.oldState === GestureState.BEGAN) {
             this.lastScrollY.setValue(0);
+            this.lastScrollYValue = 0;
         }
         this.onHandlerStateChange({nativeEvent});
     };
@@ -155,7 +156,7 @@ export default class SlideUpPanel extends PureComponent {
             const endOffsetY = lastSnap + translation;
             let destSnapPoint = this.snapPoints[0];
 
-            if (Math.abs(translationY) < 50) {
+            if (Math.abs(translationY) < 50 && allowStayMiddle) {
                 // Only drag the panel after moving 50 or more points
                 destSnapPoint = lastSnap;
             } else if (isGoingDown && !allowStayMiddle) {
@@ -184,6 +185,11 @@ export default class SlideUpPanel extends PureComponent {
                         useNativeDriver: true,
                     }).start(() => {
                         this.setState({lastSnap: destSnapPoint});
+
+                        // When dragging down the panel when is fully open reset the scrollView to the top
+                        if (isGoingDown && destSnapPoint !== this.snapPoints[0]) {
+                            this.scrollToTop();
+                        }
                     });
                 }
             } else {
@@ -284,6 +290,7 @@ export default class SlideUpPanel extends PureComponent {
                                         bounces={false}
                                         onScrollBeginDrag={this.onRegisterLastScroll}
                                         scrollEventThrottle={1}
+                                        style={{marginBottom: (this.props.marginFromTop + BOTTOM_MARGIN)}}
                                     >
                                         {children}
                                     </Animated.ScrollView>
