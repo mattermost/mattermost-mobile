@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    ScrollView,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -79,7 +80,7 @@ export default class PostBody extends PureComponent {
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        const maxHeight = (nextProps.deviceHeight * 0.6) + SHOW_MORE_HEIGHT;
+        const maxHeight = Math.round((nextProps.deviceHeight * 0.6) + SHOW_MORE_HEIGHT);
         if (maxHeight !== prevState.maxHeight) {
             return {
                 maxHeight,
@@ -95,9 +96,9 @@ export default class PostBody extends PureComponent {
 
     measurePost = (event) => {
         const {height} = event.nativeEvent.layout;
-        const {deviceHeight, showLongPost} = this.props;
+        const {showLongPost} = this.props;
 
-        if (!showLongPost && height >= (deviceHeight * 1.2)) {
+        if (!showLongPost && height >= this.state.maxHeight) {
             this.setState({
                 isLongPost: true,
             });
@@ -310,6 +311,7 @@ export default class PostBody extends PureComponent {
             postType,
             replyBarStyle,
             shouldRenderJumboEmoji,
+            showLongPost,
             theme,
         } = this.props;
         const {isLongPost, maxHeight} = this.state;
@@ -356,7 +358,8 @@ export default class PostBody extends PureComponent {
         } else if (message.length) {
             messageComponent = (
                 <View
-                    style={[style.messageContainer, (isPendingOrFailedPost && style.pendingPost), (isLongPost && {maxHeight})]}
+                    style={[style.messageContainer, (isReplyPost && style.reply), (isPendingOrFailedPost && style.pendingPost)]}
+                    onLayout={this.measurePost}
                     removeClippedSubviews={isLongPost}
                 >
                     <Markdown
@@ -380,15 +383,20 @@ export default class PostBody extends PureComponent {
         if (!hasBeenDeleted) {
             body = (
                 <View style={style.messageBody}>
-                    <View onLayout={this.measurePost}>
+                    <ScrollView
+                        style={{maxHeight: (showLongPost ? null : maxHeight), overflow: 'hidden'}}
+                        scrollEnabled={false}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                    >
                         {messageComponent}
-                        {isLongPost &&
-                        <ShowMoreButton
-                            highlight={highlight}
-                            onPress={this.openLongPost}
-                        />
-                        }
-                    </View>
+                    </ScrollView>
+                    {isLongPost &&
+                    <ShowMoreButton
+                        highlight={highlight}
+                        onPress={this.openLongPost}
+                    />
+                    }
                     {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
                     {this.renderFileAttachments()}
                     {this.renderReactions()}
@@ -402,16 +410,16 @@ export default class PostBody extends PureComponent {
                 <View style={[style.row]}>
                     {body}
                     {isFailed &&
-                        <TouchableOpacity
-                            onPress={onFailedPostPress}
-                            style={style.retry}
-                        >
-                            <Icon
-                                name='ios-information-circle-outline'
-                                size={26}
-                                color={theme.errorTextColor}
-                            />
-                        </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={onFailedPostPress}
+                        style={style.retry}
+                    >
+                        <Icon
+                            name='ios-information-circle-outline'
+                            size={26}
+                            color={theme.errorTextColor}
+                        />
+                    </TouchableOpacity>
                     }
                 </View>
             </View>
@@ -430,8 +438,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: '100%',
         },
         messageContainer: {
-            overflow: 'hidden',
             width: '100%',
+        },
+        reply: {
+            paddingRight: 10,
         },
         retry: {
             justifyContent: 'center',
