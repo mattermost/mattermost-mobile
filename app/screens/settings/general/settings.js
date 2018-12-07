@@ -43,12 +43,6 @@ class Settings extends PureComponent {
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
-        }
-    }
-
     errorEmailBody = () => {
         const {config, currentUserId, currentTeamId, errors} = this.props;
         let contents = [
@@ -180,6 +174,10 @@ class Settings extends PureComponent {
     });
 
     onNavigatorEvent = (event) => {
+        if (event.id === 'willAppear') {
+            setNavigatorStyles(this.props.navigator, this.props.theme);
+        }
+
         if (event.type === 'NavBarButtonPress') {
             if (event.id === 'close-settings') {
                 this.props.navigator.dismissModal({

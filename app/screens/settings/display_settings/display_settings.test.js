@@ -15,7 +15,10 @@ describe('DisplaySettings', () => {
         theme: Preferences.THEMES.default,
         enableTheme: false,
         enableTimezone: false,
-        navigator: {push: () => {}}, // eslint-disable-line no-empty-function
+        navigator: {
+            push: jest.fn(),
+            setOnNavigatorEvent: jest.fn(),
+        },
     };
 
     test('should match snapshot', () => {
