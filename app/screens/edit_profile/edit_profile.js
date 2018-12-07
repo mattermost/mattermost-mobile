@@ -23,7 +23,6 @@ import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar/index';
 import ProfilePictureButton from 'app/components/profile_picture_button';
 import ProfilePicture from 'app/components/profile_picture';
-import AttachmentButton from 'app/components/attachment_button';
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
@@ -60,6 +59,7 @@ export default class EditProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             setProfileImageUri: PropTypes.func.isRequired,
+            removeProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
@@ -174,7 +174,7 @@ export default class EditProfile extends PureComponent {
             position,
             email,
         };
-        const {actions} = this.props;
+        const {actions, currentUser} = this.props;
 
         if (profileImage) {
             actions.setProfileImageUri(profileImage.uri);
@@ -182,7 +182,7 @@ export default class EditProfile extends PureComponent {
         }
 
         if (profileImageRemove) {
-            console.log('Removing profile image!');
+            actions.removeProfileImage(currentUser.id);
         }
 
         if (this.canUpdate()) {
@@ -521,11 +521,6 @@ export default class EditProfile extends PureComponent {
                                 currentUser={currentUser}
                                 theme={theme}
                                 blurTextBox={emptyFunction}
-                                browseFileTypes={DocumentPickerUtil.images()}
-                                canTakeVideo={false}
-                                canBrowseVideoLibrary={false}
-                                maxFileSize={MAX_SIZE}
-                                theme={theme}
                                 navigator={navigator}
                                 wrapper={true}
                                 uploadFiles={this.handleUploadProfileImage}

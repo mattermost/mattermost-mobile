@@ -42,7 +42,7 @@ export default class AttachmentButton extends PureComponent {
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
         wrapper: PropTypes.bool,
-        extraOptions: PropTypes.object
+        extraOptions: PropTypes.object,
     };
 
     static defaultProps = {
@@ -408,7 +408,7 @@ export default class AttachmentButton extends PureComponent {
             });
         }
 
-        if (extraOptions !== null) {
+        if (typeof extraOptions !== 'undefined') {
             options.items.push(extraOptions);
         }
 

@@ -51,7 +51,7 @@ export default class ProfilePicture extends PureComponent {
     };
 
     componentWillMount() {
-        const {edit, remove, imageUri, profileImageUri, user} = this.props;
+        const {edit, imageUri, profileImageUri, user} = this.props;
 
         if (profileImageUri) {
             this.setImageURL(profileImageUri);
@@ -107,7 +107,7 @@ export default class ProfilePicture extends PureComponent {
     }
 
     render() {
-        const {edit, showStatus, theme, profileImageRemove} = this.props;
+        const {edit, showStatus, theme} = this.props;
         const {pictureUrl} = this.state;
         const style = getStyleSheet(theme);
 

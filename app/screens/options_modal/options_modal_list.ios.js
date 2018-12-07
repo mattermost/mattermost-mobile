@@ -46,7 +46,7 @@ export default class OptionsModalList extends PureComponent {
         const options = items.map((item, index) => {
             let textComponent;
             let optionIconStyle = style.optionIcon;
-            if (typeof(item.iconStyle) !== 'undefined') {
+            if (typeof item.iconStyle !== 'undefined') {
                 optionIconStyle = item.iconStyle;
             }
 

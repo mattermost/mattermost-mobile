@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {updateMe} from 'mattermost-redux/actions/users';
+import {updateMe, setDefaultProfileImage} from 'mattermost-redux/actions/users';
 
 import {ViewTypes} from 'app/constants';
 
@@ -25,7 +25,21 @@ export function setProfileImageUri(imageUri = '') {
     };
 }
 
+export function removeProfileImage(user, success, error) {
+    return async (dispatch, getState) => {
+        const result = await setDefaultProfileImage(user)(dispatch, getState);
+        const {data, error: err} = result;
+        if (data && success) {
+            success(data);
+        } else if (err && error) {
+            error({id: err.server_error_id, ...err});
+        }
+        return result;
+    };
+}
+
 export default {
     updateUser,
     setProfileImageUri,
+    removeProfileImage,
 };

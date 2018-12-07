@@ -8,14 +8,13 @@ import {Client4} from 'mattermost-redux/client';
 
 import {t} from 'app/utils/i18n';
 
-import ProfilePicture from 'app/components/profile_picture';
 import AttachmentButton from 'app/components/attachment_button';
 
-export default class ProfilePictureButton extends React.PureComponent {
+export default class ProfilePictureButton extends PureComponent {
     static propTypes = {
         currentUser: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        extraOptions: PropTypes.func
+        extraOptions: PropTypes.func,
     };
 
     state = {
@@ -40,8 +39,8 @@ export default class ProfilePictureButton extends React.PureComponent {
         } catch (error) {
             return null;
         }
-        let {extraOptions} = this.props;
-        if (typeof(extraOptions) !== 'undefined') {
+        const {extraOptions} = this.props;
+        if (typeof extraOptions !== 'undefined') {
             action = extraOptions;
         }
 
@@ -49,7 +48,7 @@ export default class ProfilePictureButton extends React.PureComponent {
             this.setState({
                 extraOptions:
                     {
-                        action: action,
+                        action,
                         text: {
                             id: t('mobile.edit_profile.remove_profile_photo'),
                             defaultMessage: 'Remove Photo',
@@ -61,9 +60,8 @@ export default class ProfilePictureButton extends React.PureComponent {
                         iconStyle: {
                             color: '#CC3239',
                         },
-                    }
+                    },
             });
-
         }
         return this.setState({isCustomProfileImage: false});
     }
@@ -73,16 +71,12 @@ export default class ProfilePictureButton extends React.PureComponent {
         this.isCustomProfileImage(id, lastPictureUpdate);
     }
 
-    componentDidMount() {
-
-    }
-
     render() {
-	    const {children, ...props} = this.props;
+        const {children, ...props} = this.props;
         const {extraOptions} = this.state;
 
-	    // Avoid passing unneeded props
-	    Reflect.deleteProperty(props, 'currentUser');
+        // Avoid passing unneeded props
+        Reflect.deleteProperty(props, 'currentUser');
 
         return (
             <AttachmentButton
