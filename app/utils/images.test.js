@@ -63,7 +63,7 @@ describe('Images calculateDimensions', () => {
         expect(width).toEqual(310);
     });
 
-    it('Set the viewPort height defined should return the image capped to the viewpoort', () => {
+    it('Set the viewPort height defined should return the image capped to the viewport', () => {
         const {height} = calculateDimensions(1334, 750, PORTRAIT_VIEWPORT, 500);
         expect(height).toEqual(500);
     });
