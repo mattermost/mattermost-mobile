@@ -395,7 +395,7 @@ export default class PostOptions extends PureComponent {
                     ref={this.refSlideUpPanel}
                     marginFromTop={marginFromTop}
                     onRequestClose={this.close}
-                    initialPosition={325}
+                    initialPosition={290}
                 >
                     {options}
                 </SlideUpPanel>
