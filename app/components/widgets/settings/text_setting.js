@@ -185,7 +185,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: '#fff',
+            backgroundColor: theme.centerChannelBg,
         },
         input: {
             ...input,
