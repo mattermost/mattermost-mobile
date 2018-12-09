@@ -489,7 +489,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
 
         const isYouTube = isYoutubeLink(link);
-        const isImage = this.isImage();
+        const isImage = this.isImage(link);
         const isOpenGraph = Boolean(openGraphData);
 
         if (((isImage && !isOpenGraph) || isYouTube) && !linkLoadError) {
