@@ -26,7 +26,7 @@ import AttachmentButton from 'app/components/attachment_button';
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
 
-const MAX_SIZE = 2 * 1024;
+const MAX_SIZE = 20 * 1024;
 const holders = {
     firstName: {
         id: t('user.settings.general.firstName'),
