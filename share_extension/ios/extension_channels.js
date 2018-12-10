@@ -14,10 +14,15 @@ import TableView from 'react-native-tableview';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {General} from 'mattermost-redux/constants';
-import {getChannelsInTeam, getAllDirectChannels} from 'mattermost-redux/selectors/entities/channels';
 
 import SearchBar from 'app/components/search_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import {
+    getExtensionSortedDirectChannels,
+    getExtensionSortedPrivateChannels,
+    getExtensionSortedPublicChannels,
+} from 'share_extension/common/selectors';
 
 import ExtensionNavBar from './extension_nav_bar';
 
@@ -44,29 +49,12 @@ export default class ExtensionChannels extends PureComponent {
         this.loadChannels();
     }
 
-    buildSections = (term) => {
-        const {channels} = this.state;
+    buildSections = (term = '') => {
+        const {publicChannels: pub, privateChannels: priv, directChannels: dms} = this.state;
         const sections = [];
-        const publicChannels = [];
-        const privateChannels = [];
-        const directChannels = [];
-
-        channels.forEach((channel) => {
-            const include = term ? channel.display_name.toLowerCase().includes(term.toLowerCase()) : true;
-            if (channel.display_name && include && channel.delete_at === 0) {
-                switch (channel.type) {
-                case General.OPEN_CHANNEL:
-                    publicChannels.push(channel);
-                    break;
-                case General.PRIVATE_CHANNEL:
-                    privateChannels.push(channel);
-                    break;
-                default:
-                    directChannels.push(channel);
-                    break;
-                }
-            }
-        });
+        const publicChannels = this.filterChannels(pub, term);
+        const privateChannels = this.filterChannels(priv, term);
+        const directChannels = this.filterChannels(dms, term);
 
         if (publicChannels.length) {
             sections.push({
@@ -100,6 +88,10 @@ export default class ExtensionChannels extends PureComponent {
         this.buildSections();
     };
 
+    filterChannels = (channels, term) => {
+        return channels.filter((c) => c.display_name.toLowerCase().includes(term.toLocaleLowerCase()) && c.delete_at === 0);
+    };
+
     goBack = () => {
         this.props.navigator.pop();
     };
@@ -107,12 +99,15 @@ export default class ExtensionChannels extends PureComponent {
     loadChannels = async () => {
         try {
             const {entities, teamId} = this.props;
-
-            // get the channels for the specified team
-            const channelsInTeam = getChannelsInTeam({entities});
-            const channelIds = channelsInTeam[teamId] || [];
-            const direct = getAllDirectChannels({entities});
-            const channels = channelIds.map((id) => this.props.entities.channels.channels[id]).concat(direct);
+            const views = {
+                extension: {
+                    selectedTeamId: teamId,
+                },
+            };
+            const state = {entities, views};
+            const publicChannels = getExtensionSortedPublicChannels(state);
+            const privateChannels = getExtensionSortedPrivateChannels(state);
+            const directChannels = getExtensionSortedDirectChannels(state);
 
             const icons = await Promise.all([
                 Icon.getImageSource('globe', 16, this.props.theme.centerChannelColor),
@@ -127,7 +122,9 @@ export default class ExtensionChannels extends PureComponent {
             this.gmChannelIcon = icons[3];
 
             this.setState({
-                channels,
+                publicChannels,
+                privateChannels,
+                directChannels,
             }, () => {
                 this.buildSections();
             });

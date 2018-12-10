@@ -5,7 +5,7 @@ import {fetchMyChannelsAndMembers} from 'mattermost-redux/actions/channels';
 
 import {loadProfilesAndTeamMembersForDMSidebar} from 'app/actions/views/channel';
 import {ViewTypes} from 'app/constants';
-import {getDefaultChannelForTeam} from 'share_extension/android/selectors';
+import {getDefaultChannelForTeam} from 'share_extension/common/selectors';
 
 export function getTeamChannels(teamId) {
     return async (dispatch, getState) => {
