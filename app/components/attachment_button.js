@@ -26,6 +26,11 @@ const ShareExtension = NativeModules.MattermostShare;
 export default class AttachmentButton extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
+        browseFileTypes: PropTypes.string,
+        canBrowseFiles: PropTypes.bool,
+        canBrowseLibrary: PropTypes.bool,
+        canTakePhoto: PropTypes.bool,
+        canTakeVideo: PropTypes.bool,
         children: PropTypes.node,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
@@ -39,6 +44,11 @@ export default class AttachmentButton extends PureComponent {
     };
 
     static defaultProps = {
+        browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
+        canBrowseFiles: true,
+        canBrowseLibrary: true,
+        canTakePhoto: true,
+        canTakeVideo: true,
         maxFileCount: 5,
     };
 
@@ -163,11 +173,12 @@ export default class AttachmentButton extends PureComponent {
     };
 
     attachFileFromFiles = async () => {
+        const {browseFileTypes} = this.props;
         const hasPermission = await this.hasStoragePermission();
 
         if (hasPermission) {
             DocumentPicker.show({
-                filetype: [Platform.OS === 'ios' ? 'public.item' : '*/*'],
+                filetype: [browseFileTypes],
             }, async (error, res) => {
                 if (error) {
                     return;
@@ -329,7 +340,15 @@ export default class AttachmentButton extends PureComponent {
     };
 
     showFileAttachmentOptions = () => {
-        const {fileCount, maxFileCount, onShowFileMaxWarning} = this.props;
+        const {
+            canBrowseFiles,
+            canBrowseLibrary,
+            canTakePhoto,
+            canTakeVideo,
+            fileCount,
+            maxFileCount,
+            onShowFileMaxWarning,
+        } = this.props;
 
         if (fileCount === maxFileCount) {
             onShowFileMaxWarning();
@@ -337,57 +356,69 @@ export default class AttachmentButton extends PureComponent {
         }
 
         this.props.blurTextBox();
-        const options = {
-            items: [{
+        const items = [];
+
+        if (canTakePhoto) {
+            items.push({
                 action: () => this.handleFileAttachmentOption(this.attachPhotoFromCamera),
                 text: {
                     id: t('mobile.file_upload.camera_photo'),
                     defaultMessage: 'Take Photo',
                 },
                 icon: 'camera',
-            }, {
+            });
+        }
+
+        if (canTakeVideo) {
+            items.push({
                 action: () => this.handleFileAttachmentOption(this.attachVideoFromCamera),
                 text: {
                     id: t('mobile.file_upload.camera_video'),
                     defaultMessage: 'Take Video',
                 },
                 icon: 'video-camera',
-            }, {
+            });
+        }
+
+        if (canBrowseLibrary) {
+            items.push({
                 action: () => this.handleFileAttachmentOption(this.attachFileFromLibrary),
                 text: {
                     id: t('mobile.file_upload.library'),
                     defaultMessage: 'Photo Library',
                 },
                 icon: 'photo',
-            }],
-        };
-
-        if (Platform.OS === 'android') {
-            options.items.push({
-                action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
-                text: {
-                    id: t('mobile.file_upload.video'),
-                    defaultMessage: 'Video Library',
-                },
-                icon: 'file-video-o',
             });
+
+            if (Platform.OS === 'android') {
+                items.push({
+                    action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
+                    text: {
+                        id: t('mobile.file_upload.video'),
+                        defaultMessage: 'Video Library',
+                    },
+                    icon: 'file-video-o',
+                });
+            }
         }
 
-        options.items.push({
-            action: () => this.handleFileAttachmentOption(this.attachFileFromFiles),
-            text: {
-                id: t('mobile.file_upload.browse'),
-                defaultMessage: 'Browse Files',
-            },
-            icon: 'file',
-        });
+        if (canBrowseFiles) {
+            items.push({
+                action: () => this.handleFileAttachmentOption(this.attachFileFromFiles),
+                text: {
+                    id: t('mobile.file_upload.browse'),
+                    defaultMessage: 'Browse Files',
+                },
+                icon: 'file',
+            });
+        }
 
         this.props.navigator.showModal({
             screen: 'OptionsModal',
             title: '',
             animationType: 'none',
             passProps: {
-                items: options.items,
+                items,
             },
             navigatorStyle: {
                 navBarHidden: true,
