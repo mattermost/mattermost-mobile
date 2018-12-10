@@ -17,11 +17,12 @@ export default class DateHeader extends PureComponent {
     static propTypes = {
         dateLineString: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        timeZone: PropTypes.string,
         style: ViewPropTypes.style,
     };
 
     render() {
-        const {theme, dateLineString} = this.props;
+        const {theme, timeZone, dateLineString} = this.props;
         const style = getStyleSheet(theme);
         const indexSuffix = dateLineString.indexOf(DATE_LINE_SUFFIX);
 
@@ -31,6 +32,17 @@ export default class DateHeader extends PureComponent {
         } else {
             date = new Date(parseInt(dateLineString.substring(DATE_LINE.length), 10));
         }
+        const dateFormatProps = {
+            weekday: 'short',
+            day: '2-digit',
+            mont: 'short',
+            year: 'numeric',
+            value: date,
+        };
+
+        if (timeZone) {
+            dateFormatProps.timeZone = timeZone;
+        }
 
         return (
             <View style={[style.container, this.props.style]}>
@@ -38,11 +50,7 @@ export default class DateHeader extends PureComponent {
                 <View style={style.dateContainer}>
                     <FormattedDate
                         style={style.date}
-                        value={date}
-                        weekday='short'
-                        day='2-digit'
-                        month='short'
-                        year='numeric'
+                        {...dateFormatProps}
                     />
                 </View>
                 <View style={style.line}/>
