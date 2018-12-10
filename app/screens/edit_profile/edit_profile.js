@@ -7,6 +7,7 @@ import {intlShape} from 'react-intl';
 import {View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {DocumentPickerUtil} from 'react-native-document-picker';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -25,6 +26,7 @@ import AttachmentButton from 'app/components/attachment_button';
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
 
+const MAX_SIZE = 20 * 1024;
 const holders = {
     firstName: {
         id: t('user.settings.general.firstName'),
@@ -488,6 +490,9 @@ export default class EditProfile extends PureComponent {
                         <View style={style.top}>
                             <AttachmentButton
                                 blurTextBox={emptyFunction}
+                                browseFileTypes={DocumentPickerUtil.images()}
+                                canTakeVideo={false}
+                                maxFileSize={MAX_SIZE}
                                 theme={theme}
                                 navigator={navigator}
                                 wrapper={true}

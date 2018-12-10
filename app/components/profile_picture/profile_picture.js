@@ -49,8 +49,13 @@ export default class ProfilePicture extends PureComponent {
         pictureUrl: null,
     };
 
-    componentWillMount() {
-        const {edit, imageUri, profileImageUri, user} = this.props;
+    componentDidMount() {
+        const {actions, edit, imageUri, profileImageUri, user, status} = this.props;
+        this.mounted = true;
+
+        if (!status && user) {
+            actions.getStatusForId(user.id);
+        }
 
         if (profileImageUri) {
             this.setImageURL(profileImageUri);
@@ -59,14 +64,6 @@ export default class ProfilePicture extends PureComponent {
         } else if (user) {
             ImageCacheManager.cache('', Client4.getProfilePictureUrl(user.id, user.last_picture_update), this.setImageURL).then(this.clearProfileImageUri).catch(emptyFunction);
         }
-    }
-
-    componentDidMount() {
-        if (!this.props.status && this.props.user) {
-            this.props.actions.getStatusForId(this.props.user.id);
-        }
-
-        this.mounted = true;
     }
 
     componentWillReceiveProps(nextProps) {
