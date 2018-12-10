@@ -17,10 +17,10 @@
  - Improved UI for the long press menu and emoji reaction viewer
 
 ### Improvements
- - Added ability to include custom headers with requests.
- - Clear notifications from a specific channel.
- - Auto-reconnect when unable to reach the server.
- - Change mobile client status to offline when the app loses connection.
+ - Added the ability to include custom headers with requests.
+ - Added support for clearing notifications from a specific channel.
+ - Added support for auto-reconnecting when unable to reach the server.
+ - Added support for changing the mobile client status to offline when the app loses connection.
  - Added 'View Members' button to archived channels.
  - Added support for keeping the postlist in place without scrolling when new content is available.
 
@@ -36,7 +36,7 @@
  - Fixed an issue where search modifier for channels was showing Direct Messages without usernames.
  - Fixed an issue where "Close Channel" did not work properly when viewing two archived channels in a row.
  - Fixed an issue with "Critical Error" screen when trying to upload a file from "+" to the left of message input box.
-
+ - Fixed an issue on iOS where text was being cutoff after replying to a message.
 
 ## 1.14.0 Release
 - Release Date: November 16, 2018
