@@ -33,7 +33,7 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
   >
     <InjectIntl(FormattedDate)
       day="2-digit"
-      mont="short"
+      month="short"
       style={
         Object {
           "color": "#3d3c40",
@@ -93,7 +93,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
   >
     <InjectIntl(FormattedDate)
       day="2-digit"
-      mont="short"
+      month="short"
       style={
         Object {
           "color": "#3d3c40",
@@ -152,7 +152,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
   >
     <InjectIntl(FormattedDate)
       day="2-digit"
-      mont="short"
+      month="short"
       style={
         Object {
           "color": "#3d3c40",

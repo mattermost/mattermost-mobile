@@ -35,7 +35,7 @@ export default class DateHeader extends PureComponent {
         const dateFormatProps = {
             weekday: 'short',
             day: '2-digit',
-            mont: 'short',
+            month: 'short',
             year: 'numeric',
             value: date,
         };
