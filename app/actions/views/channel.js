@@ -160,6 +160,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
         const state = getState();
         const {posts, postsInChannel} = state.entities.posts;
         const postsIds = postsInChannel[channelId];
+        const actions = [];
 
         const time = Date.now();
 
@@ -173,6 +174,13 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             if (received) {
                 combined = combineSystemPosts(received.order, received.posts, channelId);
                 loadMorePostsVisible = combined.postsForChannel.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+                actions.push({
+                    type: ViewTypes.SET_INITIAL_POST_COUNT,
+                    data: {
+                        channelId,
+                        count: combined.postsForChannel.length,
+                    },
+                });
             }
         } else {
             const {lastConnectAt} = state.device.websocket;
@@ -194,18 +202,26 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             if (received) {
                 combined = combineSystemPosts(received.order, received.posts, channelId);
                 loadMorePostsVisible = postsIds.length + combined.postsForChannel.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+                actions.push({
+                    type: ViewTypes.SET_INITIAL_POST_COUNT,
+                    data: {
+                        channelId,
+                        count: postsIds.length + combined.postsForChannel.length,
+                    },
+                });
             }
         }
 
-        if (received) {
-            dispatch({
+        if (combined) {
+            actions.push({
                 type: ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME,
                 channelId,
                 time,
             });
         }
 
-        dispatch(setLoadMorePostsVisible(loadMorePostsVisible));
+        actions.push(setLoadMorePostsVisible(loadMorePostsVisible));
+        dispatch(batchActions(actions));
     };
 }
 
@@ -507,13 +523,12 @@ export function increasePostVisibility(channelId, focusedPostId) {
         const currentPostVisibility = postVisibility[channelId] || 0;
 
         if (loadingPosts[channelId]) {
-            return false;
+            return true;
         }
 
         // Check if we already have the posts that we want to show
         if (!focusedPostId) {
-            const postsInChannel = state.entities.posts.postsInChannel[channelId] || [];
-            const loadedPostCount = postsInChannel.length;
+            const loadedPostCount = state.views.channel.postCountInChannel[channelId] || 0;
             const desiredPostVisibility = currentPostVisibility + ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
 
             if (loadedPostCount >= desiredPostVisibility) {
@@ -538,9 +553,9 @@ export function increasePostVisibility(channelId, focusedPostId) {
 
         let result;
         if (focusedPostId) {
-            result = await getPostsBefore(channelId, focusedPostId, page, pageSize)(dispatch, getState);
+            result = await dispatch(getPostsBefore(channelId, focusedPostId, page, pageSize));
         } else {
-            result = await getPosts(channelId, page, pageSize)(dispatch, getState);
+            result = await dispatch(getPosts(channelId, page, pageSize));
         }
 
         const actions = [{
@@ -553,6 +568,14 @@ export function increasePostVisibility(channelId, focusedPostId) {
         let hasMorePost = false;
         if (posts) {
             hasMorePost = posts.order.length >= pageSize;
+
+            actions.push({
+                type: ViewTypes.INCREASE_POST_COUNT,
+                data: {
+                    channelId,
+                    count: posts.order.length,
+                },
+            });
 
             // make sure to increment the posts visibility
             // only if we got results
