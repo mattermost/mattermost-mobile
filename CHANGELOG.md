@@ -19,7 +19,7 @@
 ### Improvements
  - Added the ability to include custom headers with requests.
  - Added support for clearing notifications from a specific channel.
- - Added support for auto-reconnecting when unable to reach the server.
+- Improved auto-reconnect when unable to reach the server.
  - Added support for changing the mobile client status to offline when the app loses connection.
  - Added 'View Members' button to archived channels.
  - Added support for keeping the postlist in place without scrolling when new content is available.
