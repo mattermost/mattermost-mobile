@@ -553,9 +553,9 @@ export function increasePostVisibility(channelId, focusedPostId) {
 
         let result;
         if (focusedPostId) {
-            result = await dispatch(getPostsBefore(channelId, focusedPostId, page, pageSize));
+            result = await retryGetPostsAction(getPostsBefore(channelId, focusedPostId, page, pageSize), dispatch, getState);
         } else {
-            result = await dispatch(getPosts(channelId, page, pageSize));
+            result = await retryGetPostsAction(getPosts(channelId, page, pageSize), dispatch, getState);
         }
 
         const actions = [{
@@ -564,16 +564,17 @@ export function increasePostVisibility(channelId, focusedPostId) {
             channelId,
         }];
 
-        const posts = result.data;
         let hasMorePost = false;
-        if (posts) {
-            hasMorePost = posts.order.length >= pageSize;
+        if (result) {
+            const combined = combineSystemPosts(result.order, result.posts, channelId);
+            const count = combined.postsForChannel.length;
+            hasMorePost = count >= pageSize;
 
             actions.push({
                 type: ViewTypes.INCREASE_POST_COUNT,
                 data: {
                     channelId,
-                    count: posts.order.length,
+                    count,
                 },
             });
 
