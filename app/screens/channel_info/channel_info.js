@@ -497,7 +497,6 @@ export default class ChannelInfo extends PureComponent {
                         />
                     </React.Fragment>
                 )}
-                <View style={style.separator}/>
             </React.Fragment>
         );
     };
@@ -554,15 +553,16 @@ export default class ChannelInfo extends PureComponent {
                     <View style={style.rowsContainer}>
                         {this.actionsRows(style, channelIsArchived)}
                         {this.renderLeaveOrDeleteChannelRow() &&
-                            <View>
-                                <ChannelInfoRow
-                                    action={this.handleLeave}
-                                    defaultMessage='Leave Channel'
-                                    icon='sign-out'
-                                    textId={t('navbar.leave')}
-                                    theme={theme}
-                                />
-                            </View>
+                        <React.Fragment>
+                            <View style={style.separator}/>
+                            <ChannelInfoRow
+                                action={this.handleLeave}
+                                defaultMessage='Leave Channel'
+                                icon='sign-out'
+                                textId={t('navbar.leave')}
+                                theme={theme}
+                            />
+                        </React.Fragment>
                         }
                     </View>
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel && !channelIsArchived &&
