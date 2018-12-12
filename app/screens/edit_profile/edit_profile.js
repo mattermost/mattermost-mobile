@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {View} from 'react-native';
+import {Alert, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {DocumentPickerUtil} from 'react-native-document-picker';
@@ -25,8 +25,9 @@ import ProfilePicture from 'app/components/profile_picture';
 import AttachmentButton from 'app/components/attachment_button';
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
+import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
-const MAX_SIZE = 20 * 1024;
+const MAX_SIZE = 20 * 1024 * 1024;
 const holders = {
     firstName: {
         id: t('user.settings.general.firstName'),
@@ -240,6 +241,19 @@ export default class EditProfile extends PureComponent {
                 break;
             }
         }
+    };
+
+    onShowFileSizeWarning = (filename) => {
+        const {formatMessage} = this.context.intl;
+        const fileSizeWarning = formatMessage({
+            id: 'file_upload.fileAbove',
+            defaultMessage: 'File above {max}MB cannot be uploaded: {filename}',
+        }, {
+            max: getFormattedFileSize({size: MAX_SIZE}),
+            filename,
+        });
+
+        Alert.alert(fileSizeWarning);
     };
 
     renderFirstNameSettings = () => {
@@ -492,11 +506,13 @@ export default class EditProfile extends PureComponent {
                                 blurTextBox={emptyFunction}
                                 browseFileTypes={DocumentPickerUtil.images()}
                                 canTakeVideo={false}
+                                canBrowseVideoLibrary={false}
                                 maxFileSize={MAX_SIZE}
                                 theme={theme}
                                 navigator={navigator}
                                 wrapper={true}
                                 uploadFiles={this.handleUploadProfileImage}
+                                onShowFileSizeWarning={this.onShowFileSizeWarning}
                             >
                                 <ProfilePicture
                                     userId={currentUser.id}

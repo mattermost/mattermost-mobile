@@ -28,7 +28,8 @@ export default class AttachmentButton extends PureComponent {
         blurTextBox: PropTypes.func.isRequired,
         browseFileTypes: PropTypes.string,
         canBrowseFiles: PropTypes.bool,
-        canBrowseLibrary: PropTypes.bool,
+        canBrowsePhotoLibrary: PropTypes.bool,
+        canBrowseVideoLibrary: PropTypes.bool,
         canTakePhoto: PropTypes.bool,
         canTakeVideo: PropTypes.bool,
         children: PropTypes.node,
@@ -46,7 +47,8 @@ export default class AttachmentButton extends PureComponent {
     static defaultProps = {
         browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
         canBrowseFiles: true,
-        canBrowseLibrary: true,
+        canBrowsePhotoLibrary: true,
+        canBrowseVideoLibrary: true,
         canTakePhoto: true,
         canTakeVideo: true,
         maxFileCount: 5,
@@ -342,7 +344,8 @@ export default class AttachmentButton extends PureComponent {
     showFileAttachmentOptions = () => {
         const {
             canBrowseFiles,
-            canBrowseLibrary,
+            canBrowsePhotoLibrary,
+            canBrowseVideoLibrary,
             canTakePhoto,
             canTakeVideo,
             fileCount,
@@ -380,7 +383,7 @@ export default class AttachmentButton extends PureComponent {
             });
         }
 
-        if (canBrowseLibrary) {
+        if (canBrowsePhotoLibrary) {
             items.push({
                 action: () => this.handleFileAttachmentOption(this.attachFileFromLibrary),
                 text: {
@@ -389,17 +392,17 @@ export default class AttachmentButton extends PureComponent {
                 },
                 icon: 'photo',
             });
+        }
 
-            if (Platform.OS === 'android') {
-                items.push({
-                    action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
-                    text: {
-                        id: t('mobile.file_upload.video'),
-                        defaultMessage: 'Video Library',
-                    },
-                    icon: 'file-video-o',
-                });
-            }
+        if (canBrowseVideoLibrary && Platform.OS === 'android') {
+            items.push({
+                action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
+                text: {
+                    id: t('mobile.file_upload.video'),
+                    defaultMessage: 'Video Library',
+                },
+                icon: 'file-video-o',
+            });
         }
 
         if (canBrowseFiles) {
