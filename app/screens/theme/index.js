@@ -8,15 +8,18 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getAllowedThemes, getCustomTheme} from 'app/selectors/theme';
+import {isLandscape, isTablet} from 'app/selectors/device';
 
 import Theme from './theme';
 
 const mapStateToProps = (state) => ({
-    userId: getCurrentUserId(state),
-    teamId: getCurrentTeamId(state),
-    theme: getTheme(state),
     allowedThemes: getAllowedThemes(state),
     customTheme: getCustomTheme(state),
+    isLandscape: isLandscape(state),
+    isTablet: isTablet(state),
+    teamId: getCurrentTeamId(state),
+    theme: getTheme(state),
+    userId: getCurrentUserId(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
