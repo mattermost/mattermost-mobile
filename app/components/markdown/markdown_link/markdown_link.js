@@ -108,7 +108,7 @@ export default class MarkdownLink extends PureComponent {
         }
     };
 
-    handleCopyURL = () => {
+    handleLinkCopy = () => {
         Clipboard.setString(this.props.href);
     };
 
