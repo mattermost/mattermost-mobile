@@ -82,8 +82,8 @@ export default class List extends PureComponent {
         }
     }
 
-    getSectionConfigByType = (sectionType) => {
-        const {canCreatePrivateChannels} = this.props;
+    getSectionConfigByType = (props, sectionType) => {
+        const {canCreatePrivateChannels} = props;
 
         switch (sectionType) {
         case SidebarSectionTypes.UNREADS:
@@ -142,7 +142,7 @@ export default class List extends PureComponent {
 
         return orderedChannelIds.map((s, i) => {
             return {
-                ...this.getSectionConfigByType(s.type),
+                ...this.getSectionConfigByType(props, s.type),
                 data: s.items,
                 topSeparator: i !== 0,
                 bottomSeparator: s.items.length > 0,
