@@ -25,15 +25,9 @@ export function setProfileImageUri(imageUri = '') {
     };
 }
 
-export function removeProfileImage(user, success, error) {
-    return async (dispatch, getState) => {
-        const result = await setDefaultProfileImage(user)(dispatch, getState);
-        const {data, error: err} = result;
-        if (data && success) {
-            success(data);
-        } else if (err && error) {
-            error({id: err.server_error_id, ...err});
-        }
+export function removeProfileImage(user) {
+    return async (dispatch) => {
+        const result = await dispatch(setDefaultProfileImage(user));
         return result;
     };
 }
