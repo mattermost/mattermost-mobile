@@ -292,13 +292,13 @@ export default class ChannelInfo extends PureComponent {
         }
     });
 
-    handleFavorite = () => {
+    handleFavorite = preventDoubleTap(() => {
         const {isFavorite, actions, currentChannel} = this.props;
         const {favoriteChannel, unfavoriteChannel} = actions;
         const toggleFavorite = isFavorite ? unfavoriteChannel : favoriteChannel;
         this.setState({isFavorite: !isFavorite});
         toggleFavorite(currentChannel.id);
-    };
+    });
 
     handleClosePermalink = () => {
         const {actions} = this.props;
@@ -311,7 +311,7 @@ export default class ChannelInfo extends PureComponent {
         this.showPermalinkView(postId);
     };
 
-    handleMuteChannel = () => {
+    handleMuteChannel = preventDoubleTap(() => {
         const {actions, currentChannel, currentUserId, isChannelMuted} = this.props;
         const {updateChannelNotifyProps} = actions;
         const opts = {
@@ -320,9 +320,9 @@ export default class ChannelInfo extends PureComponent {
 
         this.setState({isMuted: !isChannelMuted});
         updateChannelNotifyProps(currentUserId, currentChannel.id, opts);
-    };
+    });
 
-    handleIgnoreChannelMentions = () => {
+    handleIgnoreChannelMentions = preventDoubleTap(() => {
         const {actions, currentChannel, currentUserId, ignoreChannelMentions} = this.props;
         const {updateChannelNotifyProps} = actions;
 
@@ -332,7 +332,7 @@ export default class ChannelInfo extends PureComponent {
 
         this.setState({ignoreChannelMentions: !ignoreChannelMentions});
         updateChannelNotifyProps(currentUserId, currentChannel.id, opts);
-    }
+    });
 
     showPermalinkView = (postId) => {
         const {actions, navigator} = this.props;
