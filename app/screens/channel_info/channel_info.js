@@ -497,7 +497,6 @@ export default class ChannelInfo extends PureComponent {
                         />
                     </React.Fragment>
                 )}
-                <View style={style.separator}/>
             </React.Fragment>
         );
     };
@@ -536,60 +535,61 @@ export default class ChannelInfo extends PureComponent {
                     style={style.scrollView}
                 >
                     {currentChannel.hasOwnProperty('id') &&
-                        <ChannelInfoHeader
-                            createAt={currentChannel.create_at}
-                            creator={currentChannelCreatorName}
-                            displayName={currentChannel.display_name}
-                            header={currentChannel.header}
-                            memberCount={currentChannelMemberCount}
-                            navigator={navigator}
-                            onPermalinkPress={this.handlePermalinkPress}
-                            purpose={currentChannel.purpose}
-                            status={status}
-                            theme={theme}
-                            type={currentChannel.type}
-                            isArchived={currentChannel.delete_at !== 0}
-                        />
+                    <ChannelInfoHeader
+                        createAt={currentChannel.create_at}
+                        creator={currentChannelCreatorName}
+                        displayName={currentChannel.display_name}
+                        header={currentChannel.header}
+                        memberCount={currentChannelMemberCount}
+                        navigator={navigator}
+                        onPermalinkPress={this.handlePermalinkPress}
+                        purpose={currentChannel.purpose}
+                        status={status}
+                        theme={theme}
+                        type={currentChannel.type}
+                        isArchived={currentChannel.delete_at !== 0}
+                    />
                     }
                     <View style={style.rowsContainer}>
                         {this.actionsRows(style, channelIsArchived)}
                         {this.renderLeaveOrDeleteChannelRow() &&
-                            <View>
-                                <ChannelInfoRow
-                                    action={this.handleLeave}
-                                    defaultMessage='Leave Channel'
-                                    icon='sign-out'
-                                    textId={t('navbar.leave')}
-                                    theme={theme}
-                                />
-                            </View>
+                        <React.Fragment>
+                            <View style={style.separator}/>
+                            <ChannelInfoRow
+                                action={this.handleLeave}
+                                defaultMessage='Leave Channel'
+                                icon='sign-out'
+                                textId={t('navbar.leave')}
+                                theme={theme}
+                            />
+                        </React.Fragment>
                         }
                     </View>
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel && !channelIsArchived &&
-                        <View style={style.footer}>
-                            <ChannelInfoRow
-                                action={this.handleDelete}
-                                defaultMessage='Archive Channel'
-                                iconColor='#CA3B27'
-                                icon='archive'
-                                textId={t('mobile.routes.channelInfo.delete_channel')}
-                                textColor='#CA3B27'
-                                theme={theme}
-                            />
-                        </View>
+                    <View style={style.footer}>
+                        <ChannelInfoRow
+                            action={this.handleDelete}
+                            defaultMessage='Archive Channel'
+                            iconColor='#CA3B27'
+                            icon='archive'
+                            textId={t('mobile.routes.channelInfo.delete_channel')}
+                            textColor='#CA3B27'
+                            theme={theme}
+                        />
+                    </View>
                     }
                     {this.renderCloseDirect() &&
-                        <View style={style.footer}>
-                            <ChannelInfoRow
-                                action={this.handleClose}
-                                defaultMessage={defaultMessage}
-                                icon='times'
-                                iconColor='#CA3B27'
-                                textId={i18nId}
-                                textColor='#CA3B27'
-                                theme={theme}
-                            />
-                        </View>
+                    <View style={style.footer}>
+                        <ChannelInfoRow
+                            action={this.handleClose}
+                            defaultMessage={defaultMessage}
+                            icon='times'
+                            iconColor='#CA3B27'
+                            textId={i18nId}
+                            textColor='#CA3B27'
+                            theme={theme}
+                        />
+                    </View>
                     }
                 </ScrollView>
             </View>
