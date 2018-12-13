@@ -278,6 +278,25 @@ function postVisibility(state = {}, action) {
     }
 }
 
+function postCountInChannel(state = {}, action) {
+    switch (action.type) {
+    case ViewTypes.SET_INITIAL_POST_COUNT: {
+        const {channelId, count} = action.data;
+        const nextState = {...state};
+        nextState[channelId] = count;
+        return nextState;
+    }
+    case ViewTypes.INCREASE_POST_COUNT: {
+        const {channelId, count} = action.data;
+        const nextState = {...state};
+        nextState[channelId] += count;
+        return nextState;
+    }
+    default:
+        return state;
+    }
+}
+
 function loadingPosts(state = {}, action) {
     switch (action.type) {
     case ViewTypes.LOADING_POSTS: {
@@ -318,6 +337,7 @@ export default combineReducers({
     drafts,
     loading,
     refreshing,
+    postCountInChannel,
     postVisibility,
     loadingPosts,
     lastGetPosts,
