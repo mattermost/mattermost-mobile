@@ -50,8 +50,13 @@ export default class ProfilePicture extends PureComponent {
         pictureUrl: null,
     };
 
-    componentWillMount() {
-        const {edit, imageUri, profileImageUri, user} = this.props;
+    componentDidMount() {
+        const {actions, edit, imageUri, profileImageUri, user, status} = this.props;
+        this.mounted = true;
+
+        if (!status && user) {
+            actions.getStatusForId(user.id);
+        }
 
         if (profileImageUri) {
             this.setImageURL(profileImageUri);

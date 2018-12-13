@@ -343,7 +343,17 @@ export default class AttachmentButton extends PureComponent {
     };
 
     showFileAttachmentOptions = () => {
-        const {fileCount, maxFileCount, onShowFileMaxWarning, extraOptions} = this.props;
+        const {
+            canBrowseFiles,
+            canBrowsePhotoLibrary,
+            canBrowseVideoLibrary,
+            canTakePhoto,
+            canTakeVideo,
+            fileCount,
+            maxFileCount,
+            onShowFileMaxWarning,
+            extraOptions,
+        } = this.props;
 
         if (fileCount === maxFileCount) {
             onShowFileMaxWarning();
@@ -409,7 +419,7 @@ export default class AttachmentButton extends PureComponent {
         }
 
         if (typeof extraOptions !== 'undefined') {
-            options.items.push(extraOptions);
+            items.push(extraOptions);
         }
 
         this.props.navigator.showModal({

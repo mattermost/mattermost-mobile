@@ -524,6 +524,7 @@ export default class EditProfile extends PureComponent {
                                 navigator={navigator}
                                 wrapper={true}
                                 uploadFiles={this.handleUploadProfileImage}
+                                onShowFileSizeWarning={this.onShowFileSizeWarning}
                                 extraOptions={this.handleRemoveProfileImage}
                             >
                                 <ProfilePicture
