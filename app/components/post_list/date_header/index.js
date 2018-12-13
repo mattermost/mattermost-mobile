@@ -3,13 +3,26 @@
 
 import {connect} from 'react-redux';
 
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
+
+import {isTimezoneEnabled} from 'app/utils/timezone';
 
 import DateHeader from './date_header';
 
 function mapStateToProps(state) {
+    const enableTimezone = isTimezoneEnabled(state);
+    const currentUser = getCurrentUser(state);
+    let timeZone = null;
+
+    if (enableTimezone) {
+        timeZone = getUserCurrentTimezone(currentUser.timezone);
+    }
+
     return {
         theme: getTheme(state),
+        timeZone,
     };
 }
 
