@@ -9,6 +9,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
+import DeviceTypes from 'app/constants/device';
 
 import PostOption from './post_option';
 
@@ -387,6 +388,7 @@ export default class PostOptions extends PureComponent {
         const {deviceHeight} = this.props;
         const options = this.getPostOptions();
         const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT);
+        const initialPosition = DeviceTypes.IS_IPHONE_X ? 280 : 305;
 
         return (
             <View style={style.container}>
@@ -395,7 +397,7 @@ export default class PostOptions extends PureComponent {
                     ref={this.refSlideUpPanel}
                     marginFromTop={marginFromTop}
                     onRequestClose={this.close}
-                    initialPosition={290}
+                    initialPosition={initialPosition}
                 >
                     {options}
                 </SlideUpPanel>
