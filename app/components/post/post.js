@@ -383,9 +383,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         profilePictureContainer: {
             marginBottom: 5,
-            marginRight: 10,
             marginLeft: 12,
             marginTop: 10,
+
+            // to compensate STATUS_BUFFER in profile_picture component
+            ...Platform.select({
+                android: {
+                    marginRight: 11,
+                },
+                ios: {
+                    marginRight: 10,
+                },
+            }),
         },
         replyBar: {
             backgroundColor: theme.centerChannelColor,
