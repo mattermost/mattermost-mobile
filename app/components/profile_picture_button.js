@@ -14,61 +14,57 @@ export default class ProfilePictureButton extends PureComponent {
     static propTypes = {
         currentUser: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        extraOptions: PropTypes.func,
+        removeProfileImage: PropTypes.func,
     };
 
     state = {
-        profileImageUri: null,
+        extraOptions: null,
     };
 
-    getProfileImageUri = async (id, lastPictureUpdate) => {
-        let uri;
-        try {
-            uri = await Client4.getProfilePictureUrl(id, lastPictureUpdate);
-        } catch (error) {
-            return null;
-        }
-        return this.setState({profileImageUri: uri});
+    constructor(props) {
+        super(props);
+        const removeProfileImageOption = this.getRemoveProfileImageOption();
+        const extraOptions = [];
+        extraOptions.push(removeProfileImageOption);
+        this.state.extraOptions = extraOptions;
     }
 
-    isCustomProfileImage = async (id, lastPictureUpdate) => {
-        let uri;
+    setExtraOptions = (newOption) => {
+        this.setState((prevState) => ({
+            extraOptions: [...prevState.extraOptions, newOption],
+        }));
+    }
+
+    getRemoveProfileImageOption = () => {
         let action = null;
-        try {
-            uri = await Client4.getProfilePictureUrl(id, lastPictureUpdate);
-        } catch (error) {
-            return null;
-        }
-        const {extraOptions} = this.props;
-        if (typeof extraOptions !== 'undefined') {
-            action = extraOptions;
-        }
-
-        if (uri.includes('?')) {
-            this.setState({
-                extraOptions:
-                    {
-                        action,
-                        text: {
-                            id: t('mobile.edit_profile.remove_profile_photo'),
-                            defaultMessage: 'Remove Photo',
-                        },
-                        textStyle: {
-                            color: '#CC3239',
-                        },
-                        icon: 'trash',
-                        iconStyle: {
-                            color: '#CC3239',
-                        },
-                    },
-            });
-        }
-        return this.setState({isCustomProfileImage: false});
-    }
-
-    componentWillMount() {
+        const {removeProfileImage} = this.props;
         const {id, last_picture_update: lastPictureUpdate} = this.props.currentUser;
-        this.isCustomProfileImage(id, lastPictureUpdate);
+        const profileImageUri = Client4.getProfilePictureUrl(id, lastPictureUpdate);
+
+        if (removeProfileImage !== null) {
+            action = removeProfileImage;
+        }
+
+        // Check if image url includes query string for timestamp.
+        // If so, it means the image has been updated from the default
+        // i.e. '.../image?_=1544159746868'
+        if (profileImageUri.includes('?')) {
+            return {
+                action,
+                text: {
+                    id: t('mobile.edit_profile.remove_profile_photo'),
+                    defaultMessage: 'Remove Photo',
+                },
+                textStyle: {
+                    color: '#CC3239',
+                },
+                icon: 'trash',
+                iconStyle: {
+                    color: '#CC3239',
+                },
+            };
+        }
+        return null;
     }
 
     render() {

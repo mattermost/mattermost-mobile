@@ -521,11 +521,15 @@ export default class EditProfile extends PureComponent {
                                 currentUser={currentUser}
                                 theme={theme}
                                 blurTextBox={emptyFunction}
+                                browseFileTypes={DocumentPickerUtil.images()}
+                                canTakeVideo={false}
+                                canBrowseVideoLibrary={false}
+                                maxFileSize={MAX_SIZE}
                                 navigator={navigator}
                                 wrapper={true}
                                 uploadFiles={this.handleUploadProfileImage}
+                                removeProfileImage={this.handleRemoveProfileImage}
                                 onShowFileSizeWarning={this.onShowFileSizeWarning}
-                                extraOptions={this.handleRemoveProfileImage}
                             >
                                 <ProfilePicture
                                     userId={currentUser.id}
