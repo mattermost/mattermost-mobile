@@ -466,7 +466,7 @@ export default class EditProfile extends PureComponent {
         this.scrollView = ref;
     };
 
-    render() {
+    renderProfilePicture = () => {
         const {
             currentUser,
             theme,
@@ -476,12 +476,50 @@ export default class EditProfile extends PureComponent {
         const {
             profileImage,
             profileImageRemove,
+        } = this.state;
+
+        const style = getStyleSheet(theme);
+        const uri = profileImage ? profileImage.uri : null;
+
+        return (
+            <View style={style.top}>
+                <ProfilePictureButton
+                    currentUser={currentUser}
+                    theme={theme}
+                    blurTextBox={emptyFunction}
+                    browseFileTypes={DocumentPickerUtil.images()}
+                    canTakeVideo={false}
+                    canBrowseVideoLibrary={false}
+                    maxFileSize={MAX_SIZE}
+                    navigator={navigator}
+                    wrapper={true}
+                    uploadFiles={this.handleUploadProfileImage}
+                    removeProfileImage={this.handleRemoveProfileImage}
+                    onShowFileSizeWarning={this.onShowFileSizeWarning}
+                >
+                    <ProfilePicture
+                        userId={currentUser.id}
+                        size={150}
+                        statusBorderWidth={6}
+                        statusSize={40}
+                        edit={true}
+                        imageUri={uri}
+                        profileImageRemove={profileImageRemove}
+                    />
+                </ProfilePictureButton>
+            </View>
+        );
+    }
+
+    render() {
+        const {theme} = this.props;
+
+        const {
             error,
             updating,
         } = this.state;
 
         const style = getStyleSheet(theme);
-        const uri = profileImage ? profileImage.uri : null;
 
         if (updating) {
             return (
@@ -516,32 +554,7 @@ export default class EditProfile extends PureComponent {
                 >
                     {displayError}
                     <View style={[style.scrollView]}>
-                        <View style={style.top}>
-                            <ProfilePictureButton
-                                currentUser={currentUser}
-                                theme={theme}
-                                blurTextBox={emptyFunction}
-                                browseFileTypes={DocumentPickerUtil.images()}
-                                canTakeVideo={false}
-                                canBrowseVideoLibrary={false}
-                                maxFileSize={MAX_SIZE}
-                                navigator={navigator}
-                                wrapper={true}
-                                uploadFiles={this.handleUploadProfileImage}
-                                removeProfileImage={this.handleRemoveProfileImage}
-                                onShowFileSizeWarning={this.onShowFileSizeWarning}
-                            >
-                                <ProfilePicture
-                                    userId={currentUser.id}
-                                    size={150}
-                                    statusBorderWidth={6}
-                                    statusSize={40}
-                                    edit={true}
-                                    imageUri={uri}
-                                    profileImageRemove={profileImageRemove}
-                                />
-                            </ProfilePictureButton>
-                        </View>
+                        {this.renderProfilePicture()}
                         {this.renderFirstNameSettings()}
                         <View style={style.separator}/>
                         {this.renderLastNameSettings()}

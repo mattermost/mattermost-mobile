@@ -17,29 +17,19 @@ export default class ProfilePictureButton extends PureComponent {
         removeProfileImage: PropTypes.func,
     };
 
-    state = {
-        extraOptions: null,
-    };
-
     constructor(props) {
         super(props);
-        const removeProfileImageOption = this.getRemoveProfileImageOption();
-        const extraOptions = [];
-        extraOptions.push(removeProfileImageOption);
-        this.state.extraOptions = extraOptions;
-    }
-
-    setExtraOptions = (newOption) => {
-        this.setState((prevState) => ({
-            extraOptions: [...prevState.extraOptions, newOption],
-        }));
+        this.state = {
+            extraOptions: [this.getRemoveProfileImageOption()],
+        };
     }
 
     getRemoveProfileImageOption = () => {
         let action = null;
         const {removeProfileImage} = this.props;
         const {id, last_picture_update: lastPictureUpdate} = this.props.currentUser;
-        const profileImageUri = Client4.getProfilePictureUrl(id, lastPictureUpdate);
+
+        const profileImageUrl = Client4.getProfilePictureUrl(id, lastPictureUpdate);
 
         if (removeProfileImage !== null) {
             action = removeProfileImage;
@@ -48,7 +38,7 @@ export default class ProfilePictureButton extends PureComponent {
         // Check if image url includes query string for timestamp.
         // If so, it means the image has been updated from the default
         // i.e. '.../image?_=1544159746868'
-        if (profileImageUri.includes('?')) {
+        if (profileImageUrl.includes('?')) {
             return {
                 action,
                 text: {
