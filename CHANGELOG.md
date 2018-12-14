@@ -1,5 +1,39 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.15.0 Release
+- Release Date: December 16, 2018
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+**
+
+### Highlights
+ - Added mention and reply mention highlighting.
+ - Added a sliding animation for the reaction list.
+ - Added support for pinned posts.
+ - Added support for jumbo emojis.
+ - Added support for interactive dialogs.
+ - Improved UI for the long press menu and emoji reaction viewer
+
+### Improvements
+ - Added the ability to include custom headers with requests for custom builds.
+ - Push Notifications that are grouped by channels are cleared once the channel is read.
+- Improved auto-reconnect when unable to reach the server.
+ - Added support for changing the mobile client status to offline when the app loses connection.
+ - Added 'View Members' button to archived channels.
+ - Added support on iOS for keeping the postlist in place without scrolling when new content is available.
+
+### Bug Fixes
+ - Fixed an issue where clicking on a file did not show downloading progress.
+ - Fixed an issue on Android where on fresh install the share extension would not properly show available channels.
+ - Fixed an issue where recently archived channels remained in in: autocomplete when they had been archived.
+ - Fixed an issue where text should render when no actual custom emoji matched the named emoji pattern.
+ - Fixed an issue on iOS where text got cut-off after replying to a message.
+ - Fixed an issue where search modifier for channels was showing Direct Messages without usernames.
+ - Fixed an issue where "Close Channel" did not work properly when viewing two archived channels in a row.
+ - Fixed an issue with "Critical Error" screen when trying to upload certain file types from "+" to the left of message input box.
+
 ## 1.14.0 Release
 - Release Date: November 16, 2018
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
