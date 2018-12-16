@@ -21,8 +21,8 @@ import TextSetting from 'app/components/widgets/settings/text_setting';
 import Loading from 'app/components/loading';
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar/index';
+import ProfilePictureButton from 'app/components/profile_picture_button';
 import ProfilePicture from 'app/components/profile_picture';
-import AttachmentButton from 'app/components/attachment_button';
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
@@ -59,6 +59,7 @@ export default class EditProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             setProfileImageUri: PropTypes.func.isRequired,
+            removeProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
@@ -157,6 +158,7 @@ export default class EditProfile extends PureComponent {
 
         const {
             profileImage,
+            profileImageRemove,
             firstName,
             lastName,
             username,
@@ -172,11 +174,15 @@ export default class EditProfile extends PureComponent {
             position,
             email,
         };
-        const {actions} = this.props;
+        const {actions, currentUser} = this.props;
 
         if (profileImage) {
             actions.setProfileImageUri(profileImage.uri);
             this.uploadProfileImage().catch(this.handleUploadError);
+        }
+
+        if (profileImageRemove) {
+            actions.removeProfileImage(currentUser.id);
         }
 
         if (this.canUpdate()) {
@@ -195,6 +201,14 @@ export default class EditProfile extends PureComponent {
         this.setState({profileImage: image});
         this.emitCanUpdateAccount(true);
     };
+
+    handleRemoveProfileImage = () => {
+        this.setState({profileImageRemove: true});
+        this.emitCanUpdateAccount(true);
+        this.props.navigator.dismissModal({
+            animationType: 'none',
+        });
+    }
 
     uploadProfileImage = async () => {
         const {profileImage} = this.state;
@@ -452,7 +466,7 @@ export default class EditProfile extends PureComponent {
         this.scrollView = ref;
     };
 
-    render() {
+    renderProfilePicture = () => {
         const {
             currentUser,
             theme,
@@ -461,12 +475,51 @@ export default class EditProfile extends PureComponent {
 
         const {
             profileImage,
+            profileImageRemove,
+        } = this.state;
+
+        const style = getStyleSheet(theme);
+        const uri = profileImage ? profileImage.uri : null;
+
+        return (
+            <View style={style.top}>
+                <ProfilePictureButton
+                    currentUser={currentUser}
+                    theme={theme}
+                    blurTextBox={emptyFunction}
+                    browseFileTypes={DocumentPickerUtil.images()}
+                    canTakeVideo={false}
+                    canBrowseVideoLibrary={false}
+                    maxFileSize={MAX_SIZE}
+                    navigator={navigator}
+                    wrapper={true}
+                    uploadFiles={this.handleUploadProfileImage}
+                    removeProfileImage={this.handleRemoveProfileImage}
+                    onShowFileSizeWarning={this.onShowFileSizeWarning}
+                >
+                    <ProfilePicture
+                        userId={currentUser.id}
+                        size={150}
+                        statusBorderWidth={6}
+                        statusSize={40}
+                        edit={true}
+                        imageUri={uri}
+                        profileImageRemove={profileImageRemove}
+                    />
+                </ProfilePictureButton>
+            </View>
+        );
+    }
+
+    render() {
+        const {theme} = this.props;
+
+        const {
             error,
             updating,
         } = this.state;
 
         const style = getStyleSheet(theme);
-        const uri = profileImage ? profileImage.uri : null;
 
         if (updating) {
             return (
@@ -501,29 +554,7 @@ export default class EditProfile extends PureComponent {
                 >
                     {displayError}
                     <View style={[style.scrollView]}>
-                        <View style={style.top}>
-                            <AttachmentButton
-                                blurTextBox={emptyFunction}
-                                browseFileTypes={DocumentPickerUtil.images()}
-                                canTakeVideo={false}
-                                canBrowseVideoLibrary={false}
-                                maxFileSize={MAX_SIZE}
-                                theme={theme}
-                                navigator={navigator}
-                                wrapper={true}
-                                uploadFiles={this.handleUploadProfileImage}
-                                onShowFileSizeWarning={this.onShowFileSizeWarning}
-                            >
-                                <ProfilePicture
-                                    userId={currentUser.id}
-                                    size={150}
-                                    statusBorderWidth={6}
-                                    statusSize={40}
-                                    edit={true}
-                                    imageUri={uri}
-                                />
-                            </AttachmentButton>
-                        </View>
+                        {this.renderProfilePicture()}
                         {this.renderFirstNameSettings()}
                         <View style={style.separator}/>
                         {this.renderLastNameSettings()}

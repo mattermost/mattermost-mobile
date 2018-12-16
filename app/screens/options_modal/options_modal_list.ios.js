@@ -45,6 +45,11 @@ export default class OptionsModalList extends PureComponent {
 
         const options = items.map((item, index) => {
             let textComponent;
+            let optionIconStyle = style.optionIcon;
+            if (typeof item.iconStyle !== 'undefined') {
+                optionIconStyle = item.iconStyle;
+            }
+
             if (item.text.hasOwnProperty('id')) {
                 textComponent = (
                     <FormattedText
@@ -70,7 +75,7 @@ export default class OptionsModalList extends PureComponent {
                         <IconFont
                             name={item.icon}
                             size={18}
-                            style={style.optionIcon}
+                            style={optionIconStyle}
                         />
                         }
                     </TouchableOpacity>

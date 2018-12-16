@@ -42,6 +42,7 @@ export default class AttachmentButton extends PureComponent {
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
         wrapper: PropTypes.bool,
+        extraOptions: PropTypes.arrayOf(PropTypes.object),
     };
 
     static defaultProps = {
@@ -52,6 +53,7 @@ export default class AttachmentButton extends PureComponent {
         canTakePhoto: true,
         canTakeVideo: true,
         maxFileCount: 5,
+        extraOptions: null,
     };
 
     static contextTypes = {
@@ -351,6 +353,7 @@ export default class AttachmentButton extends PureComponent {
             fileCount,
             maxFileCount,
             onShowFileMaxWarning,
+            extraOptions,
         } = this.props;
 
         if (fileCount === maxFileCount) {
@@ -413,6 +416,14 @@ export default class AttachmentButton extends PureComponent {
                     defaultMessage: 'Browse Files',
                 },
                 icon: 'file',
+            });
+        }
+
+        if (extraOptions) {
+            extraOptions.forEach((option) => {
+                if (option !== null) {
+                    items.push(option);
+                }
             });
         }
 
@@ -479,4 +490,3 @@ const style = StyleSheet.create({
         justifyContent: 'center',
     },
 });
-
