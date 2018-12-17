@@ -13,13 +13,15 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {CELL_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
 
-const MAX_HEIGHT = 120;
+const MAX_HEIGHT = 300;
 
 export default class MarkdownTable extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         navigator: PropTypes.object.isRequired,
+        numColumns: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -31,9 +33,15 @@ export default class MarkdownTable extends React.PureComponent {
         super(props);
 
         this.state = {
-            contentCutOff: true,
+            containerWidth: 0,
+            contentHeight: 0,
+            contentWidth: 0,
         };
     }
+
+    getTableWidth = () => {
+        return this.props.numColumns * CELL_WIDTH;
+    };
 
     handlePress = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
@@ -48,6 +56,7 @@ export default class MarkdownTable extends React.PureComponent {
             backButtonTitle: '',
             passProps: {
                 renderRows: this.renderRows,
+                tableWidth: this.getTableWidth(),
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -58,18 +67,25 @@ export default class MarkdownTable extends React.PureComponent {
         });
     });
 
-    handleContentHeightChange = (contentWidth, contentHeight) => {
+    handleContainerLayout = (e) => {
         this.setState({
-            contentCutOff: contentHeight >= MAX_HEIGHT,
+            containerWidth: e.nativeEvent.layout.width,
         });
-    }
+    };
 
-    renderRows = (drawBottomBorder = true) => {
+    handleContentSizeChange = (contentWidth, contentHeight) => {
+        this.setState({
+            contentHeight,
+            contentWidth,
+        });
+    };
+
+    renderRows = (drawExtraBorders = true) => {
         const style = getStyleSheet(this.props.theme);
 
         const tableStyle = [style.table];
-        if (drawBottomBorder) {
-            tableStyle.push(style.tableBottomBorder);
+        if (drawExtraBorders) {
+            tableStyle.push(style.tableExtraBorders);
         }
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
@@ -89,15 +105,30 @@ export default class MarkdownTable extends React.PureComponent {
     render() {
         const style = getStyleSheet(this.props.theme);
 
-        let moreIndicator = null;
-        if (this.state.contentCutOff) {
-            moreIndicator = (
+        let moreRight = null;
+        if (this.state.containerWidth && this.state.contentWidth > this.state.containerWidth) {
+            moreRight = (
                 <LinearGradient
                     colors={[
                         changeOpacity(this.props.theme.centerChannelColor, 0.0),
                         changeOpacity(this.props.theme.centerChannelColor, 0.1),
                     ]}
-                    style={style.moreIndicator}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 0}}
+                    style={style.moreRight}
+                />
+            );
+        }
+
+        let moreBelow = null;
+        if (this.state.contentHeight > MAX_HEIGHT) {
+            moreBelow = (
+                <LinearGradient
+                    colors={[
+                        changeOpacity(this.props.theme.centerChannelColor, 0.0),
+                        changeOpacity(this.props.theme.centerChannelColor, 0.1),
+                    ]}
+                    style={style.moreBelow}
                 />
             );
         }
@@ -105,14 +136,17 @@ export default class MarkdownTable extends React.PureComponent {
         return (
             <TouchableOpacity onPress={this.handlePress}>
                 <ScrollView
-                    onContentSizeChange={this.handleContentHeightChange}
-                    style={style.container}
+                    contentContainerStyle={{width: this.getTableWidth()}}
+                    onContentSizeChange={this.handleContentSizeChange}
+                    onLayout={this.handleContainerLayout}
                     scrollEnabled={false}
                     showsVerticalScrollIndicator={false}
+                    style={[style.container, {maxWidth: this.getTableWidth()}]}
                 >
                     {this.renderRows(false)}
                 </ScrollView>
-                {moreIndicator}
+                {moreRight}
+                {moreBelow}
             </TouchableOpacity>
         );
     }
@@ -123,24 +157,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             borderBottomWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
             maxHeight: MAX_HEIGHT,
         },
         table: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1, // The right border is drawn by the MarkdownTableCell component
+            borderLeftWidth: 1,
             borderTopWidth: 1,
-            flex: 1,
         },
-        tableBottomBorder: {
+        tableExtraBorders: {
             borderBottomWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
         },
-        moreIndicator: {
+        moreBelow: {
             bottom: 0,
             height: 20,
             position: 'absolute',
             right: 0,
             width: '100%',
+        },
+        moreRight: {
+            height: '100%',
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            width: 20,
         },
     };
 });

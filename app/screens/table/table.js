@@ -3,30 +3,19 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ScrollView, StyleSheet} from 'react-native';
+import {ScrollView} from 'react-native';
 
 export default class Table extends React.PureComponent {
     static propTypes = {
         renderRows: PropTypes.func.isRequired,
+        tableWidth: PropTypes.number.isRequired,
     };
 
     render() {
         return (
-            <ScrollView
-                style={style.scrollContainer}
-                contentContainerStyle={style.container}
-            >
+            <ScrollView contentContainerStyle={{width: this.props.tableWidth}}>
                 {this.props.renderRows()}
             </ScrollView>
         );
     }
 }
-
-const style = StyleSheet.create({
-    scrollContainer: {
-        flex: 1,
-    },
-    container: {
-        flexDirection: 'row',
-    },
-});
