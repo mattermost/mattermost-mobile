@@ -28,7 +28,8 @@ import TeamIcon from 'app/components/team_icon';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
-const TEAMS_PER_PAGE = 200;
+const TEAMS_PER_PAGE = 50;
+const ON_END_REACHED_THRESHOLD = 0.5;
 
 const errorTitle = {
     id: t('error.team_not_found.title'),
@@ -66,6 +67,7 @@ export default class SelectTeam extends PureComponent {
         this.state = {
             joining: false,
             teams: null,
+            page: 0
         };
     }
 
@@ -90,9 +92,11 @@ export default class SelectTeam extends PureComponent {
 
     getTeams = () => {
         this.setState({loading: true});
-        this.props.actions.getTeams(0, TEAMS_PER_PAGE).then(() => {
-            this.setState({loading: false});
-            this.buildData(this.props);
+        this.props.actions.getTeams(this.state.page, TEAMS_PER_PAGE).then(() => {
+            this.setState(state => ({
+              loading: false,
+              page: state.page + 1
+            }));
         });
     }
 
@@ -230,12 +234,20 @@ export default class SelectTeam extends PureComponent {
         );
     };
 
+    renderListFooter = () => {
+      if (!this.state.loading) {
+        return null;
+      }
+
+      return <Loading/>;
+    }
+
     render() {
         const {theme} = this.props;
         const {teams} = this.state;
         const styles = getStyleSheet(theme);
 
-        if (this.state.joining || this.state.loading) {
+        if (this.state.joining) {
             return <Loading/>;
         }
 
@@ -268,6 +280,9 @@ export default class SelectTeam extends PureComponent {
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
                     viewabilityConfig={VIEWABILITY_CONFIG}
+                    onEndReached={this.getTeams}
+                    onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
+                    ListFooterComponent={this.renderListFooter}
                 />
             </View>
         );
