@@ -7,7 +7,7 @@
 ### Combatibility
 
  - Mobile App v1.13+ is required for Mattermost Server v5.4+.
- - Android operating system 7+ is required.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
 
 ### Highlights
  - Added mention and reply mention highlighting.
