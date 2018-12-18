@@ -68,7 +68,7 @@ export default class SelectTeam extends PureComponent {
             joining: false,
             teams: null,
             page: 0,
-            refreshing: false
+            refreshing: false,
         };
     }
 
@@ -94,10 +94,10 @@ export default class SelectTeam extends PureComponent {
     getTeams = () => {
         this.setState({loading: true});
         this.props.actions.getTeams(this.state.page, TEAMS_PER_PAGE).then(() => {
-            this.setState(state => ({
-              loading: false,
-              refreshing: false,
-              page: state.page + 1
+            this.setState((state) => ({
+                loading: false,
+                refreshing: false,
+                page: state.page + 1,
             }));
         });
     }
@@ -185,9 +185,9 @@ export default class SelectTeam extends PureComponent {
     };
 
     onRefresh = () => {
-      this.setState({page: 0, refreshing: true}, () => {
-        this.getTeams();
-      });
+        this.setState({page: 0, refreshing: true}, () => {
+            this.getTeams();
+        });
     }
 
     renderItem = ({item}) => {
@@ -243,11 +243,11 @@ export default class SelectTeam extends PureComponent {
     };
 
     renderListFooter = () => {
-      if (!this.state.loading) {
-        return null;
-      }
+        if (!this.state.loading) {
+            return null;
+        }
 
-      return <Loading/>;
+        return <Loading/>;
     }
 
     render() {
