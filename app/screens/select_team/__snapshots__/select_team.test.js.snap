@@ -95,22 +95,18 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
     />
   </View>
   <FlatList
-    data={
-      Array [
-        Object {
-          "id": "kemjcpu9bi877yegqjs18ndp4r",
-          "invite_id": "ojsnudhqzbfzpk6e4n6ip1hwae",
-          "name": "test",
-        },
-      ]
-    }
+    ListFooterComponent={[Function]}
+    data={null}
     disableVirtualization={false}
     horizontal={false}
     initialNumToRender={10}
     keyExtractor={[Function]}
     maxToRenderPerBatch={10}
     numColumns={1}
-    onEndReachedThreshold={2}
+    onEndReached={[Function]}
+    onEndReachedThreshold={0.5}
+    onRefresh={[Function]}
+    refreshing={false}
     renderItem={[Function]}
     scrollEventThrottle={50}
     updateCellsBatchingPeriod={50}

@@ -75,7 +75,9 @@ describe('SelectTeam', () => {
         const wrapper = shallow(
             <SelectTeam {...props}/>,
         );
+        expect(wrapper.state('page')).toEqual(0);
         await getTeams();
+        expect(wrapper.state('page')).toEqual(1);
         wrapper.update();
         expect(wrapper.getElement()).toMatchSnapshot();
     });
