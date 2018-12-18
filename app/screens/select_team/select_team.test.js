@@ -36,7 +36,6 @@ describe('SelectTeam', () => {
         actions,
         currentChannelId: 'someId',
         currentUrl: 'test',
-        joinTeamRequest: {},
         navigator: {
             setOnNavigatorEvent: jest.fn(),
         },
