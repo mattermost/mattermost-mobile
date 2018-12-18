@@ -67,7 +67,8 @@ export default class SelectTeam extends PureComponent {
         this.state = {
             joining: false,
             teams: null,
-            page: 0
+            page: 0,
+            refreshing: false
         };
     }
 
@@ -95,6 +96,7 @@ export default class SelectTeam extends PureComponent {
         this.props.actions.getTeams(this.state.page, TEAMS_PER_PAGE).then(() => {
             this.setState(state => ({
               loading: false,
+              refreshing: false,
               page: state.page + 1
             }));
         });
@@ -181,6 +183,12 @@ export default class SelectTeam extends PureComponent {
             });
         }
     };
+
+    onRefresh = () => {
+      this.setState({page: 0, refreshing: true}, () => {
+        this.getTeams();
+      });
+    }
 
     renderItem = ({item}) => {
         const {currentUrl, theme} = this.props;
@@ -282,6 +290,8 @@ export default class SelectTeam extends PureComponent {
                     viewabilityConfig={VIEWABILITY_CONFIG}
                     onEndReached={this.getTeams}
                     onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
+                    onRefresh={this.onRefresh}
+                    refreshing={this.state.refreshing}
                     ListFooterComponent={this.renderListFooter}
                 />
             </View>
