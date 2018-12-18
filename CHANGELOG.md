@@ -6,7 +6,7 @@
 
 ### Combatibility
 
- - Mobile App v1.13+ is required for Mattermost Server v5.4+**
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+
 
 ### Highlights
  - Added mention and reply mention highlighting.
