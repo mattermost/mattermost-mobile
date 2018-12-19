@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
-    FlatList,
     InteractionManager,
     Text,
     TouchableOpacity,
@@ -19,17 +18,14 @@ import FailedNetworkAction from 'app/components/failed_network_action';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
-import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import CustomList from 'app/components/custom_list';
 
 import TeamIcon from 'app/components/team_icon';
 
-const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
-
 const TEAMS_PER_PAGE = 50;
-const ON_END_REACHED_THRESHOLD = 0.5;
 
 const errorTitle = {
     id: t('error.team_not_found.title'),
@@ -67,7 +63,7 @@ export default class SelectTeam extends PureComponent {
         this.state = {
             loading: false,
             joining: false,
-            teams: null,
+            teams: [],
             page: 0,
             refreshing: false,
         };
@@ -93,16 +89,14 @@ export default class SelectTeam extends PureComponent {
     }
 
     getTeams = () => {
-        if (!this.state.loading) {
-            this.setState({loading: true});
-            this.props.actions.getTeams(this.state.page, TEAMS_PER_PAGE).then(() => {
-                this.setState((state) => ({
-                    loading: false,
-                    refreshing: false,
-                    page: state.page + 1,
-                }));
-            });
-        }
+        this.setState({loading: true});
+        this.props.actions.getTeams(this.state.page, TEAMS_PER_PAGE).then(() => {
+            this.setState((state) => ({
+                loading: false,
+                refreshing: false,
+                page: state.page + 1,
+            }));
+        });
     }
 
     buildData = (props) => {
@@ -245,24 +239,6 @@ export default class SelectTeam extends PureComponent {
         );
     };
 
-    renderListFooter = () => {
-        if (!this.state.loading) {
-            return null;
-        }
-
-        return <Loading/>;
-    }
-
-    canLoadMore = () => {
-        return this.props.teams.length % TEAMS_PER_PAGE === 0;
-    }
-
-    onEndReached = () => {
-        if (this.canLoadMore()) {
-            this.getTeams();
-        }
-    }
-
     render() {
         const {theme} = this.props;
         const {teams} = this.state;
@@ -296,17 +272,17 @@ export default class SelectTeam extends PureComponent {
                     </View>
                     <View style={styles.line}/>
                 </View>
-                <FlatList
+                <CustomList
                     data={teams}
-                    renderItem={this.renderItem}
-                    keyExtractor={(item) => item.id}
-                    viewabilityConfig={VIEWABILITY_CONFIG}
-                    onEndReached={this.onEndReached}
-                    onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
-                    onRefresh={this.onRefresh}
+                    loading={this.state.loading}
+                    loadingComponent={<Loading/>}
                     refreshing={this.state.refreshing}
+                    onRefresh={this.onRefresh}
+                    onLoadMore={this.getTeams}
+                    renderItem={this.renderItem}
+                    theme={theme}
                     extraData={this.state.loading}
-                    ListFooterComponent={this.renderListFooter}
+                    shouldRenderSeparator={false}
                 />
             </View>
         );
