@@ -65,6 +65,7 @@ export default class SelectTeam extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         this.state = {
+            loading: false,
             joining: false,
             teams: null,
             page: 0,
@@ -92,14 +93,16 @@ export default class SelectTeam extends PureComponent {
     }
 
     getTeams = () => {
-        this.setState({loading: true});
-        this.props.actions.getTeams(this.state.page, TEAMS_PER_PAGE).then(() => {
-            this.setState((state) => ({
-                loading: false,
-                refreshing: false,
-                page: state.page + 1,
-            }));
-        });
+        if (!this.state.loading) {
+            this.setState({loading: true});
+            this.props.actions.getTeams(this.state.page, TEAMS_PER_PAGE).then(() => {
+                this.setState((state) => ({
+                    loading: false,
+                    refreshing: false,
+                    page: state.page + 1,
+                }));
+            });
+        }
     }
 
     buildData = (props) => {
@@ -250,6 +253,16 @@ export default class SelectTeam extends PureComponent {
         return <Loading/>;
     }
 
+    canLoadMore = () => {
+        return this.props.teams.length % TEAMS_PER_PAGE === 0;
+    }
+
+    onEndReached = () => {
+        if (this.canLoadMore()) {
+            this.getTeams();
+        }
+    }
+
     render() {
         const {theme} = this.props;
         const {teams} = this.state;
@@ -288,10 +301,11 @@ export default class SelectTeam extends PureComponent {
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
                     viewabilityConfig={VIEWABILITY_CONFIG}
-                    onEndReached={this.getTeams}
+                    onEndReached={this.onEndReached}
                     onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
                     onRefresh={this.onRefresh}
                     refreshing={this.state.refreshing}
+                    extraData={this.state.loading}
                     ListFooterComponent={this.renderListFooter}
                 />
             </View>
