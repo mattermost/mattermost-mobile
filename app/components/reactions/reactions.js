@@ -24,11 +24,11 @@ export default class Reactions extends PureComponent {
             getReactionsForPost: PropTypes.func.isRequired,
             removeReaction: PropTypes.func.isRequired,
         }).isRequired,
-        highlightedReactions: PropTypes.array.isRequired,
+        currentUserId: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         position: PropTypes.oneOf(['right', 'left']),
         postId: PropTypes.string.isRequired,
-        reactions: PropTypes.object.isRequired,
+        reactions: PropTypes.object,
         theme: PropTypes.object.isRequired,
         canAddReaction: PropTypes.bool,
         canRemoveReaction: PropTypes.bool.isRequired,
@@ -44,7 +44,7 @@ export default class Reactions extends PureComponent {
 
     componentDidMount() {
         const {actions, postId, reactions} = this.props;
-        if (!reactions?.size) {
+        if (reactions) {
             actions.getReactionsForPost(postId);
         }
     }
@@ -108,13 +108,27 @@ export default class Reactions extends PureComponent {
     }
 
     renderReactions = () => {
-        const {highlightedReactions, navigator, reactions, theme, postId} = this.props;
+        const {currentUserId, navigator, reactions, theme, postId} = this.props;
+        const highlightedReactions = [];
+        const reactionsByName = Object.values(reactions).reduce((acc, reaction) => {
+            if (acc.has(reaction.emoji_name)) {
+                acc.get(reaction.emoji_name).push(reaction);
+            } else {
+                acc.set(reaction.emoji_name, [reaction]);
+            }
 
-        return Array.from(reactions.keys()).map((r) => {
+            if (reaction.user_id === currentUserId) {
+                highlightedReactions.push(reaction.emoji_name);
+            }
+
+            return acc;
+        }, new Map());
+
+        return Array.from(reactionsByName.keys()).map((r) => {
             return (
                 <Reaction
                     key={r}
-                    count={reactions.get(r).length}
+                    count={reactionsByName.get(r).length}
                     emojiName={r}
                     highlight={highlightedReactions.includes(r)}
                     navigator={navigator}
@@ -131,7 +145,7 @@ export default class Reactions extends PureComponent {
         const {position, reactions, canAddReaction} = this.props;
         const styles = getStyleSheet(this.props.theme);
 
-        if (!reactions.size) {
+        if (!reactions) {
             return null;
         }
 

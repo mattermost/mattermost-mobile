@@ -19,7 +19,6 @@ function mapStateToProps(state) {
         teamsRequest: state.requests.teams.getTeams,
         teams: getJoinableTeams(state),
         currentChannelId: getCurrentChannelId(state),
-        joinTeamRequest: state.requests.teams.joinTeam,
     };
 }
 

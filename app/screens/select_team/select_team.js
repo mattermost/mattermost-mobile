@@ -48,7 +48,6 @@ export default class SelectTeam extends PureComponent {
         }).isRequired,
         currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
-        joinTeamRequest: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
@@ -80,11 +79,6 @@ export default class SelectTeam extends PureComponent {
 
         if (this.props.teams !== nextProps.teams) {
             this.buildData(nextProps);
-        }
-
-        if (this.props.joinTeamRequest.status !== RequestStatus.FAILURE &&
-            nextProps.joinTeamRequest.status === RequestStatus.FAILURE) {
-            Alert.alert('', nextProps.joinTeamRequest.error.message);
         }
     }
 
@@ -163,8 +157,9 @@ export default class SelectTeam extends PureComponent {
             markChannelAsRead(currentChannelId);
         }
 
-        const success = await joinTeam(team.invite_id, team.id);
-        if (!success) {
+        const {error} = await joinTeam(team.invite_id, team.id);
+        if (error) {
+            Alert.alert(error.message);
             this.setState({joining: false});
             return;
         }
