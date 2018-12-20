@@ -79,6 +79,7 @@ class SSO extends PureComponent {
             error: null,
             renderWebView: false,
             jsCode: '',
+            messagingEnabled: false,
         };
 
         switch (props.ssoType) {
@@ -161,6 +162,11 @@ class SSO extends PureComponent {
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
+        } else if (parsed.pathname === this.completedUrl && !parsed.query) {
+            // To avoid `window.postMessage` conflicts in any of the SSO flows
+            // we enable the onMessage handler only When the webView navigates to the final SSO URL
+            // without including a query string in the url.
+            this.setState({messagingEnabled: true});
         }
 
         if (Object.keys(nextState).length) {
@@ -210,7 +216,7 @@ class SSO extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const {error, renderWebView, jsCode} = this.state;
+        const {error, messagingEnabled, renderWebView, jsCode} = this.state;
         const style = getStyleSheet(theme);
 
         let content;
@@ -235,14 +241,14 @@ class SSO extends PureComponent {
                     renderLoading={this.renderLoading}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
-                    onMessage={this.onMessage}
+                    onMessage={messagingEnabled && this.onMessage}
                     useWebKit={true}
                 />
             );
         }
 
         return (
-            <View style={{flex: 1}}>
+            <View style={style.container}>
                 <StatusBar/>
                 {content}
             </View>
@@ -252,6 +258,9 @@ class SSO extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            flex: 1,
+        },
         errorContainer: {
             alignItems: 'center',
             flex: 1,
