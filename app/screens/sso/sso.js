@@ -157,21 +157,20 @@ class SSO extends PureComponent {
 
     onNavigationStateChange = (navState) => {
         const {url} = navState;
-        const nextState = {};
+        const nextState = {
+            messagingEnabled: false,
+        };
         const parsed = urlParse(url);
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
-        } else if (parsed.pathname === this.completedUrl && !parsed.query) {
+        } else if (parsed.pathname === this.completedUrl) {
             // To avoid `window.postMessage` conflicts in any of the SSO flows
-            // we enable the onMessage handler only When the webView navigates to the final SSO URL
-            // without including a query string in the url.
-            this.setState({messagingEnabled: true});
+            // we enable the onMessage handler only When the webView navigates to the final SSO URL.
+            nextState.messagingEnabled = true;
         }
 
-        if (Object.keys(nextState).length) {
-            this.setState(nextState);
-        }
+        this.setState(nextState);
     };
 
     onLoadEnd = (event) => {
