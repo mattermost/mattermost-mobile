@@ -79,6 +79,7 @@ class SSO extends PureComponent {
             error: null,
             renderWebView: false,
             jsCode: '',
+            messagingEnabled: false,
         };
 
         switch (props.ssoType) {
@@ -156,16 +157,20 @@ class SSO extends PureComponent {
 
     onNavigationStateChange = (navState) => {
         const {url} = navState;
-        const nextState = {};
+        const nextState = {
+            messagingEnabled: false,
+        };
         const parsed = urlParse(url);
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
+        } else if (parsed.pathname === this.completedUrl) {
+            // To avoid `window.postMessage` conflicts in any of the SSO flows
+            // we enable the onMessage handler only When the webView navigates to the final SSO URL.
+            nextState.messagingEnabled = true;
         }
 
-        if (Object.keys(nextState).length) {
-            this.setState(nextState);
-        }
+        this.setState(nextState);
     };
 
     onLoadEnd = (event) => {
@@ -210,7 +215,7 @@ class SSO extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const {error, renderWebView, jsCode} = this.state;
+        const {error, messagingEnabled, renderWebView, jsCode} = this.state;
         const style = getStyleSheet(theme);
 
         let content;
@@ -235,14 +240,14 @@ class SSO extends PureComponent {
                     renderLoading={this.renderLoading}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
-                    onMessage={this.onMessage}
+                    onMessage={messagingEnabled && this.onMessage}
                     useWebKit={true}
                 />
             );
         }
 
         return (
-            <View style={{flex: 1}}>
+            <View style={style.container}>
                 <StatusBar/>
                 {content}
             </View>
@@ -252,6 +257,9 @@ class SSO extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            flex: 1,
+        },
         errorContainer: {
             alignItems: 'center',
             flex: 1,
