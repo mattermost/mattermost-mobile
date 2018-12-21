@@ -45,7 +45,6 @@ exports[`Badge should match snapshot 1`] = `
             "color": "#145dbf",
             "fontSize": 10,
           },
-          Object {},
         ]
       }
     >
