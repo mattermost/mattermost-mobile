@@ -282,6 +282,7 @@
   "mobile.message_length.message": "Your current message is too long. Current character count: {max}/{count}",
   "mobile.message_length.title": "Message Length",
   "mobile.more_dms.add_more": "You can add {remaining, number} more users",
+  "mobile.more_dms.one_more": "You can add 1 more user",
   "mobile.more_dms.cannot_add_more": "You cannot add more users",
   "mobile.more_dms.start": "Start",
   "mobile.more_dms.title": "New Conversation",
