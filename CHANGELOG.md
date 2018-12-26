@@ -6,7 +6,8 @@
 
 ### Combatibility
 
- - Mobile App v1.13+ is required for Mattermost Server v5.4+**
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
 
 ### Highlights
  - Added mention and reply mention highlighting.
@@ -14,7 +15,7 @@
  - Added support for pinned posts.
  - Added support for jumbo emojis.
  - Added support for interactive dialogs.
- - Improved UI for the long press menu and emoji reaction viewer
+ - Improved UI for the long press menu and emoji reaction viewer.
 
 ### Improvements
  - Added the ability to include custom headers with requests for custom builds.
