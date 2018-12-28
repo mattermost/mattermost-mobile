@@ -66,16 +66,18 @@ export default class AttachmentFields extends PureComponent {
                     style={style.flex}
                     key={`attachment__field-${i}__${nrTables}`}
                 >
-                    <View
-                        style={style.headingContainer}
-                        key={`attachment__field-caption-${i}__${nrTables}`}
-                    >
-                        <View>
-                            <Text style={style.heading}>
-                                {field.title}
-                            </Text>
+                    {Boolean(field.title) && (
+                        <View
+                            style={style.headingContainer}
+                            key={`attachment__field-caption-${i}__${nrTables}`}
+                        >
+                            <View>
+                                <Text style={style.heading}>
+                                    {field.title}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
+                    )}
                     <View
                         style={style.flex}
                         key={`attachment__field-${i}__${nrTables}`}
