@@ -309,15 +309,16 @@ platform :ios do
   error do |lane, exception|
     version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
     build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
-    send_message_to_mattermost(
-        version,
-        build_number,
-        '',
-        'Unsuccessful Build',
-        exception.message,
-        [:lane],
-        false
-    )
+    send_message_to_mattermost({
+                                   :version_number => version,
+                                   :build_number => build_number,
+                                   :pretext => '',
+                                   :title => 'Unsuccessful Build',
+                                   :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
+                                   :msg => exception.message,
+                                   :default_payloads => [:lane],
+                                   :success => false
+                               })
   end
 
   def build_ios()
@@ -438,7 +439,16 @@ platform :android do
         gradle_file: './android/app/build.gradle'
     )
     
-   send_message_to_mattermost(version_number, build_number, '', 'Unsuccessful Build', exception.message, [:lane], false)
+   send_message_to_mattermost({
+                                  :version_number => version_number,
+                                  :build_number => build_number,
+                                  :pretext => '',
+                                  :title => 'Unsuccessful Build',
+                                  :thumb_url => 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300',
+                                  :msg =>  exception.message,
+                                  :default_payloads => [:lane],
+                                  :success => false,
+                              })
   end
 
   def build_android()
@@ -482,26 +492,26 @@ def save_config_json(json)
   end
 end
 
-def send_message_to_mattermost(version_number, build_number, pretext, title, msg, default_payloads, success)
+def send_message_to_mattermost(options)
   unless ENV['MATTERMOST_WEBHOOK_URL'].nil? || ENV['MATTERMOST_WEBHOOK_URL'].empty?
     mattermost(
-        pretext: pretext,
-        message: msg,
-        default_payloads: default_payloads,
+        pretext: options[:pretext],
+        message: options[:msg],
+        default_payloads: options[:default_payloads],
         username: 'Fastlane',
         icon_url: 'https://s3-eu-west-1.amazonaws.com/fastlane.tools/fastlane.png',
         payload: {},
         attachment_properties: {
-            title: title,
-            thumb_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300',
+            title: options[:title],
+            thumb_url: options[:thumb_url],
             fields: [{
                          title: 'Version',
-                         value: version_number,
+                         value: options[:version_number],
                          short: true
                      },
                      {
                          title: 'Build Number',
-                         value: build_number,
+                         value: options[:build_number],
                          short: true
                      },
                      {
@@ -510,7 +520,7 @@ def send_message_to_mattermost(version_number, build_number, pretext, title, msg
                          short: true
                      }]
         },
-        success: success
+        success: options[:success]
     )
   end
 end
@@ -545,15 +555,16 @@ def submit_to_store
       msg = 'Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta)'
     end
 
-    send_message_to_mattermost(
-        version_number,
-        build_number,
-        pretext,
-        '',
-        msg,
-        [],
-        true
-    )
+    send_message_to_mattermost({
+                                   :version_number => version_number,
+                                   :build_number => build_number,
+                                   :pretext => pretext,
+                                   :title => '',
+                                   :thumb_url => 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300',
+                                   :msg => msg,
+                                   :default_payloads => [],
+                                   :success => true,
+                               })
   end
 
   # Submit to TestFlight if required
@@ -574,15 +585,16 @@ def submit_to_store
     version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
     build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
 
-    send_message_to_mattermost(
-        version,
-        build_number,
-        pretext,
-        '',
-        msg,
-        [],
-        true
-    )
+    send_message_to_mattermost({
+                                   :version_number => version_number,
+                                   :build_number => build_number,
+                                   :pretext => pretext,
+                                   :title => '',
+                                   :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
+                                   :msg => msg,
+                                   :default_payloads => [],
+                                   :success => true,
+                               })
   end
 
   unless apk_path.nil?
