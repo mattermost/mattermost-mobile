@@ -503,7 +503,7 @@ def send_message_to_mattermost(options)
         payload: {},
         attachment_properties: {
             title: options[:title],
-            thumb_url: options[:thumb_url], #'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300', 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png'
+            thumb_url: options[:thumb_url],
             fields: [{
                          title: 'Version',
                          value: options[:version_number],
