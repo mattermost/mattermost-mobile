@@ -97,7 +97,7 @@ export default class MessageAttachment extends PureComponent {
                         navigator={navigator}
                         onPermalinkPress={onPermalinkPress}
                         textStyles={textStyles}
-                        value={attachment.text || attachment.fallback}
+                        value={attachment.text}
                     />
                     <AttachmentFields
                         baseTextStyle={baseTextStyle}
