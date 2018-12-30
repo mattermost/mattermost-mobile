@@ -5,6 +5,7 @@
 .PHONY: build build-ios build-android unsigned-ios unsigned-android
 .PHONY: build-pr can-build-pr prepare-pr
 .PHONY: test help
+.PHONY: fastlane
 
 POD := $(shell which pod 2> /dev/null)
 OS := $(shell sh -c 'uname -s 2>/dev/null')
@@ -20,6 +21,15 @@ node_modules: package.json
 
 	@echo Getting Javascript dependencies
 	@npm install
+
+fastlane:
+	@if ! [ $(shell which bundle 2> /dev/null) ]; then \
+		echo "bundle is not installed https://bundler.io"; \
+		exit 1; \
+	fi
+
+	@echo Installing fastlane
+	@cd fastlane && bundle install
 
 npm-ci: package.json
 	@if ! [ $(shell which npm 2> /dev/null) ]; then \
@@ -54,7 +64,7 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 
 pre-run: | node_modules .podinstall dist/assets ## Installs dependencies and assets
 
-pre-build: | npm-ci .podinstall dist/assets ## Install dependencies and assets before building
+pre-build: | npm-ci fastlane .podinstall dist/assets ## Install dependencies and assets before building
 
 check-style: node_modules ## Runs eslint
 	@echo Checking for style guide compliance
