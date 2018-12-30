@@ -45,6 +45,7 @@ npm-debug.log
 .npminstall
 yarn-error.log
 .yarninstall
+.npm
 
 # BUCK
 buck-out/
