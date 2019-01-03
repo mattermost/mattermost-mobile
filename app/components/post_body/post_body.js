@@ -407,21 +407,19 @@ export default class PostBody extends PureComponent {
         return (
             <View style={style.messageContainerWithReplyBar}>
                 <View style={replyBarStyle}/>
-                <View style={[style.row]}>
-                    {body}
-                    {isFailed &&
-                    <TouchableOpacity
-                        onPress={onFailedPostPress}
-                        style={style.retry}
-                    >
-                        <Icon
-                            name='ios-information-circle-outline'
-                            size={26}
-                            color={theme.errorTextColor}
-                        />
-                    </TouchableOpacity>
-                    }
-                </View>
+                {body}
+                {isFailed &&
+                <TouchableOpacity
+                    onPress={onFailedPostPress}
+                    style={style.retry}
+                >
+                    <Icon
+                        name='ios-information-circle-outline'
+                        size={26}
+                        color={theme.errorTextColor}
+                    />
+                </TouchableOpacity>
+                }
             </View>
         );
     }
@@ -435,7 +433,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         messageBody: {
             paddingBottom: 2,
             paddingTop: 2,
-            width: '100%',
+            flex: 1,
         },
         messageContainer: {
             width: '100%',
@@ -445,7 +443,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         retry: {
             justifyContent: 'center',
-            marginLeft: 12,
+            marginLeft: 10,
         },
         message: {
             color: theme.centerChannelColor,
@@ -454,6 +452,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',
+            width: '100%',
         },
         pendingPost: {
             opacity: 0.5,
