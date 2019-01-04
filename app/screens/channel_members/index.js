@@ -27,9 +27,6 @@ function makeMapStateToProps() {
             currentChannelId,
             currentChannelMembers,
             currentUserId: state.entities.users.currentUserId,
-            requestStatus: state.requests.users.getProfilesInChannel.status,
-            searchRequestStatus: state.requests.users.searchProfiles.status,
-            removeMembersStatus: state.requests.channels.removeChannelMember.status,
             theme: getTheme(state),
         };
     };

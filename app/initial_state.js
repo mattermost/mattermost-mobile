@@ -55,15 +55,7 @@ const state = {
     errors: [],
     requests: {
         channels: {
-            getChannel: {
-                status: 'not_started',
-                error: null,
-            },
             getChannels: {
-                status: 'not_started',
-                error: null,
-            },
-            myMembers: {
                 status: 'not_started',
                 error: null,
             },
@@ -75,31 +67,7 @@ const state = {
                 status: 'not_started',
                 error: null,
             },
-            updateChannelNotifyProps: {
-                status: 'not_started',
-                error: null,
-            },
-            joinChannel: {
-                status: 'not_started',
-                error: null,
-            },
-            deleteChannel: {
-                status: 'not_started',
-                error: null,
-            },
-            updateLastViewedAt: {
-                status: 'not_started',
-                error: null,
-            },
-            getChannelStats: {
-                status: 'not_started',
-                error: null,
-            },
-            addChannelMember: {
-                status: 'not_started',
-                error: null,
-            },
-            removeChannelMember: {
+            myChannels: {
                 status: 'not_started',
                 error: null,
             },
@@ -135,27 +103,7 @@ const state = {
                 status: 'not_started',
                 error: null,
             },
-            deletePost: {
-                status: 'not_started',
-                error: null,
-            },
             getPostThread: {
-                status: 'not_started',
-                error: null,
-            },
-            getPosts: {
-                status: 'not_started',
-                error: null,
-            },
-            getPostsSince: {
-                status: 'not_started',
-                error: null,
-            },
-            getPostsBefore: {
-                status: 'not_started',
-                error: null,
-            },
-            getPostsAfter: {
                 status: 'not_started',
                 error: null,
             },
@@ -169,36 +117,16 @@ const state = {
                 status: 'not_started',
                 error: null,
             },
-            createTeam: {
-                status: 'not_started',
-                error: null,
-            },
-            updateTeam: {
-                status: 'not_started',
-                error: null,
-            },
-            getMyTeamMembers: {
-                status: 'not_started',
-                error: null,
-            },
-            getTeamMembers: {
-                status: 'not_started',
-                error: null,
-            },
-            getTeamStats: {
-                status: 'not_started',
-                error: null,
-            },
-            addUserToTeam: {
-                status: 'not_started',
-                error: null,
-            },
-            removeUserFromTeam: {
+            joinTeam: {
                 status: 'not_started',
                 error: null,
             },
         },
         users: {
+            checkMfa: {
+                status: 'not_started',
+                error: null,
+            },
             login: {
                 status: 'not_started',
                 error: null,
@@ -207,35 +135,11 @@ const state = {
                 status: 'not_started',
                 error: null,
             },
-            getProfiles: {
+            autocompleteUsers: {
                 status: 'not_started',
                 error: null,
             },
-            getProfilesInTeam: {
-                status: 'not_started',
-                error: null,
-            },
-            getProfilesInChannel: {
-                status: 'not_started',
-                error: null,
-            },
-            getProfilesNotInChannel: {
-                status: 'not_started',
-                error: null,
-            },
-            getStatusesByIds: {
-                status: 'not_started',
-                error: null,
-            },
-            getSessions: {
-                status: 'not_started',
-                error: null,
-            },
-            revokeSession: {
-                status: 'not_started',
-                error: null,
-            },
-            getAudits: {
+            updateMe: {
                 status: 'not_started',
                 error: null,
             },
