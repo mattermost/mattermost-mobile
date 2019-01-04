@@ -427,9 +427,6 @@ export default class PostBody extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        row: {
-            flexDirection: 'row',
-        },
         messageBody: {
             paddingBottom: 2,
             paddingTop: 2,
