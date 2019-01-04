@@ -66,7 +66,7 @@ export default class Thread extends PureComponent {
         }
 
         if (!this.state.lastViewedAt) {
-            this.setState({lastViewedAt: nextProps.myMember.last_viewed_at});
+            this.setState({lastViewedAt: nextProps.myMember && nextProps.myMember.last_viewed_at});
         }
     }
 
@@ -145,7 +145,7 @@ export default class Thread extends PureComponent {
                     renderFooter={this.renderFooter()}
                     indicateNewMessages={true}
                     postIds={postIds}
-                    currentUserId={myMember.user_id}
+                    currentUserId={myMember && myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                     navigator={navigator}
                 />
