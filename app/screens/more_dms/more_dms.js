@@ -463,9 +463,7 @@ export default class MoreDirectMessages extends PureComponent {
                     <SelectedUsers
                         selectedIds={this.state.selectedIds}
                         warnCount={5}
-                        warnMessage={{id: t('mobile.more_dms.add_more'), defaultMessage: 'You can add {remaining, number} more users'}}
                         maxCount={7}
-                        maxMessage={{id: t('mobile.more_dms.cannot_add_more'), defaultMessage: 'You cannot add more users'}}
                         onRemove={this.handleRemoveProfile}
                     />
                 </View>
