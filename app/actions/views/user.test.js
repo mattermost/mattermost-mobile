@@ -7,12 +7,14 @@ import thunk from 'redux-thunk';
 import {UserTypes} from 'mattermost-redux/action_types';
 import {General} from 'mattermost-redux/constants';
 
-import {setCurrentUserStatus} from 'app/actions/views/user';
+import {initUserStatuses, setCurrentUserStatus} from 'app/actions/views/user';
 
 const mockStore = configureStore([thunk]);
 
 jest.mock('mattermost-redux/actions/users', () => ({
     getStatus: (...args) => ({type: 'MOCK_GET_STATUS', args}),
+    getStatusesByIds: (...args) => ({type: 'MOCK_GET_STATUS_BY_IDS', args}),
+    startPeriodicStatusUpdates: () => ({type: 'MOCK_PERIODIC_STATUS_UPDATES'}),
 }));
 
 describe('Actions.Views.User', () => {
@@ -23,6 +25,11 @@ describe('Actions.Views.User', () => {
             entities: {
                 users: {
                     currentUserId: 'current-user-id',
+                    statuses: {
+                        'current-user-id': 'online',
+                        'another-user-id1': 'away',
+                        'another-user-id2': 'dnd',
+                    },
                 },
             },
         });
@@ -49,5 +56,16 @@ describe('Actions.Views.User', () => {
 
         await store.dispatch(setCurrentUserStatus(true));
         expect(store.getActions()).toEqual([action]);
+    });
+
+    test('should initialize the periodic status updates and get the current user statuses', () => {
+        const actionStatusByIds = {
+            type: 'MOCK_GET_STATUS_BY_IDS',
+            args: [['current-user-id', 'another-user-id1', 'another-user-id2']],
+        };
+        const actionPeriodicUpdates = {type: 'MOCK_PERIODIC_STATUS_UPDATES'};
+
+        store.dispatch(initUserStatuses());
+        expect(store.getActions()).toEqual([actionStatusByIds, actionPeriodicUpdates]);
     });
 });

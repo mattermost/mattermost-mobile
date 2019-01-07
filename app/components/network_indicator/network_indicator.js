@@ -243,12 +243,13 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     handleConnectionChange = ({hasInternet, serverReachable}) => {
-        const {connection} = this.props.actions;
+        const {connection, startPeriodicStatusUpdates} = this.props.actions;
 
         // On first run always initialize the WebSocket
         // if we have internet connection
         if (hasInternet && this.firstRun) {
             this.initializeWebSocket();
+            startPeriodicStatusUpdates();
             this.firstRun = false;
             return;
         }
