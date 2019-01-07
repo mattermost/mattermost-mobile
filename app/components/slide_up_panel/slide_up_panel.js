@@ -227,6 +227,8 @@ export default class SlideUpPanel extends PureComponent {
             transform: [{translateY: this.translateY}],
         };
 
+        const headerComponent = header(this.headerRef);
+
         return (
             <TapGestureHandler
                 maxDurationMs={100000}
@@ -268,7 +270,7 @@ export default class SlideUpPanel extends PureComponent {
                         >
                             <Animated.View>
                                 <SlideUpPanelIndicator/>
-                                {header(this.headerRef)}
+                                {headerComponent}
                             </Animated.View>
                         </PanGestureHandler>
                         <PanGestureHandler
@@ -279,7 +281,7 @@ export default class SlideUpPanel extends PureComponent {
                             onGestureEvent={this.onGestureEvent}
                             onHandlerStateChange={this.onHandlerStateChange}
                         >
-                            <Animated.View style={[styles.container, !header && styles.border]}>
+                            <Animated.View style={[styles.container, !headerComponent && styles.border]}>
                                 <NativeViewGestureHandler
                                     ref={this.scrollRef}
                                     waitFor={this.masterRef}
