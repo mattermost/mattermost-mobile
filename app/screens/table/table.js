@@ -3,30 +3,39 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ScrollView, StyleSheet} from 'react-native';
+import {
+    Platform,
+    ScrollView,
+} from 'react-native';
 
 export default class Table extends React.PureComponent {
     static propTypes = {
         renderRows: PropTypes.func.isRequired,
+        tableWidth: PropTypes.number.isRequired,
     };
 
     render() {
-        return (
-            <ScrollView
-                style={style.scrollContainer}
-                contentContainerStyle={style.container}
-            >
-                {this.props.renderRows()}
-            </ScrollView>
-        );
+        const content = this.props.renderRows();
+
+        let container;
+        if (Platform.OS === 'android') {
+            // On Android, ScrollViews can only handle one direction at once, so use two ScrollViews that go in
+            // different directions. This prevents diagonal scrolling, so only do it on Android when totally necessary.
+            container = (
+                <ScrollView>
+                    <ScrollView horizontal={true}>
+                        {content}
+                    </ScrollView>
+                </ScrollView>
+            );
+        } else {
+            container = (
+                <ScrollView contentContainerStyle={{width: this.props.tableWidth}}>
+                    {content}
+                </ScrollView>
+            );
+        }
+
+        return container;
     }
 }
-
-const style = StyleSheet.create({
-    scrollContainer: {
-        flex: 1,
-    },
-    container: {
-        flexDirection: 'row',
-    },
-});

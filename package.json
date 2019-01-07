@@ -11,7 +11,7 @@
     "@babel/runtime": "7.1.5",
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#d5a7a7bfb373778d3bfd4575962c10fb3f3909c6",
-    "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#ea502501b1f2c31c6b3ff6d40eead2c808f40d42",
+    "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#3a2ac19cab725ad28b170fdc1d397dddedcf87eb",
     "deep-equal": "1.0.1",
     "fuse.js": "3.3.0",
     "intl": "1.2.5",

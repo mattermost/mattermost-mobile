@@ -7,10 +7,13 @@ import {Text, View} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+export const CELL_WIDTH = 100;
+
 export default class MarkdownTableCell extends React.PureComponent {
     static propTypes = {
         align: PropTypes.oneOf(['', 'left', 'center', 'right']),
         children: PropTypes.node,
+        isLastCell: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     };
 
@@ -18,6 +21,9 @@ export default class MarkdownTableCell extends React.PureComponent {
         const style = getStyleSheet(this.props.theme);
 
         const cellStyle = [style.cell];
+        if (!this.props.isLastCell) {
+            cellStyle.push(style.cellRightBorder);
+        }
 
         let textStyle = null;
         if (this.props.align === 'center') {
@@ -40,11 +46,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         cell: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            flex: 1,
+            width: CELL_WIDTH,
             justifyContent: 'flex-start',
             paddingHorizontal: 13,
             paddingVertical: 6,
+        },
+        cellRightBorder: {
+            borderRightWidth: 1,
         },
         alignCenter: {
             textAlign: 'center',
