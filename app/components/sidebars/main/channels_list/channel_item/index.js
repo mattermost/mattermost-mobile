@@ -24,7 +24,7 @@ function makeMapStateToProps() {
 
     return (state, ownProps) => {
         const channel = ownProps.channel || getChannel(state, {id: ownProps.channelId});
-        const member = getMyChannelMember(state, channel.id) || {};
+        const member = getMyChannelMember(state, channel.id);
         const currentUserId = getCurrentUserId(state);
         const channelDraft = getDraftForChannel(state, channel.id);
 
