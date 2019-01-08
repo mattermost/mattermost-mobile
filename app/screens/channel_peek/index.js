@@ -15,12 +15,13 @@ import ChannelPeek from './channel_peek';
 
 function mapStateToProps(state, ownProps) {
     const channelId = ownProps.channelId;
+    const myMember = getMyChannelMember(state, channelId);
 
     return {
         channelId,
         currentUserId: getCurrentUserId(state),
         postIds: getPostIdsInChannel(state, channelId),
-        lastViewedAt: getMyChannelMember(state, channelId).last_viewed_at,
+        lastViewedAt: myMember && myMember.last_viewed_at,
         theme: getTheme(state),
     };
 }
