@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 
 import {Client4} from 'mattermost-redux/client';
-import {RequestStatus} from 'mattermost-redux/constants';
 
 import {isDocument, isGif, isVideo} from 'app/utils/file';
 import {getCacheFile} from 'app/utils/image_cache_manager';
@@ -33,7 +32,6 @@ export default class FileAttachmentList extends Component {
         onLongPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        filesForPostRequest: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -42,14 +40,18 @@ export default class FileAttachmentList extends Component {
         this.items = [];
         this.previewItems = [];
 
+        this.state = {
+            filesLoaded: !props.files && props.files.length !== 0,
+        };
+
         this.buildGalleryFiles(props).then((results) => {
             this.galleryFiles = results;
         });
     }
 
     componentDidMount() {
-        const {files, postId} = this.props;
-        if (!files || !files.length) {
+        const {postId} = this.props;
+        if (!this.state.filesLoaded) {
             this.props.actions.loadFilesForPostIfNecessary(postId);
         }
     }
@@ -59,14 +61,20 @@ export default class FileAttachmentList extends Component {
             this.buildGalleryFiles(nextProps).then((results) => {
                 this.galleryFiles = results;
             });
+
+            if (!this.state.filesLoaded && !nextProps.files.length && nextProps.fileIds.length > 0) {
+                this.setState({
+                    filesLoaded: true,
+                });
+            }
         }
     }
 
     componentDidUpdate() {
-        const {fileIds, files, filesForPostRequest, postId} = this.props;
+        const {files, postId} = this.props;
 
         // Fixes an issue where files weren't loading with optimistic post
-        if (!files.length && fileIds.length > 0 && filesForPostRequest.status !== RequestStatus.STARTED) {
+        if (!this.state.filesLoaded && (!files || !files.length === 0)) {
             this.props.actions.loadFilesForPostIfNecessary(postId);
         }
     }
