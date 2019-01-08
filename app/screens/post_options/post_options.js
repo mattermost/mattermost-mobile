@@ -217,11 +217,11 @@ export default class PostOptions extends PureComponent {
         ];
 
         const {canDelete, canPin} = this.props;
+        if (canPin) {
+            actions.splice(2, 0, this.getPinOption());
+        }
         if (canDelete) {
             actions.push(this.getDeleteOption());
-        }
-        if (canPin) {
-            actions.push(this.getPinOption());
         }
 
         return actions.filter((a) => a !== null);
@@ -231,12 +231,18 @@ export default class PostOptions extends PureComponent {
         const actions = [
             this.getFlagOption(),
             this.getAddReactionOption(),
-            this.getPinOption(),
             this.getCopyPermalink(),
             this.getCopyText(),
             this.getEditOption(),
-            this.getDeleteOption(),
         ];
+
+        const {canDelete, canPin} = this.props;
+        if (canPin) {
+            actions.splice(2, 0, this.getPinOption());
+        }
+        if (canDelete) {
+            actions.push(this.getDeleteOption());
+        }
 
         return actions.filter((a) => a !== null);
     };
