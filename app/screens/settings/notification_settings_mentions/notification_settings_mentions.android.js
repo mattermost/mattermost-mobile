@@ -59,8 +59,8 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                         <View style={style.modalBody}>
                             <View style={style.modalTitleContainer}>
                                 <FormattedText
-                                    id='user.settings.notifications.email.send'
-                                    defaultMessage='Send email notifications'
+                                    id='mobile.notification_settings_mentions.keywords'
+                                    defaultMessage='Keywords'
                                     style={style.modalTitle}
                                 />
                             </View>
