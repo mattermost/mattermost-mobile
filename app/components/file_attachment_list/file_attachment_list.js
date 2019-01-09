@@ -34,6 +34,10 @@ export default class FileAttachmentList extends Component {
         theme: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        files: [],
+    };
+
     constructor(props) {
         super(props);
 
@@ -41,7 +45,7 @@ export default class FileAttachmentList extends Component {
         this.previewItems = [];
 
         this.state = {
-            filesLoaded: !props.files && props.files.length !== 0,
+            loadingFiles: props.files.length === 0,
         };
 
         this.buildGalleryFiles(props).then((results) => {
@@ -50,9 +54,9 @@ export default class FileAttachmentList extends Component {
     }
 
     componentDidMount() {
-        const {postId} = this.props;
-        if (!this.state.filesLoaded) {
-            this.props.actions.loadFilesForPostIfNecessary(postId);
+        const {files} = this.props;
+        if (files.length === 0) {
+            this.loadFilesForPost();
         }
     }
 
@@ -61,22 +65,20 @@ export default class FileAttachmentList extends Component {
             this.buildGalleryFiles(nextProps).then((results) => {
                 this.galleryFiles = results;
             });
-
-            if (!this.state.filesLoaded && !nextProps.files.length && nextProps.fileIds.length > 0) {
-                this.setState({
-                    filesLoaded: true,
-                });
-            }
+        }
+        if (!this.state.loadingFiles && nextProps.files.length === 0) {
+            this.setState({
+                loadingFiles: true,
+            });
+            this.loadFilesForPost();
         }
     }
 
-    componentDidUpdate() {
-        const {files, postId} = this.props;
-
-        // Fixes an issue where files weren't loading with optimistic post
-        if (!this.state.filesLoaded && (!files || !files.length === 0)) {
-            this.props.actions.loadFilesForPostIfNecessary(postId);
-        }
+    loadFilesForPost = async () => {
+        await this.props.actions.loadFilesForPostIfNecessary(this.props.postId);
+        this.setState({
+            loadingFiles: false,
+        });
     }
 
     buildGalleryFiles = async (props) => {

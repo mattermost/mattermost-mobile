@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostAttachmentOpenGraph should match snapshot with a single image file 1`] = `
+<ScrollView
+  horizontal={true}
+  scrollEnabled={false}
+  style={
+    Array [
+      undefined,
+    ]
+  }
+>
+  <FileAttachment
+    canDownloadFiles={true}
+    deviceWidth={660}
+    file={
+      Object {
+        "caption": "image.png",
+        "data": Object {
+          "create_at": 1546893090093,
+          "delete_at": 0,
+          "extension": "png",
+          "has_preview_image": true,
+          "height": 171,
+          "id": "fileId",
+          "mime_type": "image/png",
+          "name": "image.png",
+          "post_id": "postId",
+          "size": 14894,
+          "update_at": 1546893090093,
+          "user_id": "userId",
+          "width": 425,
+        },
+      }
+    }
+    id="fileId"
+    index={0}
+    onCaptureRef={[Function]}
+    onPreviewPress={[Function]}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+  />
+</ScrollView>
+`;
