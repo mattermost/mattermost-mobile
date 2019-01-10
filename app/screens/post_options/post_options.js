@@ -29,6 +29,7 @@ export default class PostOptions extends PureComponent {
         additionalOption: PropTypes.object,
         canAddReaction: PropTypes.bool,
         canDelete: PropTypes.bool,
+        canPin: PropTypes.bool,
         canEdit: PropTypes.bool,
         canEditUntil: PropTypes.number.isRequired,
         channelIsReadOnly: PropTypes.bool,
@@ -210,12 +211,18 @@ export default class PostOptions extends PureComponent {
         const actions = [
             this.getEditOption(),
             this.getFlagOption(),
-            this.getPinOption(),
             this.getAddReactionOption(),
             this.getCopyPermalink(),
             this.getCopyText(),
-            this.getDeleteOption(),
         ];
+
+        const {canDelete, canPin} = this.props;
+        if (canPin) {
+            actions.splice(2, 0, this.getPinOption());
+        }
+        if (canDelete) {
+            actions.push(this.getDeleteOption());
+        }
 
         return actions.filter((a) => a !== null);
     };
@@ -224,12 +231,18 @@ export default class PostOptions extends PureComponent {
         const actions = [
             this.getFlagOption(),
             this.getAddReactionOption(),
-            this.getPinOption(),
             this.getCopyPermalink(),
             this.getCopyText(),
             this.getEditOption(),
-            this.getDeleteOption(),
         ];
+
+        const {canDelete, canPin} = this.props;
+        if (canPin) {
+            actions.splice(2, 0, this.getPinOption());
+        }
+        if (canDelete) {
+            actions.push(this.getDeleteOption());
+        }
 
         return actions.filter((a) => a !== null);
     };
