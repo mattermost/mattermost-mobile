@@ -33,7 +33,7 @@ class Settings extends PureComponent {
         currentUrl: PropTypes.string.isRequired,
         errors: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
-        joinableTeams: PropTypes.object.isRequired,
+        joinableTeams: PropTypes.array.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object,
     };
@@ -215,7 +215,7 @@ class Settings extends PureComponent {
     render() {
         const {config, joinableTeams, theme} = this.props;
         const style = getStyleSheet(theme);
-        const showTeams = Object.keys(joinableTeams).length > 0;
+        const showTeams = joinableTeams.length > 0;
         const showHelp = isValidUrl(config.HelpLink);
         const showArrow = Platform.OS === 'ios';
 
