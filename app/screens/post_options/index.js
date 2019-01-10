@@ -41,6 +41,8 @@ function mapStateToProps(state, ownProps) {
     let canAddReaction = true;
     let canEdit = false;
     let canEditUntil = -1;
+    let canDelete = true;
+    let canPin = true;
 
     if (hasNewPermissions(state)) {
         canAddReaction = haveIChannelPermission(state, {
@@ -52,6 +54,8 @@ function mapStateToProps(state, ownProps) {
 
     if (channelIsArchived) {
         canAddReaction = false;
+        canDelete = false;
+        canPin = false;
     } else {
         canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
         if (canEdit && license.IsLicensed === 'true' &&
@@ -66,6 +70,8 @@ function mapStateToProps(state, ownProps) {
         canAddReaction,
         canEdit,
         canEditUntil,
+        canDelete,
+        canPin,
         currentTeamUrl: getCurrentTeamUrl(state),
         isMyPost: currentUserId === post.user_id,
         post,
