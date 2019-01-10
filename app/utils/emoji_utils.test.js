@@ -60,6 +60,10 @@ describe('hasEmojisOnly with named emojis', () => {
         name: 'Mixed valid and invalid named emojis',
         message: '   :smile:  invalid  :heart:   ',
         expected: {isEmojiOnly: false, shouldRenderJumboEmoji: false},
+    }, {
+        name: 'This should render a codeblock instead',
+        message: '    :D',
+        expected: {isEmojiOnly: false, shouldRenderJumboEmoji: false},
     }];
 
     const customEmojis = new Map([['valid_custom', 0]]);

@@ -46,7 +46,7 @@ function isEmoticon(text) {
 }
 
 export function hasEmojisOnly(message, customEmojis) {
-    if (!message || message.length === 0) {
+    if (!message || message.length === 0 || (/^\s{4}/).test(message)) {
         return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
     }
 
