@@ -17,7 +17,8 @@
  - Fixed an issue where iOS long press menu didn't have rounded corners.
  - Fixed an issue where the Favorites section did not clear from a users's channel drawer.
  - Fixed an issue where a user was not returned to previously viewed channel after viewing and then closing an archived channel.
-
+ - Fixed an issue where the status changes for other users did not always stay current in the mobile app.
+ - Fixed an issue where a post did not fail properly when the user attempted to send the post while there was no network access.
 
 ## 1.15.1 Release
 - Release Date: December 28, 2018
