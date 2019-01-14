@@ -41,7 +41,7 @@ function mapStateToProps(state, ownProps) {
     let canAddReaction = true;
     let canEdit = false;
     let canEditUntil = -1;
-    let canDelete = true;
+    let {canDelete} = ownProps;
     let canPin = true;
 
     if (hasNewPermissions(state)) {
