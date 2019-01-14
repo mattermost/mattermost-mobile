@@ -84,7 +84,7 @@
   "last_users_message.added_to_channel.type": "Ви були **додані до каналу** користувачем {actor}.",
   "last_users_message.added_to_team.type": "Ви були **додані в команду** користувачем {actor}.",
   "last_users_message.first": "{firstUser} і",
-  "last_users_message.joined_channel.type": "**приєднується до каналу**",
+  "last_users_message.joined_channel.type": "**приєдналися до каналу**",
   "last_users_message.joined_team.type": "**приєднався до команди**.",
   "last_users_message.left_channel.type": "**залишив канал**.",
   "last_users_message.left_team.type": "**залишив команду**.",
