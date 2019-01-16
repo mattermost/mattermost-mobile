@@ -29,7 +29,7 @@ import {
     isGroupChannel,
 } from 'mattermost-redux/utils/channel_utils';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
+import {combineSystemPosts, getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from 'app/constants/post_textbox';
@@ -171,7 +171,8 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
 
             if (received) {
-                const count = received.order.length;
+                const {postsForChannel} = combineSystemPosts(received.order, received.posts, channelId);
+                const count = postsForChannel.length;
                 loadMorePostsVisible = count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
                 actions.push({
                     type: ViewTypes.SET_INITIAL_POST_COUNT,
@@ -199,7 +200,8 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
 
             if (received) {
-                const count = received.order.length;
+                const {postsForChannel} = combineSystemPosts(received.order, received.posts, channelId);
+                const count = postsForChannel.length;
                 loadMorePostsVisible = postsIds.length + count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
                 actions.push({
                     type: ViewTypes.SET_INITIAL_POST_COUNT,
