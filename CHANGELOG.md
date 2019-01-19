@@ -1,5 +1,25 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.15.2 Release
+- Release Date: January 16, 2019
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+
+### Bug Fixes
+
+ - Fixed an issue where the status changes for other users did not always stay current in the mobile app.
+ - Fixed an issue where a post did not fail properly when the user attempted to send the post while there was no network access.
+ - Fixed an issue where date separators did not update when changing timezones.
+ - Fixed an issue where the Favorites section did not clear from a users's channel drawer.
+ - Removed an extra divider below "Edit Channel" of Direct Message Channel Info.
+ - Fixed an issue where a user was not returned to previously viewed channel after viewing and then closing an archived channel.
+ - Fixed an issue where a quick double tap on switch of Channel Info created and extra on/off state.
+ - Fixed an issue where iOS long press menu didn't have rounded corners.
+
 ## 1.15.1 Release
 - Release Date: December 28, 2018
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
