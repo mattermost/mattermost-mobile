@@ -16,7 +16,7 @@ exports[`thread should match snapshot, has root post 1`] = `
   >
     <Connect(PostList)
       currentUserId="member_user_id"
-      indicateNewMessages={true}
+      indicateNewMessages={false}
       navigator={
         Object {
           "dismissModal": [MockFunction],
@@ -112,7 +112,7 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
 exports[`thread should match snapshot, render footer 1`] = `
 <Connect(PostList)
   currentUserId="member_user_id"
-  indicateNewMessages={true}
+  indicateNewMessages={false}
   navigator={
     Object {
       "dismissModal": [MockFunction],
@@ -155,7 +155,7 @@ exports[`thread should match snapshot, render footer 1`] = `
 exports[`thread should match snapshot, render footer 2`] = `
 <Connect(PostList)
   currentUserId="member_user_id"
-  indicateNewMessages={true}
+  indicateNewMessages={false}
   lastViewedAt={0}
   navigator={
     Object {
