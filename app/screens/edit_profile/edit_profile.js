@@ -72,6 +72,10 @@ export default class EditProfile extends PureComponent {
         intl: intlShape,
     };
 
+    leftButton = {
+        id: 'close-settings',
+    };
+
     rightButton = {
         id: 'update-profile',
         disabled: true,
@@ -83,10 +87,13 @@ export default class EditProfile extends PureComponent {
 
         const {email, first_name: firstName, last_name: lastName, nickname, position, username} = props.currentUser;
         const buttons = {
+            leftButtons: [this.leftButton],
             rightButtons: [this.rightButton],
         };
 
+        this.leftButton.title = context.intl.formatMessage({id: 'mobile.account.settings.cancel', defaultMessage: 'Cancel'});
         this.rightButton.title = context.intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
+
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
 
