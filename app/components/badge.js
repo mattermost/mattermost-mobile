@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
         justifyContent: 'center',
+        marginBottom: -1,
     },
     text: {
         fontSize: 14,
@@ -171,9 +172,6 @@ const styles = StyleSheet.create({
         height: 4,
         width: 4,
         backgroundColor: '#444',
-        position: 'absolute',
-        top: -1,
-        left: -2,
         borderRadius: 4,
     },
 });
