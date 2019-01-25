@@ -399,6 +399,7 @@ class FilteredList extends Component {
                     keyboardDismissMode='on-drag'
                     maxToRenderPerBatch={10}
                     viewabilityConfig={VIEWABILITY_CONFIG}
+                    keyboardShouldPersistTaps='handled'
                 />
             </View>
         );
