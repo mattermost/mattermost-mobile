@@ -186,7 +186,7 @@ export default class TermsOfService extends PureComponent {
                         siteName,
                     }),
                     [{
-                        text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'Ok'}),
+                        text: intl.formatMessage({id: 'mobile.terms_of_service.alert_ok', defaultMessage: 'OK'}),
                         onPress: this.closeTermsAndLogout,
                     }],
                 );
@@ -221,11 +221,12 @@ export default class TermsOfService extends PureComponent {
                     defaultMessage: 'Unable to complete the request. If this issue persists, contact your System Administrator.',
                 }),
                 [{
+                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_cancel', defaultMessage: 'Cancel'}),
+                    style: 'cancel',
+                    onPress: this.closeTermsAndLogout,
+                }, {
                     text: intl.formatMessage({id: 'mobile.terms_of_service.alert_retry', defaultMessage: 'Try Again'}),
                     onPress: retry,
-                }, {
-                    text: intl.formatMessage({id: 'mobile.terms_of_service.alert_cancel', defaultMessage: 'Cancel'}),
-                    onPress: this.closeTermsAndLogout,
                 }],
             );
         }
