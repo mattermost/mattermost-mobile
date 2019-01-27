@@ -62,10 +62,8 @@ class ChannelDrawerButton extends PureComponent {
         EventEmitter.on('drawer_opacity', this.setOpacity);
     }
 
-    componentDidUpdate(prevProps) {
-        if (prevProps.mentionCount !== this.props.mentionCount) {
-            PushNotifications.setApplicationIconBadgeNumber(this.props.mentionCount);
-        }
+    componentDidUpdate() {
+        PushNotifications.setApplicationIconBadgeNumber(this.props.mentionCount);
     }
 
     componentWillUnmount() {
