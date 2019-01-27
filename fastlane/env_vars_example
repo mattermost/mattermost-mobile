@@ -33,6 +33,9 @@ export MATCH_SKIP_DOCS=true
 # The ID of your Developer Portal team
 export FASTLANE_TEAM_ID=
 
+# Your Mac user password used to install the certificates in the build computer KeyChain
+export MATCH_KEYCHAIN_PASSWORD=
+
 ############ PILOT (Used to upload the ipa to TestFlight and from there you can submit to the store) ############
 # Your Apple ID Username
 export PILOT_USERNAME=
