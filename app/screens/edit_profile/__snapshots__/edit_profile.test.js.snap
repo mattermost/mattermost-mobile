@@ -34,6 +34,12 @@ exports[`edit_profile should match snapshot 1`] = `
           "calls": Array [
             Array [
               Object {
+                "leftButtons": Array [
+                  Object {
+                    "id": "close-settings",
+                    "title": undefined,
+                  },
+                ],
                 "rightButtons": Array [
                   Object {
                     "disabled": true,
