@@ -61,10 +61,10 @@ export default class AttachmentButton extends PureComponent {
     };
 
     attachPhotoFromCamera = () => {
-        return this.attachFileFromCamera('photo');
+        return this.attachFileFromCamera('photo', 'camera');
     };
 
-    attachFileFromCamera = async (mediaType) => {
+    attachFileFromCamera = async (mediaType, source) => {
         const {formatMessage} = this.context.intl;
         const options = {
             quality: 0.8,
@@ -92,7 +92,7 @@ export default class AttachmentButton extends PureComponent {
             },
         };
 
-        const hasPhotoPermission = await this.hasPhotoPermission();
+        const hasPhotoPermission = await this.hasPhotoPermission(source);
 
         if (hasPhotoPermission) {
             ImagePicker.launchCamera(options, (response) => {
@@ -141,7 +141,7 @@ export default class AttachmentButton extends PureComponent {
     };
 
     attachVideoFromCamera = () => {
-        return this.attachFileFromCamera('video');
+        return this.attachFileFromCamera('video', 'camera');
     };
 
     attachVideoFromLibraryAndroid = () => {
@@ -206,11 +206,11 @@ export default class AttachmentButton extends PureComponent {
         }
     };
 
-    hasPhotoPermission = async () => {
+    hasPhotoPermission = async (source) => {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const hasPermissionToStorage = await Permissions.check('photo');
+            const hasPermissionToStorage = await Permissions.check(source || 'photo');
 
             switch (hasPermissionToStorage) {
             case PermissionTypes.UNDETERMINED:
@@ -295,13 +295,13 @@ export default class AttachmentButton extends PureComponent {
                         defaultMessage: 'To upload images from your Android device, please change your permission settings.',
                     }),
                     [
-                        grantOption,
                         {
                             text: formatMessage({
                                 id: 'mobile.android.permission_denied_dismiss',
                                 defaultMessage: 'Dismiss',
                             }),
                         },
+                        grantOption,
                     ]
                 );
                 return false;
