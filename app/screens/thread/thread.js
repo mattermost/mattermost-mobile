@@ -143,7 +143,7 @@ export default class Thread extends PureComponent {
             content = (
                 <PostList
                     renderFooter={this.renderFooter()}
-                    indicateNewMessages={true}
+                    indicateNewMessages={false}
                     postIds={postIds}
                     currentUserId={myMember && myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
