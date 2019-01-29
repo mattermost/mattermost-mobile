@@ -379,6 +379,7 @@ export default class PostBody extends PureComponent {
                     <Markdown
                         baseTextStyle={messageStyle}
                         blockStyles={blockStyles}
+                        channelMentions={postProps.channel_mentions}
                         imageMetadata={metadata?.images}
                         isEdited={hasBeenEdited}
                         isReplyPost={isReplyPost}

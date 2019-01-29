@@ -4,20 +4,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
-
-import {getChannelFromChannelName} from './channel_link_utils';
+import {intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import {t} from 'app/utils/i18n';
+import {alertErrorWithFallback} from 'app/utils/general';
+
+import {getChannelFromChannelName} from './channel_link_utils';
 
 export default class ChannelLink extends React.PureComponent {
     static propTypes = {
         channelName: PropTypes.string.isRequired,
+        channelMentions: PropTypes.object,
+        currentTeamId: PropTypes.string.isRequired,
+        currentUserId: PropTypes.string.isRequired,
         linkStyle: CustomPropTypes.Style,
         onChannelLinkPress: PropTypes.func,
         textStyle: CustomPropTypes.Style,
         channelsByName: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             handleSelectChannel: PropTypes.func.isRequired,
+            joinChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
     };
@@ -30,6 +37,10 @@ export default class ChannelLink extends React.PureComponent {
         };
     }
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     static getDerivedStateFromProps(nextProps, prevState) {
         const nextChannel = getChannelFromChannelName(nextProps.channelName, nextProps.channelsByName);
         if (nextChannel !== prevState.channel) {
@@ -39,12 +50,35 @@ export default class ChannelLink extends React.PureComponent {
         return null;
     }
 
-    handlePress = () => {
-        this.props.actions.setChannelDisplayName(this.state.channel.display_name);
-        this.props.actions.handleSelectChannel(this.state.channel.id);
+    handlePress = async () => {
+        const {channel: channelState} = this.state;
+        let channel;
+        if (!channelState.id && channelState.display_name) {
+            const {actions, currentTeamId, currentUserId} = this.props;
+            const result = await actions.joinChannel(currentUserId, currentTeamId, null, channelState.display_name);
 
-        if (this.props.onChannelLinkPress) {
-            this.props.onChannelLinkPress(this.state.channel);
+            if (result.error || !result.data || !result.data.channel) {
+                const joinFailedMessage = {
+                    id: t('mobile.join_channel.error'),
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
+                };
+                alertErrorWithFallback(this.context.intl, result.error, joinFailedMessage, channelState.display_name);
+            }
+
+            if (result?.data?.channel) {
+                channel = result.data.channel;
+            }
+        } else {
+            channel = channelState;
+        }
+
+        if (channel) {
+            this.props.actions.setChannelDisplayName(this.state.channel.display_name);
+            this.props.actions.handleSelectChannel(this.state.channel.id);
+
+            if (this.props.onChannelLinkPress) {
+                this.props.onChannelLinkPress(this.state.channel);
+            }
         }
     }
 
@@ -55,7 +89,12 @@ export default class ChannelLink extends React.PureComponent {
             return <Text style={this.props.textStyle}>{`~${this.props.channelName}`}</Text>;
         }
 
-        const suffix = this.props.channelName.substring(channel.name.length);
+        let suffix;
+        if (!channel.name && !channel.id && channel.display_name) {
+            suffix = this.props.channelName.substring(channel.display_name.length);
+        } else {
+            suffix = this.props.channelName.substring(channel.name.length);
+        }
 
         return (
             <Text style={this.props.textStyle}>
