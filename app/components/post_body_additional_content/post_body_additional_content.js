@@ -40,6 +40,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         googleDeveloperKey: PropTypes.string,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
+        expandedLink: PropTypes.string,
         metadata: PropTypes.object,
         isReplyPost: PropTypes.bool,
         link: PropTypes.string,
@@ -114,7 +115,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     load = async (props) => {
-        const {link} = props;
+        const {link, expandedLink} = props;
         if (link) {
             let imageUrl;
             if (this.isImage()) {
@@ -124,11 +125,16 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                 ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
             } else {
-                const {data} = await this.props.actions.getRedirectLocation(link);
-
                 let shortenedLink;
-                if (data && data.location) {
-                    shortenedLink = data.location;
+
+                if (expandedLink) {
+                    shortenedLink = expandedLink;
+                } else {
+                    const {data} = await this.props.actions.getRedirectLocation(link);
+
+                    if (data && data.location) {
+                        shortenedLink = data.location;
+                    }
                 }
 
                 if (shortenedLink) {
