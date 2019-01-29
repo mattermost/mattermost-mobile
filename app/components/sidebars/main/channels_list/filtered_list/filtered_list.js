@@ -396,10 +396,10 @@ class FilteredList extends Component {
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
                     onViewableItemsChanged={this.updateUnreadIndicators}
-                    keyboardDismissMode='on-drag'
+                    keyboardDismissMode='interactive'
+                    keyboardShouldPersistTaps='always'
                     maxToRenderPerBatch={10}
                     viewabilityConfig={VIEWABILITY_CONFIG}
-                    keyboardShouldPersistTaps='handled'
                 />
             </View>
         );
