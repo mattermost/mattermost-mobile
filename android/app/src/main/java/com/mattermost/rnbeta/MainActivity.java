@@ -1,7 +1,10 @@
 package com.mattermost.rnbeta;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+
 import com.reactnativenavigation.controllers.SplashActivity;
 
 public class MainActivity extends SplashActivity {
@@ -18,10 +21,15 @@ public class MainActivity extends SplashActivity {
          * 5. Causing an unnecessary app restart
          * 6. This solution short-circuits the restart
          */
-        if (!isTaskRoot()) {
+
+        if (!isTaskRoot() && !intentHasDeepLink(getIntent())) {
             finish();
             return;
         }
+    }
+
+    public Boolean intentHasDeepLink(Intent intent) {
+        return intent != null && intent.getData() != null;
     }
 
     @Override

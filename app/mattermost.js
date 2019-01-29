@@ -477,6 +477,14 @@ if (startedSharedExtension || fromPushNotification) {
     });
 }
 
+if (Platform.OS === 'android') {
+    new NativeEventsReceiver().appLaunched(() => {
+        if (app.appStarted) {
+            launchChannel();
+        }
+    });
+}
+
 if (!app.appStarted) {
     launchEntry();
 }
