@@ -15,8 +15,11 @@ describe('should match return value of getInitialPosition', () => {
             input: {deviceHeight: 600, marginFromTop: 50},
             output: 404.5,
         }, {
-            input: {deviceHeight: 1000, marginFromTop: 300},
-            output: 700,
+            input: {deviceHeight: 1000, marginFromTop: 250},
+            output: 750,
+        }, {
+            input: {deviceHeight: 1000, marginFromTop: 150},
+            output: 704.5,
         }, {
             input: {deviceHeight: 1000, marginFromTop: 400},
             output: 600,
@@ -31,7 +34,7 @@ describe('should match return value of getInitialPosition', () => {
             const initialPosition = getInitialPosition(input.deviceHeight, input.marginFromTop);
             expect(initialPosition).toEqual(output);
 
-            // should not exceed maximum initial position at 70% of screen height
+            // should not exceed maximum initial position at 75% of screen height
             expect(initialPosition).toBeLessThanOrEqual(maxInitialPosition);
         });
     }
