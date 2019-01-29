@@ -12,6 +12,7 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {ViewTypes} from 'app/constants';
 import {app} from 'app/mattermost';
 import {getDeviceTimezone, isTimezoneEnabled} from 'app/utils/timezone';
+import {setCSRFFromCookie} from 'app/utils/security';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -41,6 +42,7 @@ export function handleSuccessfulLogin() {
         const deviceToken = state.entities.general.deviceToken;
         const currentUserId = getCurrentUserId(state);
 
+        setCSRFFromCookie(url);
         app.setAppCredentials(deviceToken, currentUserId, token, url);
 
         const enableTimezone = isTimezoneEnabled(state);
