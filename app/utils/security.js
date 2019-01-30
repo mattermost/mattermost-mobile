@@ -9,7 +9,7 @@ export function setCSRFFromCookie(url) {
     CookieManager.get(urlParse(url).origin, false).then((res) => {
         const token = res.MMCSRF;
         if (token) {
-            Client4.setCSRF(res?.MMCSRF?.value || res?.MMCSRF);
+            Client4.setCSRF(token?.value || token);
         }
     });
 }
