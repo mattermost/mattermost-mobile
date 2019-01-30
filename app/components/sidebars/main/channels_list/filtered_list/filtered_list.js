@@ -9,6 +9,7 @@ import {
     Text,
     TouchableHighlight,
     View,
+    Platform,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -396,7 +397,7 @@ class FilteredList extends Component {
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
                     onViewableItemsChanged={this.updateUnreadIndicators}
-                    keyboardDismissMode='interactive'
+                    keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
                     keyboardShouldPersistTaps='always'
                     maxToRenderPerBatch={10}
                     viewabilityConfig={VIEWABILITY_CONFIG}
