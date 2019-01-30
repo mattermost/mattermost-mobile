@@ -72,7 +72,7 @@ export default class Notification extends PureComponent {
             />
         );
 
-        if (data.from_webhook && config.EnablePostIconOverride === 'true') {
+        if (data.from_webhook && config.EnablePostIconOverride === 'true' && data.use_user_icon !== 'true') {
             const wsIcon = data.override_icon_url ? {uri: data.override_icon_url} : webhookIcon;
             icon = (
                 <Image
