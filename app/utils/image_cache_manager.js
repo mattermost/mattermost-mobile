@@ -6,7 +6,11 @@
 import {Platform} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
+import {Client4} from 'mattermost-redux/client';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+
 import {DeviceTypes} from 'app/constants';
+import {store} from 'app/mattermost';
 import mattermostBucket from 'app/mattermost_bucket';
 
 import LocalConfig from 'assets/config';
@@ -41,7 +45,14 @@ export default class ImageCacheManager {
                         certificate,
                     };
 
-                    this.downloadTask = await RNFetchBlob.config(options).fetch('GET', uri);
+                    const serverConfig = getConfig(store.getState());
+                    const headers = {};
+                    if (uri.includes(Client4.getUrl()) || uri.includes(serverConfig.SiteURL)) {
+                        headers.Authorization = `Bearer ${Client4.getToken()}`;
+                        headers['X-Requested-With'] = 'XMLHttpRequest';
+                    }
+
+                    this.downloadTask = await RNFetchBlob.config(options).fetch('GET', uri, headers);
                     if (this.downloadTask.respInfo.respType === 'text') {
                         throw new Error();
                     }
