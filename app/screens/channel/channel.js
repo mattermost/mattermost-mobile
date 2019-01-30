@@ -86,6 +86,10 @@ export default class Channel extends PureComponent {
         } else {
             this.props.actions.selectDefaultTeam();
         }
+
+        if (this.props.currentChannelId) {
+            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+        }
     }
 
     componentDidMount() {
