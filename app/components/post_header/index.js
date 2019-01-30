@@ -36,12 +36,12 @@ function makeMapStateToProps() {
             createAt: post.create_at,
             displayName: displayUsername(user, teammateNameDisplay),
             enablePostUsernameOverride: config.EnablePostUsernameOverride === 'true',
-            fromWebHook: post.props && post.props.from_webhook === 'true',
+            fromWebHook: post?.props?.from_webhook === 'true', // eslint-disable-line camelcase
             militaryTime,
             isPendingOrFailedPost: isPostPendingOrFailed(post),
             isSystemMessage: isSystemMessage(post),
             fromAutoResponder: fromAutoResponder(post),
-            overrideUsername: post.props && post.props.override_username,
+            overrideUsername: post?.props?.override_username, // eslint-disable-line camelcase
             theme: getTheme(state),
             username: user.username,
             userTimezone,
