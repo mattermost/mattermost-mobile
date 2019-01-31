@@ -191,7 +191,7 @@ export default function configureAppStore(initialState) {
                 const state = store.getState();
                 const config = getConfig(state);
 
-                if (config?.SiteURL && getSiteUrl() !== config?.SiteURL) {
+                if (getSiteUrl() !== config?.SiteURL) {
                     setSiteUrl(config.SiteURL);
                 }
 
