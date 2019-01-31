@@ -44,7 +44,6 @@ export default class ImageCacheManager {
                         certificate,
                     };
 
-                    // const serverConfig = getConfig(store.getState());
                     const headers = {};
                     if (uri.includes(Client4.getUrl()) || uri.includes(siteUrl)) {
                         headers.Authorization = `Bearer ${Client4.getToken()}`;
