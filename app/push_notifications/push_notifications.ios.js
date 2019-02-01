@@ -152,6 +152,8 @@ class PushNotification {
     clearChannelNotifications(channelId) {
         NotificationsIOS.getDeliveredNotifications((notifications) => {
             const ids = [];
+            let badgeCount = notifications.length;
+
             for (let i = 0; i < notifications.length; i++) {
                 const notification = notifications[i];
 
@@ -161,8 +163,11 @@ class PushNotification {
             }
 
             if (ids.length) {
+                badgeCount -= ids.length;
                 NotificationsIOS.removeDeliveredNotifications(ids);
             }
+
+            this.setApplicationIconBadgeNumber(badgeCount);
         });
     }
 }
