@@ -522,6 +522,7 @@
   "user.settings.display.normalClock": "12-hour clock (example: 4:00 PM)",
   "user.settings.display.preferTime": "Select how you prefer time displayed.",
   "user.settings.general.email": "Email",
+  "user.settings.general.emailCantUpdate": "Email must be updated using a web client or desktop application.",
   "user.settings.general.emailGitlabCantUpdate": "Login occurs through GitLab. Email cannot be updated. Email address used for notifications is {email}.",
   "user.settings.general.emailGoogleCantUpdate": "Login occurs through Google. Email cannot be updated. Email address used for notifications is {email}.",
   "user.settings.general.emailHelp1": "Email is used for sign-in, notifications, and password reset. Email requires verification if changed.",

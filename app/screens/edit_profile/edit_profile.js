@@ -354,21 +354,17 @@ export default class EditProfile extends PureComponent {
 
     renderEmailSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {currentUser, theme} = this.props;
         const {email} = this.state;
 
         let helpText;
-        let disabled = false;
 
-        if (config.SendEmailNotifications !== 'true') {
-            disabled = true;
+        if (currentUser.auth_service === '') {
             helpText = formatMessage({
-                id: 'user.settings.general.emailHelp1',
-                defaultMessage: 'Email is used for sign-in, notifications, and password reset. Email requires verification if changed.',
+                id: 'user.settings.general.emailCantUpdate',
+                defaultMessage: 'Email must be updated using a web client or desktop application.',
             });
-        } else if (currentUser.auth_service !== '') {
-            disabled = true;
-
+        } else {
             switch (currentUser.auth_service) {
             case 'gitlab':
                 helpText = formatMessage({
@@ -406,7 +402,7 @@ export default class EditProfile extends PureComponent {
         return (
             <View>
                 <TextSetting
-                    disabled={disabled}
+                    disabled={true}
                     id='email'
                     label={holders.email}
                     disabledText={helpText}
