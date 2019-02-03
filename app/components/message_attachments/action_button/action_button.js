@@ -23,9 +23,14 @@ export default class ActionButton extends PureComponent {
 
     handleActionPress = preventDoubleTap(() => {
         const {actions, id, postId} = this.props;
-        this.setState({isDisabled: true});
+        this.handleDisableButtonState();
         actions.doPostAction(postId, id);
     });
+
+    handleDisableButtonState = () => {
+        this.setState({isDisabled: true});
+        setTimeout(() => this.setState({isDisabled: false}), 4000);
+    }
 
     render() {
         const {name, theme} = this.props;
