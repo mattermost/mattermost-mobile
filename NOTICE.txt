@@ -20,7 +20,7 @@ Provides polyfills necessary for a full ES2015+ environment
 
 MIT License
 
-Copyright (c) 2014-2018 Sebastian McKenzie and other contributors
+Copyright (c) 2014-present Sebastian McKenzie and other contributors
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -56,7 +56,7 @@ babel's modular runtime helpers
 
 MIT License
 
-Copyright (c) 2014-2018 Sebastian McKenzie and other contributors
+Copyright (c) 2014-present Sebastian McKenzie and other contributors
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -641,7 +641,7 @@ SOFTWARE.
 
 ## jsc-android
 
-This product contains 'jsc-android' by React Community.
+This product contains 'jsc-android' by React Native Community.
 
 Pre-build version of JavaScriptCore to be used by React Native apps
 
@@ -1468,12 +1468,12 @@ SOFTWARE.
 
 ## react-native-gesture-handler
 
-This product contains 'react-native-gesture-handler' by kmagiera
+This product contains 'react-native-gesture-handler' by Krzysztof Magiera.
 
-Declarative API exposing platform native touch and gesture system to React Native.
+Experimental implementation of a new declarative API for gesture handling in react-native
 
 * HOMEPAGE:
-  * https://github.com/kmagiera/react-native-gesture-handler
+  * https://github.com/kmagiera/react-native-gesture-handler#readme
 
 * LICENSE: MIT
 
@@ -1637,7 +1637,7 @@ This product contains 'react-native-linear-gradient' by Brent Vatne.
 A <LinearGradient> element for React Native
 
 * HOMEPAGE:
-  * https://github.com/react-native-community/react-native-linear-gradient
+  * https://github.com/react-native-community/react-native-linear-gradient#readme
 
 * LICENSE: MIT
 
@@ -2005,7 +2005,7 @@ Note: An original license file for this dependency is not available. We determin
 
 MIT License
 
-Copyright (c) 2018 Brent Vatne
+Copyright (c) 2019 Brent Vatne
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -2022,7 +2022,7 @@ This product contains 'react-native-svg' by React Native Community.
 SVG library for react-native
 
 * HOMEPAGE:
-  * https://github.com/magicismight/react-native-svg#readme
+  * https://github.com/react-native-community/react-native-svg#readme
 
 * LICENSE: MIT
 
@@ -2660,7 +2660,7 @@ Note: An original license file for this dependency is not available. We determin
 
 MIT License
 
-Copyright (c) 2018 Brian Grinstead
+Copyright (c) 2019 Brian Grinstead
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
