@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
@@ -80,10 +80,9 @@ export default class Theme extends React.PureComponent {
             <ThemeTile
                 key={allowedTheme.key}
                 label={(
-                    <FormattedText
-                        id={`user.settings.display.${allowedTheme.type}`}
-                        defaultMessage={allowedTheme.type}
-                    />
+                    <Text>
+                        {allowedTheme.type}
+                    </Text>
                 )}
                 action={this.setTheme}
                 actionValue={allowedTheme.key}
@@ -103,7 +102,7 @@ export default class Theme extends React.PureComponent {
             <SectionItem
                 label={(
                     <FormattedText
-                        id={`user.settings.display.${item.type}`}
+                        id='user.settings.display.custom_theme'
                         defaultMessage={'Custom Theme'}
                     />
                 )}
