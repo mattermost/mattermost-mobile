@@ -5,12 +5,11 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {UserTypes} from 'mattermost-redux/action_types';
+import {ChannelTypes, UserTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     markChannelAsRead,
-    selectChannel,
-    leaveChannel as serviceLeaveChannel,
+    leaveChannel as serviceLeaveChannel, markChannelAsViewed,
 } from 'mattermost-redux/actions/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
@@ -18,8 +17,9 @@ import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentChannelId, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
+import {getLastPostPerChannel} from 'mattermost-redux/selectors/entities/posts';
+import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     getChannelByName,
@@ -261,7 +261,7 @@ export function loadThreadIfNecessary(rootId, channelId) {
     };
 }
 
-export function selectInitialChannel(teamId) {
+export function selectInitialChannel(teamId, skipChannelViewedAt = false) {
     return (dispatch, getState) => {
         const state = getState();
         const {channels, myMembers} = state.entities.channels;
@@ -282,8 +282,7 @@ export function selectInitialChannel(teamId) {
             lastChannel &&
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
         ) {
-            handleSelectChannel(lastChannelId)(dispatch, getState);
-            markChannelAsRead(lastChannelId)(dispatch, getState);
+            dispatch(handleSelectChannel(lastChannelId, skipChannelViewedAt));
             return;
         }
 
@@ -316,7 +315,6 @@ export function selectPenultimateChannel(teamId) {
             dispatch(setChannelLoading(true));
             dispatch(setChannelDisplayName(lastChannel.display_name));
             dispatch(handleSelectChannel(lastChannelId));
-            dispatch(markChannelAsRead(lastChannelId));
             return;
         }
 
@@ -326,7 +324,7 @@ export function selectPenultimateChannel(teamId) {
 
 export function selectDefaultChannel(teamId) {
     return (dispatch, getState) => {
-        const channels = getState().entities.channels.channels;
+        const {channels} = getState().entities.channels;
 
         const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
         let channelId;
@@ -344,21 +342,32 @@ export function selectDefaultChannel(teamId) {
         if (channelId) {
             dispatch(setChannelDisplayName(''));
             dispatch(handleSelectChannel(channelId));
-            dispatch(markChannelAsRead(channelId));
         }
     };
 }
 
-export function handleSelectChannel(channelId) {
+export function handleSelectChannel(channelId, skipChannelViewedAt = false) {
     return async (dispatch, getState) => {
-        const {currentTeamId} = getState().entities.teams;
+        const state = getState();
+        const currentTeamId = getCurrentTeamId(state);
+        const currentChannelId = getCurrentChannelId(state);
+        const sameChannel = channelId === currentChannelId;
+        let member = getMyChannelMember(state, channelId);
+
+        if (skipChannelViewedAt) {
+            const lastPost = getLastPostPerChannel(state, channelId);
+            member = {
+                last_viewed_at: lastPost[channelId].create_at,
+            };
+        }
 
         dispatch(setLoadMorePostsVisible(true));
-
-        loadPostsIfNecessaryWithRetry(channelId)(dispatch, getState);
-        selectChannel(channelId)(dispatch, getState);
-
+        dispatch(loadPostsIfNecessaryWithRetry(channelId));
         dispatch(batchActions([
+            {
+                type: ChannelTypes.SELECT_CHANNEL,
+                data: channelId,
+            },
             {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
                 data: channelId,
@@ -369,7 +378,15 @@ export function handleSelectChannel(channelId) {
                 teamId: currentTeamId,
                 channelId,
             },
+            {
+                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+                data: channelId,
+                member,
+            },
         ]));
+
+        dispatch(markChannelAsRead(channelId, sameChannel ? null : currentChannelId));
+        dispatch(markChannelAsViewed(channelId, sameChannel ? null : currentChannelId));
     };
 }
 
@@ -411,7 +428,7 @@ export function toggleDMChannel(otherUserId, visible, channelId) {
             value: Date.now().toString(),
         }];
 
-        savePreferences(currentUserId, dm)(dispatch, getState);
+        dispatch(savePreferences(currentUserId, dm));
     };
 }
 
@@ -427,7 +444,7 @@ export function toggleGMChannel(channelId, visible) {
             value: visible,
         }];
 
-        savePreferences(currentUserId, gm)(dispatch, getState);
+        dispatch(savePreferences(currentUserId, gm));
     };
 }
 
@@ -436,9 +453,9 @@ export function closeDMChannel(channel) {
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
-        toggleDMChannel(channel.teammate_id, 'false')(dispatch, getState);
+        dispatch(toggleDMChannel(channel.teammate_id, 'false'));
         if (channel.id === currentChannelId) {
-            selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
+            dispatch(selectInitialChannel(state.entities.teams.currentTeamId));
         }
     };
 }
@@ -482,7 +499,7 @@ export function leaveChannel(channel, reset = false) {
             await dispatch(selectDefaultChannel(currentTeamId));
         }
 
-        await serviceLeaveChannel(channel.id)(dispatch, getState);
+        await dispatch(serviceLeaveChannel(channel.id));
     };
 }
 

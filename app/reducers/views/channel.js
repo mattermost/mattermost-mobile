@@ -332,6 +332,22 @@ function loadMorePostsVisible(state = true, action) {
     }
 }
 
+function lastChannelViewTime(state = {}, action) {
+    switch (action.type) {
+    case ViewTypes.SELECT_CHANNEL_WITH_MEMBER: {
+        if (action.member) {
+            const nextState = {...state};
+            nextState[action.data] = action.member.last_viewed_at;
+            return nextState;
+        }
+        return state;
+    }
+
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     displayName,
     drafts,
@@ -343,4 +359,5 @@ export default combineReducers({
     lastGetPosts,
     retryFailed,
     loadMorePostsVisible,
+    lastChannelViewTime,
 });
