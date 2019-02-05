@@ -13,6 +13,7 @@
     "commonmark": "github:mattermost/commonmark.js#d5a7a7bfb373778d3bfd4575962c10fb3f3909c6",
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#3a2ac19cab725ad28b170fdc1d397dddedcf87eb",
     "deep-equal": "1.0.1",
+    "emoji-regex": "7.0.3",
     "fuse.js": "3.3.0",
     "intl": "1.2.5",
     "jail-monkey": "1.0.0",
