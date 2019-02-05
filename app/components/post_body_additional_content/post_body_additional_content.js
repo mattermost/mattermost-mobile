@@ -87,16 +87,18 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     componentWillMount() {
         this.mounted = true;
-        this.load(this.props);
+        this.load();
     }
 
     componentWillUnmount() {
         this.mounted = false;
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.link !== nextProps.link) {
-            this.load(nextProps);
+    componentDidUpdate(prevProps) {
+        const link = this.props.expandedLink || this.props.link;
+        const prevLink = prevProps.expandedLink || prevProps.link;
+        if (link !== prevLink) {
+            this.load();
         }
     }
 
@@ -114,8 +116,8 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return false;
     };
 
-    load = async (props) => {
-        const {link, expandedLink} = props;
+    load = () => {
+        const link = this.props.expandedLink || this.props.link;
         if (link) {
             let imageUrl;
             if (this.isImage()) {
@@ -124,31 +126,8 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 const videoId = getYouTubeVideoId(link);
                 imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                 ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
-            } else {
-                let shortenedLink;
-
-                if (expandedLink) {
-                    shortenedLink = expandedLink;
-                } else {
-                    const {data} = await this.props.actions.getRedirectLocation(link);
-
-                    if (data && data.location) {
-                        shortenedLink = data.location;
-                    }
-                }
-
-                if (shortenedLink) {
-                    if (this.isImage(shortenedLink)) {
-                        imageUrl = shortenedLink;
-                    } else if (isYoutubeLink(shortenedLink)) {
-                        const videoId = getYouTubeVideoId(shortenedLink);
-                        imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                        ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
-                    }
-                    if (this.mounted) {
-                        this.setState({shortenedLink});
-                    }
-                }
+            } else if (!this.props.expandedLink) {
+                this.props.actions.getRedirectLocation(link);
             }
 
             if (imageUrl) {
