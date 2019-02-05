@@ -78,7 +78,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
         this.state = {
             linkLoadError: false,
             linkLoaded: false,
-            shortenedLink: null,
             ...dimensions,
         };
 
@@ -194,11 +193,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     generateToggleableEmbed = (isImage, isYouTube) => {
-        let {link} = this.props;
-        const {shortenedLink} = this.state;
-        if (shortenedLink) {
-            link = shortenedLink;
-        }
+        const link = this.props.link || this.props.expandedLink;
         const {width, height, uri} = this.state;
         const imgHeight = height;
 
@@ -391,12 +386,8 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     handlePreviewImage = () => {
-        const {shortenedLink} = this.state;
-        let {link} = this.props;
+        const link = this.props.link || this.props.expandedLink;
         const {navigator} = this.props;
-        if (shortenedLink) {
-            link = shortenedLink;
-        }
         const {
             originalHeight,
             originalWidth,
@@ -461,12 +452,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     render() {
-        let {link} = this.props;
+        const link = this.props.link || this.props.expandedLink;
         const {openGraphData, postProps} = this.props;
-        const {linkLoadError, shortenedLink} = this.state;
-        if (shortenedLink) {
-            link = shortenedLink;
-        }
+        const {linkLoadError} = this.state;
         const {attachments} = postProps;
 
         if (!link && !attachments) {
