@@ -44,7 +44,7 @@ describe('Actions.Views.User', () => {
             },
         };
 
-        await store.dispatch(setCurrentUserStatusOffline(false));
+        await store.dispatch(setCurrentUserStatusOffline());
         expect(store.getActions()).toEqual([action]);
     });
 });
