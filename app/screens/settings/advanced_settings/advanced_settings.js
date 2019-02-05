@@ -18,6 +18,7 @@ import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
+import {t} from 'app/utils/i18n';
 import {deleteFileCache, getFileCacheSize} from 'app/utils/file';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -46,8 +47,8 @@ class AdvancedSettings extends PureComponent {
         const {formatMessage} = this.props.intl;
 
         Alert.alert(
-            formatMessage({id: 'mobile.advanced_settings.delete_title', defaultMessage: 'Delete Documents & Data'}),
-            formatMessage({id: 'mobile.advanced_settings.delete_message', defaultMessage: '\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
+            formatMessage({id: t('mobile.advanced_settings.delete_title'), defaultMessage: 'Delete Documents & Data'}),
+            formatMessage({id: t('mobile.advanced_settings.delete_message'), defaultMessage: '\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
             [{
                 text: formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
                 style: 'cancel',

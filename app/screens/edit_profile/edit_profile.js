@@ -91,8 +91,8 @@ export default class EditProfile extends PureComponent {
             rightButtons: [this.rightButton],
         };
 
-        this.leftButton.title = context.intl.formatMessage({id: 'mobile.account.settings.cancel', defaultMessage: 'Cancel'});
-        this.rightButton.title = context.intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
+        this.leftButton.title = context.intl.formatMessage({id: t('mobile.account.settings.cancel'), defaultMessage: 'Cancel'});
+        this.rightButton.title = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
