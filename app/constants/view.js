@@ -7,6 +7,7 @@ export const UpgradeTypes = {
     CAN_UPGRADE: 'can_upgrade',
     MUST_UPGRADE: 'must_upgrade',
     NO_UPGRADE: 'no_upgrade',
+    IS_BETA: 'is_beta',
 };
 
 export const SidebarSectionTypes = {
