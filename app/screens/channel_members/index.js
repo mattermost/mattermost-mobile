@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentChannel, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
 import {makeGetProfilesInChannel} from 'mattermost-redux/selectors/entities/users';
 import {getProfilesInChannel, searchProfiles} from 'mattermost-redux/actions/users';
 
@@ -16,21 +16,18 @@ function makeMapStateToProps() {
     const getChannelMembers = makeGetProfilesInChannel();
 
     return (state) => {
-        const currentChannel = getCurrentChannel(state) || {};
+        const currentChannelId = getCurrentChannelId(state);
         let currentChannelMembers = [];
-        if (currentChannel) {
-            currentChannelMembers = getChannelMembers(state, currentChannel.id, true);
+        if (currentChannelId) {
+            currentChannelMembers = getChannelMembers(state, currentChannelId, true);
         }
 
         return {
-            theme: getTheme(state),
-            currentChannel,
+            canManageUsers: canManageChannelMembers(state),
+            currentChannelId,
             currentChannelMembers,
             currentUserId: state.entities.users.currentUserId,
-            requestStatus: state.requests.users.getProfilesInChannel.status,
-            searchRequestStatus: state.requests.users.searchProfiles.status,
-            removeMembersStatus: state.requests.channels.removeChannelMember.status,
-            canManageUsers: canManageChannelMembers(state),
+            theme: getTheme(state),
         };
     };
 }

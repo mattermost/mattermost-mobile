@@ -7,7 +7,7 @@ import {
     getExtensionSortedDirectChannels,
     getExtensionSortedPrivateChannels,
     getExtensionSortedPublicChannels,
-} from 'share_extension/android/selectors';
+} from 'share_extension/common/selectors';
 
 import ExtensionChannels from './extension_channels';
 

@@ -11,11 +11,10 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import DeviceInfo from 'react-native-device-info';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
-import {UpgradeTypes} from 'app/constants/view';
+import {DeviceTypes, UpgradeTypes} from 'app/constants';
 import checkUpgradeType from 'app/utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -47,8 +46,6 @@ export default class ClientUpgradeListener extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.isX = DeviceInfo.getModel().includes('iPhone X');
-
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
@@ -73,7 +70,7 @@ export default class ClientUpgradeListener extends PureComponent {
         if (versionMismatch && (forceUpgrade || Date.now() - lastUpgradeCheck > UPDATE_TIMEOUT)) {
             this.checkUpgrade(minVersion, latestVersion, nextProps.isLandscape);
         } else if (this.props.isLandscape !== nextProps.isLandscape &&
-            this.state.upgradeType !== UpgradeTypes.NO_UPGRADE && this.isX) {
+            this.state.upgradeType !== UpgradeTypes.NO_UPGRADE && DeviceTypes.IS_IPHONE_X) {
             const newTop = nextProps.isLandscape ? 45 : 100;
             this.setState({top: new Animated.Value(newTop)});
         }
@@ -100,10 +97,10 @@ export default class ClientUpgradeListener extends PureComponent {
     toggleUpgradeMessage = (show = true, isLandscape) => {
         let toValue = -100;
         if (show) {
-            if (this.isX && isLandscape) {
+            if (DeviceTypes.IS_IPHONE_X && isLandscape) {
                 toValue = 45;
             } else {
-                toValue = this.isX ? 100 : 75;
+                toValue = DeviceTypes.IS_IPHONE_X ? 100 : 75;
             }
         }
         Animated.timing(this.state.top, {

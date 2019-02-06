@@ -4,7 +4,7 @@ exports[`MoreChannels should match snapshot 1`] = `
 <KeyboardLayout>
   <Connect(StatusBar) />
   <React.Fragment>
-    <Component
+    <View
       style={
         Object {
           "marginVertical": 5,
@@ -35,9 +35,8 @@ exports[`MoreChannels should match snapshot 1`] = `
         titleCancelColor="#3d3c40"
         value=""
       />
-    </Component>
+    </View>
     <CustomList
-      createSections={[Function]}
       data={
         Array [
           Object {
@@ -47,24 +46,36 @@ exports[`MoreChannels should match snapshot 1`] = `
           },
         ]
       }
-      listInitialSize={10}
-      listPageSize={10}
-      listScrollRenderAheadDistance={50}
-      loading={false}
-      loadingText={
-        Object {
-          "defaultMessage": "Loading Channels...",
-          "id": "mobile.loading_channels",
-        }
+      extraData={true}
+      listType="flat"
+      loading={true}
+      loadingComponent={
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "backgroundColor": "#ffffff",
+              "height": 70,
+              "justifyContent": "center",
+            }
+          }
+        >
+          <FormattedText
+            defaultMessage="Loading Channels..."
+            id="mobile.loading_channels"
+            style={
+              Object {
+                "color": "rgba(61,60,64,0.6)",
+              }
+            }
+          />
+        </View>
       }
-      onListEndReached={[Function]}
-      onListEndReachedThreshold={50}
+      noResults={null}
+      onLoadMore={[Function]}
       onRowPress={[Function]}
-      renderRow={[Function]}
-      searching={false}
-      selectable={false}
-      showNoResults={false}
-      showSections={false}
+      renderItem={[Function]}
+      showNoResults={true}
       theme={
         Object {
           "awayIndicator": "#ffbc42",

@@ -8,13 +8,6 @@ import assert from 'assert';
 import {ViewTypes} from 'app/constants';
 import {messageRetention} from 'app/store/middleware';
 
-jest.mock('react-native-device-info', () => {
-    return {
-        getVersion: () => '0.0.0',
-        getBuildNumber: () => '0',
-    };
-});
-
 describe('store/middleware', () => {
     describe('messageRetention', () => {
         describe('should chain the same incoming action type', () => {

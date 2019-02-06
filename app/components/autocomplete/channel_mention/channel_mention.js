@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {SectionList} from 'react-native';
+import {Platform, SectionList} from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
@@ -35,7 +35,6 @@ export default class ChannelMention extends PureComponent {
         privateChannels: PropTypes.array,
         publicChannels: PropTypes.array,
         directAndGroupMessages: PropTypes.array,
-        deletedPublicChannels: PropTypes.instanceOf(Set),
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
@@ -64,7 +63,7 @@ export default class ChannelMention extends PureComponent {
     }, 200);
 
     componentWillReceiveProps(nextProps) {
-        const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, directAndGroupMessages, requestStatus, myMembers, deletedPublicChannels} = nextProps;
+        const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, directAndGroupMessages, requestStatus, myMembers} = nextProps;
 
         if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
             // if the term changes but is null or the mention has been completed we render this component as null
@@ -82,18 +81,14 @@ export default class ChannelMention extends PureComponent {
         }
 
         if (matchTerm !== this.props.matchTerm) {
-            // if the term changed and we haven't made the request do that first
             const {currentTeamId} = this.props;
             this.runSearch(currentTeamId, matchTerm);
-            return;
         }
 
-        if (requestStatus !== RequestStatus.STARTED &&
-            (myChannels !== this.props.myChannels || otherChannels !== this.props.otherChannels ||
-                privateChannels !== this.props.privateChannels || publicChannels !== this.props.publicChannels ||
-                directAndGroupMessages !== this.props.directAndGroupMessages ||
-                myMembers !== this.props.myMembers || deletedPublicChannels !== this.props.deletedPublicChannels)) {
-            // if the request is complete and the term is not null we show the autocomplete
+        if (matchTerm === '' || (myChannels !== this.props.myChannels || otherChannels !== this.props.otherChannels ||
+        privateChannels !== this.props.privateChannels || publicChannels !== this.props.publicChannels ||
+        directAndGroupMessages !== this.props.directAndGroupMessages ||
+        myMembers !== this.props.myMembers)) {
             const sections = [];
             if (isSearch) {
                 if (publicChannels.length) {
@@ -102,6 +97,7 @@ export default class ChannelMention extends PureComponent {
                         defaultMessage: 'Public Channels',
                         data: publicChannels.filter((cId) => myMembers[cId]),
                         key: 'publicChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
@@ -111,6 +107,7 @@ export default class ChannelMention extends PureComponent {
                         defaultMessage: 'Private Channels',
                         data: privateChannels,
                         key: 'privateChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
@@ -129,10 +126,11 @@ export default class ChannelMention extends PureComponent {
                         defaultMessage: 'My Channels',
                         data: myChannels,
                         key: 'myChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
-                if (otherChannels.length) {
+                if (otherChannels.length || requestStatus === RequestStatus.STARTED) {
                     sections.push({
                         id: t('suggestion.mention.morechannels'),
                         defaultMessage: 'Other Channels',
@@ -145,7 +143,6 @@ export default class ChannelMention extends PureComponent {
             this.setState({
                 sections,
             });
-
             this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
         }
     }
@@ -158,6 +155,10 @@ export default class ChannelMention extends PureComponent {
         if (isSearch) {
             const channelOrIn = mentionPart.includes('in:') ? 'in:' : 'channel:';
             completedDraft = mentionPart.replace(CHANNEL_MENTION_SEARCH_REGEX, `${channelOrIn} ${mention} `);
+        } else if (Platform.OS === 'ios') {
+            // We are going to set a double ~ on iOS to prevent the auto correct from taking over and replacing it
+            // with the wrong value, this is a hack but I could not found another way to solve it
+            completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~~${mention} `);
         } else {
             completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
         }
@@ -167,6 +168,14 @@ export default class ChannelMention extends PureComponent {
         }
 
         onChangeText(completedDraft, true);
+
+        if (Platform.OS === 'ios') {
+            // This is the second part of the hack were we replace the double ~ with just one
+            // after the auto correct vanished
+            setTimeout(() => {
+                onChangeText(completedDraft.replace(`~~${mention} `, `~${mention} `));
+            });
+        }
         this.setState({mentionComplete: true});
     };
 
@@ -179,6 +188,7 @@ export default class ChannelMention extends PureComponent {
             <AutocompleteSectionHeader
                 id={section.id}
                 defaultMessage={section.defaultMessage}
+                loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
             />
         );

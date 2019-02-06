@@ -15,8 +15,8 @@ import {
 export default class Badge extends PureComponent {
     static defaultProps = {
         extraPaddingHorizontal: 10,
-        minHeight: 0,
-        minWidth: 0,
+        minHeight: 20,
+        minWidth: 20,
     };
 
     static propTypes = {
@@ -81,7 +81,7 @@ export default class Badge extends PureComponent {
             } else {
                 width = e.nativeEvent.layout.width + this.props.extraPaddingHorizontal;
             }
-            width = Math.max(width + 10, this.props.minWidth);
+            width = Math.max(this.props.count < 10 ? width : width + 10, this.props.minWidth);
             const borderRadius = width / 2;
             this.setNativeProps({
                 style: {
@@ -96,21 +96,37 @@ export default class Badge extends PureComponent {
 
     renderText = () => {
         const {count} = this.props;
-        let text = count.toString();
-        const extra = {};
+        let unreadCount = null;
+        let unreadIndicator = null;
         if (count < 0) {
-            text = '•';
-
-            //the extra margin is to align to the center?
-            extra.marginBottom = 1;
+            unreadIndicator = (
+                <View
+                    style={[styles.text, this.props.countStyle]}
+                    onLayout={this.onLayout}
+                >
+                    <View style={[styles.unreadIndicator, {backgroundColor: this.props.countStyle.color}]}/>
+                </View>
+            );
+        } else {
+            unreadCount = (
+                <Text
+                    style={[styles.text, this.props.countStyle]}
+                    onLayout={this.onLayout}
+                >
+                    {count.toString()}
+                </Text>
+            );
         }
         return (
-            <Text
-                style={[styles.text, this.props.countStyle, extra]}
-                onLayout={this.onLayout}
+            <View
+                ref='badgeContainer'
+                style={[styles.badge, this.props.style, {opacity: 0}]}
             >
-                {text}
-            </Text>
+                <View style={styles.wrapper}>
+                    {unreadCount}
+                    {unreadIndicator}
+                </View>
+            </View>
         );
     };
 
@@ -124,14 +140,7 @@ export default class Badge extends PureComponent {
                 {...this.panResponder.panHandlers}
                 onPress={this.handlePress}
             >
-                <View
-                    ref='badgeContainer'
-                    style={[styles.badge, this.props.style, {opacity: 0}]}
-                >
-                    <View style={styles.wrapper}>
-                        {this.renderText()}
-                    </View>
-                </View>
+                {this.renderText()}
             </TouchableWithoutFeedback>
         );
     }
@@ -153,9 +162,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
         justifyContent: 'center',
+        marginBottom: -1,
     },
     text: {
         fontSize: 14,
         color: 'white',
+    },
+    unreadIndicator: {
+        height: 4,
+        width: 4,
+        backgroundColor: '#444',
+        borderRadius: 4,
     },
 });

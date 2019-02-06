@@ -116,7 +116,6 @@ class FormattedMarkdownText extends React.PureComponent {
                 mentionStyle={this.props.textStyles.mention}
                 mentionName={mentionName}
                 navigator={this.props.navigator}
-                onLongPress={this.props.onPostPress}
                 onPostPress={this.props.onPostPress}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />

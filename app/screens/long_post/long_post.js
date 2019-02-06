@@ -51,7 +51,6 @@ export default class LongPost extends PureComponent {
         inThreadView: PropTypes.bool,
         managedConfig: PropTypes.object,
         navigator: PropTypes.object,
-        onAddReaction: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
@@ -141,7 +140,6 @@ export default class LongPost extends PureComponent {
                 <View style={style.attachments}>
                     <FileAttachmentList
                         fileIds={fileIds}
-                        hideOptionsContext={emptyFunction}
                         isFailed={false}
                         onLongPress={emptyFunction}
                         postId={postId}
@@ -155,7 +153,7 @@ export default class LongPost extends PureComponent {
     }
 
     renderReactions = (style) => {
-        const {hasReactions, postId, onAddReaction} = this.props;
+        const {hasReactions, navigator, postId} = this.props;
 
         if (!hasReactions) {
             return null;
@@ -164,9 +162,9 @@ export default class LongPost extends PureComponent {
         return (
             <View style={style.reactions}>
                 <Reactions
+                    navigator={navigator}
                     position='left'
                     postId={postId}
-                    onAddReaction={onAddReaction}
                 />
             </View>
         );

@@ -4,9 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {View} from 'react-native';
-import {intlShape} from 'react-intl';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
+import {intlShape} from 'react-intl';
+
+import SlideUpPanel from 'app/components/slide_up_panel';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {
     generateUserProfilesById,
@@ -41,7 +42,6 @@ export default class ReactionList extends PureComponent {
     constructor(props) {
         super(props);
         const {reactions, userProfiles} = props;
-
         const reactionsByName = getReactionsByName(reactions);
 
         this.state = {
@@ -98,11 +98,15 @@ export default class ReactionList extends PureComponent {
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
             if (event.id === 'close-reaction-list') {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
+                this.close();
             }
         }
+    };
+
+    close = () => {
+        this.props.navigator.dismissModal({
+            animationType: 'none',
+        });
     };
 
     getMissingProfiles = () => {
@@ -116,13 +120,17 @@ export default class ReactionList extends PureComponent {
         }
     }
 
-    scrollViewRef = (ref) => {
-        this.scrollView = ref;
-    };
-
     handleOnSelectReaction = (emoji) => {
         this.setState({selected: emoji});
-    }
+
+        if (this.slideUpPanel) {
+            this.slideUpPanel.getWrappedInstance().scrollToTop();
+        }
+    };
+
+    refSlideUpPanel = (r) => {
+        this.slideUpPanel = r;
+    };
 
     renderReactionRows = () => {
         const {
@@ -154,34 +162,37 @@ export default class ReactionList extends PureComponent {
                 <View style={style.separator}/>
             </View>
         ));
-    }
+    };
+
+    renderHeader = (forwardedRef) => {
+        const {theme} = this.props;
+        const {selected, sortedReactionsForHeader} = this.state;
+
+        return (
+            <ReactionHeader
+                selected={selected}
+                onSelectReaction={this.handleOnSelectReaction}
+                reactions={sortedReactionsForHeader}
+                theme={theme}
+                forwardedRef={forwardedRef}
+            />
+        );
+    };
 
     render() {
-        const {
-            theme,
-        } = this.props;
-        const {
-            selected,
-            sortedReactionsForHeader,
-        } = this.state;
-        const style = getStyleSheet(theme);
+        const style = getStyleSheet(this.props.theme);
 
         return (
             <View style={style.flex}>
-                <View style={style.headerContainer}>
-                    <ReactionHeader
-                        selected={selected}
-                        onSelectReaction={this.handleOnSelectReaction}
-                        reactions={sortedReactionsForHeader}
-                        theme={theme}
-                    />
-                </View>
-                <KeyboardAwareScrollView
-                    bounces={true}
-                    innerRef={this.scrollViewRef}
+                <SlideUpPanel
+                    ref={this.refSlideUpPanel}
+                    onRequestClose={this.close}
+                    initialPosition={0.55}
+                    header={this.renderHeader}
+                    headerHeight={37.5}
                 >
                     {this.renderReactionRows()}
-                </KeyboardAwareScrollView>
+                </SlideUpPanel>
             </View>
         );
     }
@@ -190,13 +201,10 @@ export default class ReactionList extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
         headerContainer: {
-            height: 38,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 1,
+            height: 37.5,
         },
         rowContainer: {
             justifyContent: 'center',

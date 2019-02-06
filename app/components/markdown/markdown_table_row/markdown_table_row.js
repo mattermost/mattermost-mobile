@@ -22,16 +22,21 @@ export default class MarkdownTableRow extends React.PureComponent {
             rowStyle.push(style.rowBottomBorder);
         }
 
-        return <View style={rowStyle}>{this.props.children}</View>;
+        // Add an extra prop to the last cell so that it knows not to render a right border since the container
+        // will handle that
+        const children = React.Children.toArray(this.props.children);
+        children[children.length - 1] = React.cloneElement(children[children.length - 1], {
+            isLastCell: true,
+        });
+
+        return <View style={rowStyle}>{children}</View>;
     }
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
-            flex: 1,
             flexDirection: 'row',
-            justifyContent: 'flex-start',
         },
         rowBottomBorder: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),

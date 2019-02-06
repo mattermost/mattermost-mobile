@@ -63,17 +63,24 @@ export default class ErrorTeamsList extends PureComponent {
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: theme.centerChannelBg,
             },
+            passProps: {
+                disableTermsModal: true,
+            },
         });
     };
 
     getUserInfo = async () => {
-        this.setState({loading: true});
-        this.props.actions.connection(true);
-        await this.props.actions.loadMe();
-        this.props.actions.connection(false);
-        this.setState({loading: false});
-        this.props.actions.selectDefaultTeam();
-        this.goToChannelView();
+        try {
+            this.setState({loading: true});
+            this.props.actions.connection(true);
+            await this.props.actions.loadMe();
+            this.props.actions.selectDefaultTeam();
+            this.goToChannelView();
+        } catch {
+            this.props.actions.connection(false);
+        } finally {
+            this.setState({loading: false});
+        }
     }
 
     onNavigatorEvent = (event) => {

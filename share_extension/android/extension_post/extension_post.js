@@ -60,7 +60,10 @@ const MAX_MESSAGE_LENGTH = 4000;
 
 export default class ExtensionPost extends PureComponent {
     static propTypes = {
-        channelId: PropTypes.string.isRequired,
+        actions: PropTypes.shape({
+            getTeamChannels: PropTypes.func.isRequired,
+        }).isRequired,
+        channelId: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
         maxFileSize: PropTypes.number.isRequired,
         navigation: PropTypes.object.isRequired,
@@ -265,12 +268,14 @@ export default class ExtensionPost extends PureComponent {
     };
 
     loadData = async (items) => {
-        const {maxFileSize, token, url} = this.props;
+        const {actions, maxFileSize, teamId, token, url} = this.props;
         if (token && url) {
             const text = [];
             const files = [];
             let totalSize = 0;
             let error;
+
+            actions.getTeamChannels(teamId);
 
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
@@ -320,8 +325,9 @@ export default class ExtensionPost extends PureComponent {
                 });
             }
 
-            this.setState({error, files, value, hasPermission: true, totalSize, loaded: true});
+            this.setState({error, files, value, hasPermission: true, totalSize});
         }
+        this.setState({loaded: true});
     };
 
     onClose = (data) => {

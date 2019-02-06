@@ -3,70 +3,70 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Alert,
-    InteractionManager,
     Platform,
     View,
 } from 'react-native';
 
+import {debounce} from 'mattermost-redux/actions/helpers';
+import {General} from 'mattermost-redux/constants';
+import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+
 import Loading from 'app/components/loading';
-import CustomList from 'app/components/custom_list';
+import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
+import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorIfInvalidPermissions} from 'app/utils/general';
-import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
-import {changeOpacity, setNavigatorStyles} from 'app/utils/theme';
+import {createProfilesSections, loadingText} from 'app/utils/member_list';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
-import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
-
-class ChannelAddMembers extends PureComponent {
+export default class ChannelAddMembers extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
-        theme: PropTypes.object.isRequired,
-        currentChannel: PropTypes.object,
-        membersNotInChannel: PropTypes.array.isRequired,
-        currentTeam: PropTypes.object,
-        navigator: PropTypes.object,
-        preferences: PropTypes.object,
-        loadMoreRequestStatus: PropTypes.string,
-        searchRequestStatus: PropTypes.string,
-        addChannelMemberStatus: PropTypes.string,
         actions: PropTypes.shape({
             getTeamStats: PropTypes.func.isRequired,
             getProfilesNotInChannel: PropTypes.func.isRequired,
             handleAddChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
-        }),
+        }).isRequired,
+        currentChannelId: PropTypes.string.isRequired,
+        currentTeamId: PropTypes.string.isRequired,
+        currentUserId: PropTypes.string.isRequired,
+        membersNotInChannel: PropTypes.array.isRequired,
+        navigator: PropTypes.object,
+        theme: PropTypes.object.isRequired,
     };
 
-    addButton = {
-        disabled: true,
-        id: 'add-members',
-        showAsAction: 'always',
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
 
         this.searchTimeoutId = 0;
+        this.page = -1;
+        this.next = true;
 
         this.state = {
-            canSelect: true,
-            next: true,
-            page: 0,
+            adding: false,
+            loading: false,
             profiles: [],
-            searching: false,
-            selectedMembers: {},
-            showNoResults: false,
+            searchResults: [],
+            selectedIds: {},
             term: '',
-            isLoading: true,
         };
-        this.addButton.title = props.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'});
+
+        this.addButton = {
+            disabled: true,
+            id: 'add-members',
+            title: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
+            showAsAction: 'always',
+        };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons({
@@ -75,134 +75,111 @@ class ChannelAddMembers extends PureComponent {
     }
 
     componentDidMount() {
-        InteractionManager.runAfterInteractions(() => {
-            this.props.actions.getProfilesNotInChannel(this.props.currentTeam.id, this.props.currentChannel.id, 0);
-            this.props.actions.getTeamStats(this.props.currentTeam.id);
-        });
+        const {actions, currentTeamId} = this.props;
 
-        this.emitCanAddMembers(false);
+        actions.getTeamStats(currentTeamId);
+        this.getProfiles();
+
+        this.enableAddOption(false);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
-        }
+    componentDidUpdate(prevProps) {
+        const {navigator, theme} = this.props;
+        const {adding, selectedIds} = this.state;
+        const enabled = Object.keys(selectedIds).length > 0 && !adding;
 
-        const {loadMoreRequestStatus} = this.props;
-        if (loadMoreRequestStatus === RequestStatus.STARTED &&
-            nextProps.loadMoreRequestStatus === RequestStatus.SUCCESS) {
-            const {page} = this.state;
-            const profiles = markSelectedProfiles(
-                nextProps.membersNotInChannel.slice(0, (page + 1) * General.PROFILE_CHUNK_SIZE),
-                this.state.selectedMembers
-            );
-            this.setState({profiles, showNoResults: true});
-        } else if (this.state.searching &&
-            nextProps.searchRequestStatus === RequestStatus.SUCCESS) {
-            const results = markSelectedProfiles(
-                filterProfilesMatchingTerm(nextProps.membersNotInChannel, this.state.term),
-                this.state.selectedMembers
-            );
-            this.setState({profiles: results, showNoResults: true});
-        }
+        this.enableAddOption(enabled);
 
-        const {addChannelMemberStatus} = nextProps;
-
-        if (this.props.addChannelMemberStatus !== addChannelMemberStatus) {
-            switch (addChannelMemberStatus) {
-            case RequestStatus.STARTED:
-                this.emitAdding(true);
-                this.setState({error: null, adding: true, canSelect: false});
-                break;
-            case RequestStatus.SUCCESS:
-                this.emitAdding(false);
-                this.setState({error: null, adding: false, canSelect: false});
-                this.close();
-                break;
-            case RequestStatus.FAILURE:
-                this.emitAdding(false);
-                this.setState({adding: false, canSelect: true});
-                break;
-            }
-        }
-
-        if ((loadMoreRequestStatus !== nextProps.loadMoreRequestStatus) || (this.props.searchRequestStatus !== nextProps.searchRequestStatus)) {
-            const isLoading = (nextProps.loadMoreRequestStatus === RequestStatus.STARTED) ||
-                (nextProps.searchRequestStatus === RequestStatus.STARTED);
-            this.setState({isLoading});
+        if (theme !== prevProps.theme) {
+            setNavigatorStyles(navigator, theme);
         }
     }
 
-    cancelSearch = () => {
-        this.setState({
-            searching: false,
-            term: '',
-            page: 0,
-            profiles: markSelectedProfiles(this.props.membersNotInChannel, this.state.selectedMembers),
-        });
+    clearSearch = () => {
+        this.setState({term: '', searchResults: []});
     };
 
     close = () => {
         this.props.navigator.pop({animated: true});
     };
 
-    emitAdding = (loading) => {
-        this.props.navigator.setButtons({
-            rightButtons: [{...this.addButton, disabled: loading}],
-        });
-    };
-
-    emitCanAddMembers = (enabled) => {
+    enableAddOption = (enabled) => {
         this.props.navigator.setButtons({
             rightButtons: [{...this.addButton, disabled: !enabled}],
         });
     };
 
-    handleAddMembersPress = async () => {
-        const {selectedMembers} = this.state;
-        const {actions, currentChannel} = this.props;
-        const membersToAdd = Object.keys(selectedMembers).filter((m) => selectedMembers[m]);
+    getProfiles = debounce(() => {
+        const {loading, term} = this.state;
+        if (this.next && !loading && !term) {
+            this.setState({loading: true}, () => {
+                const {actions, currentChannelId, currentTeamId} = this.props;
+
+                actions.getProfilesNotInChannel(
+                    currentTeamId,
+                    currentChannelId,
+                    this.page + 1,
+                    General.PROFILE_CHUNK_SIZE
+                ).then(this.loadedProfiles);
+            });
+        }
+    }, 100);
+
+    handleAddMembersPress = () => {
+        const {formatMessage} = this.context.intl;
+        const {actions, currentChannelId} = this.props;
+        const {selectedIds, adding} = this.state;
+        const membersToAdd = Object.keys(selectedIds).filter((id) => selectedIds[id]);
 
         if (!membersToAdd.length) {
-            Alert.alert('Add Members', 'You must select at least one member to add to the channel.');
+            Alert.alert(
+                formatMessage({id: 'channel_header.addMembers', defaultMessage: 'Add Members'}),
+                formatMessage({
+                    id: 'mobile.channel_members.add_members_alert',
+                    defaultMessage: 'You must select at least one member to add to the channel.',
+                })
+            );
+
             return;
         }
 
-        alertErrorIfInvalidPermissions(
-            await actions.handleAddChannelMembers(currentChannel.id, membersToAdd)
-        );
-    };
+        if (!adding) {
+            this.enableAddOption(false);
+            this.setState({adding: true}, async () => {
+                const result = await actions.handleAddChannelMembers(currentChannelId, membersToAdd);
 
-    handleRowSelect = (id) => {
-        const selectedMembers = Object.assign({}, this.state.selectedMembers, {[id]: !this.state.selectedMembers[id]});
-
-        if (Object.values(selectedMembers).filter((selected) => selected).length) {
-            this.emitCanAddMembers(true);
-        } else {
-            this.emitCanAddMembers(false);
-        }
-        this.setState({
-            profiles: markSelectedProfiles(this.state.profiles, selectedMembers),
-            selectedMembers,
-        });
-    };
-
-    loadMoreMembers = () => {
-        const {actions, loadMoreRequestStatus, currentChannel, currentTeam} = this.props;
-        const {next, searching} = this.state;
-        let {page} = this.state;
-        if (loadMoreRequestStatus !== RequestStatus.STARTED && next && !searching) {
-            page += 1;
-            actions.getProfilesNotInChannel(currentTeam.id, currentChannel.id, page, General.PROFILE_CHUNK_SIZE).then(({data}) => {
-                if (data && data.length) {
-                    this.setState({
-                        page,
-                    });
+                if (result.error) {
+                    alertErrorIfInvalidPermissions(result);
+                    this.enableAddOption(true);
+                    this.setState({adding: false});
                 } else {
-                    this.setState({next: false});
+                    this.close();
                 }
             });
         }
+    };
+
+    handleSelectProfile = (id) => {
+        const {selectedIds} = this.state;
+        const newSelected = Object.assign({}, selectedIds, {[id]: !selectedIds[id]});
+
+        if (Object.values(newSelected).filter((selected) => selected).length) {
+            this.enableAddOption(true);
+        } else {
+            this.enableAddOption(false);
+        }
+
+        this.setState({selectedIds: newSelected});
+    };
+
+    loadedProfiles = ({data}) => {
+        const {profiles} = this.state;
+        if (data && !data.length) {
+            this.next = false;
+        }
+
+        this.page += 1;
+        this.setState({loading: false, profiles: [...profiles, ...data]});
     };
 
     onNavigatorEvent = (event) => {
@@ -213,34 +190,104 @@ class ChannelAddMembers extends PureComponent {
         }
     };
 
-    searchProfiles = (text) => {
-        const term = text;
-        const {actions, currentChannel, currentTeam} = this.props;
+    onSearch = (text) => {
+        const term = text.toLowerCase();
 
         if (term) {
-            this.setState({searching: true, term});
+            this.setState({term});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                actions.searchProfiles(term.toLowerCase(), {not_in_channel_id: currentChannel.id, team_id: currentTeam.id});
+                this.searchProfiles(term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
-            this.cancelSearch();
+            this.clearSearch();
         }
     };
 
+    renderItem = (props) => {
+        // The list will re-render when the selection changes because it's passed into the list as extraData
+        const selected = this.state.selectedIds[props.id];
+
+        return (
+            <UserListRow
+                key={props.id}
+                {...props}
+                selectable={true}
+                selected={selected}
+                enabled={true}
+            />
+        );
+    };
+
+    renderLoading = () => {
+        const {theme} = this.props;
+        const {loading} = this.state;
+        const style = getStyleFromTheme(theme);
+
+        if (!loading) {
+            return null;
+        }
+
+        return (
+            <View style={style.loadingContainer}>
+                <FormattedText
+                    {...loadingText}
+                    style={style.loadingText}
+                />
+            </View>
+        );
+    };
+
+    renderNoResults = () => {
+        const {loading} = this.state;
+        const {theme} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        if (loading || this.page === -1) {
+            return null;
+        }
+
+        return (
+            <View style={style.noResultContainer}>
+                <FormattedText
+                    id='mobile.custom_list.no_results'
+                    defaultMessage='No Results'
+                    style={style.noResultText}
+                />
+            </View>
+        );
+    };
+
+    searchProfiles = (term) => {
+        const {actions, currentChannelId, currentTeamId} = this.props;
+        const options = {not_in_channel_id: currentChannelId, team_id: currentTeamId};
+        this.setState({loading: true});
+
+        actions.searchProfiles(term, options).then(({data}) => {
+            this.setState({searchResults: data, loading: false});
+        });
+    };
+
     render() {
-        const {intl, preferences, theme} = this.props;
-        const {adding, profiles, searching, term} = this.state;
-        const {formatMessage} = intl;
-        const more = searching ? () => true : this.loadMoreMembers;
+        const {formatMessage} = this.context.intl;
+        const {currentUserId, theme} = this.props;
+        const {
+            adding,
+            loading,
+            profiles,
+            searchResults,
+            selectedIds,
+            term,
+        } = this.state;
+        const style = getStyleFromTheme(theme);
 
         if (adding) {
             return (
-                <KeyboardLayout>
+                <View style={style.container}>
                     <StatusBar/>
                     <Loading/>
-                </KeyboardLayout>
+                </View>
             );
         }
 
@@ -255,12 +302,33 @@ class ChannelAddMembers extends PureComponent {
             }),
         };
 
+        let data;
+        let listType;
+        if (term) {
+            const exactMatches = [];
+            const results = filterProfilesMatchingTerm(searchResults, term).filter((p) => {
+                if (p.id === currentUserId) {
+                    return false;
+                }
+
+                if (p.username === term || p.username.startsWith(term)) {
+                    exactMatches.push(p);
+                    return false;
+                }
+
+                return true;
+            });
+            data = [...exactMatches, ...results];
+            listType = FLATLIST;
+        } else {
+            data = createProfilesSections(profiles);
+            listType = SECTIONLIST;
+        }
+
         return (
             <KeyboardLayout>
                 <StatusBar/>
-                <View
-                    style={{marginVertical: 5}}
-                >
+                <View style={style.searchBar}>
                     <SearchBar
                         ref='search_bar'
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -272,31 +340,57 @@ class ChannelAddMembers extends PureComponent {
                         tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
                         titleCancelColor={theme.centerChannelColor}
-                        onChangeText={this.searchProfiles}
-                        onSearchButtonPress={this.searchProfiles}
-                        onCancelButtonPress={this.cancelSearch}
+                        onChangeText={this.onSearch}
+                        onSearchButtonPress={this.onSearch}
+                        onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
                         value={term}
                     />
                 </View>
                 <CustomList
-                    data={profiles}
+                    data={data}
+                    extraData={selectedIds}
+                    key='custom_list'
+                    listType={listType}
+                    loading={loading}
+                    loadingComponent={this.renderLoading()}
+                    noResults={this.renderNoResults()}
+                    onLoadMore={this.getProfiles}
+                    onRowPress={this.handleSelectProfile}
+                    renderItem={this.renderItem}
                     theme={theme}
-                    searching={searching}
-                    onListEndReached={more}
-                    preferences={preferences}
-                    listScrollRenderAheadDistance={50}
-                    loading={this.state.isLoading}
-                    loadingText={loadingText}
-                    selectable={this.state.canSelect}
-                    onRowSelect={this.handleRowSelect}
-                    renderRow={UserListRow}
-                    createSections={createMembersSections}
-                    showNoResults={this.state.showNoResults}
                 />
             </KeyboardLayout>
         );
     }
 }
 
-export default injectIntl(ChannelAddMembers);
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            flex: 1,
+        },
+        searchBar: {
+            marginVertical: 5,
+        },
+        loadingContainer: {
+            alignItems: 'center',
+            backgroundColor: theme.centerChannelBg,
+            height: 70,
+            justifyContent: 'center',
+        },
+        loadingText: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+        },
+        noResultContainer: {
+            flexGrow: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        noResultText: {
+            fontSize: 26,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+    };
+});

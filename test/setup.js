@@ -9,13 +9,34 @@ configure({adapter: new Adapter()});
 
 jest.mock('NativeModules', () => {
     return {
+        UIManager: {
+            RCTView: {
+                directEventTypes: {},
+            },
+        },
         BlurAppScreen: () => true,
         MattermostManaged: {
             getConfig: jest.fn(),
         },
+        RNGestureHandlerModule: {
+            State: {
+                BEGAN: 'BEGAN',
+                FAILED: 'FAILED',
+                ACTIVE: 'ACTIVE',
+                END: 'END',
+            },
+        },
     };
 });
 jest.mock('NativeEventEmitter');
+
+jest.mock('react-native-device-info', () => {
+    return {
+        getVersion: () => '0.0.0',
+        getBuildNumber: () => '0',
+        getModel: () => 'iPhone X',
+    };
+});
 
 let logs;
 let warns;

@@ -1,246 +1,230 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ListView, Platform, Text, View} from 'react-native';
+import {FlatList, Platform, SectionList, Text, View} from 'react-native';
 
-import Loading from 'app/components/loading';
-import FormattedText from 'app/components/formatted_text';
+import {ListTypes} from 'app/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+
+export const FLATLIST = 'flat';
+export const SECTIONLIST = 'section';
+const INITIAL_BATCH_TO_RENDER = 15;
+const SCROLL_UP_MULTIPLIER = 6;
 
 export default class CustomList extends PureComponent {
     static propTypes = {
         data: PropTypes.array.isRequired,
-        theme: PropTypes.object.isRequired,
-        searching: PropTypes.bool,
-        onListEndReached: PropTypes.func,
-        onListEndReachedThreshold: PropTypes.number,
+        extraData: PropTypes.any,
+        listType: PropTypes.oneOf([FLATLIST, SECTIONLIST]),
         loading: PropTypes.bool,
-        loadingText: PropTypes.object,
-        listPageSize: PropTypes.number,
-        listInitialSize: PropTypes.number,
-        listScrollRenderAheadDistance: PropTypes.number,
-        showSections: PropTypes.bool,
+        loadingComponent: PropTypes.element,
+        noResults: PropTypes.element,
+        onLoadMore: PropTypes.func,
         onRowPress: PropTypes.func,
-        selectable: PropTypes.bool,
         onRowSelect: PropTypes.func,
-        renderRow: PropTypes.func.isRequired,
-        createSections: PropTypes.func,
-        showNoResults: PropTypes.bool,
+        renderItem: PropTypes.oneOfType([
+            PropTypes.func,
+            PropTypes.element,
+        ]).isRequired,
+        selectable: PropTypes.bool,
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        searching: false,
-        onListEndReached: () => true,
-        onListEndReachedThreshold: 50,
-        listPageSize: 10,
-        listInitialSize: 10,
-        listScrollRenderAheadDistance: 200,
-        loadingText: null,
-        selectable: false,
-        createSections: () => true,
-        showSections: true,
+        listType: FLATLIST,
         showNoResults: true,
     };
 
     constructor(props) {
         super(props);
 
-        this.state = this.buildDataSource(props);
+        this.contentOffsetY = 0;
+        this.state = {};
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {data, showSections, searching} = nextProps;
+    handleLayout = (event) => {
+        const {height} = event.nativeEvent.layout;
+        this.setState({listHeight: height});
+    };
 
-        if (searching || searching !== this.props.searching) {
-            this.setState(this.buildDataSource(nextProps));
-        } else if (data !== this.props.data || showSections !== this.props.showSections) {
-            let newData = data;
-            if (showSections) {
-                newData = this.props.createSections(data);
+    handleScroll = (event) => {
+        const pageOffsetY = event.nativeEvent.contentOffset.y;
+        if (pageOffsetY > 0) {
+            const contentHeight = event.nativeEvent.contentSize.height;
+            const direction = (this.contentOffsetY < pageOffsetY) ?
+                ListTypes.VISIBILITY_SCROLL_UP :
+                ListTypes.VISIBILITY_SCROLL_DOWN;
+
+            this.contentOffsetY = pageOffsetY;
+            if (
+                direction === ListTypes.VISIBILITY_SCROLL_UP &&
+                (contentHeight - pageOffsetY) < (this.state.listHeight * SCROLL_UP_MULTIPLIER)
+            ) {
+                this.props.onLoadMore();
             }
-
-            const dataSource = showSections ? this.state.dataSource.cloneWithRowsAndSections(newData) : this.state.dataSource.cloneWithRows(newData);
-            this.setState({
-                data: newData,
-                dataSource,
-            });
         }
-    }
-
-    buildDataSource = (props) => {
-        const ds = new ListView.DataSource({
-            rowHasChanged: (r1, r2) => r1 !== r2,
-            sectionHeaderHasChanged: (s1, s2) => s1 !== s2,
-        });
-        let newData = props.data;
-        if (props.showSections) {
-            newData = this.props.createSections(props.data);
-        }
-        const dataSource = props.showSections ? ds.cloneWithRowsAndSections(newData) : ds.cloneWithRows(newData);
-        return {
-            data: newData,
-            dataSource,
-        };
     };
 
-    handleRowSelect = (sectionId, rowId) => {
-        const data = this.state.data;
-        const section = [...data[sectionId]];
-
-        section[rowId] = Object.assign({}, section[rowId], {selected: !section[rowId].selected});
-        const mergedData = Object.assign({}, data, {[sectionId]: section});
-
-        const id = section[rowId].id;
-
-        const dataSource = this.state.dataSource.cloneWithRowsAndSections(mergedData);
-        this.setState({
-            data: mergedData,
-            dataSource,
-        }, () => this.props.onRowSelect(id));
+    keyExtractor = (item) => {
+        return item.id || item.key || item.value || item;
     };
 
-    renderSectionHeader = (sectionData, sectionId) => {
-        const style = getStyleFromTheme(this.props.theme);
-        return (
-            <View style={style.sectionWrapper}>
-                <View style={style.sectionContainer}>
-                    <Text style={style.sectionText}>{sectionId}</Text>
-                </View>
-            </View>
-        );
+    renderEmptyList = () => {
+        return this.props.noResults || null;
     };
 
-    renderRow = (item, sectionId, rowId) => {
+    renderItem = ({item, index, section}) => {
+        const {onRowPress, onRowSelect, selectable} = this.props;
         const props = {
             id: item.id,
             item,
             selected: item.selected,
-            selectable: this.props.selectable,
-            onPress: this.props.onRowPress,
+            selectable,
         };
 
         if ('disableSelect' in item) {
             props.enabled = !item.disableSelect;
         }
 
-        if (this.props.onRowSelect) {
-            props.onPress = this.handleRowSelect.bind(this, sectionId, rowId);
+        if (onRowSelect) {
+            props.onPress = onRowSelect(section.title, index);
         } else {
-            props.onPress = this.props.onRowPress;
+            props.onPress = onRowPress;
         }
 
         // Allow passing in a component like UserListRow or ChannelListRow
-        if (this.props.renderRow.prototype.isReactComponent) {
-            const RowComponent = this.props.renderRow;
+        if (this.props.renderItem.prototype.isReactComponent) {
+            const RowComponent = this.props.renderItem;
             return <RowComponent {...props}/>;
         }
 
-        return this.props.renderRow(props);
+        return this.props.renderItem(props);
     };
 
-    renderSeparator = (sectionId, rowId) => {
-        const style = getStyleFromTheme(this.props.theme);
+    renderFlatList = () => {
+        const {data, extraData, theme} = this.props;
+        const style = getStyleFromTheme(theme);
+
         return (
-            <View
-                key={`${sectionId}-${rowId}`}
-                style={style.separator}
+            <FlatList
+                contentContainerStyle={style.container}
+                data={data}
+                extraData={extraData}
+                keyboardShouldPersistTaps='always'
+                keyboardDismissMode='interactive'
+                keyExtractor={this.keyExtractor}
+                initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                ItemSeparatorComponent={this.renderSeparator}
+                ListEmptyComponent={this.renderEmptyList}
+                ListFooterComponent={this.renderFooter}
+                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
+                onLayout={this.handleLayout}
+                onScroll={this.handleScroll}
+                ref={this.setListRef}
+                removeClippedSubviews={true}
+                renderItem={this.renderItem}
+                scrollEventThrottle={60}
+                style={style.list}
+                stickySectionHeadersEnabled={true}
             />
         );
     };
 
     renderFooter = () => {
-        const {theme} = this.props;
-        const style = getStyleFromTheme(theme);
-        if (!this.props.loading || !this.props.loadingText) {
+        const {loading, loadingComponent} = this.props;
+
+        if (!loading || !loadingComponent) {
             return null;
         }
 
-        const backgroundColor = this.props.data.length > 0 ? theme.centerChannelBg : '#0000';
+        return loadingComponent;
+    };
+
+    renderSectionHeader = ({section}) => {
+        const style = getStyleFromTheme(this.props.theme);
 
         return (
-            <View style={{height: 70, backgroundColor, alignItems: 'center', justifyContent: 'center'}}>
-                <FormattedText
-                    {...this.props.loadingText}
-                    style={style.loadingText}
-                />
+            <View style={style.sectionWrapper}>
+                <View style={style.sectionContainer}>
+                    <Text style={style.sectionText}>{section.id}</Text>
+                </View>
             </View>
         );
     };
 
-    render() {
-        const {
-            data,
-            listInitialSize,
-            listPageSize,
-            listScrollRenderAheadDistance,
-            loading,
-            onListEndReached,
-            onListEndReachedThreshold,
-            searching,
-            showNoResults,
-            showSections,
-            theme,
-        } = this.props;
-        const {dataSource} = this.state;
+    renderSectionList = () => {
+        const {data, loading, theme} = this.props;
         const style = getStyleFromTheme(theme);
-        let noResults = false;
-
-        if (typeof data === 'object') {
-            noResults = Object.keys(data).length === 0;
-        } else {
-            noResults = data.length === 0;
-        }
-
-        let loadingComponent;
-        if (loading && searching) {
-            loadingComponent = (
-                <View
-                    style={style.searching}
-                >
-                    <Loading/>
-                </View>
-            );
-        }
-
-        if (showNoResults && noResults) {
-            return (
-                <View style={style.noResultContainer}>
-                    <FormattedText
-                        id='mobile.custom_list.no_results'
-                        defaultMessage='No Results'
-                        style={style.noResultText}
-                    />
-                </View>
-            );
-        }
 
         return (
-            <View style={style.container}>
-                <ListView
-                    style={style.listView}
-                    dataSource={dataSource}
-                    renderRow={this.renderRow}
-                    renderSectionHeader={showSections ? this.renderSectionHeader : null}
-                    renderSeparator={this.renderSeparator}
-                    renderFooter={this.renderFooter}
-                    enableEmptySections={true}
-                    onEndReached={onListEndReached}
-                    onEndReachedThreshold={onListEndReachedThreshold}
-                    pageSize={listPageSize}
-                    initialListSize={listInitialSize}
-                    scrollRenderAheadDistance={listScrollRenderAheadDistance}
-                />
-                {loadingComponent}
-            </View>
+            <SectionList
+                contentContainerStyle={style.container}
+                extraData={loading}
+                keyboardShouldPersistTaps='always'
+                keyboardDismissMode='interactive'
+                keyExtractor={this.keyExtractor}
+                initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                ItemSeparatorComponent={this.renderSeparator}
+                ListEmptyComponent={this.renderEmptyList}
+                ListFooterComponent={this.renderFooter}
+                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
+                onLayout={this.handleLayout}
+                onScroll={this.handleScroll}
+                ref={this.setListRef}
+                removeClippedSubviews={true}
+                renderItem={this.renderItem}
+                renderSectionHeader={this.renderSectionHeader}
+                scrollEventThrottle={60}
+                sections={data}
+                style={style.list}
+                stickySectionHeadersEnabled={false}
+            />
         );
+    };
+
+    renderSeparator = () => {
+        const style = getStyleFromTheme(this.props.theme);
+
+        return (
+            <View style={style.separator}/>
+        );
+    };
+
+    setListRef = (ref) => {
+        this.list = ref;
+    };
+
+    render() {
+        const {listType} = this.props;
+
+        if (listType === FLATLIST) {
+            return this.renderFlatList();
+        }
+
+        return this.renderSectionList();
     }
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
+        list: {
+            backgroundColor: theme.centerChannelBg,
             flex: 1,
+            ...Platform.select({
+                android: {
+                    marginBottom: 20,
+                },
+            }),
+        },
+        container: {
+            flexGrow: 1,
+        },
+        separator: {
+            height: 1,
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         listView: {
             flex: 1,
@@ -271,11 +255,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         sectionText: {
             fontWeight: '600',
             color: theme.centerChannelColor,
-        },
-        separator: {
-            height: 1,
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         noResultContainer: {
             flex: 1,

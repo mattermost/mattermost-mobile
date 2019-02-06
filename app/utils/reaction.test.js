@@ -49,14 +49,14 @@ describe('getReactionsByName', () => {
         output: {},
     }, {
         name: 'Should match reactions by name, single',
-        reactions: [{name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'}],
+        reactions: {'user_id_1-+1': {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'}},
         output: {'+1': [{emoji_name: '+1', name: 'thumbs_up', post_id: 'post_id_1', user_id: 'user_id_1'}]},
     }, {
         name: 'Should match reactions by name, many',
-        reactions: [
-            {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'},
-            {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_2'},
-        ],
+        reactions: {
+            'user_id_1-+1': {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'},
+            'user_id_2-+1': {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_2'},
+        },
         output: {
             '+1': [
                 {emoji_name: '+1', name: 'thumbs_up', post_id: 'post_id_1', user_id: 'user_id_1'},
@@ -65,11 +65,11 @@ describe('getReactionsByName', () => {
         },
     }, {
         name: 'Should match reactions by name, many names',
-        reactions: [
-            {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'},
-            {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_2'},
-            {name: 'thumbs_down', emoji_name: '-1', post_id: 'post_id_1', user_id: 'user_id_1'},
-        ],
+        reactions: {
+            'user_id_1-+1': {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'},
+            'user_id_2-+1': {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_2'},
+            'user_id_1--1': {name: 'thumbs_down', emoji_name: '-1', post_id: 'post_id_1', user_id: 'user_id_1'},
+        },
         output: {
             '+1': [
                 {emoji_name: '+1', name: 'thumbs_up', post_id: 'post_id_1', user_id: 'user_id_1'},
@@ -149,22 +149,22 @@ describe('getUniqueUserIds', () => {
         output: [],
     }, {
         name: 'Should match unique user ID',
-        reactions: [{name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'}],
+        reactions: {'user_id_1-+1': {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'}},
         output: ['user_id_1'],
     }, {
         name: 'Should match unique user IDs',
-        reactions: [
-            {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'},
-            {name: 'thumbs_down', emoji_name: '-1', post_id: 'post_id_1', user_id: 'user_id_1'},
-        ],
+        reactions: {
+            'user_id_1-+1': {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'},
+            'user_id_1--1': {name: 'thumbs_down', emoji_name: '-1', post_id: 'post_id_1', user_id: 'user_id_1'},
+        },
         output: ['user_id_1'],
     }, {
         name: 'Should match unique user IDs',
-        reactions: [
-            {name: 'smile', emoji_name: 'smile', post_id: 'post_id_1', user_id: 'user_id_2'},
-            {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'},
-            {name: 'thumbs_down', emoji_name: '-1', post_id: 'post_id_1', user_id: 'user_id_1'},
-        ],
+        reactions: {
+            'user_id_2-smile': {name: 'smile', emoji_name: 'smile', post_id: 'post_id_1', user_id: 'user_id_2'},
+            'user_id_1-+1': {name: 'thumbs_up', emoji_name: '+1', post_id: 'post_id_1', user_id: 'user_id_1'},
+            'user_id_1--1': {name: 'thumbs_down', emoji_name: '-1', post_id: 'post_id_1', user_id: 'user_id_1'},
+        },
         output: ['user_id_2', 'user_id_1'],
     }];
 

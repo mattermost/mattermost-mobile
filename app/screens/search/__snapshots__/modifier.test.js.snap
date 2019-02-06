@@ -1,0 +1,82 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Search RecentItem should match snapshot and respond to events 1`] = `
+<TouchableHighlight
+  activeOpacity={0.85}
+  delayPressOut={100}
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 58,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "column",
+          "paddingHorizontal": 16,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "marginRight": 5,
+            }
+          }
+        >
+          <Icon
+            allowFontScaling={false}
+            name="plus-square-o"
+            size={12}
+            style={
+              Object {
+                "color": "rgba(61,60,64,0.5)",
+                "fontSize": 16,
+              }
+            }
+          />
+        </View>
+        <Text
+          style={
+            Object {
+              "color": "#3d3c40",
+              "fontSize": 14,
+            }
+          }
+        >
+          channel-name
+        </Text>
+      </View>
+      <Text
+        style={
+          Object {
+            "color": "rgba(61,60,64,0.5)",
+            "fontSize": 12,
+            "marginTop": 5,
+          }
+        }
+      >
+        to find posts in specific channels
+      </Text>
+    </View>
+  </View>
+</TouchableHighlight>
+`;

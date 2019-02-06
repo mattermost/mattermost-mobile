@@ -37,6 +37,7 @@ const ICON_PATH_FROM_FILE_TYPE = {
 
 export default class FileAttachmentIcon extends PureComponent {
     static propTypes = {
+        backgroundColor: PropTypes.string,
         file: PropTypes.object.isRequired,
         iconHeight: PropTypes.number,
         iconWidth: PropTypes.number,
@@ -46,6 +47,7 @@ export default class FileAttachmentIcon extends PureComponent {
     };
 
     static defaultProps = {
+        backgroundColor: '#fff',
         iconHeight: 60,
         iconWidth: 60,
         wrapperHeight: 80,
@@ -66,13 +68,13 @@ export default class FileAttachmentIcon extends PureComponent {
     };
 
     render() {
-        const {file, iconHeight, iconWidth, wrapperHeight, wrapperWidth} = this.props;
+        const {backgroundColor, file, iconHeight, iconWidth, wrapperHeight, wrapperWidth} = this.props;
         const source = this.getFileIconPath(file);
 
         return (
             <View
                 ref={this.handleCaptureRef}
-                style={[styles.fileIconWrapper, {height: wrapperHeight, width: wrapperWidth}]}
+                style={[styles.fileIconWrapper, {backgroundColor, height: wrapperHeight, width: wrapperWidth}]}
             >
                 <Image
                     style={[styles.icon, {height: iconHeight, width: iconWidth}]}
@@ -86,7 +88,6 @@ export default class FileAttachmentIcon extends PureComponent {
 const styles = StyleSheet.create({
     fileIconWrapper: {
         alignItems: 'center',
-        backgroundColor: '#fff',
         justifyContent: 'center',
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
@@ -94,5 +95,6 @@ const styles = StyleSheet.create({
     icon: {
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
+        backgroundColor: '#fff',
     },
 });

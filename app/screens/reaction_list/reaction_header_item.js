@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import Emoji from 'app/components/emoji';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FormattedText from 'app/components/formatted_text';
 
@@ -22,12 +22,12 @@ export default class ReactionHeaderItem extends PureComponent {
         highlight: PropTypes.bool.isRequired,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-    }
+    };
 
     handleOnPress = () => {
         const {emojiName, highlight, onPress} = this.props;
         onPress(emojiName, highlight);
-    }
+    };
 
     renderContent = () => {
         const {count, emojiName, theme} = this.props;
@@ -56,7 +56,7 @@ export default class ReactionHeaderItem extends PureComponent {
                 <Text style={styles.text}>{count}</Text>
             </React.Fragment>
         );
-    }
+    };
 
     render() {
         const {emojiName, highlight, theme} = this.props;
@@ -79,16 +79,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 7,
         },
         text: {
-            color: theme.linkColor,
+            color: theme.buttonBg,
             marginLeft: 4,
             fontSize: 16,
         },
         highlight: {
-            borderColor: changeOpacity(theme.linkColor, 1),
+            borderColor: theme.buttonBg,
             borderBottomWidth: 2,
         },
         regular: {
-            borderColor: theme.centerChannelBg,
+            borderColor: 'transparent',
             borderBottomWidth: 2,
         },
         reaction: {

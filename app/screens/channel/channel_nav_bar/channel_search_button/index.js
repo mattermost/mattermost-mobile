@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {clearSearch} from 'mattermost-redux/actions/search';
 
-import {handlePostDraftChanged} from 'app/actions/views/channel';
+import {showSearchModal} from 'app/actions/views/search';
 
 import ChannelSearchButton from './channel_search_button';
 
@@ -14,7 +14,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearSearch,
-            handlePostDraftChanged,
+            showSearchModal,
         }, dispatch),
     };
 }

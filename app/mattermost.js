@@ -20,9 +20,11 @@ import {Provider} from 'react-redux';
 import semver from 'semver';
 
 import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
 import {loadMe, logout} from 'mattermost-redux/actions/users';
+import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
+import {General} from 'mattermost-redux/constants';
+
 import {handleLoginIdChanged} from 'app/actions/views/login';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -121,7 +123,7 @@ const configureAnalytics = (config) => {
     const {
         initAnalytics,
     } = lazyLoadAnalytics();
-    if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.SegmentApiKey) {
+    if (!__DEV__ && config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.SegmentApiKey) {
         initAnalytics(config);
     } else {
         global.analytics = null;
@@ -137,6 +139,12 @@ const resetBadgeAndVersion = () => {
 };
 
 const handleLogout = () => {
+    // Because we can logout while being offline we reset
+    // the Client online flag to true cause the network handler
+    // is not available at this point
+    Client4.setOnline(true);
+    store.dispatch(closeWebSocket(false));
+
     app.setAppStarted(true);
     app.clearNativeCache();
     deleteFileCache();

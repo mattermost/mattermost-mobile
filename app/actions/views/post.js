@@ -41,7 +41,7 @@ export function sendAddToChannelEphemeralPost(user, addedUsername, message, chan
     };
 }
 
-export function setMenuActionSelector(dataSource, onSelect, options) {
+export function setAutocompleteSelector(dataSource, onSelect, options) {
     return {
         type: ViewTypes.SELECTED_ACTION_MENU,
         data: {
@@ -52,12 +52,17 @@ export function setMenuActionSelector(dataSource, onSelect, options) {
     };
 }
 
-export function selectAttachmentMenuAction(postId, actionId, dataSource, displayText, value) {
+export function selectAttachmentMenuAction(postId, actionId, text, value) {
     return (dispatch) => {
         dispatch({
             type: ViewTypes.SUBMIT_ATTACHMENT_MENU_ACTION,
             postId,
-            data: {displayText, value},
+            data: {
+                [actionId]: {
+                    text,
+                    value,
+                },
+            },
         });
 
         dispatch(doPostAction(postId, actionId, value));

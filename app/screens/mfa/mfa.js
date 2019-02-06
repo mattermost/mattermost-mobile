@@ -81,7 +81,7 @@ export default class Mfa extends PureComponent {
     };
 
     blur = () => {
-        this.textInput.refs.wrappedInstance.blur();
+        this.textInput.blur();
     };
 
     submit = preventDoubleTap(() => {

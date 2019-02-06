@@ -128,6 +128,7 @@ const languages = {
     diff: 'Diff',
     django: 'Django',
     dockerfile: 'Dockerfile',
+    elixir: 'Elixir',
     erlang: 'Erlang',
     fortran: 'Fortran',
     fsharp: 'F#',

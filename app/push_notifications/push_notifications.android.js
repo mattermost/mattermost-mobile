@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppRegistry, AppState} from 'react-native';
+import {AppRegistry, AppState, NativeModules} from 'react-native';
 import {NotificationsAndroid, PendingNotifications} from 'react-native-notifications';
 import Notification from 'react-native-notifications/notification.android';
 
 import {emptyFunction} from 'app/utils/general';
+
+const {NotificationPreferences} = NativeModules;
 
 class PushNotification {
     constructor() {
@@ -119,6 +121,14 @@ class PushNotification {
 
     resetNotification() {
         this.deviceNotification = null;
+    }
+
+    async clearChannelNotifications(channelId) {
+        const notifications = await NotificationPreferences.getDeliveredNotifications();
+        const notificationForChannel = notifications.find((n) => n.channel_id === channelId);
+        if (notificationForChannel) {
+            NotificationPreferences.removeDeliveredNotifications(notificationForChannel.identifier, channelId);
+        }
     }
 }
 

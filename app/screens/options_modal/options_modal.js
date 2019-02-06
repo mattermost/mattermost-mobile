@@ -27,6 +27,7 @@ export default class OptionsModal extends PureComponent {
         deviceWidth: PropTypes.number.isRequired,
         navigator: PropTypes.object,
         onCancelPress: PropTypes.func,
+        onItemPress: PropTypes.func,
         title: PropTypes.oneOfType([
             PropTypes.string,
             PropTypes.object,
@@ -35,6 +36,7 @@ export default class OptionsModal extends PureComponent {
 
     static defaultProps = {
         onCancelPress: emptyFunction,
+        onItemPress: emptyFunction,
     };
 
     constructor(props) {
@@ -76,6 +78,7 @@ export default class OptionsModal extends PureComponent {
     render() {
         const {
             items,
+            onItemPress,
             title,
         } = this.props;
 
@@ -86,6 +89,7 @@ export default class OptionsModal extends PureComponent {
                         <OptionsModalList
                             items={items}
                             onCancelPress={this.handleCancel}
+                            onItemPress={onItemPress}
                             title={title}
                         />
                     </AnimatedView>

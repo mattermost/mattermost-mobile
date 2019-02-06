@@ -58,9 +58,10 @@ export function makePreparePostIdsForPostList() {
 
                 // Push on a date header if the last post was on a different day than the current one
                 const postDate = new Date(post.create_at);
+                postDate.setHours(0, 0, 0, 0);
 
                 if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
-                    out.push(DATE_LINE + post.create_at);
+                    out.push(DATE_LINE + postDate.getTime());
 
                     lastDate = postDate;
                 }

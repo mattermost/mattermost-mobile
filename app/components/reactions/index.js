@@ -45,26 +45,11 @@ function makeMapStateToProps() {
         }
 
         const currentUserId = getCurrentUserId(state);
-        const reactionsForPost = getReactionsForPostSelector(state, ownProps.postId);
-
-        const highlightedReactions = [];
-        const reactionsByName = reactionsForPost.reduce((reactions, reaction) => {
-            if (reactions.has(reaction.emoji_name)) {
-                reactions.get(reaction.emoji_name).push(reaction);
-            } else {
-                reactions.set(reaction.emoji_name, [reaction]);
-            }
-
-            if (reaction.user_id === currentUserId) {
-                highlightedReactions.push(reaction.emoji_name);
-            }
-
-            return reactions;
-        }, new Map());
+        const reactions = getReactionsForPostSelector(state, ownProps.postId);
 
         return {
-            highlightedReactions,
-            reactions: reactionsByName,
+            currentUserId,
+            reactions,
             theme: getTheme(state),
             canAddReaction,
             canRemoveReaction,

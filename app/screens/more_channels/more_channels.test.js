@@ -12,31 +12,29 @@ jest.mock('react-intl');
 
 describe('MoreChannels', () => {
     const navigator = {
-        setOnNavigatorEvent: () => {}, // eslint-disable-line no-empty-function
-        setButtons: () => {}, // eslint-disable-line no-empty-function
-        dismissModal: () => {}, // eslint-disable-line no-empty-function
-        push: () => {}, // eslint-disable-line no-empty-function
+        setOnNavigatorEvent: jest.fn(),
+        setButtons: jest.fn(),
+        dismissModal: jest.fn(),
+        push: jest.fn(),
     };
 
     const actions = {
-        handleSelectChannel: () => {}, // eslint-disable-line no-empty-function
-        joinChannel: () => {}, // eslint-disable-line no-empty-function
-        getChannels: () => {}, // eslint-disable-line no-empty-function
-        removeHiddenDefaultChannel: () => {}, // eslint-disable-line no-empty-function
-        searchChannels: () => {}, // eslint-disable-line no-empty-function
-        setChannelDisplayName: () => {}, // eslint-disable-line no-empty-function
+        handleSelectChannel: jest.fn(),
+        joinChannel: jest.fn(),
+        getChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2'}]}),
+        searchChannels: jest.fn(),
+        setChannelDisplayName: jest.fn(),
     };
 
     const baseProps = {
+        actions,
+        canCreateChannels: true,
+        channels: [{id: 'id', name: 'name', display_name: 'display_name'}],
+        closeButton: {},
         currentUserId: 'current_user_id',
         currentTeamId: 'current_team_id',
         navigator,
         theme: Preferences.THEMES.default,
-        canCreateChannels: true,
-        channels: [{id: 'id', name: 'name', display_name: 'display_name'}],
-        closeButton: {},
-        requestStatus: {},
-        actions,
     };
 
     test('should match snapshot', () => {
@@ -49,48 +47,14 @@ describe('MoreChannels', () => {
     });
 
     test('should call props.navigator.dismissModal on close', () => {
-        const props = {...baseProps, navigator: {...navigator, dismissModal: jest.fn()}};
         const wrapper = shallow(
-            <MoreChannels {...props}/>,
+            <MoreChannels {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.instance().close();
-        expect(props.navigator.dismissModal).toHaveBeenCalledTimes(1);
-        expect(props.navigator.dismissModal).toHaveBeenCalledWith({animationType: 'slide-down'});
-    });
-
-    test('should call headerButtons on emitCanCreateChannel', () => {
-        const wrapper = shallow(
-            <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-
-        const instance = wrapper.instance();
-        instance.headerButtons = jest.fn();
-
-        wrapper.instance().emitCanCreateChannel(true);
-        expect(instance.headerButtons).toHaveBeenCalledTimes(1);
-        expect(instance.headerButtons).toHaveBeenCalledWith(baseProps.canCreateChannels, true);
-
-        wrapper.instance().emitCanCreateChannel(false);
-        expect(instance.headerButtons).toHaveBeenCalledTimes(2);
-        expect(instance.headerButtons).toHaveBeenCalledWith(baseProps.canCreateChannels, false);
-    });
-
-    test('should match state on handleCreateScreenVisible', () => {
-        const wrapper = shallow(
-            <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-
-        wrapper.setState({createScreenVisible: false});
-
-        wrapper.instance().handleCreateScreenVisible(true);
-        expect(wrapper.state('createScreenVisible')).toEqual(true);
-
-        wrapper.instance().handleCreateScreenVisible(false);
-        expect(wrapper.state('createScreenVisible')).toEqual(false);
+        expect(baseProps.navigator.dismissModal).toHaveBeenCalledTimes(1);
+        expect(baseProps.navigator.dismissModal).toHaveBeenCalledWith({animationType: 'slide-down'});
     });
 
     test('should call props.navigator.setButtons on headerButtons', () => {
@@ -101,7 +65,7 @@ describe('MoreChannels', () => {
         );
 
         expect(props.navigator.setButtons).toHaveBeenCalledTimes(1);
-        wrapper.instance().headerButtons();
+        wrapper.instance().headerButtons(true);
         expect(props.navigator.setButtons).toHaveBeenCalledTimes(2);
     });
 
@@ -119,18 +83,14 @@ describe('MoreChannels', () => {
     });
 
     test('should match state on cancelSearch', () => {
-        const props = {...baseProps, actions: {...actions, getChannels: jest.fn()}};
         const wrapper = shallow(
-            <MoreChannels {...props}/>,
+            <MoreChannels {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        wrapper.setState({term: 'term', searching: true, page: 1});
+        wrapper.setState({term: 'term'});
         wrapper.instance().cancelSearch(true);
-        expect(props.actions.getChannels).toHaveBeenCalledTimes(1);
-        expect(props.actions.getChannels).toHaveBeenCalledWith(props.currentTeamId, 0);
         expect(wrapper.state('term')).toEqual('');
-        expect(wrapper.state('searching')).toEqual(false);
-        expect(wrapper.state('page')).toEqual(0);
+        expect(wrapper.state('channels')).toEqual(baseProps.channels);
     });
 });

@@ -23,8 +23,10 @@ export default class FileAttachment extends PureComponent {
         canDownloadFiles: PropTypes.bool.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         file: PropTypes.object.isRequired,
+        id: PropTypes.string.isRequired,
         index: PropTypes.number.isRequired,
         onCaptureRef: PropTypes.func,
+        onLongPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
         navigator: PropTypes.object,
@@ -92,6 +94,7 @@ export default class FileAttachment extends PureComponent {
             file,
             theme,
             navigator,
+            onLongPress,
         } = this.props;
         const {data} = file;
         const style = getStyleSheet(theme);
@@ -99,7 +102,11 @@ export default class FileAttachment extends PureComponent {
         let fileAttachmentComponent;
         if ((data && data.has_preview_image) || file.loading || isGif(data)) {
             fileAttachmentComponent = (
-                <TouchableOpacity onPress={this.handlePreviewPress}>
+                <TouchableOpacity
+                    key={`${this.props.id}${file.loading}`}
+                    onPress={this.handlePreviewPress}
+                    onLongPress={onLongPress}
+                >
                     <FileAttachmentImage
                         file={data || {}}
                         onCaptureRef={this.handleCaptureRef}
@@ -114,12 +121,16 @@ export default class FileAttachment extends PureComponent {
                     canDownloadFiles={canDownloadFiles}
                     file={file}
                     navigator={navigator}
+                    onLongPress={onLongPress}
                     theme={theme}
                 />
             );
         } else {
             fileAttachmentComponent = (
-                <TouchableOpacity onPress={this.handlePreviewPress}>
+                <TouchableOpacity
+                    onPress={this.handlePreviewPress}
+                    onLongPress={onLongPress}
+                >
                     <FileAttachmentIcon
                         file={data}
                         onCaptureRef={this.handleCaptureRef}
@@ -135,6 +146,7 @@ export default class FileAttachment extends PureComponent {
             <View style={[style.fileWrapper, {width}]}>
                 {fileAttachmentComponent}
                 <TouchableOpacity
+                    onLongPress={onLongPress}
                     onPress={this.handlePreviewPress}
                     style={style.fileInfoContainer}
                 >

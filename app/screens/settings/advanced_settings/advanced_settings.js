@@ -18,6 +18,7 @@ import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
+import {t} from 'app/utils/i18n';
 import {deleteFileCache, getFileCacheSize} from 'app/utils/file';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -43,55 +44,36 @@ class AdvancedSettings extends PureComponent {
     }
 
     clearOfflineCache = preventDoubleTap(() => {
-        const {actions, intl} = this.props;
+        const {formatMessage} = this.props.intl;
 
         Alert.alert(
-            intl.formatMessage({id: 'mobile.advanced_settings.reset_title', defaultMessage: 'Reset Cache'}),
-            intl.formatMessage({id: 'mobile.advanced_settings.reset_message', defaultMessage: '\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
+            formatMessage({id: t('mobile.advanced_settings.delete_title'), defaultMessage: 'Delete Documents & Data'}),
+            formatMessage({id: t('mobile.advanced_settings.delete_message'), defaultMessage: '\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
             [{
-                text: intl.formatMessage({id: 'mobile.advanced_settings.reset_button', defaultMessage: 'Reset'}),
-                onPress: () => actions.purgeOfflineStore(),
-            }, {
-                text: intl.formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
+                text: formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
                 onPress: () => true,
-            }]
+            }, {
+                text: formatMessage({id: 'mobile.advanced_settings.delete', defaultMessage: 'Delete'}),
+                style: 'destructive',
+                onPress: this.purgeDocumentsAndData,
+            }],
+            {cancelable: false},
         );
-    });
-
-    clearDownloadCache = preventDoubleTap(() => {
-        const {intl} = this.props;
-        const {cacheSize} = this.state;
-
-        if (cacheSize) {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.advanced_settings.delete_file_cache',
-                    defaultMessage: 'Delete File Cache',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.advanced_settings.delete_file_cache_message',
-                    defaultMessage: '\nThis will delete all the files stored in the cache. Are you sure you want to delete them?\n',
-                }),
-                [{
-                    text: intl.formatMessage({id: 'mobile.advanced_settings.delete', defaultMessage: 'Delete'}),
-                    onPress: () => {
-                        this.setState({cacheSize: null, cacheSizedFetched: false}, async () => {
-                            await deleteFileCache();
-                            this.setState({cacheSize: 0, cacheSizedFetched: true});
-                        });
-                    },
-                }, {
-                    text: intl.formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
-                    onPress: () => true,
-                }]
-            );
-        }
     });
 
     getDownloadCacheSize = async () => {
         const size = await getFileCacheSize();
         this.setState({cacheSize: size, cacheSizedFetched: true});
     };
+
+    purgeDocumentsAndData = preventDoubleTap(async () => {
+        const {actions} = this.props;
+
+        await deleteFileCache();
+        this.setState({cacheSize: 0, cacheSizedFetched: true});
+        actions.purgeOfflineStore();
+    });
 
     renderCacheFileSize = () => {
         const {theme} = this.props;
@@ -149,7 +131,7 @@ class AdvancedSettings extends PureComponent {
                 <View style={style.divider}/>
             </View>
         );
-    }
+    };
 
     render() {
         const {theme} = this.props;
@@ -164,22 +146,12 @@ class AdvancedSettings extends PureComponent {
                 >
                     <View style={style.divider}/>
                     <SettingsItem
-                        defaultMessage='Reset Cache'
-                        i18nId='mobile.advanced_settings.reset_title'
+                        defaultMessage='Delete Documents & Data'
+                        i18nId='mobile.advanced_settings.delete_title'
                         iconName='ios-refresh'
                         iconType='ion'
+                        isDestructor={true}
                         onPress={this.clearOfflineCache}
-                        separator={false}
-                        showArrow={false}
-                        theme={theme}
-                    />
-                    <View style={style.divider}/>
-                    <SettingsItem
-                        defaultMessage='Delete File Cache'
-                        i18nId='mobile.advanced_settings.clear_downloads'
-                        iconName='md-trash'
-                        iconType='ion'
-                        onPress={this.clearDownloadCache}
                         separator={false}
                         showArrow={false}
                         rightComponent={this.renderCacheFileSize()}

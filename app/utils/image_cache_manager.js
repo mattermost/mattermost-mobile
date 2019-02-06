@@ -3,7 +3,10 @@
 
 // Based on the work done by https://github.com/wcandillon/react-native-expo-image-cache/
 
+import {Platform} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
+
+import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -11,6 +14,7 @@ import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
 
 const {IMAGES_PATH} = DeviceTypes;
+let siteUrl;
 
 export default class ImageCacheManager {
     static listeners = {};
@@ -21,10 +25,11 @@ export default class ImageCacheManager {
         }
 
         const {path, exists} = await getCacheFile(filename, uri);
+        const prefix = Platform.OS === 'android' ? 'file://' : '';
         if (isDownloading(uri)) {
             addListener(uri, listener);
         } else if (exists) {
-            listener(path);
+            listener(`${prefix}${path}`);
         } else {
             addListener(uri, listener);
             if (uri.startsWith('http')) {
@@ -39,14 +44,20 @@ export default class ImageCacheManager {
                         certificate,
                     };
 
-                    this.downloadTask = await RNFetchBlob.config(options).fetch('GET', uri);
+                    const headers = {};
+                    if (uri.includes(Client4.getUrl()) || uri.includes(siteUrl)) {
+                        headers.Authorization = `Bearer ${Client4.getToken()}`;
+                        headers['X-Requested-With'] = 'XMLHttpRequest';
+                    }
+
+                    this.downloadTask = await RNFetchBlob.config(options).fetch('GET', uri, headers);
                     if (this.downloadTask.respInfo.respType === 'text') {
                         throw new Error();
                     }
 
-                    notifyAll(uri, path);
+                    notifyAll(uri, `${prefix}${path}`);
                 } catch (e) {
-                    RNFetchBlob.fs.unlink(path);
+                    RNFetchBlob.fs.unlink(`${prefix}${path}`);
                     notifyAll(uri, uri);
                 }
             } else {
@@ -62,7 +73,7 @@ export default class ImageCacheManager {
 export const getCacheFile = async (name, uri) => {
     const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
     const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
-    const path = `${IMAGES_PATH}/${hashCode(uri)}${ext}`;
+    const path = `${IMAGES_PATH}/${Math.abs(hashCode(uri))}${ext}`;
 
     try {
         const isDir = await RNFetchBlob.fs.isDir(IMAGES_PATH);
@@ -75,6 +86,14 @@ export const getCacheFile = async (name, uri) => {
 
     const exists = await RNFetchBlob.fs.exists(path);
     return {exists, path};
+};
+
+export const getSiteUrl = () => {
+    return siteUrl;
+};
+
+export const setSiteUrl = (url) => {
+    siteUrl = url;
 };
 
 const isDownloading = (uri) => Boolean(ImageCacheManager.listeners[uri]);

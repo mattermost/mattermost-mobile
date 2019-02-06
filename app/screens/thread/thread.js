@@ -66,7 +66,7 @@ export default class Thread extends PureComponent {
         }
 
         if (!this.state.lastViewedAt) {
-            this.setState({lastViewedAt: nextProps.myMember.last_viewed_at});
+            this.setState({lastViewedAt: nextProps.myMember && nextProps.myMember.last_viewed_at});
         }
     }
 
@@ -120,6 +120,9 @@ export default class Thread extends PureComponent {
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'transparent',
             },
+            passProps: {
+                disableTermsModal: true,
+            },
         });
     };
 
@@ -140,9 +143,9 @@ export default class Thread extends PureComponent {
             content = (
                 <PostList
                     renderFooter={this.renderFooter()}
-                    indicateNewMessages={true}
+                    indicateNewMessages={false}
                     postIds={postIds}
-                    currentUserId={myMember.user_id}
+                    currentUserId={myMember && myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                     navigator={navigator}
                 />

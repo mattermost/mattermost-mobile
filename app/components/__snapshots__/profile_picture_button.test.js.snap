@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`profile_picture_button should match snapshot 1`] = `
+<AttachmentButton
+  blurTextBox={[MockFunction]}
+  browseFileTypes="public.item"
+  canBrowseFiles={true}
+  canBrowsePhotoLibrary={true}
+  canBrowseVideoLibrary={true}
+  canTakePhoto={true}
+  canTakeVideo={true}
+  extraOptions={
+    Array [
+      null,
+    ]
+  }
+  maxFileCount={5}
+  maxFileSize={20971520}
+  navigator={
+    Object {
+      "dismissModal": [MockFunction],
+      "push": [MockFunction],
+      "setButtons": [MockFunction],
+      "setOnNavigatorEvent": [MockFunction],
+    }
+  }
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+  uploadFiles={[MockFunction]}
+/>
+`;

@@ -25,8 +25,8 @@ export default class ErrorText extends PureComponent {
 
         const style = getStyleSheet(theme);
 
-        if (error.hasOwnProperty('intl')) {
-            const {intl} = error;
+        const {intl} = error;
+        if (intl) {
             return (
                 <FormattedText
                     id={intl.id}

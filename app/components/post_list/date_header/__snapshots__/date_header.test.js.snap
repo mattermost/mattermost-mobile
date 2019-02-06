@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DateHeader component should match snapshot with suffix 1`] = `
-<Component
+exports[`DateHeader component should match snapshot when timezone is set 1`] = `
+<View
   style={
     Array [
       Object {
@@ -14,7 +14,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
     ]
   }
 >
-  <Component
+  <View
     style={
       Object {
         "backgroundColor": "#3d3c40",
@@ -24,7 +24,67 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
       }
     }
   />
-  <Component
+  <View
+    style={
+      Object {
+        "marginHorizontal": 15,
+      }
+    }
+  >
+    <InjectIntl(FormattedDate)
+      day="2-digit"
+      month="short"
+      style={
+        Object {
+          "color": "#3d3c40",
+          "fontSize": 14,
+          "fontWeight": "600",
+        }
+      }
+      timeZone="America/New_York"
+      value={1970-01-18T17:19:12.392Z}
+      weekday="short"
+      year="numeric"
+    />
+  </View>
+  <View
+    style={
+      Object {
+        "backgroundColor": "#3d3c40",
+        "flex": 1,
+        "height": 1,
+        "opacity": 0.2,
+      }
+    }
+  />
+</View>
+`;
+
+exports[`DateHeader component should match snapshot with suffix 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "height": 28,
+        "marginTop": 8,
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    style={
+      Object {
+        "backgroundColor": "#3d3c40",
+        "flex": 1,
+        "height": 1,
+        "opacity": 0.2,
+      }
+    }
+  />
+  <View
     style={
       Object {
         "marginHorizontal": 15,
@@ -45,8 +105,8 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
       weekday="short"
       year="numeric"
     />
-  </Component>
-  <Component
+  </View>
+  <View
     style={
       Object {
         "backgroundColor": "#3d3c40",
@@ -56,11 +116,11 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
       }
     }
   />
-</Component>
+</View>
 `;
 
 exports[`DateHeader component should match snapshot without suffix 1`] = `
-<Component
+<View
   style={
     Array [
       Object {
@@ -73,7 +133,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
     ]
   }
 >
-  <Component
+  <View
     style={
       Object {
         "backgroundColor": "#3d3c40",
@@ -83,7 +143,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
       }
     }
   />
-  <Component
+  <View
     style={
       Object {
         "marginHorizontal": 15,
@@ -104,8 +164,8 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
       weekday="short"
       year="numeric"
     />
-  </Component>
-  <Component
+  </View>
+  <View
     style={
       Object {
         "backgroundColor": "#3d3c40",
@@ -115,5 +175,5 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
       }
     }
   />
-</Component>
+</View>
 `;

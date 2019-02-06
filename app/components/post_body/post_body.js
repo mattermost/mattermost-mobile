@@ -4,9 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
-    Platform,
-    TouchableHighlight,
+    ScrollView,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -18,7 +16,7 @@ import {Posts} from 'mattermost-redux/constants';
 import CombinedSystemMessage from 'app/components/combined_system_message';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
-import OptionsContext from 'app/components/options_context';
+import MarkdownEmoji from 'app/components/markdown/markdown_emoji';
 import ShowMoreButton from 'app/components/show_more_button';
 
 import {emptyFunction} from 'app/utils/general';
@@ -31,17 +29,13 @@ let PostAddChannelMember;
 let PostBodyAdditionalContent;
 let Reactions;
 
+const SHOW_MORE_HEIGHT = 60;
+
 export default class PostBody extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            flagPost: PropTypes.func.isRequired,
-            unflagPost: PropTypes.func.isRequired,
-        }).isRequired,
-        canAddReaction: PropTypes.bool,
         canDelete: PropTypes.bool,
-        canEdit: PropTypes.bool,
-        canEditUntil: PropTypes.number.isRequired,
         channelIsReadOnly: PropTypes.bool.isRequired,
+        deviceHeight: PropTypes.number.isRequired,
         fileIds: PropTypes.array,
         hasBeenDeleted: PropTypes.bool,
         hasBeenEdited: PropTypes.bool,
@@ -55,17 +49,13 @@ export default class PostBody extends PureComponent {
         isReplyPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
+        metadata: PropTypes.object,
         managedConfig: PropTypes.object,
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
-        onAddReaction: PropTypes.func,
-        onCopyPermalink: PropTypes.func,
-        onCopyText: PropTypes.func,
         onFailedPostPress: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
-        onPostDelete: PropTypes.func,
-        onPostEdit: PropTypes.func,
         onPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object,
@@ -73,131 +63,44 @@ export default class PostBody extends PureComponent {
         replyBarStyle: PropTypes.array,
         showAddReaction: PropTypes.bool,
         showLongPost: PropTypes.bool.isRequired,
+        isEmojiOnly: PropTypes.bool.isRequired,
+        shouldRenderJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object,
-        toggleSelected: PropTypes.func,
     };
 
     static defaultProps = {
         fileIds: [],
-        onAddReaction: emptyFunction,
-        onCopyPermalink: emptyFunction,
-        onCopyText: emptyFunction,
         onFailedPostPress: emptyFunction,
-        onPostDelete: emptyFunction,
-        onPostEdit: emptyFunction,
         onPress: emptyFunction,
         replyBarStyle: [],
-        toggleSelected: emptyFunction,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
+    static getDerivedStateFromProps(nextProps, prevState) {
+        const maxHeight = Math.round((nextProps.deviceHeight * 0.6) + SHOW_MORE_HEIGHT);
+        if (maxHeight !== prevState.maxHeight) {
+            return {
+                maxHeight,
+            };
+        }
+
+        return null;
+    }
+
     state = {
         isLongPost: false,
     };
 
-    flagPost = () => {
-        const {actions, postId} = this.props;
-        actions.flagPost(postId);
-    };
-
-    handleHideUnderlay = () => {
-        this.props.toggleSelected(false);
-    };
-
-    handleShowUnderlay = () => {
-        this.props.toggleSelected(true);
-    };
-
-    hideOptionsContext = () => {
-        if (Platform.OS === 'ios' && this.refs.options) {
-            this.refs.options.hide();
-        }
-    };
-
-    getPostActions = () => {
-        const {formatMessage} = this.context.intl;
-        const {
-            canEdit,
-            canEditUntil,
-            canDelete,
-            canAddReaction,
-            channelIsReadOnly,
-            hasBeenDeleted,
-            isPending,
-            isFailed,
-            isFlagged,
-            isPostEphemeral,
-            isSystemMessage,
-            managedConfig,
-            message,
-            onCopyText,
-            onPostDelete,
-            onPostEdit,
-            showAddReaction,
-        } = this.props;
-        const actions = [];
-        const isPendingOrFailedPost = isPending || isFailed;
-
-        // we should check for the user roles and permissions
-        if (!isPendingOrFailedPost && !isSystemMessage && !isPostEphemeral) {
-            if (showAddReaction && canAddReaction && !channelIsReadOnly) {
-                actions.push({
-                    text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                    onPress: this.props.onAddReaction,
-                });
-            }
-
-            if (managedConfig.copyAndPasteProtection !== 'true' && message) {
-                actions.push({
-                    text: formatMessage({id: 'mobile.post_info.copy_post', defaultMessage: 'Copy Post'}),
-                    onPress: onCopyText,
-                    copyPost: true,
-                });
-            }
-
-            if (!channelIsReadOnly) {
-                if (isFlagged) {
-                    actions.push({
-                        text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
-                        onPress: this.unflagPost,
-                    });
-                } else {
-                    actions.push({
-                        text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
-                        onPress: this.flagPost,
-                    });
-                }
-            }
-
-            if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
-                actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: onPostEdit});
-            }
-
-            actions.push({
-                text: formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'}),
-                onPress: this.props.onCopyPermalink,
-            });
-        }
-
-        if (!isPendingOrFailedPost && !isPostEphemeral && canDelete && !hasBeenDeleted) {
-            actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: onPostDelete});
-        }
-
-        return actions;
-    };
-
     measurePost = (event) => {
         const {height} = event.nativeEvent.layout;
-        const {height: deviceHeight} = Dimensions.get('window');
         const {showLongPost} = this.props;
 
-        if (!showLongPost && height >= (deviceHeight * 1.2)) {
+        if (!showLongPost && height >= this.state.maxHeight) {
             this.setState({
                 isLongPost: true,
-                maxHeight: (deviceHeight * 0.6),
             });
         }
     };
@@ -206,7 +109,6 @@ export default class PostBody extends PureComponent {
         const {
             managedConfig,
             navigator,
-            onAddReaction,
             onHashtagPress,
             onPermalinkPress,
             postId,
@@ -225,7 +127,6 @@ export default class PostBody extends PureComponent {
             passProps: {
                 postId,
                 managedConfig,
-                onAddReaction,
                 onHashtagPress,
                 onPermalinkPress,
             },
@@ -234,15 +135,52 @@ export default class PostBody extends PureComponent {
         navigator.showModal(options);
     });
 
-    unflagPost = () => {
-        const {actions, postId} = this.props;
-        actions.unflagPost(postId);
-    };
+    showPostOptions = () => {
+        const {
+            canDelete,
+            channelIsReadOnly,
+            hasBeenDeleted,
+            isFailed,
+            isFlagged,
+            isPending,
+            isPostEphemeral,
+            isSystemMessage,
+            managedConfig,
+            navigator,
+            postId,
+            showAddReaction,
+        } = this.props;
 
-    showOptionsContext = (additionalAction) => {
-        if (this.refs.options) {
-            this.refs.options.show(additionalAction);
+        if (isSystemMessage && (!canDelete || hasBeenDeleted)) {
+            return;
         }
+
+        if (isPending || isFailed || isPostEphemeral) {
+            return;
+        }
+
+        const options = {
+            screen: 'PostOptions',
+            animationType: 'none',
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarHidden: true,
+                navBarTransparent: true,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext',
+            },
+            passProps: {
+                canDelete,
+                channelIsReadOnly,
+                hasBeenDeleted,
+                isFlagged,
+                postId,
+                managedConfig,
+                showAddReaction,
+            },
+        };
+
+        navigator.showModal(options);
     };
 
     renderAddChannelMember = (style, messageStyle, textStyles) => {
@@ -253,20 +191,15 @@ export default class PostBody extends PureComponent {
         }
 
         return (
-            <View style={style.row}>
-                <View style={style.flex}>
-                    <PostAddChannelMember
-                        baseTextStyle={messageStyle}
-                        navigator={navigator}
-                        onLongPress={this.showOptionsContext}
-                        onPostPress={onPress}
-                        textStyles={textStyles}
-                        postId={postProps.add_channel_member.post_id}
-                        userIds={postProps.add_channel_member.user_ids}
-                        usernames={postProps.add_channel_member.usernames}
-                    />
-                </View>
-            </View>
+            <PostAddChannelMember
+                baseTextStyle={messageStyle}
+                navigator={navigator}
+                onPostPress={onPress}
+                textStyles={textStyles}
+                postId={postProps.add_channel_member.post_id}
+                userIds={postProps.add_channel_member.user_ids}
+                usernames={postProps.add_channel_member.usernames}
+            />
         );
     };
 
@@ -277,7 +210,6 @@ export default class PostBody extends PureComponent {
             navigator,
             postId,
             showLongPost,
-            toggleSelected,
         } = this.props;
 
         if (showLongPost) {
@@ -285,7 +217,7 @@ export default class PostBody extends PureComponent {
         }
 
         let attachments;
-        if (fileIds.length > 0) {
+        if (fileIds.length) {
             if (!FileAttachmentList) {
                 FileAttachmentList = require('app/components/file_attachment_list').default;
             }
@@ -293,11 +225,9 @@ export default class PostBody extends PureComponent {
             attachments = (
                 <FileAttachmentList
                     fileIds={fileIds}
-                    hideOptionsContext={this.hideOptionsContext}
                     isFailed={isFailed}
-                    onLongPress={this.showOptionsContext}
+                    onLongPress={this.showPostOptions}
                     postId={postId}
-                    toggleSelected={toggleSelected}
                     navigator={navigator}
                 />
             );
@@ -306,7 +236,11 @@ export default class PostBody extends PureComponent {
     }
 
     renderPostAdditionalContent = (blockStyles, messageStyle, textStyles) => {
-        const {isReplyPost, message, navigator, onHashtagPress, onPermalinkPress, postId, postProps} = this.props;
+        const {isReplyPost, message, navigator, onHashtagPress, onPermalinkPress, postId, postProps, metadata} = this.props;
+
+        if (metadata && !metadata.embeds) {
+            return null;
+        }
 
         if (!PostBodyAdditionalContent) {
             PostBodyAdditionalContent = require('app/components/post_body_additional_content').default;
@@ -318,12 +252,12 @@ export default class PostBody extends PureComponent {
                 blockStyles={blockStyles}
                 navigator={navigator}
                 message={message}
+                metadata={metadata}
                 postId={postId}
                 postProps={postProps}
                 textStyles={textStyles}
                 isReplyPost={isReplyPost}
                 onHashtagPress={onHashtagPress}
-                onLongPress={this.showOptionsContext}
                 onPermalinkPress={onPermalinkPress}
             />
         );
@@ -334,7 +268,6 @@ export default class PostBody extends PureComponent {
             hasReactions,
             isSearchResult,
             navigator,
-            onAddReaction,
             postId,
             showLongPost,
         } = this.props;
@@ -350,18 +283,17 @@ export default class PostBody extends PureComponent {
         return (
             <Reactions
                 postId={postId}
-                onAddReaction={onAddReaction}
                 navigator={navigator}
             />
         );
     };
 
     render() {
-        const {formatMessage} = this.context.intl;
         const {
             hasBeenDeleted,
             hasBeenEdited,
             highlight,
+            isEmojiOnly,
             isFailed,
             isPending,
             isPostAddChannelMember,
@@ -369,6 +301,7 @@ export default class PostBody extends PureComponent {
             isSearchResult,
             isSystemMessage,
             message,
+            metadata,
             navigator,
             onFailedPostPress,
             onHashtagPress,
@@ -377,8 +310,9 @@ export default class PostBody extends PureComponent {
             postProps,
             postType,
             replyBarStyle,
+            shouldRenderJumboEmoji,
+            showLongPost,
             theme,
-            toggleSelected,
         } = this.props;
         const {isLongPost, maxHeight} = this.state;
         const style = getStyleSheet(theme);
@@ -390,66 +324,58 @@ export default class PostBody extends PureComponent {
         let body;
         let messageComponent;
         if (hasBeenDeleted) {
-            messageComponent = (
-                <TouchableHighlight
-                    onHideUnderlay={this.handleHideUnderlay}
-                    onPress={onPress}
-                    onShowUnderlay={this.handleShowUnderlay}
-                    underlayColor='transparent'
-                >
-                    <View style={style.row}>
-                        <FormattedText
-                            style={messageStyle}
-                            id='post_body.deleted'
-                            defaultMessage='(message deleted)'
-                        />
-                    </View>
-                </TouchableHighlight>
+            body = (
+                <FormattedText
+                    style={messageStyle}
+                    id='post_body.deleted'
+                    defaultMessage='(message deleted)'
+                />
             );
-            body = (<View>{messageComponent}</View>);
         } else if (isPostAddChannelMember) {
             messageComponent = this.renderAddChannelMember(style, messageStyle, textStyles);
         } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
             const {allUserIds, allUsernames, messageData} = postProps.user_activity;
             messageComponent = (
-                <TouchableOpacity onLongPress={this.showOptionsContext}>
-                    <View style={style.row}>
-                        <View style={style.flex}>
-                            <CombinedSystemMessage
-                                allUserIds={allUserIds}
-                                allUsernames={allUsernames}
-                                linkStyle={textStyles.link}
-                                messageData={messageData}
-                                navigator={navigator}
-                                textStyles={textStyles}
-                                theme={theme}
-                            />
-                        </View>
-                    </View>
-                </TouchableOpacity>
+                <CombinedSystemMessage
+                    allUserIds={allUserIds}
+                    allUsernames={allUsernames}
+                    linkStyle={textStyles.link}
+                    messageData={messageData}
+                    navigator={navigator}
+                    textStyles={textStyles}
+                    theme={theme}
+                />
+            );
+        } else if (isEmojiOnly) {
+            messageComponent = (
+                <MarkdownEmoji
+                    baseTextStyle={messageStyle}
+                    isEdited={hasBeenEdited}
+                    shouldRenderJumboEmoji={shouldRenderJumboEmoji}
+                    value={message}
+                />
             );
         } else if (message.length) {
             messageComponent = (
-                <View style={style.row}>
-                    <View
-                        style={[style.flex, (isPendingOrFailedPost && style.pendingPost), (isLongPost && {maxHeight, overflow: 'hidden'})]}
-                        removeClippedSubviews={isLongPost}
-                    >
-                        <Markdown
-                            baseTextStyle={messageStyle}
-                            blockStyles={blockStyles}
-                            isEdited={hasBeenEdited}
-                            isReplyPost={isReplyPost}
-                            isSearchResult={isSearchResult}
-                            navigator={navigator}
-                            onHashtagPress={onHashtagPress}
-                            onLongPress={this.showOptionsContext}
-                            onPermalinkPress={onPermalinkPress}
-                            onPostPress={onPress}
-                            textStyles={textStyles}
-                            value={message}
-                        />
-                    </View>
+                <View
+                    style={[style.messageContainer, (isReplyPost && style.reply), (isPendingOrFailedPost && style.pendingPost)]}
+                    onLayout={this.measurePost}
+                    removeClippedSubviews={isLongPost}
+                >
+                    <Markdown
+                        baseTextStyle={messageStyle}
+                        blockStyles={blockStyles}
+                        imageMetadata={metadata?.images}
+                        isEdited={hasBeenEdited}
+                        isReplyPost={isReplyPost}
+                        isSearchResult={isSearchResult}
+                        navigator={navigator}
+                        onHashtagPress={onHashtagPress}
+                        onPermalinkPress={onPermalinkPress}
+                        onPostPress={onPress}
+                        textStyles={textStyles}
+                        value={message}
+                    />
                 </View>
             );
         }
@@ -457,26 +383,23 @@ export default class PostBody extends PureComponent {
         if (!hasBeenDeleted) {
             body = (
                 <View style={style.messageBody}>
-                    <OptionsContext
-                        getPostActions={this.getPostActions}
-                        ref='options'
-                        onPress={onPress}
-                        toggleSelected={toggleSelected}
-                        cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
+                    <ScrollView
+                        style={{maxHeight: (showLongPost ? null : maxHeight), overflow: 'hidden'}}
+                        scrollEnabled={false}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
                     >
-                        <View onLayout={this.measurePost}>
-                            {messageComponent}
-                            {isLongPost &&
-                            <ShowMoreButton
-                                highlight={highlight}
-                                onPress={this.openLongPost}
-                            />
-                            }
-                        </View>
-                        {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
-                        {this.renderFileAttachments()}
-                        {this.renderReactions()}
-                    </OptionsContext>
+                        {messageComponent}
+                    </ScrollView>
+                    {isLongPost &&
+                    <ShowMoreButton
+                        highlight={highlight}
+                        onPress={this.openLongPost}
+                    />
+                    }
+                    {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}
+                    {this.renderFileAttachments()}
+                    {this.renderReactions()}
                 </View>
             );
         }
@@ -484,23 +407,19 @@ export default class PostBody extends PureComponent {
         return (
             <View style={style.messageContainerWithReplyBar}>
                 <View style={replyBarStyle}/>
-                <View style={[style.flex, style.row]}>
-                    <View style={style.flex}>
-                        {body}
-                    </View>
-                    {isFailed &&
-                        <TouchableOpacity
-                            onPress={onFailedPostPress}
-                            style={style.retry}
-                        >
-                            <Icon
-                                name='ios-information-circle-outline'
-                                size={26}
-                                color={theme.errorTextColor}
-                            />
-                        </TouchableOpacity>
-                    }
-                </View>
+                {body}
+                {isFailed &&
+                <TouchableOpacity
+                    onPress={onFailedPostPress}
+                    style={style.retry}
+                >
+                    <Icon
+                        name='ios-information-circle-outline'
+                        size={26}
+                        color={theme.errorTextColor}
+                    />
+                </TouchableOpacity>
+                }
             </View>
         );
     }
@@ -508,19 +427,20 @@ export default class PostBody extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {
-            flex: 1,
-        },
-        row: {
-            flexDirection: 'row',
-        },
         messageBody: {
             paddingBottom: 2,
             paddingTop: 2,
+            flex: 1,
+        },
+        messageContainer: {
+            width: '100%',
+        },
+        reply: {
+            paddingRight: 10,
         },
         retry: {
             justifyContent: 'center',
-            marginLeft: 12,
+            marginLeft: 10,
         },
         message: {
             color: theme.centerChannelColor,
@@ -529,7 +449,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',
-            flex: 1,
+            width: '100%',
         },
         pendingPost: {
             opacity: 0.5,

@@ -8,8 +8,8 @@ import {
     Platform,
     View,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 
+import {DeviceTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import AtMention from './at_mention';
@@ -92,7 +92,7 @@ export default class Autocomplete extends PureComponent {
         } else {
             // List is expanding downwards, likely from the search box
             let offset = Platform.select({ios: 65, android: 75});
-            if (DeviceInfo.getModel().includes('iPhone X')) {
+            if (DeviceTypes.IS_IPHONE_X) {
                 offset = 90;
             }
 

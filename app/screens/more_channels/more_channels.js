@@ -4,36 +4,24 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {
-    Platform,
-    InteractionManager,
-    StyleSheet,
-    View,
-} from 'react-native';
+import {Platform, View} from 'react-native';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {debounce} from 'mattermost-redux/actions/helpers';
+import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import CustomList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
+import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, setNavigatorStyles} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 export default class MoreChannels extends PureComponent {
     static propTypes = {
-        currentUserId: PropTypes.string.isRequired,
-        currentTeamId: PropTypes.string.isRequired,
-        navigator: PropTypes.object,
-        theme: PropTypes.object.isRequired,
-        canCreateChannels: PropTypes.bool.isRequired,
-        channels: PropTypes.array,
-        closeButton: PropTypes.object,
-        requestStatus: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
@@ -41,38 +29,43 @@ export default class MoreChannels extends PureComponent {
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
+        canCreateChannels: PropTypes.bool.isRequired,
+        channels: PropTypes.array,
+        closeButton: PropTypes.object,
+        currentUserId: PropTypes.string.isRequired,
+        currentTeamId: PropTypes.string.isRequired,
+        navigator: PropTypes.object,
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
-    leftButton = {
-        id: 'close-more-channels',
-    };
-
-    rightButton = {
-        id: 'create-pub-channel',
-        showAsAction: 'always',
-    };
-
     constructor(props, context) {
         super(props, context);
 
         this.searchTimeoutId = 0;
+        this.page = -1;
+        this.next = true;
 
         this.state = {
             channels: props.channels.slice(0, General.CHANNELS_CHUNK_SIZE),
-            createScreenVisible: false,
-            page: 0,
+            loading: false,
             adding: false,
-            next: true,
-            searching: false,
-            showNoResults: false,
             term: '',
         };
-        this.rightButton.title = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
-        this.leftButton = {...this.leftButton, icon: props.closeButton};
+
+        this.rightButton = {
+            id: 'create-pub-channel',
+            title: context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+            showAsAction: 'always',
+        };
+
+        this.leftButton = {
+            id: 'close-more-channels',
+            icon: props.closeButton,
+        };
 
         const buttons = {
             leftButtons: [this.leftButton],
@@ -86,81 +79,56 @@ export default class MoreChannels extends PureComponent {
         props.navigator.setButtons(buttons);
     }
 
-    componentWillMount() {
-        EventEmitter.on('closing-create-channel', this.handleCreateScreenVisible);
-    }
-
     componentDidMount() {
-        // set the timeout to 400 cause is the time that the modal takes to open
-        // Somehow interactionManager doesn't care
-        setTimeout(() => {
-            this.props.actions.getChannels(this.props.currentTeamId, 0);
-        }, 400);
+        this.doGetChannels();
     }
 
     componentWillReceiveProps(nextProps) {
+        const {term} = this.state;
+        let channels;
+
         if (this.props.theme !== nextProps.theme) {
             setNavigatorStyles(this.props.navigator, nextProps.theme);
         }
 
-        const {page, searching, term} = this.state;
-
-        let channels;
         if (nextProps.channels !== this.props.channels) {
-            channels = nextProps.channels.slice(0, (page + 1) * General.CHANNELS_CHUNK_SIZE);
+            channels = nextProps.channels;
             if (term) {
                 channels = this.filterChannels(nextProps.channels, term);
             }
         }
 
-        const {requestStatus} = this.props;
-        if (
-            searching &&
-            nextProps.requestStatus.status === RequestStatus.SUCCESS
-        ) {
-            channels = this.filterChannels(nextProps.channels, term);
-        } else if (
-            requestStatus.status === RequestStatus.STARTED &&
-            nextProps.requestStatus.status === RequestStatus.SUCCESS
-        ) {
-            channels = nextProps.channels.slice(0, (page + 1) * General.CHANNELS_CHUNK_SIZE);
-        }
-
         if (channels) {
-            this.setState({channels, showNoResults: true});
-        }
-
-        if (!this.state.createScreenVisible) {
-            this.headerButtons(nextProps.canCreateChannels, true);
+            this.setState({channels});
         }
     }
 
-    componentWillUnmount() {
-        EventEmitter.off('closing-create-channel', this.handleCreateScreenVisible);
-    }
+    cancelSearch = () => {
+        const {channels} = this.props;
+
+        this.setState({
+            channels,
+            term: '',
+        });
+    };
 
     close = () => {
         this.props.navigator.dismissModal({animationType: 'slide-down'});
     };
 
-    emitCanCreateChannel = (enabled) => {
-        this.headerButtons(this.props.canCreateChannels, enabled);
-    };
+    doGetChannels = () => {
+        const {actions, currentTeamId} = this.props;
+        const {loading, term} = this.state;
 
-    handleCreateScreenVisible = (createScreenVisible) => {
-        this.setState({createScreenVisible});
-    };
-
-    headerButtons = (canCreateChannels, enabled) => {
-        const buttons = {
-            leftButtons: [this.leftButton],
-        };
-
-        if (canCreateChannels) {
-            buttons.rightButtons = [{...this.rightButton, disabled: !enabled}];
+        if (this.next && !loading && !term) {
+            this.setState({loading: true}, () => {
+                actions.getChannels(
+                    currentTeamId,
+                    this.page + 1,
+                    General.CHANNELS_CHUNK_SIZE
+                ).then(this.loadedChannels);
+            });
         }
-
-        this.props.navigator.setButtons(buttons);
     };
 
     filterChannels = (channels, term) => {
@@ -169,53 +137,28 @@ export default class MoreChannels extends PureComponent {
         });
     };
 
-    searchProfiles = (text) => {
-        const term = text.toLowerCase();
+    getChannels = debounce(this.doGetChannels, 100);
 
-        if (term) {
-            const channels = this.filterChannels(this.props.channels, term);
-            this.setState({
-                channels,
-                term,
-                searching: true,
-            });
-            clearTimeout(this.searchTimeoutId);
+    headerButtons = (createEnabled) => {
+        const {canCreateChannels} = this.props;
+        const buttons = {
+            leftButtons: [this.leftButton],
+        };
 
-            this.searchTimeoutId = setTimeout(() => {
-                this.props.actions.searchChannels(this.props.currentTeamId, term);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        } else {
-            this.cancelSearch();
+        if (canCreateChannels) {
+            buttons.rightButtons = [{...this.rightButton, disabled: !createEnabled}];
         }
+
+        this.props.navigator.setButtons(buttons);
     };
 
-    cancelSearch = () => {
-        this.props.actions.getChannels(this.props.currentTeamId, 0);
-        this.setState({
-            term: '',
-            searching: false,
-            page: 0,
-        });
-    };
-
-    loadMoreChannels = () => {
-        let {page} = this.state;
-        if (this.props.requestStatus.status !== RequestStatus.STARTED && this.state.next && !this.state.searching) {
-            page += 1;
-            this.props.actions.getChannels(
-                this.props.currentTeamId,
-                page,
-                General.CHANNELS_CHUNK_SIZE
-            ).then(({data}) => {
-                if (data && data.length) {
-                    this.setState({
-                        page,
-                    });
-                } else {
-                    this.setState({next: false});
-                }
-            });
+    loadedChannels = ({data}) => {
+        if (data && !data.length) {
+            this.next = false;
         }
+
+        this.page += 1;
+        this.setState({loading: false});
     };
 
     onNavigatorEvent = (event) => {
@@ -225,9 +168,7 @@ export default class MoreChannels extends PureComponent {
                 this.close();
                 break;
             case 'create-pub-channel':
-                this.setState({
-                    createScreenVisible: true,
-                }, this.onCreateChannel);
+                this.onCreateChannel();
                 break;
             }
         }
@@ -238,7 +179,7 @@ export default class MoreChannels extends PureComponent {
         const {actions, currentTeamId, currentUserId} = this.props;
         const {channels} = this.state;
 
-        this.emitCanCreateChannel(false);
+        this.headerButtons(false);
         this.setState({adding: true});
 
         const channel = channels.find((c) => c.id === id);
@@ -256,7 +197,7 @@ export default class MoreChannels extends PureComponent {
                     displayName: channel ? channel.display_name : '',
                 }
             );
-            this.emitCanCreateChannel(true);
+            this.headerButtons(true);
             this.setState({adding: false});
         } else {
             if (channel) {
@@ -267,20 +208,20 @@ export default class MoreChannels extends PureComponent {
             await actions.handleSelectChannel(id);
 
             EventEmitter.emit('close_channel_drawer');
-            InteractionManager.runAfterInteractions(() => {
+            requestAnimationFrame(() => {
                 this.close();
             });
         }
     };
 
     onCreateChannel = () => {
-        const {intl} = this.context;
+        const {formatMessage} = this.context.intl;
         const {navigator, theme} = this.props;
 
         navigator.push({
             screen: 'CreateChannel',
             animationType: 'slide-up',
-            title: intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'}),
+            title: formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'}),
             backButtonTitle: '',
             animated: true,
             navigatorStyle: {
@@ -295,13 +236,83 @@ export default class MoreChannels extends PureComponent {
         });
     };
 
+    renderLoading = () => {
+        const {theme, channels} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        if (!channels.length && this.page <= 0) {
+            return null;
+        }
+
+        return (
+            <View style={style.loadingContainer}>
+                <FormattedText
+                    id='mobile.loading_channels'
+                    defaultMessage='Loading Channels...'
+                    style={style.loadingText}
+                />
+            </View>
+        );
+    };
+
+    renderNoResults = () => {
+        const {term, loading} = this.state;
+        const {theme} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        if (loading) {
+            return null;
+        }
+
+        if (term) {
+            return (
+                <View style={style.noResultContainer}>
+                    <FormattedText
+                        id='mobile.custom_list.no_results'
+                        defaultMessage='No Results'
+                        style={style.noResultText}
+                    />
+                </View>
+            );
+        }
+
+        return (
+            <View style={style.noResultContainer}>
+                <FormattedText
+                    id='more_channels.noMore'
+                    defaultMessage='No more channels to join'
+                    style={style.noResultText}
+                />
+            </View>
+        );
+    };
+
+    searchChannels = (text) => {
+        const {actions, channels, currentTeamId} = this.props;
+        const term = text.toLowerCase();
+
+        if (term) {
+            const filtered = this.filterChannels(channels, term);
+            this.setState({
+                channels: filtered,
+                term,
+            });
+            clearTimeout(this.searchTimeoutId);
+
+            this.searchTimeoutId = setTimeout(() => {
+                actions.searchChannels(currentTeamId, term);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
+        } else {
+            this.cancelSearch();
+        }
+    };
+
     render() {
-        const {intl} = this.context;
-        const {requestStatus, theme} = this.props;
-        const {adding, channels, searching, term} = this.state;
-        const {formatMessage} = intl;
-        const isLoading = requestStatus.status === RequestStatus.STARTED || requestStatus.status === RequestStatus.NOT_STARTED;
-        const more = searching ? () => true : this.loadMoreChannels;
+        const {formatMessage} = this.context.intl;
+        const {theme} = this.props;
+        const {adding, channels, loading, term} = this.state;
+        const more = term ? () => true : this.getChannels;
+        const style = getStyleFromTheme(theme);
 
         let content;
         if (adding) {
@@ -320,7 +331,7 @@ export default class MoreChannels extends PureComponent {
 
             content = (
                 <React.Fragment>
-                    <View style={style.searchbar}>
+                    <View style={style.searchBar}>
                         <SearchBar
                             ref='search_bar'
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -332,8 +343,8 @@ export default class MoreChannels extends PureComponent {
                             tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                             tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
                             titleCancelColor={theme.centerChannelColor}
-                            onChangeText={this.searchProfiles}
-                            onSearchButtonPress={this.searchProfiles}
+                            onChangeText={this.searchChannels}
+                            onSearchButtonPress={this.searchChannels}
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
                             value={term}
@@ -341,16 +352,15 @@ export default class MoreChannels extends PureComponent {
                     </View>
                     <CustomList
                         data={channels}
-                        theme={theme}
-                        searching={searching}
-                        onListEndReached={more}
-                        loading={isLoading}
-                        listScrollRenderAheadDistance={50}
-                        showSections={false}
-                        renderRow={ChannelListRow}
+                        extraData={loading}
+                        key='custom_list'
+                        loading={loading}
+                        loadingComponent={this.renderLoading()}
+                        noResults={this.renderNoResults()}
+                        onLoadMore={more}
                         onRowPress={this.onSelectChannel}
-                        loadingText={{id: t('mobile.loading_channels'), defaultMessage: 'Loading Channels...'}}
-                        showNoResults={this.state.showNoResults}
+                        renderItem={ChannelListRow}
+                        theme={theme}
                     />
                 </React.Fragment>
             );
@@ -365,8 +375,29 @@ export default class MoreChannels extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
-    searchbar: {
-        marginVertical: 5,
-    },
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        searchBar: {
+            marginVertical: 5,
+        },
+        loadingContainer: {
+            alignItems: 'center',
+            backgroundColor: theme.centerChannelBg,
+            height: 70,
+            justifyContent: 'center',
+        },
+        loadingText: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+        },
+        noResultContainer: {
+            flexGrow: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        noResultText: {
+            fontSize: 26,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+    };
 });

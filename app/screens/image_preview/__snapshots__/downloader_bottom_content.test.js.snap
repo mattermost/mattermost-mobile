@@ -1,0 +1,93 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DownloaderBottomContent should match snapshot for downloaded file 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "marginTop": 10,
+    }
+  }
+>
+  <FormattedText
+    defaultMessage="Download complete"
+    id="mobile.downloader.complete"
+    style={
+      Object {
+        "color": "white",
+        "fontSize": 16,
+        "fontWeight": "600",
+      }
+    }
+  />
+</View>
+`;
+
+exports[`DownloaderBottomContent should match snapshot for downloaded file and is not video 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "marginTop": 10,
+    }
+  }
+>
+  <FormattedText
+    defaultMessage="Image Saved"
+    id="mobile.downloader.image_saved"
+    style={
+      Object {
+        "color": "white",
+        "fontSize": 16,
+        "fontWeight": "600",
+      }
+    }
+  />
+</View>
+`;
+
+exports[`DownloaderBottomContent should match snapshot for downloaded file and isVideo 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "marginTop": 10,
+    }
+  }
+>
+  <FormattedText
+    defaultMessage="Video Saved"
+    id="mobile.downloader.video_saved"
+    style={
+      Object {
+        "color": "white",
+        "fontSize": 16,
+        "fontWeight": "600",
+      }
+    }
+  />
+</View>
+`;
+
+exports[`DownloaderBottomContent should match snapshot for downloading 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "marginTop": 10,
+    }
+  }
+>
+  <FormattedText
+    defaultMessage="Downloading..."
+    id="mobile.downloader.downloading"
+    style={
+      Object {
+        "color": "white",
+        "fontSize": 16,
+        "fontWeight": "600",
+      }
+    }
+  />
+</View>
+`;

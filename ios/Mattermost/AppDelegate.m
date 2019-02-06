@@ -20,8 +20,11 @@
 #import "RCCManager.h"
 #import "RNNotifications.h"
 #import "SessionManager.h"
+#import <UserNotifications/UserNotifications.h>
 
 @implementation AppDelegate
+
+NSString* const NotificationClearAction = @"clear";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -69,9 +72,54 @@
   [RNNotifications didFailToRegisterForRemoteNotificationsWithError:error];
 }
 
+-(void)cleanNotificationsFromChannel:(NSString *)channelId andUpdateBadge:(BOOL)updateBadge {
+  if ([UNUserNotificationCenter class]) {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
+      NSMutableArray<NSString *> *notificationIds = [NSMutableArray new];
+
+      for (UNNotification *prevNotification in notifications) {
+        UNNotificationRequest *notificationRequest = [prevNotification request];
+        UNNotificationContent *notificationContent = [notificationRequest content];
+        NSString *identifier = [notificationRequest identifier];
+        NSString* cId = [[notificationContent userInfo] objectForKey:@"channel_id"];
+
+        if ([cId isEqualToString: channelId]) {
+          [notificationIds addObject:identifier];
+        }
+      }
+
+      [center removeDeliveredNotificationsWithIdentifiers:notificationIds];
+      NSInteger removed = (NSInteger)[notificationIds count] + 1;
+      if (removed > 0 && updateBadge) {
+        NSInteger badge = [UIApplication sharedApplication].applicationIconBadgeNumber;
+        NSInteger count = badge - removed;
+        if (count > 0) {
+          [[UIApplication sharedApplication] setApplicationIconBadgeNumber:count];
+        } else {
+          [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
+        }
+      }
+    }];
+  }
+}
+
 // Required for the notification event.
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)notification {
-  [RNNotifications didReceiveRemoteNotification:notification];
+-(void)application:(UIApplication *)application didReceiveRemoteNotification:(nonnull NSDictionary *)userInfo fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHandler {
+  UIApplicationState state = [UIApplication sharedApplication].applicationState;
+  NSString* action = [userInfo objectForKey:@"type"];
+  NSString* channelId = [userInfo objectForKey:@"channel_id"];
+
+  if (action && [action isEqualToString: NotificationClearAction]) {
+    // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
+    [self cleanNotificationsFromChannel:channelId andUpdateBadge:NO];
+  } else if (state == UIApplicationStateInactive) {
+    // When the notification is opened
+    [self cleanNotificationsFromChannel:channelId andUpdateBadge:NO];
+  }
+
+  [RNNotifications didReceiveRemoteNotification:userInfo];
+  completionHandler(UIBackgroundFetchResultNoData);
 }
 
 // Required for the localNotification event.

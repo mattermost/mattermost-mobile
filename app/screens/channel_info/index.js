@@ -14,6 +14,7 @@ import {
 } from 'mattermost-redux/actions/channels';
 import {getCustomEmojisInText} from 'mattermost-redux/actions/emojis';
 import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
+import {clearPinnedPosts} from 'mattermost-redux/actions/search';
 import {General} from 'mattermost-redux/constants';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {
@@ -25,7 +26,7 @@ import {
     isCurrentChannelReadOnly,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
+import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
@@ -55,6 +56,7 @@ function mapStateToProps(state) {
     const isFavorite = favoriteChannels && favoriteChannels.indexOf(currentChannel.id) > -1;
     const roles = getCurrentUserRoles(state);
     const canManageUsers = currentChannel.hasOwnProperty('id') ? canManageChannelMembers(state) : false;
+    const currentUser = getUser(state, currentUserId);
 
     let status;
     if (currentChannel.type === General.DM_CHANNEL) {
@@ -79,6 +81,7 @@ function mapStateToProps(state) {
         currentChannelMemberCount,
         currentUserId,
         isChannelMuted: isChannelMuted(currentChannelMember),
+        ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember.notify_props, currentUser.notify_props),
         isCurrent,
         isFavorite,
         status,
@@ -90,6 +93,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            clearPinnedPosts,
             closeDMChannel,
             closeGMChannel,
             deleteChannel,

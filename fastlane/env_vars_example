@@ -1,77 +1,18 @@
 ############ COMMON ############
 export LC_ALL="en_US.UTF-8"
+export NODE_OPTIONS=--max_old_space_size=12000
 
-############ ANDROID ############
-
-# Should we submit the app to be rollout in Google Play, use along with SUPPLY_TRACK
-export SUBMIT_ANDROID_TO_GOOGLE_PLAY=false
-
-# Defines if the Android app should be built in release mode
-export ANDROID_BUILD_FOR_RELEASE=false
-
-# Should we use the assets found in assets/release/icons/android
-export ANDROID_REPLACE_ASSETS=false
-
-# Should we increment the Android app build number
-export ANDROID_INCREMENT_BUILD_NUMBER=false
-
-# The message that will be used for committing the increment of the build number, build number will be appended to the end of this message
-export ANDROID_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE="Bump Android build number to"
-
-# The name of the app as it is going to be shown in the Android home screen
-export ANDROID_APP_NAME="Mattermost Beta"
-
-# The package Id for the Android app
-export ANDROID_PACKAGE_ID=com.mattermost.rnbeta
-
-# The track of the application to use when submitting to Google Play, valid values are: alpha, beta, production
-export SUPPLY_TRACK=
-
-# The package id of the application, should match ANDROID_PACKAGE_ID
-export SUPPLY_PACKAGE_NAME=com.mattermost.rnbeta
-
-# The path to the service account json file used to authenticate with Google
-export SUPPLY_JSON_KEY=
-
-############ IOS ############
-
-# Should we run Fastlane's match to sync the provisioning profiles
-export SYNC_IOS_PROVISIONING_PROFILES=false
-
-# Should we submit the app to TestFlight once the build completes
-export SUBMIT_IOS_TO_TESTFLIGHT=false
-
-# Defines if the iOS app should be built in release mode
-export IOS_BUILD_FOR_RELEASE=false
-
-# Should we use the assets found in assets/release/icons/ios
-export IOS_REPLACE_ASSETS=false
-
-# Should we increment the iOS app build number
-export IOS_INCREMENT_BUILD_NUMBER=false
-
-# The message that will be used for committing the increment of the build number, build number will be appended to the end of this message
-export IOS_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE="Bump iOS build number to"
-
-# The name of the app as it is going to be shown in the iOS home screen
-export IOS_APP_NAME="Mattermost Beta"
-
-# The Bundle Identifier for the main app
-export IOS_MAIN_APP_IDENTIFIER=com.mattermost.rnbeta
-
-# The Bundle Identifier for the extension app
-export IOS_EXTENSION_APP_IDENTIFIER=com.mattermost.rnbeta.MattermostShare
-
-# The iOS App Group identifier used to share data between the app and the extension
-export IOS_APP_GROUP=group.com.mattermost.rnbeta
-
-# Method used to export the archive. Valid values are: app-store, ad-hoc, package, enterprise, development, developer-id
-export IOS_BUILD_EXPORT_METHOD=app-store
+############ MATCH (Used to sync your iOS provisioning profiles) ############
+# Should we run match to sync the provisioning profiles.
+export SYNC_PROVISIONING_PROFILES=true
 
 # Your Apple ID Username
 export MATCH_USERNAME=
 
 # Your Apple ID Password
+export FASTLANE_PASSWORD=
+
+# Your Apple ID Password (again)
 export MATCH_PASSWORD=
 
 # URL to the git repo containing all the certificates
@@ -81,7 +22,7 @@ export MATCH_GIT_URL=
 export MATCH_APP_IDENTIFIER=com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta
 
 # Define the profile type. Valid values are: appstore, adhoc, development, enterprise
-export MATCH_TYPE=adhoc
+export MATCH_TYPE=appstore
 
 # Make a shallow clone of the repository (truncate the history to 1 revision)
 export MATCH_SHALLOW_CLONE=true
@@ -92,72 +33,87 @@ export MATCH_SKIP_DOCS=true
 # The ID of your Developer Portal team
 export FASTLANE_TEAM_ID=
 
+# Your Mac user password used to install the certificates in the build computer KeyChain
+export MATCH_KEYCHAIN_PASSWORD=
+
+############ PILOT (Used to upload the ipa to TestFlight and from there you can submit to the store) ############
 # Your Apple ID Username
 export PILOT_USERNAME=
 
 # Don't wait for the build to process.
 export PILOT_SKIP_WAITING_FOR_BUILD_PROCESSING=true
 
-############ ANALYTICS AND CRASH REPORT ############
+############ SUPLY (Used to upload the apk to the play store) ############
+# The track of the application to use when submitting to Google Play, valid values are: alpha, beta, production
+export SUPPLY_TRACK=
 
-# Your Segment API Key if you want to track analytics using segment.io
-export SEGMENT_API_KEY=
+# The package id of the application, should match MAIN_APP_IDENTIFIER
+export SUPPLY_PACKAGE_NAME=com.mattermost.rnbeta
 
-# If you want to enable sentry to collect crash reports
-export SENTRY_ENABLED=false
+# The path to the service account json file used to authenticate with Google
+export SUPPLY_JSON_KEY=
 
-# Your sentry organization
-export SENTRY_ORG=
-
-# The name of your iOS Mattermost project in Sentry
-export SENTRY_PROJECT_IOS=mattermost-mobile-ios
-
-# The DSN for your iOS Mattermost project
-export SENTRY_DSN_IOS=
-
-# The name of your Android Mattermost project in Sentry
-export SENTRY_PROJECT_ANDROID=mattermost-mobile-android
-
-# The DSN for your Android Mattermost project
-export SENTRY_DSN_ANDROID=
-
-# Your Sentry auth token
-export SENTRY_AUTH_TOKEN=
-
-
-############ GIT ############
-# Commit changes made by the increase build number to a remote git and optionally submit a Pull Request to Github
-export COMMIT_CHANGES_TO_GIT=false
-
-# Reset your git branch for any changes made and checkout the master branch
-export RESET_GIT_BRANCH=false
-
-# Ensure that there are no pending changes to be committed before building the app
-export ENSURE_GIT_IS_CLEAN=true
-
-# The remote git where to submit the branch
-export GIT_REMOTE=origin
-
-# The name of the local branch to be created before building the app
-export GIT_LOCAL_BRANCH=
-
-# The name of the remote branch to be created when submitting the changes
-export GIT_REMOTE_BRANCH=beta
-
-# The API Token in github in order to submit a Pull Request
-export GITHUB_PULL_REQUEST_API_TOKEN=
-
-# The GitHub repo to submit the Pull Request against.
-export GITHUB_PULL_REQUEST_REPO=mattermost/mattermost-mobile
-
-
-############ WEBHOOK ############
+############ MATTERMOST BUILD ############
+# Publish build results to Mattermost using an Incoming WebHook
 export MATTERMOST_WEBHOOK_URL=
-export MATTERMOST_URL=$MATTERMOST_WEBHOOK_URL
 
+# Ensures there are no changes to git before building the app and every change made by the
+# the build process is committed back to git
+export COMMIT_CHANGES_TO_GIT=true
 
-############ AWS ############
-export AWS_ACCESS_KEY_ID=
-export AWS_SECRET_ACCESS_KEY=
-export AWS_BUCKET_NAME=
-export AWS_REGION=
+# Defines what branch is going to be used for building the app
+export BRANCH_TO_BUILD=master
+
+# Defines the local branch to be created using BRANCH_TO_BUILD as base
+export GIT_LOCAL_BRANCH=build
+
+# Once the build is done should the git branch reset to initial state
+export RESET_GIT_BRANCH=true
+
+# The name of the app as it is going to be shown in the device home screen
+export APP_NAME=Mattermost
+
+# Set the version of the app on build time if you want to use another one than the one set in the project.
+#export VERSION_NUMBER=1.15.0
+
+# Set the build number of the app on build time if you want to use another than the next number.
+#export BUILD_NUMBER=160
+
+# Set the commit message when changing the app version number.
+export INCREMENT_VERSION_NUMBER_MESSAGE="Bump app version number to"
+
+# Defines if the app build number should be incremented.
+export INCREMENT_BUILD_NUMBER=false
+
+# Set the commit message when changing the app build number.
+export INCREMENT_BUILD_NUMBER_MESSAGE="Bump app build number to"
+
+# Defines if the app should be built in release mode.
+export BUILD_FOR_RELEASE=true
+
+# eplaces the icons of the app with the ones found under the folder dist/assets/release/icons/
+# and the splash screen with the one found under the folder dist/assets/release/splash_screen/.
+export REPLACE_ASSETS=true
+
+# The bundle / package identifier for the app.
+export MAIN_APP_IDENTIFIER=com.mattermost.rnbeta
+
+# Submit the app to TestFlight once the build finishes
+export SUBMIT_IOS_TO_TESTFLIGHT=true
+
+# Should the app be submitted to the Play Store once it finishes to build, use along with SUPPLY_TRACK.
+export SUBMIT_ANDROID_TO_GOOGLE_PLAY=true
+
+#### IOS SPECIFIC ####
+# The bundle identifier for the share extension.
+export EXTENSION_APP_IDENTIFIER=com.mattermost.rnbeta.MattermostShare
+
+# The iOS App Group identifier used to share data between the app and the share extension.
+export IOS_APP_GROUP=group.com.mattermost.rnbeta
+
+# The iOS iCloud container identifier used to support iCloud storage.
+export IOS_ICLOUD_CONTAINER=iCloud.com.mattermost.rnbeta
+
+# Method used to export the archive. Valid values are: app-store, ad-hoc, package, enterprise, development, developer-id
+export IOS_BUILD_EXPORT_METHOD=app-store
+

@@ -70,8 +70,6 @@ export default class Permalink extends PureComponent {
         myMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         onClose: PropTypes.func,
-        onHashtagPress: PropTypes.func,
-        onPermalinkPress: PropTypes.func,
         onPress: PropTypes.func,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
@@ -209,6 +207,14 @@ export default class Permalink extends PureComponent {
         }
     };
 
+    handleHashtagPress = () => {
+        // Do nothing because we're already in a modal
+    };
+
+    handlePermalinkPress = () => {
+        // Do nothing because we're already in permalink view for a different post
+    };
+
     handlePress = () => {
         const {channelIdState, channelNameState} = this.state;
 
@@ -246,6 +252,9 @@ export default class Permalink extends PureComponent {
                         statusBarHidden: false,
                         statusBarHideWithNavBar: false,
                         screenBackgroundColor: theme.centerChannelBg,
+                    },
+                    passProps: {
+                        disableTermsModal: true,
                     },
                 });
             }
@@ -359,8 +368,6 @@ export default class Permalink extends PureComponent {
             currentUserId,
             focusedPostId,
             navigator,
-            onHashtagPress,
-            onPermalinkPress,
             theme,
         } = this.props;
         const {
@@ -398,13 +405,14 @@ export default class Permalink extends PureComponent {
                     isSearchResult={false}
                     shouldRenderReplyButton={false}
                     renderReplies={true}
-                    onHashtagPress={onHashtagPress}
-                    onPermalinkPress={onPermalinkPress}
+                    onHashtagPress={this.handleHashtagPress}
+                    onPermalinkPress={this.handlePermalinkPress}
                     onPostPress={this.goToThread}
                     postIds={postIdsState}
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     navigator={navigator}
+                    highlightPinnedOrFlagged={false}
                 />
             );
         }

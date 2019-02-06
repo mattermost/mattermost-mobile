@@ -59,6 +59,7 @@ export default class CustomListRow extends React.PureComponent {
 const style = StyleSheet.create({
     touchable: {
         flex: 1,
+        overflow: 'hidden',
     },
     container: {
         flexDirection: 'row',

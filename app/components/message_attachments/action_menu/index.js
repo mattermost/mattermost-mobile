@@ -4,16 +4,16 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
-import {setMenuActionSelector, selectAttachmentMenuAction} from 'app/actions/views/post';
+import {selectAttachmentMenuAction} from 'app/actions/views/post';
 
 import ActionMenu from './action_menu';
 
 function mapStateToProps(state, ownProps) {
+    const actions = state.views.post.submittedMenuActions[ownProps.postId];
+    const selected = actions?.[ownProps.id];
+
     return {
-        theme: getTheme(state),
-        selected: state.views.post.submittedMenuActions[ownProps.postId],
+        selected,
     };
 }
 
@@ -21,7 +21,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             selectAttachmentMenuAction,
-            setMenuActionSelector,
         }, dispatch),
     };
 }

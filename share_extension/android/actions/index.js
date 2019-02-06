@@ -3,17 +3,15 @@
 
 import {fetchMyChannelsAndMembers} from 'mattermost-redux/actions/channels';
 
+import {loadProfilesAndTeamMembersForDMSidebar} from 'app/actions/views/channel';
 import {ViewTypes} from 'app/constants';
-import {getDefaultChannelForTeam} from 'share_extension/android/selectors';
+import {getDefaultChannelForTeam} from 'share_extension/common/selectors';
 
 export function getTeamChannels(teamId) {
     return async (dispatch, getState) => {
-        let defaultChannel = getDefaultChannelForTeam(getState(), teamId);
-
-        if (!defaultChannel) {
-            await fetchMyChannelsAndMembers(teamId)(dispatch, getState);
-            defaultChannel = getDefaultChannelForTeam(getState(), teamId);
-        }
+        await dispatch(fetchMyChannelsAndMembers(teamId));
+        dispatch(loadProfilesAndTeamMembersForDMSidebar(teamId));
+        const defaultChannel = getDefaultChannelForTeam(getState(), teamId);
 
         return defaultChannel.id;
     };

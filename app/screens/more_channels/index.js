@@ -8,7 +8,8 @@ import {createSelector} from 'reselect';
 import {General} from 'mattermost-redux/constants';
 import {getChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
 import {getChannelsInCurrentTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
@@ -29,21 +30,18 @@ const joinableChannels = createSelector(
 );
 
 function mapStateToProps(state) {
-    const {currentUserId} = state.entities.users;
-    const {currentTeamId} = state.entities.teams;
-    const {getChannels: requestStatus} = state.requests.channels;
     const config = getConfig(state);
     const license = getLicense(state);
     const roles = getCurrentUserRoles(state);
     const channels = joinableChannels(state);
+    const currentTeamId = getCurrentTeamId(state);
 
     return {
         canCreateChannels: showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
-        currentUserId,
+        currentUserId: getCurrentUserId(state),
         currentTeamId,
         channels,
         theme: getTheme(state),
-        requestStatus,
     };
 }
 

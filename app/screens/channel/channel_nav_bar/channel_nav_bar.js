@@ -4,9 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 
-import {ViewTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDrawerButton from './channel_drawer_button';
@@ -32,12 +31,6 @@ export default class ChannelNavBar extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    constructor(props) {
-        super(props);
-
-        this.isX = DeviceInfo.getModel().includes('iPhone X');
-    }
-
     render() {
         const {isLandscape, navigator, onPress, theme} = this.props;
         const {openChannelDrawer, openSettingsDrawer} = this.props;
@@ -58,7 +51,7 @@ export default class ChannelNavBar extends PureComponent {
                 height = IOS_TOP_LANDSCAPE;
             }
 
-            if (this.isX && isLandscape) {
+            if (DeviceTypes.IS_IPHONE_X && isLandscape) {
                 padding.paddingHorizontal = 10;
             }
             break;

@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 
 import {
     Image,
-    Platform,
     Text,
     View,
 } from 'react-native';
@@ -50,12 +49,7 @@ export default class TeamIcon extends React.PureComponent {
     }
 
     setImageURL = (teamIcon) => {
-        let prefix = '';
-        if (Platform.OS === 'android') {
-            prefix = 'file://';
-        }
-
-        this.setState({teamIcon: `${prefix}${teamIcon}`});
+        this.setState({teamIcon});
     };
 
     render() {

@@ -37,6 +37,10 @@ export function combineTextNodes(ast) {
                 node._parent._lastChild = node;
             }
         }
+
+        // Resume parsing after the current node since otherwise the walker would continue to parse any old text nodes
+        // that have been merged into this one
+        walker.resumeAt(node, false);
     }
 
     return ast;

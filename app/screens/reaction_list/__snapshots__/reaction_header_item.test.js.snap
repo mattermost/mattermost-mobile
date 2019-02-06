@@ -18,7 +18,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       },
       Object {
         "borderBottomWidth": 2,
-        "borderColor": "#ffffff",
+        "borderColor": "transparent",
       },
       false,
     ]
@@ -30,17 +30,17 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       padding={5}
       size={16}
     />
-    <Component
+    <Text
       style={
         Object {
-          "color": "#2389d7",
+          "color": "#166de0",
           "fontSize": 16,
           "marginLeft": 4,
         }
       }
     >
       3
-    </Component>
+    </Text>
   </React.Fragment>
 </TouchableOpacity>
 `;
@@ -52,17 +52,17 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
     padding={5}
     size={16}
   />
-  <Component
+  <Text
     style={
       Object {
-        "color": "#2389d7",
+        "color": "#166de0",
         "fontSize": 16,
         "marginLeft": 4,
       }
     }
   >
     3
-  </Component>
+  </Text>
 </React.Fragment>
 `;
 
@@ -73,22 +73,22 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
     id="mobile.reaction_header.all_emojis"
     style={
       Object {
-        "color": "#2389d7",
+        "color": "#166de0",
         "fontSize": 16,
         "marginLeft": 4,
       }
     }
   />
-  <Component
+  <Text
     style={
       Object {
-        "color": "#2389d7",
+        "color": "#166de0",
         "fontSize": 16,
         "marginLeft": 4,
       }
     }
   >
     3
-  </Component>
+  </Text>
 </React.Fragment>
 `;

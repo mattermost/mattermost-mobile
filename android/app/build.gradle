@@ -113,8 +113,8 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 153
-        versionName "1.14.0"
+        versionCode 172
+        versionName "1.16.0"
         multiDexEnabled = true
         ndk {
             abiFilters "armeabi-v7a", "x86"
@@ -180,7 +180,10 @@ configurations.all {
     resolutionStrategy {
         eachDependency { DependencyResolveDetails details ->
             if (details.requested.name == 'android-jsc') {
-                details.useTarget group: details.requested.group, name: 'android-jsc-intl', version: 'r224109'
+                details.useTarget group: details.requested.group, name: 'android-jsc-intl', version: 'r236355'
+            }
+            if (details.requested.name == 'play-services-gcm') {
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '16.0.0'
             }
         }
     }
@@ -212,6 +215,8 @@ dependencies {
     implementation project(':react-native-exception-handler')
     implementation project(':rn-fetch-blob')
     implementation project(':react-native-recyclerview-list')
+    implementation project(':react-native-webview')
+    implementation project(':react-native-gesture-handler')
 
     // For animated GIF support
     implementation 'com.facebook.fresco:fresco:1.10.0'

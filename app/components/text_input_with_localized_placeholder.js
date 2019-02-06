@@ -3,13 +3,16 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {TextInput} from 'react-native';
 
-class TextInputWithLocalizedPlaceholder extends PureComponent {
+export default class TextInputWithLocalizedPlaceholder extends PureComponent {
     static propTypes = {
         ...TextInput.propTypes,
         placeholder: PropTypes.object.isRequired,
+    };
+
+    static contextTypes = {
         intl: intlShape.isRequired,
     };
 
@@ -22,10 +25,11 @@ class TextInputWithLocalizedPlaceholder extends PureComponent {
     };
 
     render() {
-        const {intl, placeholder, ...otherProps} = this.props;
+        const {formatMessage} = this.context.intl;
+        const {placeholder, ...otherProps} = this.props;
         let placeholderString = '';
         if (placeholder.id) {
-            placeholderString = intl.formatMessage(placeholder);
+            placeholderString = formatMessage(placeholder);
         }
 
         return (
@@ -38,5 +42,3 @@ class TextInputWithLocalizedPlaceholder extends PureComponent {
         );
     }
 }
-
-export default injectIntl(TextInputWithLocalizedPlaceholder, {withRef: true});

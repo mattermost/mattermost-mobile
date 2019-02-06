@@ -1,11 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ReactionRow should match snapshot, renderContent 1`] = `
-<Component
+<View
   style={
     Object {
       "alignItems": "center",
-      "backgroundColor": "#ffffff",
       "flexDirection": "row",
       "height": 44,
       "justifyContent": "flex-start",
@@ -13,7 +12,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
     }
   }
 >
-  <Component
+  <View
     style={
       Object {
         "alignItems": "center",
@@ -25,7 +24,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
       activeOpacity={0.2}
       onPress={[Function]}
     >
-      <Component
+      <View
         style={
           Object {
             "paddingTop": 3,
@@ -37,10 +36,10 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
           size={24}
           userId="user_id"
         />
-      </Component>
+      </View>
     </TouchableOpacity>
-  </Component>
-  <Component
+  </View>
+  <Text
     ellipsizeMode="tail"
     numberOfLines={1}
     style={
@@ -50,32 +49,31 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
       }
     }
   >
-    <Component
+    <Text
       style={
         Object {
-          "color": "#3d3c40",
           "fontSize": 14,
           "paddingRight": 5,
         }
       }
     >
       @username
-    </Component>
-    <Component>
+    </Text>
+    <Text>
         
-    </Component>
-    <Component
+    </Text>
+    <Text
       style={
         Object {
-          "color": "rgba(61,60,64,0.5)",
+          "color": "rgba(0,0,0,0.5)",
           "fontSize": 14,
         }
       }
     >
       username
-    </Component>
-  </Component>
-  <Component
+    </Text>
+  </Text>
+  <View
     style={
       Object {
         "alignItems": "center",
@@ -88,6 +86,6 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
       emojiName="smile"
       size={24}
     />
-  </Component>
-</Component>
+  </View>
+</View>
 `;

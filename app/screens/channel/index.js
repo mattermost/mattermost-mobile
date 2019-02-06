@@ -5,11 +5,11 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates, logout} from 'mattermost-redux/actions/users';
-import {init as initWebSocket, close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/users';
 
 import {
     loadChannelsIfNecessary,
@@ -32,6 +32,7 @@ function mapStateToProps(state) {
         currentChannelId: getCurrentChannelId(state),
         isLandscape: isLandscape(state),
         theme: getTheme(state),
+        showTermsOfService: shouldShowTermsOfService(state),
     };
 }
 
@@ -44,8 +45,6 @@ function mapDispatchToProps(dispatch) {
             logout,
             selectDefaultTeam,
             selectInitialChannel,
-            initWebSocket,
-            closeWebSocket,
             recordLoadTime,
             startPeriodicStatusUpdates,
             stopPeriodicStatusUpdates,

@@ -31,7 +31,6 @@ export default class PostAddChannelMember extends React.PureComponent {
         userIds: PropTypes.array.isRequired,
         usernames: PropTypes.array.isRequired,
         navigator: PropTypes.object.isRequired,
-        onLongPress: PropTypes.func,
         onPostPress: PropTypes.func,
         textStyles: PropTypes.object,
     };
@@ -85,7 +84,6 @@ export default class PostAddChannelMember extends React.PureComponent {
                 <AtMention
                     mentionStyle={this.props.textStyles.mention}
                     mentionName={usernames[0]}
-                    onLongPress={this.props.onLongPress}
                     onPostPress={this.props.onPostPress}
                     navigator={this.props.navigator}
                 />
@@ -114,7 +112,6 @@ export default class PostAddChannelMember extends React.PureComponent {
                                     key={username}
                                     mentionStyle={this.props.textStyles.mention}
                                     mentionName={username}
-                                    onLongPress={this.props.onLongPress}
                                     onPostPress={this.props.onPostPress}
                                     navigator={this.props.navigator}
                                 />

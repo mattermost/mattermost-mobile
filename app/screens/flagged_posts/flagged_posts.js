@@ -33,6 +33,7 @@ export default class FlaggedPosts extends PureComponent {
             getFlaggedPosts: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            showSearchModal: PropTypes.func.isRequired,
         }).isRequired,
         didFail: PropTypes.bool,
         isLoading: PropTypes.bool,
@@ -112,6 +113,14 @@ export default class FlaggedPosts extends PureComponent {
         this.showPermalinkView(postId, true);
     };
 
+    handleHashtagPress = async (hashtag) => {
+        const {actions, navigator} = this.props;
+
+        await navigator.dismissModal();
+
+        actions.showSearchModal(navigator, '#' + hashtag);
+    };
+
     keyExtractor = (item) => item;
 
     onNavigatorEvent = (event) => {
@@ -171,11 +180,15 @@ export default class FlaggedPosts extends PureComponent {
                 <SearchResultPost
                     postId={item}
                     previewPost={this.previewPost}
+                    highlightPinnedOrFlagged={false}
                     goToThread={this.goToThread}
                     navigator={this.props.navigator}
+                    onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={managedConfig}
                     showFullDate={false}
+                    skipFlaggedHeader={true}
+                    skipPinnedHeader={true}
                 />
                 {separator}
             </View>
@@ -212,7 +225,6 @@ export default class FlaggedPosts extends PureComponent {
                 passProps: {
                     isPermalink,
                     onClose: this.handleClosePermalink,
-                    onPermalinkPress: this.handlePermalinkPress,
                 },
             };
 

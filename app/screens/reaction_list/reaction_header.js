@@ -4,21 +4,23 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Animated,
+    Platform,
     ScrollView,
-    View,
+    StyleSheet,
 } from 'react-native';
-
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {NativeViewGestureHandler} from 'react-native-gesture-handler';
 
 import ReactionHeaderItem from './reaction_header_item';
 
 export default class ReactionHeader extends PureComponent {
     static propTypes = {
+        forwardedRef: PropTypes.object,
         selected: PropTypes.string.isRequired,
         onSelectReaction: PropTypes.func.isRequired,
         reactions: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
-    }
+    };
 
     handleOnPress = (emoji) => {
         this.props.onSelectReaction(emoji);
@@ -37,32 +39,41 @@ export default class ReactionHeader extends PureComponent {
                 theme={theme}
             />
         ));
-    }
+    };
 
     render() {
-        const {theme} = this.props;
-        const styles = getStyleSheet(theme);
-
         return (
-            <View style={styles.container}>
-                <ScrollView
-                    alwaysBounceHorizontal={false}
-                    horizontal={true}
-                    overScrollMode='never'
-                >
-                    {this.renderReactionHeaderItems()}
-                </ScrollView>
-            </View>
+            <NativeViewGestureHandler
+                ref={this.props.forwardedRef}
+            >
+                <Animated.View style={styles.container}>
+                    <ScrollView
+                        alwaysBounceHorizontal={false}
+                        horizontal={true}
+                        overScrollMode='never'
+                    >
+                        {this.renderReactionHeaderItems()}
+                    </ScrollView>
+                </Animated.View>
+            </NativeViewGestureHandler>
         );
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            backgroundColor: theme.centerChannelBg,
-            height: 37,
-            paddingHorizontal: 0,
-        },
-    };
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: '#FFFFFF',
+        height: 36.5,
+        paddingHorizontal: 0,
+        ...Platform.select({
+            android: {
+                borderTopRightRadius: 2,
+                borderTopLeftRadius: 2,
+            },
+            ios: {
+                borderTopRightRadius: 10,
+                borderTopLeftRadius: 10,
+            },
+        }),
+    },
 });

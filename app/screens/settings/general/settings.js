@@ -33,7 +33,7 @@ class Settings extends PureComponent {
         currentUrl: PropTypes.string.isRequired,
         errors: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
-        joinableTeams: PropTypes.object.isRequired,
+        joinableTeams: PropTypes.array.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object,
     };
@@ -41,12 +41,6 @@ class Settings extends PureComponent {
     constructor(props) {
         super(props);
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
-        }
     }
 
     errorEmailBody = () => {
@@ -180,6 +174,10 @@ class Settings extends PureComponent {
     });
 
     onNavigatorEvent = (event) => {
+        if (event.id === 'willAppear') {
+            setNavigatorStyles(this.props.navigator, this.props.theme);
+        }
+
         if (event.type === 'NavBarButtonPress') {
             if (event.id === 'close-settings') {
                 this.props.navigator.dismissModal({
@@ -217,7 +215,7 @@ class Settings extends PureComponent {
     render() {
         const {config, joinableTeams, theme} = this.props;
         const style = getStyleSheet(theme);
-        const showTeams = Object.keys(joinableTeams).length > 0;
+        const showTeams = joinableTeams.length > 0;
         const showHelp = isValidUrl(config.HelpLink);
         const showArrow = Platform.OS === 'ios';
 

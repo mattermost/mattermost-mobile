@@ -181,12 +181,13 @@ export default class ImagePreview extends PureComponent {
                     ref={(ref) => {
                         this.documents[this.state.index] = ref;
                     }}
+                    backgroundColor='transparent'
                     canDownloadFiles={canDownloadFiles}
                     file={file}
-                    theme={theme}
+                    iconHeight={100}
+                    iconWidth={100}
                     navigator={navigator}
-                    iconHeight={120}
-                    iconWidth={120}
+                    theme={theme}
                     wrapperHeight={200}
                     wrapperWidth={200}
                 />
@@ -198,10 +199,11 @@ export default class ImagePreview extends PureComponent {
         return (
             <View style={[style.flex, style.center]}>
                 <FileAttachmentIcon
+                    backgroundColor='transparent'
                     file={file}
                     theme={this.props.theme}
-                    iconHeight={120}
-                    iconWidth={120}
+                    iconHeight={150}
+                    iconWidth={150}
                     wrapperHeight={200}
                     wrapperWidth={200}
                 />
@@ -336,10 +338,12 @@ export default class ImagePreview extends PureComponent {
 
     renderImageComponent = (imageProps, imageDimensions) => {
         if (imageDimensions) {
+            const {deviceHeight, deviceWidth} = this.props;
             const {height, width} = imageDimensions;
             const {style, ...otherProps} = imageProps;
+            const statusBar = DeviceTypes.IS_IPHONE_X ? 0 : 20;
             const flattenStyle = StyleSheet.flatten(style);
-            const calculatedDimensions = calculateDimensions(height, width, flattenStyle.width, flattenStyle.height);
+            const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
             const imageStyle = {...flattenStyle, ...calculatedDimensions};
 
             return (
@@ -374,12 +378,13 @@ export default class ImagePreview extends PureComponent {
 
     renderVideoPreview = (file) => {
         const {deviceHeight, deviceWidth, theme} = this.props;
+        const statusBar = DeviceTypes.IS_IPHONE_X ? 0 : 20;
 
         return (
             <VideoPreview
                 file={file}
                 onFullScreen={this.setHeaderAndFooterVisible}
-                deviceHeight={deviceHeight}
+                deviceHeight={deviceHeight - statusBar}
                 deviceWidth={deviceWidth}
                 theme={theme}
             />

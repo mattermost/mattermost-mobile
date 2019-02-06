@@ -119,6 +119,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             marginHorizontal: 10,
+            overflow: 'hidden',
         },
         profileContainer: {
             flexDirection: 'row',

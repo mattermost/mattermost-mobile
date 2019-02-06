@@ -29,8 +29,8 @@ export function compareReactions(a, b) {
     return a.name.localeCompare(b.name);
 }
 
-export function getReactionsByName(reactions = []) {
-    return reactions.reduce((acc, reaction) => {
+export function getReactionsByName(reactions = {}) {
+    return Object.values(reactions).reduce((acc, reaction) => {
         const byName = acc[reaction.emoji_name] || [];
         acc[reaction.emoji_name] = [...byName, reaction];
 
@@ -62,6 +62,6 @@ export function getSortedReactionsForHeader(reactionsByName = {}) {
     return [{name: ALL_EMOJIS, count: totalCount}, ...sortedReactionsForHeader];
 }
 
-export function getUniqueUserIds(reactions = []) {
-    return reactions.map((reaction) => reaction.user_id).filter((id, index, arr) => arr.indexOf(id) === index);
+export function getUniqueUserIds(reactions = {}) {
+    return Object.values(reactions).map((reaction) => reaction.user_id).filter((id, index, arr) => arr.indexOf(id) === index);
 }

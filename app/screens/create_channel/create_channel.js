@@ -60,7 +60,7 @@ export default class CreateChannel extends PureComponent {
 
         this.rightButton.title = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
 
-        if (props.channelType === General.PRIVATE_CHANNEL) {
+        if (props.closeButton) {
             this.left = {...this.leftButton, icon: props.closeButton};
         }
 
@@ -110,7 +110,6 @@ export default class CreateChannel extends PureComponent {
     }
 
     close = (goBack = false) => {
-        EventEmitter.emit('closing-create-channel', false);
         if (goBack) {
             this.props.navigator.pop({animated: true});
         } else {
@@ -154,7 +153,7 @@ export default class CreateChannel extends PureComponent {
         if (event.type === 'NavBarButtonPress') {
             switch (event.id) {
             case 'close-new-channel':
-                this.close(this.props.channelType === General.OPEN_CHANNEL);
+                this.close(!this.props.closeButton);
                 break;
             case 'create-channel':
                 this.onCreateChannel();

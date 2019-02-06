@@ -1,74 +1,112 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CustomList should match snapshot 1`] = `
-<Component
+exports[`CustomList should match snapshot with FlatList 1`] = `
+<FlatList
+  ItemSeparatorComponent={[Function]}
+  ListEmptyComponent={[Function]}
+  ListFooterComponent={[Function]}
+  contentContainerStyle={
+    Object {
+      "flexGrow": 1,
+    }
+  }
+  data={
+    Array [
+      Object {
+        "username": "username_1",
+      },
+      Object {
+        "username": "username_2",
+      },
+    ]
+  }
+  disableVirtualization={false}
+  horizontal={false}
+  initialNumToRender={15}
+  keyExtractor={[Function]}
+  keyboardDismissMode="interactive"
+  keyboardShouldPersistTaps="always"
+  maxToRenderPerBatch={16}
+  numColumns={1}
+  onEndReachedThreshold={2}
+  onLayout={[Function]}
+  onScroll={[Function]}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  scrollEventThrottle={60}
+  stickySectionHeadersEnabled={true}
   style={
     Object {
+      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
->
-  <ListViewMock
-    dataSource={
-      ListViewDataSource {
-        "items": 2,
-      }
+  updateCellsBatchingPeriod={50}
+  windowSize={21}
+/>
+`;
+
+exports[`CustomList should match snapshot with SectionList 1`] = `
+<SectionList
+  ItemSeparatorComponent={[Function]}
+  ListEmptyComponent={[Function]}
+  ListFooterComponent={[Function]}
+  contentContainerStyle={
+    Object {
+      "flexGrow": 1,
     }
-    enableEmptySections={true}
-    initialListSize={0}
-    onEndReached={[Function]}
-    onEndReachedThreshold={0}
-    pageSize={0}
-    renderFooter={[Function]}
-    renderRow={[Function]}
-    renderScrollComponent={[Function]}
-    renderSectionHeader={[Function]}
-    renderSeparator={[Function]}
-    scrollRenderAheadDistance={0}
-    style={
+  }
+  data={Array []}
+  disableVirtualization={false}
+  extraData={false}
+  horizontal={false}
+  initialNumToRender={15}
+  keyExtractor={[Function]}
+  keyboardDismissMode="interactive"
+  keyboardShouldPersistTaps="always"
+  maxToRenderPerBatch={16}
+  onEndReachedThreshold={2}
+  onLayout={[Function]}
+  onScroll={[Function]}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  renderSectionHeader={[Function]}
+  scrollEventThrottle={60}
+  sections={
+    Array [
       Object {
-        "backgroundColor": "#ffffff",
-        "flex": 1,
-      }
+        "username": "username_1",
+      },
+      Object {
+        "username": "username_2",
+      },
+    ]
+  }
+  stickySectionHeadersEnabled={false}
+  style={
+    Object {
+      "backgroundColor": "#ffffff",
+      "flex": 1,
     }
-  />
-</Component>
+  }
+  updateCellsBatchingPeriod={50}
+  windowSize={21}
+/>
 `;
 
 exports[`CustomList should match snapshot, renderFooter 1`] = `null`;
 
-exports[`CustomList should match snapshot, renderFooter 2`] = `
-<Component
-  style={
-    Object {
-      "alignItems": "center",
-      "backgroundColor": "#ffffff",
-      "height": 70,
-      "justifyContent": "center",
-    }
-  }
->
-  <FormattedText
-    defaultMessage="Loading Members..."
-    id="mobile.loading_members"
-    style={
-      Object {
-        "color": "rgba(61,60,64,0.6)",
-      }
-    }
-  />
-</Component>
-`;
+exports[`CustomList should match snapshot, renderFooter 2`] = `<View />`;
 
 exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
-<Component
+<View
   style={
     Object {
       "backgroundColor": "#ffffff",
     }
   }
 >
-  <Component
+  <View
     style={
       Object {
         "backgroundColor": "rgba(61,60,64,0.07)",
@@ -77,7 +115,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
       }
     }
   >
-    <Component
+    <Text
       style={
         Object {
           "color": "#3d3c40",
@@ -86,13 +124,13 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
       }
     >
       section_id
-    </Component>
-  </Component>
-</Component>
+    </Text>
+  </View>
+</View>
 `;
 
 exports[`CustomList should match snapshot, renderSeparator 1`] = `
-<Component
+<View
   style={
     Object {
       "backgroundColor": "rgba(61,60,64,0.1)",

@@ -5,12 +5,13 @@ import DeviceTypes from './device';
 import ListTypes from './list';
 import NavigationTypes from './navigation';
 import PermissionTypes from './permissions';
-import ViewTypes from './view';
+import ViewTypes, {UpgradeTypes} from './view';
 
 export {
     DeviceTypes,
     ListTypes,
     NavigationTypes,
     PermissionTypes,
+    UpgradeTypes,
     ViewTypes,
 };

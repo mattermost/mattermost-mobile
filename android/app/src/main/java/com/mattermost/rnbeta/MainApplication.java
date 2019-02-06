@@ -1,11 +1,15 @@
 package com.mattermost.rnbeta;
 
 import com.mattermost.share.SharePackage;
+import com.mattermost.share.RealPathUtil;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.os.Bundle;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import com.reactnativedocumentpicker.ReactNativeDocumentPicker;
 import com.oblador.keychain.KeychainPackage;
@@ -19,6 +23,8 @@ import com.RNFetchBlob.RNFetchBlobPackage;
 import com.gantix.JailMonkey.JailMonkeyPackage;
 import io.tradle.react.LocalAuthPackage;
 import com.github.godness84.RNRecyclerViewList.RNRecyclerviewListPackage;
+import com.reactnativecommunity.webview.RNCWebViewPackage;
+import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
@@ -33,14 +39,15 @@ import com.reactnativenavigation.NavigationApplication;
 import com.wix.reactnativenotifications.RNNotificationsPackage;
 import com.wix.reactnativenotifications.core.notification.INotificationsApplication;
 import com.wix.reactnativenotifications.core.notification.IPushNotification;
+import com.wix.reactnativenotifications.core.notificationdrawer.IPushNotificationsDrawer;
+import com.wix.reactnativenotifications.core.notificationdrawer.INotificationsDrawerApplication;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
 
-import java.util.Arrays;
-import java.util.List;
+import android.util.Log;
 
-public class MainApplication extends NavigationApplication implements INotificationsApplication {
+public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
   public Boolean sharedExtensionIsOpened = false;
   public Boolean replyFromPushNotification = false;
@@ -77,7 +84,9 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SharePackage(this),
             new KeychainPackage(),
             new InitializationPackage(this),
-            new RNRecyclerviewListPackage()
+            new RNRecyclerviewListPackage(),
+            new RNCWebViewPackage(),
+            new RNGestureHandlerPackage()
     );
   }
 
@@ -90,6 +99,12 @@ public class MainApplication extends NavigationApplication implements INotificat
   public void onCreate() {
     super.onCreate();
     instance = this;
+
+    // Delete any previous temp files created by the app
+    File tempFolder = new File(getApplicationContext().getCacheDir(), "mmShare");
+    RealPathUtil.deleteTempFiles(tempFolder);
+    Log.i("ReactNative", "Cleaning temp cache " + tempFolder.getAbsolutePath());
+
     // Create an object of the custom facade impl
     notificationsLifecycleFacade = NotificationsLifecycleFacade.getInstance();
     // Attach it to react-native-navigation
@@ -114,5 +129,10 @@ public class MainApplication extends NavigationApplication implements INotificat
             defaultAppLaunchHelper,
             new JsIOHelper()
     );
+  }
+
+  @Override
+  public IPushNotificationsDrawer getPushNotificationsDrawer(Context context, AppLaunchHelper defaultAppLaunchHelper) {
+    return new CustomPushNotificationDrawer(context, defaultAppLaunchHelper);
   }
 }

@@ -61,8 +61,6 @@ export default class TeamsListItem extends React.PureComponent {
                 style={styles.badge}
                 countStyle={styles.mention}
                 count={mentionCount}
-                minHeight={20}
-                minWidth={20}
             />
         );
 
@@ -152,7 +150,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             padding: 3,
             position: 'absolute',
             left: 45,
-            top: -7.5,
+            top: -2,
         },
         mention: {
             color: theme.mentionColor,

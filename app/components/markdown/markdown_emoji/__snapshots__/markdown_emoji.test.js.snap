@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MarkdownEmoji should match snapshot 1`] = `
+<Unknown
+  context={Array []}
+  first={true}
+  last={true}
+  literal={null}
+  nodeKey="5"
+>
+  <Unknown
+    context={
+      Array [
+        "paragraph",
+      ]
+    }
+    emojiName="smile"
+    literal=":smile:"
+    nodeKey="4"
+  >
+    <Unknown
+      context={
+        Array [
+          "paragraph",
+          "emoji",
+        ]
+      }
+      literal=":smile:"
+      nodeKey="3"
+    />
+  </Unknown>
+</Unknown>
+`;

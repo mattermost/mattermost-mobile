@@ -13,6 +13,7 @@ import DateHeader from './date_header.js';
 describe('DateHeader', () => {
     const baseProps = {
         theme: Preferences.THEMES.default,
+        timeZone: null,
     };
 
     describe('component should match snapshot', () => {
@@ -34,6 +35,21 @@ describe('DateHeader', () => {
             const props = {
                 ...baseProps,
                 dateLineString: 'date-1531152392-index-2',
+                index: 2,
+            };
+            const wrapper = shallow(
+                <DateHeader {...props}/>,
+                {context: {intl: {formatMessage: jest.fn()}}},
+            );
+
+            expect(wrapper.getElement()).toMatchSnapshot();
+        });
+
+        it('when timezone is set', () => {
+            const props = {
+                ...baseProps,
+                dateLineString: 'date-1531152392-index-2',
+                timeZone: 'America/New_York',
                 index: 2,
             };
             const wrapper = shallow(

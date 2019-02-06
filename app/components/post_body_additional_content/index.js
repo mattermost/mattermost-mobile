@@ -30,6 +30,16 @@ function makeGetFirstLink() {
     };
 }
 
+function getOpenGraphData(metadata, url) {
+    if (!metadata || !metadata.embeds) {
+        return null;
+    }
+
+    return metadata.embeds.find((embed) => {
+        return embed.type === 'opengraph' && embed.url === url ? embed.data : null;
+    });
+}
+
 function makeMapStateToProps() {
     const getFirstLink = makeGetFirstLink();
 
@@ -42,11 +52,17 @@ function makeMapStateToProps() {
         const previewsEnabled = getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, `${ViewTypes.FEATURE_TOGGLE_PREFIX}${ViewTypes.EMBED_PREVIEW}`) ||
             getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true);
 
+        let openGraphData = getOpenGraphMetadataForUrl(state, link);
+        if (!openGraphData) {
+            const data = getOpenGraphData(ownProps.metadata, link);
+            openGraphData = data?.data;
+        }
+
         return {
             ...getDimensions(state),
             googleDeveloperKey: config.GoogleDeveloperKey,
             link,
-            openGraphData: getOpenGraphMetadataForUrl(state, link),
+            openGraphData,
             showLinkPreviews: previewsEnabled && config.EnableLinkPreviews === 'true',
             theme: getTheme(state),
         };
