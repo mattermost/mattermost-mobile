@@ -18,7 +18,6 @@ import {Client4} from 'mattermost-redux/client';
 import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
-import PushNotifications from 'app/push_notifications';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
 
@@ -104,22 +103,11 @@ class SSO extends PureComponent {
         });
     };
 
-    goToLoadTeam = (expiresAt) => {
-        const {intl, navigator} = this.props;
+    goToChannel = () => {
+        const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 
-        if (expiresAt) {
-            PushNotifications.localNotificationSchedule({
-                date: new Date(expiresAt),
-                message: intl.formatMessage({
-                    id: 'mobile.session_expired',
-                    defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
-                }),
-                userInfo: {
-                    localNotification: true,
-                },
-            });
-        }
+        this.scheduleSessionExpiredNotification();
 
         navigator.resetTo({
             screen: 'Channel',
@@ -182,7 +170,6 @@ class SSO extends PureComponent {
                 if (token) {
                     this.setState({renderWebView: false});
                     const {
-                        getSession,
                         handleSuccessfulLogin,
                         setStoreFromLocalData,
                     } = this.props.actions;
@@ -190,8 +177,7 @@ class SSO extends PureComponent {
                     Client4.setToken(token);
                     setStoreFromLocalData({url: Client4.getUrl(), token}).
                         then(handleSuccessfulLogin).
-                        then(getSession).
-                        then(this.goToLoadTeam).
+                        then(this.goToChannel).
                         catch(this.onLoadEndError);
                 } else if (this.webView && !this.state.error) {
                     this.webView.injectJavaScript(postMessageJS);
@@ -203,6 +189,16 @@ class SSO extends PureComponent {
     onLoadEndError = (e) => {
         console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
         this.setState({error: e.message});
+    };
+
+    scheduleSessionExpiredNotification = () => {
+        const {actions, intl} = this.props;
+        const message = intl.formatMessage({
+            id: 'mobile.session_expired',
+            defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
+        });
+
+        actions.getSession(message);
     };
 
     renderLoading = () => {
