@@ -5,11 +5,12 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {ChannelTypes, UserTypes} from 'mattermost-redux/action_types';
+import {UserTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     markChannelAsRead,
     leaveChannel as serviceLeaveChannel, markChannelAsViewed,
+    selectChannel,
 } from 'mattermost-redux/actions/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
@@ -18,7 +19,6 @@ import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
 import {getCurrentChannelId, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
-import {getLastPostPerChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
 import {
@@ -261,7 +261,7 @@ export function loadThreadIfNecessary(rootId, channelId) {
     };
 }
 
-export function selectInitialChannel(teamId, skipChannelViewedAt = false) {
+export function selectInitialChannel(teamId) {
     return (dispatch, getState) => {
         const state = getState();
         const {channels, myMembers} = state.entities.channels;
@@ -282,7 +282,7 @@ export function selectInitialChannel(teamId, skipChannelViewedAt = false) {
             lastChannel &&
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
         ) {
-            dispatch(handleSelectChannel(lastChannelId, skipChannelViewedAt));
+            dispatch(handleSelectChannel(lastChannelId));
             return;
         }
 
@@ -346,28 +346,18 @@ export function selectDefaultChannel(teamId) {
     };
 }
 
-export function handleSelectChannel(channelId, skipChannelViewedAt = false) {
+export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const state = getState();
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
         const sameChannel = channelId === currentChannelId;
-        let member = getMyChannelMember(state, channelId);
-
-        if (skipChannelViewedAt) {
-            const lastPost = getLastPostPerChannel(state, channelId);
-            member = {
-                last_viewed_at: lastPost[channelId].create_at,
-            };
-        }
+        const member = getMyChannelMember(state, channelId);
 
         dispatch(setLoadMorePostsVisible(true));
         dispatch(loadPostsIfNecessaryWithRetry(channelId));
         dispatch(batchActions([
-            {
-                type: ChannelTypes.SELECT_CHANNEL,
-                data: channelId,
-            },
+            selectChannel(channelId),
             {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
                 data: channelId,

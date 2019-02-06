@@ -91,7 +91,7 @@ const initializeModules = () => {
     EventEmitter.on(NavigationTypes.RESTART_APP, restartApp);
     EventEmitter.on(General.SERVER_VERSION_CHANGED, handleServerVersionChanged);
     EventEmitter.on(General.CONFIG_CHANGED, handleConfigChanged);
-    EventEmitter.on(General.DEFAULT_CHANNEL, handleSelectDefaultChannel);
+    EventEmitter.on(General.SWITCH_TO_DEFAULT_CHANNEL, handleSwithToDefaultChannel);
     Dimensions.addEventListener('change', handleOrientationChange);
     mattermostManaged.addEventListener('managedConfigDidChange', () => {
         handleManagedConfig(true);
@@ -337,7 +337,7 @@ const handleAuthentication = async (vendor) => {
     return true;
 };
 
-const handleSelectDefaultChannel = (teamId) => {
+const handleSwithToDefaultChannel = (teamId) => {
     store.dispatch(selectDefaultChannel(teamId));
 };
 

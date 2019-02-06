@@ -80,24 +80,29 @@ const onPushNotification = async (deviceNotification) => {
     if (data.type === 'clear') {
         dispatch(markChannelAsRead(data.channel_id, null, false));
         dispatch(markChannelAsViewed(data.channel_id, null));
-    } else if (foreground) {
-        EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
-    } else if (userInteraction && !notification.localNotification) {
-        EventEmitter.emit('close_channel_drawer');
-        if (getState().views.root.hydrationComplete) {
-            setTimeout(() => {
-                loadFromNotification(notification);
-            }, 0);
-        } else {
-            const waitForHydration = () => {
-                if (getState().views.root.hydrationComplete && !stopLoadingNotification) {
-                    stopLoadingNotification = true;
-                    unsubscribeFromStore();
-                    loadFromNotification(notification);
-                }
-            };
+    } else {
+        // get the posts for the channel as soon as possible
+        retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
 
-            unsubscribeFromStore = store.subscribe(waitForHydration);
+        if (foreground) {
+            EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
+        } else if (userInteraction && !notification.localNotification) {
+            EventEmitter.emit('close_channel_drawer');
+            if (getState().views.root.hydrationComplete) {
+                setTimeout(() => {
+                    loadFromNotification(notification);
+                }, 0);
+            } else {
+                const waitForHydration = () => {
+                    if (getState().views.root.hydrationComplete && !stopLoadingNotification) {
+                        stopLoadingNotification = true;
+                        unsubscribeFromStore();
+                        loadFromNotification(notification);
+                    }
+                };
+
+                unsubscribeFromStore = store.subscribe(waitForHydration);
+            }
         }
     }
 };

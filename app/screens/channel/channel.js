@@ -249,9 +249,11 @@ export default class Channel extends PureComponent {
 
         loadChannelsIfNecessary(teamId).then(() => {
             loadProfilesAndTeamMembersForDMSidebar(teamId);
-            selectInitialChannel(teamId, app.startAppFromPushNotification);
+
             if (app.startAppFromPushNotification) {
                 app.setStartAppFromPushNotification(false);
+            } else {
+                selectInitialChannel(teamId);
             }
         });
     };
