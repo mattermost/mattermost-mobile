@@ -65,25 +65,21 @@ describe('ChannelLink', () => {
     });
 
     test('should call props.actions and onChannelLinkPress on handlePress', () => {
-        const actions = {...baseProps.actions, joinChannel: jest.fn()};
         const wrapper = shallow(
-            <ChannelLink
-                {...baseProps}
-                actions={actions}
-            />,
+            <ChannelLink {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 
         const channel = channelsByName.firstChannel;
         wrapper.instance().handlePress();
-        expect(actions.handleSelectChannel).toHaveBeenCalledTimes(1);
-        expect(actions.handleSelectChannel).toBeCalledWith(channel.id);
-        expect(actions.setChannelDisplayName).toHaveBeenCalledTimes(1);
-        expect(actions.setChannelDisplayName).toBeCalledWith(channel.display_name);
+        expect(baseProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.handleSelectChannel).toBeCalledWith(channel.id);
+        expect(baseProps.actions.setChannelDisplayName).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.setChannelDisplayName).toBeCalledWith(channel.display_name);
         expect(baseProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
         expect(baseProps.onChannelLinkPress).toBeCalledWith(channel);
 
-        expect(actions.joinChannel).not.toBeCalled();
+        expect(baseProps.actions.joinChannel).not.toBeCalled();
     });
 
     test('should call props.actions.joinChannel on handlePress when user is not member of such channel', async () => {
@@ -105,6 +101,6 @@ describe('ChannelLink', () => {
 
         await wrapper.instance().handlePress();
         expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(1);
-        expect(newProps.actions.joinChannel).toBeCalledWith('current_user_id', 'current_team_id', null, 'thirdChannel');
+        expect(newProps.actions.joinChannel).toBeCalledWith('current_user_id', 'current_team_id', null, newChannelName);
     });
 });

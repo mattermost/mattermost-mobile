@@ -51,25 +51,23 @@ export default class ChannelLink extends React.PureComponent {
     }
 
     handlePress = async () => {
-        const {channel: channelState} = this.state;
-        let channel;
-        if (!channelState.id && channelState.display_name) {
+        let {channel} = this.state;
+
+        if (!channel.id && channel.display_name) {
             const {actions, currentTeamId, currentUserId} = this.props;
-            const result = await actions.joinChannel(currentUserId, currentTeamId, null, channelState.display_name);
+            const result = await actions.joinChannel(currentUserId, currentTeamId, null, this.props.channelName);
 
             if (result.error || !result.data || !result.data.channel) {
                 const joinFailedMessage = {
                     id: t('mobile.join_channel.error'),
                     defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
                 };
-                alertErrorWithFallback(this.context.intl, result.error, joinFailedMessage, channelState.display_name);
+                alertErrorWithFallback(this.context.intl, result.error, joinFailedMessage, channel.display_name);
             }
 
             if (result?.data?.channel) {
                 channel = result.data.channel;
             }
-        } else {
-            channel = channelState;
         }
 
         if (channel) {
@@ -90,9 +88,7 @@ export default class ChannelLink extends React.PureComponent {
         }
 
         let suffix;
-        if (!channel.name && !channel.id && channel.display_name) {
-            suffix = this.props.channelName.substring(channel.display_name.length);
-        } else {
+        if (channel.name) {
             suffix = this.props.channelName.substring(channel.name.length);
         }
 
