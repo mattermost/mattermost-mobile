@@ -21,7 +21,6 @@ function makeMapStateToProps() {
             canDownloadFiles: canDownloadFilesOnMobile(state),
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),
-            filesForPostRequest: state.requests.files.getFilesForPost,
         };
     };
 }

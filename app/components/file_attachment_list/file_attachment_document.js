@@ -66,13 +66,14 @@ export default class FileAttachmentDocument extends PureComponent {
     state = {
         didCancel: false,
         downloading: false,
+        preview: false,
         progress: 0,
     };
 
     componentDidMount() {
         this.mounted = true;
         this.eventEmitter = new NativeEventEmitter(NativeModules.RNReactNativeDocViewer);
-        this.eventEmitter.addListener('DoneButtonEvent', () => this.setStatusBarColor());
+        this.eventEmitter.addListener('DoneButtonEvent', this.onDonePreviewingFile);
     }
 
     componentWillUnmount() {
@@ -223,15 +224,21 @@ export default class FileAttachmentDocument extends PureComponent {
         }, delay);
     };
 
+    onDonePreviewingFile = () => {
+        this.setState({preview: false});
+        this.setStatusBarColor();
+    };
+
     openDocument = (file, delay = 2000) => {
         // The animation for the progress circle takes about 2 seconds to finish
         // therefore we are delaying the opening of the document to have the UI
         // shown nicely and smooth
         setTimeout(() => {
-            if (!this.state.didCancel && this.mounted) {
+            if (!this.state.didCancel && !this.state.preview && this.mounted) {
                 const {data} = file;
                 const prefix = Platform.OS === 'android' ? 'file:/' : '';
                 const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
+                this.setState({preview: true});
                 this.setStatusBarColor('dark-content');
                 OpenFile.openDoc([{
                     url: `${prefix}${path}`,
@@ -260,12 +267,18 @@ export default class FileAttachmentDocument extends PureComponent {
                                 }),
                             }]
                         );
-                        this.setStatusBarColor();
+                        this.onDonePreviewingFile();
                         RNFetchBlob.fs.unlink(path);
                     }
 
                     this.setState({downloading: false, progress: 0});
                 });
+
+                // Android does not trigger the event for DoneButtonEvent
+                // so we'll wait 4 seconds before enabling the tap for open the preview again
+                if (Platform.OS === 'android') {
+                    setTimeout(this.onDonePreviewingFile, 4000);
+                }
             }
         }, delay);
     };

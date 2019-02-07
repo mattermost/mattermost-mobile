@@ -60,6 +60,10 @@ describe('hasEmojisOnly with named emojis', () => {
         name: 'Mixed valid and invalid named emojis',
         message: '   :smile:  invalid  :heart:   ',
         expected: {isEmojiOnly: false, shouldRenderJumboEmoji: false},
+    }, {
+        name: 'This should render a codeblock instead',
+        message: '    :D',
+        expected: {isEmojiOnly: false, shouldRenderJumboEmoji: false},
     }];
 
     const customEmojis = new Map([['valid_custom', 0]]);
@@ -80,6 +84,10 @@ describe('hasEmojisOnly with unicode emojis', () => {
         message: '🙌',
         expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
     }, {
+        name: 'Unicode emoji',
+        message: '🤟',
+        expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
+    }, {
         name: 'Unicode emojis',
         message: '🙌 👏',
         expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
@@ -88,8 +96,16 @@ describe('hasEmojisOnly with unicode emojis', () => {
         message: '🙌👏',
         expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
     }, {
+        name: 'Unicode emojis without whitespace in between',
+        message: '🙌🤟',
+        expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
+    }, {
         name: 'Unicode emojis with white spaces',
         message: '  😣   😖  ',
+        expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
+    }, {
+        name: 'Unicode emojis with white spaces',
+        message: '  😣   🤟  ',
         expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
     }, {
         name: '4 unicode emojis',
@@ -194,12 +210,24 @@ describe('hasEmojisOnly with empty and mixed emojis', () => {
         message: '👍 :)',
         expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
     }, {
+        name: 'with unicode emoji and emoticon',
+        message: '🤟 :)',
+        expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
+    }, {
         name: 'with named and unicode emojis',
         message: ':smile: 👍',
         expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
     }, {
+        name: 'with named and unicode emojis',
+        message: ':smile: 🤟',
+        expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
+    }, {
         name: 'with named & unicode emojis and emoticon',
         message: ':smile: 👍 :)',
+        expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
+    }, {
+        name: 'with named & unicode emojis and emoticon',
+        message: ':smile: 🤟 :)',
         expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
     }, {
         name: 'with 4 named & unicode emojis and emoticon',

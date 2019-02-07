@@ -9,11 +9,9 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
-import DeviceTypes from 'app/constants/device';
 
+import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
 import PostOption from './post_option';
-
-const OPTION_HEIGHT = 50;
 
 export default class PostOptions extends PureComponent {
     static propTypes = {
@@ -29,6 +27,7 @@ export default class PostOptions extends PureComponent {
         additionalOption: PropTypes.object,
         canAddReaction: PropTypes.bool,
         canDelete: PropTypes.bool,
+        canPin: PropTypes.bool,
         canEdit: PropTypes.bool,
         canEditUntil: PropTypes.number.isRequired,
         channelIsReadOnly: PropTypes.bool,
@@ -210,12 +209,18 @@ export default class PostOptions extends PureComponent {
         const actions = [
             this.getEditOption(),
             this.getFlagOption(),
-            this.getPinOption(),
             this.getAddReactionOption(),
             this.getCopyPermalink(),
             this.getCopyText(),
-            this.getDeleteOption(),
         ];
+
+        const {canDelete, canPin} = this.props;
+        if (canPin) {
+            actions.splice(2, 0, this.getPinOption());
+        }
+        if (canDelete) {
+            actions.push(this.getDeleteOption());
+        }
 
         return actions.filter((a) => a !== null);
     };
@@ -224,12 +229,18 @@ export default class PostOptions extends PureComponent {
         const actions = [
             this.getFlagOption(),
             this.getAddReactionOption(),
-            this.getPinOption(),
             this.getCopyPermalink(),
             this.getCopyText(),
             this.getEditOption(),
-            this.getDeleteOption(),
         ];
+
+        const {canDelete, canPin} = this.props;
+        if (canPin) {
+            actions.splice(2, 0, this.getPinOption());
+        }
+        if (canDelete) {
+            actions.push(this.getDeleteOption());
+        }
 
         return actions.filter((a) => a !== null);
     };
@@ -388,14 +399,14 @@ export default class PostOptions extends PureComponent {
         const {deviceHeight} = this.props;
         const options = this.getPostOptions();
         const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT);
-        const initialPosition = DeviceTypes.IS_IPHONE_X ? 280 : 305;
+        const initialPosition = getInitialPosition(deviceHeight, marginFromTop);
 
         return (
             <View style={style.container}>
                 <SlideUpPanel
                     allowStayMiddle={false}
                     ref={this.refSlideUpPanel}
-                    marginFromTop={marginFromTop}
+                    marginFromTop={marginFromTop > 0 ? marginFromTop : 0}
                     onRequestClose={this.close}
                     initialPosition={initialPosition}
                 >

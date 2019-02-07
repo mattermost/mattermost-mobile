@@ -263,7 +263,8 @@ export default class Post extends PureComponent {
 
         const style = getStyleSheet(theme);
         const isReplyPost = this.isReplyPost();
-        const onUsernamePress = Config.ExperimentalUsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile;
+        const onUsernamePress =
+            Config.ExperimentalUsernamePressIsMention && !channelIsReadOnly ? this.autofillUserMention : this.viewUserProfile;
         const mergeMessage = consecutivePost && !hasComments;
         const highlightFlagged = isFlagged && !skipFlaggedHeader;
         const hightlightPinned = post.is_pinned && !skipPinnedHeader;

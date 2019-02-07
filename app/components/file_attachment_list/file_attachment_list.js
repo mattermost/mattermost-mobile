@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 
 import {Client4} from 'mattermost-redux/client';
-import {RequestStatus} from 'mattermost-redux/constants';
 
 import {isDocument, isGif, isVideo} from 'app/utils/file';
 import {getCacheFile} from 'app/utils/image_cache_manager';
@@ -33,7 +32,10 @@ export default class FileAttachmentList extends Component {
         onLongPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        filesForPostRequest: PropTypes.object.isRequired,
+    };
+
+    static defaultProps = {
+        files: [],
     };
 
     constructor(props) {
@@ -42,15 +44,19 @@ export default class FileAttachmentList extends Component {
         this.items = [];
         this.previewItems = [];
 
+        this.state = {
+            loadingFiles: props.files.length === 0,
+        };
+
         this.buildGalleryFiles(props).then((results) => {
             this.galleryFiles = results;
         });
     }
 
     componentDidMount() {
-        const {files, postId} = this.props;
-        if (!files || !files.length) {
-            this.props.actions.loadFilesForPostIfNecessary(postId);
+        const {files} = this.props;
+        if (files.length === 0) {
+            this.loadFilesForPost();
         }
     }
 
@@ -60,15 +66,19 @@ export default class FileAttachmentList extends Component {
                 this.galleryFiles = results;
             });
         }
+        if (!this.state.loadingFiles && nextProps.files.length === 0) {
+            this.setState({
+                loadingFiles: true,
+            });
+            this.loadFilesForPost();
+        }
     }
 
-    componentDidUpdate() {
-        const {fileIds, files, filesForPostRequest, postId} = this.props;
-
-        // Fixes an issue where files weren't loading with optimistic post
-        if (!files.length && fileIds.length > 0 && filesForPostRequest.status !== RequestStatus.STARTED) {
-            this.props.actions.loadFilesForPostIfNecessary(postId);
-        }
+    loadFilesForPost = async () => {
+        await this.props.actions.loadFilesForPostIfNecessary(this.props.postId);
+        this.setState({
+            loadingFiles: false,
+        });
     }
 
     buildGalleryFiles = async (props) => {

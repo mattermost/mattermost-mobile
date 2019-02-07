@@ -62,13 +62,12 @@ export default class SettingsItem extends PureComponent {
                 style={textStyle}
             />
         );
-    }
+    };
 
     render() {
         const {
             iconName,
             iconType,
-            isDestructor,
             onPress,
             rightComponent,
             separator,
@@ -85,10 +84,6 @@ export default class SettingsItem extends PureComponent {
         let icon;
         if (iconType && iconName) {
             const iconStyle = [style.icon];
-            if (isDestructor) {
-                iconStyle.push(style.destructor);
-            }
-
             icon = (
                 <VectorIcon
                     name={iconName}

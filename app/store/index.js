@@ -8,12 +8,14 @@ import {createTransform, persistStore} from 'redux-persist';
 
 import {ErrorTypes, GeneralTypes} from 'mattermost-redux/action_types';
 import {General, RequestStatus} from 'mattermost-redux/constants';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import configureStore from 'mattermost-redux/store';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
 import {throttle} from 'app/utils/general';
+import {getSiteUrl, setSiteUrl} from 'app/utils/image_cache_manager';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
 import mattermostBucket from 'app/mattermost_bucket';
@@ -187,6 +189,12 @@ export default function configureAppStore(initialState) {
             // check to see if the logout request was successful
             store.subscribe(async () => {
                 const state = store.getState();
+                const config = getConfig(state);
+
+                if (getSiteUrl() !== config?.SiteURL) {
+                    setSiteUrl(config.SiteURL);
+                }
+
                 if ((state.requests.users.logout.status === RequestStatus.SUCCESS || state.requests.users.logout.status === RequestStatus.FAILURE) && !purging) {
                     purging = true;
 
@@ -211,6 +219,7 @@ export default function configureAppStore(initialState) {
                     mattermostBucket.removePreference('cert', Config.AppGroupId);
                     mattermostBucket.removePreference('emm', Config.AppGroupId);
                     mattermostBucket.removeFile('entities', Config.AppGroupId);
+                    setSiteUrl(null);
 
                     setTimeout(() => {
                         purging = false;

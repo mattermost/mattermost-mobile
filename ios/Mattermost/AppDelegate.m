@@ -115,7 +115,7 @@ NSString* const NotificationClearAction = @"clear";
     [self cleanNotificationsFromChannel:channelId andUpdateBadge:NO];
   } else if (state == UIApplicationStateInactive) {
     // When the notification is opened
-    [self cleanNotificationsFromChannel:channelId andUpdateBadge:YES];
+    [self cleanNotificationsFromChannel:channelId andUpdateBadge:NO];
   }
 
   [RNNotifications didReceiveRemoteNotification:userInfo];
