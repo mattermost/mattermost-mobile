@@ -11,6 +11,7 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {ViewTypes} from 'app/constants';
 import {app} from 'app/mattermost';
+import PushNotifications from 'app/push_notifications';
 import {getDeviceTimezone, isTimezoneEnabled} from 'app/utils/timezone';
 
 export function handleLoginIdChanged(loginId) {
@@ -67,31 +68,46 @@ export function handleSuccessfulLogin() {
     };
 }
 
-export function getSession() {
-    return async (dispatch, getState) => {
+export function scheduleExpiredNotification(intl) {
+    return (dispatch, getState) => {
         const state = getState();
         const {currentUserId} = state.entities.users;
         const {deviceToken} = state.entities.general;
+        const message = intl.formatMessage({
+            id: 'mobile.session_expired',
+            defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
+        });
 
-        if (!currentUserId || !deviceToken) {
-            return 0;
-        }
+        // Once the user logs in we are going to wait for 10 seconds
+        // before retrieving the session that belongs to this device
+        // to ensure that we get the actual session without issues
+        // then we can schedule the local notification for the session expired
+        setTimeout(async () => {
+            let sessions;
+            try {
+                sessions = await dispatch(getSessions(currentUserId));
+            } catch (e) {
+                console.warn('Failed to get current session', e); // eslint-disable-line no-console
+                return;
+            }
 
-        let sessions;
-        try {
-            sessions = await dispatch(getSessions(currentUserId));
-        } catch (e) {
-            console.warn('Failed to get current session', e); // eslint-disable-line no-console
-            return 0;
-        }
+            if (!Array.isArray(sessions.data)) {
+                return;
+            }
 
-        if (!Array.isArray(sessions.data)) {
-            return 0;
-        }
+            const session = sessions.data.find((s) => s.device_id === deviceToken);
+            const expiresAt = session?.expires_at || 0; //eslint-disable-line camelcase
 
-        const session = sessions.data.find((s) => s.device_id === deviceToken);
-
-        return session && session.expires_at ? session.expires_at : 0;
+            if (expiresAt) {
+                PushNotifications.localNotificationSchedule({
+                    date: new Date(expiresAt),
+                    message,
+                    userInfo: {
+                        localNotification: true,
+                    },
+                });
+            }
+        }, 10000);
     };
 }
 
@@ -99,5 +115,5 @@ export default {
     handleLoginIdChanged,
     handlePasswordChanged,
     handleSuccessfulLogin,
-    getSession,
+    scheduleExpiredNotification,
 };

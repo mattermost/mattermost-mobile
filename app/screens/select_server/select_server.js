@@ -28,7 +28,6 @@ import FormattedText from 'app/components/formatted_text';
 import {UpgradeTypes} from 'app/constants';
 import fetchConfig from 'app/fetch_preconfig';
 import mattermostBucket from 'app/mattermost_bucket';
-import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
 import checkUpgradeType from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
@@ -44,7 +43,7 @@ export default class SelectServer extends PureComponent {
             getPing: PropTypes.func.isRequired,
             handleServerUrlChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
-            getSession: PropTypes.func.isRequired,
+            scheduleExpiredNotification: PropTypes.func.isRequired,
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
@@ -283,26 +282,13 @@ export default class SelectServer extends PureComponent {
     };
 
     loginWithCertificate = async () => {
-        const {intl, navigator} = this.props;
+        const {navigator} = this.props;
 
         tracker.initialLoad = Date.now();
 
         await this.props.actions.login('credential', 'password');
         await this.props.actions.handleSuccessfulLogin();
-        const expiresAt = await this.props.actions.getSession();
-
-        if (expiresAt) {
-            PushNotifications.localNotificationSchedule({
-                date: new Date(expiresAt),
-                message: intl.formatMessage({
-                    id: 'mobile.session_expired',
-                    defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
-                }),
-                userInfo: {
-                    localNotification: true,
-                },
-            });
-        }
+        this.scheduleSessionExpiredNotification();
 
         navigator.resetTo({
             screen: 'Channel',
@@ -378,6 +364,13 @@ export default class SelectServer extends PureComponent {
                 connecting: false,
             });
         });
+    };
+
+    scheduleSessionExpiredNotification = () => {
+        const {intl} = this.context;
+        const {actions} = this.props;
+
+        actions.scheduleExpiredNotification(intl);
     };
 
     selectCertificate = () => {
