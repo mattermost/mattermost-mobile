@@ -19,6 +19,7 @@ import {debounce} from 'mattermost-redux/actions/helpers';
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
+import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
@@ -88,48 +89,48 @@ export default class List extends PureComponent {
         switch (sectionType) {
         case SidebarSectionTypes.UNREADS:
             return {
-                id: 'mobile.channel_list.unreads',
+                id: t('mobile.channel_list.unreads'),
                 defaultMessage: 'UNREADS',
             };
         case SidebarSectionTypes.FAVORITE:
             return {
-                id: 'sidebar.favorite',
+                id: t('sidebar.favorite'),
                 defaultMessage: 'FAVORITES',
             };
         case SidebarSectionTypes.PUBLIC:
             return {
                 action: this.goToMoreChannels,
-                id: 'sidebar.channels',
+                id: t('sidebar.channels'),
                 defaultMessage: 'PUBLIC CHANNELS',
             };
         case SidebarSectionTypes.PRIVATE:
             return {
                 action: canCreatePrivateChannels ? this.goToCreatePrivateChannel : null,
-                id: 'sidebar.pg',
+                id: t('sidebar.pg'),
                 defaultMessage: 'PRIVATE CHANNELS',
             };
         case SidebarSectionTypes.DIRECT:
             return {
                 action: this.goToDirectMessages,
-                id: 'sidebar.direct',
+                id: t('sidebar.direct'),
                 defaultMessage: 'DIRECT MESSAGES',
             };
         case SidebarSectionTypes.RECENT_ACTIVITY:
             return {
                 action: this.showCreateChannelOptions,
-                id: 'sidebar.types.recent',
+                id: t('sidebar.types.recent'),
                 defaultMessage: 'RECENT ACTIVITY',
             };
         case SidebarSectionTypes.ALPHA:
             return {
                 action: this.showCreateChannelOptions,
-                id: 'mobile.channel_list.channels',
+                id: t('mobile.channel_list.channels'),
                 defaultMessage: 'CHANNELS',
             };
         default:
             return {
                 action: this.showCreateChannelOptions,
-                id: 'mobile.channel_list.channels',
+                id: t('mobile.channel_list.channels'),
                 defaultMessage: 'CHANNELS',
             };
         }

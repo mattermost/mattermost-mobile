@@ -45,10 +45,9 @@ exports[`Theme should match snapshot 1`] = `
         isLandscape={false}
         isTablet={false}
         label={
-          <FormattedText
-            defaultMessage="Mattermost"
-            id="user.settings.display.Mattermost"
-          />
+          <Text>
+            Mattermost
+          </Text>
         }
         selected={true}
         theme={
@@ -91,10 +90,9 @@ exports[`Theme should match snapshot 1`] = `
         isLandscape={false}
         isTablet={false}
         label={
-          <FormattedText
-            defaultMessage="Organization"
-            id="user.settings.display.Organization"
-          />
+          <Text>
+            Organization
+          </Text>
         }
         selected={false}
         theme={
@@ -137,10 +135,9 @@ exports[`Theme should match snapshot 1`] = `
         isLandscape={false}
         isTablet={false}
         label={
-          <FormattedText
-            defaultMessage="Mattermost Dark"
-            id="user.settings.display.Mattermost Dark"
-          />
+          <Text>
+            Mattermost Dark
+          </Text>
         }
         selected={false}
         theme={
@@ -183,10 +180,9 @@ exports[`Theme should match snapshot 1`] = `
         isLandscape={false}
         isTablet={false}
         label={
-          <FormattedText
-            defaultMessage="Windows Dark"
-            id="user.settings.display.Windows Dark"
-          />
+          <Text>
+            Windows Dark
+          </Text>
         }
         selected={false}
         theme={

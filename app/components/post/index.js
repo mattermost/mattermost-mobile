@@ -23,8 +23,8 @@ function isConsecutivePost(state, ownProps) {
     let consecutivePost = false;
 
     if (previousPost) {
-        const postFromWebhook = Boolean(post.props && post.props.from_webhook);
-        const prevPostFromWebhook = Boolean(previousPost.props && previousPost.props.from_webhook);
+        const postFromWebhook = Boolean(post?.props?.from_webhook); // eslint-disable-line camelcase
+        const prevPostFromWebhook = Boolean(previousPost?.props?.from_webhook); // eslint-disable-line camelcase
         if (previousPost && previousPost.user_id === post.user_id &&
             post.create_at - previousPost.create_at <= Posts.POST_COLLAPSE_TIMEOUT &&
             !postFromWebhook && !prevPostFromWebhook &&
