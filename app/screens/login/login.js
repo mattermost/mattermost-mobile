@@ -37,7 +37,7 @@ export default class Login extends PureComponent {
             handleLoginIdChanged: PropTypes.func.isRequired,
             handlePasswordChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
-            getSession: PropTypes.func.isRequired,
+            scheduleExpiredNotification: PropTypes.func.isRequired,
             checkMfa: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
@@ -202,7 +202,7 @@ export default class Login extends PureComponent {
             defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
         });
 
-        this.props.actions.getSession(message);
+        this.props.actions.scheduleExpiredNotification(message);
     };
 
     signIn = () => {

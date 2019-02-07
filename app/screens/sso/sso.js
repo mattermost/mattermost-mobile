@@ -65,7 +65,7 @@ class SSO extends PureComponent {
         serverUrl: PropTypes.string.isRequired,
         ssoType: PropTypes.string.isRequired,
         actions: PropTypes.shape({
-            getSession: PropTypes.func.isRequired,
+            scheduleExpiredNotification: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             setStoreFromLocalData: PropTypes.func.isRequired,
         }).isRequired,
@@ -198,7 +198,7 @@ class SSO extends PureComponent {
             defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
         });
 
-        actions.getSession(message);
+        actions.scheduleExpiredNotification(message);
     };
 
     renderLoading = () => {

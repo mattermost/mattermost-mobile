@@ -68,7 +68,7 @@ export function handleSuccessfulLogin() {
     };
 }
 
-export function getSession(message) {
+export function scheduleExpiredNotification(message) {
     return (dispatch, getState) => {
         const state = getState();
         const {currentUserId} = state.entities.users;
@@ -111,5 +111,5 @@ export default {
     handleLoginIdChanged,
     handlePasswordChanged,
     handleSuccessfulLogin,
-    getSession,
+    getSession: scheduleExpiredNotification,
 };
