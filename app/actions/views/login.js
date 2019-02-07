@@ -68,11 +68,15 @@ export function handleSuccessfulLogin() {
     };
 }
 
-export function scheduleExpiredNotification(message) {
+export function scheduleExpiredNotification(intl) {
     return (dispatch, getState) => {
         const state = getState();
         const {currentUserId} = state.entities.users;
         const {deviceToken} = state.entities.general;
+        const message = intl.formatMessage({
+            id: 'mobile.session_expired',
+            defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
+        });
 
         // Once the user logs in we are going to wait for 10 seconds
         // before retrieving the session that belongs to this device
@@ -111,5 +115,5 @@ export default {
     handleLoginIdChanged,
     handlePasswordChanged,
     handleSuccessfulLogin,
-    getSession: scheduleExpiredNotification,
+    scheduleExpiredNotification,
 };

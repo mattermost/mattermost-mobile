@@ -193,12 +193,8 @@ class SSO extends PureComponent {
 
     scheduleSessionExpiredNotification = () => {
         const {actions, intl} = this.props;
-        const message = intl.formatMessage({
-            id: 'mobile.session_expired',
-            defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
-        });
 
-        actions.scheduleExpiredNotification(message);
+        actions.scheduleExpiredNotification(intl);
     };
 
     renderLoading = () => {

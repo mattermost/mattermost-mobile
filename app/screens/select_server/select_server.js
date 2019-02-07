@@ -368,12 +368,9 @@ export default class SelectServer extends PureComponent {
 
     scheduleSessionExpiredNotification = () => {
         const {intl} = this.context;
-        const message = intl.formatMessage({
-            id: 'mobile.session_expired',
-            defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
-        });
+        const {actions} = this.props;
 
-        this.props.actions.scheduleExpiredNotification(message);
+        actions.scheduleExpiredNotification(intl);
     };
 
     selectCertificate = () => {
