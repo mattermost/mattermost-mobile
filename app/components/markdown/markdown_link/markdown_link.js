@@ -40,7 +40,7 @@ export default class MarkdownLink extends PureComponent {
             return;
         }
 
-        const match = matchPermalink(url, serverURL) || matchPermalink(url, siteURL);
+        const match = matchPermalink(url, serverURL) || matchPermalink(url, siteURL) || matchPermalink(url, '');
 
         if (match) {
             const teamName = match[1];
