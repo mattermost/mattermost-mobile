@@ -68,7 +68,7 @@ export default class NetworkIndicator extends PureComponent {
         super(props);
 
         this.state = {
-            opacity: 0
+            opacity: 0,
         };
 
         const navBar = this.getNavBarHeight(props.isLandscape);
@@ -183,7 +183,7 @@ export default class NetworkIndicator extends PureComponent {
         ]).start(() => {
             this.backgroundColor.setValue(0);
             this.setState({
-                opacity: 0
+                opacity: 0,
             });
         });
     };
@@ -256,10 +256,11 @@ export default class NetworkIndicator extends PureComponent {
             this.initializeWebSocket();
             startPeriodicStatusUpdates();
             this.firstRun = false;
+
             // if the state of the internet connection was previously known to be false,
             // don't exit connection handler in order for application to register it has
             // reconnected to the internet
-            if(this.hasInternet !== false){
+            if (this.hasInternet !== false) {
                 return;
             }
         }
@@ -327,7 +328,7 @@ export default class NetworkIndicator extends PureComponent {
 
     show = () => {
         this.setState({
-            opacity: 1
+            opacity: 1,
         });
 
         Animated.timing(
