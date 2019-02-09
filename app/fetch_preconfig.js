@@ -38,7 +38,15 @@ Client4.doFetchWithResponse = async (url, options) => {
     }
 
     const customHeaders = LocalConfig.CustomRequestHeaders;
-    let requestOptions = Client4.getOptions(options);
+    let waitsForConnectivity = false;
+    if (url.includes('/api/v4/system/ping')) {
+        waitsForConnectivity = true;
+    }
+    let requestOptions = {
+        ...Client4.getOptions(options),
+        waitsForConnectivity,
+    };
+
     if (customHeaders && Object.keys(customHeaders).length > 0) {
         requestOptions = {
             ...requestOptions,
