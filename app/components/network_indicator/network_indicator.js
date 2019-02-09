@@ -256,7 +256,12 @@ export default class NetworkIndicator extends PureComponent {
             this.initializeWebSocket();
             startPeriodicStatusUpdates();
             this.firstRun = false;
-            return;
+            // if the state of the internet connection was previously known to be false,
+            // don't exit connection handler in order for application to register it has
+            // reconnected to the internet
+            if(this.hasInternet !== false){
+                return;
+            }
         }
 
         // Prevent for being called more than once.
