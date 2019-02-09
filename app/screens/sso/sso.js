@@ -8,6 +8,7 @@ import {
     InteractionManager,
     Text,
     View,
+    Platform,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
 import CookieManager from 'react-native-cookies';
@@ -72,6 +73,8 @@ class SSO extends PureComponent {
         }).isRequired,
     };
 
+    useWebkit = true;
+
     constructor(props) {
         super(props);
 
@@ -92,6 +95,10 @@ class SSO extends PureComponent {
             this.completedUrl = '/login/sso/saml';
             break;
         }
+
+        if (Platform.OS === 'ios') {
+            this.useWebkit = parseInt(Platform.Version, 10) >= 11;
+        }
     }
 
     componentDidMount() {
@@ -99,7 +106,7 @@ class SSO extends PureComponent {
     }
 
     clearPreviousCookies = () => {
-        CookieManager.clearAll(false).then(() => {
+        CookieManager.clearAll(this.useWebkit).then(() => {
             this.setState({renderWebView: true});
         });
     };
@@ -176,7 +183,7 @@ class SSO extends PureComponent {
     onLoadEnd = (event) => {
         const url = event.nativeEvent.url;
         if (url.includes(this.completedUrl)) {
-            CookieManager.get(urlParse(url).origin, false).then((res) => {
+            CookieManager.get(urlParse(url).origin, this.useWebkit).then((res) => {
                 const token = res.MMAUTHTOKEN;
 
                 if (token) {
@@ -241,7 +248,7 @@ class SSO extends PureComponent {
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                     onMessage={messagingEnabled && this.onMessage}
-                    useWebKit={true}
+                    useWebKit={this.useWebkit}
                 />
             );
         }
