@@ -51,6 +51,14 @@ export default class About extends PureComponent {
         Linking.openURL(Config.MobileNoticeURL);
     };
 
+    handleTermsOfService = () => {
+        Linking.openURL(Config.TermsOfServiceURL);
+    };
+
+    handlePrivacyPolicy = () => {
+        Linking.openURL(Config.PrivacyPolicyURL);
+    }
+
     render() {
         const {theme, config, license} = this.props;
         const style = getStyleSheet(theme);
@@ -228,9 +236,32 @@ export default class About extends PureComponent {
                         <FormattedText
                             id='mobile.about.copyright'
                             defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
-                            style={style.footerText}
+                            style={[style.footerText, {marginBottom: 0}]}
                             values={{
                                 currentYear: new Date().getFullYear(),
+                            }}
+                        />
+                        <FormattedText
+                            id='about.tos_privacy_text'
+                            defaultMessage='{tos} - {privacy}'
+                            style={style.footerText}
+                            values={{
+                                tos: (
+                                    <FormattedText
+                                        id='mobile.tos_link'
+                                        defaultMessage='Terms of Service'
+                                        style={style.noticeLink}
+                                        onPress={this.handleTermsOfService}
+                                    />
+                                ),
+                                privacy: (
+                                    <FormattedText
+                                        id='mobile.privacy_link'
+                                        defaultMessage='Privacy Policy'
+                                        style={[style.noticeLink, {marginLeft: 5}]}
+                                        onPress={this.handlePrivacyPolicy}
+                                    />
+                                ),
                             }}
                         />
                         <View style={style.noticeContainer}>
