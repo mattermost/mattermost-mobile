@@ -207,7 +207,6 @@ export default class PostListBase extends PureComponent {
         const {
             actions,
             navigator,
-            onHashtagPress,
         } = this.props;
 
         actions.selectFocusedPostId(postId);
