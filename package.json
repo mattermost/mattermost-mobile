@@ -66,7 +66,7 @@
     "redux-persist-transform-filter": "0.0.18",
     "redux-thunk": "2.3.0",
     "reselect": "4.0.0",
-    "rn-fetch-blob": "github:enahum/react-native-fetch-blob#20d1c07ef34ba18be485a1f56cd2261158e93f69",
+    "rn-fetch-blob": "github:enahum/react-native-fetch-blob#1f370ab3616101d4ffe919e0b58cbe4ef319ce5d",
     "rn-placeholder": "github:enahum/rn-placeholder#bfee66eb54f1f06d1425a0ad511a5e16559bf82c",
     "semver": "5.6.0",
     "shallow-equals": "1.0.0",
