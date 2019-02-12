@@ -67,9 +67,12 @@ export default class NetworkIndicator extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.state = {
+            opacity: 0,
+        };
+
         const navBar = this.getNavBarHeight(props.isLandscape);
         this.top = new Animated.Value(navBar - HEIGHT);
-        this.opacity = 0;
         this.clearNotificationTimeout = null;
 
         this.backgroundColor = new Animated.Value(0);
@@ -179,7 +182,9 @@ export default class NetworkIndicator extends PureComponent {
             ),
         ]).start(() => {
             this.backgroundColor.setValue(0);
-            this.opacity = 0;
+            this.setState({
+                opacity: 0,
+            });
         });
     };
 
@@ -251,7 +256,13 @@ export default class NetworkIndicator extends PureComponent {
             this.initializeWebSocket();
             startPeriodicStatusUpdates();
             this.firstRun = false;
-            return;
+
+            // if the state of the internet connection was previously known to be false,
+            // don't exit connection handler in order for application to register it has
+            // reconnected to the internet
+            if (this.hasInternet !== false) {
+                return;
+            }
         }
 
         // Prevent for being called more than once.
@@ -316,7 +327,9 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     show = () => {
-        this.opacity = 1;
+        this.setState({
+            opacity: 1,
+        });
 
         Animated.timing(
             this.top, {
@@ -376,7 +389,7 @@ export default class NetworkIndicator extends PureComponent {
         }
 
         return (
-            <Animated.View style={[styles.container, {top: this.top, backgroundColor: background, opacity: this.opacity}]}>
+            <Animated.View style={[styles.container, {top: this.top, backgroundColor: background, opacity: this.state.opacity}]}>
                 <Animated.View style={styles.wrapper}>
                     <FormattedText
                         defaultMessage={defaultMessage}
