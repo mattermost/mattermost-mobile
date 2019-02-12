@@ -14,14 +14,19 @@
 
 ### Improvements
  - Changed "X" to "Cancel" on Edit Profile page.
+ - Added support for relative permalinks.
 
 ### Bug Fixes
+ - Fixed an issue where the Mattermost iOS app did not trigger MobileIron VPN to connect.
  - Fixed an issue where the iOS badge notification did not always clear.
  - Fixed an issue where the thread view should not display a new message indicator.
  - Fixed an issue where quick multiple taps on file icon opened multiple file previews.
  - Fixed an issue where the settings page did not show an option to join other teams.
  - Fixed an issue where iOS image previews didn't work after using Delete File Cache.
  - Fixed an issue where the notification trigger word modal title was "Send email notifications" instead of "Keywords".
+ - Fixed an issue where the Webhook icon was misaligned and bottom edges were cut off.
+ - Fixed an issue where the user was not asked to authenticate to the app first when trying to share a photo, resulting in a white "Share modal" screen with a never-ending loading indicator.
+ - Fixed an issue on iOS where push notifications were not preserved when opening the app via the Mattermost icon.
  
 
 ## 1.15.2 Release
