@@ -314,7 +314,7 @@ export function getFirstMention(str, mentionKeys) {
         const pattern = new RegExp(`\\b${escapeRegex(mention.key)}_*\\b`, flags);
 
         const match = pattern.exec(str);
-        if (!match) {
+        if (!match || match[0] === '') {
             continue;
         }
 
