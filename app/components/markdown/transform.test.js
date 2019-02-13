@@ -2758,6 +2758,11 @@ describe('Components.Markdown.transform', () => {
             input: 'apple banana orange',
             mentionKeys: [{key: '*\\3_.'}],
             expected: {index: -1, mention: null},
+        }, {
+            name: 'no blank mention keys',
+            input: 'apple banana orange',
+            mentionKeys: [{key: ''}],
+            expected: {index: -1, mention: null},
         }];
 
         for (const test of tests) {
