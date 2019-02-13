@@ -310,7 +310,7 @@ export function getFirstMention(str, mentionKeys) {
     let firstMentionIndex = -1;
 
     for (const mention of mentionKeys) {
-        if (mention.key === '') {
+        if (mention.key.trim() === '') {
             continue;
         }
 
