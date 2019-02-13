@@ -310,6 +310,10 @@ export function getFirstMention(str, mentionKeys) {
     let firstMentionIndex = -1;
 
     for (const mention of mentionKeys) {
+        if (mention.key === '') {
+            continue;
+        }
+
         const flags = mention.caseSensitive ? '' : 'i';
         const pattern = new RegExp(`\\b${escapeRegex(mention.key)}_*\\b`, flags);
 
