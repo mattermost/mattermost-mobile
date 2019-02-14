@@ -311,9 +311,9 @@ export default class Permalink extends PureComponent {
         if (!channelId) {
             const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
             focusChannelId = focusedPost ? focusedPost.channel_id : '';
-            if (focusChannelId && !this.props.myMembers[focusChannelId]) {
+            if (focusChannelId) {
                 const {data: channel} = await actions.getChannel(focusChannelId);
-                if (channel && channel.type === General.OPEN_CHANNEL) {
+                if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
                     await actions.joinChannel(currentUserId, channel.team_id, channel.id);
                 }
             }

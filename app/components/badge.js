@@ -104,17 +104,21 @@ export default class Badge extends PureComponent {
                     style={[styles.text, this.props.countStyle]}
                     onLayout={this.onLayout}
                 >
-                    <View style={[styles.unreadIndicator, {backgroundColor: this.props.countStyle.color}]}/>
+                    <View style={styles.verticalAlign}>
+                        <View style={[styles.unreadIndicator, {backgroundColor: this.props.countStyle.color}]}/>
+                    </View>
                 </View>
             );
         } else {
             unreadCount = (
-                <Text
-                    style={[styles.text, this.props.countStyle]}
-                    onLayout={this.onLayout}
-                >
-                    {count.toString()}
-                </Text>
+                <View style={styles.verticalAlign}>
+                    <Text
+                        style={[styles.text, this.props.countStyle]}
+                        onLayout={this.onLayout}
+                    >
+                        {count.toString()}
+                    </Text>
+                </View>
             );
         }
         return (
@@ -159,10 +163,10 @@ const styles = StyleSheet.create({
         top: 2,
     },
     wrapper: {
-        alignItems: 'center',
         flex: 1,
+        alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: -1,
+        alignSelf: 'center',
     },
     text: {
         fontSize: 14,
@@ -173,5 +177,12 @@ const styles = StyleSheet.create({
         width: 4,
         backgroundColor: '#444',
         borderRadius: 4,
+    },
+    verticalAlign: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlignVertical: 'center',
     },
 });
