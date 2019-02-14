@@ -6,6 +6,8 @@ import {escapeRegex} from './markdown';
 
 import {Files} from 'mattermost-redux/constants';
 
+import {DeepLinkTypes} from 'app/constants';
+
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
 
 export function isValidUrl(url = '') {
@@ -96,8 +98,20 @@ export function getScheme(url) {
     return match && match[1];
 }
 
-export function matchPermalink(link, rootURL) {
-    return new RegExp('^' + escapeRegex(rootURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(link);
+export function matchDeepLink(url, serverURL, siteURL) {
+    const linkRoot = `(?:${escapeRegex(serverURL)}|${escapeRegex(siteURL)})?`;
+
+    let match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
+    if (match) {
+        return {type: DeepLinkTypes.CHANNEL, teamName: match[1], channelName: match[2]};
+    }
+
+    match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
+    if (match) {
+        return {type: DeepLinkTypes.PERMALINK, teamName: match[1], postId: match[2]};
+    }
+
+    return null;
 }
 
 export function getYouTubeVideoId(link) {

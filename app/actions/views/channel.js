@@ -8,6 +8,7 @@ import {ViewTypes} from 'app/constants';
 import {UserTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
+    getChannelByNameAndTeamName,
     markChannelAsRead,
     selectChannel,
     leaveChannel as serviceLeaveChannel,
@@ -370,6 +371,20 @@ export function handleSelectChannel(channelId) {
                 channelId,
             },
         ]));
+    };
+}
+
+export function handleSelectChannelByName(channelName, teamName) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {teams: currentTeams, currentTeamId} = state.entities.teams;
+        const currentTeamName = currentTeams[currentTeamId].name;
+        const {data: channel} = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
+        const currentChannelId = getCurrentChannelId(state);
+        if (channel && currentChannelId !== channel.id) {
+            dispatch(setChannelDisplayName(channel.display_name));
+            dispatch(handleSelectChannel(channel.id));
+        }
     };
 }
 
