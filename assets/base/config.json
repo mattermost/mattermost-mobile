@@ -10,8 +10,6 @@
     "AboutEnterpriseURL": "http://about.mattermost.com/",
     "PlatformNoticeURL": "https://about.mattermost.com/platform-notice-txt/",
     "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
-    "TermsOfServiceURL": "http://about.mattermost.com/default-terms/",
-    "PrivacyPolicyURL": "http://mattermost.com/privacy-policy/",
     "SegmentApiKey": "",
     "ExperimentalUsernamePressIsMention": false,
 

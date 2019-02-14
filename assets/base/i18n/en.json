@@ -12,7 +12,6 @@
   "about.teamEditiont1": "Enterprise Edition",
   "about.title": "About Mattermost",
   "about.tos": "Terms of Service",
-  "about.tos_privacy_text": "{tos} - {privacy}",
   "announcment_banner.dont_show_again": "Don't show again",
   "api.channel.add_member.added": "{addedUsername} added to the channel by {username}.",
   "archivedChannelMessage": "You are viewing an **archived channel**. New messages cannot be posted.",
