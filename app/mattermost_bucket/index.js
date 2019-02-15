@@ -4,17 +4,17 @@
 import {NativeModules, Platform} from 'react-native';
 
 // TODO: Remove platform specific once android is implemented
-const MattermostBucket = Platform.OS === 'ios' ? NativeModules.MattermostBucket : null;
+const MattermostBucket = Platform.OS === 'ios' ? NativeModules.MattermostBucketModule : null;
 
 export default {
-    setPreference: (key, value, groupName) => {
+    setPreference: (key, value) => {
         if (MattermostBucket) {
-            MattermostBucket.setPreference(key, value, groupName);
+            MattermostBucket.setPreference(key, value);
         }
     },
-    getPreference: async (key, groupName) => {
+    getPreference: async (key) => {
         if (MattermostBucket) {
-            const value = await MattermostBucket.getPreference(key, groupName);
+            const value = await MattermostBucket.getPreference(key);
             if (value) {
                 try {
                     return JSON.parse(value);
@@ -26,19 +26,19 @@ export default {
 
         return null;
     },
-    removePreference: (key, groupName) => {
+    removePreference: (key) => {
         if (MattermostBucket) {
-            MattermostBucket.removePreference(key, groupName);
+            MattermostBucket.removePreference(key);
         }
     },
-    writeToFile: (fileName, content, groupName) => {
+    writeToFile: (fileName, content) => {
         if (MattermostBucket) {
-            MattermostBucket.writeToFile(fileName, content, groupName);
+            MattermostBucket.writeToFile(fileName, content);
         }
     },
-    readFromFile: async (fileName, groupName) => {
+    readFromFile: async (fileName) => {
         if (MattermostBucket) {
-            const value = await MattermostBucket.readFromFile(fileName, groupName);
+            const value = await MattermostBucket.readFromFile(fileName);
             if (value) {
                 try {
                     return JSON.parse(value);
@@ -50,9 +50,9 @@ export default {
 
         return null;
     },
-    removeFile: (fileName, groupName) => {
+    removeFile: (fileName) => {
         if (MattermostBucket) {
-            MattermostBucket.removeFile(fileName, groupName);
+            MattermostBucket.removeFile(fileName);
         }
     },
 };

@@ -8,7 +8,6 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 
 import mattermostBucket from 'app/mattermost_bucket';
-import LocalConfig from 'assets/config';
 
 const PING_TIMEOUT = 3000;
 
@@ -30,7 +29,7 @@ export async function checkConnection(isConnected) {
     };
 
     if (Platform.OS === 'ios' && certificate === '') {
-        certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+        certificate = await mattermostBucket.getPreference('cert');
         config.certificate = certificate;
     }
 

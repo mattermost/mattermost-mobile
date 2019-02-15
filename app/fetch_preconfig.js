@@ -130,7 +130,7 @@ Client4.doFetchWithResponse = async (url, options) => {
 const initFetchConfig = async () => {
     let fetchConfig = {};
     if (Platform.OS === 'ios') {
-        const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+        const certificate = await mattermostBucket.getPreference('cert');
         fetchConfig = {
             auto: true,
             certificate,
