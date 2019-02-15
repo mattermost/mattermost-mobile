@@ -85,7 +85,7 @@
   "last_users_message.added_to_channel.type": " **добавлены на канал**. Кем: {actor}.",
   "last_users_message.added_to_team.type": "были **добавлены в команду** пользователем {actor}.",
   "last_users_message.first": "{firstUser} и ",
-  "last_users_message.joined_channel.type": " - **выполнен вход на канал**",
+  "last_users_message.joined_channel.type": "**выполнен вход на канал**",
   "last_users_message.joined_team.type": "присоединяется к команде.",
   "last_users_message.left_channel.type": "**покинул канал**.",
   "last_users_message.left_team.type": "**покинул команду**.",
