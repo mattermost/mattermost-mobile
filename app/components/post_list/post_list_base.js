@@ -5,10 +5,11 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
 import Post from 'app/components/post';
+import {DeepLinkTypes} from 'app/constants';
 import {START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
 import {changeOpacity} from 'app/utils/theme';
-import {matchPermalink} from 'app/utils/url';
+import {matchDeepLink} from 'app/utils/url';
 
 import DateHeader from './date_header';
 import {isDateLine} from './date_header/utils';
@@ -17,6 +18,7 @@ import NewMessagesDivider from './new_messages_divider';
 export default class PostListBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            handleSelectChannelByName: PropTypes.func.isRequired,
             loadChannelsByTeamName: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
@@ -82,12 +84,13 @@ export default class PostListBase extends PureComponent {
     handleDeepLink = (url) => {
         const {serverURL, siteURL} = this.props;
 
-        const match = matchPermalink(url, serverURL) || matchPermalink(url, siteURL);
-
+        const match = matchDeepLink(url, serverURL, siteURL);
         if (match) {
-            const teamName = match[1];
-            const postId = match[2];
-            this.handlePermalinkPress(postId, teamName);
+            if (match.type === DeepLinkTypes.CHANNEL) {
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName);
+            } else if (match.type === DeepLinkTypes.PERMALINK) {
+                this.handlePermalinkPress(match.postId, match.teamName);
+            }
         }
     };
 
