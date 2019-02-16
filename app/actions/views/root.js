@@ -4,7 +4,7 @@
 import {GeneralTypes, PostTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
-import {fetchMyChannelsAndMembers, markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {fetchMyChannelsAndMembers, markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'mattermost-redux/actions/general';
 import {getMyTeams, getMyTeamMembers, selectTeam} from 'mattermost-redux/actions/teams';
 
@@ -49,7 +49,7 @@ export function loadConfigAndLicense() {
     };
 }
 
-export function loadFromPushNotification(notification) {
+export function loadFromPushNotification(notification, startAppFromPushNotification) {
     return async (dispatch, getState) => {
         const state = getState();
         const {data} = notification;
@@ -86,12 +86,11 @@ export function loadFromPushNotification(notification) {
             dispatch(selectTeam({id: teamId}));
         }
 
-        // mark channel as read
-        dispatch(markChannelAsRead(channelId, channelId === currentChannelId ? null : currentChannelId, false));
-
-        if (channelId !== currentChannelId) {
+        if (channelId === currentChannelId && !startAppFromPushNotification) {
+            dispatch(markChannelAsRead(channelId, null, true));
+            dispatch(markChannelAsViewed(channelId));
+        } else if (channelId !== currentChannelId) {
             // when the notification is from a channel other than the current channel
-            dispatch(markChannelAsRead(channelId, currentChannelId, false));
             dispatch(setChannelDisplayName(''));
             dispatch(handleSelectChannel(channelId));
         }

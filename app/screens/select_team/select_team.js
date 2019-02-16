@@ -47,9 +47,7 @@ export default class SelectTeam extends PureComponent {
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
         }).isRequired,
-        currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,
@@ -143,16 +141,11 @@ export default class SelectTeam extends PureComponent {
 
     onSelectTeam = async (team) => {
         this.setState({joining: true});
-        const {currentChannelId, userWithoutTeams} = this.props;
+        const {userWithoutTeams} = this.props;
         const {
             joinTeam,
             handleTeamChange,
-            markChannelAsRead,
         } = this.props.actions;
-
-        if (currentChannelId) {
-            markChannelAsRead(currentChannelId);
-        }
 
         const {error} = await joinTeam(team.invite_id, team.id);
         if (error) {

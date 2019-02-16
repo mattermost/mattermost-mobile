@@ -24,11 +24,14 @@ import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
 import {loadMe, logout} from 'mattermost-redux/actions/users';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {General} from 'mattermost-redux/constants';
-
-import {handleLoginIdChanged} from 'app/actions/views/login';
-import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
+import {selectDefaultChannel} from 'app/actions/views/channel';
+import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
+import {handleLoginIdChanged} from 'app/actions/views/login';
+import {handleServerUrlChanged} from 'app/actions/views/select_server';
+import {loadConfigAndLicense, startDataCleanup} from 'app/actions/views/root';
 
 import initialState from 'app/initial_state';
 import configureStore from 'app/store';
@@ -38,14 +41,6 @@ import mattermostManaged from 'app/mattermost_managed';
 import {configurePushNotifications} from 'app/utils/push_notifications';
 import PushNotifications from 'app/push_notifications';
 import {registerScreens} from 'app/screens';
-import {
-    setDeviceDimensions,
-    setDeviceOrientation,
-    setDeviceAsTablet,
-    setStatusBarHeight,
-} from 'app/actions/device';
-import {loadConfigAndLicense, startDataCleanup} from 'app/actions/views/root';
-import {setChannelDisplayName} from 'app/actions/views/channel';
 import {deleteFileCache} from 'app/utils/file';
 import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 import {t} from 'app/utils/i18n';
@@ -96,7 +91,7 @@ const initializeModules = () => {
     EventEmitter.on(NavigationTypes.RESTART_APP, restartApp);
     EventEmitter.on(General.SERVER_VERSION_CHANGED, handleServerVersionChanged);
     EventEmitter.on(General.CONFIG_CHANGED, handleConfigChanged);
-    EventEmitter.on(General.DEFAULT_CHANNEL, handleResetChannelDisplayName);
+    EventEmitter.on(General.SWITCH_TO_DEFAULT_CHANNEL, handleSwithToDefaultChannel);
     Dimensions.addEventListener('change', handleOrientationChange);
     mattermostManaged.addEventListener('managedConfigDidChange', () => {
         handleManagedConfig(true);
@@ -342,8 +337,8 @@ const handleAuthentication = async (vendor) => {
     return true;
 };
 
-const handleResetChannelDisplayName = (displayName) => {
-    store.dispatch(setChannelDisplayName(displayName));
+const handleSwithToDefaultChannel = (teamId) => {
+    store.dispatch(selectDefaultChannel(teamId));
 };
 
 const launchSelectServer = () => {

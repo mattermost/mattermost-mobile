@@ -33,10 +33,11 @@ import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general
 import {
     closeDMChannel,
     closeGMChannel,
+    handleSelectChannel,
     leaveChannel,
     loadChannelsByTeamName,
     selectPenultimateChannel,
-    handleSelectChannel,
+    setChannelDisplayName,
 } from 'app/actions/views/channel';
 
 import ChannelInfo from './channel_info';
@@ -107,6 +108,7 @@ function mapDispatchToProps(dispatch) {
             selectFocusedPostId,
             updateChannelNotifyProps,
             selectPenultimateChannel,
+            setChannelDisplayName,
             handleSelectChannel,
         }, dispatch),
     };

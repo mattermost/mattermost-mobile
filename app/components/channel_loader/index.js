@@ -4,7 +4,6 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {handleSelectChannel, setChannelLoading} from 'app/actions/views/channel';
@@ -22,9 +21,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             handleSelectChannel,
-            markChannelAsRead,
             setChannelLoading,
-            markChannelAsViewed,
         }, dispatch),
     };
 }

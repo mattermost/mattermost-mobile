@@ -45,7 +45,7 @@ export default class NetworkIndicator extends PureComponent {
             connection: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
-            setCurrentUserStatus: PropTypes.func.isRequired,
+            setCurrentUserStatusOffline: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
             stopPeriodicStatusUpdates: PropTypes.func.isRequired,
         }).isRequired,
@@ -165,7 +165,6 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     connected = () => {
-        this.props.actions.setCurrentUserStatus(true);
         Animated.sequence([
             Animated.timing(
                 this.backgroundColor, {
@@ -337,7 +336,7 @@ export default class NetworkIndicator extends PureComponent {
                 duration: 300,
             }
         ).start(() => {
-            this.props.actions.setCurrentUserStatus(false);
+            this.props.actions.setCurrentUserStatusOffline();
         });
     };
 
