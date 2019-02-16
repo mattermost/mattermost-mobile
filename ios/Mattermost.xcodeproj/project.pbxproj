@@ -5,7 +5,6 @@
 	};
 	objectVersion = 46;
 	objects = {
-
 /* Begin PBXBuildFile section */
 		00C302E51ABCBA2D00DB3ED1 /* libRCTActionSheet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302AC1ABCB8CE00DB3ED1 /* libRCTActionSheet.a */; };
 		00C302E71ABCBA2D00DB3ED1 /* libRCTGeolocation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302BA1ABCB90400DB3ED1 /* libRCTGeolocation.a */; };
@@ -51,7 +50,6 @@
 		7BD159C40A68467FB5A17141 /* FontAwesome5_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC1D660B55BE462A9C3B8028 /* FontAwesome5_Solid.ttf */; };
 		7F0AA8C121A613A000E4370E /* libRNSentry.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F0AA8BB21A6138200E4370E /* libRNSentry.a */; };
 		7F2691A11EE1DC6A007574FE /* libRNNotifications.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2691A01EE1DC51007574FE /* libRNNotifications.a */; };
-		7F26C1CC219C463D00FEB42D /* libRNCWebView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F26C1CB219C463300FEB42D /* libRNCWebView.a */; };
 		7F292A711E8AB73400A450A3 /* SplashScreenResource in Resources */ = {isa = PBXBuildFile; fileRef = 7F292A701E8AB73400A450A3 /* SplashScreenResource */; };
 		7F292AA61E8ABB1100A450A3 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7F292AA41E8ABB1100A450A3 /* LaunchScreen.xib */; };
 		7F292AA71E8ABB1100A450A3 /* splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F292AA51E8ABB1100A450A3 /* splash.png */; };
@@ -75,6 +73,11 @@
 		7F6C47A51FE87E8C00F5A912 /* PerformRequests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F6C47A41FE87E8C00F5A912 /* PerformRequests.m */; };
 		7F7D7F98201645E100D31155 /* libReactNativePermissions.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F7D7F87201645D300D31155 /* libReactNativePermissions.a */; };
 		7F95132F208646CE00616E3E /* 0155-keys.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F9512EA208646CD00616E3E /* 0155-keys.png */; };
+		7F97F2312217989F00F5BCCC /* libRNCWebView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F26C1CB219C463300FEB42D /* libRNCWebView.a */; };
+		7FABDFC22211A39000D0F595 /* Section.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABDFC12211A39000D0F595 /* Section.swift */; };
+		7FABE00A2212650600D0F595 /* ChannelsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE0092212650600D0F595 /* ChannelsViewController.swift */; };
+		7FABE04622137F5C00D0F595 /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
+		7FABE0562213884700D0F595 /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
 		7FBB5E9B1E1F5A4B000DE18A /* libRNVectorIcons.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FDF290C1E1F4B4E00DBBE56 /* libRNVectorIcons.a */; };
 		7FC200E81EBB65370099331B /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FC200DF1EBB65100099331B /* libReactNativeNavigation.a */; };
 		7FC649EE1FE983660074E4C7 /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 349FBA7338E74D9BBD709528 /* EvilIcons.ttf */; };
@@ -852,14 +855,14 @@
 				7FDB92B11F706F58006CDFD1 /* libRNImagePicker.a in Frameworks */,
 				7F5CA9A0208FE3B9004F91CE /* libRNDocumentPicker.a in Frameworks */,
 				7F43D5DE1F6BF96A001FC614 /* libRCTYouTube.a in Frameworks */,
-				7F26C1CC219C463D00FEB42D /* libRNCWebView.a in Frameworks */,
-				7F43D6061F6BF9EB001FC614 /* libPods-Mattermost.a in Frameworks */,
-				A9B746D2CFA9CEBFB8AE2B5B /* libPods-Mattermost.a in Frameworks */,
+				7F97F2312217989F00F5BCCC /* libRNCWebView.a in Frameworks */,
 				5A0920184BD344979BCFCD5C /* libRCTVideo.a in Frameworks */,
 				3F876A0DC6314E27B16C8A96 /* libRNReactNativeDocViewer.a in Frameworks */,
 				8D26455C994F46C39B1392F2 /* libRNSafeArea.a in Frameworks */,
 				C3BD62ED5B5940AB8C0AC678 /* libz.tbd in Frameworks */,
 				3F55075810254369AB39F032 /* libRNGestureHandler.a in Frameworks */,
+				7F43D6061F6BF9EB001FC614 /* libPods-Mattermost.a in Frameworks */,
+				A9B746D2CFA9CEBFB8AE2B5B /* libPods-Mattermost.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2555,7 +2558,7 @@
 					"$(SRCROOT)/../node_modules/react-native-gesture-handler/ios/**",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -2607,7 +2610,7 @@
 					"$(SRCROOT)/../node_modules/react-native-gesture-handler/ios/**",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -2664,7 +2667,7 @@
 					"$(SRCROOT)/../node_modules/react-native-gesture-handler/ios/**",
 				);
 				INFOPLIST_FILE = MattermostShare/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2726,7 +2729,7 @@
 					"$(SRCROOT)/../node_modules/react-native-gesture-handler/ios/**",
 				);
 				INFOPLIST_FILE = MattermostShare/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

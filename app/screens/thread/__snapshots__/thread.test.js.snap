@@ -33,7 +33,7 @@ exports[`thread should match snapshot, has root post 1`] = `
             ],
             "results": Array [
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
             ],
@@ -73,7 +73,7 @@ exports[`thread should match snapshot, has root post 1`] = `
             ],
             "results": Array [
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
             ],
@@ -130,7 +130,7 @@ exports[`thread should match snapshot, render footer 1`] = `
         ],
         "results": Array [
           Object {
-            "isThrow": false,
+            "type": "return",
             "value": undefined,
           },
         ],
@@ -175,7 +175,7 @@ exports[`thread should match snapshot, render footer 2`] = `
         ],
         "results": Array [
           Object {
-            "isThrow": false,
+            "type": "return",
             "value": undefined,
           },
         ],

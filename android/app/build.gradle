@@ -109,6 +109,11 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
 
+    packagingOptions {
+        pickFirst 'lib/x86_64/libjsc.so'
+        pickFirst 'lib/arm64-v8a/libjsc.so'
+    }
+
     defaultConfig {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -192,8 +197,8 @@ configurations.all {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
-    implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support:percent:27.1.1'
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.android.support:percent:28.0.0'
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation project(':react-native-document-picker')
     implementation project(':react-native-keychain')
