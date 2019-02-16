@@ -10,8 +10,8 @@ import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     markChannelAsRead,
+    leaveChannel as serviceLeaveChannel, markChannelAsViewed,
     selectChannel,
-    leaveChannel as serviceLeaveChannel,
 } from 'mattermost-redux/actions/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
@@ -19,8 +19,8 @@ import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentChannelId, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     getChannelByName,
@@ -283,8 +283,7 @@ export function selectInitialChannel(teamId) {
             lastChannel &&
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
         ) {
-            handleSelectChannel(lastChannelId)(dispatch, getState);
-            markChannelAsRead(lastChannelId)(dispatch, getState);
+            dispatch(handleSelectChannel(lastChannelId));
             return;
         }
 
@@ -317,7 +316,6 @@ export function selectPenultimateChannel(teamId) {
             dispatch(setChannelLoading(true));
             dispatch(setChannelDisplayName(lastChannel.display_name));
             dispatch(handleSelectChannel(lastChannelId));
-            dispatch(markChannelAsRead(lastChannelId));
             return;
         }
 
@@ -327,7 +325,7 @@ export function selectPenultimateChannel(teamId) {
 
 export function selectDefaultChannel(teamId) {
     return (dispatch, getState) => {
-        const channels = getState().entities.channels.channels;
+        const {channels} = getState().entities.channels;
 
         const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
         let channelId;
@@ -345,21 +343,22 @@ export function selectDefaultChannel(teamId) {
         if (channelId) {
             dispatch(setChannelDisplayName(''));
             dispatch(handleSelectChannel(channelId));
-            dispatch(markChannelAsRead(channelId));
         }
     };
 }
 
 export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
-        const {currentTeamId} = getState().entities.teams;
+        const state = getState();
+        const currentTeamId = getCurrentTeamId(state);
+        const currentChannelId = getCurrentChannelId(state);
+        const sameChannel = channelId === currentChannelId;
+        const member = getMyChannelMember(state, channelId);
 
         dispatch(setLoadMorePostsVisible(true));
-
-        loadPostsIfNecessaryWithRetry(channelId)(dispatch, getState);
-        selectChannel(channelId)(dispatch, getState);
-
+        dispatch(loadPostsIfNecessaryWithRetry(channelId));
         dispatch(batchActions([
+            selectChannel(channelId),
             {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
                 data: channelId,
@@ -370,7 +369,15 @@ export function handleSelectChannel(channelId) {
                 teamId: currentTeamId,
                 channelId,
             },
+            {
+                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+                data: channelId,
+                member,
+            },
         ]));
+
+        dispatch(markChannelAsRead(channelId, sameChannel ? null : currentChannelId));
+        dispatch(markChannelAsViewed(channelId, sameChannel ? null : currentChannelId));
     };
 }
 
@@ -426,7 +433,7 @@ export function toggleDMChannel(otherUserId, visible, channelId) {
             value: Date.now().toString(),
         }];
 
-        savePreferences(currentUserId, dm)(dispatch, getState);
+        dispatch(savePreferences(currentUserId, dm));
     };
 }
 
@@ -442,7 +449,7 @@ export function toggleGMChannel(channelId, visible) {
             value: visible,
         }];
 
-        savePreferences(currentUserId, gm)(dispatch, getState);
+        dispatch(savePreferences(currentUserId, gm));
     };
 }
 
@@ -451,9 +458,9 @@ export function closeDMChannel(channel) {
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
-        toggleDMChannel(channel.teammate_id, 'false')(dispatch, getState);
+        dispatch(toggleDMChannel(channel.teammate_id, 'false'));
         if (channel.id === currentChannelId) {
-            selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
+            dispatch(selectInitialChannel(state.entities.teams.currentTeamId));
         }
     };
 }
@@ -497,7 +504,7 @@ export function leaveChannel(channel, reset = false) {
             await dispatch(selectDefaultChannel(currentTeamId));
         }
 
-        await serviceLeaveChannel(channel.id)(dispatch, getState);
+        await dispatch(serviceLeaveChannel(channel.id));
     };
 }
 

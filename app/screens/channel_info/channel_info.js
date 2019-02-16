@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 
 import {General, Users} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -42,6 +41,7 @@ export default class ChannelInfo extends PureComponent {
             updateChannelNotifyProps: PropTypes.func.isRequired,
             selectPenultimateChannel: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired,
         }),
         viewArchivedChannels: PropTypes.bool.isRequired,
         canDeleteChannel: PropTypes.bool.isRequired,
@@ -104,7 +104,7 @@ export default class ChannelInfo extends PureComponent {
 
     close = (redirect = true) => {
         if (redirect) {
-            EventEmitter.emit(General.DEFAULT_CHANNEL, '');
+            this.props.actions.setChannelDisplayName('');
         }
         if (Platform.OS === 'android') {
             this.props.navigator.dismissModal({animated: true});
