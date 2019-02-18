@@ -6,12 +6,10 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
-    Platform,
     Text,
     View,
-    WebView as RNWebView,
 } from 'react-native';
-import {WebView as RNCWebView} from 'react-native-webview';
+import {WebView} from 'react-native-webview';
 import CookieManager from 'react-native-cookies';
 import urlParse from 'url-parse';
 
@@ -222,11 +220,6 @@ class SSO extends PureComponent {
                 </View>
             );
         } else {
-            const WebView = Platform.select({
-                android: RNWebView,
-                ios: RNCWebView,
-            });
-
             content = (
                 <WebView
                     ref={this.webViewRef}
