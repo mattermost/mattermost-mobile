@@ -78,20 +78,20 @@ class ShareViewController: SLComposeServiceViewController {
   
   override func loadPreviewView() -> UIView! {
     if attachments.findBy(type: kUTTypeFileURL as String) {
-      let genericView = GenericView()
-      genericView.contentMode = .scaleAspectFit
-      genericView.clipsToBounds = true
-      genericView.isUserInteractionEnabled = false
-      genericView.addConstraints([
-        NSLayoutConstraint(item: genericView, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .width, multiplier: 1.0, constant: 70),
-        NSLayoutConstraint(item: genericView, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .height, multiplier: 1.0, constant: 70)
+      let genericPreview = GenericPreview()
+      genericPreview.contentMode = .scaleAspectFit
+      genericPreview.clipsToBounds = true
+      genericPreview.isUserInteractionEnabled = false
+      genericPreview.addConstraints([
+        NSLayoutConstraint(item: genericPreview, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .width, multiplier: 1.0, constant: 70),
+        NSLayoutConstraint(item: genericPreview, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .height, multiplier: 1.0, constant: 70)
         ])
       
       if attachments.count > 1 {
-        genericView.mainLabel.text = "\(attachments.count) Items"
+        genericPreview.mainLabel.text = "\(attachments.count) Items"
       }
       
-      return genericView
+      return genericPreview
     }
     return super.loadPreviewView();
   }

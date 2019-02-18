@@ -1,6 +1,6 @@
 import UIKit
 
-class GenericView: UIView {
+class GenericPreview: UIView {
     
     @IBOutlet var contentView: UIView!
     @IBOutlet weak var mainLabel: UILabel!
