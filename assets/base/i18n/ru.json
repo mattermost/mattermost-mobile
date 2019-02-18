@@ -130,7 +130,7 @@
   "mobile.advanced_settings.clockDisplay": "Отображение времени",
   "mobile.advanced_settings.delete": "Удалить",
   "mobile.advanced_settings.delete_message": "\nДанное действие приведёт к очистке локальных данных и перезапуску приложения.\n",
-  "mobile.advanced_settings.delete_title": "Delete Documents & Data",
+  "mobile.advanced_settings.delete_title": "Удалить файловый кэш",
   "mobile.advanced_settings.timezone": "Часовой пояс",
   "mobile.advanced_settings.title": "Дополнительные параметры",
   "mobile.android.camera_permission_denied_description": "Чтобы делать фото и видео, вам нужно разрешить доступ к камере.",
