@@ -19,7 +19,6 @@ import {
     app,
     store,
 } from 'app/mattermost';
-import {loadFromPushNotification} from 'app/actions/views/root';
 import {ViewTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import {stripTrailingSlashes} from 'app/utils/url';
@@ -202,11 +201,8 @@ export default class Entry extends PureComponent {
             const {data, text, badge, completed} = notificationData;
 
             // if the notification has a completed property it means that we are replying to a notification
-            // and in case it doesn't it means we just opened the notification
             if (completed) {
                 onPushNotificationReply(data, text, badge, completed);
-            } else {
-                await store.dispatch(loadFromPushNotification(notification));
             }
             PushNotifications.resetNotification();
         }
