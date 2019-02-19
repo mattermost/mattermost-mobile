@@ -188,7 +188,7 @@ export default class Search extends PureComponent {
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
-        actions.loadThreadIfNecessary(rootId, channelId);
+        actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
         const options = {
