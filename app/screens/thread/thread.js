@@ -148,6 +148,7 @@ export default class Thread extends PureComponent {
                     currentUserId={myMember && myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                     navigator={navigator}
+                    location='thread'
                 />
             );
 
