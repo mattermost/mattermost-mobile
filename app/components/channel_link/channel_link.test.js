@@ -5,28 +5,40 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {Text} from 'react-native';
 
+import {alertErrorWithFallback} from 'app/utils/general';
+
 import ChannelLink from './channel_link';
 
+jest.mock('react-intl');
+
+jest.mock('app/utils/general', () => ({
+    alertErrorWithFallback: jest.fn(),
+}));
+
 describe('ChannelLink', () => {
+    const formatMessage = jest.fn();
     const channelsByName = {
-        firstChannel: {id: 'channel_id_1', name: 'firstChannel', display_name: 'First Channel'},
-        secondChannel: {id: 'channel_id_2', name: 'secondChannel', display_name: 'Second Channel'},
+        firstChannel: {id: 'channel_id_1', name: 'firstChannel', display_name: 'First Channel', team_id: 'current_team_id'},
+        secondChannel: {id: 'channel_id_2', name: 'secondChannel', display_name: 'Second Channel', team_id: 'current_team_id'},
     };
     const baseProps = {
         channelName: 'firstChannel',
+        currentTeamId: 'current_team_id',
+        currentUserId: 'current_user_id',
         linkStyle: {color: '#2389d7'},
         onChannelLinkPress: jest.fn(),
         textStyle: {color: '#3d3c40', fontSize: 15, lineHeight: 20},
         channelsByName,
         actions: {
             handleSelectChannel: jest.fn(),
-            setChannelDisplayName: jest.fn(),
+            joinChannel: jest.fn(),
         },
     };
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <ChannelLink {...baseProps}/>
+            <ChannelLink {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -59,17 +71,76 @@ describe('ChannelLink', () => {
 
     test('should call props.actions and onChannelLinkPress on handlePress', () => {
         const wrapper = shallow(
-            <ChannelLink {...baseProps}/>
+            <ChannelLink {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
         );
 
         const channel = channelsByName.firstChannel;
-        wrapper.setState({channel});
         wrapper.instance().handlePress();
         expect(baseProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
         expect(baseProps.actions.handleSelectChannel).toBeCalledWith(channel.id);
-        expect(baseProps.actions.setChannelDisplayName).toHaveBeenCalledTimes(1);
-        expect(baseProps.actions.setChannelDisplayName).toBeCalledWith(channel.display_name);
         expect(baseProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
         expect(baseProps.onChannelLinkPress).toBeCalledWith(channel);
+
+        expect(baseProps.actions.joinChannel).not.toBeCalled();
+    });
+
+    test('should call props.actions.joinChannel on handlePress when user is not member of such channel', async () => {
+        const newChannelName = 'thirdChannel';
+        const thirdChannel = {id: 'channel_id_3', name: 'thirdChannel', display_name: 'thirdChannel', team_id: 'current_team_id'};
+        const error = {message: 'Failed to join a channel'};
+        const joinChannel = jest.fn().
+            mockReturnValueOnce({data: {channel: thirdChannel}}).
+            mockReturnValueOnce({}).
+            mockReturnValueOnce({data: {}}).
+            mockReturnValueOnce({error});
+        const channelMentions = {thirdChannel: {display_name: 'thirdChannel'}};
+        const newChannelsByName = Object.assign({}, channelMentions, channelsByName);
+        const newProps = {
+            ...baseProps,
+            channelsByName: newChannelsByName,
+            channelName: newChannelName,
+            actions: {...baseProps.actions, joinChannel},
+        };
+        const intl = {formatMessage};
+        const joinFailedMessage = {
+            id: 'mobile.join_channel.error',
+            defaultMessage: 'We couldn\'t join the channel {displayName}. Please check your connection and try again.',
+        };
+        const wrapper = shallow(
+            <ChannelLink {...newProps}/>,
+            {context: {intl}},
+        );
+
+        await wrapper.instance().handlePress();
+        expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(1);
+        expect(newProps.actions.joinChannel).toBeCalledWith('current_user_id', 'current_team_id', null, newChannelName);
+        expect(alertErrorWithFallback).not.toBeCalled();
+        expect(newProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
+        expect(newProps.actions.handleSelectChannel).toHaveBeenLastCalledWith(thirdChannel.id);
+        expect(newProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
+        expect(newProps.onChannelLinkPress).toHaveBeenLastCalledWith(thirdChannel);
+
+        // should have called alertErrorWithFallback on error when joining a channel
+        await wrapper.instance().handlePress();
+        expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(2);
+        expect(alertErrorWithFallback).toHaveBeenCalledTimes(1);
+        expect(alertErrorWithFallback).toHaveBeenLastCalledWith(intl, {}, joinFailedMessage, thirdChannel.display_name);
+        expect(newProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
+        expect(newProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
+
+        await wrapper.instance().handlePress();
+        expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(3);
+        expect(alertErrorWithFallback).toHaveBeenCalledTimes(2);
+        expect(alertErrorWithFallback).toHaveBeenLastCalledWith(intl, {}, joinFailedMessage, thirdChannel.display_name);
+        expect(newProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
+        expect(newProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
+
+        await wrapper.instance().handlePress();
+        expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(4);
+        expect(alertErrorWithFallback).toHaveBeenCalledTimes(3);
+        expect(alertErrorWithFallback).toHaveBeenLastCalledWith(intl, error, joinFailedMessage, thirdChannel.display_name);
+        expect(newProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
+        expect(newProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
     });
 });
