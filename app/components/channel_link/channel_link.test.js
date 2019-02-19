@@ -32,7 +32,6 @@ describe('ChannelLink', () => {
         actions: {
             handleSelectChannel: jest.fn(),
             joinChannel: jest.fn(),
-            setChannelDisplayName: jest.fn(),
         },
     };
 
@@ -80,8 +79,6 @@ describe('ChannelLink', () => {
         wrapper.instance().handlePress();
         expect(baseProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
         expect(baseProps.actions.handleSelectChannel).toBeCalledWith(channel.id);
-        expect(baseProps.actions.setChannelDisplayName).toHaveBeenCalledTimes(1);
-        expect(baseProps.actions.setChannelDisplayName).toBeCalledWith(channel.display_name);
         expect(baseProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
         expect(baseProps.onChannelLinkPress).toBeCalledWith(channel);
 

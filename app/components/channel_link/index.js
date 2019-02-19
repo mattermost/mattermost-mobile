@@ -10,7 +10,7 @@ import {getChannelsNameMapInCurrentTeam} from 'mattermost-redux/selectors/entiti
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
-import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
+import {handleSelectChannel} from 'app/actions/views/channel';
 
 import ChannelLink from './channel_link';
 
@@ -45,7 +45,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             handleSelectChannel,
             joinChannel,
-            setChannelDisplayName,
         }, dispatch),
     };
 }
