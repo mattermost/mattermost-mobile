@@ -7,6 +7,7 @@ import {FlatList, StyleSheet} from 'react-native';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import {ListTypes} from 'app/constants';
+import {THREAD} from 'app/constants/screen';
 import {makeExtraData} from 'app/utils/list_view';
 
 import PostListBase from './post_list_base';
@@ -75,7 +76,7 @@ export default class PostList extends PostListBase {
                 this.props.onLoadMoreUp();
             }
         } else if (pageOffsetY < 0) {
-            if (this.state.postListHeight > contentHeight || this.props.location === 'thread') {
+            if (this.state.postListHeight > contentHeight || this.props.location === THREAD) {
                 // Posting a message like multiline or jumbo emojis causes the FlatList component for iOS
                 // to render RefreshControl component and remain the space as is when it's unmounted,
                 // leaving a whitespace of ~64 units of height between input box and post list.
@@ -111,7 +112,7 @@ export default class PostList extends PostListBase {
             this.refs.list.scrollToIndex({
                 animated: false,
                 index: this.props.initialIndex,
-                viewPosition: 0.5,
+                viewPosition: 1,
             });
             this.hasDoneInitialScroll = true;
         }
