@@ -25,11 +25,10 @@ import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import {UpgradeTypes} from 'app/constants';
 import fetchConfig from 'app/fetch_preconfig';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
-import checkUpgradeType from 'app/utils/client_upgrade';
+import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
@@ -101,10 +100,10 @@ export default class SelectServer extends PureComponent {
                 this.props.actions.setLastUpgradeCheck();
                 const {currentVersion, minVersion, latestVersion} = nextProps;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
-                if (upgradeType === UpgradeTypes.NO_UPGRADE) {
-                    this.handleLoginOptions(nextProps);
-                } else {
+                if (isUpgradeAvailable(upgradeType)) {
                     this.handleShowClientUpgrade(upgradeType);
+                } else {
+                    this.handleLoginOptions(nextProps);
                 }
             } else {
                 this.handleLoginOptions(nextProps);
