@@ -55,7 +55,7 @@
     "react-native-svg": "9.2.4",
     "react-native-tableview": "2.4.1",
     "react-native-vector-icons": "6.3.0",
-    "react-native-video": "github:react-native-community/react-native-video#d8a2a9e108c52e79b850be17bff08e1519c118ea",
+    "react-native-video": "4.4.0",
     "react-native-webview": "5.2.1",
     "react-native-youtube": "github:enahum/react-native-youtube#3f395b620ae4e05a3f1c6bdeef3a1158e78daadc",
     "react-navigation": "3.2.3",
