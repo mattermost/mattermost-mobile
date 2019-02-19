@@ -4,15 +4,12 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {stopPeriodicStatusUpdates, logout} from 'mattermost-redux/actions/users';
+import {stopPeriodicStatusUpdates, startPeriodicStatusUpdates, logout} from 'mattermost-redux/actions/users';
 import {init as initWebSocket, close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 
 import {connection} from 'app/actions/device';
-import {
-    initUserStatuses as startPeriodicStatusUpdates,
-    setCurrentUserStatus,
-} from 'app/actions/views/user';
+import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 import {getConnection, isLandscape} from 'app/selectors/device';
 
 import NetworkIndicator from './network_indicator';
@@ -37,7 +34,7 @@ function mapDispatchToProps(dispatch) {
             connection,
             initWebSocket,
             logout,
-            setCurrentUserStatus,
+            setCurrentUserStatusOffline,
             startPeriodicStatusUpdates,
             stopPeriodicStatusUpdates,
         }, dispatch),

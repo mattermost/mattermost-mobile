@@ -314,7 +314,6 @@ export default class App {
             break;
         }
 
-        this.setStartAppFromPushNotification(false);
         this.setAppStarted(true);
     }
 }

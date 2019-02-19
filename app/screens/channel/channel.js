@@ -14,6 +14,8 @@ import {
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import {app} from 'app/mattermost';
+
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import EmptyToolbar from 'app/components/start/empty_toolbar';
 import ChannelLoader from 'app/components/channel_loader';
@@ -247,9 +249,12 @@ export default class Channel extends PureComponent {
 
         loadChannelsIfNecessary(teamId).then(() => {
             loadProfilesAndTeamMembersForDMSidebar(teamId);
-            selectInitialChannel(teamId);
-        }).catch(() => {
-            selectInitialChannel(teamId);
+
+            if (app.startAppFromPushNotification) {
+                app.setStartAppFromPushNotification(false);
+            } else {
+                selectInitialChannel(teamId);
+            }
         });
     };
 

@@ -1,22 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {batchActions} from 'redux-batched-actions';
-
-import {ChannelTypes, TeamTypes} from 'mattermost-redux/action_types';
-import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
+import {TeamTypes} from 'mattermost-redux/action_types';
 import {getMyTeams} from 'mattermost-redux/actions/teams';
 import {RequestStatus} from 'mattermost-redux/constants';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes} from 'app/constants';
 import {selectFirstAvailableTeam} from 'app/utils/teams';
 
-import {setChannelDisplayName} from './channel';
-
-export function handleTeamChange(teamId, selectChannel = true) {
+export function handleTeamChange(teamId) {
     return async (dispatch, getState) => {
         const state = getState();
         const {currentTeamId} = state.entities.teams;
@@ -24,19 +18,7 @@ export function handleTeamChange(teamId, selectChannel = true) {
             return;
         }
 
-        const actions = [setChannelDisplayName(''), {type: TeamTypes.SELECT_TEAM, data: teamId}];
-
-        if (selectChannel) {
-            actions.push({type: ChannelTypes.SELECT_CHANNEL, data: ''});
-
-            const lastChannels = state.views.team.lastChannelForTeam[teamId] || [];
-            const lastChannelId = lastChannels[0] || '';
-            const currentChannelId = getCurrentChannelId(state);
-            markChannelAsViewed(currentChannelId)(dispatch, getState);
-            markChannelAsRead(lastChannelId, currentChannelId)(dispatch, getState);
-        }
-
-        dispatch(batchActions(actions, 'BATCH_SELECT_TEAM'), getState);
+        dispatch({type: TeamTypes.SELECT_TEAM, data: teamId});
     };
 }
 
