@@ -91,7 +91,7 @@ export default class PostList extends PostListBase {
         this.refs.list.scrollToIndex({
             animated: true,
             index: 0,
-            viewPosition: 0.5,
+            viewPosition: 1,
         });
     }, 100);
 
@@ -112,7 +112,7 @@ export default class PostList extends PostListBase {
             this.refs.list.scrollToIndex({
                 animated: false,
                 index: this.props.initialIndex,
-                viewPosition: 1,
+                viewPosition: 0.5,
             });
             this.hasDoneInitialScroll = true;
         }
