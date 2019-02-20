@@ -53,6 +53,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
     onLoadMore={[Function]}
     onRowPress={[Function]}
     renderItem={[Function]}
+    shouldRenderSeparator={true}
     showNoResults={true}
     theme={
       Object {
@@ -139,6 +140,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
     onLoadMore={[Function]}
     onRowPress={[Function]}
     renderItem={[Function]}
+    shouldRenderSeparator={true}
     showNoResults={true}
     theme={
       Object {
@@ -232,6 +234,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
     onLoadMore={[Function]}
     onRowPress={[Function]}
     renderItem={[Function]}
+    shouldRenderSeparator={true}
     showNoResults={true}
     theme={
       Object {
@@ -318,6 +321,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
     onLoadMore={[Function]}
     onRowPress={[Function]}
     renderItem={[Function]}
+    shouldRenderSeparator={true}
     showNoResults={true}
     theme={
       Object {
@@ -404,6 +408,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
     onLoadMore={[Function]}
     onRowPress={[Function]}
     renderItem={[Function]}
+    shouldRenderSeparator={true}
     showNoResults={true}
     theme={
       Object {
@@ -490,6 +495,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
     onLoadMore={[Function]}
     onRowPress={[Function]}
     renderItem={[Function]}
+    shouldRenderSeparator={true}
     showNoResults={true}
     theme={
       Object {

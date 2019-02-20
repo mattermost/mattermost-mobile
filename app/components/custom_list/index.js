@@ -21,6 +21,8 @@ export default class CustomList extends PureComponent {
         loading: PropTypes.bool,
         loadingComponent: PropTypes.element,
         noResults: PropTypes.element,
+        refreshing: PropTypes.bool,
+        onRefresh: PropTypes.func,
         onLoadMore: PropTypes.func,
         onRowPress: PropTypes.func,
         onRowSelect: PropTypes.func,
@@ -30,11 +32,13 @@ export default class CustomList extends PureComponent {
         ]).isRequired,
         selectable: PropTypes.bool,
         theme: PropTypes.object.isRequired,
+        shouldRenderSeparator: PropTypes.bool,
     };
 
     static defaultProps = {
         listType: FLATLIST,
         showNoResults: true,
+        shouldRenderSeparator: true,
     };
 
     constructor(props) {
@@ -104,7 +108,7 @@ export default class CustomList extends PureComponent {
     };
 
     renderFlatList = () => {
-        const {data, extraData, theme} = this.props;
+        const {data, extraData, theme, onRefresh, refreshing} = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -122,6 +126,8 @@ export default class CustomList extends PureComponent {
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 onLayout={this.handleLayout}
                 onScroll={this.handleScroll}
+                onRefresh={onRefresh}
+                refreshing={refreshing}
                 ref={this.setListRef}
                 removeClippedSubviews={true}
                 renderItem={this.renderItem}
@@ -185,6 +191,10 @@ export default class CustomList extends PureComponent {
     };
 
     renderSeparator = () => {
+        if (!this.props.shouldRenderSeparator) {
+            return null;
+        }
+
         const style = getStyleFromTheme(this.props.theme);
 
         return (
