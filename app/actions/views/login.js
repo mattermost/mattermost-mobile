@@ -55,11 +55,11 @@ export function handleSuccessfulLogin() {
                 url,
                 token,
             },
-        }, getState);
+        });
 
         if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
             license.IsLicensed === 'true' && license.DataRetention === 'true') {
-            getDataRetentionPolicy()(dispatch, getState);
+            dispatch(getDataRetentionPolicy());
         } else {
             dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
         }

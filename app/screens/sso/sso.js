@@ -232,7 +232,7 @@ class SSO extends PureComponent {
                     renderLoading={this.renderLoading}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
-                    onMessage={messagingEnabled && this.onMessage}
+                    onMessage={messagingEnabled ? this.onMessage : null}
                     useWebKit={true}
                 />
             );
