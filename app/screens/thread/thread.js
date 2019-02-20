@@ -7,6 +7,8 @@ import {Platform} from 'react-native';
 import {intlShape} from 'react-intl';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 
+import {THREAD} from 'app/constants/screen';
+
 import Loading from 'app/components/loading';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import PostList from 'app/components/post_list';
@@ -148,6 +150,7 @@ export default class Thread extends PureComponent {
                     currentUserId={myMember && myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                     navigator={navigator}
+                    location={THREAD}
                 />
             );
 
