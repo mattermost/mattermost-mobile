@@ -165,12 +165,15 @@ public class ShareModule extends ReactContextBaseJavaModule {
                     map.putString("value", text);
 
                     type = RealPathUtil.getMimeTypeFromUri(currentActivity, uri);
-                    if (type.equals("image/*")) {
-                        type = "image/jpeg";
-                    } else if (type.equals("video/*")) {
-                        type = "video/mp4";
+                    if (type != null) {
+                        if (type.equals("image/*")) {
+                            type = "image/jpeg";
+                        } else if (type.equals("video/*")) {
+                            type = "video/mp4";
+                        }
+                    } else {
+                        type = "application/octet-stream";
                     }
-
                     map.putString("type", type);
                     items.pushMap(map);
                 }
