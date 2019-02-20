@@ -139,7 +139,7 @@ export default class App {
                         this.url = url;
                         Client4.setUrl(url);
                         Client4.setToken(token);
-                        setCSRFFromCookie(url);
+                        await setCSRFFromCookie(url);
                     } else {
                         this.waitForRehydration = true;
                     }

@@ -6,10 +6,13 @@ import CookieManager from 'react-native-cookies';
 import urlParse from 'url-parse';
 
 export function setCSRFFromCookie(url) {
-    CookieManager.get(urlParse(url).origin, false).then((res) => {
-        const token = res.MMCSRF;
-        if (token) {
-            Client4.setCSRF(token?.value || token);
-        }
+    return new Promise((resolve) => {
+        CookieManager.get(urlParse(url).origin, false).then((res) => {
+            const token = res.MMCSRF;
+            if (token) {
+                Client4.setCSRF(token?.value || token);
+            }
+            resolve();
+        });
     });
 }

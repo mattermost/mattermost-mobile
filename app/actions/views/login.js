@@ -42,7 +42,7 @@ export function handleSuccessfulLogin() {
         const deviceToken = state.entities.general.deviceToken;
         const currentUserId = getCurrentUserId(state);
 
-        setCSRFFromCookie(url);
+        await setCSRFFromCookie(url);
         app.setAppCredentials(deviceToken, currentUserId, token, url);
 
         const enableTimezone = isTimezoneEnabled(state);
