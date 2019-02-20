@@ -13,6 +13,7 @@ import {ViewTypes} from 'app/constants';
 import {app} from 'app/mattermost';
 import PushNotifications from 'app/push_notifications';
 import {getDeviceTimezone, isTimezoneEnabled} from 'app/utils/timezone';
+import {setCSRFFromCookie} from 'app/utils/security';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -42,6 +43,7 @@ export function handleSuccessfulLogin() {
         const deviceToken = state.entities.general.deviceToken;
         const currentUserId = getCurrentUserId(state);
 
+        await setCSRFFromCookie(url);
         app.setAppCredentials(deviceToken, currentUserId, token, url);
 
         const enableTimezone = isTimezoneEnabled(state);

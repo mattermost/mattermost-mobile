@@ -17,6 +17,7 @@ import {getCurrentLocale} from 'app/selectors/i18n';
 import {getTranslations as getLocalTranslations} from 'app/i18n';
 import {store, handleManagedConfig} from 'app/mattermost';
 import avoidNativeBridge from 'app/utils/avoid_native_bridge';
+import {setCSRFFromCookie} from 'utils/security';
 
 const {Initialization} = NativeModules;
 
@@ -138,6 +139,7 @@ export default class App {
                         this.url = url;
                         Client4.setUrl(url);
                         Client4.setToken(token);
+                        await setCSRFFromCookie(url);
                     } else {
                         this.waitForRehydration = true;
                     }

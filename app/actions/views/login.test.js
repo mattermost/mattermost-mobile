@@ -17,6 +17,21 @@ jest.mock('app/mattermost', () => ({
     },
 }));
 
+jest.mock('react-native-cookies', () => ({
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    openURL: jest.fn(),
+    canOpenURL: jest.fn(),
+    getInitialURL: jest.fn(),
+    get: () => Promise.resolve(({
+        res: {
+            MMCSRF: {
+                value: 'the cookie',
+            },
+        },
+    })),
+}));
+
 const mockStore = configureStore([thunk]);
 
 describe('Actions.Views.Login', () => {
