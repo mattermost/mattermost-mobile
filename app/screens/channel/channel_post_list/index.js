@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {selectPost} from 'mattermost-redux/actions/posts';
 import {getPostIdsInCurrentChannel} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentChannelId, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -18,7 +18,6 @@ import ChannelPostList from './channel_post_list';
 function mapStateToProps(state) {
     const channelId = getCurrentChannelId(state);
     const channelRefreshingFailed = state.views.channel.retryFailed;
-    const currentChannelMember = getMyCurrentChannelMembership(state);
 
     return {
         channelId,
@@ -27,7 +26,7 @@ function mapStateToProps(state) {
         deviceHeight: state.device.dimension.deviceHeight,
         postIds: getPostIdsInCurrentChannel(state),
         postVisibility: state.views.channel.postVisibility[channelId],
-        lastViewedAt: currentChannelMember && currentChannelMember.last_viewed_at,
+        lastViewedAt: state.views.channel.lastChannelViewTime[channelId],
         loadMorePostsVisible: state.views.channel.loadMorePostsVisible,
         refreshing: state.views.channel.refreshing,
         theme: getTheme(state),

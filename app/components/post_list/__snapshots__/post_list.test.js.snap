@@ -1,0 +1,145 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostList setting channel deep link 1`] = `
+<FlatList
+  ListFooterComponent={[Function]}
+  contentContainerStyle={
+    Object {
+      "paddingTop": 5,
+    }
+  }
+  data={
+    Array [
+      "post-id-1",
+      "post-id-2",
+    ]
+  }
+  disableVirtualization={false}
+  extraData={
+    Array [
+      undefined,
+      undefined,
+      undefined,
+    ]
+  }
+  horizontal={false}
+  initialNumToRender={15}
+  inverted={true}
+  keyExtractor={[Function]}
+  maintainVisibleContentPosition={
+    Object {
+      "autoscrollToTopThreshold": 60,
+      "minIndexForVisible": 0,
+    }
+  }
+  maxToRenderPerBatch={16}
+  numColumns={1}
+  onContentSizeChange={[Function]}
+  onEndReachedThreshold={2}
+  onLayout={[Function]}
+  onScroll={[Function]}
+  onScrollToIndexFailed={[Function]}
+  refreshing={false}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  scrollEventThrottle={60}
+  updateCellsBatchingPeriod={50}
+  windowSize={21}
+/>
+`;
+
+exports[`PostList setting permalink deep link 1`] = `
+<FlatList
+  ListFooterComponent={[Function]}
+  contentContainerStyle={
+    Object {
+      "paddingTop": 5,
+    }
+  }
+  data={
+    Array [
+      "post-id-1",
+      "post-id-2",
+    ]
+  }
+  disableVirtualization={false}
+  extraData={
+    Array [
+      undefined,
+      undefined,
+      undefined,
+    ]
+  }
+  horizontal={false}
+  initialNumToRender={15}
+  inverted={true}
+  keyExtractor={[Function]}
+  maintainVisibleContentPosition={
+    Object {
+      "autoscrollToTopThreshold": 60,
+      "minIndexForVisible": 0,
+    }
+  }
+  maxToRenderPerBatch={16}
+  numColumns={1}
+  onContentSizeChange={[Function]}
+  onEndReachedThreshold={2}
+  onLayout={[Function]}
+  onScroll={[Function]}
+  onScrollToIndexFailed={[Function]}
+  refreshing={false}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  scrollEventThrottle={60}
+  updateCellsBatchingPeriod={50}
+  windowSize={21}
+/>
+`;
+
+exports[`PostList should match snapshot 1`] = `
+<FlatList
+  ListFooterComponent={[Function]}
+  contentContainerStyle={
+    Object {
+      "paddingTop": 5,
+    }
+  }
+  data={
+    Array [
+      "post-id-1",
+      "post-id-2",
+    ]
+  }
+  disableVirtualization={false}
+  extraData={
+    Array [
+      undefined,
+      undefined,
+      undefined,
+    ]
+  }
+  horizontal={false}
+  initialNumToRender={15}
+  inverted={true}
+  keyExtractor={[Function]}
+  maintainVisibleContentPosition={
+    Object {
+      "autoscrollToTopThreshold": 60,
+      "minIndexForVisible": 0,
+    }
+  }
+  maxToRenderPerBatch={16}
+  numColumns={1}
+  onContentSizeChange={[Function]}
+  onEndReachedThreshold={2}
+  onLayout={[Function]}
+  onScroll={[Function]}
+  onScrollToIndexFailed={[Function]}
+  refreshing={false}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  scrollEventThrottle={60}
+  updateCellsBatchingPeriod={50}
+  windowSize={21}
+/>
+`;

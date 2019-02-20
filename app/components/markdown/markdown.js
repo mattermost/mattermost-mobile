@@ -42,6 +42,7 @@ export default class Markdown extends PureComponent {
         autolinkedUrlSchemes: PropTypes.array.isRequired,
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
+        channelMentions: PropTypes.object,
         imageMetadata: PropTypes.object,
         isEdited: PropTypes.bool,
         isReplyPost: PropTypes.bool,
@@ -222,6 +223,7 @@ export default class Markdown extends PureComponent {
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
                 onChannelLinkPress={this.props.onChannelLinkPress}
                 channelName={channelName}
+                channelMentions={this.props.channelMentions}
             />
         );
     };
