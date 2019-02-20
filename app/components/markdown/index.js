@@ -10,11 +10,12 @@ import {getCurrentUserMentionKeys} from 'mattermost-redux/selectors/entities/use
 import Markdown from './markdown';
 
 function mapStateToProps(state) {
-    const config = getConfig(state);
+    const {MinimumHashtagLength} = getConfig(state);
+
     return {
         autolinkedUrlSchemes: getAutolinkedUrlSchemes(state),
         mentionKeys: getCurrentUserMentionKeys(state),
-        minimumHashtagLength: parseInt(config.MinimumHashtagLength, 10),
+        minimumHashtagLength: MinimumHashtagLength ? parseInt(MinimumHashtagLength, 10) : 3,
         theme: getTheme(state),
     };
 }
