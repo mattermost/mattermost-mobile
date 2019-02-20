@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import {NavigationActions} from 'react-navigation';
-import TouchableItem from 'react-navigation/src/views/TouchableItem';
+import TouchableItem from 'react-navigation-stack/dist/views/TouchableItem';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
