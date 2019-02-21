@@ -17,7 +17,7 @@ import {getCurrentLocale} from 'app/selectors/i18n';
 import {getTranslations as getLocalTranslations} from 'app/i18n';
 import {store, handleManagedConfig} from 'app/mattermost';
 import avoidNativeBridge from 'app/utils/avoid_native_bridge';
-import {setCSRFFromCookie} from 'utils/security';
+import {setCSRFFromCookie} from 'app/utils/security';
 
 const {Initialization} = NativeModules;
 
