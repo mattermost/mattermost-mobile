@@ -18,7 +18,7 @@ describe('ReactionList', () => {
         },
         allUserIds: ['user_id_1', 'user_id_2'],
         navigator: {setOnNavigatorEvent: jest.fn()},
-        reactions: [{emoji_name: 'smile', user_id: 'user_id_1'}, {emoji_name: '+1', user_id: 'user_id_2'}],
+        reactions: {'user_id_1-smile': {emoji_name: 'smile', user_id: 'user_id_1'}, 'user_id_2-+1': {emoji_name: '+1', user_id: 'user_id_2'}},
         theme: Preferences.THEMES.default,
         teammateNameDisplay: 'username',
         userProfiles: [{id: 'user_id_1', username: 'username_1'}, {id: 'user_id_2', username: 'username_2'}],

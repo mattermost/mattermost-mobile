@@ -26,6 +26,7 @@ export async function checkConnection(isConnected) {
     const config = {
         timeout: PING_TIMEOUT,
         auto: true,
+        waitsForConnectivity: true,
     };
 
     if (Platform.OS === 'ios' && certificate === '') {

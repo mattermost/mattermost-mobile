@@ -18,8 +18,6 @@ export default class ChannelLoader extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleSelectChannel: PropTypes.func.isRequired,
-            markChannelAsViewed: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
         backgroundColor: PropTypes.string,
@@ -42,7 +40,6 @@ export default class ChannelLoader extends PureComponent {
             return {
                 switch: false,
                 channel: null,
-                currentChannelId: null,
             };
         }
 
@@ -61,22 +58,13 @@ export default class ChannelLoader extends PureComponent {
         if (this.state.switch) {
             const {
                 handleSelectChannel,
-                markChannelAsRead,
-                markChannelAsViewed,
                 setChannelLoading,
             } = this.props.actions;
 
-            const {channel, currentChannelId} = this.state;
+            const {channel} = this.state;
 
             setTimeout(() => {
                 handleSelectChannel(channel.id);
-
-                // mark the channel as viewed after all the frame has flushed
-                markChannelAsRead(channel.id, currentChannelId);
-                if (channel.id !== currentChannelId) {
-                    markChannelAsViewed(currentChannelId);
-                }
-
                 setChannelLoading(false);
             }, 250);
         }
@@ -106,7 +94,7 @@ export default class ChannelLoader extends PureComponent {
         if (channel.id === currentChannelId) {
             this.props.actions.setChannelLoading(false);
         } else {
-            this.setState({switch: true, channel, currentChannelId});
+            this.setState({switch: true, channel});
         }
     };
 

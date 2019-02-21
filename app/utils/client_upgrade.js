@@ -6,11 +6,13 @@ import {UpgradeTypes} from 'app/constants';
 
 import LocalConfig from 'assets/config';
 
-export default function checkUpgradeType(currentVersion, minVersion, latestVersion, logError) {
+export function checkUpgradeType(currentVersion, minVersion, latestVersion, logError) {
     let upgradeType = UpgradeTypes.NO_UPGRADE;
 
     try {
-        if (minVersion && semver.lt(currentVersion, minVersion)) {
+        if (semver.gt(currentVersion, latestVersion)) {
+            upgradeType = UpgradeTypes.IS_BETA;
+        } else if (minVersion && semver.lt(currentVersion, minVersion)) {
             upgradeType = UpgradeTypes.MUST_UPGRADE;
         } else if (latestVersion && semver.lt(currentVersion, latestVersion)) {
             if (LocalConfig.EnableForceMobileClientUpgrade) {
@@ -24,4 +26,11 @@ export default function checkUpgradeType(currentVersion, minVersion, latestVersi
     }
 
     return upgradeType;
+}
+
+export function isUpgradeAvailable(upgradeType) {
+    return [
+        UpgradeTypes.CAN_UPGRADE,
+        UpgradeTypes.MUST_UPGRADE,
+    ].includes(upgradeType);
 }

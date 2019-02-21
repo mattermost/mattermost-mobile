@@ -11,25 +11,15 @@
 #define IDIOM    UI_USER_INTERFACE_IDIOM()
 #define IPAD     UIUserInterfaceIdiomPad
 
-@interface RNDocumentPicker () <UIDocumentPickerDelegate>
+@interface RNDocumentPicker () <UIDocumentMenuDelegate,UIDocumentPickerDelegate>
 @end
 
 
 @implementation RNDocumentPicker {
-    NSMutableArray *composeViews;
-    NSMutableArray *composeCallbacks;
+    NSMutableArray *_composeCallbacks;
 }
 
 @synthesize bridge = _bridge;
-
-- (instancetype)init
-{
-    if ((self = [super init])) {
-        composeCallbacks = [[NSMutableArray alloc] init];
-        composeViews = [[NSMutableArray alloc] init];
-    }
-    return self;
-}
 
 - (dispatch_queue_t)methodQueue
 {
@@ -44,7 +34,7 @@ RCT_EXPORT_METHOD(show:(NSDictionary *)options
     NSArray *allowedUTIs = [RCTConvert NSArray:options[@"filetype"]];
     UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:(NSArray *)allowedUTIs inMode:UIDocumentPickerModeImport];
 
-    [composeCallbacks addObject:callback];
+    [[self composeCallbacks] addObject:callback];
 
 
     documentPicker.delegate = self;
@@ -66,10 +56,27 @@ RCT_EXPORT_METHOD(show:(NSDictionary *)options
 }
 
 
+- (void)documentMenu:(UIDocumentMenuViewController *)documentMenu didPickDocumentPicker:(UIDocumentPickerViewController *)documentPicker {
+    documentPicker.delegate = self;
+    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+
+    UIViewController *rootViewController = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
+    
+    while (rootViewController.modalViewController) {
+        rootViewController = rootViewController.modalViewController;
+    }
+    if ( IDIOM == IPAD ) {
+        [documentPicker.popoverPresentationController setSourceRect: CGRectMake(rootViewController.view.frame.size.width/2, rootViewController.view.frame.size.height - rootViewController.view.frame.size.height / 6, 0, 0)];
+        [documentPicker.popoverPresentationController setSourceView: rootViewController.view];
+    }
+
+    [rootViewController presentViewController:documentPicker animated:YES completion:nil];
+}
+
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url {
     if (controller.documentPickerMode == UIDocumentPickerModeImport) {
-        RCTResponseSenderBlock callback = [composeCallbacks lastObject];
-        [composeCallbacks removeLastObject];
+        RCTResponseSenderBlock callback = [[self composeCallbacks] lastObject];
+        [[self composeCallbacks] removeLastObject];
 
         [url startAccessingSecurityScopedResource];
 
@@ -95,6 +102,13 @@ RCT_EXPORT_METHOD(show:(NSDictionary *)options
 
         [url stopAccessingSecurityScopedResource];
     }
+}
+
+- (NSMutableArray *)composeCallbacks {
+    if(_composeCallbacks == nil) {
+        _composeCallbacks = [[NSMutableArray alloc] init];
+    }
+    return _composeCallbacks;
 }
 
 @end

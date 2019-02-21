@@ -18,11 +18,11 @@ function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
 
     return {
-        enablePostIconOverride: config.EnablePostIconOverride === 'true',
-        fromWebHook: post.props && post.props.from_webhook === 'true',
+        enablePostIconOverride: config.EnablePostIconOverride === 'true' && post?.props?.use_user_icon === 'false', // eslint-disable-line camelcase
+        fromWebHook: post?.props?.from_webhook === 'true', // eslint-disable-line camelcase
         isSystemMessage: isSystemMessage(post),
         fromAutoResponder: fromAutoResponder(post),
-        overrideIconUrl: post.props && post.props.override_icon_url,
+        overrideIconUrl: post?.props?.override_icon_url, // eslint-disable-line camelcase
         userId: post.user_id,
         theme: getTheme(state),
     };

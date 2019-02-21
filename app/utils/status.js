@@ -39,6 +39,7 @@ export function confirmOutOfOfficeDisabled(intl, status, updateStatus) {
         }, {status: translatedStatus}),
         [{
             text: intl.formatMessage({id: 'mobile.reset_status.alert_cancel', defaultMessage: 'Cancel'}),
+            style: 'cancel',
         }, {
             text: intl.formatMessage({id: 'mobile.reset_status.alert_ok', defaultMessage: 'OK'}),
             onPress: () => updateStatus(status),

@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {
     PanResponder,
-    Platform,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -14,7 +13,6 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
-import PushNotifications from 'app/push_notifications';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -60,12 +58,6 @@ class ChannelDrawerButton extends PureComponent {
 
     componentDidMount() {
         EventEmitter.on('drawer_opacity', this.setOpacity);
-    }
-
-    componentDidUpdate(prevProps) {
-        if (prevProps.mentionCount !== this.props.mentionCount) {
-            PushNotifications.setApplicationIconBadgeNumber(this.props.mentionCount);
-        }
     }
 
     componentWillUnmount() {
@@ -133,8 +125,10 @@ class ChannelDrawerButton extends PureComponent {
                 style={style.container}
             >
                 <View style={[style.wrapper, {opacity: this.state.opacity}]}>
-                    {icon}
-                    {badge}
+                    <View>
+                        {icon}
+                        {badge}
+                    </View>
                 </View>
             </TouchableOpacity>
         );
@@ -158,19 +152,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderColor: theme.sidebarHeaderBg,
             borderRadius: 10,
             borderWidth: 1,
-            flexDirection: 'row',
-            left: 3,
+            left: -13,
             padding: 3,
             position: 'absolute',
             right: 0,
-            ...Platform.select({
-                android: {
-                    top: 10,
-                },
-                ios: {
-                    top: 5,
-                },
-            }),
+            top: -4,
         },
         mention: {
             color: theme.mentionColor,

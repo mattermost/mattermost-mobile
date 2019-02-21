@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import {NavigationActions} from 'react-navigation';
-import TouchableItem from 'react-navigation/src/views/TouchableItem';
+import TouchableItem from 'react-navigation-stack/dist/views/TouchableItem';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
@@ -63,7 +63,7 @@ export default class ExtensionPost extends PureComponent {
         actions: PropTypes.shape({
             getTeamChannels: PropTypes.func.isRequired,
         }).isRequired,
-        channelId: PropTypes.string.isRequired,
+        channelId: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
         maxFileSize: PropTypes.number.isRequired,
         navigation: PropTypes.object.isRequired,
@@ -325,8 +325,9 @@ export default class ExtensionPost extends PureComponent {
                 });
             }
 
-            this.setState({error, files, value, hasPermission: true, totalSize, loaded: true});
+            this.setState({error, files, value, hasPermission: true, totalSize});
         }
+        this.setState({loaded: true});
     };
 
     onClose = (data) => {

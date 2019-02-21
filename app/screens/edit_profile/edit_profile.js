@@ -72,6 +72,10 @@ export default class EditProfile extends PureComponent {
         intl: intlShape,
     };
 
+    leftButton = {
+        id: 'close-settings',
+    };
+
     rightButton = {
         id: 'update-profile',
         disabled: true,
@@ -83,10 +87,13 @@ export default class EditProfile extends PureComponent {
 
         const {email, first_name: firstName, last_name: lastName, nickname, position, username} = props.currentUser;
         const buttons = {
+            leftButtons: [this.leftButton],
             rightButtons: [this.rightButton],
         };
 
-        this.rightButton.title = context.intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
+        this.leftButton.title = context.intl.formatMessage({id: t('mobile.account.settings.cancel'), defaultMessage: 'Cancel'});
+        this.rightButton.title = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
+
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
 
@@ -347,21 +354,17 @@ export default class EditProfile extends PureComponent {
 
     renderEmailSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {currentUser, theme} = this.props;
         const {email} = this.state;
 
         let helpText;
-        let disabled = false;
 
-        if (config.SendEmailNotifications !== 'true') {
-            disabled = true;
+        if (currentUser.auth_service === '') {
             helpText = formatMessage({
-                id: 'user.settings.general.emailHelp1',
-                defaultMessage: 'Email is used for sign-in, notifications, and password reset. Email requires verification if changed.',
+                id: 'user.settings.general.emailCantUpdate',
+                defaultMessage: 'Email must be updated using a web client or desktop application.',
             });
-        } else if (currentUser.auth_service !== '') {
-            disabled = true;
-
+        } else {
             switch (currentUser.auth_service) {
             case 'gitlab':
                 helpText = formatMessage({
@@ -399,7 +402,7 @@ export default class EditProfile extends PureComponent {
         return (
             <View>
                 <TextSetting
-                    disabled={disabled}
+                    disabled={true}
                     id='email'
                     label={holders.email}
                     disabledText={helpText}

@@ -111,15 +111,15 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
             ],
             "results": Array [
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
             ],
@@ -132,7 +132,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
             ],
             "results": Array [
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
             ],
@@ -359,19 +359,19 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
             ],
             "results": Array [
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
             ],
@@ -384,7 +384,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
             ],
             "results": Array [
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
             ],
@@ -664,15 +664,15 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
             ],
             "results": Array [
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
             ],
@@ -685,7 +685,7 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
             ],
             "results": Array [
               Object {
-                "isThrow": false,
+                "type": "return",
                 "value": undefined,
               },
             ],

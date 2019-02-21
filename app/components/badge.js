@@ -96,13 +96,30 @@ export default class Badge extends PureComponent {
 
     renderText = () => {
         const {count} = this.props;
-        let text = count.toString();
-        const extra = {};
+        let unreadCount = null;
+        let unreadIndicator = null;
         if (count < 0) {
-            text = '•';
-
-            //the extra margin is to align to the center?
-            extra.marginBottom = 1;
+            unreadIndicator = (
+                <View
+                    style={[styles.text, this.props.countStyle]}
+                    onLayout={this.onLayout}
+                >
+                    <View style={styles.verticalAlign}>
+                        <View style={[styles.unreadIndicator, {backgroundColor: this.props.countStyle.color}]}/>
+                    </View>
+                </View>
+            );
+        } else {
+            unreadCount = (
+                <View style={styles.verticalAlign}>
+                    <Text
+                        style={[styles.text, this.props.countStyle]}
+                        onLayout={this.onLayout}
+                    >
+                        {count.toString()}
+                    </Text>
+                </View>
+            );
         }
         return (
             <View
@@ -110,12 +127,8 @@ export default class Badge extends PureComponent {
                 style={[styles.badge, this.props.style, {opacity: 0}]}
             >
                 <View style={styles.wrapper}>
-                    <Text
-                        style={[styles.text, this.props.countStyle, extra]}
-                        onLayout={this.onLayout}
-                    >
-                        {text}
-                    </Text>
+                    {unreadCount}
+                    {unreadIndicator}
                 </View>
             </View>
         );
@@ -150,12 +163,26 @@ const styles = StyleSheet.create({
         top: 2,
     },
     wrapper: {
-        alignItems: 'center',
         flex: 1,
+        alignItems: 'center',
         justifyContent: 'center',
+        alignSelf: 'center',
     },
     text: {
         fontSize: 14,
         color: 'white',
+    },
+    unreadIndicator: {
+        height: 4,
+        width: 4,
+        backgroundColor: '#444',
+        borderRadius: 4,
+    },
+    verticalAlign: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlignVertical: 'center',
     },
 });

@@ -48,7 +48,6 @@ export default class ProfilePicture extends PureComponent {
 
     state = {
         pictureUrl: null,
-        otherImageProps: {},
     };
 
     componentDidMount() {
@@ -99,34 +98,21 @@ export default class ProfilePicture extends PureComponent {
         }
     };
 
-    showDefaultImage = () => {
-        if (this.mounted) {
-            this.setState({otherImageProps: {defaultSource: placeholder}});
-        }
-    };
-
     clearProfileImageUri = () => {
         if (this.props.isCurrentUser && this.props.profileImageUri !== '') {
             this.props.actions.setProfileImageUri('');
         }
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        if (!this.props.edit) {
-            if (this.state.otherImageProps !== prevState.otherImageProps) {
-                this.showDefaultImage();
-            }
-        }
-
+    componentDidUpdate(prevProps) {
         if (this.props.profileImageRemove !== prevProps.profileImageRemove) {
             this.setImageURL(null);
-            this.showDefaultImage();
         }
     }
 
     render() {
         const {edit, showStatus, theme} = this.props;
-        const {pictureUrl, otherImageProps} = this.state;
+        const {pictureUrl} = this.state;
         const style = getStyleSheet(theme);
 
         let statusIcon;
@@ -155,6 +141,7 @@ export default class ProfilePicture extends PureComponent {
         }
 
         let source = null;
+        let image;
         if (pictureUrl) {
             let prefix = '';
             if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') &&
@@ -165,16 +152,26 @@ export default class ProfilePicture extends PureComponent {
             source = {
                 uri: `${prefix}${pictureUrl}`,
             };
-        }
 
-        return (
-            <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
+            image = (
                 <Image
                     key={pictureUrl}
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={source}
-                    {...otherImageProps}
                 />
+            );
+        } else {
+            image = (
+                <Image
+                    style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
+                    source={placeholder}
+                />
+            );
+        }
+
+        return (
+            <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
+                {image}
                 {(showStatus || edit) &&
                     <View style={[style.statusWrapper, statusStyle, {borderRadius: this.props.statusSize / 2}]}>
                         {statusIcon}

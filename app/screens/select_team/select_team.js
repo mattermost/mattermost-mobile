@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
-    FlatList,
     InteractionManager,
     Text,
     TouchableOpacity,
@@ -19,16 +18,14 @@ import FailedNetworkAction from 'app/components/failed_network_action';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
-import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import CustomList from 'app/components/custom_list';
 
 import TeamIcon from 'app/components/team_icon';
 
-const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
-
-const TEAMS_PER_PAGE = 200;
+const TEAMS_PER_PAGE = 50;
 
 const errorTitle = {
     id: t('error.team_not_found.title'),
@@ -47,9 +44,7 @@ export default class SelectTeam extends PureComponent {
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
         }).isRequired,
-        currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,
@@ -63,8 +58,11 @@ export default class SelectTeam extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         this.state = {
+            loading: false,
             joining: false,
-            teams: null,
+            teams: [],
+            page: 0,
+            refreshing: false,
         };
     }
 
@@ -84,9 +82,12 @@ export default class SelectTeam extends PureComponent {
 
     getTeams = () => {
         this.setState({loading: true});
-        this.props.actions.getTeams(0, TEAMS_PER_PAGE).then(() => {
-            this.setState({loading: false});
-            this.buildData(this.props);
+        this.props.actions.getTeams(this.state.page, TEAMS_PER_PAGE).then(() => {
+            this.setState((state) => ({
+                loading: false,
+                refreshing: false,
+                page: state.page + 1,
+            }));
         });
     }
 
@@ -143,16 +144,11 @@ export default class SelectTeam extends PureComponent {
 
     onSelectTeam = async (team) => {
         this.setState({joining: true});
-        const {currentChannelId, userWithoutTeams} = this.props;
+        const {userWithoutTeams} = this.props;
         const {
             joinTeam,
             handleTeamChange,
-            markChannelAsRead,
         } = this.props.actions;
-
-        if (currentChannelId) {
-            markChannelAsRead(currentChannelId);
-        }
 
         const {error} = await joinTeam(team.invite_id, team.id);
         if (error) {
@@ -172,6 +168,12 @@ export default class SelectTeam extends PureComponent {
             });
         }
     };
+
+    onRefresh = () => {
+        this.setState({page: 0, refreshing: true}, () => {
+            this.getTeams();
+        });
+    }
 
     renderItem = ({item}) => {
         const {currentUrl, theme} = this.props;
@@ -230,7 +232,7 @@ export default class SelectTeam extends PureComponent {
         const {teams} = this.state;
         const styles = getStyleSheet(theme);
 
-        if (this.state.joining || this.state.loading) {
+        if (this.state.joining) {
             return <Loading/>;
         }
 
@@ -258,11 +260,17 @@ export default class SelectTeam extends PureComponent {
                     </View>
                     <View style={styles.line}/>
                 </View>
-                <FlatList
+                <CustomList
                     data={teams}
+                    loading={this.state.loading}
+                    loadingComponent={<Loading/>}
+                    refreshing={this.state.refreshing}
+                    onRefresh={this.onRefresh}
+                    onLoadMore={this.getTeams}
                     renderItem={this.renderItem}
-                    keyExtractor={(item) => item.id}
-                    viewabilityConfig={VIEWABILITY_CONFIG}
+                    theme={theme}
+                    extraData={this.state.loading}
+                    shouldRenderSeparator={false}
                 />
             </View>
         );

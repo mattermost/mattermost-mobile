@@ -236,7 +236,21 @@ export default class PostBody extends PureComponent {
     }
 
     renderPostAdditionalContent = (blockStyles, messageStyle, textStyles) => {
-        const {isReplyPost, message, navigator, onHashtagPress, onPermalinkPress, postId, postProps, metadata} = this.props;
+        const {
+            isReplyPost,
+            isSystemMessage,
+            message,
+            metadata,
+            navigator,
+            onHashtagPress,
+            onPermalinkPress,
+            postId,
+            postProps,
+        } = this.props;
+
+        if (isSystemMessage) {
+            return null;
+        }
 
         if (metadata && !metadata.embeds) {
             return null;
@@ -365,6 +379,7 @@ export default class PostBody extends PureComponent {
                     <Markdown
                         baseTextStyle={messageStyle}
                         blockStyles={blockStyles}
+                        channelMentions={postProps.channel_mentions}
                         imageMetadata={metadata?.images}
                         isEdited={hasBeenEdited}
                         isReplyPost={isReplyPost}

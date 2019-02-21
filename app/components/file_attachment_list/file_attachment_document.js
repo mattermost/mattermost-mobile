@@ -267,12 +267,18 @@ export default class FileAttachmentDocument extends PureComponent {
                                 }),
                             }]
                         );
-                        this.setStatusBarColor();
+                        this.onDonePreviewingFile();
                         RNFetchBlob.fs.unlink(path);
                     }
 
                     this.setState({downloading: false, progress: 0});
                 });
+
+                // Android does not trigger the event for DoneButtonEvent
+                // so we'll wait 4 seconds before enabling the tap for open the preview again
+                if (Platform.OS === 'android') {
+                    setTimeout(this.onDonePreviewingFile, 4000);
+                }
             }
         }, delay);
     };
