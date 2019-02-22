@@ -76,6 +76,10 @@ post-install:
 	@# Need to copy custom RNDocumentPicker.m that implements direct access to the document picker in iOS
 	@cp ./native_modules/RNDocumentPicker.m node_modules/react-native-document-picker/ios/RNDocumentPicker/RNDocumentPicker.m
 
+	@# Need to copy custom RNCWebViewManager.java and RNCWEKWebView.m that implements IWA support for the WebView to avoid forking the lib
+	@cp ./native_modules/RNCWebViewManager.java node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManager.java
+	@cp ./native_modules/RNCWKWebView.m node_modules/react-native-webview/ios/RNCWKWebView.m
+
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
