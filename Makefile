@@ -232,6 +232,16 @@ unsigned-android: stop pre-build check-style prepare-android-build ## Build an u
 	@mv android/app/build/outputs/apk/unsigned/app-unsigned-unsigned.apk ./Mattermost-unsigned.apk
 	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
 
+unsigned-x86_64-android: stop pre-build check-style prepare-android-build ## Build an unsigned x86_64 version of the Android app
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
+		echo Starting React Native packager server; \
+		npm start & echo; \
+    fi
+	@echo "Building unsigned x86_64 Android app"
+	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned_x86_64
+	@mv android/app/build/outputs/apk/unsigned/app-x86_64-unsigned-unsigned.apk ./Mattermost-x86_64-unsigned.apk
+	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+
 test: | pre-run check-style ## Runs tests
 	@npm test
 

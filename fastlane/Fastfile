@@ -370,6 +370,42 @@ platform :android do
     )
   end
 
+  desc "Build unsigned x86_64 apk"
+  lane :unsigned_x86_64 do
+    unless configured
+      configure
+    end
+    enable_separate_build_per_CPU_arch
+    update_identifiers
+    replace_assets
+
+    gradle(
+        task: 'assemble',
+        build_type: 'Unsigned',
+        project_dir: 'android/'
+    )
+
+    disable_separate_build_per_CPU_arch
+  end
+
+  def enable_separate_build_per_CPU_arch()
+    # Set enableSeparateBuildPerCPUArchitecture to true
+    find_replace_string(
+          path_to_file: './android/app/build.gradle',
+          old_string: 'def enableSeparateBuildPerCPUArchitecture = false',
+          new_string: 'def enableSeparateBuildPerCPUArchitecture = true'
+      )
+  end
+
+  def disable_separate_build_per_CPU_arch()
+    # Set enableSeparateBuildPerCPUArchitecture to false
+    find_replace_string(
+          path_to_file: './android/app/build.gradle',
+          old_string: 'def enableSeparateBuildPerCPUArchitecture = true',
+          new_string: 'def enableSeparateBuildPerCPUArchitecture = false'
+      )
+  end
+
   lane :update_identifiers do
     # Set the name for the app
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
