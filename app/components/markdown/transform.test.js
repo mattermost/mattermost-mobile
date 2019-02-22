@@ -2693,6 +2693,64 @@ describe('Components.Markdown.transform', () => {
                     }],
                 }],
             },
+        }, {
+            name: 'multibyte keyword',
+            input: '我爱吃番茄炒饭',
+            mentionKeys: [{key: '番茄'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: '我爱吃',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: '番茄',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: '炒饭',
+                    }],
+                }],
+            },
+        }, {
+            name: 'multiple multibyte keywords',
+            input: 'CJK is 中國日本한국.',
+            mentionKeys: [{key: '中國'}, {key: '日本'}, {key: '한국'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'CJK is ',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: '中國',
+                        }],
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: '日本',
+                        }],
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'text',
+                            literal: '한국',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: '.',
+                    }],
+                }],
+            },
         }];
 
         for (const test of tests) {
@@ -2763,6 +2821,11 @@ describe('Components.Markdown.transform', () => {
             input: 'apple banana orange',
             mentionKeys: [{key: ''}],
             expected: {index: -1, mention: null},
+        }, {
+            name: 'multibyte key',
+            input: '좋은 하루 되세요.',
+            mentionKeys: [{key: '하루'}],
+            expected: {index: 3, mention: {key: '하루'}},
         }];
 
         for (const test of tests) {
