@@ -205,8 +205,12 @@ public class RealPathUtil {
     }
 
     public static String getMimeTypeFromUri(final Context context, final Uri uri) {
-        ContentResolver cR = context.getContentResolver();
-        return cR.getType(uri);
+        try {
+            ContentResolver cR = context.getContentResolver();
+            return cR.getType(uri);
+        } catch (Exception e) {
+            return "application/octet-stream";
+        }
     }
 
     public static void deleteTempFiles(final File dir) {

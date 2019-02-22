@@ -18,6 +18,9 @@ jest.mock('NativeModules', () => {
         MattermostManaged: {
             getConfig: jest.fn(),
         },
+        PlatformConstants: {
+            forceTouchAvailable: false,
+        },
         RNGestureHandlerModule: {
             State: {
                 BEGAN: 'BEGAN',

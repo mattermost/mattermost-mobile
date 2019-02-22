@@ -25,11 +25,10 @@ import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import {UpgradeTypes} from 'app/constants';
 import fetchConfig from 'app/fetch_preconfig';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
-import checkUpgradeType from 'app/utils/client_upgrade';
+import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
@@ -101,10 +100,10 @@ export default class SelectServer extends PureComponent {
                 this.props.actions.setLastUpgradeCheck();
                 const {currentVersion, minVersion, latestVersion} = nextProps;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
-                if (upgradeType === UpgradeTypes.NO_UPGRADE) {
-                    this.handleLoginOptions(nextProps);
-                } else {
+                if (isUpgradeAvailable(upgradeType)) {
                     this.handleShowClientUpgrade(upgradeType);
+                } else {
+                    this.handleLoginOptions(nextProps);
                 }
             } else {
                 this.handleLoginOptions(nextProps);
@@ -202,7 +201,7 @@ export default class SelectServer extends PureComponent {
     });
 
     handleLoginOptions = (props = this.props) => {
-        const {intl} = this.context;
+        const {formatMessage} = this.context.intl;
         const {config, license} = props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
@@ -216,10 +215,10 @@ export default class SelectServer extends PureComponent {
         let title;
         if (options) {
             screen = 'LoginOptions';
-            title = intl.formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
+            title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
         } else {
             screen = 'Login';
-            title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
+            title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
         }
 
         this.props.actions.resetPing();
@@ -250,12 +249,12 @@ export default class SelectServer extends PureComponent {
     };
 
     handleShowClientUpgrade = (upgradeType) => {
-        const {intl} = this.context;
+        const {formatMessage} = this.context.intl;
         const {theme} = this.props;
 
         this.props.navigator.push({
             screen: 'ClientUpgrade',
-            title: intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'}),
+            title: formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'}),
             backButtonTitle: '',
             navigatorStyle: {
                 navBarHidden: LocalConfig.AutoSelectServerUrl,

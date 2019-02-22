@@ -14,8 +14,8 @@ import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
-import {DeviceTypes, UpgradeTypes} from 'app/constants';
-import checkUpgradeType from 'app/utils/client_upgrade';
+import {DeviceTypes} from 'app/constants';
+import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const {View: AnimatedView} = Animated;
@@ -70,7 +70,7 @@ export default class ClientUpgradeListener extends PureComponent {
         if (versionMismatch && (forceUpgrade || Date.now() - lastUpgradeCheck > UPDATE_TIMEOUT)) {
             this.checkUpgrade(minVersion, latestVersion, nextProps.isLandscape);
         } else if (this.props.isLandscape !== nextProps.isLandscape &&
-            this.state.upgradeType !== UpgradeTypes.NO_UPGRADE && DeviceTypes.IS_IPHONE_X) {
+            isUpgradeAvailable(this.state.upgradeType) && DeviceTypes.IS_IPHONE_X) {
             const newTop = nextProps.isLandscape ? 45 : 100;
             this.setState({top: new Animated.Value(newTop)});
         }
@@ -83,7 +83,7 @@ export default class ClientUpgradeListener extends PureComponent {
 
         this.setState({upgradeType});
 
-        if (upgradeType === UpgradeTypes.NO_UPGRADE) {
+        if (!isUpgradeAvailable(upgradeType)) {
             return;
         }
 
@@ -166,7 +166,7 @@ export default class ClientUpgradeListener extends PureComponent {
     };
 
     render() {
-        if (this.state.upgradeType === UpgradeTypes.NO_UPGRADE) {
+        if (!isUpgradeAvailable(this.state.upgradeType)) {
             return null;
         }
 

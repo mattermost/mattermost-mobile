@@ -15,6 +15,10 @@ export default class ProfilePictureButton extends PureComponent {
         currentUser: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         removeProfileImage: PropTypes.func,
+        children: PropTypes.oneOfType([
+            PropTypes.arrayOf(PropTypes.node),
+            PropTypes.node,
+        ]),
     };
 
     constructor(props) {
@@ -55,7 +59,7 @@ export default class ProfilePictureButton extends PureComponent {
             };
         }
         return null;
-    }
+    };
 
     render() {
         const {children, ...props} = this.props;

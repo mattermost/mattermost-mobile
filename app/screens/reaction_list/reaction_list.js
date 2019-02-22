@@ -29,7 +29,7 @@ export default class ReactionList extends PureComponent {
             getMissingProfilesByIds: PropTypes.func.isRequired,
         }).isRequired,
         navigator: PropTypes.object,
-        reactions: PropTypes.array.isRequired,
+        reactions: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string,
         userProfiles: PropTypes.array,
