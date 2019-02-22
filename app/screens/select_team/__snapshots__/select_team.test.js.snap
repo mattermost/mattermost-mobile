@@ -94,33 +94,52 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
       }
     />
   </View>
-  <FlatList
-    data={
-      Array [
-        Object {
-          "id": "kemjcpu9bi877yegqjs18ndp4r",
-          "invite_id": "ojsnudhqzbfzpk6e4n6ip1hwae",
-          "name": "test",
-        },
-      ]
+  <CustomList
+    data={Array []}
+    extraData={false}
+    listType="flat"
+    loading={false}
+    loadingComponent={
+      <Loading
+        color="grey"
+        size="large"
+        style={Object {}}
+      />
     }
-    disableVirtualization={false}
-    horizontal={false}
-    initialNumToRender={10}
-    keyExtractor={[Function]}
-    maxToRenderPerBatch={10}
-    numColumns={1}
-    onEndReachedThreshold={2}
+    onLoadMore={[Function]}
+    onRefresh={[Function]}
+    refreshing={false}
     renderItem={[Function]}
-    scrollEventThrottle={50}
-    updateCellsBatchingPeriod={50}
-    viewabilityConfig={
+    shouldRenderSeparator={false}
+    showNoResults={true}
+    theme={
       Object {
-        "viewAreaCoveragePercentThreshold": 3,
-        "waitForInteraction": false,
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
     }
-    windowSize={21}
   />
 </View>
 `;

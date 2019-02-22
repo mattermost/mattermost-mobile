@@ -47,6 +47,7 @@ export default class PostListBase extends PureComponent {
         shouldRenderReplyButton: PropTypes.bool,
         siteURL: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        location: PropTypes.string,
     };
 
     static defaultProps = {

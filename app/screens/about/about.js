@@ -51,6 +51,14 @@ export default class About extends PureComponent {
         Linking.openURL(Config.MobileNoticeURL);
     };
 
+    handleTermsOfService = () => {
+        Linking.openURL(this.props.config.TermsOfServiceLink);
+    };
+
+    handlePrivacyPolicy = () => {
+        Linking.openURL(this.props.config.PrivacyPolicyLink);
+    }
+
     render() {
         const {theme, config, license} = this.props;
         const style = getStyleSheet(theme);
@@ -173,6 +181,39 @@ export default class About extends PureComponent {
             );
         }
 
+        let termsOfService;
+        if (config.TermsOfServiceLink) {
+            termsOfService = (
+                <FormattedText
+                    id='mobile.tos_link'
+                    defaultMessage='Terms of Service'
+                    style={style.noticeLink}
+                    onPress={this.handleTermsOfService}
+                />
+            );
+        }
+
+        let privacyPolicy;
+        if (config.PrivacyPolicyLink) {
+            privacyPolicy = (
+                <FormattedText
+                    id='mobile.privacy_link'
+                    defaultMessage='Privacy Policy'
+                    style={style.noticeLink}
+                    onPress={this.handlePrivacyPolicy}
+                />
+            );
+        }
+
+        let tosPrivacyHyphen;
+        if (termsOfService && privacyPolicy) {
+            tosPrivacyHyphen = (
+                <Text style={[style.footerText, style.hyphenText]}>
+                    {' - '}
+                </Text>
+            );
+        }
+
         return (
             <View style={style.wrapper}>
                 <StatusBar/>
@@ -228,11 +269,16 @@ export default class About extends PureComponent {
                         <FormattedText
                             id='mobile.about.copyright'
                             defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
-                            style={style.footerText}
+                            style={[style.footerText, style.copyrightText]}
                             values={{
                                 currentYear: new Date().getFullYear(),
                             }}
                         />
+                        <View style={style.tosPrivacyContainer}>
+                            {termsOfService}
+                            {tosPrivacyHyphen}
+                            {privacyPolicy}
+                        </View>
                         <View style={style.noticeContainer}>
                             <View style={style.footerGroup}>
                                 <FormattedText
@@ -385,6 +431,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 11,
             lineHeight: 13,
+            marginBottom: 10,
+        },
+        copyrightText: {
+            marginBottom: 0,
+        },
+        hyphenText: {
+            marginBottom: 0,
+        },
+        tosPrivacyContainer: {
+            flex: 1,
+            flexDirection: 'row',
             marginBottom: 10,
         },
     };

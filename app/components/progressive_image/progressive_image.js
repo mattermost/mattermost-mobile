@@ -18,6 +18,9 @@ export default class ProgressiveImage extends PureComponent {
         defaultSource: PropTypes.oneOfType([PropTypes.object, PropTypes.number]), // this should be provided by the component
         filename: PropTypes.string,
         imageUri: PropTypes.string,
+        onError: PropTypes.func,
+        resizeMethod: PropTypes.string,
+        resizeMode: PropTypes.string,
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         thumbnailUri: PropTypes.string,
