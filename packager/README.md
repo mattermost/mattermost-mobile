@@ -16,7 +16,6 @@
 	- sidebars
 	- swiper
 	- team_icon
-	- prop-types
 	- react-deep-force-update
 	- react-devtools-core
 	- react-native-video
@@ -31,4 +30,4 @@
 8. Change development versions of certain files to production ones:
 	- configureStore.dev.js -> configureStore.prod.js
 	- react/cjs/react.development.js -> react/cjs/react.production.min.js
-	- schedule/cjs/schedule-tracking.development.js -> schedule/cjs/schedule-tracting.production.min.js
+	- schedule/cjs/scheduler-tracing.development.js -> schedule/cjs/scheduler-tracing.production.min.js
