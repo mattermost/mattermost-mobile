@@ -19,16 +19,16 @@ We plan on releasing monthly updates with new features - check the [changelog](h
 To help with testing app updates before they're released, you can:
 
 1. Sign up to be a beta tester
-  - [Android](https://play.google.com/apps/testing/com.mattermost.rnbeta)
-  - [iOS](https://mattermost-fastlane.herokuapp.com/)
+   - [Android](https://play.google.com/apps/testing/com.mattermost.rnbeta)
+   - [iOS](https://mattermost-fastlane.herokuapp.com/)
 2. Install the `Mattermost Beta` app. New updates in the Beta app are released periodically. You will receive a notification when the new updates are available.
 3. File any bugs you find by filing a [GitHub issue](https://github.com/mattermost/mattermost-mobile/issues) with:
-  - Device information
-  - Repro steps
-  - Observed behavior (including screenshot / video when possible)
-  - Expected behavior
+   - Device information
+   - Repro steps
+   - Observed behavior (including screenshot / video when possible)
+   - Expected behavior
 4. (Optional) [Sign up for our team site](https://pre-release.mattermost.com/signup_user_complete/?id=f1924a8db44ff3bb41c96424cdc20676)
-  - Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) to see what's new and discuss feedback with other contributors and the core team
+   - Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) to see what's new and discuss feedback with other contributors and the core team
 
 ### Contribute Code 
 
