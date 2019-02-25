@@ -6,12 +6,14 @@ import {Linking, Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import Markdown from 'app/components/markdown';
 
 export default class AttachmentTitle extends PureComponent {
     static propTypes = {
         link: PropTypes.string,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
+        navigator: PropTypes.object.isRequired,
     };
 
     openLink = () => {
@@ -26,6 +28,7 @@ export default class AttachmentTitle extends PureComponent {
             link,
             value,
             theme,
+            navigator,
         } = this.props;
 
         if (!value) {
@@ -34,14 +37,37 @@ export default class AttachmentTitle extends PureComponent {
 
         const style = getStyleSheet(theme);
 
-        return (
-            <View style={style.container}>
+        let title;
+        if (link) {
+            title = (
                 <Text
                     style={[style.title, Boolean(link) && style.link]}
                     onPress={this.openLink}
                 >
                     {value}
                 </Text>
+            );
+        } else {
+            title = (
+                <Markdown
+                    isEdited={false}
+                    isReplyPost={false}
+                    disableHashtags={true}
+                    disableAtMentions={true}
+                    disableChannelLink={true}
+                    autolinkedUrlSchemes={[]}
+                    mentionKeys={[]}
+                    navigator={navigator}
+                    theme={theme}
+                    value={value}
+                    baseTextStyle={[style.title, Boolean(link) && style.link]}
+                />
+            );
+        }
+
+        return (
+            <View style={style.container}>
+                {title}
             </View>
         );
     }
@@ -50,6 +76,7 @@ export default class AttachmentTitle extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
+            marginTop: 3,
             flex: 1,
             flexDirection: 'row',
         },
@@ -57,6 +84,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontWeight: '600',
             marginBottom: 5,
+            fontSize: 14,
+            lineHeight: 20,
         },
         link: {
             color: theme.linkColor,
