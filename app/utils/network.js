@@ -10,13 +10,11 @@ import {Client4} from 'mattermost-redux/client';
 import mattermostBucket from 'app/mattermost_bucket';
 import LocalConfig from 'assets/config';
 
-const PING_TIMEOUT = 3000;
-
 let certificate = '';
 let previousState;
 export async function checkConnection(isConnected) {
-    if (!Client4.getBaseRoute().startsWith('http')) {
-        // If we don't have a server yet, return the default implementation
+    if (!isConnected || !Client4.getBaseRoute().startsWith('http')) {
+        // If we don't have a connection or have a server yet, return the default implementation
         return {hasInternet: isConnected, serverReachable: false};
     }
 
@@ -24,7 +22,6 @@ export async function checkConnection(isConnected) {
     const server = `${Client4.getBaseRoute()}/system/ping?time=${Date.now()}`;
 
     const config = {
-        timeout: PING_TIMEOUT,
         auto: true,
         waitsForConnectivity: true,
     };
