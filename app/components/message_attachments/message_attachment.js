@@ -86,6 +86,7 @@ export default class MessageAttachment extends PureComponent {
                         link={attachment.title_link}
                         theme={theme}
                         value={attachment.title}
+                        navigator={navigator}
                     />
                     <AttachmentThumbnail url={attachment.thumb_url}/>
                     <AttachmentText
