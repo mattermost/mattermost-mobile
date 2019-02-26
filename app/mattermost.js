@@ -321,7 +321,7 @@ const handleAuthentication = async (vendor) => {
     const translations = app.getTranslations();
     if (isSecured) {
         try {
-            mattermostBucket.setPreference('emm', vendor, LocalConfig.AppGroupId);
+            mattermostBucket.setPreference('emm', vendor);
             await mattermostManaged.authenticate({
                 reason: translations[t('mobile.managed.secured_by')].replace('{vendor}', vendor),
                 fallbackToPasscode: true,

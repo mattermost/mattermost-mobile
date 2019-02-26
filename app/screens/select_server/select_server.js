@@ -188,7 +188,7 @@ export default class SelectServer extends PureComponent {
         if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
             RNFetchBlob.cba.selectCertificate((certificate) => {
                 if (certificate) {
-                    mattermostBucket.setPreference('cert', certificate, LocalConfig.AppGroupId);
+                    mattermostBucket.setPreference('cert', certificate);
                     window.fetch = new RNFetchBlob.polyfill.Fetch({
                         auto: true,
                         certificate,
@@ -378,7 +378,7 @@ export default class SelectServer extends PureComponent {
         const url = this.getUrl();
         RNFetchBlob.cba.selectCertificate((certificate) => {
             if (certificate) {
-                mattermostBucket.setPreference('cert', certificate, LocalConfig.AppGroupId);
+                mattermostBucket.setPreference('cert', certificate);
                 fetchConfig().then(() => {
                     this.pingServer(url, true);
                 });

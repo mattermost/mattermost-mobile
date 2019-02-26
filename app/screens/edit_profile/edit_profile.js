@@ -24,7 +24,7 @@ import StatusBar from 'app/components/status_bar/index';
 import ProfilePictureButton from 'app/components/profile_picture_button';
 import ProfilePicture from 'app/components/profile_picture';
 import mattermostBucket from 'app/mattermost_bucket';
-import LocalConfig from 'assets/config';
+
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 const MAX_SIZE = 20 * 1024 * 1024;
@@ -235,7 +235,7 @@ export default class EditProfile extends PureComponent {
             type: fileData.type,
         };
 
-        const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+        const certificate = await mattermostBucket.getPreference('cert');
         const options = {
             timeout: 10000,
             certificate,
