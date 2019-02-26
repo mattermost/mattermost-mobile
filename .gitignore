@@ -80,6 +80,7 @@ ios/sentry.properties
 
 # Testing
 .nyc_output
+coverage
 
 # Pods
 .podinstall
