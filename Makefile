@@ -222,6 +222,20 @@ unsigned-ios: stop pre-build check-style ## Build an unsigned version of the iOS
 	@rm -rf build-ios/
 	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
 
+unsigned-ios-x86_64: stop pre-build check-style ## Build an unsigned x86_64 version of the iOS app for iPhone simulator
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
+		echo Starting React Native packager server; \
+		npm start & echo; \
+	fi
+	@echo "Building unsigned x86_64 iOS app for iPhone simulator"
+	@cd fastlane && NODE_ENV=production bundle exec fastlane ios unsigned
+	@mkdir -p build-ios
+	@cd ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO
+	@cd build-ios/Build/Products/Release-iphonesimulator/ && zip -r Mattermost-unsigned-x86_64.app.zip Mattermost.app/
+	@mv build-ios/Build/Products/Release-iphonesimulator/Mattermost-unsigned-x86_64.app.zip .
+	@rm -rf build-ios/
+	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+
 unsigned-android: stop pre-build check-style prepare-android-build ## Build an unsigned version of the Android app
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
