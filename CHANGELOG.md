@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
-## 1.16.1 Release
-- Release Date: February 21, 2019
+## 1.17.0 Release
+- Release Date: March 16, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Combatibility
@@ -9,8 +9,15 @@
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
 
 ### Bug Fixes
- - Fixed an issue where link previews and reactions weren't displayed when post metadata was disabled.
- - Fixed an issue on Android where the app crashed when sharing multiple files.
+ - Fixed an issue where user profile icon for a Webhook did not follow use_user_icon.
+ - Fixed an issue where emoji not included in our list of text-based emoji were not rendered as jumboemoji.
+ - Fixed an issue where notification badges were not cleared from other clients when channel was changed via push notification after the mobile app was opened.
+ - Fixed an issue where the app did not show local notification when session expired.
+ - Fixed an issue where the "No Internet Connection" banner did not always display when internet connectivity was lost.
+ - Fixed an issue where opening channels with unreads had loading indicator placed above unread messages line.
+ - Fixed an issue where jumbo-emoji-only reply sometimes appeared with a large space beneath.
+ - Fixed an issue where the "No internet connection" banner did not always disappear when connection was re-estabilished.
+ 
  
 ## 1.16.0 Release
 - Release Date: February 16, 2019
