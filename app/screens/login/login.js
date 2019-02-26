@@ -38,14 +38,12 @@ export default class Login extends PureComponent {
             handlePasswordChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
-            checkMfa: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
-        checkMfaRequest: PropTypes.object.isRequired,
         loginRequest: PropTypes.object.isRequired,
     };
 
@@ -182,16 +180,7 @@ export default class Login extends PureComponent {
                 return;
             }
 
-            if (this.props.config.EnableMultifactorAuthentication === 'true') {
-                const result = await this.props.actions.checkMfa(this.props.loginId);
-                if (result.data) {
-                    this.goToMfa();
-                } else {
-                    this.signIn();
-                }
-            } else {
-                this.signIn();
-            }
+            this.signIn();
         });
     });
 
@@ -205,7 +194,13 @@ export default class Login extends PureComponent {
     signIn = () => {
         const {actions, loginId, loginRequest, password} = this.props;
         if (loginRequest.status !== RequestStatus.STARTED) {
-            actions.login(loginId.toLowerCase(), password);
+            actions.login(loginId.toLowerCase(), password).then(this.checkLoginResponse)
+        }
+    };
+
+    checkLoginResponse = (data) => {
+        if (data?.error?.server_error_id === "mfa.validate_token.authenticate.app_error") {
+            this.goToMfa();
         }
     };
 
@@ -245,7 +240,6 @@ export default class Login extends PureComponent {
     getLoginErrorMessage = () => {
         return (
             this.getServerErrorForLogin() ||
-            this.props.checkMfaRequest.error ||
             this.state.error
         );
     };
