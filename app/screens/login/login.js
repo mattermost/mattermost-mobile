@@ -194,12 +194,12 @@ export default class Login extends PureComponent {
     signIn = () => {
         const {actions, loginId, loginRequest, password} = this.props;
         if (loginRequest.status !== RequestStatus.STARTED) {
-            actions.login(loginId.toLowerCase(), password).then(this.checkLoginResponse)
+            actions.login(loginId.toLowerCase(), password).then(this.checkLoginResponse);
         }
     };
 
     checkLoginResponse = (data) => {
-        if (data?.error?.server_error_id === "mfa.validate_token.authenticate.app_error") {
+        if (data?.error.server_error_id === 'mfa.validate_token.authenticate.app_error') { // eslint-disable-line camelcase
             this.goToMfa();
         }
     };
