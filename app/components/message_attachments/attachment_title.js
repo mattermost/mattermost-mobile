@@ -60,7 +60,8 @@ export default class AttachmentTitle extends PureComponent {
                     navigator={navigator}
                     theme={theme}
                     value={value}
-                    baseTextStyle={[style.title, Boolean(link) && style.link]}
+                    baseTextStyle={style.title}
+                    textStyles={{link: style.link}}
                 />
             );
         }
