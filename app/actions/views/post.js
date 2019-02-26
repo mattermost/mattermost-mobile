@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Posts} from 'mattermost-redux/constants';
-import {PostTypes} from 'mattermost-redux/action_types';
-import {doPostAction} from 'mattermost-redux/actions/posts';
+import {doPostAction, receivedNewPost} from 'mattermost-redux/actions/posts';
 
 import {ViewTypes} from 'app/constants';
 
@@ -28,16 +27,7 @@ export function sendAddToChannelEphemeralPost(user, addedUsername, message, chan
             },
         };
 
-        dispatch({
-            type: PostTypes.RECEIVED_POSTS,
-            data: {
-                order: [],
-                posts: {
-                    [post.id]: post,
-                },
-            },
-            channelId,
-        });
+        dispatch(receivedNewPost(post));
     };
 }
 
