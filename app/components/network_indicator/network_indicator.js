@@ -22,7 +22,6 @@ import mattermostBucket from 'app/mattermost_bucket';
 import PushNotifications from 'app/push_notifications';
 import networkConnectionListener, {checkConnection} from 'app/utils/network';
 import {t} from 'app/utils/i18n';
-import LocalConfig from 'assets/config';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -293,7 +292,7 @@ export default class NetworkIndicator extends PureComponent {
         const platform = Platform.OS;
         let certificate = null;
         if (platform === 'ios') {
-            certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+            certificate = await mattermostBucket.getPreference('cert');
         }
 
         initWebSocket(platform, null, null, null, {certificate, forceConnection: true}).catch(() => {

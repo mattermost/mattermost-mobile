@@ -19,12 +19,16 @@
 #endif
 #import "RCCManager.h"
 #import "RNNotifications.h"
-#import "SessionManager.h"
+#import <UploadAttachments/UploadAttachments-Swift.h>
 #import <UserNotifications/UserNotifications.h>
 
 @implementation AppDelegate
 
 NSString* const NotificationClearAction = @"clear";
+
+-(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
+  [[UploadSession shared] attachSessionWithIdentifier:identifier completionHandler:completionHandler];
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -137,11 +141,6 @@ NSString* const NotificationClearAction = @"clear";
 - (void)application:(UIApplication *)application handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo withResponseInfo:(NSDictionary *)responseInfo completionHandler:(void (^)())completionHandler
 {
   [RNNotifications handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo completionHandler:completionHandler];
-}
-
--(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(nonnull NSString *)identifier completionHandler:(nonnull void (^)(void))completionHandler {
-  [SessionManager sharedSession].savedCompletionHandler = completionHandler;
-  [[SessionManager sharedSession] createSessionForRequestRequest:identifier];
 }
 
 // Required for deeplinking

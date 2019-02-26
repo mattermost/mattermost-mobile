@@ -19,7 +19,6 @@ import {getSiteUrl, setSiteUrl} from 'app/utils/image_cache_manager';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
 import mattermostBucket from 'app/mattermost_bucket';
-import Config from 'assets/config';
 
 import {messageRetention} from './middleware';
 import {createThunkMiddleware} from './thunk';
@@ -181,7 +180,7 @@ export default function configureAppStore(initialState) {
                                 profilesNotInChannel: [],
                             },
                         };
-                        mattermostBucket.writeToFile('entities', JSON.stringify(entities), Config.AppGroupId);
+                        mattermostBucket.writeToFile('entities', JSON.stringify(entities));
                     }
                 }, 1000));
             }
@@ -216,9 +215,9 @@ export default function configureAppStore(initialState) {
                     ]));
 
                     // When logging out remove the data stored in the bucket
-                    mattermostBucket.removePreference('cert', Config.AppGroupId);
-                    mattermostBucket.removePreference('emm', Config.AppGroupId);
-                    mattermostBucket.removeFile('entities', Config.AppGroupId);
+                    mattermostBucket.removePreference('cert');
+                    mattermostBucket.removePreference('emm');
+                    mattermostBucket.removeFile('entities');
                     setSiteUrl(null);
 
                     setTimeout(() => {
