@@ -75,6 +75,7 @@ exports[`MoreChannels should match snapshot 1`] = `
       onLoadMore={[Function]}
       onRowPress={[Function]}
       renderItem={[Function]}
+      shouldRenderSeparator={true}
       showNoResults={true}
       theme={
         Object {

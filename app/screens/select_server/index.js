@@ -8,7 +8,7 @@ import {getPing, resetPing, setServerVersion} from 'mattermost-redux/actions/gen
 import {login} from 'mattermost-redux/actions/users';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
-import {getSession, handleSuccessfulLogin} from 'app/actions/views/login';
+import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
 import {loadConfigAndLicense} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import getClientUpgrade from 'app/selectors/client_upgrade';
@@ -39,7 +39,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             handleSuccessfulLogin,
             getPing,
-            getSession,
+            scheduleExpiredNotification,
             handleServerUrlChanged,
             loadConfigAndLicense,
             login,

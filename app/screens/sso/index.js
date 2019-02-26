@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getSession, handleSuccessfulLogin} from 'app/actions/views/login';
+import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
@@ -21,7 +21,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getSession,
+            scheduleExpiredNotification,
             handleSuccessfulLogin,
             setStoreFromLocalData,
         }, dispatch),

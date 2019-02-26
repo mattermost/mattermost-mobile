@@ -7,6 +7,7 @@ export const UpgradeTypes = {
     CAN_UPGRADE: 'can_upgrade',
     MUST_UPGRADE: 'must_upgrade',
     NO_UPGRADE: 'no_upgrade',
+    IS_BETA: 'is_beta',
 };
 
 export const SidebarSectionTypes = {
@@ -87,6 +88,7 @@ const ViewTypes = keyMirror({
 
     SELECTED_ACTION_MENU: null,
     SUBMIT_ATTACHMENT_MENU_ACTION: null,
+    SELECT_CHANNEL_WITH_MEMBER: null,
 });
 
 export default {

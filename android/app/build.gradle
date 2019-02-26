@@ -109,12 +109,17 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
 
+    packagingOptions {
+        pickFirst 'lib/x86_64/libjsc.so'
+        pickFirst 'lib/arm64-v8a/libjsc.so'
+    }
+
     defaultConfig {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 172
-        versionName "1.16.0"
+        versionCode 176
+        versionName "1.16.1"
         multiDexEnabled = true
         ndk {
             abiFilters "armeabi-v7a", "x86"
@@ -182,8 +187,17 @@ configurations.all {
             if (details.requested.name == 'android-jsc') {
                 details.useTarget group: details.requested.group, name: 'android-jsc-intl', version: 'r236355'
             }
-            if (details.requested.name == 'play-services-gcm') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '16.0.0'
+            if (details.requested.name == 'play-services-base') {
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '15.0.1'
+            }
+            if (details.requested.name == 'play-services-tasks') {
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '15.0.1'
+            }
+            if (details.requested.name == 'play-services-stats') {
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '15.0.1'
+            }
+            if (details.requested.name == 'play-services-basement') {
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '15.0.1'
             }
         }
     }
@@ -192,8 +206,8 @@ configurations.all {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
-    implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support:percent:27.1.1'
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.android.support:percent:28.0.0'
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation project(':react-native-document-picker')
     implementation project(':react-native-keychain')
@@ -232,3 +246,5 @@ task copyDownloadableDepsToLibs(type: Copy) {
     from configurations.compile
     into 'libs'
 }
+
+apply plugin: 'com.google.gms.google-services'

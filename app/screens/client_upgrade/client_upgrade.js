@@ -17,7 +17,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {UpgradeTypes} from 'app/constants';
 import logo from 'assets/images/logo.png';
-import checkUpgradeType from 'app/utils/client_upgrade';
+import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 export default class ClientUpgrade extends PureComponent {
@@ -203,6 +203,7 @@ export default class ClientUpgrade extends PureComponent {
             break;
         default:
         case UpgradeTypes.NO_UPGRADE:
+        case UpgradeTypes.IS_BETA:
             messageComponent = this.renderNoUpgrade();
             break;
         }
@@ -210,14 +211,16 @@ export default class ClientUpgrade extends PureComponent {
         return (
             <View style={styles.messageContainer}>
                 {messageComponent}
-                <FormattedText
-                    id='mobile.client_upgrade.current_version'
-                    defaultMessage='Lastest Version: {version}'
-                    style={styles.messageSubtitle}
-                    values={{
-                        version: latestVersion,
-                    }}
-                />
+                {upgradeType !== UpgradeTypes.IS_BETA && (
+                    <FormattedText
+                        id='mobile.client_upgrade.current_version'
+                        defaultMessage='Lastest Version: {version}'
+                        style={styles.messageSubtitle}
+                        values={{
+                            version: latestVersion,
+                        }}
+                    />
+                )}
                 <FormattedText
                     id='mobile.client_upgrade.latest_version'
                     defaultMessage='Your Version: {version}'
@@ -226,7 +229,7 @@ export default class ClientUpgrade extends PureComponent {
                         version: currentVersion,
                     }}
                 />
-                {upgradeType !== UpgradeTypes.NO_UPGRADE &&
+                {isUpgradeAvailable(this.state.upgradeType) &&
                     <View>
                         <TouchableOpacity
                             onPress={this.handleDownload}

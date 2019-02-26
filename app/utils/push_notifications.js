@@ -4,7 +4,7 @@
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import {markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {setDeviceToken} from 'mattermost-redux/actions/general';
 import {getPosts} from 'mattermost-redux/actions/posts';
 import {Client4} from 'mattermost-redux/client';
@@ -50,7 +50,7 @@ const onRegisterDevice = (data) => {
 };
 
 const loadFromNotification = async (notification) => {
-    await store.dispatch(loadFromPushNotification(notification));
+    await store.dispatch(loadFromPushNotification(notification, app.startAppFromPushNotification));
     if (!app.startAppFromPushNotification) {
         EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
         PushNotifications.resetNotification();
@@ -63,7 +63,7 @@ const onPushNotification = async (deviceNotification) => {
     let stopLoadingNotification = false;
 
     // mark the app as started as soon as possible
-    if (Platform.OS === 'android' && !app.appStarted) {
+    if (!app.appStarted) {
         app.setStartAppFromPushNotification(true);
     }
 
@@ -79,6 +79,7 @@ const onPushNotification = async (deviceNotification) => {
 
     if (data.type === 'clear') {
         dispatch(markChannelAsRead(data.channel_id, null, false));
+        dispatch(markChannelAsViewed(data.channel_id, null));
     } else {
         // get the posts for the channel as soon as possible
         retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);

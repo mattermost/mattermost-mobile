@@ -168,7 +168,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             return attachments;
         }
 
-        if (!openGraphData) {
+        if (!openGraphData && metadata) {
             return null;
         }
 

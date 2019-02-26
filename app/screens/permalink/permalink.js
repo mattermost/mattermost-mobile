@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    InteractionManager,
     Text,
     TouchableOpacity,
     View,
@@ -53,8 +52,6 @@ export default class Permalink extends PureComponent {
             handleTeamChange: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
-            markChannelAsViewed: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
@@ -232,10 +229,8 @@ export default class Permalink extends PureComponent {
             const {
                 handleSelectChannel,
                 handleTeamChange,
-                markChannelAsRead,
                 setChannelLoading,
                 setChannelDisplayName,
-                markChannelAsViewed,
             } = actions;
 
             actions.selectPost('');
@@ -266,19 +261,12 @@ export default class Permalink extends PureComponent {
             }
 
             if (channelTeamId && currentTeamId !== channelTeamId) {
-                handleTeamChange(channelTeamId, false);
+                handleTeamChange(channelTeamId);
             }
 
             setChannelLoading(channelId !== currentChannelId);
             setChannelDisplayName(channelDisplayName);
             handleSelectChannel(channelId);
-
-            InteractionManager.runAfterInteractions(async () => {
-                markChannelAsRead(channelId, currentChannelId);
-                if (channelId !== currentChannelId) {
-                    markChannelAsViewed(currentChannelId);
-                }
-            });
         }
     };
 
@@ -311,9 +299,9 @@ export default class Permalink extends PureComponent {
         if (!channelId) {
             const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
             focusChannelId = focusedPost ? focusedPost.channel_id : '';
-            if (focusChannelId && !this.props.myMembers[focusChannelId]) {
+            if (focusChannelId) {
                 const {data: channel} = await actions.getChannel(focusChannelId);
-                if (channel && channel.type === General.OPEN_CHANNEL) {
+                if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
                     await actions.joinChannel(currentUserId, channel.team_id, channel.id);
                 }
             }

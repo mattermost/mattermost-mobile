@@ -152,20 +152,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderColor: theme.sidebarHeaderBg,
             borderRadius: 10,
             borderWidth: 1,
-            flexDirection: 'row',
             left: -13,
             padding: 3,
             position: 'absolute',
             right: 0,
             top: -4,
-            justifyContent: 'center',
-            alignItems: 'center',
         },
         mention: {
             color: theme.mentionColor,
             fontSize: 10,
-            textAlign: 'center',
-            lineHeight: 12,
         },
     };
 });
