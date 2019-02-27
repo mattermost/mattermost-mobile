@@ -91,21 +91,10 @@ post-install:
 	@sed -i'' -e 's|transform: \[{scaleY: -1}\],|...Platform.select({android: {transform: \[{perspective: 1}, {scaleY: -1}\]}, ios: {transform: \[{scaleY: -1}\]}}),|g' node_modules/react-native/Libraries/Lists/VirtualizedList.js
 
 start: | pre-run ## Starts the React Native packager server
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
-		echo Starting React Native packager server; \
-		npm start; \
-	else \
-		echo React Native packager server already running; \
-	fi
+	$(call start_packager)
 
 stop: ## Stops the React Native packager server
-	@echo Stopping React Native packager server
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 1 ]; then \
-		ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9; \
-		echo React Native packager server stopped; \
-	else \
-		echo No React Native packager server running; \
-	fi
+	$(call stop_packager)
 
 check-device-ios:
 	@if ! [ $(shell which xcodebuild) ]; then \
@@ -253,12 +242,20 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 define start_packager
-  @if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		npm start & echo; \
+	else \
+		echo React Native packager server already running; \
 	fi
 endef
 
 define stop_packager
-  @ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+	@echo Stopping React Native packager server
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 1 ]; then \
+		ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9; \
+		echo React Native packager server stopped; \
+	else \
+		echo No React Native packager server running; \
+	fi
 endef
