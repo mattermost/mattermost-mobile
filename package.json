@@ -49,7 +49,7 @@
     "react-native-recyclerview-list": "enahum/react-native-recyclerview-list.git#a2d26bc7b2623cae25e947ba3905f702434717bf",
     "react-native-safe-area": "0.5.0",
     "react-native-section-list-get-item-layout": "2.2.3",
-    "react-native-sentry": "0.39.1",
+    "react-native-sentry": "0.42.0",
     "react-native-slider": "0.11.0",
     "react-native-status-bar-size": "0.3.3",
     "react-native-svg": "9.2.4",
