@@ -43,7 +43,7 @@
     "react-native-linear-gradient": "2.5.3",
     "react-native-local-auth": "github:enahum/react-native-local-auth#cc9ce2f468fbf7b431dfad3191a31aaa9227a6ab",
     "react-native-navigation": "github:migbot/react-native-navigation#03c623c373f818827a463ca0fe90f86f56e71b2f",
-    "react-native-notifications": "github:enahum/react-native-notifications#ae66562fb9ad167cf8078def3588895049881859",
+    "react-native-notifications": "github:enahum/react-native-notifications#fcfed22dfee7a02e43f4d8acc5cf6310fa18bd6a",
     "react-native-passcode-status": "1.1.1",
     "react-native-permissions": "1.1.1",
     "react-native-recyclerview-list": "enahum/react-native-recyclerview-list.git#a2d26bc7b2623cae25e947ba3905f702434717bf",
