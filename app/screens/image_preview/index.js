@@ -8,11 +8,12 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {canDownloadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 
 import ImagePreview from './image_preview';
+import LocalConfig from 'assets/config';
 
 function mapStateToProps(state) {
     return {
         ...getDimensions(state),
-        canDownloadFiles: canDownloadFilesOnMobile(state),
+        canDownloadFiles: canDownloadFilesOnMobile(state) && LocalConfig.EnableAttachmentDownloads,
         theme: getTheme(state),
     };
 }

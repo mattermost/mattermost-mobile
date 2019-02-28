@@ -41,5 +41,7 @@
 
     "ShowSentryDebugOptions": false,
 
-    "CustomRequestHeaders": {}
+    "CustomRequestHeaders": {},
+    
+    "EnableAttachmentDownloads": true
 }

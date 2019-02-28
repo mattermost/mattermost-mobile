@@ -11,14 +11,17 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
 import {getDimensions} from 'app/selectors/device';
 
+import LocalConfig from 'assets/config';
+
 import FileAttachmentList from './file_attachment_list';
 
 function makeMapStateToProps() {
     const getFilesForPost = makeGetFilesForPost();
+
     return function mapStateToProps(state, ownProps) {
         return {
             ...getDimensions(state),
-            canDownloadFiles: canDownloadFilesOnMobile(state),
+            canDownloadFiles: canDownloadFilesOnMobile(state) && LocalConfig.EnableAttachmentDownloads,
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),
         };
