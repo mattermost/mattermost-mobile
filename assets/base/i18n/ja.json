@@ -334,6 +334,7 @@
   "mobile.pinned_posts.empty_description": "メッセージを押し続けると出現するメニューで \"チャンネルにピン留め\" するを選択することで重要な項目をピン留めできます。",
   "mobile.pinned_posts.empty_title": "ピン留めされた投稿がありません",
   "mobile.post_info.add_reaction": "リアクションを追加する",
+  "mobile.post_info.reply": "返信する",
   "mobile.post_info.copy_text": "テキストをコピーする",
   "mobile.post_info.flag": "フラグ",
   "mobile.post_info.pin": "チャンネルにピン留めする",

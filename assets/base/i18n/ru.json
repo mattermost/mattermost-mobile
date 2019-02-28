@@ -334,6 +334,7 @@
   "mobile.pinned_posts.empty_description": "Сохраняйте важные вещи, удерживая палец на сообщении и выбрав \"Прикрепить сообщение\".",
   "mobile.pinned_posts.empty_title": "Нет прикреплённых сообщений",
   "mobile.post_info.add_reaction": "Добавить реакцию",
+  "mobile.post_info.reply": "Ответить",
   "mobile.post_info.copy_text": "Копировать текст",
   "mobile.post_info.flag": "Отметить",
   "mobile.post_info.pin": "Прикрепить сообщение",

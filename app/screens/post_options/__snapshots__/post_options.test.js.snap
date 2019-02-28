@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostOptions should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(SlideUpPanel)
+    allowStayMiddle={false}
+    initialPosition={424}
+    marginFromTop={376}
+    onRequestClose={[Function]}
+  >
+    <PostOption
+      icon="flag"
+      onPress={[Function]}
+      text="Flag"
+    />
+    <PostOption
+      icon="emoji"
+      onPress={[Function]}
+      text="Add Reaction"
+    />
+    <PostOption
+      icon="reply"
+      onPress={[Function]}
+      text="Reply"
+    />
+    <PostOption
+      icon="pin"
+      onPress={[Function]}
+      text="Pin to Channel"
+    />
+    <PostOption
+      icon="link"
+      onPress={[Function]}
+      text="Copy Permalink"
+    />
+    <PostOption
+      icon="copy"
+      onPress={[Function]}
+      text="Copy Text"
+    />
+    <PostOption
+      destructive={true}
+      icon="trash"
+      onPress={[Function]}
+      text="Delete"
+    />
+  </Connect(SlideUpPanel)>
+</View>
+`;

@@ -334,6 +334,7 @@
   "mobile.pinned_posts.empty_description": "Önemli iletileri üzerinde basılı tutarken \"Kanala Sabitle\" seçeneği ile sabitleyebilirsiniz.",
   "mobile.pinned_posts.empty_title": "Herhangi bir ileti sabitlenmemiş",
   "mobile.post_info.add_reaction": "Tepki Ekle",
+  "mobile.post_info.reply": "Yanıtla",
   "mobile.post_info.copy_text": "Metni Kopyala",
   "mobile.post_info.flag": "İşaretle",
   "mobile.post_info.pin": "Kanala Sabitle",

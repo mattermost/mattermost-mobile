@@ -11,6 +11,7 @@ import {
     unflagPost,
     unpinPost,
     removePost,
+    selectPost,
 } from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
 import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
@@ -22,6 +23,7 @@ import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles'
 import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
 import {canEditPost} from 'mattermost-redux/utils/post_utils';
 
+import {loadThreadIfNecessary} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions} from 'app/selectors/device';
 
@@ -39,6 +41,7 @@ function mapStateToProps(state, ownProps) {
     const channelIsArchived = channel.delete_at !== 0;
 
     let canAddReaction = true;
+    let canReply = true;
     let canEdit = false;
     let canEditUntil = -1;
     let {canDelete} = ownProps;
@@ -52,8 +55,9 @@ function mapStateToProps(state, ownProps) {
         });
     }
 
-    if (channelIsArchived) {
+    if (channelIsArchived || ownProps.channelIsReadOnly) {
         canAddReaction = false;
+        canReply = false;
         canDelete = false;
         canPin = false;
     } else {
@@ -68,6 +72,7 @@ function mapStateToProps(state, ownProps) {
     return {
         ...getDimensions(state),
         canAddReaction,
+        canReply,
         canEdit,
         canEditUntil,
         canDelete,
@@ -89,6 +94,8 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
+            selectPost,
+            loadThreadIfNecessary,
         }, dispatch),
     };
 }

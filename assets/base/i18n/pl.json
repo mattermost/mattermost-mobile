@@ -334,6 +334,7 @@
   "mobile.pinned_posts.empty_description": "Pin important items by holding down on any message and selecting \"Pin to Channel\".",
   "mobile.pinned_posts.empty_title": "Brak Przypiętych Wiadomości",
   "mobile.post_info.add_reaction": "Dodaj Reakcję",
+  "mobile.post_info.reply": "Odpowiedź",
   "mobile.post_info.copy_text": "Kopiuj Tekst",
   "mobile.post_info.flag": "Oflaguj",
   "mobile.post_info.pin": "Przypnij do kanału",

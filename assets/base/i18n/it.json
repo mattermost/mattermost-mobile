@@ -334,6 +334,7 @@
   "mobile.pinned_posts.empty_description": "Blocca gli oggetti importanti tenendo cliccato su un messaggio qualsiasi e selezionando \"Blocca al canale\".",
   "mobile.pinned_posts.empty_title": "Nessuna pubblicazione bloccata",
   "mobile.post_info.add_reaction": "Aggiungi reazione",
+  "mobile.post_info.reply": "Rispondi",
   "mobile.post_info.copy_text": "Copia Testo",
   "mobile.post_info.flag": "Contrassegna",
   "mobile.post_info.pin": "Blocca al canale",

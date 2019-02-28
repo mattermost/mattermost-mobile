@@ -334,6 +334,7 @@
   "mobile.pinned_posts.empty_description": "長按任何訊息並選擇\"釘選至頻道\"以釘選重要訊息。",
   "mobile.pinned_posts.empty_title": "釘選的訊息",
   "mobile.post_info.add_reaction": "新增反應",
+  "mobile.post_info.reply": "回覆",
   "mobile.post_info.copy_text": "複製文字",
   "mobile.post_info.flag": "標記",
   "mobile.post_info.pin": "釘選至頻道",

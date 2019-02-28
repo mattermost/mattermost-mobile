@@ -334,6 +334,7 @@
   "mobile.pinned_posts.empty_description": "按住任何消息并选择 \"置顶到频道\" 以置顶重要的项目。",
   "mobile.pinned_posts.empty_title": "无置顶消息",
   "mobile.post_info.add_reaction": "添加互动",
+  "mobile.post_info.reply": "回复",
   "mobile.post_info.copy_text": "复制文字",
   "mobile.post_info.flag": "标记",
   "mobile.post_info.pin": "置顶到频道",
