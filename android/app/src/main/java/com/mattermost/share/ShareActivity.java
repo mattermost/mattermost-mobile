@@ -17,4 +17,28 @@ public class ShareActivity extends ReactActivity {
         MainApplication app = (MainApplication) this.getApplication();
         app.sharedExtensionIsOpened = true;
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MainApplication.instance.getActivityCallbacks().onActivityResumed(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MainApplication.instance.getActivityCallbacks().onActivityPaused(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        MainApplication.instance.getActivityCallbacks().onActivityStopped(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        MainApplication.instance.getActivityCallbacks().onActivityDestroyed(this);
+        super.onDestroy();
+    }
 }
