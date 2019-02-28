@@ -25,8 +25,6 @@ import {DeviceTypes} from 'app/constants/';
 import mattermostBucket from 'app/mattermost_bucket';
 import {changeOpacity} from 'app/utils/theme';
 
-import LocalConfig from 'assets/config';
-
 import FileAttachmentIcon from './file_attachment_icon';
 
 const {DOCUMENTS_PATH} = DeviceTypes;
@@ -114,7 +112,7 @@ export default class FileAttachmentDocument extends PureComponent {
         this.setState({didCancel: false});
 
         try {
-            const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+            const certificate = await mattermostBucket.getPreference('cert');
             const isDir = await RNFetchBlob.fs.isDir(DOCUMENTS_PATH);
             if (!isDir) {
                 try {

@@ -11,8 +11,6 @@ import {Client4} from 'mattermost-redux/client';
 import {DeviceTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 
-import LocalConfig from 'assets/config';
-
 const {IMAGES_PATH} = DeviceTypes;
 let siteUrl;
 
@@ -34,7 +32,7 @@ export default class ImageCacheManager {
             addListener(uri, listener);
             if (uri.startsWith('http')) {
                 try {
-                    const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+                    const certificate = await mattermostBucket.getPreference('cert');
                     const options = {
                         session: uri,
                         timeout: 10000,

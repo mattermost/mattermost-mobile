@@ -283,6 +283,13 @@ platform :ios do
         app_group_identifiers: [app_group_id]
     )
 
+    find_replace_string(
+        path_to_file: './ios/UploadAttachments/UploadAttachments/Constants.m',
+        old_string: 'group.com.mattermost.rnbeta',
+        new_string: app_group_id
+    )
+
+
     update_app_group_identifiers(
         entitlements_file: './ios/MattermostShare/MattermostShare.entitlements',
         app_group_identifiers: [app_group_id]
@@ -290,7 +297,6 @@ platform :ios do
 
     # Save changes to the config.json file
     config_json = load_config_json
-    config_json['AppGroupId'] = app_group_id
     save_config_json(config_json)
 
     # Sync the provisioning profiles using match
