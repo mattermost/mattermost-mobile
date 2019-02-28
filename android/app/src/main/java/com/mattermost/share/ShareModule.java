@@ -77,7 +77,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         this.clear();
         getCurrentActivity().finish();
 
-        if (data != null) {
+        if (data != null && data.hasKey("url")) {
             ReadableArray files = data.getArray("files");
             String serverUrl = data.getString("url");
             String token = data.getString("token");
