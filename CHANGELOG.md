@@ -17,7 +17,18 @@
  - Fixed an issue where opening channels with unreads had loading indicator placed above unread messages line.
  - Fixed an issue where jumbo-emoji-only reply sometimes appeared with a large space beneath.
  - Fixed an issue where the "No internet connection" banner did not always disappear when connection was re-estabilished.
- 
+
+## 1.16.1 Release
+- Release Date: February 21, 2019
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+
+### Bug Fixes
+ - Fixed an issue where link previews and reactions weren't displayed when post metadata was disabled.
+ - Fixed an issue on Android where the app crashed when sharing multiple files.
  
 ## 1.16.0 Release
 - Release Date: February 16, 2019
