@@ -26,8 +26,11 @@ import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
+import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
 
 import {RequestStatus} from 'mattermost-redux/constants';
+
+const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
 export default class Login extends PureComponent {
     static propTypes = {
@@ -59,8 +62,9 @@ export default class Login extends PureComponent {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
+        setMfaPreflightDone(false);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -199,7 +203,7 @@ export default class Login extends PureComponent {
     };
 
     checkLoginResponse = (data) => {
-        if (data?.error.server_error_id === 'mfa.validate_token.authenticate.app_error') { // eslint-disable-line camelcase
+        if (mfaExpectedErrors.includes(data?.error.server_error_id)) { // eslint-disable-line camelcase
             this.goToMfa();
         }
     };
@@ -252,6 +256,9 @@ export default class Login extends PureComponent {
         const errorId = error.server_error_id;
         if (!errorId) {
             return error.message;
+        }
+        if (mfaExpectedErrors.includes(errorId) && !getMfaPreflightDone()) {
+            return null;
         }
         if (
             errorId === 'store.sql_user.get_for_login.app_error' ||
