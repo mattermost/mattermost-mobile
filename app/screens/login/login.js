@@ -26,8 +26,11 @@ import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
+import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
 
 import {RequestStatus} from 'mattermost-redux/constants';
+
+const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
 export default class Login extends PureComponent {
     static propTypes = {
@@ -38,14 +41,12 @@ export default class Login extends PureComponent {
             handlePasswordChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
-            checkMfa: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
-        checkMfaRequest: PropTypes.object.isRequired,
         loginRequest: PropTypes.object.isRequired,
     };
 
@@ -61,8 +62,9 @@ export default class Login extends PureComponent {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
+        setMfaPreflightDone(false);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -182,16 +184,7 @@ export default class Login extends PureComponent {
                 return;
             }
 
-            if (this.props.config.EnableMultifactorAuthentication === 'true') {
-                const result = await this.props.actions.checkMfa(this.props.loginId);
-                if (result.data) {
-                    this.goToMfa();
-                } else {
-                    this.signIn();
-                }
-            } else {
-                this.signIn();
-            }
+            this.signIn();
         });
     });
 
@@ -205,7 +198,13 @@ export default class Login extends PureComponent {
     signIn = () => {
         const {actions, loginId, loginRequest, password} = this.props;
         if (loginRequest.status !== RequestStatus.STARTED) {
-            actions.login(loginId.toLowerCase(), password);
+            actions.login(loginId.toLowerCase(), password).then(this.checkLoginResponse);
+        }
+    };
+
+    checkLoginResponse = (data) => {
+        if (mfaExpectedErrors.includes(data?.error.server_error_id)) { // eslint-disable-line camelcase
+            this.goToMfa();
         }
     };
 
@@ -245,7 +244,6 @@ export default class Login extends PureComponent {
     getLoginErrorMessage = () => {
         return (
             this.getServerErrorForLogin() ||
-            this.props.checkMfaRequest.error ||
             this.state.error
         );
     };
@@ -258,6 +256,9 @@ export default class Login extends PureComponent {
         const errorId = error.server_error_id;
         if (!errorId) {
             return error.message;
+        }
+        if (mfaExpectedErrors.includes(errorId) && !getMfaPreflightDone()) {
+            return null;
         }
         if (
             errorId === 'store.sql_user.get_for_login.app_error' ||
