@@ -26,6 +26,8 @@ export default class MarkdownLink extends PureComponent {
 
     static defaultProps = {
         onPermalinkPress: () => true,
+        serverURL: '',
+        siteURL: '',
     };
 
     static contextTypes = {

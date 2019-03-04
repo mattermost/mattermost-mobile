@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import assert from 'assert';
+
 import * as UrlUtils from 'app/utils/url';
 
 /* eslint-disable max-nested-callbacks */
@@ -85,5 +87,32 @@ describe('UrlUtils', () => {
             const expected = 'https://www.youtube.com/watch?v=zrFWrmPgfzc&feature=youtu.be';
             expect(UrlUtils.stripTrailingSlashes(url)).toEqual(expected);
         });
+    });
+
+    describe('matchPermalink', () => {
+        const ROOT_URL = 'http://localhost:8065';
+
+        const tests = [
+            {name: 'should return null if all inputs are empty', input: {link: '', rootURL: ''}, expected: null},
+            {name: 'should return null if any of the inputs is null', input: {link: '', rootURL: null}, expected: null},
+            {name: 'should return null if any of the inputs is null', input: {link: null, rootURL: ''}, expected: null},
+            {name: 'should return null for not supported link', input: {link: 'https://mattermost.com', rootURL: ROOT_URL}, expected: null},
+            {name: 'should match permalink', input: {link: ROOT_URL + '/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsgy', rootURL: ROOT_URL}, expected: ['http://localhost:8065/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsgy', 'ad-1', 'qe93kkfd7783iqwuwfcwcxbsgy']},
+        ];
+
+        for (const test of tests) {
+            const {name, input, expected} = test;
+
+            it(name, () => {
+                const actual = UrlUtils.matchPermalink(input.link, input.rootURL);
+                if (actual) {
+                    assert.equal(actual[0], expected[0]);
+                    assert.equal(actual[1], expected[1]);
+                    assert.equal(actual[2], expected[2]);
+                } else {
+                    assert.equal(actual, expected);
+                }
+            });
+        }
     });
 });
