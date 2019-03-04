@@ -8,11 +8,12 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 
 import mattermostBucket from 'app/mattermost_bucket';
+import mattermostManaged from 'app/mattermost_managed';
 
 let certificate = '';
 let previousState;
 export async function checkConnection(isConnected) {
-    if (!isConnected || !Client4.getBaseRoute().startsWith('http')) {
+    if (!Client4.getBaseRoute().startsWith('http')) {
         // If we don't have a connection or have a server yet, return the default implementation
         return {hasInternet: isConnected, serverReachable: false};
     }
@@ -20,9 +21,28 @@ export async function checkConnection(isConnected) {
     // Ping the Mattermost server to detect if the we have network connection even if the websocket cannot connect
     const server = `${Client4.getBaseRoute()}/system/ping?time=${Date.now()}`;
 
+    let managedConfig;
+    let waitsForConnectivity = false;
+    let timeoutIntervalForResource = 30;
+
+    try {
+        managedConfig = await mattermostManaged.getConfig();
+    } catch {
+        // no managed config
+    }
+
+    if (managedConfig?.useVPN === 'true') {
+        waitsForConnectivity = true;
+    }
+
+    if (managedConfig?.timeoutVPN) {
+        timeoutIntervalForResource = parseInt(managedConfig.timeoutVPN, 10);
+    }
+
     const config = {
         auto: true,
-        waitsForConnectivity: true,
+        waitsForConnectivity,
+        timeoutIntervalForResource,
     };
 
     if (Platform.OS === 'ios' && certificate === '') {
