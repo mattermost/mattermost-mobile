@@ -203,7 +203,7 @@ export default class Login extends PureComponent {
     };
 
     checkLoginResponse = (data) => {
-        if (mfaExpectedErrors.includes(data?.error.server_error_id)) { // eslint-disable-line camelcase
+        if (mfaExpectedErrors.includes(data?.error?.server_error_id)) { // eslint-disable-line camelcase
             this.goToMfa();
         }
     };
