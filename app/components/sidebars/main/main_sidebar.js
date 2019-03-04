@@ -164,14 +164,7 @@ export default class ChannelSidebar extends Component {
     };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {
-            actions,
-        } = this.props;
-
-        const {
-            setChannelLoading,
-            setChannelDisplayName,
-        } = actions;
+        const {setChannelLoading} = this.props.actions;
 
         tracker.channelSwitch = Date.now();
 
@@ -195,7 +188,6 @@ export default class ChannelSidebar extends Component {
             return;
         }
 
-        setChannelDisplayName(channel.display_name);
         EventEmitter.emit('switch_channel', channel, currentChannelId);
     };
 
