@@ -25,8 +25,8 @@ function mapStateToProps(state) {
         state,
         Preferences.CATEGORY_NOTIFICATIONS,
         Preferences.EMAIL_INTERVAL,
-        Preferences.INTERVAL_NEVER.toString(),
-    ) || '0';
+        Preferences.INTERVAL_IMMEDIATE.toString(),
+    );
 
     return {
         enableEmailBatching,
