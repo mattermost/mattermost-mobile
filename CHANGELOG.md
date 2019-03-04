@@ -7,8 +7,14 @@
 ### Combatibility
  - Mobile App v1.13+ is required for Mattermost Server v5.4+.
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ 
+### Highlights
+ - Upgraded mobile apps to RN 0.58.5.
+ - iOS Share Extension is now built natively.
 
 ### Bug Fixes
+ - Fixed several Android app crash / fatal error issues.
+ - Fixed an issue on Android where the app crashed intermittently when selecting a link.
  - Fixed an issue where user profile icon for a Webhook did not follow use_user_icon.
  - Fixed an issue where emoji not included in our list of text-based emoji were not rendered as jumboemoji.
  - Fixed an issue where notification badges were not cleared from other clients when channel was changed via push notification after the mobile app was opened.
