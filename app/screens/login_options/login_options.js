@@ -188,6 +188,41 @@ class LoginOptions extends PureComponent {
         return null;
     };
 
+    renderO365Option = () => {
+        const {config, license} = this.props;
+        const forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
+        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
+
+        if (!forceHideFromLocal && o365Enabled) {
+            const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
+            const additionalStyle = {
+                backgroundColor,
+            };
+
+            if (config.EmailLoginButtonBorderColor) {
+                additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
+            }
+
+            const textColor = config.EmailLoginButtonTextColor || 'white';
+
+            return (
+                <Button
+                    key='o365'
+                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.OFFICE365))}
+                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
+                >
+                    <FormattedText
+                        id='signup.office365'
+                        defaultMessage='Office 365'
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
+                    />
+                </Button>
+            );
+        }
+
+        return null;
+    };
+
     renderSamlOption = () => {
         const {config, license} = this.props;
         const forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
@@ -255,6 +290,7 @@ class LoginOptions extends PureComponent {
                 {this.renderLdapOption()}
                 {this.renderGitlabOption()}
                 {this.renderSamlOption()}
+                {this.renderO365Option()}
             </ScrollView>
         );
     }
