@@ -86,4 +86,26 @@ describe('UrlUtils', () => {
             expect(UrlUtils.stripTrailingSlashes(url)).toEqual(expected);
         });
     });
+
+    describe('matchDeepLink', () => {
+        const SITE_URL = 'http://localhost:8065';
+        const SERVER_URL = 'http://localhost:8065';
+        const tests = [
+            {name: 'should return null if all inputs are empty', input: {url: '', serverURL: '', siteURL: ''}, expected: null},
+            {name: 'should return null if any of the input is null', input: {url: '', serverURL: '', siteURL: null}, expected: null},
+            {name: 'should return null if any of the input is null', input: {url: '', serverURL: null, siteURL: ''}, expected: null},
+            {name: 'should return null if any of the input is null', input: {url: null, serverURL: '', siteURL: ''}, expected: null},
+            {name: 'should return null for not supported link', input: {url: 'https://mattermost.com', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: null},
+            {name: 'should match channel link', input: {url: SITE_URL + '/ad-1/channels/town-square', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {channelName: 'town-square', teamName: 'ad-1', type: 'channel'}},
+            {name: 'should match permalink', input: {url: SITE_URL + '/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsgy', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {postId: 'qe93kkfd7783iqwuwfcwcxbsgy', teamName: 'ad-1', type: 'permalink'}},
+        ];
+
+        for (const test of tests) {
+            const {name, input, expected} = test;
+
+            it(name, () => {
+                expect(UrlUtils.matchDeepLink(input.url, input.serverURL, input.siteURL)).toEqual(expected);
+            });
+        }
+    });
 });

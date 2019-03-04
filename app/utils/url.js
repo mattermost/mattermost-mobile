@@ -99,6 +99,10 @@ export function getScheme(url) {
 }
 
 export function matchDeepLink(url, serverURL, siteURL) {
+    if (!url || !serverURL || !siteURL) {
+        return null;
+    }
+
     const linkRoot = `(?:${escapeRegex(serverURL)}|${escapeRegex(siteURL)})?`;
 
     let match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
