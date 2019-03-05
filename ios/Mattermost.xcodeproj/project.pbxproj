@@ -558,6 +558,20 @@
 			remoteGlobalIDString = 134814201AA4EA6300B7C361;
 			remoteInfo = ReactNativeExceptionHandler;
 		};
+		7FAB4570222DD0DA00EBFFC8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 7FABE03522137F2900D0F595;
+			remoteInfo = UploadAttachments;
+		};
+		7FAB45B9222DD0E300EBFFC8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 7FABE03522137F2900D0F595;
+			remoteInfo = UploadAttachments;
+		};
 		7FABE04422137F2A00D0F595 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */;
@@ -1495,6 +1509,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7FAB45BA222DD0E300EBFFC8 /* PBXTargetDependency */,
 				7F240A22220D3A2300637665 /* PBXTargetDependency */,
 			);
 			name = Mattermost;
@@ -1513,6 +1528,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7FAB4571222DD0DA00EBFFC8 /* PBXTargetDependency */,
 			);
 			name = MattermostShare;
 			productName = MattermostShare;
@@ -2428,6 +2444,16 @@
 			isa = PBXTargetDependency;
 			target = 7F240A18220D3A2300637665 /* MattermostShare */;
 			targetProxy = 7F240A21220D3A2300637665 /* PBXContainerItemProxy */;
+		};
+		7FAB4571222DD0DA00EBFFC8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = UploadAttachments;
+			targetProxy = 7FAB4570222DD0DA00EBFFC8 /* PBXContainerItemProxy */;
+		};
+		7FAB45BA222DD0E300EBFFC8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = UploadAttachments;
+			targetProxy = 7FAB45B9222DD0E300EBFFC8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
