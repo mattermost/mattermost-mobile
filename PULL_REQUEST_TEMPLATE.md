@@ -1,4 +1,4 @@
-Please make sure you've read the [pull request](http://docs.mattermost.com/developer/contribution-guide.html#preparing-a-pull-request) section of our [code contribution guidelines](http://docs.mattermost.com/developer/contribution-guide.html).
+Please make sure you've read the [pull request](https://developers.mattermost.com/contribute/getting-started/contribution-checklist/) section of our [code contribution guidelines](https://developers.mattermost.com/contribute/getting-started/).
 
 When filling in a section please remove the help text and the above text.
 
