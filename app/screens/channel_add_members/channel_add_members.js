@@ -36,7 +36,7 @@ export default class ChannelAddMembers extends PureComponent {
         currentChannelId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        membersNotInChannel: PropTypes.array.isRequired,
+        profilesNotInChannel: PropTypes.array.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
@@ -55,7 +55,6 @@ export default class ChannelAddMembers extends PureComponent {
         this.state = {
             adding: false,
             loading: false,
-            profiles: [],
             searchResults: [],
             selectedIds: {},
             term: '',
@@ -120,7 +119,7 @@ export default class ChannelAddMembers extends PureComponent {
                     currentChannelId,
                     this.page + 1,
                     General.PROFILE_CHUNK_SIZE
-                ).then(this.loadedProfiles);
+                ).then(this.onProfilesLoaded);
             });
         }
     }, 100);
@@ -172,14 +171,15 @@ export default class ChannelAddMembers extends PureComponent {
         this.setState({selectedIds: newSelected});
     };
 
-    loadedProfiles = ({data}) => {
-        const {profiles} = this.state;
+    onProfilesLoaded = ({data}) => {
         if (data && !data.length) {
             this.next = false;
         }
 
         this.page += 1;
-        this.setState({loading: false, profiles: [...profiles, ...data]});
+        this.setState({
+            loading: false,
+        });
     };
 
     onNavigatorEvent = (event) => {
@@ -271,11 +271,10 @@ export default class ChannelAddMembers extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {currentUserId, theme} = this.props;
+        const {currentUserId, profilesNotInChannel, theme} = this.props;
         const {
             adding,
             loading,
-            profiles,
             searchResults,
             selectedIds,
             term,
@@ -321,7 +320,7 @@ export default class ChannelAddMembers extends PureComponent {
             data = [...exactMatches, ...results];
             listType = FLATLIST;
         } else {
-            data = createProfilesSections(profiles);
+            data = createProfilesSections(profilesNotInChannel.filter((user) => user.delete_at === 0));
             listType = SECTIONLIST;
         }
 
