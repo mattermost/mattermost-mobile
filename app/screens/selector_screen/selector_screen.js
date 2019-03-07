@@ -178,23 +178,21 @@ export default class SelectorScreen extends PureComponent {
     };
 
     onSearch = (text) => {
-        const term = text.toLowerCase();
-
-        if (term) {
+        if (text) {
             const {dataSource, data} = this.props;
-            this.setState({term});
+            this.setState({term: text});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
                 if (!dataSource) {
-                    this.setState({searchResults: filterSearchData(null, data, term)});
+                    this.setState({searchResults: filterSearchData(null, data, text)});
                     return;
                 }
 
                 if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-                    this.searchProfiles(term);
+                    this.searchProfiles(text);
                 } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-                    this.searchChannels(term);
+                    this.searchChannels(text);
                 }
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
@@ -205,7 +203,7 @@ export default class SelectorScreen extends PureComponent {
     searchChannels = (term) => {
         const {actions, currentTeamId} = this.props;
 
-        actions.searchChannels(currentTeamId, term).then(({data}) => {
+        actions.searchChannels(currentTeamId, term.toLowerCase()).then(({data}) => {
             this.setState({searchResults: data, loading: false});
         });
     };
@@ -214,7 +212,7 @@ export default class SelectorScreen extends PureComponent {
         const {actions} = this.props;
         this.setState({loading: true});
 
-        actions.searchProfiles(term).then(({data}) => {
+        actions.searchProfiles(term.toLowerCase()).then(({data}) => {
             this.setState({searchResults: data, loading: false});
         });
     };
@@ -380,11 +378,12 @@ const filterSearchData = memoizeResult((dataSource, data, term) => {
         return [];
     }
 
+    const lowerCasedTerm = term.toLowerCase();
     if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-        return filterProfilesMatchingTerm(data, term);
+        return filterProfilesMatchingTerm(data, lowerCasedTerm);
     } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-        return filterChannelsMatchingTerm(data, term);
+        return filterChannelsMatchingTerm(data, lowerCasedTerm);
     }
 
-    return data.filter((option) => option.text && option.text.toLowerCase().startsWith(term));
+    return data.filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
 });

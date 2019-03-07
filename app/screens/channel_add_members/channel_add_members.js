@@ -191,14 +191,12 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     onSearch = (text) => {
-        const term = text.toLowerCase();
-
-        if (term) {
-            this.setState({term});
+        if (text) {
+            this.setState({term: text});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                this.searchProfiles(term);
+                this.searchProfiles(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.clearSearch();
@@ -264,7 +262,7 @@ export default class ChannelAddMembers extends PureComponent {
         const options = {not_in_channel_id: currentChannelId, team_id: currentTeamId};
         this.setState({loading: true});
 
-        actions.searchProfiles(term, options).then(({data}) => {
+        actions.searchProfiles(term.toLowerCase(), options).then(({data}) => {
             this.setState({searchResults: data, loading: false});
         });
     };
