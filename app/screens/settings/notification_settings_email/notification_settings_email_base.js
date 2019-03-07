@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {PureComponent} from 'react';
+import {Platform} from 'react-native';
 import PropTypes from 'prop-types';
 
 import {Preferences} from 'mattermost-redux/constants';
@@ -35,11 +36,9 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             sendEmailNotifications,
         } = props;
 
-        const interval = this.computeEmailInterval(sendEmailNotifications, enableEmailBatching, emailInterval);
-
         this.state = {
-            interval,
-            newInterval: interval,
+            emailInterval,
+            newInterval: this.computeEmailInterval(sendEmailNotifications, enableEmailBatching, emailInterval),
             showEmailNotificationsModal: false,
         };
 
@@ -62,16 +61,15 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             this.props.enableEmailBatching !== enableEmailBatching ||
             this.props.emailInterval !== emailInterval
         ) {
-            const interval = this.computeEmailInterval(sendEmailNotifications, enableEmailBatching, emailInterval);
             this.setState({
-                interval,
-                newInterval: interval,
+                emailInterval,
+                newInterval: this.computeEmailInterval(sendEmailNotifications, enableEmailBatching, emailInterval),
             });
         }
     }
 
     onNavigatorEvent = (event) => {
-        if (event.type === 'ScreenChangedEvent') {
+        if (Platform.OS === 'ios' && event.type === 'ScreenChangedEvent') {
             switch (event.id) {
             case 'willDisappear':
                 this.saveEmailNotifyProps();
@@ -90,20 +88,21 @@ export default class NotificationSettingsEmailBase extends PureComponent {
 
         this.setState({
             email,
-            interval: value,
             newInterval: value,
         });
     };
 
     saveEmailNotifyProps = () => {
         const {actions, currentUser} = this.props;
-        const {email, newInterval} = this.state;
+        const {email, emailInterval, newInterval} = this.state;
 
-        const notifyProps = getNotificationProps(currentUser);
-        actions.updateMe({notify_props: {...notifyProps, email}});
+        if (emailInterval !== newInterval) {
+            const notifyProps = getNotificationProps(currentUser);
+            actions.updateMe({notify_props: {...notifyProps, email}});
 
-        const emailInterval = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUser.id, name: Preferences.EMAIL_INTERVAL, value: newInterval};
-        actions.savePreferences(currentUser.id, [emailInterval]);
+            const emailIntervalPreference = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUser.id, name: Preferences.EMAIL_INTERVAL, value: newInterval};
+            actions.savePreferences(currentUser.id, [emailIntervalPreference]);
+        }
     };
 
     computeEmailInterval = (sendEmailNotifications, enableEmailBatching, emailInterval) => {
