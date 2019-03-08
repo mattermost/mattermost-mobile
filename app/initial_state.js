@@ -123,10 +123,6 @@ const state = {
             },
         },
         users: {
-            checkMfa: {
-                status: 'not_started',
-                error: null,
-            },
             login: {
                 status: 'not_started',
                 error: null,

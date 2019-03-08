@@ -2,7 +2,7 @@
 .PHONY: check-style
 .PHONY: start stop
 .PHONY: run run-ios run-android
-.PHONY: build build-ios build-android unsigned-ios unsigned-android
+.PHONY: build build-ios build-android unsigned-ios unsigned-android ios-sim-x86_64
 .PHONY: build-pr can-build-pr prepare-pr
 .PHONY: test help
 
@@ -91,21 +91,10 @@ post-install:
 	@sed -i'' -e 's|transform: \[{scaleY: -1}\],|...Platform.select({android: {transform: \[{perspective: 1}, {scaleY: -1}\]}, ios: {transform: \[{scaleY: -1}\]}}),|g' node_modules/react-native/Libraries/Lists/VirtualizedList.js
 
 start: | pre-run ## Starts the React Native packager server
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
-		echo Starting React Native packager server; \
-		npm start; \
-	else \
-		echo React Native packager server already running; \
-	fi
+	$(call start_packager)
 
 stop: ## Stops the React Native packager server
-	@echo Stopping React Native packager server
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 1 ]; then \
-		ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9; \
-		echo React Native packager server stopped; \
-	else \
-		echo No React Native packager server running; \
-	fi
+	$(call stop_packager)
 
 check-device-ios:
 	@if ! [ $(shell which xcodebuild) ]; then \
@@ -181,38 +170,26 @@ run-android: | check-device-android pre-run prepare-android-build ## Runs the ap
     fi
 
 build: | stop pre-build check-style ## Builds the app for Android & iOS
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
-		echo Starting React Native packager server; \
-		npm start & echo; \
-	fi
+	$(call start_packager)
 	@echo "Building App"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane build
-	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+	$(call stop_packager)
 
 
 build-ios: | stop pre-build check-style ## Builds the iOS app
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
-		echo Starting React Native packager server; \
-		npm start & echo; \
-	fi
+	$(call start_packager)
 	@echo "Building iOS app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios build
-	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+	$(call stop_packager)
 
 build-android: | stop pre-build check-style prepare-android-build ## Build the Android app
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
-		echo Starting React Native packager server; \
-		npm start & echo; \
-	fi
+	$(call start_packager)
 	@echo "Building Android app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane android build
-	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+	$(call stop_packager)
 
 unsigned-ios: stop pre-build check-style ## Build an unsigned version of the iOS app
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
-		echo Starting React Native packager server; \
-		npm start & echo; \
-	fi
+	$(call start_packager)
 	@echo "Building unsigned iOS app"
 	@cd fastlane && NODE_ENV=production bundle exec fastlane ios unsigned
 	@mkdir -p build-ios
@@ -220,29 +197,34 @@ unsigned-ios: stop pre-build check-style ## Build an unsigned version of the iOS
 	@cd build-ios/ && mkdir -p Payload && cp -R Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/
 	@mv build-ios/Mattermost-unsigned.ipa .
 	@rm -rf build-ios/
-	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+	$(call stop_packager)
+
+ios-sim-x86_64: stop pre-build check-style ## Build an unsigned x86_64 version of the iOS app for iPhone simulator
+	$(call start_packager)
+	@echo "Building unsigned x86_64 iOS app for iPhone simulator"
+	@cd fastlane && NODE_ENV=production bundle exec fastlane ios unsigned
+	@mkdir -p build-ios
+	@cd ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO
+	@cd build-ios/Build/Products/Release-iphonesimulator/ && zip -r Mattermost-simulator-x86_64.app.zip Mattermost.app/
+	@mv build-ios/Build/Products/Release-iphonesimulator/Mattermost-simulator-x86_64.app.zip .
+	@rm -rf build-ios/
+	$(call stop_packager)
 
 unsigned-android: stop pre-build check-style prepare-android-build ## Build an unsigned version of the Android app
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
-		echo Starting React Native packager server; \
-		npm start & echo; \
-    fi
+	$(call start_packager)
 	@echo "Building unsigned Android app"
 	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned
 	@mv android/app/build/outputs/apk/unsigned/app-unsigned-unsigned.apk ./Mattermost-unsigned.apk
-	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+	$(call stop_packager)
 
 test: | pre-run check-style ## Runs tests
 	@npm test
 
 build-pr: | can-build-pr stop pre-build check-style ## Build a PR from the mattermost-mobile repo
-	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
-		echo Starting React Native packager server; \
-		npm start & echo; \
-	fi
+	$(call start_packager)
 	@echo "Building App from PR ${PR_ID}"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane build_pr pr:PR-${PR_ID}
-	@ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9
+	$(call stop_packager)
 
 can-build-pr:
 	@if [ -z ${PR_ID} ]; then \
@@ -258,3 +240,22 @@ i18n-extract: ## Extract strings for translation from the source code
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+define start_packager
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
+		echo Starting React Native packager server; \
+		npm start & echo; \
+	else \
+		echo React Native packager server already running; \
+	fi
+endef
+
+define stop_packager
+	@echo Stopping React Native packager server
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 1 ]; then \
+		ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9; \
+		echo React Native packager server stopped; \
+	else \
+		echo No React Native packager server running; \
+	fi
+endef

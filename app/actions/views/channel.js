@@ -26,7 +26,7 @@ import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
-import {getCurrentChannelId, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
+import {getChannel, getCurrentChannelId, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
 import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
@@ -325,7 +325,6 @@ export function selectPenultimateChannel(teamId) {
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
         ) {
             dispatch(setChannelLoading(true));
-            dispatch(setChannelDisplayName(lastChannel.display_name));
             dispatch(handleSelectChannel(lastChannelId));
             return;
         }
@@ -352,7 +351,6 @@ export function selectDefaultChannel(teamId) {
         }
 
         if (channelId) {
-            dispatch(setChannelDisplayName(''));
             dispatch(handleSelectChannel(channelId));
         }
     };
@@ -361,6 +359,7 @@ export function selectDefaultChannel(teamId) {
 export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const state = getState();
+        const channel = getChannel(state, channelId);
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
         const sameChannel = channelId === currentChannelId;
@@ -370,6 +369,7 @@ export function handleSelectChannel(channelId) {
         dispatch(loadPostsIfNecessaryWithRetry(channelId));
         dispatch(batchActions([
             selectChannel(channelId),
+            setChannelDisplayName(channel.display_name),
             {
                 type: ChannelTypes.SELECT_CHANNEL,
                 data: channelId,
@@ -404,7 +404,6 @@ export function handleSelectChannelByName(channelName, teamName) {
         const {data: channel} = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const currentChannelId = getCurrentChannelId(state);
         if (channel && currentChannelId !== channel.id) {
-            dispatch(setChannelDisplayName(channel.display_name));
             dispatch(handleSelectChannel(channel.id));
         }
     };

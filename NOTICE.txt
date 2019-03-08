@@ -314,10 +314,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This product contains 'emoji-regex' by Mathias Bynens.
 
-Regular expression to match all emoji symbols (including textual representations of emoji) as per the Unicode Standard.
+A regular expression to match all Emoji-only symbols as per the Unicode Standard.
 
 * HOMEPAGE:
-  * https://github.com/mathiasbynens/emoji-regex
+  * https://mths.be/emoji-regex
 
 * LICENSE: MIT
 
@@ -1722,7 +1722,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 
 ## react-native-navigation
 
-This product contains 'react-native-navigation' by Daniel Zlotin.
+This product contains a modified version of 'react-native-navigation' by Daniel Zlotin.
 
 React Native Navigation - truly native navigation for iOS and Android
 
@@ -2128,7 +2128,7 @@ This product contains 'react-native-video' by Brent Vatne.
 A <Video /> element for react-native
 
 * HOMEPAGE:
-  * https://github.com/brentvatne/react-native-video#readme
+  * https://github.com/react-native-community/react-native-video#readme
 
 * LICENSE: MIT
 

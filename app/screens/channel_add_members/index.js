@@ -20,7 +20,7 @@ function mapStateToProps(state) {
         currentChannelId: getCurrentChannelId(state),
         currentTeamId: getCurrentTeamId(state),
         currentUserId: getCurrentUserId(state),
-        membersNotInChannel: getProfilesNotInCurrentChannel(state),
+        profilesNotInChannel: getProfilesNotInCurrentChannel(state),
         theme: getTheme(state),
     };
 }

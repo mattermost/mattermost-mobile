@@ -55,6 +55,8 @@ export default class PostListBase extends PureComponent {
         onLoadMoreUp: () => true,
         renderFooter: () => null,
         refreshing: false,
+        serverURL: '',
+        siteURL: '',
     };
 
     componentWillMount() {
