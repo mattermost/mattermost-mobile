@@ -35,13 +35,14 @@ export default class ChannelPostList extends PureComponent {
         lastViewedAt: PropTypes.number,
         loadMorePostsVisible: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
-        postIds: PropTypes.array.isRequired,
+        postIds: PropTypes.array,
         postVisibility: PropTypes.number,
         refreshing: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
+        postIds: [],
         postVisibility: ViewTypes.POST_VISIBILITY_CHUNK_SIZE,
     };
 
@@ -53,6 +54,9 @@ export default class ChannelPostList extends PureComponent {
         };
 
         this.contentHeight = 0;
+
+        this.isLoadingMoreBottom = false;
+        this.isLoadingMoreTop = false;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -77,14 +81,14 @@ export default class ChannelPostList extends PureComponent {
     }
 
     getVisiblePostIds = (props) => {
-        return props.postIds.slice(0, props.postVisibility);
+        return props.postIds ? props.postIds.slice(0, props.postVisibility) : [];
     };
 
     goToThread = (post) => {
         const {actions, channelId, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
 
-        actions.loadThreadIfNecessary(post.root_id, channelId);
+        actions.loadThreadIfNecessary(post.root_id);
         actions.selectPost(rootId);
 
         const options = {
@@ -110,23 +114,26 @@ export default class ChannelPostList extends PureComponent {
         }
     };
 
-    loadMorePostsTop = async () => {
+    loadMorePostsTop = () => {
         const {actions, channelId} = this.props;
         if (!this.isLoadingMoreTop) {
             this.isLoadingMoreTop = true;
-            actions.increasePostVisibility(channelId).then((hasMore) => {
+            actions.increasePostVisibility(
+                channelId,
+                this.state.visiblePostIds[this.state.visiblePostIds.length - 1]
+            ).then((hasMore) => {
                 this.isLoadingMoreTop = !hasMore;
             });
         }
     };
 
-    loadMorePostsBottom = async () => {
+    loadMorePostsBottom = () => {
         const {actions, channelId} = this.props;
         if (!this.isLoadingMoreBottom) {
             this.isLoadingMoreBottom = true;
             actions.increasePostVisibility(
                 channelId,
-                null,
+                this.state.visiblePostIds[0],
                 ListTypes.VISIBILITY_SCROLL_DOWN,
             ).then((hasMore) => {
                 this.isLoadingMoreBottom = !hasMore;
@@ -179,7 +186,6 @@ export default class ChannelPostList extends PureComponent {
             lastViewedAt,
             loadMorePostsVisible,
             navigator,
-            postIds,
             refreshing,
             theme,
         } = this.props;
@@ -187,7 +193,7 @@ export default class ChannelPostList extends PureComponent {
         const {visiblePostIds} = this.state;
         let component;
 
-        if (!postIds.length && channelRefreshingFailed) {
+        if (visiblePostIds.length === 0 && channelRefreshingFailed) {
             component = (
                 <PostListRetry
                     retry={this.loadPostsRetry}
