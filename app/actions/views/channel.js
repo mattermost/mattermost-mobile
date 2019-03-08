@@ -345,7 +345,7 @@ export function selectDefaultChannel(teamId) {
     };
 }
 
-export function handleSelectChannel(channelId) {
+export function handleSelectChannel(channelId, fromPushNotification = false) {
     return async (dispatch, getState) => {
         const state = getState();
         const channel = getChannel(state, channelId);
@@ -376,8 +376,8 @@ export function handleSelectChannel(channelId) {
             },
         ]));
 
-        dispatch(markChannelAsRead(channelId, sameChannel ? null : currentChannelId));
-        dispatch(markChannelAsViewed(channelId, sameChannel ? null : currentChannelId));
+        dispatch(markChannelAsRead(channelId, fromPushNotification || sameChannel ? null : currentChannelId));
+        dispatch(markChannelAsViewed(channelId, fromPushNotification || sameChannel ? null : currentChannelId));
     };
 }
 
