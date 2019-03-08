@@ -246,14 +246,12 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     onSearch = (text) => {
-        const term = text.toLowerCase();
-
-        if (term) {
-            this.setState({term});
+        if (text) {
+            this.setState({term: text});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                this.searchProfiles(term);
+                this.searchProfiles(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.clearSearch();
@@ -261,15 +259,16 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     searchProfiles = (term) => {
+        const lowerCasedTerm = term.toLowerCase();
         const {actions, currentTeamId, restrictDirectMessage} = this.props;
         this.setState({loading: true});
 
         if (restrictDirectMessage) {
-            actions.searchProfiles(term).then(({data}) => {
+            actions.searchProfiles(lowerCasedTerm).then(({data}) => {
                 this.setState({searchResults: data, loading: false});
             });
         } else {
-            actions.searchProfiles(term, {team_id: currentTeamId}).then(({data}) => {
+            actions.searchProfiles(lowerCasedTerm, {team_id: currentTeamId}).then(({data}) => {
                 this.setState({searchResults: data, loading: false});
             });
         }
