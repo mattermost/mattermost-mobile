@@ -28,7 +28,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
 
     handleClose = () => {
         this.setState({
-            newInterval: this.state.interval,
+            newInterval: this.state.emailInterval,
             showEmailNotificationsModal: false,
         });
     }
@@ -47,11 +47,11 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
             sendEmailNotifications,
             theme,
         } = this.props;
-        const {interval} = this.state;
+        const {newInterval} = this.state;
         let i18nId;
         let i18nMessage;
         if (sendEmailNotifications) {
-            switch (interval) {
+            switch (newInterval) {
             case Preferences.INTERVAL_IMMEDIATE.toString():
                 i18nId = t('user.settings.notifications.email.immediately');
                 i18nMessage = 'Immediately';
