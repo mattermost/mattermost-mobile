@@ -92,7 +92,7 @@ export function loadFromPushNotification(notification, startAppFromPushNotificat
         } else if (channelId !== currentChannelId) {
             // when the notification is from a channel other than the current channel
             dispatch(setChannelDisplayName(''));
-            dispatch(handleSelectChannel(channelId));
+            dispatch(handleSelectChannel(channelId, true));
         }
     };
 }
