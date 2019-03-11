@@ -90,6 +90,10 @@ class SSO extends PureComponent {
             this.loginUrl = `${props.serverUrl}/login/sso/saml?action=mobile`;
             this.completedUrl = '/login/sso/saml';
             break;
+        case ViewTypes.OFFICE365:
+            this.loginUrl = `${props.serverUrl}/oauth/office365/mobile_login`;
+            this.completedUrl = '/signup/office365/complete';
+            break;
         }
     }
 
@@ -234,6 +238,8 @@ class SSO extends PureComponent {
                     onLoadEnd={this.onLoadEnd}
                     onMessage={messagingEnabled ? this.onMessage : null}
                     useWebKit={true}
+                    useSharedProcessPool={true}
+                    cacheEnabled={true}
                 />
             );
         }
