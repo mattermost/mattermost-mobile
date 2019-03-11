@@ -22,7 +22,9 @@
  - Fixed an issue where the "No Internet Connection" banner did not always display when internet connectivity was lost.
  - Fixed an issue where opening channels with unreads had loading indicator placed above unread messages line.
  - Fixed an issue where jumbo-emoji-only reply sometimes appeared with a large space beneath.
- - Fixed an issue where the "No internet connection" banner did not always disappear when connection was re-estabilished.
+ - Fixed an issue where the "No Internet Connection" banner did not always disappear when connection was re-estabilished.
+ - Fixed an issue where the profile picture for webhooks was showing the hook owner picture.
+ - Fixed an issue where email notifications setting was out of sync with the webapp until the setting was edited.
 
 ## 1.16.1 Release
 - Release Date: February 21, 2019
