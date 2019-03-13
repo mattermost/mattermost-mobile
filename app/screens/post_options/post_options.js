@@ -24,7 +24,6 @@ export default class PostOptions extends PureComponent {
             unflagPost: PropTypes.func.isRequired,
             unpinPost: PropTypes.func.isRequired,
         }).isRequired,
-        additionalOption: PropTypes.object,
         canAddReaction: PropTypes.bool,
         canDelete: PropTypes.bool,
         canPin: PropTypes.bool,
@@ -36,6 +35,7 @@ export default class PostOptions extends PureComponent {
         hasBeenDeleted: PropTypes.bool,
         isFlagged: PropTypes.bool,
         isMyPost: PropTypes.bool,
+        isSystemMessage: PropTypes.bool,
         managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
         post: PropTypes.object.isRequired,
@@ -63,9 +63,9 @@ export default class PostOptions extends PureComponent {
 
     getAddReactionOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canAddReaction, channelIsReadOnly, showAddReaction} = this.props;
+        const {canAddReaction, channelIsReadOnly, isSystemMessage, showAddReaction} = this.props;
 
-        if (showAddReaction && canAddReaction && !channelIsReadOnly) {
+        if (!isSystemMessage && showAddReaction && canAddReaction && !channelIsReadOnly) {
             return (
                 <PostOption
                     key='reaction'
@@ -80,6 +80,10 @@ export default class PostOptions extends PureComponent {
     };
 
     getCopyPermalink = () => {
+        if (this.props.isSystemMessage) {
+            return null;
+        }
+
         const {formatMessage} = this.context.intl;
 
         return (
@@ -94,9 +98,9 @@ export default class PostOptions extends PureComponent {
 
     getCopyText = () => {
         const {formatMessage} = this.context.intl;
-        const {managedConfig, post} = this.props;
+        const {isSystemMessage, managedConfig, post} = this.props;
 
-        if (managedConfig.copyAndPasteProtection !== 'true' && post.message) {
+        if (!isSystemMessage && managedConfig.copyAndPasteProtection !== 'true' && post.message) {
             return (
                 <PostOption
                     key='copy'
@@ -131,9 +135,9 @@ export default class PostOptions extends PureComponent {
 
     getEditOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canEdit, canEditUntil} = this.props;
+        const {canEdit, canEditUntil, isSystemMessage} = this.props;
 
-        if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
+        if (!isSystemMessage && canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
             return (
                 <PostOption
                     key='edit'
@@ -149,9 +153,9 @@ export default class PostOptions extends PureComponent {
 
     getFlagOption = () => {
         const {formatMessage} = this.context.intl;
-        const {channelIsReadOnly, isFlagged} = this.props;
+        const {channelIsReadOnly, isFlagged, isSystemMessage} = this.props;
 
-        if (channelIsReadOnly) {
+        if (isSystemMessage || channelIsReadOnly) {
             return null;
         }
 
@@ -178,9 +182,9 @@ export default class PostOptions extends PureComponent {
 
     getPinOption = () => {
         const {formatMessage} = this.context.intl;
-        const {channelIsReadOnly, post} = this.props;
+        const {channelIsReadOnly, isSystemMessage, post} = this.props;
 
-        if (channelIsReadOnly) {
+        if (isSystemMessage || channelIsReadOnly) {
             return null;
         }
 
@@ -398,6 +402,10 @@ export default class PostOptions extends PureComponent {
     render() {
         const {deviceHeight} = this.props;
         const options = this.getPostOptions();
+        if (!options || !options.length) {
+            return null;
+        }
+
         const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT);
         const initialPosition = getInitialPosition(deviceHeight, marginFromTop);
 
