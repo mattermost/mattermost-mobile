@@ -27,7 +27,7 @@ export const getMatchTermForAtMention = (() => {
             lastValue = value;
             lastIsSearch = isSearch;
             if (match) {
-                lastMatchTerm = isSearch ? match[1] : match[2];
+                lastMatchTerm = (isSearch ? match[1] : match[2]).toLowerCase();
             } else {
                 lastMatchTerm = null;
             }
