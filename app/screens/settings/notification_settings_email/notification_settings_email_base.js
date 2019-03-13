@@ -30,15 +30,18 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         super(props);
 
         const {
+            currentUser,
             emailInterval,
             enableEmailBatching,
             navigator,
             sendEmailNotifications,
         } = props;
 
+        const notifyProps = getNotificationProps(currentUser);
+
         this.state = {
             emailInterval,
-            newInterval: this.computeEmailInterval(sendEmailNotifications, enableEmailBatching, emailInterval),
+            newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
             showEmailNotificationsModal: false,
         };
 
@@ -51,6 +54,7 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         }
 
         const {
+            currentUser,
             sendEmailNotifications,
             enableEmailBatching,
             emailInterval,
@@ -61,9 +65,11 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             this.props.enableEmailBatching !== enableEmailBatching ||
             this.props.emailInterval !== emailInterval
         ) {
+            const notifyProps = getNotificationProps(currentUser);
+
             this.setState({
                 emailInterval,
-                newInterval: this.computeEmailInterval(sendEmailNotifications, enableEmailBatching, emailInterval),
+                newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
             });
         }
     }
