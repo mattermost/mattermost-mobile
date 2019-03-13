@@ -25,7 +25,7 @@ function mapStateToProps(state) {
         state,
         Preferences.CATEGORY_NOTIFICATIONS,
         Preferences.EMAIL_INTERVAL,
-        Preferences.INTERVAL_IMMEDIATE.toString(),
+        Preferences.INTERVAL_NOT_SET.toString(),
     );
 
     return {
