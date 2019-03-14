@@ -97,7 +97,7 @@ export function getScheme(url) {
 }
 
 export function matchPermalink(link, rootURL) {
-    if (!link || !rootURL) {
+    if (!link) {
         return null;
     }
 
