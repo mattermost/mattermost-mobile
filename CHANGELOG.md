@@ -7,6 +7,7 @@
 ### Combatibility
  - Mobile App v1.13+ is required for Mattermost Server v5.4+.
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iOS operating system 11+ is required.
  
 ### Highlights
  - Upgraded mobile apps to RN 0.58.5.
@@ -15,16 +16,16 @@
 ### Bug Fixes
  - Fixed several Android app crash / fatal error issues.
  - Fixed an issue on Android where the app crashed intermittently when selecting a link.
- - Fixed an issue where user profile icon for a Webhook did not follow use_user_icon.
- - Fixed an issue where emoji not included in our list of text-based emoji were not rendered as jumboemoji.
+ - Fixed an issue where email notifications setting was out of sync with the webapp until the setting was edited.
  - Fixed an issue where notification badges were not cleared from other clients when channel was changed via push notification after the mobile app was opened.
  - Fixed an issue where the app did not show local notification when session expired.
- - Fixed an issue where the "No Internet Connection" banner did not always display when internet connectivity was lost.
- - Fixed an issue where opening channels with unreads had loading indicator placed above unread messages line.
- - Fixed an issue where jumbo-emoji-only reply sometimes appeared with a large space beneath.
- - Fixed an issue where the "No Internet Connection" banner did not always disappear when connection was re-estabilished.
+ - Fixed an issue where user profile icon for a webhook did not follow use_user_icon.
  - Fixed an issue where the profile picture for webhooks was showing the hook owner picture.
- - Fixed an issue where email notifications setting was out of sync with the webapp until the setting was edited.
+ - Fixed an issue where emoji not included in our list of text-based emoji were not rendered as jumboemoji.
+ - Fixed an issue where jumbo-emoji-only reply sometimes appeared with a large space beneath.
+ - Fixed an issue where the "No Internet Connection" banner did not always display when internet connectivity was lost.
+ - Fixed an issue where the "No Internet Connection" banner did not always disappear when connection was re-estabilished.
+ - Fixed an issue where opening channels with unreads had loading indicator placed above unread messages line.
 
 ## 1.16.1 Release
 - Release Date: February 21, 2019
