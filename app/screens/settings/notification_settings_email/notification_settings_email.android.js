@@ -180,7 +180,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                             {sendEmailNotifications &&
                             <RadioButtonGroup
                                 name='emailSettings'
-                                onSelect={this.setEmailNotifications}
+                                onSelect={this.setEmailInterval}
                                 options={emailOptions}
                             />
                             }

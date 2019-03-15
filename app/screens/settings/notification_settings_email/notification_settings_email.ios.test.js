@@ -86,20 +86,20 @@ describe('NotificationSettingsEmailIos', () => {
         expect(savePreferences).toBeCalledWith('current_user_id', [{category: 'notifications', name: 'email_interval', user_id: 'current_user_id', value: 30}]);
     });
 
-    test('should match state on setEmailNotifications', () => {
+    test('should match state on setEmailInterval', () => {
         const wrapper = shallow(
             <NotificationSettingsEmailIos {...baseProps}/>
         );
 
-        wrapper.setState({email: 'false', interval: '0'});
-        wrapper.instance().setEmailNotifications('30');
-        expect(wrapper.state({email: 'true', interval: '30'}));
+        wrapper.setState({interval: '0'});
+        wrapper.instance().setEmailInterval('30');
+        expect(wrapper.state({interval: '30'}));
 
-        wrapper.instance().setEmailNotifications('0');
-        expect(wrapper.state({email: 'false', interval: '0'}));
+        wrapper.instance().setEmailInterval('0');
+        expect(wrapper.state({interval: '0'}));
 
-        wrapper.instance().setEmailNotifications('3600');
-        expect(wrapper.state({email: 'true', interval: '3600'}));
+        wrapper.instance().setEmailInterval('3600');
+        expect(wrapper.state({interval: '3600'}));
     });
 
     test('should match state on action of SectionItem', () => {
