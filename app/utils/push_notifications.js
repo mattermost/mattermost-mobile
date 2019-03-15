@@ -50,7 +50,7 @@ const onRegisterDevice = (data) => {
 };
 
 const loadFromNotification = async (notification) => {
-    await store.dispatch(loadFromPushNotification(notification, app.startAppFromPushNotification));
+    await store.dispatch(loadFromPushNotification(notification, true));
     if (!app.startAppFromPushNotification) {
         EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
         PushNotifications.resetNotification();

@@ -355,7 +355,12 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
         const member = getMyChannelMember(state, channelId);
 
         dispatch(setLoadMorePostsVisible(true));
-        dispatch(loadPostsIfNecessaryWithRetry(channelId));
+
+        // If the app is open from push notification, we already fetched the posts.
+        if (!fromPushNotification) {
+            dispatch(loadPostsIfNecessaryWithRetry(channelId));
+        }
+
         dispatch(batchActions([
             selectChannel(channelId),
             setChannelDisplayName(channel.display_name),
@@ -376,8 +381,13 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             },
         ]));
 
-        dispatch(markChannelAsRead(channelId, fromPushNotification || sameChannel ? null : currentChannelId));
-        dispatch(markChannelAsViewed(channelId, fromPushNotification || sameChannel ? null : currentChannelId));
+        let markPreviousChannelId;
+        if (!fromPushNotification && !sameChannel) {
+            markPreviousChannelId = currentChannelId;
+        }
+
+        dispatch(markChannelAsRead(channelId, markPreviousChannelId));
+        dispatch(markChannelAsViewed(channelId, markPreviousChannelId));
     };
 }
 
