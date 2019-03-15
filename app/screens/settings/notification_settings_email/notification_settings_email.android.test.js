@@ -56,20 +56,20 @@ describe('NotificationSettingsEmailAndroid', () => {
         expect(wrapper.instance().renderEmailNotificationsModal(style)).toMatchSnapshot();
     });
 
-    test('should match state on setEmailNotifications', () => {
+    test('should match state on setEmailInterval', () => {
         const wrapper = shallowWithIntl(
             <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
-        wrapper.setState({email: 'false', interval: '0'});
-        wrapper.instance().setEmailNotifications('30');
-        expect(wrapper.state({email: 'true', interval: '30'}));
+        wrapper.setState({interval: '0'});
+        wrapper.instance().setEmailInterval('30');
+        expect(wrapper.state({interval: '30'}));
 
-        wrapper.instance().setEmailNotifications('0');
-        expect(wrapper.state({email: 'false', interval: '0'}));
+        wrapper.instance().setEmailInterval('0');
+        expect(wrapper.state({interval: '0'}));
 
-        wrapper.instance().setEmailNotifications('3600');
-        expect(wrapper.state({email: 'true', interval: '3600'}));
+        wrapper.instance().setEmailInterval('3600');
+        expect(wrapper.state({interval: '3600'}));
     });
 
     test('should match state on select of RadioButtonGroup', () => {

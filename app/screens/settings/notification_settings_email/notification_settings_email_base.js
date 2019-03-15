@@ -84,25 +84,25 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         }
     };
 
-    setEmailNotifications = (value) => {
-        const {sendEmailNotifications} = this.props;
-
-        let email = 'false';
-        if (sendEmailNotifications && value !== Preferences.INTERVAL_NEVER.toString()) {
-            email = 'true';
-        }
-
-        this.setState({
-            email,
-            newInterval: value,
-        });
+    setEmailInterval = (value) => {
+        this.setState({newInterval: value});
     };
 
     saveEmailNotifyProps = () => {
-        const {actions, currentUser} = this.props;
-        const {email, emailInterval, newInterval} = this.state;
+        const {emailInterval, newInterval} = this.state;
 
         if (emailInterval !== newInterval) {
+            const {
+                actions,
+                currentUser,
+                sendEmailNotifications,
+            } = this.props;
+
+            let email = 'false';
+            if (sendEmailNotifications && newInterval !== Preferences.INTERVAL_NEVER.toString()) {
+                email = 'true';
+            }
+
             const notifyProps = getNotificationProps(currentUser);
             actions.updateMe({notify_props: {...notifyProps, email}});
 
