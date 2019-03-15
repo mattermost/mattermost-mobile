@@ -15,15 +15,15 @@
  - iOS Share Extension is now built natively.
 
 ### Bug Fixes
+ - Fixed support for EMM connections using VPN on-demand. See docs for more details on [setting AppConfig values](https://docs.mattermost.com/mobile/mobile-appconfig.html#mattermost-appconfig-values) for VPN support.
  - Fixed several Android app crash / fatal error issues.
  - Fixed an issue on Android where the app crashed intermittently when selecting a link.
  - Fixed an issue where email notifications setting was out of sync with the webapp until the setting was edited.
- - Fixed an issue where notification badges were not cleared from other clients when channel was changed via push notification after the mobile app was opened.
+ - Fixed an issue where notification badges were not cleared from other clients when clicking on a push notification after opening the mobile app.
  - Fixed an issue where the app did not show local notification when session expired.
- - Fixed an issue where user profile icon for a webhook did not follow use_user_icon.
  - Fixed an issue where the profile picture for webhooks was showing the hook owner picture.
- - Fixed an issue where emoji not included in our list of text-based emoji were not rendered as jumboemoji.
- - Fixed an issue where jumbo-emoji-only reply sometimes appeared with a large space beneath.
+ - Fixed an issue where some emoji were not rendered as jumbo.
+ - Fixed an issue where jumbo emoji posted as a reply sometimes appeared with large space beneath.
  - Fixed an issue where the "No Internet Connection" banner did not always display when internet connectivity was lost.
  - Fixed an issue where the "No Internet Connection" banner did not always disappear when connection was re-estabilished.
  - Fixed an issue where opening channels with unreads had loading indicator placed above unread messages line.
