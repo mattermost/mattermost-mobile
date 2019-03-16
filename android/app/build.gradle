@@ -118,8 +118,8 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 176
-        versionName "1.16.1"
+        versionCode 181
+        versionName "1.17.0"
         multiDexEnabled = true
         ndk {
             abiFilters "armeabi-v7a", "x86"
@@ -208,6 +208,7 @@ dependencies {
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation 'com.android.support:design:28.0.0'
     implementation 'com.android.support:percent:28.0.0'
+    implementation "com.google.firebase:firebase-messaging:17.3.0"
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation project(':react-native-document-picker')
     implementation project(':react-native-keychain')

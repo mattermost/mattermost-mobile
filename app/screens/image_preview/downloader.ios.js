@@ -16,8 +16,6 @@ import mattermostBucket from 'app/mattermost_bucket';
 import {getLocalFilePathFromFile} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 
-import LocalConfig from 'assets/config';
-
 import DownloaderBottomContent from './downloader_bottom_content.js';
 
 const {View: AnimatedView} = Animated;
@@ -236,7 +234,7 @@ export default class Downloader extends PureComponent {
                 this.setState({didCancel: false});
             }
 
-            const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+            const certificate = await mattermostBucket.getPreference('cert');
             const imageUrl = Client4.getFileUrl(data.id);
             const options = {
                 session: data.id,

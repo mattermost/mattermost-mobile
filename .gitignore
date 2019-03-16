@@ -1,5 +1,6 @@
 assets/override
 dist
+build-ios
 *.zip
 server.PID
 mattermost.keystore
@@ -80,6 +81,7 @@ ios/sentry.properties
 
 # Testing
 .nyc_output
+coverage
 
 # Pods
 .podinstall

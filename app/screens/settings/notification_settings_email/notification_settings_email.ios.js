@@ -28,7 +28,7 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
             siteName,
             theme,
         } = this.props;
-        const {interval} = this.state;
+        const {newInterval} = this.state;
         const style = getStyleSheet(theme);
 
         return (
@@ -50,10 +50,10 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                                 defaultMessage='Immediately'
                             />
                         )}
-                        action={this.setEmailNotifications}
+                        action={this.setEmailInterval}
                         actionType='select'
                         actionValue={Preferences.INTERVAL_IMMEDIATE.toString()}
-                        selected={interval === Preferences.INTERVAL_IMMEDIATE.toString()}
+                        selected={newInterval === Preferences.INTERVAL_IMMEDIATE.toString()}
                         theme={theme}
                     />
                     <View style={style.separator}/>
@@ -66,10 +66,10 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                                     defaultMessage='Every 15 minutes'
                                 />
                             )}
-                            action={this.setEmailNotifications}
+                            action={this.setEmailInterval}
                             actionType='select'
                             actionValue={Preferences.INTERVAL_FIFTEEN_MINUTES.toString()}
-                            selected={interval === Preferences.INTERVAL_FIFTEEN_MINUTES.toString()}
+                            selected={newInterval === Preferences.INTERVAL_FIFTEEN_MINUTES.toString()}
                             theme={theme}
                         />
                         <View style={style.separator}/>
@@ -80,10 +80,10 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                                     defaultMessage='Every hour'
                                 />
                             )}
-                            action={this.setEmailNotifications}
+                            action={this.setEmailInterval}
                             actionType='select'
                             actionValue={Preferences.INTERVAL_HOUR.toString()}
-                            selected={interval === Preferences.INTERVAL_HOUR.toString()}
+                            selected={newInterval === Preferences.INTERVAL_HOUR.toString()}
                             theme={theme}
                         />
                         <View style={style.separator}/>
@@ -96,10 +96,10 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                                 defaultMessage='Never'
                             />
                         )}
-                        action={this.setEmailNotifications}
+                        action={this.setEmailInterval}
                         actionType='select'
                         actionValue={Preferences.INTERVAL_NEVER.toString()}
-                        selected={interval === Preferences.INTERVAL_NEVER.toString()}
+                        selected={newInterval === Preferences.INTERVAL_NEVER.toString()}
                         theme={theme}
                     />
                 </View>

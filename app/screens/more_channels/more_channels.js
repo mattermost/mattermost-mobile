@@ -132,8 +132,9 @@ export default class MoreChannels extends PureComponent {
     };
 
     filterChannels = (channels, term) => {
+        const lowerCasedTerm = term.toLowerCase();
         return channels.filter((c) => {
-            return (c.name.toLowerCase().includes(term) || c.display_name.toLowerCase().includes(term));
+            return (c.name.toLowerCase().includes(lowerCasedTerm) || c.display_name.toLowerCase().includes(lowerCasedTerm));
         });
     };
 
@@ -289,18 +290,17 @@ export default class MoreChannels extends PureComponent {
 
     searchChannels = (text) => {
         const {actions, channels, currentTeamId} = this.props;
-        const term = text.toLowerCase();
 
-        if (term) {
-            const filtered = this.filterChannels(channels, term);
+        if (text) {
+            const filtered = this.filterChannels(channels, text);
             this.setState({
                 channels: filtered,
-                term,
+                term: text,
             });
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                actions.searchChannels(currentTeamId, term);
+                actions.searchChannels(currentTeamId, text.toLowerCase());
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();

@@ -9,6 +9,7 @@ import {Client4} from 'mattermost-redux/client';
 import {ClientError} from 'mattermost-redux/client/client4';
 
 import mattermostBucket from 'app/mattermost_bucket';
+import mattermostManaged from 'app/mattermost_managed';
 import LocalConfig from 'assets/config';
 
 import {t} from 'app/utils/i18n';
@@ -17,6 +18,12 @@ import {t} from 'app/utils/i18n';
 
 const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
 const HEADER_TOKEN = 'Token';
+
+let managedConfig;
+
+mattermostManaged.addEventListener('fetch_managed_config', (config) => {
+    managedConfig = config;
+});
 
 const handleRedirectProtocol = (url, response) => {
     const serverUrl = Client4.getUrl();
@@ -30,21 +37,31 @@ const handleRedirectProtocol = (url, response) => {
 };
 
 Client4.doFetchWithResponse = async (url, options) => {
-    if (!Client4.online) {
-        throw new ClientError(Client4.getUrl(), {
-            message: 'no internet connection',
-            url,
-        });
-    }
+    // Removing the check of this flag to be handled natively.
+    // In case Android presents the out of memory issue, consider uncommenting line 42-47.
+    // if (!Client4.online) {
+    //     throw new ClientError(Client4.getUrl(), {
+    //         message: 'no internet connection',
+    //         url,
+    //     });
+    // }
 
     const customHeaders = LocalConfig.CustomRequestHeaders;
     let waitsForConnectivity = false;
-    if (url.includes('/api/v4/system/ping')) {
+    let timeoutIntervalForResource = 30;
+
+    if (managedConfig?.useVPN === 'true') {
         waitsForConnectivity = true;
     }
+
+    if (managedConfig?.timeoutVPN) {
+        timeoutIntervalForResource = parseInt(managedConfig.timeoutVPN, 10);
+    }
+
     let requestOptions = {
         ...Client4.getOptions(options),
         waitsForConnectivity,
+        timeoutIntervalForResource,
     };
 
     if (customHeaders && Object.keys(customHeaders).length > 0) {
@@ -129,8 +146,15 @@ Client4.doFetchWithResponse = async (url, options) => {
 
 const initFetchConfig = async () => {
     let fetchConfig = {};
+
+    try {
+        managedConfig = await mattermostManaged.getConfig();
+    } catch {
+        // no managed config
+    }
+
     if (Platform.OS === 'ios') {
-        const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+        const certificate = await mattermostBucket.getPreference('cert');
         fetchConfig = {
             auto: true,
             certificate,

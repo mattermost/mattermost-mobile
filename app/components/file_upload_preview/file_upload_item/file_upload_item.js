@@ -15,7 +15,6 @@ import FileUploadRetry from 'app/components/file_upload_preview/file_upload_retr
 import FileUploadRemove from 'app/components/file_upload_preview/file_upload_remove';
 import mattermostBucket from 'app/mattermost_bucket';
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
-import LocalConfig from 'assets/config';
 
 export default class FileUploadItem extends PureComponent {
     static propTypes = {
@@ -137,7 +136,7 @@ export default class FileUploadItem extends PureComponent {
 
         Client4.trackEvent('api', 'api_files_upload');
 
-        const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+        const certificate = await mattermostBucket.getPreference('cert');
         const options = {
             timeout: 10000,
             certificate,

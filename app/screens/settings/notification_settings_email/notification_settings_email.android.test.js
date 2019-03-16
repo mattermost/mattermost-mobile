@@ -12,6 +12,12 @@ import RadioButtonGroup from 'app/components/radio_button';
 
 import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
 
+jest.mock('Platform', () => {
+    const Platform = require.requireActual('Platform');
+    Platform.OS = 'android';
+    return Platform;
+});
+
 describe('NotificationSettingsEmailAndroid', () => {
     const baseProps = {
         currentUser: {id: 'current_user_id'},
@@ -50,20 +56,20 @@ describe('NotificationSettingsEmailAndroid', () => {
         expect(wrapper.instance().renderEmailNotificationsModal(style)).toMatchSnapshot();
     });
 
-    test('should match state on setEmailNotifications', () => {
+    test('should match state on setEmailInterval', () => {
         const wrapper = shallowWithIntl(
             <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
-        wrapper.setState({email: 'false', interval: '0'});
-        wrapper.instance().setEmailNotifications('30');
-        expect(wrapper.state({email: 'true', interval: '30'}));
+        wrapper.setState({interval: '0'});
+        wrapper.instance().setEmailInterval('30');
+        expect(wrapper.state({interval: '30'}));
 
-        wrapper.instance().setEmailNotifications('0');
-        expect(wrapper.state({email: 'false', interval: '0'}));
+        wrapper.instance().setEmailInterval('0');
+        expect(wrapper.state({interval: '0'}));
 
-        wrapper.instance().setEmailNotifications('3600');
-        expect(wrapper.state({email: 'true', interval: '3600'}));
+        wrapper.instance().setEmailInterval('3600');
+        expect(wrapper.state({interval: '3600'}));
     });
 
     test('should match state on select of RadioButtonGroup', () => {
@@ -138,5 +144,23 @@ describe('NotificationSettingsEmailAndroid', () => {
         wrapper.setState({showEmailNotificationsModal: false});
         wrapper.instance().showEmailModal();
         expect(wrapper.state('showEmailNotificationsModal')).toEqual(true);
+    });
+
+    test('should not save preference on back button on Android', () => {
+        const wrapper = shallowWithIntl(
+            <NotificationSettingsEmailAndroid {...baseProps}/>
+        );
+
+        const instance = wrapper.instance();
+        instance.saveEmailNotifyProps = jest.fn();
+
+        // should not save preference on back button on Android
+        // saving email preference on Android is done via Save button
+        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        expect(instance.saveEmailNotifyProps).toHaveBeenCalledTimes(0);
+
+        wrapper.setState({newInterval: '0'});
+        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        expect(instance.saveEmailNotifyProps).toHaveBeenCalledTimes(0);
     });
 });

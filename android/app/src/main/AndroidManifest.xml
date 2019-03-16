@@ -53,7 +53,7 @@
                 <action android:name="android.intent.action.SEND" />
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
-                //  for sharing
+                <!-- for sharing-->
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>

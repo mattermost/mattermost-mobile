@@ -19,7 +19,7 @@ import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
-import {getCurrentChannelId, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
+import {getChannel, getCurrentChannelId, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
 import {
@@ -314,7 +314,6 @@ export function selectPenultimateChannel(teamId) {
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
         ) {
             dispatch(setChannelLoading(true));
-            dispatch(setChannelDisplayName(lastChannel.display_name));
             dispatch(handleSelectChannel(lastChannelId));
             return;
         }
@@ -341,24 +340,30 @@ export function selectDefaultChannel(teamId) {
         }
 
         if (channelId) {
-            dispatch(setChannelDisplayName(''));
             dispatch(handleSelectChannel(channelId));
         }
     };
 }
 
-export function handleSelectChannel(channelId) {
+export function handleSelectChannel(channelId, fromPushNotification = false) {
     return async (dispatch, getState) => {
         const state = getState();
+        const channel = getChannel(state, channelId);
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
         const sameChannel = channelId === currentChannelId;
         const member = getMyChannelMember(state, channelId);
 
         dispatch(setLoadMorePostsVisible(true));
-        dispatch(loadPostsIfNecessaryWithRetry(channelId));
+
+        // If the app is open from push notification, we already fetched the posts.
+        if (!fromPushNotification) {
+            dispatch(loadPostsIfNecessaryWithRetry(channelId));
+        }
+
         dispatch(batchActions([
             selectChannel(channelId),
+            setChannelDisplayName(channel.display_name),
             {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
                 data: channelId,
@@ -376,8 +381,13 @@ export function handleSelectChannel(channelId) {
             },
         ]));
 
-        dispatch(markChannelAsRead(channelId, sameChannel ? null : currentChannelId));
-        dispatch(markChannelAsViewed(channelId, sameChannel ? null : currentChannelId));
+        let markPreviousChannelId;
+        if (!fromPushNotification && !sameChannel) {
+            markPreviousChannelId = currentChannelId;
+        }
+
+        dispatch(markChannelAsRead(channelId, markPreviousChannelId));
+        dispatch(markChannelAsViewed(channelId, markPreviousChannelId));
     };
 }
 
@@ -389,7 +399,6 @@ export function handleSelectChannelByName(channelName, teamName) {
         const {data: channel} = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const currentChannelId = getCurrentChannelId(state);
         if (channel && currentChannelId !== channel.id) {
-            dispatch(setChannelDisplayName(channel.display_name));
             dispatch(handleSelectChannel(channel.id));
         }
     };

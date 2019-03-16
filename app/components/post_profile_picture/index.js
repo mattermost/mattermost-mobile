@@ -18,7 +18,7 @@ function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
 
     return {
-        enablePostIconOverride: config.EnablePostIconOverride === 'true' && post?.props?.use_user_icon === 'false', // eslint-disable-line camelcase
+        enablePostIconOverride: config.EnablePostIconOverride === 'true' && post?.props?.use_user_icon !== 'true', // eslint-disable-line camelcase
         fromWebHook: post?.props?.from_webhook === 'true', // eslint-disable-line camelcase
         isSystemMessage: isSystemMessage(post),
         fromAutoResponder: fromAutoResponder(post),

@@ -12,6 +12,12 @@ import SectionItem from 'app/screens/settings/section_item';
 
 import NotificationSettingsEmailIos from './notification_settings_email.ios.js';
 
+jest.mock('Platform', () => {
+    const Platform = require.requireActual('Platform');
+    Platform.OS = 'ios';
+    return Platform;
+});
+
 jest.mock('app/utils/theme', () => {
     const original = require.requireActual('app/utils/theme');
     return {
@@ -43,16 +49,23 @@ describe('NotificationSettingsEmailIos', () => {
         expect(wrapper.instance().renderEmailSection()).toMatchSnapshot();
     });
 
-    test('should call saveEmailNotifyProps on onNavigatorEvent', () => {
+    test('should save preference on back button only if email interval has changed', () => {
         const wrapper = shallow(
             <NotificationSettingsEmailIos {...baseProps}/>
         );
 
         const instance = wrapper.instance();
-        instance.saveEmailNotifyProps = jest.fn();
-        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
 
-        expect(instance.saveEmailNotifyProps).toHaveBeenCalledTimes(1);
+        // should not save preference if email interval has not changed.
+        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        expect(baseProps.actions.updateMe).toHaveBeenCalledTimes(0);
+        expect(baseProps.actions.savePreferences).toHaveBeenCalledTimes(0);
+
+        // should save preference if email interval has changed.
+        wrapper.setState({newInterval: '0'});
+        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        expect(baseProps.actions.updateMe).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.savePreferences).toHaveBeenCalledTimes(1);
     });
 
     test('should call actions.updateMe and actions.savePreferences on saveEmailNotifyProps', () => {
@@ -73,20 +86,20 @@ describe('NotificationSettingsEmailIos', () => {
         expect(savePreferences).toBeCalledWith('current_user_id', [{category: 'notifications', name: 'email_interval', user_id: 'current_user_id', value: 30}]);
     });
 
-    test('should match state on setEmailNotifications', () => {
+    test('should match state on setEmailInterval', () => {
         const wrapper = shallow(
             <NotificationSettingsEmailIos {...baseProps}/>
         );
 
-        wrapper.setState({email: 'false', interval: '0'});
-        wrapper.instance().setEmailNotifications('30');
-        expect(wrapper.state({email: 'true', interval: '30'}));
+        wrapper.setState({interval: '0'});
+        wrapper.instance().setEmailInterval('30');
+        expect(wrapper.state({interval: '30'}));
 
-        wrapper.instance().setEmailNotifications('0');
-        expect(wrapper.state({email: 'false', interval: '0'}));
+        wrapper.instance().setEmailInterval('0');
+        expect(wrapper.state({interval: '0'}));
 
-        wrapper.instance().setEmailNotifications('3600');
-        expect(wrapper.state({email: 'true', interval: '3600'}));
+        wrapper.instance().setEmailInterval('3600');
+        expect(wrapper.state({interval: '3600'}));
     });
 
     test('should match state on action of SectionItem', () => {
