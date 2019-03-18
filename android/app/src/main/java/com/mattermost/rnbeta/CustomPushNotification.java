@@ -252,7 +252,7 @@ public class CustomPushNotification extends PushNotification {
 
         for (Bundle data : list) {
             String message = data.getString("message");
-            if ((title == null || !title.startsWith("@")) {
+            if (title == null || !title.startsWith("@")) {
                 message = removeSenderFromMessage(message);
             }
             messagingStyle.addMessage(message, data.getLong("time"), data.getString("sender_name"));
