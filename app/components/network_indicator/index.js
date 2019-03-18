@@ -9,6 +9,7 @@ import {init as initWebSocket, close as closeWebSocket} from 'mattermost-redux/a
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 
 import {connection} from 'app/actions/device';
+import {markChannelViewedAndRead} from 'app/actions/views/channel';
 import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 import {getConnection, isLandscape} from 'app/selectors/device';
 
@@ -34,6 +35,7 @@ function mapDispatchToProps(dispatch) {
             connection,
             initWebSocket,
             logout,
+            markChannelViewedAndRead,
             setCurrentUserStatusOffline,
             startPeriodicStatusUpdates,
             stopPeriodicStatusUpdates,

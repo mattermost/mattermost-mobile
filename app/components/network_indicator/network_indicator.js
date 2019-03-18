@@ -43,6 +43,7 @@ export default class NetworkIndicator extends PureComponent {
             closeWebSocket: PropTypes.func.isRequired,
             connection: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
+            markChannelViewedAndRead: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
             setCurrentUserStatusOffline: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
@@ -226,7 +227,7 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     handleAppStateChange = async (appState) => {
-        const {currentChannelId} = this.props;
+        const {actions, currentChannelId} = this.props;
         const active = appState === 'active';
 
         if (active) {
@@ -238,6 +239,7 @@ export default class NetworkIndicator extends PureComponent {
                 // foreground by tapping a notification from another channel
                 this.clearNotificationTimeout = setTimeout(() => {
                     PushNotifications.clearChannelNotifications(currentChannelId);
+                    actions.markChannelViewedAndRead(currentChannelId);
                 }, 1000);
             }
         } else {

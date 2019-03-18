@@ -4,11 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {loadPostsIfNecessaryWithRetry} from 'app/actions/views/channel';
+import {loadPostsIfNecessaryWithRetry, markChannelViewedAndRead} from 'app/actions/views/channel';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import ChannelPeek from './channel_peek';
@@ -30,7 +29,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadPostsIfNecessaryWithRetry,
-            markChannelAsRead,
+            markChannelViewedAndRead,
         }, dispatch),
     };
 }
