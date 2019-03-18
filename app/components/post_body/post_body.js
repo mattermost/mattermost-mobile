@@ -57,7 +57,7 @@ export default class PostBody extends PureComponent {
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPress: PropTypes.func,
-        postId: PropTypes.string.isRequired,
+        post: PropTypes.object.isRequired,
         postProps: PropTypes.object,
         postType: PropTypes.string,
         replyBarStyle: PropTypes.array,
@@ -112,7 +112,7 @@ export default class PostBody extends PureComponent {
             navigator,
             onHashtagPress,
             onPermalinkPress,
-            postId,
+            post,
         } = this.props;
 
         const options = {
@@ -126,7 +126,7 @@ export default class PostBody extends PureComponent {
                 modalPresentationStyle: 'overCurrentContext',
             },
             passProps: {
-                postId,
+                postId: post.id,
                 managedConfig,
                 onHashtagPress,
                 onPermalinkPress,
@@ -148,7 +148,7 @@ export default class PostBody extends PureComponent {
             isSystemMessage,
             managedConfig,
             navigator,
-            postId,
+            post,
             showAddReaction,
             location,
         } = this.props;
@@ -177,7 +177,7 @@ export default class PostBody extends PureComponent {
                 hasBeenDeleted,
                 isFlagged,
                 isSystemMessage,
-                postId,
+                post,
                 managedConfig,
                 showAddReaction,
                 location,
@@ -212,7 +212,7 @@ export default class PostBody extends PureComponent {
             fileIds,
             isFailed,
             navigator,
-            postId,
+            post,
             showLongPost,
         } = this.props;
 
@@ -231,7 +231,7 @@ export default class PostBody extends PureComponent {
                     fileIds={fileIds}
                     isFailed={isFailed}
                     onLongPress={this.showPostOptions}
-                    postId={postId}
+                    postId={post.id}
                     navigator={navigator}
                 />
             );
@@ -248,7 +248,7 @@ export default class PostBody extends PureComponent {
             navigator,
             onHashtagPress,
             onPermalinkPress,
-            postId,
+            post,
             postProps,
         } = this.props;
 
@@ -271,7 +271,7 @@ export default class PostBody extends PureComponent {
                 navigator={navigator}
                 message={message}
                 metadata={metadata}
-                postId={postId}
+                postId={post.id}
                 postProps={postProps}
                 textStyles={textStyles}
                 isReplyPost={isReplyPost}
@@ -286,7 +286,7 @@ export default class PostBody extends PureComponent {
             hasReactions,
             isSearchResult,
             navigator,
-            postId,
+            post,
             showLongPost,
         } = this.props;
 
@@ -300,7 +300,7 @@ export default class PostBody extends PureComponent {
 
         return (
             <Reactions
-                postId={postId}
+                postId={post.id}
                 navigator={navigator}
             />
         );
