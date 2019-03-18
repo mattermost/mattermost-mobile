@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
 ## 1.17.0 Release
-- Release Date: March 16, 2019
+- Release Date: March 18, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Combatibility
@@ -12,7 +12,6 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Highlights
- - Upgraded mobile apps to RN 0.58.5.
  - iOS Share Extension is now built natively.
 
 ### Bug Fixes
