@@ -1,4 +1,5 @@
 import UIKit
+import os.log
 
 @objc @objcMembers public class UploadSession: NSObject, URLSessionDataDelegate {
     public class var shared :UploadSession {
@@ -33,6 +34,11 @@ import UIKit
             request.setValue("Bearer \(sessionToken!)", forHTTPHeaderField: "Authorization")
             request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
             request.httpBody = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted)
+            
+            if #available(iOS 12.0, *) {
+                os_log(OSLogType.default, "Mattermost will post identifier=%{public}@", identifier)
+            }
+
             URLSession(configuration: .ephemeral).dataTask(with: request).resume()
 
             UploadSessionManager.shared.removeUploadSessionData(identifier: identifier)
@@ -42,6 +48,9 @@ import UIKit
     
     public func attachSession(identifier: String, completionHandler: @escaping () -> Void) {
         self.completionHandler = completionHandler
+        if #available(iOS 12.0, *) {
+            os_log(OSLogType.default, "Mattermost Attached session with completionHandler identifier=%{public}@", identifier)
+        }
         let sessionConfig = URLSessionConfiguration.background(withIdentifier: identifier)
         sessionConfig.sharedContainerIdentifier = APP_GROUP_ID
         if #available(iOS 11.0, *) {
@@ -59,9 +68,12 @@ import UIKit
         }
 
         self.session = URLSession(configuration: sessionConfig, delegate: self, delegateQueue: nil)
+        if #available(iOS 12.0, *) {
+            os_log(OSLogType.default, "Mattermost Session created identifier=%{public}@", identifier)
+        }
         return self.session!
     }
-    
+
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         // here we should get the file Id and update it in the session
         guard let identifier = session.configuration.identifier else {return}
@@ -74,6 +86,9 @@ import UIKit
                     UploadSessionManager.shared.appendCompletedUploadToSession(identifier: identifier, fileId: fileId)
                 }
             } catch {
+                if #available(iOS 12.0, *) {
+                    os_log(OSLogType.default, "Mattermost Failed to receive data identifier=%{public}@ error=%{public}", identifier, error.localizedDescription)
+                }
                 print("MMLOG: Failed to get the file upload response %@", error.localizedDescription)
             }
 
@@ -84,19 +99,28 @@ import UIKit
             let identifier = session.configuration.identifier!
             guard let sessionData = UploadSessionManager.shared.getUploadSessionData(identifier: identifier) else {return}
             if sessionData.fileIds.count == sessionData.totalFiles {
+                if #available(iOS 12.0, *) {
+                    os_log(OSLogType.default, "Mattermost did complete upload identifier=%{public}@", identifier)
+                }
                 ProcessInfo().performExpiringActivity(withReason: "Need to post the message") { (expires) in
-                    self.createPost(identifier: identifier)
+                    self.createPost(identifier: session.configuration.identifier!)
                 }
             }
         }
     }
     
     public func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
-        DispatchQueue.main.async {
-            
+        if #available(iOS 12.0, *) {
+            os_log(OSLogType.default, "Mattermost urlSessionDidFinishEvents identifier=%{public}@", session.configuration.identifier ?? "no identifier")
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1.0*Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
             if self.completionHandler != nil {
+                if #available(iOS 12.0, *) {
+                    os_log(OSLogType.default, "Mattermost CALLED COMPLETIONHANDLER")
+                }
                 self.completionHandler!()
             }
-        }
+        })
     }
 }
