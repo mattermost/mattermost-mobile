@@ -50,7 +50,7 @@
 		72FB67307C2E4BA197BEC567 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CF19152887874B7E996210B1 /* libz.tbd */; };
 		74D116AD208A8D5600CF8A79 /* libRNKeychain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74D116AA208A8D3100CF8A79 /* libRNKeychain.a */; };
 		7BD159C40A68467FB5A17141 /* FontAwesome5_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC1D660B55BE462A9C3B8028 /* FontAwesome5_Solid.ttf */; };
-		7F151D3E221B062700FAD8F3 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F151D3D221B062700FAD8F3 /* Dummy.swift */; };
+		7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */; };
 		7F151D41221B069200FAD8F3 /* 0155-keys.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F151D40221B069200FAD8F3 /* 0155-keys.png */; };
 		7F240A1C220D3A2300637665 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F240A1B220D3A2300637665 /* ShareViewController.swift */; };
 		7F240A1F220D3A2300637665 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F240A1D220D3A2300637665 /* MainInterface.storyboard */; };
@@ -732,7 +732,7 @@
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		79CB6EBA24FE4ABFB0C155F0 /* YTPlayerView-iframe-player.html */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "YTPlayerView-iframe-player.html"; path = "../node_modules/react-native-youtube/assets/YTPlayerView-iframe-player.html"; sourceTree = "<group>"; };
 		7DCC3D826CE640AF8F491692 /* BVLinearGradient.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = BVLinearGradient.xcodeproj; path = "../node_modules/react-native-linear-gradient/BVLinearGradient.xcodeproj"; sourceTree = "<group>"; };
-		7F151D3D221B062700FAD8F3 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Dummy.swift; path = Mattermost/Dummy.swift; sourceTree = "<group>"; };
+		7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeUtils.swift; path = Mattermost/RuntimeUtils.swift; sourceTree = "<group>"; };
 		7F151D40221B069200FAD8F3 /* 0155-keys.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "0155-keys.png"; path = "Mattermost/0155-keys.png"; sourceTree = "<group>"; };
 		7F151D42221B07F700FAD8F3 /* MattermostShare-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MattermostShare-Bridging-Header.h"; sourceTree = "<group>"; };
 		7F151D43221B082A00FAD8F3 /* Mattermost-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Mattermost-Bridging-Header.h"; path = "Mattermost/Mattermost-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -1021,7 +1021,7 @@
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				7FEB10961F6101710039A015 /* BlurAppScreen.h */,
 				7FEB10971F6101710039A015 /* BlurAppScreen.m */,
-				7F151D3D221B062700FAD8F3 /* Dummy.swift */,
+				7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				7F292AA41E8ABB1100A450A3 /* LaunchScreen.xib */,
@@ -2409,7 +2409,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
-				7F151D3E221B062700FAD8F3 /* Dummy.swift in Sources */,
+				7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */,
 				7FEB109E1F61019C0039A015 /* UIImage+ImageEffects.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				7FEB10981F6101710039A015 /* BlurAppScreen.m in Sources */,

@@ -21,6 +21,7 @@
 #import "RNNotifications.h"
 #import <UploadAttachments/UploadAttachments-Swift.h>
 #import <UserNotifications/UserNotifications.h>
+#import "Mattermost-Swift.h"
 
 @implementation AppDelegate
 
@@ -117,6 +118,13 @@ NSString* const NotificationClearAction = @"clear";
   if (action && [action isEqualToString: NotificationClearAction]) {
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
     [self cleanNotificationsFromChannel:channelId andUpdateBadge:NO];
+    RuntimeUtils *utils = [[RuntimeUtils alloc] init];
+    [utils delayWithSeconds:0.2 closure:^(void) {
+      // This is to notify the NotificationCenter that something has changed.
+      completionHandler(UIBackgroundFetchResultNewData);
+    }];
+    
+    return;
   } else if (state == UIApplicationStateInactive) {
     // When the notification is opened
     [self cleanNotificationsFromChannel:channelId andUpdateBadge:NO];
