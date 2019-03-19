@@ -31,7 +31,7 @@
     "react-native-calendars": "github:enahum/react-native-calendars#e399bb749c0a944f009e75e7b45748299aea35d6",
     "react-native-circular-progress": "1.1.0",
     "react-native-cookies": "github:joeferraro/react-native-cookies#f11374745deba9f18f7b8a9bb4b0b2573026f522",
-    "react-native-device-info": "github:enahum/react-native-device-info#d80037dd7d805bf9e7372aeef098d17c90e75e13",
+    "react-native-device-info": "github:enahum/react-native-device-info#00c9ff7dc11e63b06e0624cc1c4b0cc2bc4e7a39",
     "react-native-doc-viewer": "2.7.8",
     "react-native-document-picker": "2.2.0",
     "react-native-exception-handler": "2.10.6",
