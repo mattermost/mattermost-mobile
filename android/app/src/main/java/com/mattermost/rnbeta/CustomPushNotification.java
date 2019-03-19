@@ -264,10 +264,13 @@ public class CustomPushNotification extends PushNotification {
                 .setStyle(messagingStyle)
                 .setSmallIcon(smallIconResId)
                 .setNumber(Integer.parseInt(badge))
-                .setBadgeIconType(Notification.BADGE_ICON_SMALL)
                 .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setAutoCancel(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notification.setBadgeIconType(Notification.BADGE_ICON_SMALL);
+        }
 
         // Let's add a delete intent when the notification is dismissed
         Intent delIntent = new Intent(mContext, NotificationDismissService.class);
