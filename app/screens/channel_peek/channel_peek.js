@@ -12,7 +12,7 @@ export default class ChannelPeek extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadPostsIfNecessaryWithRetry: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
+            markChannelViewedAndRead: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string,
@@ -59,7 +59,7 @@ export default class ChannelPeek extends PureComponent {
         if (event.type === 'PreviewActionPress') {
             if (event.id === 'action-mark-as-read') {
                 const {actions, channelId} = this.props;
-                actions.markChannelAsRead(channelId);
+                actions.markChannelViewedAndRead(channelId);
             }
         }
     };

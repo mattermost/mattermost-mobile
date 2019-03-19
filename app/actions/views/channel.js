@@ -385,8 +385,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             markPreviousChannelId = currentChannelId;
         }
 
-        dispatch(markChannelAsRead(channelId, markPreviousChannelId));
-        dispatch(markChannelAsViewed(channelId, markPreviousChannelId));
+        dispatch(markChannelViewedAndRead(channelId, markPreviousChannelId));
     };
 }
 
@@ -408,6 +407,13 @@ export function insertToDraft(value) {
         const insertEvent = threadId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
 
         EventEmitter.emit(insertEvent, value);
+    };
+}
+
+export function markChannelViewedAndRead(channelId, previousChannelId, markOnServer = true) {
+    return (dispatch) => {
+        dispatch(markChannelAsRead(channelId, previousChannelId, markOnServer));
+        dispatch(markChannelAsViewed(channelId, previousChannelId));
     };
 }
 

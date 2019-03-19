@@ -4,7 +4,6 @@
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {setDeviceToken} from 'mattermost-redux/actions/general';
 import {getPosts} from 'mattermost-redux/actions/posts';
 import {Client4} from 'mattermost-redux/client';
@@ -12,7 +11,7 @@ import {General} from 'mattermost-redux/constants';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {retryGetPostsAction} from 'app/actions/views/channel';
+import {markChannelViewedAndRead, retryGetPostsAction} from 'app/actions/views/channel';
 import {
     createPostForNotificationReply,
     loadFromPushNotification,
@@ -78,8 +77,7 @@ const onPushNotification = async (deviceNotification) => {
     }
 
     if (data.type === 'clear') {
-        dispatch(markChannelAsRead(data.channel_id, null, false));
-        dispatch(markChannelAsViewed(data.channel_id, null));
+        dispatch(markChannelViewedAndRead(data.channel_id, null, false));
     } else {
         // get the posts for the channel as soon as possible
         retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
@@ -159,7 +157,7 @@ export const onPushNotificationReply = async (data, text, badge, completed) => {
             PushNotifications.setApplicationIconBadgeNumber(badge);
         }
 
-        dispatch(markChannelAsRead(data.channel_id));
+        dispatch(markChannelViewedAndRead(data.channel_id));
         app.setReplyNotificationData(null);
         completed();
     } else {
