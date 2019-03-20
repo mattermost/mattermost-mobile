@@ -21,13 +21,16 @@
 #import "RNNotifications.h"
 #import <UploadAttachments/UploadAttachments-Swift.h>
 #import <UserNotifications/UserNotifications.h>
+#import <os/log.h>
 
 @implementation AppDelegate
 
 NSString* const NotificationClearAction = @"clear";
 
 -(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
+  os_log(OS_LOG_DEFAULT, "Mattermost will attach session from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
   [[UploadSession shared] attachSessionWithIdentifier:identifier completionHandler:completionHandler];
+  os_log(OS_LOG_DEFAULT, "Mattermost session ATTACHED from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -57,6 +60,9 @@ NSString* const NotificationClearAction = @"clear";
   self.window.backgroundColor = [UIColor whiteColor];
   [[RCCManager sharedInstance] initBridgeWithBundleURL:jsCodeLocation launchOptions:launchOptions];
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
+
+  os_log(OS_LOG_DEFAULT, "Mattermost started!!");
+
 
   return YES;
 }

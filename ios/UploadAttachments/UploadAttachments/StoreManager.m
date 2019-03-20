@@ -26,21 +26,16 @@
 -(NSDictionary *)getChannelById:(NSString *)channelId {
   NSDictionary *channelsStore = [self.entities objectForKey:@"channels"];
   NSDictionary *channels = [channelsStore objectForKey:@"channels"];
+  NSDictionary *channel = channels[channelId];
   
-  for (NSString * key in channels) {
-    NSDictionary *channel = channels[key];
-    NSString *channel_id = [channel objectForKey:@"id"];
-    if ([channel_id isEqualToString:channelId]) {
-      return channel;
-    }
-  }
-  
-  return nil;
+  return channel;
 }
 
 -(NSDictionary *)getChannelsBySections:(NSString *)forTeamId {
   NSDictionary *channelsStore = [self.entities objectForKey:@"channels"];
   NSString *currentUserId = [self getCurrentUserId];
+  NSString *currentChannelId = [self getCurrentChannelId];
+  NSDictionary *preferences = [self getMyPreferences];
   NSDictionary *channels = [channelsStore objectForKey:@"channels"];
   NSMutableDictionary *channelsInTeam = [[NSMutableDictionary alloc] init];
   NSMutableArray *publicChannels = [[NSMutableArray alloc] init];
@@ -66,13 +61,17 @@
         // direct message
         NSString *otherUserId = [self getOtherUserIdFromChannel:currentUserId withChannelName:[channel objectForKey:@"name"]];
         NSDictionary *otherUser = [self getUserById:otherUserId];
-        if (otherUser) {
+        NSNumber *delete_at = [otherUser objectForKey:@"delete_at"] ?: 0;
+          if (otherUser && [self isDirectChannelVisible:preferences otherUserId:otherUserId] && ![self isAutoClosed:preferences channel:channel currentChannelId:currentChannelId channelArchivedAt:delete_at]) {
           [channel setObject:[self displayUserName:otherUser] forKey:@"display_name"];
           [directChannels addObject:channel];
         }
       } else {
-        [channel setObject:[self completeDirectGroupInfo:key] forKey:@"display_name"];
-        [directChannels addObject:channel];
+        NSNumber *delete_at = [channel objectForKey:@"delete_at"] ?: 0;
+        if ([self isGroupChannelVisible:preferences channelId:key] && ![self isAutoClosed:preferences channel:channel currentChannelId:currentChannelId channelArchivedAt:delete_at]) {
+            [channel setObject:[self completeDirectGroupInfo:key] forKey:@"display_name"];
+            [directChannels addObject:channel];
+        }
       }
     }
   }
@@ -88,8 +87,6 @@
   NSString *currentChannelId = [self getCurrentChannelId];
   return [self getChannelById:currentChannelId];
 }
-
-
 
 -(NSString *)getCurrentChannelId {
   return [[self.entities objectForKey:@"channels"] objectForKey:@"currentChannelId"];
@@ -236,27 +233,22 @@
 }
 
 -(NSString *)getOtherUserIdFromChannel:(NSString *)currentUserId withChannelName:(NSString *)channelName {
-  NSArray *ids = [channelName componentsSeparatedByString:@"_"];
-  if ([ids[0] isEqualToString:currentUserId]) {
-    return ids[2];
-  }
-  
-  return ids[0];
+    NSArray *ids = [channelName componentsSeparatedByString:@"_"];
+    NSString *user1 = ids[0];
+    NSString *user2 = ids[2];
+    if (user1 != nil && [user1 isEqualToString:currentUserId]) {
+        return user2;
+    }
+    
+    return user1;
 }
 
 -(NSDictionary *)getUserById:(NSString *)userId {
   NSDictionary *usersStore = [self.entities objectForKey:@"users"];
   NSDictionary *users = [usersStore objectForKey:@"profiles"];
+  NSDictionary *user = [users objectForKey:userId];
   
-  for (NSString* key in users) {
-    NSDictionary *user = [users objectForKey:key];
-    NSString *user_id = [user objectForKey:@"id"];
-    if ([user_id isEqualToString:userId]) {
-      return user;
-    }
-  }
-  
-  return nil;
+  return user;
 }
 
 -(NSString *)getUserFullName:(NSDictionary*) user {
@@ -298,6 +290,102 @@
                           selector: @selector(localizedCaseInsensitiveCompare:)];
   NSArray *sortDescriptor = [NSArray arrayWithObjects:sd, nil];
   return [array sortedArrayUsingDescriptors:sortDescriptor];
+}
+
+-(BOOL)isAutoClosed:(NSDictionary*)preferences channel:(NSDictionary *)channel currentChannelId:(NSString *)currentChannelId channelArchivedAt:(NSNumber *)channelArchivedAt {
+    NSNumber *cutoff = [NSNumber numberWithLongLong:([[NSDate date] timeIntervalSince1970] * 1000 - (7 * 24 * 60 * 60 * 1000))];
+    NSString *channelId = [channel objectForKey:@"id"];
+
+    NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
+    numberFormatter.numberStyle = NSNumberFormatterNoStyle;
+    
+    NSDictionary *viewTimePref = [preferences objectForKey:[NSString stringWithFormat:@"channel_approximate_view_time--%@", channelId]];
+    NSNumber *viewTime = 0;
+    if (viewTimePref != nil) {
+        viewTime = [numberFormatter numberFromString:[viewTimePref objectForKey:@"value"]];
+    }
+    
+    if ([viewTime doubleValue] > [cutoff doubleValue]) {
+        return NO;
+    }
+    
+    // If chhannel is archived we cannot post to it
+    if ([channelArchivedAt doubleValue] > 0.0) {
+        return YES;
+    }
+    
+    NSDictionary *config = [self getConfig];
+    if (![[config objectForKey:@"CloseUnusedDirectMessages"] isEqualToString:@"true"] || [self isFavoriteChannel:channelId]) {
+        return NO;
+    }
+
+    NSDictionary *autoClosePref = [preferences objectForKey:@"sidebar_settings--close_unused_direct_messages"];
+    
+    if (autoClosePref == nil || [[autoClosePref objectForKey:@"value"] isEqualToString:@"after_seven_days"]) {
+        NSNumber *lastChannelPostAt = [self lastChannelPostActivity:channelId];
+        if ([lastChannelPostAt doubleValue] > [cutoff doubleValue]) {
+            return NO;
+        }
+        
+        NSDictionary *openTimePref = [preferences objectForKey:[NSString stringWithFormat:@"channel_open_time--%@", channelId]];
+        NSNumber *openTime = 0;
+        if (openTimePref != nil) {
+            openTime = [numberFormatter numberFromString:[openTimePref objectForKey:@"value"]];
+        }
+        
+        if ([openTime doubleValue] > [cutoff doubleValue]) {
+            return NO;
+        }
+        
+        NSNumber *lastActivity = [channel objectForKey:@"last_post_at"];
+        return [lastActivity doubleValue] == 0.0 || [lastActivity doubleValue] < [cutoff doubleValue];
+    }
+    
+    return NO;
+}
+
+-(BOOL)isFavoriteChannel:(NSString *)channelId {
+    NSDictionary *preferences = [self getMyPreferences];
+    NSDictionary *favoritePref = [preferences objectForKey:[NSString stringWithFormat:@"favorite_channel--%@", channelId]];
+    return favoritePref != nil && [[favoritePref objectForKey:@"value"] isEqualToString:@"true"];
+}
+
+-(NSNumber *)lastChannelPostActivity:(NSString *)channelId {
+    NSDictionary *allPosts = [[self.entities objectForKey:@"posts"] objectForKey:@"posts"];
+    NSDictionary *postsInChannels = [[self.entities objectForKey:@"posts"] objectForKey:@"postsInChannel"];
+    NSArray *postInChannel = [postsInChannels objectForKey:channelId];
+    
+    if (postInChannel != nil && [postInChannel count] > 0) {
+        NSString *postId = [postInChannel lastObject];
+        NSDictionary *post = [allPosts objectForKey:postId];
+        if (post != nil) {
+            return [post objectForKey:@"create_at"];
+        }
+    }
+
+    return 0;
+}
+
+-(BOOL)isDirectChannelVisible:(NSDictionary *)preferences otherUserId:(NSString *) otherUserId {
+    NSDictionary *dmPref = [preferences objectForKey:[NSString stringWithFormat:@"direct_channel_show--%@", otherUserId]];
+    if (dmPref != nil) {
+        NSString *value = [dmPref objectForKey:@"value"];
+        if (value != nil) {
+            return [value isEqualToString:@"true"];
+        }
+    }
+    return NO;
+}
+
+-(BOOL)isGroupChannelVisible:(NSDictionary *)preferences channelId:(NSString *) channelId {
+    NSDictionary *gmPref = [preferences objectForKey:[NSString stringWithFormat:@"group_channel_show--%@", channelId]];
+    if (gmPref != nil) {
+        NSString *value = [gmPref objectForKey:@"value"];
+        if (value != nil) {
+            return [value isEqualToString:@"true"];
+        }
+    }
+    return NO;
 }
 
 @end
