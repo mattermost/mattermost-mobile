@@ -1,11 +1,14 @@
 package com.mattermost.rnbeta;
 
-import android.app.PendingIntent;
+import android.app.Notification;
 import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.RemoteInput;
 import android.content.Intent;
 import android.content.Context;
-import android.content.res.Resources;
 import android.content.pm.ApplicationInfo;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -14,15 +17,14 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Build;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.RemoteInput;
 import android.provider.Settings.System;
-import java.util.LinkedHashMap;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.List;
+import android.util.Log;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
@@ -31,12 +33,9 @@ import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
 import com.wix.reactnativenotifications.helpers.ApplicationBadgeHelper;
 
-import android.util.Log;
-
 import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
 
 public class CustomPushNotification extends PushNotification {
-
     public static final int MESSAGE_NOTIFICATION_ID = 435345;
     public static final String GROUP_KEY_MESSAGES = "mm_group_key_messages";
     public static final String NOTIFICATION_ID = "notificationId";
@@ -113,6 +112,11 @@ public class CustomPushNotification extends PushNotification {
                 list = Collections.synchronizedList((List)bundleArray);
             }
             synchronized (list) {
+                if (!"clear".equals(type)) {
+                    String senderName = getSenderName(data.getString("channel_name"), data.getString("message"));
+                    data.putLong("time", new Date().getTime());
+                    data.putString("sender_name", senderName);
+                }
                 list.add(0, data);
                 channelIdToNotification.put(channelId, list);
             }
@@ -155,19 +159,24 @@ public class CustomPushNotification extends PushNotification {
         String packageName = mContext.getPackageName();
         NotificationPreferences notificationPreferences = NotificationPreferences.getInstance(mContext);
 
-        String CHANNEL_ID = "channel_01";
-        String CHANNEL_NAME = "Mattermost notifications";
-
         // First, get a builder initialized with defaults from the core class.
         final Notification.Builder notification = new Notification.Builder(mContext);
+
+        // If Android Oreo or above we need to register a channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String CHANNEL_ID = "channel_01";
+            String CHANNEL_NAME = "Mattermost notifications";
+
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     CHANNEL_NAME,
                     NotificationManager.IMPORTANCE_HIGH);
+            channel.setShowBadge(true);
+
             final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.createNotificationChannel(channel);
             notification.setChannelId(CHANNEL_ID);
         }
+
         Bundle bundle = mNotificationProps.asBundle();
         String version = bundle.getString("version");
 
@@ -185,12 +194,10 @@ public class CustomPushNotification extends PushNotification {
 
         String channelId = bundle.getString("channel_id");
         String postId = bundle.getString("post_id");
-        int notificationId = channelId != null ? channelId.hashCode() : MESSAGE_NOTIFICATION_ID;
-        String message = bundle.getString("message");
-        String subText = bundle.getString("subText");
-        String numberString = bundle.getString("badge");
+        String badge = bundle.getString("badge");
         String smallIcon = bundle.getString("smallIcon");
         String largeIcon = bundle.getString("largeIcon");
+        int notificationId = channelId != null ? channelId.hashCode() : MESSAGE_NOTIFICATION_ID;
 
         Bundle b = bundle.getBundle("userInfo");
         if (b == null) {
@@ -222,67 +229,47 @@ public class CustomPushNotification extends PushNotification {
             largeIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
         }
 
-        if (numberString != null) {
-            CustomPushNotification.badgeCount = Integer.parseInt(numberString);
+        if (badge != null) {
+            CustomPushNotification.badgeCount = Integer.parseInt(badge);
             ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), CustomPushNotification.badgeCount);
+        } else {
+            // HERE ADD THE DOT INDICATOR STUFF
         }
 
-        int numMessages = getMessageCountInChannel(channelId);
+        Notification.MessagingStyle messagingStyle = new Notification.MessagingStyle("You");
+        if (title != null && !title.startsWith("@")) {
+            messagingStyle
+                    .setConversationTitle(title);
+        }
+
+        List<Bundle> bundleArray = channelIdToNotification.get(channelId);
+        List<Bundle> list;
+        if (bundleArray != null) {
+            list = new ArrayList<Bundle>(bundleArray);
+        } else {
+            list = new ArrayList<Bundle>();
+        }
+
+        for (Bundle data : list) {
+            String message = data.getString("message");
+            if (title == null || !title.startsWith("@")) {
+                message = removeSenderFromMessage(message);
+            }
+            messagingStyle.addMessage(message, data.getLong("time"), data.getString("sender_name"));
+        }
 
         notification
                 .setContentIntent(intent)
                 .setGroupSummary(true)
+                .setStyle(messagingStyle)
                 .setSmallIcon(smallIconResId)
+                .setNumber(Integer.parseInt(badge))
                 .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
-        if (numMessages == 1) {
-            notification
-                    .setContentTitle(title)
-                    .setContentText(message)
-                    .setStyle(new Notification.BigTextStyle()
-                            .bigText(message));
-        } else {
-            String summaryTitle = null;
-
-            if (version != null && version.equals("v2")) {
-                summaryTitle = String.format("(%d) %s", numMessages, title);
-            } else {
-                summaryTitle = String.format("%s (%d)", title, numMessages);
-            }
-
-            Notification.InboxStyle style = new Notification.InboxStyle();
-            List<Bundle> bundleArray = channelIdToNotification.get(channelId);
-            List<Bundle> list;
-            if (bundleArray != null) {
-                list = new ArrayList<Bundle>(bundleArray);
-            } else {
-                list = new ArrayList<Bundle>();
-            }
-
-            if (version != null && version.equals("v2")) {
-                style.addLine(message);
-            }
-
-            for (Bundle data : list) {
-                String msg = data.getString("message");
-                if (msg != message) {
-                    style.addLine(data.getString("message"));
-                }
-            }
-
-            if (version != null && version.equals("v2")) {
-                notification
-                        .setContentTitle(summaryTitle)
-                        .setContentText(message)
-                        .setStyle(style);
-            } else {
-                style.setBigContentTitle(message)
-                        .setSummaryText(String.format("+%d more", (numMessages - 1)));
-                notification.setStyle(style)
-                        .setContentTitle(summaryTitle);
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notification.setBadgeIconType(Notification.BADGE_ICON_SMALL);
         }
 
         // Let's add a delete intent when the notification is dismissed
@@ -296,17 +283,11 @@ public class CustomPushNotification extends PushNotification {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && postId != null) {
-            Intent replyIntent = new Intent(mContext, NotificationReplyService.class);
+            Intent replyIntent = new Intent(mContext, NotificationReplyBroadcastReceiver.class);
             replyIntent.setAction(KEY_TEXT_REPLY);
             replyIntent.putExtra(NOTIFICATION_ID, notificationId);
             replyIntent.putExtra("pushNotification", bundle);
-            PendingIntent replyPendingIntent;
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                replyPendingIntent = PendingIntent.getForegroundService(mContext, notificationId, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            } else {
-                replyPendingIntent = PendingIntent.getService(mContext, notificationId, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            }
+            PendingIntent replyPendingIntent = PendingIntent.getBroadcast(mContext, notificationId, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
                     .setLabel("Reply")
@@ -326,10 +307,6 @@ public class CustomPushNotification extends PushNotification {
         Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
         if (largeIconResId != 0 && (largeIcon != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)) {
             notification.setLargeIcon(largeIconBitmap);
-        }
-
-        if (subText != null) {
-            notification.setSubText(subText);
         }
 
         String soundUri = notificationPreferences.getNotificationSound();
@@ -377,5 +354,18 @@ public class CustomPushNotification extends PushNotification {
         CustomPushNotification.clearNotification(mContext.getApplicationContext(), notificationId, channelId);
 
         ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), CustomPushNotification.badgeCount);
+    }
+
+    private String getSenderName(String channelName, String message) {
+        if (channelName != null && channelName.startsWith("@")) {
+            return channelName;
+        }
+
+        return message.split(":")[0];
+    }
+
+    private String removeSenderFromMessage(String message) {
+        String sender = String.format("%s: ", getSenderName("", message));
+        return message.replaceFirst(sender, "");
     }
 }

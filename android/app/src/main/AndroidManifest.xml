@@ -37,7 +37,7 @@
       <service android:name=".NotificationDismissService"
                 android:enabled="true"
                 android:exported="false" />
-      <service android:name=".NotificationReplyService"
+      <receiver android:name=".NotificationReplyBroadcastReceiver"
                android:enabled="true"
                android:exported="false" />
         <activity
