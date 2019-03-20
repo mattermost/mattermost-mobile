@@ -12,7 +12,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Highlights
- - iOS Share Extension is now built natively.
+ - iOS Share Extension now supports large file sizes and improved performance
 
 ### Bug Fixes
  - Fixed support for EMM connections using VPN on-demand. See docs for more details on [setting AppConfig values](https://docs.mattermost.com/mobile/mobile-appconfig.html#mattermost-appconfig-values) for VPN support.
