@@ -1,5 +1,33 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.17.0 Release
+- Release Date: March 20, 2019
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - If **DisableLegacyMfa** setting in ``config.json`` is set to ``true`` and [multi-factor authentication](https://docs.mattermost.com/deployment/auth.html) is enabled, ensure your users have upgraded to mobile app version 1.17 or later. See [Important Upgrade Notes](https://docs.mattermost.com/administration/important-upgrade-notes.html) for more details.
+ - Fixed support for EMM connections using VPN on-demand to indicate that every request should wait for the VPN connection to be establish and to set the value in seconds for the timeout. See docs for more details on [setting AppConfig values](https://docs.mattermost.com/mobile/mobile-appconfig.html#mattermost-appconfig-values) for VPN support.
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Highlights
+ - iOS Share Extension now supports large file sizes and improved performance
+
+### Bug Fixes
+ - Fixed support for EMM connections using VPN on-demand. See docs for more details on [setting AppConfig values](https://docs.mattermost.com/mobile/mobile-appconfig.html#mattermost-appconfig-values) for VPN support.
+ - Fixed several Android app crash / fatal error issues.
+ - Fixed an issue on Android where the app crashed intermittently when selecting a link.
+ - Fixed an issue where email notifications setting was out of sync with the webapp until the setting was edited.
+ - Fixed an issue where notification badges were not cleared from other clients when clicking on a push notification after opening the mobile app.
+ - Fixed an issue where the app did not show local notification when session expired.
+ - Fixed an issue where the profile picture for webhooks was showing the hook owner picture.
+ - Fixed an issue where some emoji were not rendered as jumbo.
+ - Fixed an issue where jumbo emoji posted as a reply sometimes appeared with large space beneath.
+ - Fixed an issue where the "No Internet Connection" banner did not always display when internet connectivity was lost.
+ - Fixed an issue where the "No Internet Connection" banner did not always disappear when connection was re-estabilished.
+ - Fixed an issue where opening channels with unreads had loading indicator placed above unread messages line.
+
 ## 1.16.1 Release
 - Release Date: February 21, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
