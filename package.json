@@ -36,7 +36,7 @@
     "react-native-document-picker": "2.2.0",
     "react-native-exception-handler": "2.10.6",
     "react-native-gesture-handler": "1.0.15",
-    "react-native-image-gallery": "github:enahum/react-native-image-gallery#a98b1051e94f5a394541ca1ff9b15e2c9ffed84f",
+    "react-native-image-gallery": "github:enahum/react-native-image-gallery#c1a9f7118e90cc87d47620bc0584c9cac4b0cf38",
     "react-native-image-picker": "0.28.0",
     "react-native-keyboard-aware-scroll-view": "0.8.0",
     "react-native-keychain": "3.1.1",
