@@ -174,6 +174,7 @@ export default class PostBody extends PureComponent {
                 channelIsReadOnly,
                 hasBeenDeleted,
                 isFlagged,
+                isSystemMessage,
                 postId,
                 managedConfig,
                 showAddReaction,
