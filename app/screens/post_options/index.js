@@ -25,6 +25,7 @@ import {canEditPost} from 'mattermost-redux/utils/post_utils';
 
 import {loadThreadIfNecessary} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
+import {THREAD} from 'app/constants/screen';
 import {getDimensions} from 'app/selectors/device';
 
 import PostOptions from './post_options';
@@ -53,6 +54,10 @@ function mapStateToProps(state, ownProps) {
             channel: post.channel_id,
             permission: Permissions.ADD_REACTION,
         });
+    }
+
+    if (ownProps.location === THREAD) {
+        canReply = false;
     }
 
     if (channelIsArchived || ownProps.channelIsReadOnly) {

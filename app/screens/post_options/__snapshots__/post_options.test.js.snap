@@ -15,24 +15,24 @@ exports[`PostOptions should match snapshot 1`] = `
     onRequestClose={[Function]}
   >
     <PostOption
-      icon="flag"
-      onPress={[Function]}
-      text="Flag"
-    />
-    <PostOption
-      icon="emoji"
-      onPress={[Function]}
-      text="Add Reaction"
-    />
-    <PostOption
       icon="reply"
       onPress={[Function]}
       text="Reply"
     />
     <PostOption
+      icon="flag"
+      onPress={[Function]}
+      text="Flag"
+    />
+    <PostOption
       icon="pin"
       onPress={[Function]}
       text="Pin to Channel"
+    />
+    <PostOption
+      icon="emoji"
+      onPress={[Function]}
+      text="Add Reaction"
     />
     <PostOption
       icon="link"

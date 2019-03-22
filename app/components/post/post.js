@@ -63,6 +63,7 @@ export default class Post extends PureComponent {
         skipFlaggedHeader: PropTypes.bool,
         skipPinnedHeader: PropTypes.bool,
         isCommentMention: PropTypes.bool,
+        location: PropTypes.string,
     };
 
     static defaultProps = {
@@ -255,6 +256,7 @@ export default class Post extends PureComponent {
             highlightPinnedOrFlagged,
             skipFlaggedHeader,
             skipPinnedHeader,
+            location,
         } = this.props;
 
         if (!post) {
@@ -348,6 +350,7 @@ export default class Post extends PureComponent {
                                 isReplyPost={isReplyPost}
                                 showAddReaction={showAddReaction}
                                 showLongPost={showLongPost}
+                                location={location}
                             />
                         </View>
                     </View>

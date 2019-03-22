@@ -225,11 +225,11 @@ export default class PostOptions extends PureComponent {
         );
     };
 
-    getPostOptions = () => {
+    getOthersPostOptions = () => {
         const actions = [
+            this.getReplyOption(),
             this.getFlagOption(),
             this.getAddReactionOption(),
-            this.getReplyOption(),
             this.getPinOption(),
             this.getCopyPermalink(),
             this.getCopyText(),
@@ -238,6 +238,27 @@ export default class PostOptions extends PureComponent {
         ];
 
         return actions.filter((a) => a !== null);
+    };
+
+    getMyPostOptions = () => {
+        const actions = [
+            this.getEditOption(),
+            this.getReplyOption(),
+            this.getFlagOption(),
+            this.getPinOption(),
+            this.getAddReactionOption(),
+            this.getCopyPermalink(),
+            this.getCopyText(),
+            this.getDeleteOption(),
+        ];
+
+        return actions.filter((a) => a !== null);
+    };
+
+    getPostOptions = () => {
+        const {isMyPost} = this.props;
+
+        return isMyPost ? this.getMyPostOptions() : this.getOthersPostOptions();
     };
 
     handleAddReaction = () => {
@@ -273,15 +294,11 @@ export default class PostOptions extends PureComponent {
     };
 
     handleReply = () => {
-        this.goToThread();
-    }
-
-    goToThread = () => {
         const {actions, post, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
         const channelId = post.channel_id;
 
-        actions.loadThreadIfNecessary(post.root_id, channelId);
+        actions.loadThreadIfNecessary(rootId, channelId);
         actions.selectPost(rootId);
 
         const options = {
@@ -305,7 +322,7 @@ export default class PostOptions extends PureComponent {
         } else {
             navigator.push(options);
         }
-    };
+    }
 
     handleCopyPermalink = () => {
         const {currentTeamUrl, post} = this.props;
