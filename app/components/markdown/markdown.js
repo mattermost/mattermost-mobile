@@ -48,6 +48,7 @@ export default class Markdown extends PureComponent {
         isReplyPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         mentionKeys: PropTypes.array.isRequired,
+        minimumHashtagLength: PropTypes.number.isRequired,
         navigator: PropTypes.object.isRequired,
         onChannelLinkPress: PropTypes.func,
         onHashtagPress: PropTypes.func,
@@ -80,6 +81,7 @@ export default class Markdown extends PureComponent {
     createParser = () => {
         return new Parser({
             urlFilter: this.urlFilter,
+            minimumHashtagLength: this.props.minimumHashtagLength,
         });
     };
 
