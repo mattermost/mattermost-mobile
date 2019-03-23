@@ -28,21 +28,19 @@ export default class PostOptions extends PureComponent {
         }).isRequired,
         canAddReaction: PropTypes.bool,
         canReply: PropTypes.bool,
+        canCopyPermalink: PropTypes.bool,
+        canCopyText: PropTypes.bool,
         canDelete: PropTypes.bool,
+        canFlag: PropTypes.bool,
         canPin: PropTypes.bool,
         canEdit: PropTypes.bool,
         canEditUntil: PropTypes.number.isRequired,
-        channelIsReadOnly: PropTypes.bool,
         currentTeamUrl: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
-        hasBeenDeleted: PropTypes.bool,
         isFlagged: PropTypes.bool,
         isMyPost: PropTypes.bool,
-        isSystemMessage: PropTypes.bool,
-        managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
         post: PropTypes.object.isRequired,
-        showAddReaction: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     };
 
@@ -66,9 +64,9 @@ export default class PostOptions extends PureComponent {
 
     getAddReactionOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canAddReaction, showAddReaction} = this.props;
+        const {canAddReaction} = this.props;
 
-        if (showAddReaction && canAddReaction) {
+        if (canAddReaction) {
             return (
                 <PostOption
                     key='reaction'
@@ -101,27 +99,28 @@ export default class PostOptions extends PureComponent {
     }
 
     getCopyPermalink = () => {
-        if (this.props.isSystemMessage) {
-            return null;
+        const {formatMessage} = this.context.intl;
+        const {canCopyPermalink} = this.props;
+
+        if (canCopyPermalink) {
+            return (
+                <PostOption
+                    key='permalink'
+                    icon='link'
+                    text={formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'})}
+                    onPress={this.handleCopyPermalink}
+                />
+            );
         }
 
-        const {formatMessage} = this.context.intl;
-
-        return (
-            <PostOption
-                key='permalink'
-                icon='link'
-                text={formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'})}
-                onPress={this.handleCopyPermalink}
-            />
-        );
+        return null;
     };
 
     getCopyText = () => {
         const {formatMessage} = this.context.intl;
-        const {isSystemMessage, managedConfig, post} = this.props;
+        const {canCopyText} = this.props;
 
-        if (!isSystemMessage && managedConfig.copyAndPasteProtection !== 'true' && post.message) {
+        if (canCopyText) {
             return (
                 <PostOption
                     key='copy'
@@ -137,9 +136,9 @@ export default class PostOptions extends PureComponent {
 
     getDeleteOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canDelete, hasBeenDeleted} = this.props;
+        const {canDelete} = this.props;
 
-        if (canDelete && !hasBeenDeleted) {
+        if (canDelete) {
             return (
                 <PostOption
                     destructive={true}
@@ -156,9 +155,9 @@ export default class PostOptions extends PureComponent {
 
     getEditOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canEdit, canEditUntil, isSystemMessage} = this.props;
+        const {canEdit, canEditUntil} = this.props;
 
-        if (!isSystemMessage && canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
+        if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
             return (
                 <PostOption
                     key='edit'
@@ -174,9 +173,9 @@ export default class PostOptions extends PureComponent {
 
     getFlagOption = () => {
         const {formatMessage} = this.context.intl;
-        const {channelIsReadOnly, isFlagged, isSystemMessage} = this.props;
+        const {canFlag, isFlagged} = this.props;
 
-        if (isSystemMessage || channelIsReadOnly) {
+        if (!canFlag) {
             return null;
         }
 
@@ -203,9 +202,9 @@ export default class PostOptions extends PureComponent {
 
     getPinOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canPin, isSystemMessage, post} = this.props;
+        const {canPin, post} = this.props;
 
-        if (isSystemMessage || !canPin) {
+        if (!canPin) {
             return null;
         }
 

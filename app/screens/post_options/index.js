@@ -43,9 +43,12 @@ function mapStateToProps(state, ownProps) {
 
     let canAddReaction = true;
     let canReply = true;
+    let canCopyPermalink = true;
+    let canCopyText = false;
     let canEdit = false;
     let canEditUntil = -1;
     let {canDelete} = ownProps;
+    let canFlag = true;
     let canPin = true;
 
     if (hasNewPermissions(state)) {
@@ -74,13 +77,38 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
+    if (ownProps.channelIsReadOnly) {
+        canFlag = false;
+    }
+
+    if (ownProps.isSystemMessage) {
+        canAddReaction = false;
+        canCopyPermalink = false;
+        canEdit = false;
+        canPin = false;
+    }
+    if (ownProps.hasBeenDeleted) {
+        canDelete = false;
+    }
+
+    if (!ownProps.showAddReaction) {
+        canAddReaction = false;
+    }
+
+    if (ownProps.isSystemMessage && ownProps.managedConfig.copyAndPasteProtection !== 'true' && post.message) {
+        canCopyText = true;
+    }
+
     return {
         ...getDimensions(state),
         canAddReaction,
         canReply,
+        canCopyPermalink,
+        canCopyText,
         canEdit,
         canEditUntil,
         canDelete,
+        canFlag,
         canPin,
         currentTeamUrl: getCurrentTeamUrl(state),
         isMyPost: currentUserId === post.user_id,

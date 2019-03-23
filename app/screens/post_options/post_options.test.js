@@ -10,8 +10,6 @@ import PostOptions from './post_options';
 
 jest.mock('react-intl');
 
-
-
 describe('PostOptions', () => {
     const navigator = {
         showModal: jest.fn(),
@@ -29,7 +27,7 @@ describe('PostOptions', () => {
         unpinPost: jest.fn(),
         selectPost: jest.fn(),
         loadThreadIfNecessary: jest.fn(),
-    }; 
+    };
 
     const post = {
         root_id: 'root_id',
@@ -61,7 +59,7 @@ describe('PostOptions', () => {
         theme: Preferences.THEMES.default,
     };
 
-    function getWrapper(props={}) {
+    function getWrapper(props = {}) {
         return shallow(
             <PostOptions
                 {...baseProps}
@@ -92,7 +90,7 @@ describe('PostOptions', () => {
     test('should load thread', () => {
         const wrapper = getWrapper();
 
-        wrapper.findWhere((node) => node.key() == 'reply').simulate('press');
+        wrapper.findWhere((node) => node.key() === 'reply').simulate('press');
         expect(actions.loadThreadIfNecessary).toBeCalled();
     });
 
