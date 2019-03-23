@@ -166,6 +166,9 @@ function resetStateForNewVersion(action) {
             thread: {
                 drafts: threadDrafts,
             },
+            root: {
+                hydrationComplete: true,
+            },
             selectServer,
             recentEmojis,
         },

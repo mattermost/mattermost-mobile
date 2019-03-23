@@ -145,7 +145,6 @@ export default function configureAppStore(initialState) {
             const persistor = persistStore(store, {storage: AsyncStorage, ...options}, () => {
                 store.dispatch({
                     type: General.STORE_REHYDRATION_COMPLETE,
-                    complete: true,
                 });
             });
 
@@ -205,6 +204,9 @@ export default function configureAppStore(initialState) {
                             data: initialState,
                         },
                         {
+                            type: General.STORE_REHYDRATION_COMPLETE,
+                        },
+                        {
                             type: ViewTypes.SERVER_URL_CHANGED,
                             serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
                         },
@@ -255,6 +257,9 @@ export default function configureAppStore(initialState) {
                         {
                             type: GeneralTypes.RECEIVED_SERVER_VERSION,
                             data: state.entities.general.serverVersion,
+                        },
+                        {
+                            type: General.STORE_REHYDRATION_COMPLETE,
                         },
                     ], 'BATCH_FOR_RESTART'));
 
