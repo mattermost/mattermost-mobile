@@ -20,6 +20,7 @@ import flag from 'assets/images/post_menu/flag.png';
 import link from 'assets/images/post_menu/link.png';
 import pin from 'assets/images/post_menu/pin.png';
 import trash from 'assets/images/post_menu/trash.png';
+import reply from 'assets/images/post_menu/reply.png';
 
 const icons = {
     copy,
@@ -29,6 +30,7 @@ const icons = {
     link,
     pin,
     trash,
+    reply,
 };
 
 export default class PostOption extends PureComponent {
