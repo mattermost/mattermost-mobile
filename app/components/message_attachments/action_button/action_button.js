@@ -25,11 +25,6 @@ export default class ActionButton extends PureComponent {
         actions.doPostAction(postId, id);
     }, 4000);
 
-    handleDisableButtonState = () => {
-        this.setState({isDisabled: true});
-        setTimeout(() => this.setState({isDisabled: false}), 4000);
-    }
-
     render() {
         const {name, theme} = this.props;
         const style = getStyleSheet(theme);
