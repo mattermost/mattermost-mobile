@@ -11,6 +11,7 @@ import {
     unflagPost,
     unpinPost,
     removePost,
+    selectPost,
 } from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
 import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
@@ -22,6 +23,8 @@ import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles'
 import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
 import {canEditPost} from 'mattermost-redux/utils/post_utils';
 
+import {loadThreadIfNecessary} from 'app/actions/views/channel';
+import {THREAD} from 'app/constants/screen';
 import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions} from 'app/selectors/device';
 
@@ -39,9 +42,13 @@ function mapStateToProps(state, ownProps) {
     const channelIsArchived = channel.delete_at !== 0;
 
     let canAddReaction = true;
+    let canReply = true;
+    let canCopyPermalink = true;
+    let canCopyText = false;
     let canEdit = false;
     let canEditUntil = -1;
     let {canDelete} = ownProps;
+    let canFlag = true;
     let canPin = true;
 
     if (hasNewPermissions(state)) {
@@ -52,8 +59,13 @@ function mapStateToProps(state, ownProps) {
         });
     }
 
-    if (channelIsArchived) {
+    if (ownProps.location === THREAD) {
+        canReply = false;
+    }
+
+    if (channelIsArchived || ownProps.channelIsReadOnly) {
         canAddReaction = false;
+        canReply = false;
         canDelete = false;
         canPin = false;
     } else {
@@ -65,12 +77,39 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
+    if (ownProps.channelIsReadOnly) {
+        canFlag = false;
+    }
+
+    if (ownProps.isSystemMessage) {
+        canAddReaction = false;
+        canReply = false;
+        canCopyPermalink = false;
+        canEdit = false;
+        canPin = false;
+    }
+    if (ownProps.hasBeenDeleted) {
+        canDelete = false;
+    }
+
+    if (!ownProps.showAddReaction) {
+        canAddReaction = false;
+    }
+
+    if (!ownProps.isSystemMessage && ownProps.managedConfig.copyAndPasteProtection !== 'true' && post.message) {
+        canCopyText = true;
+    }
+
     return {
         ...getDimensions(state),
         canAddReaction,
+        canReply,
+        canCopyPermalink,
+        canCopyText,
         canEdit,
         canEditUntil,
         canDelete,
+        canFlag,
         canPin,
         currentTeamUrl: getCurrentTeamUrl(state),
         isMyPost: currentUserId === post.user_id,
@@ -89,6 +128,8 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
+            selectPost,
+            loadThreadIfNecessary,
         }, dispatch),
     };
 }

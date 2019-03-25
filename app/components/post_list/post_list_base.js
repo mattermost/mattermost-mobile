@@ -171,6 +171,7 @@ export default class PostListBase extends PureComponent {
             onPostPress,
             renderReplies,
             shouldRenderReplyButton,
+            location,
         } = this.props;
         const {managedConfig} = this.state;
 
@@ -190,6 +191,7 @@ export default class PostListBase extends PureComponent {
                 onPress={onPostPress}
                 navigator={navigator}
                 managedConfig={managedConfig}
+                location={location}
             />
         );
     };

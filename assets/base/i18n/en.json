@@ -339,6 +339,7 @@
   "mobile.post_info.flag": "Flag",
   "mobile.post_info.unflag": "Unflag",
   "mobile.post_info.pin": "Pin to Channel",
+  "mobile.post_info.reply": "Reply",
   "mobile.post_info.unpin": "Unpin from Channel",
   "mobile.post_pre_header.flagged": "Flagged",
   "mobile.post_pre_header.pinned_flagged": "Pinned and Flagged",

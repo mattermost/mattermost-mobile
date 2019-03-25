@@ -1,6 +1,42 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PostOptions should match snapshot, no option for system message to user who doesn't have the permission to delete 1`] = `null`;
+exports[`PostOptions should match snapshot, no option for system message to user who doesn't have the permission to delete 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(SlideUpPanel)
+    allowStayMiddle={false}
+    initialPosition={274}
+    marginFromTop={326}
+    onRequestClose={[Function]}
+  >
+    <PostOption
+      icon="edit"
+      onPress={[Function]}
+      text="Edit"
+    />
+    <PostOption
+      icon="reply"
+      onPress={[Function]}
+      text="Reply"
+    />
+    <PostOption
+      icon="pin"
+      onPress={[Function]}
+      text="Pin to Channel"
+    />
+    <PostOption
+      icon="emoji"
+      onPress={[Function]}
+      text="Add Reaction"
+    />
+  </Connect(SlideUpPanel)>
+</View>
+`;
 
 exports[`PostOptions should match snapshot, showing Delete option only for system message to user who has permission to delete 1`] = `
 <View
@@ -12,10 +48,30 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={124}
-    marginFromTop={476}
+    initialPosition={324}
+    marginFromTop={276}
     onRequestClose={[Function]}
   >
+    <PostOption
+      icon="edit"
+      onPress={[Function]}
+      text="Edit"
+    />
+    <PostOption
+      icon="reply"
+      onPress={[Function]}
+      text="Reply"
+    />
+    <PostOption
+      icon="pin"
+      onPress={[Function]}
+      text="Pin to Channel"
+    />
+    <PostOption
+      icon="emoji"
+      onPress={[Function]}
+      text="Add Reaction"
+    />
     <PostOption
       destructive={true}
       icon="trash"
@@ -36,8 +92,8 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={424}
-    marginFromTop={176}
+    initialPosition={324}
+    marginFromTop={276}
     onRequestClose={[Function]}
   >
     <PostOption
@@ -46,9 +102,9 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       text="Edit"
     />
     <PostOption
-      icon="flag"
+      icon="reply"
       onPress={[Function]}
-      text="Flag"
+      text="Reply"
     />
     <PostOption
       icon="pin"
@@ -59,16 +115,6 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       icon="emoji"
       onPress={[Function]}
       text="Add Reaction"
-    />
-    <PostOption
-      icon="link"
-      onPress={[Function]}
-      text="Copy Permalink"
-    />
-    <PostOption
-      icon="copy"
-      onPress={[Function]}
-      text="Copy Text"
     />
     <PostOption
       destructive={true}

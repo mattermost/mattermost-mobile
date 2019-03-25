@@ -14,6 +14,7 @@ describe('PostOptions', () => {
     const navigator = {
         showModal: jest.fn(),
         dismissModal: jest.fn(),
+        push: jest.fn(),
     };
 
     const actions = {
@@ -24,16 +25,22 @@ describe('PostOptions', () => {
         removePost: jest.fn(),
         unflagPost: jest.fn(),
         unpinPost: jest.fn(),
+        selectPost: jest.fn(),
+        loadThreadIfNecessary: jest.fn(),
     };
 
     const post = {
+        root_id: 'root_id',
         id: 'post_id',
         message: 'message',
+        is_pinned: false,
+        channel_id: 'channel_id',
     };
 
     const baseProps = {
         actions,
         canAddReaction: true,
+        canReply: true,
         canDelete: true,
         canPin: true,
         canEdit: true,
@@ -52,37 +59,44 @@ describe('PostOptions', () => {
         theme: Preferences.THEMES.default,
     };
 
-    test('should match snapshot, showing all possible options', () => {
-        const wrapper = shallow(
-            <PostOptions {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn((format) => format.defaultMessage)}}},
+    function getWrapper(props = {}) {
+        return shallow(
+            <PostOptions
+                {...baseProps}
+                {...props}
+            />,
+            {context: {intl: {formatMessage: ({defaultMessage}) => defaultMessage}}}
         );
+    }
+
+    test('should match snapshot, showing all possible options', () => {
+        const wrapper = getWrapper();
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot, showing Delete option only for system message to user who has permission to delete', () => {
-        const wrapper = shallow(
-            <PostOptions
-                {...baseProps}
-                isSystemMessage={true}
-            />,
-            {context: {intl: {formatMessage: jest.fn((format) => format.defaultMessage)}}},
-        );
+        const wrapper = getWrapper({isSystemMessage: true});
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot, no option for system message to user who doesn\'t have the permission to delete', () => {
-        const wrapper = shallow(
-            <PostOptions
-                {...baseProps}
-                isSystemMessage={true}
-                canDelete={false}
-            />,
-            {context: {intl: {formatMessage: jest.fn((format) => format.defaultMessage)}}},
-        );
+        const wrapper = getWrapper({isSystemMessage: true, canDelete: false});
 
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should load thread', () => {
+        const wrapper = getWrapper();
+
+        wrapper.findWhere((node) => node.key() === 'reply').simulate('press');
+        expect(actions.loadThreadIfNecessary).toBeCalled();
+    });
+
+    test('should not show reply option', () => {
+        const wrapper = getWrapper({canReply: false});
+
+        expect(wrapper.findWhere((node) => node.key() === 'reply')).toMatchObject({});
     });
 });
