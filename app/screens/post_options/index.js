@@ -83,6 +83,7 @@ function mapStateToProps(state, ownProps) {
 
     if (ownProps.isSystemMessage) {
         canAddReaction = false;
+        canReply = false;
         canCopyPermalink = false;
         canEdit = false;
         canPin = false;
