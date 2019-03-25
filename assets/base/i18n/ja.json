@@ -338,6 +338,7 @@
   "mobile.post_info.copy_text": "テキストをコピーする",
   "mobile.post_info.flag": "フラグ",
   "mobile.post_info.pin": "チャンネルにピン留めする",
+  "mobile.post_info.reply": "Reply",
   "mobile.post_info.unflag": "フラグを消す",
   "mobile.post_info.unpin": "チャンネルへのピン留めをやめる",
   "mobile.post_pre_header.flagged": "フラグ済み",

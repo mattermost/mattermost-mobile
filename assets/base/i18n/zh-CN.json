@@ -338,6 +338,7 @@
   "mobile.post_info.copy_text": "复制文字",
   "mobile.post_info.flag": "标记",
   "mobile.post_info.pin": "置顶到频道",
+  "mobile.post_info.reply": "Reply",
   "mobile.post_info.unflag": "取消标记",
   "mobile.post_info.unpin": "从频道取消置顶",
   "mobile.post_pre_header.flagged": "已标记",
