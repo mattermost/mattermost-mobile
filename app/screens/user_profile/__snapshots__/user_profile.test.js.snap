@@ -36,12 +36,24 @@ exports[`user_profile should match snapshot 1`] = `
         style={
           Object {
             "color": "#3d3c40",
+            "fontSize": 17,
+            "fontWeight": "600",
+            "marginTop": 15,
+          }
+        }
+      >
+        fred
+      </Text>
+      <Text
+        style={
+          Object {
+            "color": "#3d3c40",
             "fontSize": 15,
             "marginTop": 15,
           }
         }
       >
-        @undefined
+        @fred
       </Text>
     </View>
     <View
@@ -52,6 +64,31 @@ exports[`user_profile should match snapshot 1`] = `
         }
       }
     >
+      <View>
+        <Text
+          style={
+            Object {
+              "color": undefined,
+              "fontSize": 13,
+              "fontWeight": "600",
+              "marginBottom": 10,
+              "marginTop": 25,
+            }
+          }
+        >
+          USERNAME
+        </Text>
+        <Text
+          style={
+            Object {
+              "color": "#3d3c40",
+              "fontSize": 15,
+            }
+          }
+        >
+          fred
+        </Text>
+      </View>
       <View>
         <Text
           style={
