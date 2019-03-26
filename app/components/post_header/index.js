@@ -44,6 +44,7 @@ function makeMapStateToProps() {
             overrideUsername: post?.props?.override_username, // eslint-disable-line camelcase
             theme: getTheme(state),
             username: user.username,
+            isBot: user.is_bot || false,
             userTimezone,
         };
     };

@@ -29,6 +29,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
+        isBot: PropTypes.bool.isRequired,
     };
 
     render() {
@@ -45,6 +46,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             theme,
             type,
             isArchived,
+            isBot,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -62,6 +64,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         theme={theme}
                         type={type}
                         isArchived={isArchived}
+                        isBot={isBot}
                     />
                     <Text
                         ellipsizeMode='tail'

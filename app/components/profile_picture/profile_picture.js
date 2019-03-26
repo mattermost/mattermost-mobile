@@ -111,7 +111,7 @@ export default class ProfilePicture extends PureComponent {
     }
 
     render() {
-        const {edit, showStatus, theme} = this.props;
+        const {edit, showStatus, theme, user} = this.props;
         const {pictureUrl} = this.state;
         const style = getStyleSheet(theme);
 
@@ -172,7 +172,7 @@ export default class ProfilePicture extends PureComponent {
         return (
             <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
                 {image}
-                {(showStatus || edit) &&
+                {(showStatus || edit) && (user && !user.is_bot) &&
                     <View style={[style.statusWrapper, statusStyle, {borderRadius: this.props.statusSize / 2}]}>
                         {statusIcon}
                     </View>

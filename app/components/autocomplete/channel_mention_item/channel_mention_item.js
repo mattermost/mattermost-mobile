@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import {General} from 'mattermost-redux/constants';
+import BotTag from 'app/components/bot_tag';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -18,6 +19,7 @@ export default class ChannelMentionItem extends PureComponent {
         displayName: PropTypes.string,
         name: PropTypes.string,
         type: PropTypes.string,
+        isBot: PropTypes.bool.isRequired,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -38,6 +40,7 @@ export default class ChannelMentionItem extends PureComponent {
             name,
             theme,
             type,
+            isBot,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -53,6 +56,10 @@ export default class ChannelMentionItem extends PureComponent {
                     style={style.row}
                 >
                     <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
+                    <BotTag
+                        show={isBot}
+                        theme={theme}
+                    />
                 </TouchableOpacity>
             );
         }

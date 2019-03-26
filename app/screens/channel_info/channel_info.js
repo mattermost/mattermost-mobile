@@ -58,6 +58,7 @@ export default class ChannelInfo extends PureComponent {
         canManageUsers: PropTypes.bool.isRequired,
         canEditChannel: PropTypes.bool.isRequired,
         ignoreChannelMentions: PropTypes.bool.isRequired,
+        isBot: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -510,6 +511,7 @@ export default class ChannelInfo extends PureComponent {
             navigator,
             status,
             theme,
+            isBot,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -548,6 +550,7 @@ export default class ChannelInfo extends PureComponent {
                         theme={theme}
                         type={currentChannel.type}
                         isArchived={currentChannel.delete_at !== 0}
+                        isBot={isBot}
                     />
                     }
                     <View style={style.rowsContainer}>

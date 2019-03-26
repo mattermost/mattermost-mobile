@@ -32,6 +32,57 @@ exports[`user_profile should match snapshot 1`] = `
         statusSize={40}
         userId="4hzdnk6mg7gepe7yze6m3domnc"
       />
+      <View
+        style={
+          Object {
+            "flexDirection": "row",
+            "marginTop": 15,
+          }
+        }
+      >
+        <Text
+          style={
+            Object {
+              "color": "#3d3c40",
+              "fontSize": 17,
+              "fontWeight": "600",
+            }
+          }
+        >
+          fred
+        </Text>
+        <BotTag
+          show={false}
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+        />
+      </View>
       <Text
         style={
           Object {
@@ -41,7 +92,7 @@ exports[`user_profile should match snapshot 1`] = `
           }
         }
       >
-        @undefined
+        @fred
       </Text>
     </View>
     <View
@@ -52,6 +103,31 @@ exports[`user_profile should match snapshot 1`] = `
         }
       }
     >
+      <View>
+        <Text
+          style={
+            Object {
+              "color": undefined,
+              "fontSize": 13,
+              "fontWeight": "600",
+              "marginBottom": 10,
+              "marginTop": 25,
+            }
+          }
+        >
+          USERNAME
+        </Text>
+        <Text
+          style={
+            Object {
+              "color": "#3d3c40",
+              "fontSize": 15,
+            }
+          }
+        >
+          fred
+        </Text>
+      </View>
       <View>
         <Text
           style={
