@@ -6,7 +6,7 @@ import {bindActionCreators} from 'redux';
 
 import {createPost, removePost} from 'mattermost-redux/actions/posts';
 import {Posts} from 'mattermost-redux/constants';
-import {isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
+import {isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channels';
 import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -71,7 +71,7 @@ function makeMapStateToProps() {
         }
 
         return {
-            channelIsReadOnly: isCurrentChannelReadOnly(state),
+            channelIsReadOnly: isChannelReadOnlyById(state, post.channel_id),
             currentUserId,
             post,
             isFirstReply,
