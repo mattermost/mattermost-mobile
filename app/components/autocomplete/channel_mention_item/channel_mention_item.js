@@ -9,9 +9,9 @@ import {
 } from 'react-native';
 
 import {General} from 'mattermost-redux/constants';
-import FormattedText from 'app/components/formatted_text';
+import BotTag from 'app/components/bot_tag';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelMentionItem extends PureComponent {
     static propTypes = {
@@ -49,16 +49,6 @@ export default class ChannelMentionItem extends PureComponent {
             if (!displayName) {
                 return null;
             }
-            let tag = null;
-            if (isBot) {
-                tag = (
-                    <FormattedText
-                        id='post_info.bot'
-                        defaultMessage='BOT'
-                        style={style.bot}
-                    />
-                );
-            }
             return (
                 <TouchableOpacity
                     key={channelId}
@@ -66,7 +56,10 @@ export default class ChannelMentionItem extends PureComponent {
                     style={style.row}
                 >
                     <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
-                    {tag}
+                    <BotTag
+                        show={isBot}
+                        theme={theme}
+                    />
                 </TouchableOpacity>
             );
         }
@@ -98,18 +91,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         rowName: {
             color: theme.centerChannelColor,
             opacity: 0.6,
-        },
-        bot: {
-            alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRadius: 2,
-            color: theme.centerChannelColor,
-            fontSize: 10,
-            fontWeight: '600',
-            marginRight: 5,
-            marginLeft: 5,
-            paddingVertical: 2,
-            paddingHorizontal: 4,
         },
     };
 });

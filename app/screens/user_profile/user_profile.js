@@ -18,6 +18,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import StatusBar from 'app/components/status_bar';
+import BotTag from 'app/components/bot_tag';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -78,21 +79,17 @@ export default class UserProfile extends PureComponent {
         const displayName = displayUsername(user, teammateNameDisplay);
 
         if (displayName) {
-            if (user.is_bot) {
-                return (
-                    <View style={style.indicatorContainer}>
-                        <Text style={style.displayName}>
-                            {displayName}
-                        </Text>
-                        <FormattedText
-                            id='post_info.bot'
-                            defaultMessage='BOT'
-                            style={style.bot}
-                        />
-                    </View>
-                );
-            }
-            return <Text style={style.displayName}>{displayName}</Text>;
+            return (
+                <View style={style.indicatorContainer}>
+                    <Text style={style.displayName}>
+                        {displayName}
+                    </Text>
+                    <BotTag
+                        show={user.is_bot}
+                        theme={theme}
+                    />
+                </View>
+            );
         }
 
         return null;
@@ -212,8 +209,24 @@ export default class UserProfile extends PureComponent {
         return additionalOptions;
     };
 
+    renderDetailsBlock = (style) => {
+        if (this.props.user.is_bot) {
+            return null;
+        }
+
+        return (
+            <View style={style.content}>
+                {this.props.enableTimezone && this.buildTimezoneBlock()}
+                {this.buildDisplayBlock('username')}
+                {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                {this.buildDisplayBlock('nickname')}
+                {this.buildDisplayBlock('position')}
+            </View>
+        );
+    }
+
     render() {
-        const {config, theme, user, enableTimezone} = this.props;
+        const {theme, user} = this.props;
         const style = createStyleSheet(theme);
 
         if (!user) {
@@ -236,13 +249,7 @@ export default class UserProfile extends PureComponent {
                         {this.getDisplayName()}
                         <Text style={style.username}>{`@${user.username}`}</Text>
                     </View>
-                    <View style={style.content}>
-                        {!user.is_bot && enableTimezone && this.buildTimezoneBlock()}
-                        {!user.is_bot && this.buildDisplayBlock('username')}
-                        {!user.is_bot && config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
-                        {!user.is_bot && this.buildDisplayBlock('nickname')}
-                        {!user.is_bot && this.buildDisplayBlock('position')}
-                    </View>
+                    {this.renderDetailsBlock(style)}
                     <UserProfileRow
                         action={this.sendMessage}
                         defaultMessage='Send Message'
@@ -268,7 +275,6 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 15,
         },
         displayName: {
-            marginTop: 15,
             color: theme.centerChannelColor,
             fontSize: 17,
             fontWeight: '600',
@@ -299,20 +305,8 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
         },
         indicatorContainer: {
-            flexDirection: 'row',
-        },
-        bot: {
             marginTop: 15,
-            alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRadius: 2,
-            color: theme.centerChannelColor,
-            fontSize: 10,
-            fontWeight: '600',
-            marginRight: 5,
-            marginLeft: 5,
-            paddingVertical: 2,
-            paddingHorizontal: 4,
+            flexDirection: 'row',
         },
     };
 });

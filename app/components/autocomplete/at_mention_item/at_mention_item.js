@@ -9,9 +9,9 @@ import {
     View,
 } from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
 import ProfilePicture from 'app/components/profile_picture';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import BotTag from 'app/components/bot_tag';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AtMentionItem extends PureComponent {
     static propTypes = {
@@ -42,17 +42,6 @@ export default class AtMentionItem extends PureComponent {
         const style = getStyleFromTheme(theme);
         const hasFullName = firstName.length > 0 && lastName.length > 0;
 
-        let tag = null;
-        if (isBot) {
-            tag = (
-                <FormattedText
-                    id='post_info.bot'
-                    defaultMessage='BOT'
-                    style={style.bot}
-                />
-            );
-        }
-
         return (
             <TouchableOpacity
                 key={userId}
@@ -68,7 +57,10 @@ export default class AtMentionItem extends PureComponent {
                     />
                 </View>
                 <Text style={style.rowUsername}>{`@${username}`}</Text>
-                {tag}
+                <BotTag
+                    show={isBot}
+                    theme={theme}
+                />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
                 {hasFullName && <Text style={style.rowFullname}>{`${firstName} ${lastName}`}</Text>}
             </TouchableOpacity>
@@ -97,18 +89,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         rowFullname: {
             color: theme.centerChannelColor,
             opacity: 0.6,
-        },
-        bot: {
-            alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRadius: 2,
-            color: theme.centerChannelColor,
-            fontSize: 10,
-            fontWeight: '600',
-            marginRight: 5,
-            marginLeft: 5,
-            paddingVertical: 2,
-            paddingHorizontal: 4,
         },
     };
 });

@@ -13,8 +13,8 @@ import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {General} from 'mattermost-redux/constants';
 import {injectIntl, intlShape} from 'react-intl';
 
-import FormattedText from 'app/components/formatted_text';
 import ProfilePicture from 'app/components/profile_picture';
+import BotTag from 'app/components/bot_tag';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -93,16 +93,6 @@ class ChannelIntro extends PureComponent {
         const style = getStyleSheet(theme);
 
         return currentChannelMembers.map((member, index) => {
-            let tag = null;
-            if (member.is_bot) {
-                tag = (
-                    <FormattedText
-                        id='post_info.bot'
-                        defaultMessage='BOT'
-                        style={style.bot}
-                    />
-                );
-            }
             return (
                 <TouchableOpacity
                     key={member.id}
@@ -112,7 +102,10 @@ class ChannelIntro extends PureComponent {
                         <Text style={style.displayName}>
                             {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}
                         </Text>
-                        {tag}
+                        <BotTag
+                            show={member.is_bot}
+                            theme={theme}
+                        />
                     </View>
                 </TouchableOpacity>
             );
@@ -400,18 +393,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         indicatorContainer: {
             flexDirection: 'row',
-        },
-        bot: {
-            alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRadius: 2,
-            color: theme.centerChannelColor,
-            fontSize: 10,
-            fontWeight: '600',
-            marginRight: 5,
-            marginLeft: 5,
-            paddingVertical: 2,
-            paddingHorizontal: 4,
         },
     };
 });
