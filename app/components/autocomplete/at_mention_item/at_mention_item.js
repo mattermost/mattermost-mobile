@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import ProfilePicture from 'app/components/profile_picture';
+import BotTag from 'app/components/bot_tag';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AtMentionItem extends PureComponent {
@@ -19,6 +20,7 @@ export default class AtMentionItem extends PureComponent {
         onPress: PropTypes.func.isRequired,
         userId: PropTypes.string.isRequired,
         username: PropTypes.string,
+        isBot: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     };
 
@@ -34,6 +36,7 @@ export default class AtMentionItem extends PureComponent {
             userId,
             username,
             theme,
+            isBot,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -54,6 +57,10 @@ export default class AtMentionItem extends PureComponent {
                     />
                 </View>
                 <Text style={style.rowUsername}>{`@${username}`}</Text>
+                <BotTag
+                    show={isBot}
+                    theme={theme}
+                />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
                 {hasFullName && <Text style={style.rowFullname}>{`${firstName} ${lastName}`}</Text>}
             </TouchableOpacity>

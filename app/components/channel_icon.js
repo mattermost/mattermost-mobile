@@ -8,7 +8,7 @@ import {
     Text,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 import {General} from 'mattermost-redux/constants';
 
@@ -26,6 +26,7 @@ export default class ChannelIcon extends React.PureComponent {
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
+        isBot: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -47,6 +48,7 @@ export default class ChannelIcon extends React.PureComponent {
             theme,
             type,
             isArchived,
+            isBot,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -83,6 +85,13 @@ export default class ChannelIcon extends React.PureComponent {
                 <Icon
                     name='archive'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                />
+            );
+        } else if (isBot) {
+            icon = (
+                <Icon
+                    name='robot'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}, style.iconBot]}
                 />
             );
         } else if (hasDraft) {
@@ -176,6 +185,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         iconInfo: {
             color: theme.centerChannelColor,
+        },
+        iconBot: {
+            marginLeft: -5,
         },
         groupBox: {
             alignSelf: 'flex-start',

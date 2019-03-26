@@ -18,6 +18,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import StatusBar from 'app/components/status_bar';
+import BotTag from 'app/components/bot_tag';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -30,6 +31,7 @@ export default class UserProfile extends PureComponent {
         actions: PropTypes.shape({
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            loadBot: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
@@ -37,6 +39,7 @@ export default class UserProfile extends PureComponent {
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
+        bot: PropTypes.object,
         militaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
     };
@@ -48,6 +51,12 @@ export default class UserProfile extends PureComponent {
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
             setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+    }
+
+    componentDidMount() {
+        if (this.props.user && this.props.user.is_bot) {
+            this.props.actions.loadBot(this.props.user.id);
         }
     }
 
@@ -78,7 +87,17 @@ export default class UserProfile extends PureComponent {
         const displayName = displayUsername(user, teammateNameDisplay);
 
         if (displayName) {
-            return <Text style={style.displayName}>{displayName}</Text>;
+            return (
+                <View style={style.indicatorContainer}>
+                    <Text style={style.displayName}>
+                        {displayName}
+                    </Text>
+                    <BotTag
+                        show={Boolean(user.is_bot)}
+                        theme={theme}
+                    />
+                </View>
+            );
         }
 
         return null;
@@ -198,8 +217,34 @@ export default class UserProfile extends PureComponent {
         return additionalOptions;
     };
 
+    renderDetailsBlock = (style) => {
+        if (this.props.user.is_bot) {
+            if (!this.props.bot) {
+                return null;
+            }
+            return (
+                <View style={style.content}>
+                    <View>
+                        <Text style={style.header}>{'DESCRIPTION'}</Text>
+                        <Text style={style.text}>{this.props.bot.description || ''}</Text>
+                    </View>
+                </View>
+            );
+        }
+
+        return (
+            <View style={style.content}>
+                {this.props.enableTimezone && this.buildTimezoneBlock()}
+                {this.buildDisplayBlock('username')}
+                {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                {this.buildDisplayBlock('nickname')}
+                {this.buildDisplayBlock('position')}
+            </View>
+        );
+    }
+
     render() {
-        const {config, theme, user, enableTimezone} = this.props;
+        const {theme, user} = this.props;
         const style = createStyleSheet(theme);
 
         if (!user) {
@@ -222,13 +267,7 @@ export default class UserProfile extends PureComponent {
                         {this.getDisplayName()}
                         <Text style={style.username}>{`@${user.username}`}</Text>
                     </View>
-                    <View style={style.content}>
-                        {enableTimezone && this.buildTimezoneBlock()}
-                        {this.buildDisplayBlock('username')}
-                        {config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
-                        {this.buildDisplayBlock('nickname')}
-                        {this.buildDisplayBlock('position')}
-                    </View>
+                    {this.renderDetailsBlock(style)}
                     <UserProfileRow
                         action={this.sendMessage}
                         defaultMessage='Send Message'
@@ -254,7 +293,6 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 15,
         },
         displayName: {
-            marginTop: 15,
             color: theme.centerChannelColor,
             fontSize: 17,
             fontWeight: '600',
@@ -283,6 +321,10 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 15,
             color: theme.centerChannelColor,
             fontSize: 15,
+        },
+        indicatorContainer: {
+            marginTop: 15,
+            flexDirection: 'row',
         },
     };
 });

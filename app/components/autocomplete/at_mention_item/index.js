@@ -16,6 +16,7 @@ function mapStateToProps(state, ownProps) {
         firstName: user.first_name,
         lastName: user.last_name,
         username: user.username,
+        isBot: Boolean(user.is_bot),
         theme: getTheme(state),
     };
 }

@@ -60,9 +60,14 @@ function mapStateToProps(state) {
     const currentUser = getUser(state, currentUserId);
 
     let status;
+    let isBot = false;
     if (currentChannel.type === General.DM_CHANNEL) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
+        const teammate = getUser(state, teammateId);
         status = getStatusForUserId(state, teammateId);
+        if (teammate && teammate.is_bot) {
+            isBot = true;
+        }
     }
 
     const isAdmin = checkIsAdmin(roles);
@@ -88,6 +93,7 @@ function mapStateToProps(state) {
         status,
         theme: getTheme(state),
         canManageUsers,
+        isBot,
     };
 }
 
