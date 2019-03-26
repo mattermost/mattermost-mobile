@@ -21,6 +21,7 @@ describe('user_profile', () => {
     const actions = {
         setChannelDisplayName: jest.fn(),
         makeDirectChannel: jest.fn(),
+        loadBot: jest.fn(),
     };
     const baseProps = {
         actions,
