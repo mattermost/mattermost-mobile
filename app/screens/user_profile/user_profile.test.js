@@ -6,7 +6,7 @@ import {shallow} from 'enzyme';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import UserProfile from './user_profile.js';
-import FormattedText from 'app/components/formatted_text';
+import BotTag from 'app/components/bot_tag';
 
 jest.mock('react-intl');
 jest.mock('app/utils/theme', () => {
@@ -77,9 +77,9 @@ describe('user_profile', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.containsMatchingElement(
-            <FormattedText
-                id='post_info.bot'
-                defaultMessage='BOT'
+            <BotTag
+                show={true}
+                theme={baseProps.theme}
             />
         )).toEqual(true);
     });
