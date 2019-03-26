@@ -1,5 +1,39 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.18.0 Release
+- Release Date: April 16, 2019
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Highlights
+ - Added support for Office365 SSO.
+ - Added support for IWA Authentication.
+
+### Improvements
+ - Added the ability for channel links to open outside of the app.
+ - Implemented CSRF protection Tokens.
+ - Added ability for emojis to render in the message attachment title.
+ - Added Chinese support for words that trigger mentions.
+ - Added ability for hyperlinks to render in the message attachment title.
+ - Added a setting to the system console to change the minimum length of hashtags.
+ - Added a reply option to long press context menu.
+
+### Bug Fixes
+ - Fixed an issue where deactivated users appeared on "Add Members" (to channel) modal but not on the search results.
+ - Fixed an issue with multiple text entries when typing with Shift+Letter on Android.
+ - Fixed an issue where push notifications badges did not always clear when read on another device.
+ - Fixed an issue where timezone did not automatically update on Android when travelling to another timezone.
+ - Fixed an issue on Android where extra text in search box appeared after using autocomplete drop down.
+ - Fixed an issue where System Admins were able to see full long press menu when long pressing a system message.
+ - Fixed an issue on iOS where opening a single or group notification did not take the user into the channel where the notification came from.
+ - Fixed an issue where the user mention autocomplete drop down was case sensitive.
+ - Fixed an issue on iOS where users were not able to unflag posts from "Flagged Posts" when opened from a read-only channel.
+
+
 ## 1.17.0 Release
 - Release Date: March 20, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
