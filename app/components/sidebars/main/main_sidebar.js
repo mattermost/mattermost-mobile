@@ -275,7 +275,6 @@ export default class ChannelSidebar extends Component {
         if (this.refs.drawer) {
             this.refs.drawer.canClose = false;
         }
-        this.setState({openDrawerOffset: 0});
     };
 
     showTeams = () => {
