@@ -31,6 +31,7 @@ export default class UserProfile extends PureComponent {
         actions: PropTypes.shape({
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            loadBot: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
@@ -38,6 +39,7 @@ export default class UserProfile extends PureComponent {
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
+        bot: PropTypes.object,
         militaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
     };
@@ -49,6 +51,12 @@ export default class UserProfile extends PureComponent {
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
             setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+    }
+
+    componentDidMount() {
+        if (this.props.user && this.props.user.is_bot) {
+            this.props.actions.loadBot(this.props.user.id);
         }
     }
 
@@ -85,7 +93,7 @@ export default class UserProfile extends PureComponent {
                         {displayName}
                     </Text>
                     <BotTag
-                        show={user.is_bot}
+                        show={Boolean(user.is_bot)}
                         theme={theme}
                     />
                 </View>
@@ -211,7 +219,17 @@ export default class UserProfile extends PureComponent {
 
     renderDetailsBlock = (style) => {
         if (this.props.user.is_bot) {
-            return null;
+            if (!this.props.bot) {
+                return null;
+            }
+            return (
+                <View style={style.content}>
+                    <View>
+                        <Text style={style.header}>{'DESCRIPTION'}</Text>
+                        <Text style={style.text}>{this.props.bot.description || ''}</Text>
+                    </View>
+                </View>
+            );
         }
 
         return (

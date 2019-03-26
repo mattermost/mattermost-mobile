@@ -66,7 +66,7 @@ export default class PostHeader extends PureComponent {
             isBot,
         } = this.props;
 
-        if (fromWebHook || isBot) {
+        if (fromWebHook) {
             let name = this.props.displayName;
             if (overrideUsername && enablePostUsernameOverride) {
                 name = overrideUsername;
@@ -81,6 +81,19 @@ export default class PostHeader extends PureComponent {
                         theme={this.props.theme}
                     />
                 </View>
+            );
+        } else if (isBot) {
+            return (
+                <TouchableOpacity onPress={this.handleUsernamePress}>
+                    <View style={style.indicatorContainer}>
+                        <Text style={style.displayName}>
+                            {this.props.displayName}
+                        </Text>
+                        <BotTag
+                            theme={this.props.theme}
+                        />
+                    </View>
+                </TouchableOpacity>
             );
         } else if (fromAutoResponder) {
             let name = this.props.displayName;

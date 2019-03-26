@@ -103,7 +103,7 @@ class ChannelIntro extends PureComponent {
                             {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}
                         </Text>
                         <BotTag
-                            show={member.is_bot}
+                            show={Boolean(member.is_bot)}
                             theme={theme}
                         />
                     </View>
