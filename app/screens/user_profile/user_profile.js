@@ -78,6 +78,20 @@ export default class UserProfile extends PureComponent {
         const displayName = displayUsername(user, teammateNameDisplay);
 
         if (displayName) {
+            if (user.is_bot) {
+                return (
+                    <View style={style.indicatorContainer}>
+                        <Text style={style.displayName}>
+                            {displayName}
+                        </Text>
+                        <FormattedText
+                            id='post_info.bot'
+                            defaultMessage='BOT'
+                            style={style.bot}
+                        />
+                    </View>
+                );
+            }
             return <Text style={style.displayName}>{displayName}</Text>;
         }
 
@@ -223,11 +237,11 @@ export default class UserProfile extends PureComponent {
                         <Text style={style.username}>{`@${user.username}`}</Text>
                     </View>
                     <View style={style.content}>
-                        {enableTimezone && this.buildTimezoneBlock()}
-                        {this.buildDisplayBlock('username')}
-                        {config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
-                        {this.buildDisplayBlock('nickname')}
-                        {this.buildDisplayBlock('position')}
+                        {!user.is_bot && enableTimezone && this.buildTimezoneBlock()}
+                        {!user.is_bot && this.buildDisplayBlock('username')}
+                        {!user.is_bot && config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                        {!user.is_bot && this.buildDisplayBlock('nickname')}
+                        {!user.is_bot && this.buildDisplayBlock('position')}
                     </View>
                     <UserProfileRow
                         action={this.sendMessage}
@@ -283,6 +297,22 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 15,
             color: theme.centerChannelColor,
             fontSize: 15,
+        },
+        indicatorContainer: {
+            flexDirection: 'row',
+        },
+        bot: {
+            marginTop: 15,
+            alignSelf: 'center',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderRadius: 2,
+            color: theme.centerChannelColor,
+            fontSize: 10,
+            fontWeight: '600',
+            marginRight: 5,
+            marginLeft: 5,
+            paddingVertical: 2,
+            paddingHorizontal: 4,
         },
     };
 });

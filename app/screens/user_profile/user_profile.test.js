@@ -6,6 +6,7 @@ import {shallow} from 'enzyme';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import UserProfile from './user_profile.js';
+import FormattedText from 'app/components/formatted_text';
 
 jest.mock('react-intl');
 jest.mock('app/utils/theme', () => {
@@ -33,21 +34,53 @@ describe('user_profile', () => {
         teams: [],
         theme: Preferences.THEMES.default,
         enableTimezone: false,
-        user: {
+        militaryTime: false,
+    };
+
+    const user = {
+        email: 'test@test.com',
+        first_name: 'test',
+        id: '4hzdnk6mg7gepe7yze6m3domnc',
+        last_name: 'fake',
+        nickname: 'nick',
+        username: 'fred',
+        is_bot: false,
+    };
+
+    test('should match snapshot', async () => {
+        const wrapper = shallow(
+            <UserProfile
+                {...baseProps}
+                user={user}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should contain bot tag', async () => {
+        const botUser = {
             email: 'test@test.com',
             first_name: 'test',
             id: '4hzdnk6mg7gepe7yze6m3domnc',
             last_name: 'fake',
             nickname: 'nick',
-        },
-        militaryTime: false,
-    };
+            username: 'fred',
+            is_bot: true,
+        };
 
-    test('should match snapshot', async () => {
         const wrapper = shallow(
-            <UserProfile {...baseProps}/>,
+            <UserProfile
+                {...baseProps}
+                user={botUser}
+            />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
-        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.containsMatchingElement(
+            <FormattedText
+                id='post_info.bot'
+                defaultMessage='BOT'
+            />
+        )).toEqual(true);
     });
 });

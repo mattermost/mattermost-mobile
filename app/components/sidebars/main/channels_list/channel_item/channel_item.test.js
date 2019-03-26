@@ -38,6 +38,7 @@ describe('ChannelItem', () => {
         theme: Preferences.THEMES.default,
         unreadMsgs: 1,
         isSearchResult: false,
+        isBot: false,
     };
 
     test('should match snapshot', () => {

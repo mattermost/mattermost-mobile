@@ -13,6 +13,7 @@ import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {General} from 'mattermost-redux/constants';
 import {injectIntl, intlShape} from 'react-intl';
 
+import FormattedText from 'app/components/formatted_text';
 import ProfilePicture from 'app/components/profile_picture';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -91,16 +92,31 @@ class ChannelIntro extends PureComponent {
         const {currentChannelMembers, theme} = this.props;
         const style = getStyleSheet(theme);
 
-        return currentChannelMembers.map((member, index) => (
-            <TouchableOpacity
-                key={member.id}
-                onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
-            >
-                <Text style={style.displayName}>
-                    {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}
-                </Text>
-            </TouchableOpacity>
-        ));
+        return currentChannelMembers.map((member, index) => {
+            let tag = null;
+            if (member.is_bot) {
+                tag = (
+                    <FormattedText
+                        id='post_info.bot'
+                        defaultMessage='BOT'
+                        style={style.bot}
+                    />
+                );
+            }
+            return (
+                <TouchableOpacity
+                    key={member.id}
+                    onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
+                >
+                    <View style={style.indicatorContainer}>
+                        <Text style={style.displayName}>
+                            {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}
+                        </Text>
+                        {tag}
+                    </View>
+                </TouchableOpacity>
+            );
+        });
     };
 
     buildDMContent = () => {
@@ -381,6 +397,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             flexWrap: 'wrap',
             justifyContent: 'flex-start',
+        },
+        indicatorContainer: {
+            flexDirection: 'row',
+        },
+        bot: {
+            alignSelf: 'center',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderRadius: 2,
+            color: theme.centerChannelColor,
+            fontSize: 10,
+            fontWeight: '600',
+            marginRight: 5,
+            marginLeft: 5,
+            paddingVertical: 2,
+            paddingHorizontal: 4,
         },
     };
 });

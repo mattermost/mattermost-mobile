@@ -38,6 +38,7 @@ export default class PostHeader extends PureComponent {
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         username: PropTypes.string,
+        isBot: PropTypes.bool,
         userTimezone: PropTypes.string,
         enableTimezone: PropTypes.bool,
     };
@@ -61,9 +62,10 @@ export default class PostHeader extends PureComponent {
             isSystemMessage,
             fromAutoResponder,
             overrideUsername,
+            isBot,
         } = this.props;
 
-        if (fromWebHook) {
+        if (fromWebHook || isBot) {
             let name = this.props.displayName;
             if (overrideUsername && enablePostUsernameOverride) {
                 name = overrideUsername;
