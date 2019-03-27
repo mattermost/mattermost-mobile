@@ -9,6 +9,7 @@ import Button from 'react-native-button';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
+import mattermostManaged from 'app/mattermost_managed';
 
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
@@ -94,6 +95,7 @@ export default class PostTextbox extends PureComponent {
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
+            mattermostManaged.addEventListener('onExternalKeyboardEnter', this.handleAndroidEnterKey);
         }
     }
 
@@ -174,8 +176,13 @@ export default class PostTextbox extends PureComponent {
         }
     };
 
+    handleAndroidEnterKey = () => {
+        console.log("----------> enter key tapped!");
+        this.handleSendMessage();
+    };
+
     handleAndroidKeyboard = () => {
-        this.blur();
+        // this.blur();
     };
 
     handleAndroidBack = () => {

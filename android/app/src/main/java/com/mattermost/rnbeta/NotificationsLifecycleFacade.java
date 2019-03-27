@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.ArraySet;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.content.res.Configuration;
@@ -247,5 +248,19 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
         }
 
         return true;
+    }
+
+    @Override
+    public void onKeyUp(int keyCode, KeyEvent event) {
+        super.onKeyUp(keyCode, event);
+
+        ReactContext ctx = getRunningReactContext();
+
+        if (!event.isShiftPressed() && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+            if (ctx != null) {
+                ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
+                        emit("onExternalKeyboardEnter", null);
+            }
+        }
     }
 }
