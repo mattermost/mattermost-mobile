@@ -86,6 +86,7 @@ export default class PostTextbox extends PureComponent {
             top: 0,
             value: props.value,
             showFileMaxWarning: false,
+            keyboardState: 'hidden',
         };
     }
 
@@ -93,9 +94,10 @@ export default class PostTextbox extends PureComponent {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.on(event, this.handleInsertTextToDraft);
         if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+            Keyboard.addListener('keyboardDidShow', this.androidKeyboardDidShow);
+            Keyboard.addListener('keyboardDidHide', this.androidKeyboardDidHide);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
-            mattermostManaged.addEventListener('onExternalKeyboardEnter', this.handleAndroidEnterKey);
+            this.listenerId = mattermostManaged.addEventListener('hardwareEnter', this.handleAndroidEnterKey);
         }
     }
 
@@ -109,8 +111,10 @@ export default class PostTextbox extends PureComponent {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.off(event, this.handleInsertTextToDraft);
         if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+            Keyboard.removeListener('keyboardDidShow', this.androidKeyboardDidShow);
+            Keyboard.removeListener('keyboardDidHide', this.androidKeyboardDidHide);
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+            mattermostManaged.removeEventListener(this.listenerId);
         }
     }
 
@@ -177,12 +181,21 @@ export default class PostTextbox extends PureComponent {
     };
 
     handleAndroidEnterKey = () => {
-        console.log("----------> enter key tapped!");
-        this.handleSendMessage();
+        if (this.state.keyboardState === 'hidden') {
+            this.handleSendMessage();
+        }
     };
 
-    handleAndroidKeyboard = () => {
-        // this.blur();
+    androidKeyboardDidShow = () => {
+        this.setState({
+            keyboardState: 'shown',
+        });
+    };
+
+    androidKeyboardDidHide = () => {
+        this.setState({
+            keyboardState: 'hidden',
+        });
     };
 
     handleAndroidBack = () => {

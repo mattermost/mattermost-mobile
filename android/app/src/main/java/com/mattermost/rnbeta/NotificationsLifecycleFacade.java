@@ -259,7 +259,7 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
         if (!event.isShiftPressed() && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
             if (ctx != null) {
                 ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
-                        emit("onExternalKeyboardEnter", null);
+                        emit("hardwareEnter", null);
             }
         }
     }
