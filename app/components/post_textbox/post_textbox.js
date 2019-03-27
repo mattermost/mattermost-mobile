@@ -12,6 +12,7 @@ import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
+import Fade from 'app/components/fade';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
@@ -294,6 +295,10 @@ export default class PostTextbox extends PureComponent {
         const {files} = this.props;
 
         return files.some((file) => file.loading);
+    }
+
+    isSendButtonVisible() {
+        return this.canSend() || this.isFileLoading();
     }
 
     sendMessage = () => {
@@ -580,11 +585,16 @@ export default class PostTextbox extends PureComponent {
                                 disableFullscreenUI={true}
                                 editable={!channelIsReadOnly}
                             />
-                            <SendButton
+                            <Fade
+                                visible={this.isSendButtonVisible()}
                                 disabled={this.isFileLoading()}
-                                handleSendMessage={this.handleSendMessage}
-                                theme={theme}
-                            />
+                            >
+                                <SendButton
+                                    disabled={this.isFileLoading()}
+                                    handleSendMessage={this.handleSendMessage}
+                                    theme={theme}
+                                />
+                            </Fade>
                         </View>
                     </View>
                 )}
