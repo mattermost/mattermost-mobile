@@ -12,7 +12,7 @@ import {
 } from 'mattermost-redux/selectors/entities/channels';
 import {getTheme, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
-import {isChannelMuted} from 'mattermost-redux/utils/channel_utils';
+import {getUserIdFromChannelName, isChannelMuted} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import {getDraftForChannel} from 'app/selectors/views';
@@ -29,12 +29,19 @@ function makeMapStateToProps() {
         const channelDraft = getDraftForChannel(state, channel.id);
 
         let displayName = channel.display_name;
+        let isBot = false;
 
         if (channel.type === General.DM_CHANNEL) {
-            if (!ownProps.isSearchResult) {
-                const teammate = getUser(state, channel.teammate_id);
+            if (ownProps.isSearchResult) {
+                isBot = channel.isBot;
+            } else {
+                const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+                const teammate = getUser(state, teammateId);
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
                 displayName = displayUsername(teammate, teammateNameDisplay, false);
+                if (teammate && teammate.is_bot) {
+                    isBot = true;
+                }
             }
         }
 
@@ -73,6 +80,7 @@ function makeMapStateToProps() {
             showUnreadForMsgs,
             theme: getTheme(state),
             unreadMsgs,
+            isBot,
         };
     };
 }

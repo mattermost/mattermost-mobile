@@ -39,6 +39,7 @@ export default class ChannelItem extends PureComponent {
         theme: PropTypes.object.isRequired,
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
+        isBot: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -99,6 +100,7 @@ export default class ChannelItem extends PureComponent {
             theme,
             isSearchResult,
             channel,
+            isBot,
         } = this.props;
 
         const isArchived = channel.delete_at > 0;
@@ -183,6 +185,7 @@ export default class ChannelItem extends PureComponent {
                 theme={theme}
                 type={channel.type}
                 isArchived={isArchived}
+                isBot={isBot}
             />
         );
 

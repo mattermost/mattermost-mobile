@@ -218,6 +218,7 @@ class FilteredList extends Component {
                 nickname: u.nickname,
                 fullname: `${u.first_name} ${u.last_name}`,
                 delete_at: u.delete_at,
+                isBot: u.is_bot,
 
                 // need name key for DM's as we use it for sortChannelsByDisplayName with same display_name
                 name: displayName,
@@ -263,6 +264,7 @@ class FilteredList extends Component {
                 nickname: u.nickname,
                 fullname: `${u.first_name} ${u.last_name}`,
                 delete_at: u.delete_at,
+                isBot: u.is_bot,
             };
         });
 
