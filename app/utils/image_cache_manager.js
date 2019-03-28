@@ -23,7 +23,7 @@ export default class ImageCacheManager {
             console.warn('Unable to cache image when no listener is provided'); // eslint-disable-line no-console
         }
 
-        const {path, exists} = await getCacheFile(filename, mimeType, uri);
+        const {path, exists} = await getCacheFile(filename, uri, mimeType);
         const prefix = Platform.OS === 'android' ? 'file://' : '';
         if (isDownloading(uri)) {
             addListener(uri, listener);
@@ -69,7 +69,7 @@ export default class ImageCacheManager {
     };
 }
 
-export const getCacheFile = async (name, mimeType, uri) => {
+export const getCacheFile = async (name, uri, mimeType = DEFAULT_MIME_TYPE) => {
     const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
     let ext;
     if (filename.indexOf('.') === -1) {
