@@ -49,6 +49,7 @@ export default class Emoji extends React.PureComponent {
         customEmojis: new Map(),
         literal: '',
         imageUrl: '',
+        mimeType: '',
         isCustomEmoji: false,
     };
 
