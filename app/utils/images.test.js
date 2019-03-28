@@ -2,10 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {calculateDimensions} from 'app/utils/images';
+import {
+    IMAGE_MAX_HEIGHT,
+    IMAGE_MIN_DIMENSION,
+} from 'app/constants/image';
 
 const PORTRAIT_VIEWPORT = 315;
-const IMAGE_MAX_HEIGHT = 350;
-const IMAGE_MIN_DIMENSION = 50;
 
 describe('Images calculateDimensions', () => {
     it('image with 0 height should return 50x50', () => {
