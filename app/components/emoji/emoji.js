@@ -22,6 +22,11 @@ export default class Emoji extends React.PureComponent {
         emojiName: PropTypes.string.isRequired,
 
         /*
+         * Emoji mime type.
+         */
+        mimeType: PropTypes.string.isRequired,
+
+        /*
          * Image URL for the emoji.
          */
         imageUrl: PropTypes.string.isRequired,
@@ -56,15 +61,15 @@ export default class Emoji extends React.PureComponent {
     }
 
     componentWillMount() {
-        const {displayTextOnly, emojiName, imageUrl} = this.props;
+        const {displayTextOnly, emojiName, imageUrl, mimeType} = this.props;
         this.mounted = true;
         if (!displayTextOnly && imageUrl) {
-            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl);
+            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl, mimeType);
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        const {displayTextOnly, emojiName, imageUrl} = nextProps;
+        const {displayTextOnly, emojiName, imageUrl, mimeType} = nextProps;
         if (emojiName !== this.props.emojiName) {
             this.setState({
                 imageUrl: null,
@@ -73,7 +78,7 @@ export default class Emoji extends React.PureComponent {
 
         if (!displayTextOnly && imageUrl &&
                 imageUrl !== this.props.imageUrl) {
-            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl);
+            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl, mimeType);
         }
     }
 

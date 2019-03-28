@@ -9,6 +9,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants';
+import {mimeTypeExtensions, DEFAULT_MIME_TYPE} from 'app/constants/emoji';
 import mattermostBucket from 'app/mattermost_bucket';
 
 const {IMAGES_PATH} = DeviceTypes;
@@ -17,12 +18,12 @@ let siteUrl;
 export default class ImageCacheManager {
     static listeners = {};
 
-    static cache = async (filename, uri, listener) => {
+    static cache = async (filename, uri, listener, mimeType = DEFAULT_MIME_TYPE) => {
         if (!listener) {
             console.warn('Unable to cache image when no listener is provided'); // eslint-disable-line no-console
         }
 
-        const {path, exists} = await getCacheFile(filename, uri);
+        const {path, exists} = await getCacheFile(filename, mimeType, uri);
         const prefix = Platform.OS === 'android' ? 'file://' : '';
         if (isDownloading(uri)) {
             addListener(uri, listener);
@@ -68,9 +69,18 @@ export default class ImageCacheManager {
     };
 }
 
-export const getCacheFile = async (name, uri) => {
+export const getCacheFile = async (name, mimeType, uri) => {
     const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
-    const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+    let ext;
+    if (filename.indexOf('.') === -1) {
+        if (mimeTypeExtensions.hasOwnProperty(mimeType)) {
+            ext = mimeTypeExtensions[mimeType];
+        } else {
+            ext = mimeTypeExtensions[DEFAULT_MIME_TYPE];
+        }
+    } else {
+        ext = filename.substring(filename.lastIndexOf('.'));
+    }
     const path = `${IMAGES_PATH}/${Math.abs(hashCode(uri))}${ext}`;
 
     try {

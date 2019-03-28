@@ -10,6 +10,7 @@ import {Client4} from 'mattermost-redux/client';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
+import {DEFAULT_MIME_TYPE} from 'app/constants/emoji';
 
 import Emoji from './emoji';
 
@@ -18,14 +19,17 @@ function mapStateToProps(state, ownProps) {
     const emojiName = ownProps.emojiName;
     const customEmojis = getCustomEmojisByName(state);
 
+    let mimeType = DEFAULT_MIME_TYPE;
     let imageUrl = '';
     let isCustomEmoji = false;
     let displayTextOnly = false;
     if (EmojiIndicesByAlias.has(emojiName)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
+        mimeType = emoji.mimeType;
         imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
     } else if (customEmojis.has(emojiName)) {
         const emoji = customEmojis.get(emojiName);
+        mimeType = emoji.mimeType;
         imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);
         isCustomEmoji = true;
     } else {
@@ -37,6 +41,7 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
+        mimeType,
         imageUrl,
         isCustomEmoji,
         displayTextOnly,
