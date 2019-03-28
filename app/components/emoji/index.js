@@ -25,11 +25,11 @@ function mapStateToProps(state, ownProps) {
     let displayTextOnly = false;
     if (EmojiIndicesByAlias.has(emojiName)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
-        mimeType = emoji.mimeType;
+        mimeType = emoji.mime_type;
         imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
     } else if (customEmojis.has(emojiName)) {
         const emoji = customEmojis.get(emojiName);
-        mimeType = emoji.mimeType;
+        mimeType = emoji.mime_type;
         imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);
         isCustomEmoji = true;
     } else {
