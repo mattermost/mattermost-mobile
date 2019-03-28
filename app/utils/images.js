@@ -6,6 +6,13 @@ const IMAGE_MAX_HEIGHT = 350;
 const IMAGE_MIN_DIMENSION = 50;
 
 export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHeight = 0) => {
+    if (height === 0 || width === 0) {
+        return {
+            height: IMAGE_MIN_DIMENSION,
+            width: IMAGE_MIN_DIMENSION,
+        };
+    }
+
     const ratio = height / width;
     const heightRatio = width / height;
 

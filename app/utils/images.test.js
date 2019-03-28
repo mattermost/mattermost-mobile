@@ -8,6 +8,18 @@ const IMAGE_MAX_HEIGHT = 350;
 const IMAGE_MIN_DIMENSION = 50;
 
 describe('Images calculateDimensions', () => {
+    it('image with 0 height should return 50x50', () => {
+        const {height, width} = calculateDimensions(0, 20, PORTRAIT_VIEWPORT);
+        expect(height).toEqual(IMAGE_MIN_DIMENSION);
+        expect(width).toEqual(IMAGE_MIN_DIMENSION);
+    });
+
+    it('image with 0 width should return 50x50', () => {
+        const {height, width} = calculateDimensions(20, 0, PORTRAIT_VIEWPORT);
+        expect(height).toEqual(IMAGE_MIN_DIMENSION);
+        expect(width).toEqual(IMAGE_MIN_DIMENSION);
+    });
+
     it('image smaller than 50x50 should return 50x50', () => {
         const {height, width} = calculateDimensions(20, 20, PORTRAIT_VIEWPORT);
         expect(height).toEqual(IMAGE_MIN_DIMENSION);
