@@ -15,7 +15,7 @@ describe('getCacheFile', () => {
         const mimeType = 'application/octet-stream';
         const uri = '';
 
-        const {path} = await getCacheFile(name, mimeType, uri);
+        const {path} = await getCacheFile(name, uri, mimeType);
         expect(path).toMatch(/\.png$/);
     });
 
@@ -24,7 +24,7 @@ describe('getCacheFile', () => {
         const mimeType = 'image/png';
         const uri = '';
 
-        const {path} = await getCacheFile(name, mimeType, uri);
+        const {path} = await getCacheFile(name, uri, mimeType);
         expect(path).toMatch(/\.png$/);
     });
 
@@ -33,7 +33,7 @@ describe('getCacheFile', () => {
         const mimeType = 'image/gif';
         const uri = '';
 
-        const {path} = await getCacheFile(name, mimeType, uri);
+        const {path} = await getCacheFile(name, uri, mimeType);
         expect(path).toMatch(/\.gif$/);
     });
 
@@ -42,7 +42,7 @@ describe('getCacheFile', () => {
         const mimeType = '';
         const uri = 'file://uri.png';
 
-        const {path} = await getCacheFile(name, mimeType, uri);
+        const {path} = await getCacheFile(name, uri, mimeType);
         expect(path).toMatch(/\.png$/);
     });
 
@@ -51,7 +51,7 @@ describe('getCacheFile', () => {
         const mimeType = '';
         const uri = 'file://uri.gif';
 
-        const {path} = await getCacheFile(name, mimeType, uri);
+        const {path} = await getCacheFile(name, uri, mimeType);
         expect(path).toMatch(/\.gif$/);
     });
 });
