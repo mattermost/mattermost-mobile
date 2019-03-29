@@ -9,10 +9,10 @@ import {
 let previewComponents;
 
 export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHeight = 0) => {
-    if (height === 0 || width === 0) {
+    if (!height || !width) {
         return {
-            height: IMAGE_MIN_DIMENSION,
-            width: IMAGE_MIN_DIMENSION,
+            height: null,
+            width: null,
         };
     }
 
