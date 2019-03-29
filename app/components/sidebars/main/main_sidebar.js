@@ -263,10 +263,10 @@ export default class ChannelSidebar extends Component {
     };
 
     onSearchStart = () => {
-        this.setState({searching: true});
         if (this.refs.drawer) {
             this.refs.drawer.canClose = false;
         }
+        this.setState({searching: true});
     };
 
     showTeams = () => {
