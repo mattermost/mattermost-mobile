@@ -32,6 +32,7 @@
  - Fixed an issue on iOS where opening a single or group notification did not take the user into the channel where the notification came from.
  - Fixed an issue where the user mention autocomplete drop down was case sensitive.
  - Fixed an issue on iOS where users were not able to unflag posts from "Flagged Posts" when opened from a read-only channel.
+ - Fixed an issue on iOS where users were unable to create channel names of 2 byte characters.
 
 
 ## 1.17.0 Release
