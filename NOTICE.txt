@@ -1369,7 +1369,7 @@ This product contains a modified version of 'react-native-device-info' by Rebecc
 Get device information using react-native
 
 * HOMEPAGE:
-  * https://github.com/rebeccahughes/react-native-device-info#readme
+  * https://github.com/react-native-community/react-native-device-info#readme
 
 * LICENSE: MIT
 
@@ -1828,7 +1828,7 @@ SOFTWARE.
 
 This product contains 'react-native-permissions' by Yonah Forst.
 
-Check user permissions in React Native
+Check and request user permissions in React Native.
 
 * HOMEPAGE:
   * https://github.com/yonahforst/react-native-permissions
