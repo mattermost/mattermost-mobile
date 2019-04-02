@@ -585,10 +585,7 @@ export default class PostTextbox extends PureComponent {
                                 disableFullscreenUI={true}
                                 editable={!channelIsReadOnly}
                             />
-                            <Fade
-                                visible={this.isSendButtonVisible()}
-                                disabled={this.isFileLoading()}
-                            >
+                            <Fade visible={this.isSendButtonVisible()}>
                                 <SendButton
                                     disabled={this.isFileLoading()}
                                     handleSendMessage={this.handleSendMessage}

@@ -1,32 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Animated} from 'react-native';
 
 export const FADE_DURATION = 300;
 
-export default class Fade extends Component {
+export default class Fade extends PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         style: PropTypes.object,
         visible: PropTypes.bool.isRequired,
-        disabled: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
         super(props);
         this.state = {
-            fadeAnim: new Animated.Value(this.props.visible ? 1 : 0),
+            fadeAnim: new Animated.Value(props.visible ? 1 : 0),
         };
-    }
-
-    shouldComponentUpdate(nextProps) {
-        if (this.props.visible !== nextProps.visible || this.props.disabled !== nextProps.disabled) {
-            return true;
-        }
-        return false;
     }
 
     componentDidUpdate(prevProps) {
