@@ -250,6 +250,7 @@ public class CustomPushNotification extends PushNotification {
             list = new ArrayList<Bundle>(bundleArray);
         } else {
             list = new ArrayList<Bundle>();
+            list.add(bundle);
         }
 
         for (Bundle data : list) {
