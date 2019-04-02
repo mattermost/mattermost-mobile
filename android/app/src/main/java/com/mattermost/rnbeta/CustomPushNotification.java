@@ -263,10 +263,12 @@ public class CustomPushNotification extends PushNotification {
                 .setGroupSummary(true)
                 .setStyle(messagingStyle)
                 .setSmallIcon(smallIconResId)
-                .setNumber(Integer.parseInt(badge))
                 .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setAutoCancel(true);
+        if (badge != null) {
+            notification.setNumber(Integer.parseInt(badge));
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notification.setBadgeIconType(Notification.BADGE_ICON_SMALL);
