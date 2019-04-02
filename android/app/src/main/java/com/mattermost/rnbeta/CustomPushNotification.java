@@ -230,7 +230,9 @@ public class CustomPushNotification extends PushNotification {
         }
 
         if (badge != null) {
-            CustomPushNotification.badgeCount = Integer.parseInt(badge);
+            int badgeCount = Integer.parseInt(badge);
+            CustomPushNotification.badgeCount = badgeCount;
+            notification.setNumber(badgeCount);
             ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), CustomPushNotification.badgeCount);
         } else {
             // HERE ADD THE DOT INDICATOR STUFF
@@ -266,9 +268,6 @@ public class CustomPushNotification extends PushNotification {
                 .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setAutoCancel(true);
-        if (badge != null) {
-            notification.setNumber(Integer.parseInt(badge));
-        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notification.setBadgeIconType(Notification.BADGE_ICON_SMALL);
