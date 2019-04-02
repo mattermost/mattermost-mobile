@@ -23,7 +23,7 @@ export default class ActionButton extends PureComponent {
     handleActionPress = preventDoubleTap(() => {
         const {actions, id, postId} = this.props;
         actions.doPostAction(postId, id);
-    });
+    }, 4000);
 
     render() {
         const {name, theme} = this.props;
