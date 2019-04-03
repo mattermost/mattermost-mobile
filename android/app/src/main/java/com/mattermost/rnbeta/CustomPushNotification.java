@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
@@ -47,6 +49,7 @@ public class CustomPushNotification extends PushNotification {
     private static AppLifecycleFacade lifecycleFacade;
     private static Context context;
     private static int badgeCount = 0;
+    private static Pattern senderNamePattern = Pattern.compile("^(@[a-z0-9\\.\\-_]+):.*$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
@@ -361,7 +364,12 @@ public class CustomPushNotification extends PushNotification {
             return channelName;
         }
 
-        return message.split(":")[0];
+        Matcher m = senderNamePattern.matcher(message);
+        if (m.find()) {
+            return m.group(1);
+        }
+
+        return "";
     }
 
     private String removeSenderFromMessage(String message) {
