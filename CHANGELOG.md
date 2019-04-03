@@ -10,30 +10,27 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Highlights
- - Added support for Office365 SSO.
- - Added support for IWA Authentication.
+ - Added support for Office365 single sign-on (SSO).
+ - Added support for Integrated Windows Authentication (IWA).
 
 ### Improvements
  - Added the ability for channel links to open outside of the app.
- - Implemented CSRF protection Tokens.
- - Added ability for emojis to render in the message attachment title.
+ - Added ability for emojis and hyperlinks to render in the message attachment title.
  - Added Chinese support for words that trigger mentions.
- - Added ability for hyperlinks to render in the message attachment title.
  - Added a setting to the system console to change the minimum length of hashtags.
  - Added a reply option to long press context menu.
 
 ### Bug Fixes
- - Fixed an issue where deactivated users appeared on "Add Members" (to channel) modal but not on the search results.
+ - Fixed an issue where deactivated users appeared on "Add Members" modal but not on the search results.
  - Fixed an issue with multiple text entries when typing with Shift+Letter on Android.
  - Fixed an issue where push notifications badges did not always clear when read on another device.
  - Fixed an issue where timezone did not automatically update on Android when travelling to another timezone.
- - Fixed an issue on Android where extra text in search box appeared after using autocomplete drop down.
- - Fixed an issue where System Admins were able to see full long press menu when long pressing a system message.
+ - Fixed an issue on Android where extra text in the search box appeared after using the autocomplete drop-down.
+ - Fixed an issue where the user mention autocomplete drop-down was case sensitive.
+ - Fixed an issue where system admininistrators were able to see the full long press menu when long pressing a system message.
  - Fixed an issue on iOS where opening a single or group notification did not take the user into the channel where the notification came from.
- - Fixed an issue where the user mention autocomplete drop down was case sensitive.
  - Fixed an issue on iOS where users were not able to unflag posts from "Flagged Posts" when opened from a read-only channel.
  - Fixed an issue on iOS where users were unable to create channel names of 2 byte characters.
-
 
 ## 1.17.0 Release
 - Release Date: March 20, 2019
