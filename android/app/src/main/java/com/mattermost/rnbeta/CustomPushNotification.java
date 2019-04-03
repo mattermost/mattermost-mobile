@@ -236,7 +236,7 @@ public class CustomPushNotification extends PushNotification {
             // HERE ADD THE DOT INDICATOR STUFF
         }
 
-        Notification.MessagingStyle messagingStyle = new Notification.MessagingStyle("");
+        Notification.MessagingStyle messagingStyle = new Notification.MessagingStyle("You");
         if (title != null && !title.startsWith("@")) {
             messagingStyle
                     .setConversationTitle(title);
@@ -366,7 +366,7 @@ public class CustomPushNotification extends PushNotification {
             return senderName;
         }
 
-        return "";
+        return " ";
     }
 
     private String removeSenderFromMessage(String message) {
