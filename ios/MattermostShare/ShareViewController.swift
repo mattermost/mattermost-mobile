@@ -175,10 +175,12 @@ class ShareViewController: SLComposeServiceViewController {
           dispatchGroup.enter()
           itemProvider.loadItem(forTypeIdentifier: kUTTypeMovie as String, options: nil, completionHandler: ({item, error in
             if error == nil {
-              let attachment = self.saveAttachment(url: item as! URL)
-              if (attachment != nil) {
-                attachment?.type = kUTTypeMovie as String
-                self.attachments.append(attachment!)
+              if let url = item as? URL {
+                let attachment = self.saveAttachment(url: url)
+                if (attachment != nil) {
+                  attachment?.type = kUTTypeMovie as String
+                  self.attachments.append(attachment!)
+                }
               }
             }
             self.dispatchGroup.leave()
@@ -187,10 +189,12 @@ class ShareViewController: SLComposeServiceViewController {
           dispatchGroup.enter()
           itemProvider.loadItem(forTypeIdentifier: kUTTypeImage as String, options: nil, completionHandler: ({item, error in
             if error == nil {
-              let attachment = self.saveAttachment(url: item as! URL)
-              if (attachment != nil) {
-                attachment?.type = kUTTypeImage as String
-                self.attachments.append(attachment!)
+              if let url = item as? URL {
+                let attachment = self.saveAttachment(url: url)
+                if (attachment != nil) {
+                  attachment?.type = kUTTypeImage as String
+                  self.attachments.append(attachment!)
+                }
               }
             }
             self.dispatchGroup.leave()
@@ -199,10 +203,12 @@ class ShareViewController: SLComposeServiceViewController {
           dispatchGroup.enter()
           itemProvider.loadItem(forTypeIdentifier: kUTTypeFileURL as String, options: nil, completionHandler: ({item, error in
             if error == nil {
-              let attachment = self.saveAttachment(url: item as! URL)
-              if (attachment != nil) {
-                attachment?.type = kUTTypeFileURL as String
-                self.attachments.append(attachment!)
+              if let url = item as? URL {
+                let attachment = self.saveAttachment(url: url)
+                if (attachment != nil) {
+                  attachment?.type = kUTTypeFileURL as String
+                  self.attachments.append(attachment!)
+                }
               }
             }
             self.dispatchGroup.leave()
