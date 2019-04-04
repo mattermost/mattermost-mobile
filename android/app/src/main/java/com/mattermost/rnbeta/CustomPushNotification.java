@@ -363,7 +363,12 @@ public class CustomPushNotification extends PushNotification {
             return channelName;
         }
 
-        return message.split(":")[0];
+        String senderName = message.split(":")[0];
+        if (senderName != message) {
+            return senderName;
+        }
+
+        return " ";
     }
 
     private String removeSenderFromMessage(String message) {
