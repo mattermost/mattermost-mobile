@@ -3,7 +3,18 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {
+    Alert,
+    BackHandler,
+    Keyboard,
+    Platform,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    NativeModules,
+    NativeEventEmitter,
+} from 'react-native';
 import {intlShape} from 'react-intl';
 import Button from 'react-native-button';
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -93,11 +104,16 @@ export default class PostTextbox extends PureComponent {
     componentDidMount() {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.on(event, this.handleInsertTextToDraft);
+        Keyboard.addListener('keyboardDidShow', this.onKeyboardShow);
+        Keyboard.addListener('keyboardDidHide', this.onKeyboardHide);
+
         if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidShow', this.androidKeyboardDidShow);
-            Keyboard.addListener('keyboardDidHide', this.androidKeyboardDidHide);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
-            this.listenerId = mattermostManaged.addEventListener('hardwareEnter', this.handleAndroidEnterKey);
+            this.listenerId = mattermostManaged.addEventListener('hardwareEnter', this.handleHardwareEnterKey);
+        } else if (Platform.OS === 'ios') {
+            const {EventEmitModule} = NativeModules;
+            this.eventEmitter = new NativeEventEmitter(EventEmitModule);
+            this.eventEmitter.addListener('handleIosEnter', this.handleHardwareEnterKey);
         }
     }
 
@@ -110,11 +126,14 @@ export default class PostTextbox extends PureComponent {
     componentWillUnmount() {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.off(event, this.handleInsertTextToDraft);
+        Keyboard.removeListener('keyboardDidShow', this.onKeyboardShow);
+        Keyboard.removeListener('keyboardDidHide', this.onKeyboardHide);
+
         if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidShow', this.androidKeyboardDidShow);
-            Keyboard.removeListener('keyboardDidHide', this.androidKeyboardDidHide);
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
             mattermostManaged.removeEventListener(this.listenerId);
+        } else if (Platform.OS === 'ios') {
+            this.eventEmitter.removeListener('handleIosEnter', this.handleHardwareEnterKey);
         }
     }
 
@@ -180,19 +199,19 @@ export default class PostTextbox extends PureComponent {
         }
     };
 
-    handleAndroidEnterKey = () => {
+    handleHardwareEnterKey = () => {
         if (this.state.keyboardState === 'hidden') {
             this.handleSendMessage();
         }
     };
 
-    androidKeyboardDidShow = () => {
+    onKeyboardShow = () => {
         this.setState({
             keyboardState: 'shown',
         });
     };
 
-    androidKeyboardDidHide = () => {
+    onKeyboardHide = () => {
         this.setState({
             keyboardState: 'hidden',
         });

@@ -104,6 +104,7 @@
 		C035DB50ED2045F09923FFAE /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 04AA5E8EF3B54735A11E3B95 /* MaterialCommunityIcons.ttf */; };
 		C337E8708D2845C6A8DBB47E /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2DCFD31D3F4A4154822AB532 /* Ionicons.ttf */; };
 		C99BB3F4E4564F01A531FBEA /* Roboto-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 09FA716C56874BDDA30FE8C4 /* Roboto-Medium.ttf */; };
+		CB794CB02256D97F007944B6 /* EventEmitModule.m in Sources */ = {isa = PBXBuildFile; fileRef = CB794CAE2256D97F007944B6 /* EventEmitModule.m */; };
 		D719A67137964F08BE47A5FC /* OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */; };
 		DA32194224944F1DBD27C485 /* FontAwesome5_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 59A2AAD141C34AA7B4655F27 /* FontAwesome5_Regular.ttf */; };
 		DDE492F7425D451884DAA088 /* Roboto-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6EFF13DD24CE4E26953E598A /* Roboto-Black.ttf */; };
@@ -804,6 +805,8 @@
 		C46342B0E5FD4D878AF3A129 /* Roboto-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-BoldItalic.ttf"; path = "../assets/fonts/Roboto-BoldItalic.ttf"; sourceTree = "<group>"; };
 		C5BD64DE829E455A997DCAD5 /* Roboto-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Regular.ttf"; path = "../assets/fonts/Roboto-Regular.ttf"; sourceTree = "<group>"; };
 		C78A387124874496AD2C1466 /* OpenSans-Semibold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Semibold.ttf"; path = "../assets/fonts/OpenSans-Semibold.ttf"; sourceTree = "<group>"; };
+		CB794CAE2256D97F007944B6 /* EventEmitModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EventEmitModule.m; path = Mattermost/EventEmitModule.m; sourceTree = "<group>"; };
+		CB794CAF2256D97F007944B6 /* EventEmitModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EventEmitModule.h; path = Mattermost/EventEmitModule.h; sourceTree = "<group>"; };
 		CF19152887874B7E996210B1 /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D0281D64B98143668D6AD42B /* RNLocalAuth.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNLocalAuth.xcodeproj; path = "../node_modules/react-native-local-auth/RNLocalAuth.xcodeproj"; sourceTree = "<group>"; };
 		D08F54E10DF14AE4BBF4E2B4 /* Roboto-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-MediumItalic.ttf"; path = "../assets/fonts/Roboto-MediumItalic.ttf"; sourceTree = "<group>"; };
@@ -1016,6 +1019,8 @@
 		13B07FAE1A68108700A75B9A /* Mattermost */ = {
 			isa = PBXGroup;
 			children = (
+				CB794CAF2256D97F007944B6 /* EventEmitModule.h */,
+				CB794CAE2256D97F007944B6 /* EventEmitModule.m */,
 				7F151D43221B082A00FAD8F3 /* Mattermost-Bridging-Header.h */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -2410,6 +2415,7 @@
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */,
+				CB794CB02256D97F007944B6 /* EventEmitModule.m in Sources */,
 				7FEB109E1F61019C0039A015 /* UIImage+ImageEffects.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				7FEB10981F6101710039A015 /* BlurAppScreen.m in Sources */,

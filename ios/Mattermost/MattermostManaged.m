@@ -10,6 +10,7 @@
 #import <React/RCTEventDispatcher.h>
 #import "RCTUITextView.h"
 #import "MattermostManaged.h"
+#import "EventEmitModule.h"
 
 @implementation MattermostManaged
 
@@ -83,6 +84,21 @@ RCT_EXPORT_METHOD(quitApp)
 @end
 
 @implementation RCTUITextView (DisableCopyPaste)
+
+- (BOOL)canBecomeFirstResponder
+{
+  return YES;
+}
+
+- (NSArray<UIKeyCommand *>*)keyCommands
+{
+  return @[[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:nil action:@selector(handleEnter:)]];
+}
+
+- (void)handleEnter:(UIKeyCommand *)sender
+{
+  [EventEmitModule emitEventWithName:@"handleIosEnter" andPayload:nil];
+}
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
