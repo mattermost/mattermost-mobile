@@ -195,6 +195,19 @@ class ShareViewController: SLComposeServiceViewController {
                   attachment?.type = kUTTypeImage as String
                   self.attachments.append(attachment!)
                 }
+              } else if let image = item as? UIImage {
+                if let data = image.pngData() {
+                  let url = URL(fileURLWithPath: NSTemporaryDirectory())
+                    .appendingPathComponent(UUID().uuidString)
+                    .appendingPathExtension(".png")
+                  if (try? data.write(to: url)) != nil {
+                    let attachment = self.saveAttachment(url: url)
+                    if (attachment != nil) {
+                      attachment?.type = kUTTypeImage as String
+                      self.attachments.append(attachment!)
+                    }
+                  }
+                }
               }
             }
             self.dispatchGroup.leave()
