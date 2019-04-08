@@ -2,9 +2,3 @@
 // See LICENSE.txt for license information.
 
 export const DEFAULT_MIME_TYPE = 'image/png';
-
-export const mimeTypeExtensions = {
-    'image/png': '.png',
-    'image/gif': '.gif',
-    'image/jpeg': '.jpeg',
-};

@@ -9,7 +9,8 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants';
-import {DEFAULT_MIME_TYPE, mimeTypeExtensions} from 'app/constants/image';
+import {DEFAULT_MIME_TYPE} from 'app/constants/image';
+import {getExtensionFromMime} from 'app/utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
 
 const {IMAGES_PATH} = DeviceTypes;
@@ -55,7 +56,7 @@ export default class ImageCacheManager {
                     }
 
                     const mimeType = this.downloadTask.respInfo.headers['Content-Type'];
-                    const ext = mimeTypeExtensions[mimeType] || mimeTypeExtensions[DEFAULT_MIME_TYPE];
+                    const ext = `.${getExtensionFromMime(mimeType) || getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
                     if (path.endsWith(ext)) {
                         notifyAll(uri, `${prefix}${path}`);
                     } else {
@@ -81,7 +82,7 @@ export default class ImageCacheManager {
 
 export const getCacheFile = async (name, uri) => {
     const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
-    const defaultExt = mimeTypeExtensions[DEFAULT_MIME_TYPE];
+    const defaultExt = `.${getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
     const ext = filename.indexOf('.') === -1 ? defaultExt : filename.substring(filename.lastIndexOf('.'));
     let path = `${IMAGES_PATH}/${Math.abs(hashCode(uri))}${ext}`;
 
