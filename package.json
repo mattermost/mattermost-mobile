@@ -43,7 +43,7 @@
     "react-native-linear-gradient": "2.5.3",
     "react-native-local-auth": "github:mattermost/react-native-local-auth#cc9ce2f468fbf7b431dfad3191a31aaa9227a6ab",
     "react-native-navigation": "github:migbot/react-native-navigation#03c623c373f818827a463ca0fe90f86f56e71b2f",
-    "react-native-notifications": "github:mattermost/react-native-notifications#fcfed22dfee7a02e43f4d8acc5cf6310fa18bd6a",
+    "react-native-notifications": "github:mattermost/react-native-notifications#c58499aedf9bd4c9a405196ec807019ed316f2bb",
     "react-native-passcode-status": "1.1.1",
     "react-native-permissions": "1.1.1",
     "react-native-recyclerview-list": "mattermost/react-native-recyclerview-list#a2d26bc7b2623cae25e947ba3905f702434717bf",
