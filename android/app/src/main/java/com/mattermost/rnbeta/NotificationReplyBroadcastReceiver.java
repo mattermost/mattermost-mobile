@@ -133,7 +133,6 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         Notification notification =
                 new Notification.Builder(mContext, CHANNEL_ID)
                         .setContentTitle("Message failed to send.")
-                        .setContentText(packageName)
                         .setSmallIcon(smallIconResId)
                         .build();
 

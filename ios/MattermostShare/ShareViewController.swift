@@ -19,6 +19,7 @@ class ShareViewController: SLComposeServiceViewController {
   private var serverURL: String?
   private var message: String?
   private var publicURL: String?
+  private var tempContainerURL: URL? = UploadSessionManager.shared.tempContainerURL() as URL?
   
   fileprivate var selectedChannel: Item?
   fileprivate var selectedTeam: Item?
@@ -121,6 +122,7 @@ class ShareViewController: SLComposeServiceViewController {
       channels.tapHandler = {
         let vc = ChannelsViewController()
         vc.channelDecks = channelDecks!
+        vc.navbarTitle = self.selectedTeam?.title
         vc.delegate = self
         self.pushConfigurationViewController(vc)
       }
@@ -161,6 +163,7 @@ class ShareViewController: SLComposeServiceViewController {
       if id == currentChannelId {
         item.selected = true
         selectedChannel = item
+        placeholder = "Write to \(item.title!)"
       }
       section.items.append(item)
     }
@@ -194,6 +197,19 @@ class ShareViewController: SLComposeServiceViewController {
                 if (attachment != nil) {
                   attachment?.type = kUTTypeImage as String
                   self.attachments.append(attachment!)
+                }
+              } else if let image = item as? UIImage {
+                if let data = image.pngData() {
+                  let tempImageURL = self.tempContainerURL?
+                    .appendingPathComponent(UUID().uuidString)
+                    .appendingPathExtension(".png")
+                  if (try? data.write(to: tempImageURL!)) != nil {
+                    let attachment = self.saveAttachment(url: tempImageURL!)
+                    if (attachment != nil) {
+                      attachment?.type = kUTTypeImage as String
+                      self.attachments.append(attachment!)
+                    }
+                  }
                 }
               }
             }
@@ -339,16 +355,17 @@ class ShareViewController: SLComposeServiceViewController {
   }
 
   func saveAttachment(url: URL) -> AttachmentItem? {
-    let tempURL: URL? = UploadSessionManager.shared.tempContainerURL() as URL?
     let fileMgr = FileManager.default
     let fileName = url.lastPathComponent
-    let tempFileURL = tempURL?.appendingPathComponent(fileName)
+    let tempFileURL = tempContainerURL?.appendingPathComponent(fileName)
 
     do {
-      try? FileManager.default.removeItem(at: tempFileURL!)
-      try fileMgr.copyItem(at: url, to: tempFileURL!)
-      let attr = try fileMgr.attributesOfItem(atPath: (tempFileURL?.path)!) as NSDictionary
+      if (tempFileURL != url) {
+        try? FileManager.default.removeItem(at: tempFileURL!)
+        try fileMgr.copyItem(at: url, to: tempFileURL!)
+      }
 
+      let attr = try fileMgr.attributesOfItem(atPath: (tempFileURL?.path)!) as NSDictionary
       let attachment = AttachmentItem()
       attachment.fileName = fileName
       attachment.fileURL = tempFileURL
