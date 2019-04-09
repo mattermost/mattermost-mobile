@@ -162,29 +162,21 @@ class ChannelIntro extends PureComponent {
         if (creator) {
             const creatorName = this.getDisplayName(creator);
             mainMessageIntl = {
-                id: 'intro_messages.creator',
-                defaultMessage: 'This is the start of the {name} {type}, created by {creator} on {date}.',
+                id: t('intro_messages.creator'),
+                defaultMessage: 'This is the start of the {name} channel, created by {creator} on {date}.',
                 values: {
                     name: currentChannel.display_name,
                     creator: creatorName,
                     date,
-                    type: intl.formatMessage({
-                        id: 'intro_messages.channel',
-                        defaultMessage: 'channel',
-                    }),
                 },
             };
         } else {
             mainMessageIntl = {
                 id: t('intro_messages.noCreator'),
-                defaultMessage: 'This is the start of the {name} {type}, created on {date}.',
+                defaultMessage: 'This is the start of the {name} channel, created on {date}.',
                 values: {
                     name: currentChannel.display_name,
                     date,
-                    type: intl.formatMessage({
-                        id: 'intro_messages.channel',
-                        defaultMessage: 'channel',
-                    }),
                 },
             };
         }
@@ -228,16 +220,12 @@ class ChannelIntro extends PureComponent {
         });
 
         const mainMessage = intl.formatMessage({
-            id: 'intro_messages.creator',
-            defaultMessage: 'This is the start of the {name} {type}, created by {creator} on {date}.',
+            id: 'intro_messages.creatorPrivate',
+            defaultMessage: 'This is the start of the {name} private channel, created by {creator} on {date}.',
         }, {
             name: currentChannel.display_name,
             creator: creatorName,
             date,
-            type: intl.formatMessage({
-                id: 'intro_messages.group',
-                defaultMessage: 'private channel',
-            }),
         });
 
         const onlyInvitedMessage = intl.formatMessage({
