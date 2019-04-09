@@ -237,9 +237,7 @@ can-build-pr:
 	fi
 
 i18n-extract: ## Extract strings for translation from the source code
-	@[[ -d $(MM_UTILITIES_DIR) ]] || echo "You must clone github.com/mattermost/mattermost-utilities repo in .. to use this command"
-	@[[ -d $(MM_UTILITIES_DIR) ]] && cd $(MM_UTILITIES_DIR) && npm install && npm run babel && node mmjstool/build/index.js i18n extract-mobile
-
+	npm run mmjstool -- i18n extract-mobile
 
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
