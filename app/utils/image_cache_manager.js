@@ -9,11 +9,11 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants';
-import {DEFAULT_MIME_TYPE} from 'app/constants/image';
 import {getExtensionFromMime} from 'app/utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
 
 const {IMAGES_PATH} = DeviceTypes;
+const DEFAULT_MIME_TYPE = 'image/png';
 let siteUrl;
 
 export default class ImageCacheManager {
