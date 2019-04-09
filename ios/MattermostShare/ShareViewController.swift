@@ -122,6 +122,7 @@ class ShareViewController: SLComposeServiceViewController {
       channels.tapHandler = {
         let vc = ChannelsViewController()
         vc.channelDecks = channelDecks!
+        vc.navbarTitle = self.selectedTeam?.title
         vc.delegate = self
         self.pushConfigurationViewController(vc)
       }
@@ -162,6 +163,7 @@ class ShareViewController: SLComposeServiceViewController {
       if id == currentChannelId {
         item.selected = true
         selectedChannel = item
+        placeholder = "Write to \(item.title!)"
       }
       section.items.append(item)
     }

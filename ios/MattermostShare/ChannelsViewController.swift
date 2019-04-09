@@ -15,15 +15,30 @@ class ChannelsViewController: UIViewController {
     return tableView
   }()
   
+  var navbarTitle: String? = "Channels"
   var channelDecks = [Section]()
   var filteredDecks: [Section]?
   weak var delegate: ChannelsViewControllerDelegate?
+  
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    if #available(iOS 11.0, *) {
+      navigationItem.hidesSearchBarWhenScrolling = false
+    }
+  }
+
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    if #available(iOS 11.0, *) {
+      navigationItem.hidesSearchBarWhenScrolling = true
+    }
+  }
   
   override func viewDidLoad() {
     super.viewDidLoad()
     
     filteredDecks = channelDecks
-    title = "Channels"
+    title = navbarTitle
     configureSearchBar()
     view.addSubview(tableView)
   }
@@ -34,13 +49,17 @@ class ChannelsViewController: UIViewController {
     searchController.dimsBackgroundDuringPresentation = false
     searchController.searchBar.searchBarStyle = .minimal
     searchController.searchBar.autocapitalizationType = .none
+    searchController.searchBar.delegate = self
+
+    self.definesPresentationContext = true
     
     if #available(iOS 11.0, *) {
       // For iOS 11 and later, place the search bar in the navigation bar.
-      self.definesPresentationContext = true
       
-      // Make the search bar always visible.
-      navigationItem.hidesSearchBarWhenScrolling = true
+      // Give space at the top so provide a better look and feel
+      let offset = UIOffset(horizontal: 0.0, vertical: 6.0)
+      searchController.searchBar.searchFieldBackgroundPositionAdjustment = offset
+      
       
       navigationItem.searchController = searchController
     } else {
@@ -130,5 +149,27 @@ extension ChannelsViewController: UISearchBarDelegate {
   
   func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
     searchBar.showsCancelButton = true
+    
+    // Center the Cancel Button
+    if #available(iOS 11.0, *) {
+      searchBar.cancelButton?.titleEdgeInsets = UIEdgeInsets(top: 12.0, left: 0, bottom: 0, right: 0)
+    }
+  }
+}
+
+// get the cancel button of the Search Bar
+extension UISearchBar {
+  var cancelButton : UIButton? {
+    let topView: UIView = self.subviews[0] as UIView
+    
+    if let pvtClass = NSClassFromString("UINavigationButton") {
+      for v in topView.subviews {
+        if v.isKind(of: pvtClass) {
+          return v as? UIButton
+        }
+      }
+    }
+    
+    return nil
   }
 }
