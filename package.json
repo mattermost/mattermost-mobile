@@ -95,6 +95,7 @@
     "jest-cli": "24.1.0",
     "jsdom-global": "3.0.2",
     "metro-react-native-babel-preset": "0.51.1",
+    "mmjstool": "github:mattermost/mattermost-utilities",
     "nyc": "13.3.0",
     "react-dom": "16.8.2",
     "redux-mock-store": "1.5.3",
@@ -110,7 +111,8 @@
     "test": "jest --forceExit --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "updatesnapshot": "jest --updateSnapshot"
+    "updatesnapshot": "jest --updateSnapshot",
+    "mmjstool": "mmjstool"
   },
   "rnpm": {
     "assets": [
