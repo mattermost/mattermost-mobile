@@ -241,6 +241,7 @@ export default class PostBody extends PureComponent {
 
     renderPostAdditionalContent = (blockStyles, messageStyle, textStyles) => {
         const {
+            isPostEphemeral,
             isReplyPost,
             isSystemMessage,
             message,
@@ -252,7 +253,7 @@ export default class PostBody extends PureComponent {
             postProps,
         } = this.props;
 
-        if (isSystemMessage) {
+        if (isSystemMessage && !isPostEphemeral) {
             return null;
         }
 
