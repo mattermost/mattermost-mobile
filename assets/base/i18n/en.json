@@ -468,6 +468,7 @@
   "post_body.check_for_out_of_channel_mentions.message_last": "? They will have access to all message history.",
   "post_body.check_for_out_of_channel_mentions.message.multiple": "were mentioned but they are not in the channel. Would you like to ",
   "post_body.check_for_out_of_channel_mentions.message.one": "was mentioned but is not in the channel. Would you like to ",
+  "post_body.check_for_out_of_channel_groups_mentions.message": "did not get notified by this mention because they are not in the channel. They are also not a member of the groups linked to this channel.",
   "post_body.commentedOn": "Commented on {name}{apostrophe} message: ",
   "post_body.deleted": "(message deleted)",
   "post_info.auto_responder": "AUTOMATIC REPLY",

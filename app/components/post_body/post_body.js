@@ -201,8 +201,9 @@ export default class PostBody extends PureComponent {
                 onPostPress={onPress}
                 textStyles={textStyles}
                 postId={postProps.add_channel_member.post_id}
-                userIds={postProps.add_channel_member.user_ids}
-                usernames={postProps.add_channel_member.usernames}
+                userIds={postProps.add_channel_member.not_in_channel_user_ids}
+                usernames={postProps.add_channel_member.not_in_channel_usernames}
+                noGroupsUsernames={postProps.add_channel_member.not_in_groups_usernames}
             />
         );
     };
