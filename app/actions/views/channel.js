@@ -561,8 +561,7 @@ export function setChannelDisplayName(displayName) {
 export function increasePostVisibility(channelId, postId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {loadingPosts} = state.views.channel;
-        const {postVisibility} = state.views.channel;
+        const {loadingPosts, postVisibility} = state.views.channel;
         const currentPostVisibility = postVisibility[channelId] || 0;
 
         if (loadingPosts[channelId]) {
