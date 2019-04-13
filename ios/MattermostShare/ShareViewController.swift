@@ -45,7 +45,7 @@ class ShareViewController: SLComposeServiceViewController {
     let maxMessageSize = store.getMaxPostSize()
     //Check content text size is not above max
     if (contentText.count > maxMessageSize) {
-      showErrorMessage(title: "", message: "Content text shared in Mattermost must be less than \(maxMessageSize) characters.", VC: self)
+      showErrorMessage(title: "", message: "Content text shared in Mattermost must be less than \(maxMessageSize+1) characters.", VC: self)
     } else if (attachments.count > 0) { // Do validation of contentText and/or NSExtensionContext attachments
       let maxFileSize = store.getMaxFileSize()
       //Check attachment size is not above max
