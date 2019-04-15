@@ -30,7 +30,7 @@ export default class PostAddChannelMember extends React.PureComponent {
         postId: PropTypes.string.isRequired,
         userIds: PropTypes.array.isRequired,
         usernames: PropTypes.array.isRequired,
-        noGroupsUsernames: PropTypes.array.isRequired,
+        noGroupsUsernames: PropTypes.array,
         navigator: PropTypes.object.isRequired,
         onPostPress: PropTypes.func,
         textStyles: PropTypes.object,
@@ -166,7 +166,7 @@ export default class PostAddChannelMember extends React.PureComponent {
         let outOfGroupsMessageID;
         let outOfGroupsMessageText;
         const outOfGroupsAtMentions = this.generateAtMentions(noGroupsUsernames, baseTextStyle);
-        if (noGroupsUsernames.length) {
+        if (noGroupsUsernames?.length) {
             outOfGroupsMessageID = t('post_body.check_for_out_of_channel_groups_mentions.message');
             outOfGroupsMessageText = 'did not get notified by this mention because they are not in the channel. They are also not a member of the groups linked to this channel.';
         }
@@ -202,7 +202,7 @@ export default class PostAddChannelMember extends React.PureComponent {
         }
 
         let outOfGroupsMessage = null;
-        if (noGroupsUsernames.length) {
+        if (noGroupsUsernames?.length) {
             outOfGroupsMessage = (
                 <Text>
                     {outOfGroupsAtMentions}
