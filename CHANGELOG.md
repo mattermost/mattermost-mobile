@@ -33,6 +33,9 @@
  - Fixed an issue where system admininistrators were able to see the full long press menu when long pressing a system message.
  - Fixed an issue where users were not able to unflag posts from "Flagged Posts" when opened from a read-only channel.
  - Fixed an issue where users were unable to create channel names of 2 byte characters.
+ 
+### Known Issues
+ - Content for ephemeral messages is not displayed on Mattermost Mobile Apps.
 
 ## 1.17.0 Release
 - Release Date: March 20, 2019
