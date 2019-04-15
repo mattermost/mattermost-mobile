@@ -17,7 +17,7 @@ class TeamsViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     
-    title = "Teams"
+    title = "Team"
     view.addSubview(tableView)
   }
   

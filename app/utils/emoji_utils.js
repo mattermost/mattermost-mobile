@@ -20,7 +20,7 @@ const RE_EMOTICON = {
     stuck_out_tongue: /(^|\s)(:-?p)(?=$|\s)/gi, // :p
     rage: /(^|\s)(:-?[[@])(?=$|\s)/g, // :@
     slightly_frowning_face: /(^|\s)(:-?\()(?=$|\s)/g, // :(
-    cry: /(^|\s)(:['’]-?\(|:&#x27;\(|:&#39;\()(?=$|\s)/g, // :`(
+    cry: /(^|\s)(:[`'’]-?\(|:&#x27;\(|:&#39;\()(?=$|\s)/g, // :`(
     confused: /(^|\s)(:-?\/)(?=$|\s)/g, // :/
     confounded: /(^|\s)(:-?s)(?=$|\s)/gi, // :s
     neutral_face: /(^|\s)(:-?\|)(?=$|\s)/g, // :|
@@ -44,6 +44,10 @@ function isEmoticon(text) {
     }
 
     return false;
+}
+
+export function getEmoticonName(value) {
+    return Object.keys(RE_EMOTICON).find((key) => value.match(RE_EMOTICON[key]) !== null);
 }
 
 export function hasEmojisOnly(message, customEmojis) {

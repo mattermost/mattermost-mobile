@@ -86,6 +86,7 @@ function mapStateToProps(state, ownProps) {
         canCopyPermalink = false;
         canEdit = false;
         canPin = false;
+        canFlag = false;
     }
     if (ownProps.hasBeenDeleted) {
         canDelete = false;
