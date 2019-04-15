@@ -17,7 +17,6 @@ import {General, Permissions} from 'mattermost-redux/constants';
 import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
-import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
 import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
@@ -31,7 +30,7 @@ import {getDimensions} from 'app/selectors/device';
 import PostOptions from './post_options';
 
 function mapStateToProps(state, ownProps) {
-    const post = getPost(state, ownProps.postId) || {};
+    const post = ownProps.post;
     const channel = getChannel(state, post.channel_id) || {};
     const config = getConfig(state);
     const license = getLicense(state);
@@ -114,7 +113,6 @@ function mapStateToProps(state, ownProps) {
         canPin,
         currentTeamUrl: getCurrentTeamUrl(state),
         isMyPost: currentUserId === post.user_id,
-        post,
         theme: getTheme(state),
     };
 }

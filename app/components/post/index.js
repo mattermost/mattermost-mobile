@@ -16,13 +16,10 @@ import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 
 import Post from './post';
 
-function isConsecutivePost(state, ownProps) {
-    const post = getPost(state, ownProps.postId);
-    const previousPost = ownProps.previousPostId && getPost(state, ownProps.previousPostId);
-
+function isConsecutivePost(post, previousPost) {
     let consecutivePost = false;
 
-    if (previousPost) {
+    if (post && previousPost) {
         const postFromWebhook = Boolean(post?.props?.from_webhook); // eslint-disable-line camelcase
         const prevPostFromWebhook = Boolean(previousPost?.props?.from_webhook); // eslint-disable-line camelcase
         if (previousPost && previousPost.user_id === post.user_id &&
@@ -41,7 +38,9 @@ function makeMapStateToProps() {
     const getCommentCountForPost = makeGetCommentCountForPost();
     const isPostCommentMention = makeIsPostCommentMention();
     return function mapStateToProps(state, ownProps) {
-        const post = getPost(state, ownProps.postId);
+        const post = ownProps.post || getPost(state, ownProps.postId);
+        const previousPost = getPost(state, ownProps.previousPostId);
+
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
         const isCommentMention = isPostCommentMention(state, post.id);
@@ -51,7 +50,6 @@ function makeMapStateToProps() {
 
         if (ownProps.renderReplies && post && post.root_id) {
             if (ownProps.previousPostId) {
-                const previousPost = getPost(state, ownProps.previousPostId);
                 if (previousPost && (previousPost.id === post.root_id || previousPost.root_id === post.root_id)) {
                     // Previous post is root post or previous post is in same thread
                     isFirstReply = false;
@@ -76,7 +74,7 @@ function makeMapStateToProps() {
             post,
             isFirstReply,
             isLastReply,
-            consecutivePost: isConsecutivePost(state, ownProps),
+            consecutivePost: isConsecutivePost(post, previousPost),
             hasComments: getCommentCountForPost(state, {post}) > 0,
             commentedOnPost,
             theme: getTheme(state),

@@ -20,8 +20,7 @@ describe('Permalink', () => {
     };
 
     const actions = {
-        getPostsAfter: jest.fn(),
-        getPostsBefore: jest.fn(),
+        getPostsAround: jest.fn(),
         getPostThread: jest.fn(),
         getChannel: jest.fn(),
         handleSelectChannel: jest.fn(),

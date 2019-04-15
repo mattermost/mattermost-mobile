@@ -12,9 +12,10 @@ import {
     View,
 } from 'react-native';
 
+import {isDateLine} from 'mattermost-redux/utils/post_list';
+
 import ChannelLoader from 'app/components/channel_loader';
 import DateHeader from 'app/components/post_list/date_header';
-import {isDateLine} from 'app/components/post_list/date_header/utils';
 import FailedNetworkAction from 'app/components/failed_network_action';
 import NoResults from 'app/components/no_results';
 import PostSeparator from 'app/components/post_separator';
@@ -82,7 +83,7 @@ export default class PinnedPosts extends PureComponent {
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
-        actions.loadThreadIfNecessary(rootId, channelId);
+        actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
         const options = {
