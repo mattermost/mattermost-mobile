@@ -187,6 +187,7 @@ export default class Search extends Component {
             {
                 toValue: (text.length > 0) ? 1 : 0,
                 duration: 200,
+                useNativeDriver: true,
             }
         ).start();
 
@@ -212,6 +213,7 @@ export default class Search extends Component {
             {
                 toValue: 0,
                 duration: 200,
+                useNativeDriver: true,
             }
         ).start();
         this.focus();
@@ -243,57 +245,59 @@ export default class Search extends Component {
                         toValue: this.contentWidth - 70,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.inputFocusAnimated,
                     {
                         toValue: this.state.leftComponentWidth,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.leftComponentAnimated,
                     {
                         toValue: this.contentWidth,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.btnCancelAnimated,
                     {
                         toValue: this.state.leftComponentWidth ? 15 - this.state.leftComponentWidth : 10,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.inputFocusPlaceholderAnimated,
                     {
                         toValue: this.props.placeholderExpandedMargin,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.iconSearchAnimated,
                     {
                         toValue: this.props.searchIconExpandedMargin,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.iconDeleteAnimated,
                     {
                         toValue: (this.props.value.length > 0) ? 1 : 0,
                         duration: 200,
+                        useNativeDriver: true,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.shadowOpacityAnimated,
                     {
                         toValue: this.props.shadowOpacityExpanded,
                         duration: 200,
+                        useNativeDriver: true,
                     }
-                ).start(),
-            ]);
+                ),
+            ]).start();
             this.shadowHeight = this.props.shadowOffsetHeightExpanded;
             resolve();
         });
@@ -309,28 +313,28 @@ export default class Search extends Component {
                         toValue: this.contentWidth - this.state.leftComponentWidth - 10,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.inputFocusAnimated,
                     {
                         toValue: 0,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.leftComponentAnimated,
                     {
                         toValue: 0,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.btnCancelAnimated,
                     {
                         toValue: this.contentWidth,
                         duration: 200,
                     }
-                ).start(),
+                ),
                 ((this.props.keyboardShouldPersist === false) ?
                     Animated.timing(
                         this.inputFocusPlaceholderAnimated,
@@ -338,7 +342,7 @@ export default class Search extends Component {
                             toValue: this.props.placeholderCollapsedMargin,
                             duration: 200,
                         }
-                    ).start() : null),
+                    ) : null),
                 ((this.props.keyboardShouldPersist === false || isForceAnim === true) ?
                     Animated.timing(
                         this.iconSearchAnimated,
@@ -346,22 +350,24 @@ export default class Search extends Component {
                             toValue: this.props.searchIconCollapsedMargin + this.state.leftComponentWidth,
                             duration: 200,
                         }
-                    ).start() : null),
+                    ) : null),
                 Animated.timing(
                     this.iconDeleteAnimated,
                     {
                         toValue: 0,
                         duration: 200,
+                        useNativeDriver: true,
                     }
-                ).start(),
+                ),
                 Animated.timing(
                     this.shadowOpacityAnimated,
                     {
                         toValue: this.props.shadowOpacityCollapsed,
                         duration: 200,
+                        useNativeDriver: true,
                     }
-                ).start(),
-            ]);
+                ),
+            ]).start();
             this.shadowHeight = this.props.shadowOffsetHeightCollapsed;
             resolve();
         });
