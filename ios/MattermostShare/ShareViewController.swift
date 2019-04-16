@@ -19,6 +19,7 @@ class ShareViewController: SLComposeServiceViewController {
   private var serverURL: String?
   private var message: String?
   private var publicURL: String?
+  private var maxPostAlertShown: Bool = false
   private var tempContainerURL: URL? = UploadSessionManager.shared.tempContainerURL() as URL?
   
   fileprivate var selectedChannel: Item?
@@ -45,7 +46,11 @@ class ShareViewController: SLComposeServiceViewController {
     let maxMessageSize = store.getMaxPostSize()
     //Check content text size is not above max
     if (contentText.count > maxMessageSize) {
-      showErrorMessage(title: "", message: "Content text shared in Mattermost must be less than \(maxMessageSize+1) characters.", VC: self)
+      if !maxPostAlertShown {
+        maxPostAlertShown = true
+        showErrorMessageAndStayOpen(title: "", message: "Content text shared in Mattermost must be less than \(maxMessageSize+1) characters.", VC: self)
+      }
+      return false
     } else if (attachments.count > 0) { // Do validation of contentText and/or NSExtensionContext attachments
       let maxFileSize = store.getMaxFileSize()
       //Check attachment size is not above max
@@ -54,7 +59,7 @@ class ShareViewController: SLComposeServiceViewController {
         showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxSize).", VC: self)
       }
     }
-
+    
     return serverURL != nil &&
       sessionToken != nil &&
       attachmentsCount() == attachments.count &&
@@ -391,7 +396,14 @@ class ShareViewController: SLComposeServiceViewController {
     alert.addAction(okAction)
     VC.present(alert, animated: true, completion: nil)
   }
-
+  
+  func showErrorMessageAndStayOpen(title: String, message: String, VC: UIViewController) {
+    let alert: UIAlertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
+    let okAction = UIAlertAction(title: "OK", style: UIAlertAction.Style.default)
+    alert.addAction(okAction)
+    VC.present(alert, animated: true, completion: nil)
+  }
+  
   func formatFileSize(bytes: Double) -> String {
     guard bytes > 0 else {
       return "0 bytes"
