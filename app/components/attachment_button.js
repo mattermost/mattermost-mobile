@@ -27,6 +27,7 @@ export default class AttachmentButton extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
         browseFileTypes: PropTypes.string,
+        validMimeTypes: PropTypes.array,
         canBrowseFiles: PropTypes.bool,
         canBrowsePhotoLibrary: PropTypes.bool,
         canBrowseVideoLibrary: PropTypes.bool,
@@ -39,6 +40,7 @@ export default class AttachmentButton extends PureComponent {
         navigator: PropTypes.object.isRequired,
         onShowFileMaxWarning: PropTypes.func,
         onShowFileSizeWarning: PropTypes.func,
+        onShowUnsupportedMimeTypeWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
         wrapper: PropTypes.bool,
@@ -47,6 +49,7 @@ export default class AttachmentButton extends PureComponent {
 
     static defaultProps = {
         browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
+        validMimeTypes: [],
         canBrowseFiles: true,
         canBrowsePhotoLibrary: true,
         canBrowseVideoLibrary: true,
@@ -321,7 +324,10 @@ export default class AttachmentButton extends PureComponent {
             file.fileName = fileInfo.filename;
         }
 
-        if (file.fileSize > this.props.maxFileSize) {
+        const {validMimeTypes} = this.props;
+        if (validMimeTypes.length && !validMimeTypes.includes(file.type || '')) {
+            this.props.onShowUnsupportedMimeTypeWarning();
+        } else if (file.fileSize > this.props.maxFileSize) {
             this.props.onShowFileSizeWarning(file.fileName);
         } else {
             this.props.uploadFiles(files);
