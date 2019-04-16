@@ -15,7 +15,7 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {RequestStatus} from 'mattermost-redux/constants';
-import {isDateLine} from 'mattermost-redux/utils/post_list';
+import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
 
 import Autocomplete from 'app/components/autocomplete';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -379,7 +379,7 @@ export default class Search extends PureComponent {
         if (isDateLine(item)) {
             return (
                 <DateHeader
-                    dateLineString={item}
+                    date={getDateForDateLine(item)}
                     index={index}
                 />
             );
