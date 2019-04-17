@@ -103,6 +103,10 @@ export default class PostList extends PureComponent {
             this.handleDeepLink(this.props.deepLinkURL);
             this.props.actions.setDeepLinkURL('');
         }
+
+        this.lastPostIndex = this.getLastPostIndex(this.props.postIds);
+
+        telemetry.start(['posts:list_update']);
     }
 
     componentWillUnmount() {
@@ -199,8 +203,21 @@ export default class PostList extends PureComponent {
         return item;
     };
 
+    getLastPostIndex = (postIds) => {
+        let index = 0;
+        for (let i = postIds.length - 1; i > 0; i--) {
+            const item = postIds[i];
+            if (!isStartOfNewMessages(item) && !isDateLine(item)) {
+                index = i;
+                break;
+            }
+        }
+
+        return index;
+    }
+
     renderItem = ({item, index}) => {
-        if (PostListUtils.isStartOfNewMessages(item)) {
+        if (isStartOfNewMessages(item)) {
             // postIds includes a date item after the new message indicator so 2
             // needs to be added to the index for the length check to be correct.
             const moreNewMessages = this.props.postIds.length === index + 2;
@@ -212,10 +229,10 @@ export default class PostList extends PureComponent {
                     moreMessages={moreNewMessages}
                 />
             );
-        } else if (PostListUtils.isDateLine(item)) {
+        } else if (isDateLine(item)) {
             return (
                 <DateHeader
-                    date={PostListUtils.getDateForDateLine(item)}
+                    date={getDateForDateLine(item)}
                     index={index}
                 />
             );
@@ -241,7 +258,7 @@ export default class PostList extends PureComponent {
             shouldRenderReplyButton: this.props.shouldRenderReplyButton,
         };
 
-        if (PostListUtils.isCombinedUserActivityPost(item)) {
+        if (isCombinedUserActivityPost(item)) {
             return (
                 <CombinedUserActivityPost
                     combinedId={item}
@@ -256,6 +273,7 @@ export default class PostList extends PureComponent {
             <Post
                 postId={postId}
                 highlight={this.props.highlightPostId === postId}
+                isLastPost={this.lastPostIndex === index}
                 {...postProps}
             />
         );

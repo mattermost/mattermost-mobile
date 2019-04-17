@@ -23,6 +23,8 @@ import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swipper';
 import TeamsList from './teams_list';
 
+import telemetry from 'app/telemetry';
+
 const DRAWER_INITIAL_OFFSET = 40;
 const DRAWER_LANDSCAPE_OFFSET = 150;
 
@@ -41,6 +43,7 @@ export default class ChannelSidebar extends Component {
         deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTablet: PropTypes.bool.isRequired,
+        loadedChannelIds: PropTypes.array,
         navigator: PropTypes.object,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
@@ -164,12 +167,28 @@ export default class ChannelSidebar extends Component {
         }
     };
 
+    logTelemetry = (loadedChannelIds = [], channelId, currentChannelId) => {
+        if (channelId !== currentChannelId) {
+            const metrics = [];
+            if (loadedChannelIds.includes(channelId)) {
+                metrics.push('channel:switch_loaded');
+            } else {
+                metrics.push('channel:switch_initial');
+            }
+
+            telemetry.reset();
+            telemetry.start(metrics);
+        }
+    }
+
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
+        this.logTelemetry(this.props.loadedChannelIds, channel.id, currentChannelId);
         const {setChannelLoading} = this.props.actions;
 
         tracker.channelSwitch = Date.now();
 
         if (closeDrawer) {
+            telemetry.start(['channel:close_drawer']);
             this.closeChannelDrawer();
             setChannelLoading(channel.id !== currentChannelId);
         }

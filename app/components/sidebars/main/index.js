@@ -3,6 +3,7 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {createIdsSelector} from 'mattermost-redux/utils/helpers';
 
 import {joinChannel} from 'mattermost-redux/actions/channels';
 import {getTeams} from 'mattermost-redux/actions/teams';
@@ -15,11 +16,19 @@ import {isLandscape, isTablet, getDimensions} from 'app/selectors/device';
 
 import MainSidebar from './main_sidebar.js';
 
+export const getChannelIdsInPostsInChannel = createIdsSelector(
+    (state) => state.entities.posts.postsInChannel,
+    (postsInChannel) => {
+        return Object.keys(postsInChannel);
+    }
+);
+
 function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
 
     return {
         ...getDimensions(state),
+        loadedChannelIds: getChannelIdsInPostsInChannel(state),
         currentTeamId: getCurrentTeamId(state),
         currentUserId,
         isLandscape: isLandscape(state),

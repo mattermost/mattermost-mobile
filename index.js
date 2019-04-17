@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import 'react-native/Libraries/Core/InitializeCore';
-import {AppRegistry, Platform} from 'react-native';
+import {AppRegistry, DeviceEventEmitter, Platform} from 'react-native';
 import 'react-native-gesture-handler';
+
+import telemetry from 'app/telemetry';
 
 import 'app/mattermost';
 import ShareExtension from 'share_extension/android';
@@ -11,6 +13,16 @@ import ShareExtension from 'share_extension/android';
 if (Platform.OS === 'android') {
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
 }
+
+const metricsSubscription = DeviceEventEmitter.addListener('nativeMetrics', (metrics) => {
+    telemetry.include([
+        {name: 'start:process_packages', startTime: metrics.processPackagesStart, endTime: metrics.processPackagesEnd},
+        {name: 'start:content_appeared', startTime: metrics.appReload, endTime: metrics.appContentAppeared},
+    ]);
+    telemetry.start(['start:overall'], metrics.appReload);
+
+    DeviceEventEmitter.removeSubscription(metricsSubscription);
+});
 
 // Uncomment the snippet below if you want to update the modules
 // defined in packager/modulePaths.js so they are included in the main bundle.
