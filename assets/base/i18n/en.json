@@ -462,6 +462,7 @@
   "password_send.link": "If the account exists, a password reset email will be sent to:",
   "password_send.reset": "Reset my password",
   "permalink.error.access": "Permalink belongs to a deleted message or to a channel to which you do not have access.",
+  "post_body.check_for_out_of_channel_groups_mentions.message": "did not get notified by this mention because they are not in the channel. They are also not a member of the groups linked to this channel.",
   "post_body.check_for_out_of_channel_mentions.link.and": " and ",
   "post_body.check_for_out_of_channel_mentions.link.private": "add them to this private channel",
   "post_body.check_for_out_of_channel_mentions.link.public": "add them to the channel",
