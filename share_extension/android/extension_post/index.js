@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getCurrentChannel, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getAllChannels, getCurrentChannel, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
@@ -25,6 +25,7 @@ function mapStateToProps(state) {
 
     return {
         channelId: channel?.id,
+        channels: getAllChannels(state),
         currentUserId: getCurrentUserId(state),
         maxFileSize: getAllowedServerMaxFileSize(config),
         teamId: getCurrentTeamId(state),
