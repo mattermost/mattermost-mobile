@@ -70,7 +70,7 @@
   "combined_system_message.you": "You",
   "create_comment.addComment": "Add a comment...",
   "create_post.deactivated": "You are viewing an archived channel with a deactivated user.",
-  "create_post.write": "Write a message...",
+  "create_post.write": "Write to {channelDisplayName}",
   "edit_post.editPost": "Edit the post...",
   "edit_post.save": "Save",
   "error.team_not_found.title": "Team Not Found",
