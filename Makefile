@@ -80,6 +80,9 @@ post-install:
 	@cp ./native_modules/RNCWebViewManager.java node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManager.java
 	@cp ./native_modules/RNCWKWebView.m node_modules/react-native-webview/ios/RNCWKWebView.m
 
+	# Need to copy custom RNCookieManagerIOS.m that fixes a crash when cookies does not have expiration date set
+	@cp ./native_modules/RNCookieManagerIOS.m node_modules/react-native-cookies/ios/RNCookieManagerIOS/RNCookieManagerIOS.m
+
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
