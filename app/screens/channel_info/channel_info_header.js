@@ -160,6 +160,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         detail: {
             fontSize: 13,
             color: theme.centerChannelColor,
+            lineHeight: 20,
         },
         header: {
             fontSize: 13,
