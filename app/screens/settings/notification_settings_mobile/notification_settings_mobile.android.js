@@ -4,6 +4,7 @@
 import React from 'react';
 import {injectIntl} from 'react-intl';
 import {
+    Alert,
     Modal,
     Platform,
     ScrollView,
@@ -21,8 +22,17 @@ import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import NotificationSettingsMobileBase from './notification_settings_mobile_base';
+import {getNotificationProps} from '../../../utils/notify_props';
+import deepEqual from 'deep-equal';
+import {RequestStatus} from 'mattermost-redux/constants';
+import PropTypes from 'prop-types';
 
 class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
+    static propTypes = {
+        ...NotificationSettingsMobileBase.propTypes,
+        updateMeRequest: PropTypes.object.isRequired,
+    }
+
     cancelMobilePushModal = () => {
         this.setState({
             newPush: this.state.push,
@@ -354,6 +364,24 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         );
     }
 
+    componentWillReceiveProps(nextProps) {
+        super.componentWillReceiveProps(nextProps);
+
+        const {updateMeRequest, intl} = nextProps;
+        if (this.props.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.notification_settings.save_failed_title',
+                    defaultMessage: 'Connection issue',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.notification_settings.save_failed_description',
+                    defaultMessage: 'The notification settings failed to save due to a connection issue, please try again.',
+                })
+            );
+        }
+    }
+
     renderMobilePushSection() {
         const {config, theme} = this.props;
 
@@ -583,12 +611,49 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
 
     saveMobilePushModal = () => {
         this.setState({showMobilePushModal: false});
-        this.setMobilePush(this.state.newPush);
+        this.setMobilePush(this.state.newPush, this.saveNotificationProps);
     };
 
     saveMobilePushStatusModal = () => {
         this.setState({showMobilePushStatusModal: false});
-        this.setMobilePushStatus(this.state.newPushStatus);
+        this.setMobilePushStatus(this.state.newPushStatus, this.saveNotificationProps);
+    };
+
+    saveNotificationProps = () => {
+        const {
+            channel,
+            comments,
+            desktop,
+            email,
+            first_name: firstName,
+            mention_keys: mentionKeys,
+            push,
+            push_status: pushStatus,
+        } = this.state;
+
+        const {currentUser} = this.props;
+
+        const notifyProps = {
+            channel,
+            comments,
+            desktop,
+            email,
+            first_name: firstName,
+            mention_keys: mentionKeys,
+            push,
+            push_status: pushStatus,
+            user_id: currentUser.id,
+        };
+
+        const {user_id: userId} = notifyProps;
+        const previousProps = {
+            ...getNotificationProps(currentUser),
+            user_id: userId,
+        };
+
+        if (!deepEqual(previousProps, notifyProps)) {
+            this.props.actions.updateMe({notify_props: notifyProps});
+        }
     };
 
     saveMobileSoundsModal = () => {
