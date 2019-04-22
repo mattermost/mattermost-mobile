@@ -44,10 +44,16 @@ class ShareViewController: SLComposeServiceViewController {
   override func isContentValid() -> Bool {
     // Do validation of contentText and/or NSExtensionContext attachments here
     if (attachments.count > 0) {
+      let maxImageSize = store.getMaxImageSize()
+      if attachments.hasImageLargerThan(imageSize: maxImageSize) {
+        let readableMaxImageSize = formatFileSize(bytes: Double(maxImageSize))
+        showErrorMessage(title: "", message: "Image attachments shared in Mattermost must be less than \(readableMaxImageSize).", VC: self)
+      }
+
       let maxFileSize = store.getMaxFileSize()
       if attachments.hasAttachementLargerThan(fileSize: maxFileSize) {
-        let readableMaxSize = formatFileSize(bytes: Double(maxFileSize))
-        showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxSize).", VC: self)
+        let readableMaxFileSize = formatFileSize(bytes: Double(maxFileSize))
+        showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxFileSize).", VC: self)
       }
     }
 

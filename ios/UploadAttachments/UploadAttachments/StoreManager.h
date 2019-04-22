@@ -14,6 +14,7 @@
 -(NSString *)getCurrentUserId;
 -(NSDictionary *)getDefaultChannel:(NSString *)forTeamId;
 -(NSDictionary *)getEntities:(BOOL)loadFromFile;
+-(UInt64)getMaxImageSize;
 -(UInt64)getMaxFileSize;
 -(NSArray *)getMyTeams;
 -(NSString *)getServerUrl;

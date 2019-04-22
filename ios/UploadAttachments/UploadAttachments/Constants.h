@@ -3,5 +3,6 @@
 
 @interface Constants : NSObject
 extern NSString *APP_GROUP_ID;
+extern UInt64 DEFAULT_SERVER_MAX_IMAGE_SIZE;
 extern UInt64 DEFAULT_SERVER_MAX_FILE_SIZE;
 @end
