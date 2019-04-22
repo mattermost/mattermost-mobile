@@ -348,6 +348,7 @@ export default class Login extends PureComponent {
 
             proceed = (
                 <Button
+                    accessibilityLabel='Sign in button'
                     onPress={this.preSignIn}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
@@ -386,6 +387,7 @@ export default class Login extends PureComponent {
                         </View>
                         <ErrorText error={this.getLoginErrorMessage()}/>
                         <TextInput
+                            accessibilityLabel='Email address input'
                             ref={this.loginRef}
                             value={this.props.loginId}
                             onChangeText={this.props.actions.handleLoginIdChanged}
@@ -403,6 +405,7 @@ export default class Login extends PureComponent {
                         <TextInput
                             ref={this.passwordRef}
                             value={this.props.password}
+                            accessibilityLabel='Password input'
                             onChangeText={this.props.actions.handlePasswordChanged}
                             style={GlobalStyles.inputBox}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
@@ -416,6 +419,7 @@ export default class Login extends PureComponent {
                         />
                         {proceed}
                         <Button
+                            accessibilityLabel='Forgot password button'
                             onPress={this.forgotPassword}
                             containerStyle={[style.forgotPasswordBtn]}
                         >
