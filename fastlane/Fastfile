@@ -379,7 +379,7 @@ platform :android do
 
   desc 'Update config and module/listener for Android telemetry'
   lane :configure_telemetry_android do
-    if ENV['BETA_BUILD'] == 'true' && ENV['TELEMETRY_ENABLED'] == 'true' && ENV['TELEMETRY_URL'] != '' && ENV['TELEMETRY_API_KEY'] != ''
+    if ENV['TELEMETRY_ENABLED'] == 'true' && ENV['TELEMETRY_URL'] != '' && ENV['TELEMETRY_API_KEY'] != ''
       # Update telemetry config
       json = load_config_json
       json['TelemetryEnabled'] = true
