@@ -10,7 +10,10 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Bug Fixes
-
+ - Fixed an issue where contents of ephemeral posts from /giphy did not display on the mobile app.
+ - Fixed several mobile app crash / fatal error issues.
+ - Fixed an issue with an expanding animation when tapping on Jump to Channel in the channel list.
+ - Fixed an issue on iOS where animated custom emoji weren't animated.
 
 ## 1.18.0 Release
 - Release Date: April 16, 2019
