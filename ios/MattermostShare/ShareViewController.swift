@@ -45,8 +45,8 @@ class ShareViewController: SLComposeServiceViewController {
     // Do validation of contentText and/or NSExtensionContext attachments here
     if (attachments.count > 0) {
       let maxImagePixels = store.getMaxImagePixels()
-      let readableMaxImagePixels = formatImagePixels(pixels: maxImagePixels)
       if attachments.hasImageLargerThan(pixels: maxImagePixels) {
+        let readableMaxImagePixels = formatImagePixels(pixels: maxImagePixels)
         showErrorMessage(title: "", message: "Image attachments shared in Mattermost must be less than \(readableMaxImagePixels).", VC: self)
       }
 
