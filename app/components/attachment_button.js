@@ -17,6 +17,8 @@ import {DocumentPicker} from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
+import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+
 import {PermissionTypes} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -324,8 +326,12 @@ export default class AttachmentButton extends PureComponent {
             file.fileName = fileInfo.filename;
         }
 
+        if (!file.type) {
+            file.type = lookupMimeType(file.fileName);
+        }
+
         const {validMimeTypes} = this.props;
-        if (validMimeTypes.length && !validMimeTypes.includes(file.type || '')) {
+        if (validMimeTypes.length && !validMimeTypes.includes(file.type)) {
             this.props.onShowUnsupportedMimeTypeWarning();
         } else if (file.fileSize > this.props.maxFileSize) {
             this.props.onShowFileSizeWarning(file.fileName);

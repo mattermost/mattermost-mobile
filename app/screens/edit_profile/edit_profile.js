@@ -286,7 +286,7 @@ export default class EditProfile extends PureComponent {
     onShowUnsupportedMimeTypeWarning = () => {
         const {formatMessage} = this.context.intl;
         const fileTypeWarning = formatMessage({
-            id: 'file_upload.unsupportedMimeType',
+            id: 'mobile.file_upload.unsupportedMimeType',
             defaultMessage: 'Only files of the following MIME type can be uploaded: {mimeTypes}',
         }, {
             mimeTypes: VALID_MIME_TYPES.join('\n'),
