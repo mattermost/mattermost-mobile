@@ -44,6 +44,7 @@ class ShareViewController: SLComposeServiceViewController {
   
   override func isContentValid() -> Bool {
     let maxMessageSize = store.getMaxPostSize()
+    self.charactersRemaining = NSNumber(value: Int(maxMessageSize) - contentText.count)
     //Check content text size is not above max
     if (contentText.count > maxMessageSize) {
       if !maxPostAlertShown {
