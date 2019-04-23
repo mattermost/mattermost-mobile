@@ -269,13 +269,13 @@ extension AttachmentArray {
         return exceed
     }
 
-    public func hasImageLargerThan(imageSize: UInt64) -> Bool {
+    public func hasImageLargerThan(pixels: UInt64) -> Bool {
         var exceed = false
 
         self.queue.sync {
             exceed = self.array.contains { element in
                 let attachment = element as! AttachmentItem
-                return attachment.type == kUTTypeImage as String && attachment.fileSize > imageSize
+                return attachment.imagePixels > pixels
             }
         }
 
