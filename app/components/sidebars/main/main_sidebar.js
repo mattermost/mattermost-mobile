@@ -37,13 +37,13 @@ export default class ChannelSidebar extends Component {
             setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
+        channelIdsWithPosts: PropTypes.array,
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTablet: PropTypes.bool.isRequired,
-        loadedChannelIds: PropTypes.array,
         navigator: PropTypes.object,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
@@ -167,10 +167,10 @@ export default class ChannelSidebar extends Component {
         }
     };
 
-    logTelemetry = (loadedChannelIds = [], channelId, currentChannelId) => {
+    logTelemetry = (channelIdsWithPosts = [], channelId, currentChannelId) => {
         if (channelId !== currentChannelId) {
             const metrics = [];
-            if (loadedChannelIds.includes(channelId)) {
+            if (channelIdsWithPosts.includes(channelId)) {
                 metrics.push('channel:switch_loaded');
             } else {
                 metrics.push('channel:switch_initial');
@@ -182,7 +182,7 @@ export default class ChannelSidebar extends Component {
     }
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        this.logTelemetry(this.props.loadedChannelIds, channel.id, currentChannelId);
+        this.logTelemetry(this.props.channelIdsWithPosts, channel.id, currentChannelId);
         const {setChannelLoading} = this.props.actions;
 
         tracker.channelSwitch = Date.now();

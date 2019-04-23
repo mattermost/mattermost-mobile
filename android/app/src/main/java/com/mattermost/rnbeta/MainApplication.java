@@ -76,7 +76,8 @@ public class MainApplication extends NavigationApplication implements INotificat
   protected List<ReactPackage> getPackages() {
     // Add the packages you require here.
     // No need to add RnnPackage and MainReactPackage
-    return Arrays.<ReactPackage>asList(
+
+    List<ReactPackage> packages = Arrays.asList(
             new ImagePickerPackage(),
             new RNBottomSheetPackage(),
             new RNDeviceInfo(),
@@ -99,9 +100,13 @@ public class MainApplication extends NavigationApplication implements INotificat
             new KeychainPackage(),
             new InitializationPackage(this),
             new RNCWebViewPackage(),
-            new RNGestureHandlerPackage(),
-            new StartTimePackage(this)
+            new RNGestureHandlerPackage()
     );
+
+    // Uncomment to load module for build that has telemetry enabled
+    // packages.add(new StartTimePackage(this));
+
+    return packages;
   }
 
   @Override
@@ -131,7 +136,8 @@ public class MainApplication extends NavigationApplication implements INotificat
 
     SoLoader.init(this, /* native exopackage */ false);
 
-    addReactMarkerListener();
+    // Uncomment to listen to react markers for build that has telemetry enabled
+    // addReactMarkerListener();
   }
 
   @Override

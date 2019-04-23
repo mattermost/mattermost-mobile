@@ -27,8 +27,10 @@ class Telemetry {
     }
 
     async initialize() {
-        const nativeTimes = await StartTime.getNativeTimes();
-        this.appStartTime = nativeTimes.appStartTime;
+        if (StartTime) {
+            const nativeTimes = await StartTime.getNativeTimes();
+            this.appStartTime = nativeTimes.appStartTime;
+        }
     }
 
     reset() {

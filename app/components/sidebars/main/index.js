@@ -16,7 +16,7 @@ import {isLandscape, isTablet, getDimensions} from 'app/selectors/device';
 
 import MainSidebar from './main_sidebar.js';
 
-export const getChannelIdsInPostsInChannel = createIdsSelector(
+export const getChannelIdsWithPosts = createIdsSelector(
     (state) => state.entities.posts.postsInChannel,
     (postsInChannel) => {
         return Object.keys(postsInChannel);
@@ -28,7 +28,7 @@ function mapStateToProps(state) {
 
     return {
         ...getDimensions(state),
-        loadedChannelIds: getChannelIdsInPostsInChannel(state),
+        channelIdsWithPosts: getChannelIdsWithPosts(state),
         currentTeamId: getCurrentTeamId(state),
         currentUserId,
         isLandscape: isLandscape(state),
