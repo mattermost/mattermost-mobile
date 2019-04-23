@@ -44,6 +44,7 @@ export default class SearchBarAndroid extends PureComponent {
         showArrow: PropTypes.bool,
         value: PropTypes.string,
         containerStyle: CustomPropTypes.Style,
+        leftComponent: PropTypes.element,
     };
 
     static defaultProps = {
@@ -63,6 +64,7 @@ export default class SearchBarAndroid extends PureComponent {
         onBlur: () => true,
         onSelectionChange: () => true,
         value: '',
+        leftComponent: null,
     };
 
     constructor(props) {
@@ -174,6 +176,7 @@ export default class SearchBarAndroid extends PureComponent {
                     backgroundColor && {backgroundColor},
                 ]}
             >
+                {!isFocused && this.props.leftComponent}
                 <View
                     style={[
                         styles.searchBar,

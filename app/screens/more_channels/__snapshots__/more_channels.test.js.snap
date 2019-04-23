@@ -23,6 +23,7 @@ exports[`MoreChannels should match snapshot 1`] = `
             "fontSize": 15,
           }
         }
+        leftComponent={null}
         onBlur={[Function]}
         onCancelButtonPress={[Function]}
         onChangeText={[Function]}

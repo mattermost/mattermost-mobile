@@ -30,6 +30,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
           "fontSize": 15,
         }
       }
+      leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
@@ -117,6 +118,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
           "fontSize": 15,
         }
       }
+      leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
@@ -204,6 +206,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
           "fontSize": 15,
         }
       }
+      leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
@@ -298,6 +301,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
           "fontSize": 15,
         }
       }
+      leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
@@ -385,6 +389,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
           "fontSize": 15,
         }
       }
+      leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
@@ -472,6 +477,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
           "fontSize": 15,
         }
       }
+      leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
