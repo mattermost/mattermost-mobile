@@ -4,10 +4,7 @@
 import React from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-
 import {ListTypes} from 'app/constants';
-import {THREAD} from 'app/constants/screen';
 import {makeExtraData} from 'app/utils/list_view';
 
 import PostListBase from './post_list_base';
@@ -62,8 +59,8 @@ export default class PostList extends PostListBase {
 
     handleScroll = (event) => {
         const pageOffsetY = event.nativeEvent.contentOffset.y;
-        const contentHeight = event.nativeEvent.contentSize.height;
         if (pageOffsetY > 0) {
+            const contentHeight = event.nativeEvent.contentSize.height;
             const direction = (this.contentOffsetY < pageOffsetY) ?
                 ListTypes.VISIBILITY_SCROLL_UP :
                 ListTypes.VISIBILITY_SCROLL_DOWN;
@@ -75,25 +72,8 @@ export default class PostList extends PostListBase {
             ) {
                 this.props.onLoadMoreUp();
             }
-        } else if (pageOffsetY < 0) {
-            if (this.state.postListHeight > contentHeight || this.props.location === THREAD) {
-                // Posting a message like multiline or jumbo emojis causes the FlatList component for iOS
-                // to render RefreshControl component and remain the space as is when it's unmounted,
-                // leaving a whitespace of ~64 units of height between input box and post list.
-                // This condition explicitly pull down the list to recent post when pageOffsetY is less than zero,
-                // and the height of the layout is greater than its content or is on a thread screen.
-                this.handleScrollToRecentPost();
-            }
         }
     };
-
-    handleScrollToRecentPost = debounce(() => {
-        this.refs.list.scrollToIndex({
-            animated: true,
-            index: 0,
-            viewPosition: 1,
-        });
-    }, 100);
 
     handleScrollToIndexFailed = () => {
         requestAnimationFrame(() => {
