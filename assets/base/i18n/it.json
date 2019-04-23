@@ -81,7 +81,7 @@
   "intro_messages.anyMember": " Tutti i membri possono entrare e leggere questo canale.",
   "intro_messages.beginning": "Inizio di {name}",
   "intro_messages.channel": "canale",
-  "intro_messages.creator": "Questo è l'inizio di {name} {type}, creato il {date} da {creator}.",
+  "intro_messages.creator": "Questo è l'inizio di {name} {type}, creato da {creator} il {date}.",
   "intro_messages.group": "canale privato",
   "intro_messages.group_message": "Questo è l'inizio della tua conversazione privata con questi colleghi. Messaggi privati e file condivisi qui non sono accessibili ad altre persone.",
   "intro_messages.noCreator": "Questo è l'inizio di {name} {type}, creato il {date}.",

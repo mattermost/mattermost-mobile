@@ -70,7 +70,7 @@
   "combined_system_message.you": "Tu",
   "create_comment.addComment": "Agregar un comentario...",
   "create_post.deactivated": "Estás viendo un canal archivado con un usuario desactivado.",
-  "create_post.write": "Escribir a {channelDisplayName}",
+  "create_post.write": "Escribir en {channelDisplayName}",
   "edit_post.editPost": "Editar el mensaje...",
   "edit_post.save": "Guardar",
   "error.team_not_found.title": "Equipo no encontrado",
