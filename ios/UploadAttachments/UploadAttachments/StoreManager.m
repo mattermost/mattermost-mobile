@@ -150,16 +150,31 @@
   return [credentials objectForKey:@"token"];
 }
 
+-(UInt64)scanValueFromConfig:(NSDictionary *)config key:(NSString *)key {
+  NSString *value = [config objectForKey:key];
+  NSScanner *scanner = [NSScanner scannerWithString:value];
+  unsigned long long convertedValue = 0;
+  [scanner scanUnsignedLongLong:&convertedValue];
+  return convertedValue;
+}
+
+-(UInt64)getMaxImagePixels {
+  NSDictionary *config = [self getConfig];
+  NSString *key = @"MaxImagePixels";
+  if (config != nil && [config objectForKey:key]) {
+    return [self scanValueFromConfig:config key:key];
+  }
+
+  return DEFAULT_SERVER_MAX_IMAGE_PIXELS;
+}
+
 -(UInt64)getMaxFileSize {
   NSDictionary *config = [self getConfig];
-  if (config != nil && [config objectForKey:@"MaxFileSize"]) {
-    NSString *maxFileSize = [config objectForKey:@"MaxFileSize"];
-    NSScanner *scanner = [NSScanner scannerWithString:maxFileSize];
-    unsigned long long convertedValue = 0;
-    [scanner scanUnsignedLongLong:&convertedValue];
-    return convertedValue;
+  NSString *key = @"MaxFileSize";
+  if (config != nil && [config objectForKey:key]) {
+    return [self scanValueFromConfig:config key:key];
   }
-  
+
   return DEFAULT_SERVER_MAX_FILE_SIZE;
 }
 

@@ -1,3 +1,5 @@
+import MobileCoreServices
+
 /// A thread-safe array.
 public class AttachmentArray<Element>: NSObject {
     fileprivate let queue = DispatchQueue(label: "com.mattermost.SynchronizedArray", attributes: .concurrent)
@@ -264,6 +266,19 @@ extension AttachmentArray {
             }
         }
         
+        return exceed
+    }
+
+    public func hasImageLargerThan(pixels: UInt64) -> Bool {
+        var exceed = false
+
+        self.queue.sync {
+            exceed = self.array.contains { element in
+                let attachment = element as! AttachmentItem
+                return attachment.imagePixels > pixels
+            }
+        }
+
         return exceed
     }
 }
