@@ -1,11 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {
+    IMAGE_MAX_HEIGHT,
+    IMAGE_MIN_DIMENSION,
+} from 'app/constants/image';
+
 let previewComponents;
-const IMAGE_MAX_HEIGHT = 350;
-const IMAGE_MIN_DIMENSION = 50;
 
 export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHeight = 0) => {
+    if (!height || !width) {
+        return {
+            height: null,
+            width: null,
+        };
+    }
+
     const ratio = height / width;
     const heightRatio = width / height;
 

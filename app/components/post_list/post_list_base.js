@@ -4,15 +4,16 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
+import * as PostListUtils from 'mattermost-redux/utils/post_list';
+
+import CombinedUserActivityPost from 'app/components/combined_user_activity_post';
 import Post from 'app/components/post';
 import {DeepLinkTypes} from 'app/constants';
-import {START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
 import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
 
 import DateHeader from './date_header';
-import {isDateLine} from './date_header/utils';
 import NewMessagesDivider from './new_messages_divider';
 
 export default class PostListBase extends PureComponent {
@@ -130,7 +131,7 @@ export default class PostListBase extends PureComponent {
     };
 
     renderItem = ({item, index}) => {
-        if (item === START_OF_NEW_MESSAGES) {
+        if (PostListUtils.isStartOfNewMessages(item)) {
             // postIds includes a date item after the new message indicator so 2
             // needs to be added to the index for the length check to be correct.
             const moreNewMessages = this.props.postIds.length === index + 2;
@@ -142,56 +143,51 @@ export default class PostListBase extends PureComponent {
                     moreMessages={moreNewMessages}
                 />
             );
-        } else if (isDateLine(item)) {
+        } else if (PostListUtils.isDateLine(item)) {
             return (
                 <DateHeader
-                    dateLineString={item}
+                    date={PostListUtils.getDateForDateLine(item)}
                     index={index}
                 />
             );
         }
-
-        const postId = item;
 
         // Remember that the list is rendered with item 0 at the bottom so the "previous" post
         // comes after this one in the list
         const previousPostId = index < this.props.postIds.length - 1 ? this.props.postIds[index + 1] : null;
         const nextPostId = index > 0 ? this.props.postIds[index - 1] : null;
 
-        return this.renderPost(postId, previousPostId, nextPostId);
-    };
+        const postProps = {
+            previousPostId,
+            nextPostId,
+            highlightPinnedOrFlagged: this.props.highlightPinnedOrFlagged,
+            isSearchResult: this.props.isSearchResult,
+            location: this.props.location,
+            managedConfig: this.state.managedConfig,
+            navigator: this.props.navigator,
+            onHashtagPress: this.props.onHashtagPress,
+            onPermalinkPress: this.handlePermalinkPress,
+            onPostPress: this.props.onPostPress,
+            renderReplies: this.props.renderReplies,
+            shouldRenderReplyButton: this.props.shouldRenderReplyButton,
+        };
 
-    renderPost = (postId, previousPostId, nextPostId) => {
-        const {
-            highlightPinnedOrFlagged,
-            highlightPostId,
-            isSearchResult,
-            navigator,
-            onHashtagPress,
-            onPostPress,
-            renderReplies,
-            shouldRenderReplyButton,
-            location,
-        } = this.props;
-        const {managedConfig} = this.state;
+        if (PostListUtils.isCombinedUserActivityPost(item)) {
+            return (
+                <CombinedUserActivityPost
+                    combinedId={item}
+                    {...postProps}
+                />
+            );
+        }
 
-        const highlight = highlightPostId === postId;
+        const postId = item;
+
         return (
             <Post
                 postId={postId}
-                previousPostId={previousPostId}
-                nextPostId={nextPostId}
-                onHashtagPress={onHashtagPress}
-                onPermalinkPress={this.handlePermalinkPress}
-                highlight={highlight}
-                highlightPinnedOrFlagged={highlightPinnedOrFlagged}
-                renderReplies={renderReplies}
-                isSearchResult={isSearchResult}
-                shouldRenderReplyButton={shouldRenderReplyButton}
-                onPress={onPostPress}
-                navigator={navigator}
-                managedConfig={managedConfig}
-                location={location}
+                highlight={this.props.highlightPostId === postId}
+                {...postProps}
             />
         );
     };

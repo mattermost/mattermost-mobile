@@ -14,11 +14,35 @@ export default class ActionMenu extends PureComponent {
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         dataSource: PropTypes.string,
+        defaultOption: PropTypes.string,
         options: PropTypes.arrayOf(PropTypes.object),
         postId: PropTypes.string.isRequired,
         selected: PropTypes.object,
         navigator: PropTypes.object,
     };
+
+    constructor(props) {
+        super(props);
+
+        let selected;
+        if (props.defaultOption && props.options) {
+            selected = props.options.find((option) => option.value === props.defaultOption);
+        }
+
+        this.state = {
+            selected,
+        };
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        if (props.selected && props.selected !== state.selected) {
+            return {
+                selected: props.selected,
+            };
+        }
+
+        return null;
+    }
 
     handleSelect = (selected) => {
         if (!selected) {
@@ -38,10 +62,10 @@ export default class ActionMenu extends PureComponent {
         const {
             name,
             dataSource,
-            selected,
             options,
             navigator,
         } = this.props;
+        const {selected} = this.state;
 
         return (
             <AutocompleteSelector
