@@ -145,6 +145,11 @@ export default class ChannelsList extends PureComponent {
                     onChangeText={this.onSearch}
                     onFocus={this.onSearchFocused}
                     value={term}
+                    leftComponent={(
+                        <SwitchTeamsButton
+                            onShowTeams={onShowTeams}
+                        />
+                    )}
                 />
             </View>
         );
@@ -155,12 +160,6 @@ export default class ChannelsList extends PureComponent {
             >
                 <View style={styles.statusBar}>
                     <View style={styles.headerContainer}>
-                        <View style={styles.switchContainer}>
-                            <SwitchTeamsButton
-                                searching={searching}
-                                onShowTeams={onShowTeams}
-                            />
-                        </View>
                         {title}
                     </View>
                 </View>
