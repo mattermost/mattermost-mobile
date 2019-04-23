@@ -32,11 +32,13 @@ export default class Typing extends PureComponent {
     }
 
     animateTyping = (show = false) => {
-        const height = show ? 20 : 0;
+        const [height, duration] = show ?
+            [20, 200] :
+            [0, 400];
 
         Animated.timing(this.state.typingHeight, {
             toValue: height,
-            duration: 200,
+            duration,
         }).start();
     }
 
