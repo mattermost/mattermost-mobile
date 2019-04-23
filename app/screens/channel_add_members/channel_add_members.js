@@ -33,7 +33,7 @@ export default class ChannelAddMembers extends PureComponent {
             handleAddChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
-        currentChannelId: PropTypes.string.isRequired,
+        currentChannel: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         profilesNotInChannel: PropTypes.array.isRequired,
@@ -112,11 +112,12 @@ export default class ChannelAddMembers extends PureComponent {
         const {loading, term} = this.state;
         if (this.next && !loading && !term) {
             this.setState({loading: true}, () => {
-                const {actions, currentChannelId, currentTeamId} = this.props;
+                const {actions, currentChannel, currentTeamId} = this.props;
 
                 actions.getProfilesNotInChannel(
                     currentTeamId,
-                    currentChannelId,
+                    currentChannel.id,
+                    currentChannel.group_constrained,
                     this.page + 1,
                     General.PROFILE_CHUNK_SIZE
                 ).then(this.onProfilesLoaded);
@@ -126,7 +127,7 @@ export default class ChannelAddMembers extends PureComponent {
 
     handleAddMembersPress = () => {
         const {formatMessage} = this.context.intl;
-        const {actions, currentChannelId} = this.props;
+        const {actions, currentChannel} = this.props;
         const {selectedIds, adding} = this.state;
         const membersToAdd = Object.keys(selectedIds).filter((id) => selectedIds[id]);
 
@@ -145,7 +146,7 @@ export default class ChannelAddMembers extends PureComponent {
         if (!adding) {
             this.enableAddOption(false);
             this.setState({adding: true}, async () => {
-                const result = await actions.handleAddChannelMembers(currentChannelId, membersToAdd);
+                const result = await actions.handleAddChannelMembers(currentChannel.id, membersToAdd);
 
                 if (result.error) {
                     alertErrorIfInvalidPermissions(result);
@@ -258,8 +259,8 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     searchProfiles = (term) => {
-        const {actions, currentChannelId, currentTeamId} = this.props;
-        const options = {not_in_channel_id: currentChannelId, team_id: currentTeamId};
+        const {actions, currentChannel, currentTeamId} = this.props;
+        const options = {not_in_channel_id: currentChannel.id, team_id: currentTeamId, group_constrained: currentChannel.group_constrained};
         this.setState({loading: true});
 
         actions.searchProfiles(term.toLowerCase(), options).then(({data}) => {
