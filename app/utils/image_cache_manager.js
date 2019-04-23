@@ -9,9 +9,11 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants';
+import {getExtensionFromMime} from 'app/utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
 
 const {IMAGES_PATH} = DeviceTypes;
+const DEFAULT_MIME_TYPE = 'image/png';
 let siteUrl;
 
 export default class ImageCacheManager {
@@ -53,7 +55,17 @@ export default class ImageCacheManager {
                         throw new Error();
                     }
 
-                    notifyAll(uri, `${prefix}${path}`);
+                    const mimeType = this.downloadTask.respInfo.headers['Content-Type'];
+                    const ext = `.${getExtensionFromMime(mimeType) || getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
+                    if (path.endsWith(ext)) {
+                        notifyAll(uri, `${prefix}${path}`);
+                    } else {
+                        const oldExt = path.substring(path.lastIndexOf('.'));
+                        const newPath = path.replace(oldExt, ext);
+                        await RNFetchBlob.fs.mv(path, newPath);
+
+                        notifyAll(uri, `${prefix}${newPath}`);
+                    }
                 } catch (e) {
                     RNFetchBlob.fs.unlink(`${prefix}${path}`);
                     notifyAll(uri, uri);
@@ -70,8 +82,9 @@ export default class ImageCacheManager {
 
 export const getCacheFile = async (name, uri) => {
     const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
-    const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
-    const path = `${IMAGES_PATH}/${Math.abs(hashCode(uri))}${ext}`;
+    const defaultExt = `.${getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
+    const ext = filename.indexOf('.') === -1 ? defaultExt : filename.substring(filename.lastIndexOf('.'));
+    let path = `${IMAGES_PATH}/${Math.abs(hashCode(uri))}${ext}`;
 
     try {
         const isDir = await RNFetchBlob.fs.isDir(IMAGES_PATH);
@@ -82,7 +95,15 @@ export const getCacheFile = async (name, uri) => {
         // do nothing
     }
 
-    const exists = await RNFetchBlob.fs.exists(path);
+    let exists = await RNFetchBlob.fs.exists(path);
+    if (!exists) {
+        const pathWithDiffExt = await RNFetchBlob.fs.existsWithDiffExt(path);
+        if (pathWithDiffExt) {
+            exists = true;
+            path = pathWithDiffExt;
+        }
+    }
+
     return {exists, path};
 };
 
