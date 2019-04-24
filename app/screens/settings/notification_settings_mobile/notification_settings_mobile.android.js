@@ -22,7 +22,7 @@ import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import NotificationSettingsMobileBase from './notification_settings_mobile_base';
-import {getNotificationProps} from '../../../utils/notify_props';
+import {getNotificationProps} from 'app/utils/notify_props';
 import deepEqual from 'deep-equal';
 import {RequestStatus} from 'mattermost-redux/constants';
 import PropTypes from 'prop-types';
