@@ -56,8 +56,7 @@ class ShareViewController: SLComposeServiceViewController {
       let maxFileSize = store.getMaxFileSize()
       //Check attachment size is not above max
       if attachments.hasAttachementLargerThan(fileSize: maxFileSize) {
-        let readableMaxSize = formatFileSize(bytes: Double(maxFileSize))
-        showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxSize).", VC: self)
+        showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxFileSize).", VC: self)
       }
     }
     
@@ -179,6 +178,26 @@ class ShareViewController: SLComposeServiceViewController {
     }
     return section
   }
+
+  func getImagePixels(imageUrl: URL) -> UInt64 {
+    guard let imageData = try? Data(contentsOf: imageUrl) else {
+      return 0
+    }
+
+    guard let image = UIImage.init(data: imageData) else {
+      return 0
+    }
+
+    return getImagePixels(image: image)
+  }
+
+  func getImagePixels(image: UIImage) -> UInt64 {
+    guard let cgImage = image.cgImage else {
+        return 0
+    }
+
+    return UInt64(cgImage.width * cgImage.height)
+  }
   
   func extractDataFromContext() {
     for item in extensionContext?.inputItems as! [NSExtensionItem] {
@@ -206,6 +225,7 @@ class ShareViewController: SLComposeServiceViewController {
                 let attachment = self.saveAttachment(url: url)
                 if (attachment != nil) {
                   attachment?.type = kUTTypeImage as String
+                  attachment?.imagePixels = self.getImagePixels(imageUrl: url)
                   self.attachments.append(attachment!)
                 }
               } else if let image = item as? UIImage {
@@ -217,6 +237,7 @@ class ShareViewController: SLComposeServiceViewController {
                     let attachment = self.saveAttachment(url: tempImageURL!)
                     if (attachment != nil) {
                       attachment?.type = kUTTypeImage as String
+                      attachment?.imagePixels = self.getImagePixels(image: image)
                       self.attachments.append(attachment!)
                     }
                   }
@@ -380,6 +401,7 @@ class ShareViewController: SLComposeServiceViewController {
       attachment.fileName = fileName
       attachment.fileURL = tempFileURL
       attachment.fileSize = attr.fileSize()
+
       return attachment
     } catch {
       return nil
@@ -410,17 +432,26 @@ class ShareViewController: SLComposeServiceViewController {
       return "0 bytes"
     }
 
-    // Adapted from http://stackoverflow.com/a/18650828
+  func formatFileSize(fileSize: UInt64) -> String {
     let suffixes = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
     let k: Double = 1024
-    let i = floor(log(bytes) / log(k))
+    return formatSize(size: Double(fileSize), k: k, suffixes: suffixes)
+  }
 
-    // Format number with thousands separator and everything below 1 GB with no decimal places.
+  func formatSize(size: Double, k: Double, suffixes: Array<String>) -> String {
+    guard size > 0 else {
+      return "0 \(suffixes[0])"
+    }
+
+    // Adapted from http://stackoverflow.com/a/18650828
+    let i = floor(log(size) / log(k))
+
+    // Format number with thousands separator and everything below 1 giga with no decimal places.
     let numberFormatter = NumberFormatter()
     numberFormatter.maximumFractionDigits = i < 3 ? 0 : 1
     numberFormatter.numberStyle = .decimal
 
-    let numberString = numberFormatter.string(from: NSNumber(value: bytes / pow(k, i))) ?? "Unknown"
+    let numberString = numberFormatter.string(from: NSNumber(value: size / pow(k, i))) ?? "Unknown"
     let suffix = suffixes[Int(i)]
     return "\(numberString) \(suffix)"
   }

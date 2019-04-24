@@ -46,6 +46,7 @@ export default class PostTextbox extends PureComponent {
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
+        channelDisplayName: PropTypes.string,
         channelTeamId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool.isRequired,
@@ -518,6 +519,7 @@ export default class PostTextbox extends PureComponent {
         const {
             canUploadFiles,
             channelId,
+            channelDisplayName,
             channelIsLoading,
             channelIsReadOnly,
             deactivatedChannel,
@@ -559,7 +561,7 @@ export default class PostTextbox extends PureComponent {
         } else if (rootId) {
             placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
         } else {
-            placeholder = {id: t('create_post.write'), defaultMessage: 'Write a message...'};
+            placeholder = {id: t('create_post.write'), defaultMessage: 'Write to {channelDisplayName}'};
         }
 
         let attachmentButton = null;
@@ -611,7 +613,7 @@ export default class PostTextbox extends PureComponent {
                                 value={textValue}
                                 onChangeText={this.handleTextChange}
                                 onSelectionChange={this.handlePostDraftSelectionChanged}
-                                placeholder={intl.formatMessage(placeholder)}
+                                placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
                                 placeholderTextColor={changeOpacity('#000', 0.5)}
                                 multiline={true}
                                 numberOfLines={5}

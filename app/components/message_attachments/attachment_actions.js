@@ -40,6 +40,7 @@ export default class AttachmentActions extends PureComponent {
                         id={action.id}
                         name={action.name}
                         dataSource={action.data_source}
+                        defaultOption={action.default_option}
                         options={action.options}
                         postId={postId}
                         navigator={navigator}

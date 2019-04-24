@@ -39,7 +39,6 @@ export default class Post extends PureComponent {
         highlight: PropTypes.bool,
         style: ViewPropTypes.style,
         post: PropTypes.object,
-        postId: PropTypes.string.isRequired, // Used by container // eslint-disable-line no-unused-prop-types
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
@@ -290,13 +289,13 @@ export default class Post extends PureComponent {
                 <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                     <PostProfilePicture
                         onViewUserProfile={this.viewUserProfile}
-                        postId={post.id}
+                        post={post}
                     />
                 </View>
             );
             postHeader = (
                 <PostHeader
-                    postId={post.id}
+                    post={post}
                     commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
                     createAt={post.create_at}
                     isSearchResult={isSearchResult}
@@ -343,7 +342,7 @@ export default class Post extends PureComponent {
                                 onHashtagPress={onHashtagPress}
                                 onPermalinkPress={onPermalinkPress}
                                 onPress={this.handlePress}
-                                postId={post.id}
+                                post={post}
                                 replyBarStyle={replyBarStyle}
                                 managedConfig={managedConfig}
                                 isFlagged={isFlagged}

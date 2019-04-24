@@ -3,7 +3,6 @@
 
 import {connect} from 'react-redux';
 
-import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -15,7 +14,7 @@ import PostProfilePicture from './post_profile_picture';
 
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
-    const post = getPost(state, ownProps.postId);
+    const post = ownProps.post;
 
     return {
         enablePostIconOverride: config.EnablePostIconOverride === 'true' && post?.props?.use_user_icon !== 'true', // eslint-disable-line camelcase

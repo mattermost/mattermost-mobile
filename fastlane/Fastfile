@@ -157,6 +157,13 @@ lane :configure do
     json['SentryDsnAndroid'] = ENV['SENTRY_DSN_ANDROID']
   end
 
+  # Configure Telemetry if enabled
+  if ENV['BETA_BUILD'] == 'true' && ENV['TELEMETRY_ENABLED'] == 'true' && ENV['TELEMETRY_URL'] != '' && ENV['TELEMETRY_API_KEY'] != ''
+    json['TelemetryEnabled'] = true
+    json['TelemetryUrl'] = ENV['TELEMETRY_URL']
+    json['TelemetryApiKey'] = ENV['TELEMETRY_API_KEY']
+  end
+
   # Save the config.json file
   save_config_json(json)
 

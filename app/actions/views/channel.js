@@ -13,13 +13,25 @@ import {
     leaveChannel as serviceLeaveChannel, markChannelAsViewed,
     selectChannel,
 } from 'mattermost-redux/actions/channels';
-import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
+import {
+    getPosts,
+    getPostsBefore,
+    getPostsSince,
+    getPostThread,
+} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
-import {getChannel, getCurrentChannelId, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
+import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
+import {
+    getChannel,
+    getCurrentChannelId,
+    getMyChannelMember,
+    getRedirectChannelNameForTeam,
+    getChannelByName as getChannelByNameSelector,
+} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
 import {
@@ -159,8 +171,8 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
 export function loadPostsIfNecessaryWithRetry(channelId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {posts, postsInChannel} = state.entities.posts;
-        const postsIds = postsInChannel[channelId];
+        const {posts} = state.entities.posts;
+        const postsIds = getPostIdsInChannel(state, channelId);
         const actions = [];
 
         const time = Date.now();
@@ -250,14 +262,14 @@ export function loadFilesForPostIfNecessary(postId) {
     };
 }
 
-export function loadThreadIfNecessary(rootId, channelId) {
-    return async (dispatch, getState) => {
+export function loadThreadIfNecessary(rootId) {
+    return (dispatch, getState) => {
         const state = getState();
-        const {posts, postsInChannel} = state.entities.posts;
-        const channelPosts = postsInChannel[channelId];
+        const {posts, postsInThread} = state.entities.posts;
+        const threadPosts = postsInThread[rootId];
 
-        if (rootId && (!posts[rootId] || !channelPosts || !channelPosts[rootId])) {
-            getPostThread(rootId, false)(dispatch, getState);
+        if (!posts[rootId] || !threadPosts) {
+            dispatch(getPostThread(rootId));
         }
     };
 }
@@ -324,16 +336,16 @@ export function selectPenultimateChannel(teamId) {
 
 export function selectDefaultChannel(teamId) {
     return (dispatch, getState) => {
-        const {channels} = getState().entities.channels;
+        const state = getState();
 
-        const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
+        const channel = getChannelByNameSelector(state, getRedirectChannelNameForTeam(state, teamId));
         let channelId;
         if (channel) {
             channelId = channel.id;
         } else {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
-            const channelsInTeam = Object.values(channels).filter((c) => c.team_id === teamId);
+            const channelsInTeam = Object.values(state.entities.channels).filter((c) => c.team_id === teamId);
             const firstChannel = channelsInTeam.length ? channelsInTeam[0].id : {id: ''};
 
             channelId = firstChannel.id;
@@ -552,7 +564,7 @@ export function setChannelDisplayName(displayName) {
 }
 
 // Returns true if there are more posts to load
-export function increasePostVisibility(channelId, focusedPostId) {
+export function increasePostVisibility(channelId, postId) {
     return async (dispatch, getState) => {
         const state = getState();
         const {loadingPosts, postVisibility} = state.views.channel;
@@ -562,20 +574,23 @@ export function increasePostVisibility(channelId, focusedPostId) {
             return true;
         }
 
+        if (!postId) {
+            // No posts are visible, so the channel is empty
+            return true;
+        }
+
         // Check if we already have the posts that we want to show
-        if (!focusedPostId) {
-            const loadedPostCount = state.views.channel.postCountInChannel[channelId] || 0;
-            const desiredPostVisibility = currentPostVisibility + ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+        const loadedPostCount = state.views.channel.postCountInChannel[channelId] || 0;
+        const desiredPostVisibility = currentPostVisibility + ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
 
-            if (loadedPostCount >= desiredPostVisibility) {
-                // We already have the posts, so we just need to show them
-                dispatch(batchActions([
-                    doIncreasePostVisibility(channelId),
-                    setLoadMorePostsVisible(true),
-                ]));
+        if (loadedPostCount >= desiredPostVisibility) {
+            // We already have the posts, so we just need to show them
+            dispatch(batchActions([
+                doIncreasePostVisibility(channelId),
+                setLoadMorePostsVisible(true),
+            ]));
 
-                return true;
-            }
+            return true;
         }
 
         dispatch({
@@ -585,14 +600,8 @@ export function increasePostVisibility(channelId, focusedPostId) {
         });
 
         const pageSize = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-        const page = Math.floor(currentPostVisibility / pageSize);
 
-        let result;
-        if (focusedPostId) {
-            result = await retryGetPostsAction(getPostsBefore(channelId, focusedPostId, page, pageSize), dispatch, getState);
-        } else {
-            result = await retryGetPostsAction(getPosts(channelId, page, pageSize), dispatch, getState);
-        }
+        const result = await retryGetPostsAction(getPostsBefore(channelId, postId, 0, pageSize), dispatch, getState);
 
         const actions = [{
             type: ViewTypes.LOADING_POSTS,
