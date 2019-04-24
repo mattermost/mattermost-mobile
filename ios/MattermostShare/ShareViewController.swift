@@ -56,6 +56,7 @@ class ShareViewController: SLComposeServiceViewController {
       let maxFileSize = store.getMaxFileSize()
       //Check attachment size is not above max
       if attachments.hasAttachementLargerThan(fileSize: maxFileSize) {
+        let readableMaxFileSize = formatFileSize(fileSize: maxFileSize)
         showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxFileSize).", VC: self)
       }
     }
