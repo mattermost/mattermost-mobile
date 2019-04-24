@@ -13,6 +13,11 @@ import {
     View,
 } from 'react-native';
 
+import deepEqual from 'deep-equal';
+import PropTypes from 'prop-types';
+
+import {RequestStatus} from 'mattermost-redux/constants';
+
 import FormattedText from 'app/components/formatted_text';
 import RadioButtonGroup from 'app/components/radio_button';
 import NotificationPreferences from 'app/notification_preferences';
@@ -20,12 +25,9 @@ import PushNotifications from 'app/push_notifications';
 import StatusBar from 'app/components/status_bar';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {getNotificationProps} from 'app/utils/notify_props';
 
 import NotificationSettingsMobileBase from './notification_settings_mobile_base';
-import {getNotificationProps} from 'app/utils/notify_props';
-import deepEqual from 'deep-equal';
-import {RequestStatus} from 'mattermost-redux/constants';
-import PropTypes from 'prop-types';
 
 class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     static propTypes = {
