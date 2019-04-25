@@ -180,12 +180,9 @@
 
 -(UInt64)getMaxPostSize {
     NSDictionary *config = [self getConfig];
-    if (config != nil && [config objectForKey:@"MaxPostSize"]) {
-        NSString *maxPostSize = [config objectForKey:@"MaxPostSize"];
-        NSScanner *scanner = [NSScanner scannerWithString:maxPostSize];
-        unsigned long long convertedValue = 0;
-        [scanner scanUnsignedLongLong:&convertedValue];
-        return convertedValue;
+    NSString *key = @"MaxPostSize";
+    if (config != nil && [config objectForKey:key]) {
+        return [self scanValueFromConfig:config key:key];
     }
     
     return DEFAULT_SERVER_MAX_POST_SIZE;
