@@ -19,6 +19,7 @@ class ShareViewController: SLComposeServiceViewController {
   private var serverURL: String?
   private var message: String?
   private var publicURL: String?
+  private var maxPostAlertShown: Bool = false
   private var tempContainerURL: URL? = UploadSessionManager.shared.tempContainerURL() as URL?
   
   fileprivate var selectedChannel: Item?
@@ -42,21 +43,28 @@ class ShareViewController: SLComposeServiceViewController {
   }
   
   override func isContentValid() -> Bool {
-    // Do validation of contentText and/or NSExtensionContext attachments here
-    if (attachments.count > 0) {
+    let maxMessageSize = store.getMaxPostSize()
+    self.charactersRemaining = NSNumber(value: Int(maxMessageSize) - contentText.count)
+    //Check content text size is not above max
+    if (contentText.count > maxMessageSize) {
+      if !maxPostAlertShown {
+        maxPostAlertShown = true
+        showErrorMessageAndStayOpen(title: "", message: "Content text shared in Mattermost must be less than \(maxMessageSize+1) characters.", VC: self)
+      }
+      return false
+    } else if (attachments.count > 0) { // Do validation of contentText and/or NSExtensionContext attachments here
       let maxImagePixels = store.getMaxImagePixels()
       if attachments.hasImageLargerThan(pixels: maxImagePixels) {
         let readableMaxImagePixels = formatImagePixels(pixels: maxImagePixels)
         showErrorMessage(title: "", message: "Image attachments shared in Mattermost must be less than \(readableMaxImagePixels).", VC: self)
       }
-
       let maxFileSize = store.getMaxFileSize()
       if attachments.hasAttachementLargerThan(fileSize: maxFileSize) {
         let readableMaxFileSize = formatFileSize(fileSize: maxFileSize)
         showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxFileSize).", VC: self)
       }
     }
-
+    
     return serverURL != nil &&
       sessionToken != nil &&
       attachmentsCount() == attachments.count &&
@@ -416,19 +424,26 @@ class ShareViewController: SLComposeServiceViewController {
     alert.addAction(okAction)
     VC.present(alert, animated: true, completion: nil)
   }
-
+  
+  func showErrorMessageAndStayOpen(title: String, message: String, VC: UIViewController) {
+    let alert: UIAlertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
+    let okAction = UIAlertAction(title: "OK", style: UIAlertAction.Style.default)
+    alert.addAction(okAction)
+    VC.present(alert, animated: true, completion: nil)
+  }
+  
   func formatImagePixels(pixels: UInt64) -> String {
     let suffixes = ["pixels", "KP", "MP", "GP", "TP", "PP", "EP", "ZP", "YP"]
     let k: Double = 1000
     return formatSize(size: Double(pixels), k: k, suffixes: suffixes)
   }
-
+  
   func formatFileSize(fileSize: UInt64) -> String {
     let suffixes = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
     let k: Double = 1024
     return formatSize(size: Double(fileSize), k: k, suffixes: suffixes)
   }
-
+  
   func formatSize(size: Double, k: Double, suffixes: Array<String>) -> String {
     guard size > 0 else {
       return "0 \(suffixes[0])"

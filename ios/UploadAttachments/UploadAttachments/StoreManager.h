@@ -16,6 +16,7 @@
 -(NSDictionary *)getEntities:(BOOL)loadFromFile;
 -(UInt64)getMaxImagePixels;
 -(UInt64)getMaxFileSize;
+-(UInt64)getMaxPostSize;
 -(NSArray *)getMyTeams;
 -(NSString *)getServerUrl;
 -(NSString *)getToken;
