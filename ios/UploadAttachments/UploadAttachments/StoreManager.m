@@ -178,6 +178,16 @@
   return DEFAULT_SERVER_MAX_FILE_SIZE;
 }
 
+-(UInt64)getMaxPostSize {
+    NSDictionary *config = [self getConfig];
+    NSString *key = @"MaxPostSize";
+    if (config != nil && [config objectForKey:key]) {
+        return [self scanValueFromConfig:config key:key];
+    }
+    
+    return DEFAULT_SERVER_MAX_POST_SIZE;
+}
+
 -(void)updateEntities:(NSString *)content {
     [self.bucket writeToFile:@"entities" content:content];
 }
