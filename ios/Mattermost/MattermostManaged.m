@@ -9,13 +9,23 @@
 #import "RCTUITextView.h"
 #import "MattermostManaged.h"
 
-@implementation MattermostManaged
+@implementation MattermostManaged {
+  bool hasListeners;
+}
 
 RCT_EXPORT_MODULE();
 
 + (BOOL)requiresMainQueueSetup
 {
   return YES;
+}
+
+- (void)startObserving {
+  hasListeners = YES;
+}
+
+- (void)stopObserving {
+  hasListeners = NO;
 }
 
 - (void)dealloc
@@ -58,12 +68,16 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
 - (void)managedConfigDidChange:(NSNotification *)notification
 {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [self sendEventWithName:@"managedConfigDidChange" body:response];
+  if (hasListeners) {
+    [self sendEventWithName:@"managedConfigDidChange" body:response];
+  }
 }
 
 - (void) remoteConfigChanged {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [self sendEventWithName:@"managedConfigDidChange" body:response];
+  if (hasListeners) {
+    [self sendEventWithName:@"managedConfigDidChange" body:response];
+  }
 }
 
 RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve
