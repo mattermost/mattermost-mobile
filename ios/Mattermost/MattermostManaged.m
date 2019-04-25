@@ -6,8 +6,6 @@
 // See License.txt for license information.
 //
 
-#import <React/RCTBridge.h>
-#import <React/RCTEventDispatcher.h>
 #import "RCTUITextView.h"
 #import "MattermostManaged.h"
 
@@ -20,23 +18,28 @@ RCT_EXPORT_MODULE();
   return YES;
 }
 
-@synthesize bridge = _bridge;
-
 - (void)dealloc
 {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [[NSNotificationCenter defaultCenter] removeObserver:NSUserDefaultsDidChangeNotification];
 }
 
-- (void)setBridge:(RCTBridge *)bridge
+- (NSArray<NSString *> *)supportedEvents
 {
-  _bridge = bridge;
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedConfigDidChange:) name:@"managedConfigDidChange" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification
-                                                    object:nil
-                                                     queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
-                                                       [self remoteConfigChanged];
-                                                     }];
+  return @[@"managedConfigDidChange"];
+}
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedConfigDidChange:) name:@"managedConfigDidChange" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification
+                                                      object:nil
+                                                       queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
+                                                         [self remoteConfigChanged];
+                                                       }];
+  }
+  return self;
 }
 
 + (void)sendConfigChangedEvent {
@@ -55,12 +58,12 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
 - (void)managedConfigDidChange:(NSNotification *)notification
 {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [_bridge.eventDispatcher sendDeviceEventWithName:@"managedConfigDidChange" body:response];
+  [self sendEventWithName:@"managedConfigDidChange" body:response];
 }
 
 - (void) remoteConfigChanged {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [_bridge.eventDispatcher sendDeviceEventWithName:@"managedConfigDidChange" body:response];
+  [self sendEventWithName:@"managedConfigDidChange" body:response];
 }
 
 RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve
