@@ -75,7 +75,10 @@ public class ShareModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void close(ReadableMap data) {
         this.clear();
-        getCurrentActivity().finish();
+        Activity currentActivity = getCurrentActivity();
+        if (currentActivity != null) {
+            currentActivity.finish();
+        }
 
         if (data != null && data.hasKey("url")) {
             ReadableArray files = data.getArray("files");
