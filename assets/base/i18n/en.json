@@ -252,6 +252,7 @@
   "mobile.file_upload.library": "Photo Library",
   "mobile.file_upload.max_warning": "Uploads limited to 5 files maximum.",
   "mobile.file_upload.video": "Video Library",
+  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
   "mobile.flagged_posts.empty_description": "Flags are a way to mark messages for follow up. Your flags are personal, and cannot be seen by other users.",
   "mobile.flagged_posts.empty_title": "No Flagged Posts",
   "mobile.help.title": "Help",
