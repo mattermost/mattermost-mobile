@@ -380,23 +380,41 @@ export default class PostTextbox extends PureComponent {
                 }
             }
 
-            this.handleTextChange('');
-            this.changeDraft('');
-
-            // Shrink the input textbox since the layout events lag slightly
-            const nextState = {
-                contentHeight: INITIAL_HEIGHT,
-            };
-
-            // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
-            // are typed successively without blurring the input
-            let callback;
-            if (Platform.OS === 'android') {
-                nextState.keyboardType = 'email-address';
-                callback = () => this.setState({keyboardType: 'default'});
+            if (Platform.OS === 'ios') {
+                // On iOS, if the PostTextbox height increases from its
+                // initial height (due to a multiline post or a post whose
+                // message wraps, for example), then when the text is cleared
+                // the PostTextbox height decrease will be animated. This
+                // animation in conjunction with the PostList animation as it
+                // receives the newly created post is causing issues in the iOS
+                // PostList component as it fails to properly react to its content
+                // size changes. While a proper fix is determined for the PostList
+                // component, a small delay in triggering the height decrease
+                // animation gives the PostList enough time to first handle content
+                // size changes from the new post.
+                setTimeout(() => {
+                    this.handleTextChange('');
+                }, 250);
+            } else {
+                this.handleTextChange('');
             }
 
-            this.setState(nextState, callback);
+            this.changeDraft('');
+
+            let callback;
+            if (Platform.OS === 'android') {
+                // Shrink the input textbox since the layout events lag slightly
+                const nextState = {
+                    contentHeight: INITIAL_HEIGHT,
+                };
+
+                // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
+                // are typed successively without blurring the input
+                nextState.keyboardType = 'email-address';
+                callback = () => this.setState({keyboardType: 'default'});
+
+                this.setState(nextState, callback);
+            }
         }
     };
 
