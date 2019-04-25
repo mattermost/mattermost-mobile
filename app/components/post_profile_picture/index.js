@@ -26,7 +26,7 @@ function mapStateToProps(state, ownProps) {
         fromAutoResponder: fromAutoResponder(post),
         overrideIconUrl: post?.props?.override_icon_url, // eslint-disable-line camelcase
         userId: post.user_id,
-        isBot: user.is_bot || false,
+        isBot: (user ? user.is_bot : false),
         theme: getTheme(state),
     };
 }
