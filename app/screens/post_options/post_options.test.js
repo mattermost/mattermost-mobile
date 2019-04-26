@@ -13,8 +13,8 @@ jest.mock('react-intl');
 
 jest.mock('Alert', () => {
     return {
-      alert: jest.fn()
-    }
+        alert: jest.fn(),
+    };
 });
 
 describe('PostOptions', () => {
@@ -118,5 +118,5 @@ describe('PostOptions', () => {
 
         expect(actions.deletePost).toBeCalled();
         expect(actions.removePost).toBeCalled();
-    })
+    });
 });
