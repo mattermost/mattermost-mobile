@@ -17,7 +17,7 @@ describe('ChannelAddMembers', () => {
             handleAddChannelMembers: jest.fn().mockResolvedValue({}),
             searchProfiles: jest.fn().mockResolvedValue({data: []}),
         },
-        currentChannel: {id: 'current_channel_id'},
+        currentChannelId: 'current_channel_id',
         currentTeamId: 'current_team_id',
         currentUserId: 'current_user_id',
         profilesNotInChannel: [],

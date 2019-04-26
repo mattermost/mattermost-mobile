@@ -16,8 +16,11 @@ import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
 import ChannelAddMembers from './channel_add_members';
 
 function mapStateToProps(state) {
+    const currentChannel = getCurrentChannel(state);
+
     return {
-        currentChannel: getCurrentChannel(state),
+        currentChannelId: currentChannel.id,
+        currentChannelGroupConstrained: currentChannel.group_constrained,
         currentTeamId: getCurrentTeamId(state),
         currentUserId: getCurrentUserId(state),
         profilesNotInChannel: getProfilesNotInCurrentChannel(state),
