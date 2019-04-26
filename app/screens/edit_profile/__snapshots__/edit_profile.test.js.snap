@@ -74,6 +74,7 @@ exports[`edit_profile should match snapshot 1`] = `
       }
     }
     onShowFileSizeWarning={[Function]}
+    onShowUnsupportedMimeTypeWarning={[Function]}
     removeProfileImage={[Function]}
     theme={
       Object {
@@ -104,6 +105,13 @@ exports[`edit_profile should match snapshot 1`] = `
       }
     }
     uploadFiles={[Function]}
+    validMimeTypes={
+      Array [
+        "image/jpeg",
+        "image/png",
+        "image/bmp",
+      ]
+    }
     wrapper={true}
   >
     <Connect(ProfilePicture)

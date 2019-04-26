@@ -28,6 +28,11 @@ import mattermostBucket from 'app/mattermost_bucket';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 const MAX_SIZE = 20 * 1024 * 1024;
+const VALID_MIME_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/bmp',
+];
 const holders = {
     firstName: {
         id: t('user.settings.general.firstName'),
@@ -278,6 +283,18 @@ export default class EditProfile extends PureComponent {
         Alert.alert(fileSizeWarning);
     };
 
+    onShowUnsupportedMimeTypeWarning = () => {
+        const {formatMessage} = this.context.intl;
+        const fileTypeWarning = formatMessage({
+            id: 'mobile.file_upload.unsupportedMimeType',
+            defaultMessage: 'Only files of the following MIME type can be uploaded: {mimeTypes}',
+        }, {
+            mimeTypes: VALID_MIME_TYPES.join('\n'),
+        });
+
+        Alert.alert('', fileTypeWarning);
+    };
+
     renderFirstNameSettings = () => {
         const {formatMessage} = this.context.intl;
         const {config, currentUser, theme} = this.props;
@@ -500,6 +517,8 @@ export default class EditProfile extends PureComponent {
                     uploadFiles={this.handleUploadProfileImage}
                     removeProfileImage={this.handleRemoveProfileImage}
                     onShowFileSizeWarning={this.onShowFileSizeWarning}
+                    onShowUnsupportedMimeTypeWarning={this.onShowUnsupportedMimeTypeWarning}
+                    validMimeTypes={VALID_MIME_TYPES}
                 >
                     <ProfilePicture
                         userId={currentUser.id}

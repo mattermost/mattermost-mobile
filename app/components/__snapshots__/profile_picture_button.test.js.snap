@@ -53,5 +53,6 @@ exports[`profile_picture_button should match snapshot 1`] = `
     }
   }
   uploadFiles={[MockFunction]}
+  validMimeTypes={Array []}
 />
 `;
