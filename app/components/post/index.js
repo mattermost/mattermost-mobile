@@ -11,6 +11,7 @@ import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from 'mat
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {getUser} from 'mattermost-redux/selectors/entities/users';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 
@@ -43,6 +44,7 @@ function makeMapStateToProps() {
 
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
+        const user = getUser(state, post.user_id);
         const isCommentMention = isPostCommentMention(state, post.id);
         let isFirstReply = true;
         let isLastReply = true;
@@ -72,6 +74,7 @@ function makeMapStateToProps() {
             channelIsReadOnly: isChannelReadOnlyById(state, post.channel_id),
             currentUserId,
             post,
+            isBot: (user ? user.is_bot : false),
             isFirstReply,
             isLastReply,
             consecutivePost: isConsecutivePost(post, previousPost),
