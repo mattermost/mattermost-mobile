@@ -321,7 +321,6 @@ export default class SelectServer extends PureComponent {
         });
 
         Client4.setUrl(url);
-        Client4.online = true;
         handleServerUrlChanged(url);
 
         let cancel = false;

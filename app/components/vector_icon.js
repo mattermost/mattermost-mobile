@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {Text} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import FoundationIcon from 'react-native-vector-icons/Foundation';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -28,6 +29,14 @@ export default class VectorIcon extends PureComponent {
         case 'fontawesome':
             return (
                 <FontAwesomeIcon
+                    name={name}
+                    style={style}
+                    size={size}
+                />
+            );
+        case 'fontawesome5':
+            return (
+                <FontAwesome5Icon
                     name={name}
                     style={style}
                     size={size}

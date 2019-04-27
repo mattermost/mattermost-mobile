@@ -18,7 +18,6 @@ import TeamIcon from 'app/components/team_icon';
 export default class SwitchTeamsButton extends React.PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string,
-        searching: PropTypes.bool.isRequired,
         onShowTeams: PropTypes.func.isRequired,
         mentionCount: PropTypes.number.isRequired,
         teamsCount: PropTypes.number.isRequired,
@@ -33,7 +32,6 @@ export default class SwitchTeamsButton extends React.PureComponent {
         const {
             currentTeamId,
             mentionCount,
-            searching,
             teamsCount,
             theme,
         } = this.props;
@@ -42,7 +40,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
             return null;
         }
 
-        if (searching || teamsCount < 2) {
+        if (teamsCount < 2) {
             return null;
         }
 

@@ -11,8 +11,12 @@ import {handleSelectChannel, setChannelLoading} from 'app/actions/views/channel'
 import ChannelLoader from './channel_loader';
 
 function mapStateToProps(state, ownProps) {
+    const channelIsLoading = ownProps.hasOwnProperty('channelIsLoading') ?
+        ownProps.channelIsLoading :
+        state.views.channel.loading;
+
     return {
-        channelIsLoading: ownProps.channelIsLoading || state.views.channel.loading,
+        channelIsLoading,
         theme: getTheme(state),
     };
 }

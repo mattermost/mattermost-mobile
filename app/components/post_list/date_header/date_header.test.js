@@ -20,8 +20,7 @@ describe('DateHeader', () => {
         it('without suffix', () => {
             const props = {
                 ...baseProps,
-                dateLineString: 'date-1531152392',
-                index: 0,
+                date: 1531152392,
             };
             const wrapper = shallow(
                 <DateHeader {...props}/>,
@@ -34,8 +33,7 @@ describe('DateHeader', () => {
         it('with suffix', () => {
             const props = {
                 ...baseProps,
-                dateLineString: 'date-1531152392-index-2',
-                index: 2,
+                date: 1531152392,
             };
             const wrapper = shallow(
                 <DateHeader {...props}/>,
@@ -48,9 +46,8 @@ describe('DateHeader', () => {
         it('when timezone is set', () => {
             const props = {
                 ...baseProps,
-                dateLineString: 'date-1531152392-index-2',
+                date: 1531152392,
                 timeZone: 'America/New_York',
-                index: 2,
             };
             const wrapper = shallow(
                 <DateHeader {...props}/>,

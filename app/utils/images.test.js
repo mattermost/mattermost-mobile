@@ -2,12 +2,32 @@
 // See LICENSE.txt for license information.
 
 import {calculateDimensions} from 'app/utils/images';
+import {
+    IMAGE_MAX_HEIGHT,
+    IMAGE_MIN_DIMENSION,
+} from 'app/constants/image';
 
 const PORTRAIT_VIEWPORT = 315;
-const IMAGE_MAX_HEIGHT = 350;
-const IMAGE_MIN_DIMENSION = 50;
 
 describe('Images calculateDimensions', () => {
+    it('image with falsy height should return null height and width', () => {
+        const falsyHeights = [0, null, undefined, NaN, '', false];
+        falsyHeights.forEach((falsyHeight) => {
+            const {height, width} = calculateDimensions(falsyHeight, 20, PORTRAIT_VIEWPORT);
+            expect(height).toEqual(null);
+            expect(width).toEqual(null);
+        });
+    });
+
+    it('image with falsy width should return null height and width', () => {
+        const falsyWidths = [0, null, undefined, NaN, '', false];
+        falsyWidths.forEach((falsyWidth) => {
+            const {height, width} = calculateDimensions(20, falsyWidth, PORTRAIT_VIEWPORT);
+            expect(height).toEqual(null);
+            expect(width).toEqual(null);
+        });
+    });
+
     it('image smaller than 50x50 should return 50x50', () => {
         const {height, width} = calculateDimensions(20, 20, PORTRAIT_VIEWPORT);
         expect(height).toEqual(IMAGE_MIN_DIMENSION);

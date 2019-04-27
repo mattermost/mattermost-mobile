@@ -63,6 +63,7 @@ export default class ChannelSidebar extends Component {
             show: false,
             openDrawerOffset,
             drawerOpened: false,
+            searching: false,
         };
     }
 
@@ -92,9 +93,9 @@ export default class ChannelSidebar extends Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const {currentTeamId, deviceWidth, isLandscape, teamsCount} = this.props;
-        const {openDrawerOffset} = this.state;
+        const {openDrawerOffset, show, searching} = this.state;
 
-        if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== this.state.show) {
+        if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching) {
             return true;
         }
 
@@ -258,24 +259,14 @@ export default class ChannelSidebar extends Component {
     };
 
     onSearchEnds = () => {
-        //hack to update the drawer when the offset changes
-        const {isLandscape, isTablet} = this.props;
-
-        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-        if (isLandscape || isTablet) {
-            openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
-        }
-        if (this.refs.drawer) {
-            this.refs.drawer.canClose = true;
-        }
-        this.setState({openDrawerOffset});
+        this.setState({searching: false});
     };
 
     onSearchStart = () => {
         if (this.refs.drawer) {
             this.refs.drawer.canClose = false;
         }
-        this.setState({openDrawerOffset: 0});
+        this.setState({searching: true});
     };
 
     showTeams = () => {
@@ -300,6 +291,7 @@ export default class ChannelSidebar extends Component {
         const {
             show,
             openDrawerOffset,
+            searching,
         } = this.state;
 
         if (!show) {
@@ -307,7 +299,7 @@ export default class ChannelSidebar extends Component {
         }
 
         const multipleTeams = teamsCount > 1;
-        const showTeams = openDrawerOffset !== 0 && multipleTeams;
+        const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {
             if (multipleTeams) {
                 this.drawerSwiper.getWrappedInstance().runOnLayout();
