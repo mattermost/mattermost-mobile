@@ -8,10 +8,9 @@ import {createPost, removePost} from 'mattermost-redux/actions/posts';
 import {Posts} from 'mattermost-redux/constants';
 import {isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channels';
 import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getUser, getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
-import {getUser} from 'mattermost-redux/selectors/entities/users';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 

@@ -63,6 +63,7 @@ export default class Post extends PureComponent {
         skipPinnedHeader: PropTypes.bool,
         isCommentMention: PropTypes.bool,
         location: PropTypes.string,
+        isBot: PropTypes.bool,
     };
 
     static defaultProps = {
