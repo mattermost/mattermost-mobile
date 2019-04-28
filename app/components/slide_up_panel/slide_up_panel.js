@@ -12,10 +12,11 @@ import {
 } from 'react-native-gesture-handler';
 
 import {DeviceTypes} from 'app/constants';
+import mattermostManaged from 'app/mattermost_managed';
 
 import SlideUpPanelIndicator from './slide_up_panel_indicator';
 
-export const BOTTOM_MARGIN = DeviceTypes.IS_IPHONE_X ? 24 : 0;
+export const BOTTOM_MARGIN = mattermostManaged.hasSafeAreaInsets ? 24 : 0;
 const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_X ? 84 : 64;
 const TOP_ANDROID_MARGIN = 44;
 const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;

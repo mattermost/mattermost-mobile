@@ -48,6 +48,7 @@ export default {
 
         return localConfig || {};
     },
+    hasSafeAreaInsets: MattermostManaged.hasSafeAreaInsets,
     isDeviceSecure: async () => {
         try {
             return await LocalAuth.isDeviceSecure();
