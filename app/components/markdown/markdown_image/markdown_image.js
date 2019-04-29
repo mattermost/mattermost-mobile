@@ -21,7 +21,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import ImageCacheManager from 'app/utils/image_cache_manager';
-import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
+import {previewImageAtIndex, calculateDimensions, isGifTooLarge} from 'app/utils/images';
 import {normalizeProtocol} from 'app/utils/url';
 
 import brokenImageIcon from 'assets/images/icons/brokenimage.png';
@@ -36,7 +36,7 @@ export default class MarkdownImage extends React.Component {
         children: PropTypes.node,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        imageMetadata: PropTypes.object,
+        imagesMetadata: PropTypes.object,
         linkDestination: PropTypes.string,
         isReplyPost: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
@@ -52,7 +52,7 @@ export default class MarkdownImage extends React.Component {
     constructor(props) {
         super(props);
 
-        const dimensions = props?.imageMetadata?.[props.source];
+        const dimensions = props.imagesMetadata?.[props.source];
         this.state = {
             originalHeight: dimensions?.height || 0,
             originalWidth: dimensions?.width || 0,
@@ -63,26 +63,29 @@ export default class MarkdownImage extends React.Component {
         this.mounted = false;
     }
 
-    componentWillMount() {
+    componentDidMount() {
+        this.mounted = true;
+
         ImageCacheManager.cache(null, this.getSource(), this.setImageUrl);
     }
 
-    componentDidMount() {
-        this.mounted = true;
+    static getDerivedStateFromProps(props) {
+        const imageMetadata = props.imagesMetadata?.[props.source];
+
+        if (imageMetadata) {
+            return {
+                originalHeight: imageMetadata.height,
+                originalWidth: imageMetadata.width,
+            };
+        }
+
+        return null;
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.source !== nextProps.source) {
-            const dimensions = nextProps?.imageMetadata?.[nextProps.source];
-
-            this.setState({
-                failed: false,
-                originalHeight: dimensions?.height || 0,
-                originalWidth: dimensions?.width || 0,
-            });
-
+    componentDidUpdate(prevProps) {
+        if (this.props.source !== prevProps.source) {
             // getSource also depends on serverURL, but that shouldn't change while this is mounted
-            ImageCacheManager.cache(null, this.getSource(nextProps), this.setImageUrl);
+            ImageCacheManager.cache(null, this.getSource(), this.setImageUrl);
         }
     }
 
@@ -90,11 +93,11 @@ export default class MarkdownImage extends React.Component {
         this.mounted = false;
     }
 
-    getSource = (props = this.props) => {
-        let source = props.source;
+    getSource = () => {
+        let source = this.props.source;
 
         if (source.startsWith('/')) {
-            source = props.serverURL + '/' + source;
+            source = this.props.serverURL + '/' + source;
         }
 
         return source;
@@ -112,6 +115,7 @@ export default class MarkdownImage extends React.Component {
         }
 
         this.setState({
+            failed: false,
             originalHeight: height,
             originalWidth: width,
         });
@@ -203,6 +207,10 @@ export default class MarkdownImage extends React.Component {
     };
 
     render() {
+        if (isGifTooLarge(this.props.imagesMetadata?.[this.props.source])) {
+            return null;
+        }
+
         let image = null;
         const {originalHeight, originalWidth, uri} = this.state;
         const {height, width} = calculateDimensions(originalHeight, originalWidth, this.getViewPortWidth());

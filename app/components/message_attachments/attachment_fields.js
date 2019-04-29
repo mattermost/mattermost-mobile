@@ -86,7 +86,7 @@ export default class AttachmentFields extends PureComponent {
                             baseTextStyle={baseTextStyle}
                             textStyles={textStyles}
                             blockStyles={blockStyles}
-                            imageMetadata={metadata?.images}
+                            imagesMetadata={metadata?.images}
                             value={(field.value || '')}
                             navigator={navigator}
                             onPermalinkPress={onPermalinkPress}

@@ -108,7 +108,7 @@ export default class FileAttachment extends PureComponent {
                     onLongPress={onLongPress}
                 >
                     <FileAttachmentImage
-                        file={data || {}}
+                        file={data}
                         onCaptureRef={this.handleCaptureRef}
                         theme={theme}
                     />
