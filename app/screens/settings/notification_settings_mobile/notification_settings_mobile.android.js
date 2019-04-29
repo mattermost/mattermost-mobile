@@ -36,7 +36,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     }
 
     static defaultProps = {
-        currentUser: {}
+        currentUser: {},
     }
 
     cancelMobilePushModal = () => {
