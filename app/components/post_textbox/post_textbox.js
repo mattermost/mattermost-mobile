@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import Button from 'react-native-button';
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -12,6 +12,7 @@ import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
+import Fade from 'app/components/fade';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
@@ -19,13 +20,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
+import SendButton from 'app/components/send_button';
 
 import Typing from './components/typing';
 
 const AUTOCOMPLETE_MARGIN = 20;
 const AUTOCOMPLETE_MAX_HEIGHT = 200;
-
-let PaperPlane = null;
 
 export default class PostTextbox extends PureComponent {
     static propTypes = {
@@ -122,21 +122,19 @@ export default class PostTextbox extends PureComponent {
     canSend = () => {
         const {files, maxMessageLength, uploadFileRequestStatus} = this.props;
         const {value} = this.state;
-        const valueLength = value.trim().length;
+        const messageLength = value.trim().length;
 
-        if (files.length) {
-            const filesLoading = [];
-            files.forEach((file) => {
-                if (file.loading) {
-                    filesLoading.push(file);
-                }
-            });
-
-            const loadingComplete = filesLoading.length === 0;
-            return valueLength <= maxMessageLength && uploadFileRequestStatus !== RequestStatus.STARTED && loadingComplete;
+        if (messageLength > maxMessageLength) {
+            return false;
         }
 
-        return valueLength > 0 && valueLength <= maxMessageLength;
+        if (files.length) {
+            const loadingComplete = !this.isFileLoading();
+            const alreadySendingFiles = uploadFileRequestStatus === RequestStatus.STARTED;
+            return loadingComplete && !alreadySendingFiles;
+        }
+
+        return messageLength > 0;
     };
 
     changeDraft = (text) => {
@@ -294,52 +292,15 @@ export default class PostTextbox extends PureComponent {
         this.props.actions.initUploadFiles(images, this.props.rootId);
     };
 
-    renderSendButton = () => {
-        const {files, theme} = this.props;
-        const style = getStyleSheet(theme);
+    isFileLoading() {
+        const {files} = this.props;
 
-        const canSend = this.canSend();
-        const imagesLoading = files.filter((f) => f.loading).length > 0;
+        return files.some((file) => file.loading);
+    }
 
-        let button = null;
-
-        if (canSend || imagesLoading) {
-            if (!PaperPlane) {
-                PaperPlane = require('app/components/paper_plane').default;
-            }
-
-            const icon = (
-                <PaperPlane
-                    height={13}
-                    width={15}
-                    color={theme.buttonColor}
-                />
-            );
-
-            if (imagesLoading) {
-                button = (
-                    <View style={style.sendButtonContainer}>
-                        <View style={[style.sendButton, style.disableButton]}>
-                            {icon}
-                        </View>
-                    </View>
-                );
-            } else if (canSend) {
-                button = (
-                    <TouchableOpacity
-                        onPress={this.handleSendMessage}
-                        style={style.sendButtonContainer}
-                    >
-                        <View style={style.sendButton}>
-                            {icon}
-                        </View>
-                    </TouchableOpacity>
-                );
-            }
-        }
-
-        return button;
-    };
+    isSendButtonVisible() {
+        return this.canSend() || this.isFileLoading();
+    }
 
     sendMessage = () => {
         const {actions, currentUserId, channelId, files, rootId} = this.props;
@@ -644,7 +605,13 @@ export default class PostTextbox extends PureComponent {
                                 disableFullscreenUI={true}
                                 editable={!channelIsReadOnly}
                             />
-                            {this.renderSendButton()}
+                            <Fade visible={this.isSendButtonVisible()}>
+                                <SendButton
+                                    disabled={this.isFileLoading()}
+                                    handleSendMessage={this.handleSendMessage}
+                                    theme={theme}
+                                />
+                            </Fade>
                         </View>
                     </View>
                 )}
@@ -656,9 +623,6 @@ export default class PostTextbox extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        disableButton: {
-            backgroundColor: changeOpacity(theme.buttonBg, 0.3),
-        },
         input: {
             color: '#000',
             flex: 1,
@@ -707,19 +671,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
             marginLeft: 10,
             marginRight: 10,
-        },
-        sendButtonContainer: {
-            justifyContent: 'flex-end',
-            paddingHorizontal: 5,
-            paddingVertical: 3,
-        },
-        sendButton: {
-            backgroundColor: theme.buttonBg,
-            borderRadius: 18,
-            height: 28,
-            width: 28,
-            alignItems: 'center',
-            justifyContent: 'center',
         },
         archivedWrapper: {
             paddingLeft: 20,

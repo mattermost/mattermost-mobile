@@ -1,0 +1,103 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
+<View
+  style={
+    Object {
+      "justifyContent": "flex-end",
+      "paddingHorizontal": 5,
+      "paddingVertical": 3,
+    }
+  }
+>
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#166de0",
+          "borderRadius": 18,
+          "height": 28,
+          "justifyContent": "center",
+          "width": 28,
+        },
+        Object {
+          "backgroundColor": "rgba(22,109,224,0.3)",
+        },
+      ]
+    }
+  >
+    <PaperPlane
+      color="#ffffff"
+      height={13}
+      width={15}
+    />
+  </View>
+</View>
+`;
+
+exports[`SendButton should match snapshot 1`] = `
+<TouchableOpacity
+  activeOpacity={0.2}
+  onPress={[MockFunction]}
+  style={
+    Object {
+      "justifyContent": "flex-end",
+      "paddingHorizontal": 5,
+      "paddingVertical": 3,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#166de0",
+        "borderRadius": 18,
+        "height": 28,
+        "justifyContent": "center",
+        "width": 28,
+      }
+    }
+  >
+    <PaperPlane
+      color="#ffffff"
+      height={13}
+      width={15}
+    />
+  </View>
+</TouchableOpacity>
+`;
+
+exports[`SendButton should render theme backgroundColor 1`] = `
+<TouchableOpacity
+  activeOpacity={0.2}
+  onPress={[MockFunction]}
+  style={
+    Object {
+      "justifyContent": "flex-end",
+      "paddingHorizontal": 5,
+      "paddingVertical": 3,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#166de0",
+        "borderRadius": 18,
+        "height": 28,
+        "justifyContent": "center",
+        "width": 28,
+      }
+    }
+  >
+    <PaperPlane
+      color="#ffffff"
+      height={13}
+      width={15}
+    />
+  </View>
+</TouchableOpacity>
+`;

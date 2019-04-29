@@ -93,6 +93,7 @@
     "eslint-plugin-react": "7.12.4",
     "jest": "24.1.0",
     "jest-cli": "24.1.0",
+    "jest-enzyme": "7.0.2",
     "jsdom-global": "3.0.2",
     "metro-react-native-babel-preset": "0.51.1",
     "mmjstool": "github:mattermost/mattermost-utilities",
@@ -130,7 +131,8 @@
     ],
     "preset": "react-native",
     "setupFilesAfterEnv": [
-      "<rootDir>/test/setup.js"
+      "<rootDir>/test/setup.js",
+      "<rootDir>/node_modules/jest-enzyme/lib/index.js"
     ],
     "testPathIgnorePatterns": [
       "/node_modules/"
