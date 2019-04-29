@@ -16,7 +16,7 @@ function mapStateToProps(state) {
     const config = getConfig(state);
     const theme = getTheme(state);
     const updateMeRequest = state.requests.users.updateMe;
-    const currentUser = getCurrentUser(state) || {};
+    const currentUser = getCurrentUser(state);
 
     return {
         config,

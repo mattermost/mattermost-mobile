@@ -35,6 +35,10 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         updateMeRequest: PropTypes.object.isRequired,
     }
 
+    static defaultProps = {
+        currentUser: {}
+    }
+
     cancelMobilePushModal = () => {
         this.setState({
             newPush: this.state.push,
