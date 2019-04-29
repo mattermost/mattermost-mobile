@@ -251,6 +251,7 @@
   "mobile.file_upload.camera_video": "Gira video",
   "mobile.file_upload.library": "Galleria Fotografica",
   "mobile.file_upload.max_warning": "Numero massimo di file caricabili limitato a 5.",
+  "mobile.file_upload.unsupportedMimeType": "Solo i file con i seguenti tipi MIME possono essere caricati:\n{mimeTypes}",
   "mobile.file_upload.video": "Libreria video",
   "mobile.flagged_posts.empty_description": "Contrassegnare i messaggi è uno strumento per seguirli. I contrassegni sono personali e non sono visibili agli altri utenti.",
   "mobile.flagged_posts.empty_title": "Nessuna pubblicazione contrassegnata",

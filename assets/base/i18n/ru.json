@@ -251,6 +251,7 @@
   "mobile.file_upload.camera_video": "Снять видео",
   "mobile.file_upload.library": "Библиотека изображений",
   "mobile.file_upload.max_warning": "Вы можете загрузить не более 5 файлов за раз.",
+  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
   "mobile.file_upload.video": "Библиотека видео",
   "mobile.flagged_posts.empty_description": "Флаги - один из способов, пометки сообщений для последующей деятельности. Ваши флаги не могут быть просмотрены другими пользователями.",
   "mobile.flagged_posts.empty_title": "Отмеченные сообщения",

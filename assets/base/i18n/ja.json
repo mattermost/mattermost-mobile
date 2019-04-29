@@ -251,6 +251,7 @@
   "mobile.file_upload.camera_video": "動画を撮る",
   "mobile.file_upload.library": "フォトライブラリー",
   "mobile.file_upload.max_warning": "最大5ファイルまでアップロードできます。",
+  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
   "mobile.file_upload.video": "動画ライブラリー",
   "mobile.flagged_posts.empty_description": "フラグはメッセージに追跡のためのマークを付ける一つの方法です。あなたのフラグは個人のもので、他のユーザーからは見えません。",
   "mobile.flagged_posts.empty_title": "フラグの立てられた投稿はありません",

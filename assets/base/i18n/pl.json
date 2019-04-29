@@ -251,6 +251,7 @@
   "mobile.file_upload.camera_video": "Wrzuć wideo",
   "mobile.file_upload.library": "Biblioteka Zdjęć",
   "mobile.file_upload.max_warning": "Wrzucanie jest limitowane do 5 plików maksymalnie.",
+  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
   "mobile.file_upload.video": "Biblioteka wideo",
   "mobile.flagged_posts.empty_description": "Oznaczanie wiadomości stanowi sposób ich zapisywania \"na później\". Twoje flagi są poufne i nie są widoczne dla innych użytkowników.",
   "mobile.flagged_posts.empty_title": "Brak Oznaczonych Postów",
