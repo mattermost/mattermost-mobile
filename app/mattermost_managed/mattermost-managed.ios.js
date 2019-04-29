@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {NativeModules, DeviceEventEmitter} from 'react-native';
+import {NativeModules, NativeEventEmitter} from 'react-native';
 import LocalAuth from 'react-native-local-auth';
 import JailMonkey from 'jail-monkey';
 
 const {BlurAppScreen, MattermostManaged} = NativeModules;
+const mattermostManagedEmitter = new NativeEventEmitter(MattermostManaged);
 
 const listeners = [];
 let localConfig;
 
 export default {
     addEventListener: (name, callback) => {
-        const listener = DeviceEventEmitter.addListener(name, (config) => {
+        const listener = mattermostManagedEmitter.addListener(name, (config) => {
             localConfig = config;
             if (callback && typeof callback === 'function') {
                 callback(config);
