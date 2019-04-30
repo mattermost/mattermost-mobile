@@ -5,13 +5,15 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import java.lang.System;
 
-
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import org.json.JSONObject;
+import org.json.JSONException;
 
 import com.mattermost.react_native_interface.ResolvePromise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -53,17 +55,23 @@ public class ReceiptDelivery {
             return;
         }
 
+        JSONObject json;
         long receivedAt = System.currentTimeMillis();
-        String json = "{"
-                + "\"id\": \"" + ackId + "\","
-                + "\"received_at\":" + receivedAt + ","
-                + "\"platform\": \"android\","
-                + "\"type\": \"" + type + "\""
-                + "}";
+
+        try {
+            json = new JSONObject();
+            json.put("id", ackId);
+            json.put("received_at", receivedAt);
+            json.put("platform", "android");
+            json.put("type", type);
+        } catch (JSONException e) {
+            Log.e("ReactNative", "Receipt delivery failed to build json payload");
+            return;
+        }
 
         final OkHttpClient client = new OkHttpClient();
         final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, json);
+        RequestBody body = RequestBody.create(JSON, json.toString());
         Request request = new Request.Builder()
                 .header("Authorization", String.format("Bearer %s", token))
                 .header("Content-Type", "application/json")
@@ -74,7 +82,7 @@ public class ReceiptDelivery {
         try {
             client.newCall(request).execute();
         } catch (Exception e) {
-            Log.i("ReactNative", "Receipt delivery failed to send");
+            Log.e("ReactNative", "Receipt delivery failed to send");
         }
 
     }
