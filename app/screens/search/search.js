@@ -99,7 +99,7 @@ export default class Search extends PureComponent {
     }
 
     componentWillMount() {
-        this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);
+        this.listenerId = mattermostManaged.addEventListener('managedConfigDidChange', this.setManagedConfig);
     }
 
     componentDidMount() {
