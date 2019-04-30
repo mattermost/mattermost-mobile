@@ -363,7 +363,7 @@ export default class PostOptions extends PureComponent {
 
     handlePostDelete = () => {
         const {formatMessage} = this.context.intl;
-        const {actions, isMyPost, post} = this.props;
+        const {actions, post} = this.props;
 
         Alert.alert(
             formatMessage({id: 'mobile.post.delete_title', defaultMessage: 'Delete Post'}),
@@ -379,9 +379,7 @@ export default class PostOptions extends PureComponent {
                 style: 'destructive',
                 onPress: () => {
                     actions.deletePost(post);
-                    if (isMyPost) {
-                        actions.removePost(post);
-                    }
+                    actions.removePost(post);
                     this.closeWithAnimation();
                 },
             }]
