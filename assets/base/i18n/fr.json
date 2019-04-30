@@ -251,6 +251,7 @@
   "mobile.file_upload.camera_video": "Enregistrer une vidéo",
   "mobile.file_upload.library": "Bibliothèque de photos",
   "mobile.file_upload.max_warning": "Envois limités à maximum 5 fichiers.",
+  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
   "mobile.file_upload.video": "Bibliothèque vidéo",
   "mobile.flagged_posts.empty_description": "Marquer un message est un bon moyen d'assurer le suivi. Marquer un message est personnel et ne peut être vu par les autres utilisateurs.",
   "mobile.flagged_posts.empty_title": "Aucun message marqué d'un indicateur",

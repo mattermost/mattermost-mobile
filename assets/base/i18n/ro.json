@@ -251,6 +251,7 @@
   "mobile.file_upload.camera_video": "Adauga video",
   "mobile.file_upload.library": "Biblioteca foto",
   "mobile.file_upload.max_warning": "Încărcările sunt limitate la maxim 5 fișiere.",
+  "mobile.file_upload.unsupportedMimeType": "Numai fișierele din următorul tip MIME pot fi încărcate:\n{mimeTypes}",
   "mobile.file_upload.video": "Biblioteca video",
   "mobile.flagged_posts.empty_description": "Steagurile reprezintă o modalitate de a marca mesajele de urmat. Steagurile dvs. sunt personale și nu pot fi văzute de alți utilizatori.",
   "mobile.flagged_posts.empty_title": "Nu sunt postări semnate",

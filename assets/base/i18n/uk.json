@@ -251,6 +251,7 @@
   "mobile.file_upload.camera_video": "Візьміть відео",
   "mobile.file_upload.library": "Бібліотека фотозображень ",
   "mobile.file_upload.max_warning": "Максимальна кількість завантажень - до 5 файлів.",
+  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
   "mobile.file_upload.video": "Відео бібліотека",
   "mobile.flagged_posts.empty_description": "Прапори - це спосіб позначення повідомлень для подальшого спостереження. Ваші прапори є особистими, і їх не можуть бачити інші користувачі.",
   "mobile.flagged_posts.empty_title": "Немає позначених повідомлень",

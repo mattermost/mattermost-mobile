@@ -251,6 +251,7 @@
   "mobile.file_upload.camera_video": "Take Video",
   "mobile.file_upload.library": "Photo Library",
   "mobile.file_upload.max_warning": "Uploads limited to 5 files maximum.",
+  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
   "mobile.file_upload.video": "Video Library",
   "mobile.flagged_posts.empty_description": "중요한 메시지를 따로 모아 확인할 수 있습니다. 중요 메시지는 개인별로 표시되며 다른 사람이 볼 수 없습니다.",
   "mobile.flagged_posts.empty_title": "중요 메세지 없음",

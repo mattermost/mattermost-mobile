@@ -251,6 +251,7 @@
   "mobile.file_upload.camera_video": "錄影",
   "mobile.file_upload.library": "相簿",
   "mobile.file_upload.max_warning": "上傳最多 5 個檔案。",
+  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
   "mobile.file_upload.video": "媒體櫃",
   "mobile.flagged_posts.empty_description": "標記是標注訊息以追蹤後續的功能。您的標記是屬於個人的，不會被其他使用者看到。",
   "mobile.flagged_posts.empty_title": "被標記的訊息",
