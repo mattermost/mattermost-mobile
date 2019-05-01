@@ -92,18 +92,11 @@ export default class Search extends PureComponent {
             channelName: '',
             cursorPosition: 0,
             value: props.initialValue,
-            managedConfig: {},
             recent: props.recent,
         };
     }
 
-    componentWillMount() {
-        this.listenerId = mattermostManaged.addEventListener('managedConfigDidChange', this.setManagedConfig);
-    }
-
     componentDidMount() {
-        this.setManagedConfig();
-
         if (this.props.initialValue) {
             this.search(this.props.initialValue);
         }
@@ -145,10 +138,6 @@ export default class Search extends PureComponent {
                 }
             }, 250);
         }
-    }
-
-    componentWillUnmount() {
-        mattermostManaged.removeEventListener(this.listenerId);
     }
 
     archivedIndicator = (postID, style) => {
@@ -365,7 +354,6 @@ export default class Search extends PureComponent {
 
     renderPost = ({item, index}) => {
         const {postIds, theme} = this.props;
-        const {managedConfig} = this.state;
         const style = getStyleFromTheme(theme);
 
         if (item.id) {
@@ -402,7 +390,7 @@ export default class Search extends PureComponent {
                     navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
-                    managedConfig={managedConfig}
+                    managedConfig={mattermostManaged.getCachedConfig()}
                     skipPinnedHeader={true}
                 />
                 {separator}
@@ -456,17 +444,6 @@ export default class Search extends PureComponent {
 
     retry = () => {
         this.search(this.state.value.trim());
-    };
-
-    setManagedConfig = async (config) => {
-        let nextConfig = config;
-        if (!nextConfig) {
-            nextConfig = await mattermostManaged.getLocalConfig();
-        }
-
-        this.setState({
-            managedConfig: nextConfig,
-        });
     };
 
     showPermalinkView = (postId, isPermalink) => {
