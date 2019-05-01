@@ -28,7 +28,7 @@ describe('PostAttachmentOpenGraph', () => {
         },
         deviceHeight: 600,
         deviceWidth: 400,
-        imageMetadata: {
+        imagesMetadata: {
             'https://www.mattermost.org/wp-content/uploads/2016/03/logoHorizontal_WS.png': {
                 width: 1165,
                 height: 265,
