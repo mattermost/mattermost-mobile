@@ -43,7 +43,7 @@ export default class Markdown extends PureComponent {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
         channelMentions: PropTypes.object,
-        imageMetadata: PropTypes.object,
+        imagesMetadata: PropTypes.object,
         isEdited: PropTypes.bool,
         isReplyPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
@@ -186,7 +186,7 @@ export default class Markdown extends PureComponent {
         return (
             <MarkdownImage
                 linkDestination={linkDestination}
-                imageMetadata={this.props.imageMetadata}
+                imagesMetadata={this.props.imagesMetadata}
                 isReplyPost={this.props.isReplyPost}
                 navigator={this.props.navigator}
                 source={src}

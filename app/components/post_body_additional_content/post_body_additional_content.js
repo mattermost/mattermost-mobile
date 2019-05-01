@@ -9,13 +9,12 @@ import {
     Linking,
     Platform,
     StyleSheet,
-    TouchableWithoutFeedback,
     TouchableOpacity,
-    View,
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import {intlShape} from 'react-intl';
 
+import PostAttachmentImage from 'app/components/post_attachment_image';
 import ProgressiveImage from 'app/components/progressive_image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -199,7 +198,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     link={link}
                     navigator={navigator}
                     openGraphData={openGraphData}
-                    imageMetadata={metadata && metadata.images}
+                    imagesMetadata={metadata && metadata.images}
                     theme={theme}
                 />
             );
@@ -215,7 +214,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
             link = shortenedLink;
         }
         const {width, height, uri} = this.state;
-        const imgHeight = height;
 
         if (link) {
             if (isYouTube) {
@@ -225,14 +223,13 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
                 return (
                     <TouchableOpacity
-                        style={[styles.imageContainer, {height: imgHeight || MAX_YOUTUBE_IMAGE_HEIGHT}]}
-                        {...this.responder}
+                        style={[styles.imageContainer, {height: height || MAX_YOUTUBE_IMAGE_HEIGHT}]}
                         onPress={this.playYouTubeVideo}
                     >
                         <ProgressiveImage
                             isBackgroundImage={true}
                             imageUri={imgUrl}
-                            style={[styles.image, {width: width || MAX_YOUTUBE_IMAGE_WIDTH, height: imgHeight || MAX_YOUTUBE_IMAGE_HEIGHT}]}
+                            style={[styles.image, {width: width || MAX_YOUTUBE_IMAGE_WIDTH, height: height || MAX_YOUTUBE_IMAGE_HEIGHT}]}
                             thumbnailUri={thumbUrl}
                             resizeMode='cover'
                             onError={this.handleLinkLoadError}
@@ -252,22 +249,17 @@ export default class PostBodyAdditionalContent extends PureComponent {
             }
 
             if (isImage) {
+                const imageMetadata = this.props.metadata?.images?.[link];
+
                 return (
-                    <TouchableWithoutFeedback
-                        onPress={this.handlePreviewImage}
-                        style={[styles.imageContainer, {height: imgHeight || MAX_YOUTUBE_IMAGE_HEIGHT}]}
-                        {...this.responder}
-                    >
-                        <View ref='item'>
-                            <ProgressiveImage
-                                ref='image'
-                                style={[styles.image, {width, height: imgHeight || MAX_YOUTUBE_IMAGE_HEIGHT}]}
-                                defaultSource={{uri}}
-                                resizeMode='contain'
-                                onError={this.handleLinkLoadError}
-                            />
-                        </View>
-                    </TouchableWithoutFeedback>
+                    <PostAttachmentImage
+                        height={height || MAX_YOUTUBE_IMAGE_HEIGHT}
+                        imageMetadata={imageMetadata}
+                        onImagePress={this.handlePreviewImage}
+                        onError={this.handleLinkLoadError}
+                        uri={uri}
+                        width={width}
+                    />
                 );
             }
         }
@@ -405,7 +397,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         this.setState({linkLoadError: true});
     };
 
-    handlePreviewImage = () => {
+    handlePreviewImage = (imageRef) => {
         const {shortenedLink} = this.state;
         let {link} = this.props;
         const {navigator} = this.props;
@@ -430,7 +422,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             },
         }];
 
-        previewImageAtIndex(navigator, [this.refs.item], 0, files);
+        previewImageAtIndex(navigator, [imageRef], 0, files);
     };
 
     playYouTubeVideo = () => {
