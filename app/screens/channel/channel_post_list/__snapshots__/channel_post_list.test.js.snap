@@ -1,0 +1,124 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelPostList should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(PostList)
+    channelId="current_channel_id"
+    currentUserId="current_user_id"
+    extraData={false}
+    indicateNewMessages={true}
+    lastViewedAt={1556753170812}
+    navigator={
+      Object {
+        "pop": [MockFunction],
+        "setButtons": [MockFunction],
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+    onLoadMoreUp={[Function]}
+    onPostPress={[Function]}
+    postIds={Array []}
+    refreshing={false}
+    renderFooter={[Function]}
+    renderReplies={true}
+  />
+  <Connect(AnnouncementBanner)
+    navigator={
+      Object {
+        "pop": [MockFunction],
+        "setButtons": [MockFunction],
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+  />
+  <Connect(RetryBarIndicator) />
+</View>
+`;
+
+exports[`ChannelPostList should match snapshot 2`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(PostList)
+    channelId="current_channel_id"
+    currentUserId="current_user_id"
+    extraData={false}
+    indicateNewMessages={true}
+    lastViewedAt={1556753170812}
+    navigator={
+      Object {
+        "pop": [MockFunction],
+        "setButtons": [MockFunction],
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+    onLoadMoreUp={[Function]}
+    onPostPress={[Function]}
+    postIds={Array []}
+    refreshing={false}
+    renderFooter={[Function]}
+    renderReplies={true}
+  />
+  <Connect(AnnouncementBanner)
+    navigator={
+      Object {
+        "pop": [MockFunction],
+        "setButtons": [MockFunction],
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+  />
+  <Connect(RetryBarIndicator) />
+</View>
+`;
+
+exports[`ChannelPostList should match snapshot 3`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(PostList)
+    channelId="current_channel_id"
+    currentUserId="current_user_id"
+    extraData={false}
+    indicateNewMessages={true}
+    lastViewedAt={1556753170812}
+    navigator={
+      Object {
+        "pop": [MockFunction],
+        "setButtons": [MockFunction],
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+    onLoadMoreUp={[Function]}
+    onPostPress={[Function]}
+    postIds={Array []}
+    refreshing={false}
+    renderFooter={[Function]}
+    renderReplies={true}
+  />
+  <Connect(AnnouncementBanner)
+    navigator={
+      Object {
+        "pop": [MockFunction],
+        "setButtons": [MockFunction],
+        "setOnNavigatorEvent": [MockFunction],
+      }
+    }
+  />
+  <Connect(RetryBarIndicator) />
+</View>
+`;
