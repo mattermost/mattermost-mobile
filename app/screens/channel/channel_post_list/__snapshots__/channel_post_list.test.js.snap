@@ -13,7 +13,7 @@ exports[`ChannelPostList should match snapshot 1`] = `
     currentUserId="current_user_id"
     extraData={false}
     indicateNewMessages={true}
-    lastViewedAt={1556753170812}
+    lastViewedAt={12345}
     navigator={
       Object {
         "pop": [MockFunction],
@@ -54,7 +54,7 @@ exports[`ChannelPostList should match snapshot 2`] = `
     currentUserId="current_user_id"
     extraData={false}
     indicateNewMessages={true}
-    lastViewedAt={1556753170812}
+    lastViewedAt={12345}
     navigator={
       Object {
         "pop": [MockFunction],
@@ -95,7 +95,7 @@ exports[`ChannelPostList should match snapshot 3`] = `
     currentUserId="current_user_id"
     extraData={false}
     indicateNewMessages={true}
-    lastViewedAt={1556753170812}
+    lastViewedAt={12345}
     navigator={
       Object {
         "pop": [MockFunction],

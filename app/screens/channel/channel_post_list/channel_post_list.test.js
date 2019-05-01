@@ -21,7 +21,7 @@ describe('ChannelPostList', () => {
         channelId: 'current_channel_id',
         channelRefreshingFailed: false,
         currentUserId: 'current_user_id',
-        lastViewedAt: Date.now(),
+        lastViewedAt: 12345,
         loadMorePostsVisible: false,
         postIds: [],
         postVisibility: 15,
