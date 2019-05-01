@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, View} from 'react-native';
+import {Alert, BackHandler, findNodeHandle, Keyboard, NativeModules, Platform, Text, TextInput, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import Button from 'react-native-button';
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -23,6 +23,8 @@ import FormattedText from 'app/components/formatted_text';
 import SendButton from 'app/components/send_button';
 
 import Typing from './components/typing';
+
+const {RNTextInputReset} = NativeModules;
 
 const AUTOCOMPLETE_MARGIN = 20;
 const AUTOCOMPLETE_MAX_HEIGHT = 200;
@@ -273,12 +275,17 @@ export default class PostTextbox extends PureComponent {
         });
     }
 
-    handleTextChange = (value) => {
+    handleTextChange = (value, autocomplete = false) => {
         const {
             actions,
             channelId,
             rootId,
         } = this.props;
+
+        // Workaround for some Android keyboards that don't play well with cursors (e.g. Samsung keyboards)
+        if (autocomplete && Platform.OS === 'android') {
+            RNTextInputReset.resetKeyboardInput(findNodeHandle(this.refs.input));
+        }
 
         this.checkMessageLength(value);
         this.setState({value});
