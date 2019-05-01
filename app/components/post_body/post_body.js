@@ -194,6 +194,16 @@ export default class PostBody extends PureComponent {
             PostAddChannelMember = require('app/components/post_add_channel_member').default;
         }
 
+        let userIds = postProps.add_channel_member.not_in_channel_user_ids;
+        let usernames = postProps.add_channel_member.not_in_channel_usernames;
+
+        if (!userIds) {
+            userIds = postProps.add_channel_member.user_ids;
+        }
+        if (!usernames) {
+            usernames = postProps.add_channel_member.usernames;
+        }
+
         return (
             <PostAddChannelMember
                 baseTextStyle={messageStyle}
@@ -201,8 +211,9 @@ export default class PostBody extends PureComponent {
                 onPostPress={onPress}
                 textStyles={textStyles}
                 postId={postProps.add_channel_member.post_id}
-                userIds={postProps.add_channel_member.user_ids}
-                usernames={postProps.add_channel_member.usernames}
+                userIds={userIds}
+                usernames={usernames}
+                noGroupsUsernames={postProps.add_channel_member.not_in_groups_usernames}
             />
         );
     };
@@ -241,6 +252,7 @@ export default class PostBody extends PureComponent {
 
     renderPostAdditionalContent = (blockStyles, messageStyle, textStyles) => {
         const {
+            isPostEphemeral,
             isReplyPost,
             isSystemMessage,
             message,
@@ -252,7 +264,7 @@ export default class PostBody extends PureComponent {
             postProps,
         } = this.props;
 
-        if (isSystemMessage) {
+        if (isSystemMessage && !isPostEphemeral) {
             return null;
         }
 
@@ -384,7 +396,7 @@ export default class PostBody extends PureComponent {
                         baseTextStyle={messageStyle}
                         blockStyles={blockStyles}
                         channelMentions={postProps.channel_mentions}
-                        imageMetadata={metadata?.images}
+                        imagesMetadata={metadata?.images}
                         isEdited={hasBeenEdited}
                         isReplyPost={isReplyPost}
                         isSearchResult={isSearchResult}

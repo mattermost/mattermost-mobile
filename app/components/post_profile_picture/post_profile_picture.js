@@ -21,6 +21,7 @@ export default class PostProfilePicture extends PureComponent {
         onViewUserProfile: PropTypes.func,
         theme: PropTypes.object,
         userId: PropTypes.string,
+        isBot: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -37,9 +38,10 @@ export default class PostProfilePicture extends PureComponent {
             overrideIconUrl,
             theme,
             userId,
+            isBot,
         } = this.props;
 
-        if (isSystemMessage && !fromAutoResponder) {
+        if (isSystemMessage && !fromAutoResponder && !isBot) {
             return (
                 <View>
                     <AppIcon

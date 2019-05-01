@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Image, TouchableWithoutFeedback, View} from 'react-native';
 
 import ProgressiveImage from 'app/components/progressive_image';
-import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
+import {isGifTooLarge, previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -17,8 +17,8 @@ export default class AttachmentImage extends PureComponent {
     static propTypes = {
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
+        imageMetadata: PropTypes.object,
         imageUrl: PropTypes.string,
-        metadata: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -34,12 +34,11 @@ export default class AttachmentImage extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
-        const {imageUrl, metadata} = this.props;
+        const {imageUrl, imageMetadata} = this.props;
 
         this.setViewPortMaxWidth();
-        if (metadata?.images?.[imageUrl]) {
-            const img = metadata.images[imageUrl];
-            this.setImageDimensionsFromMeta(null, img);
+        if (imageMetadata) {
+            this.setImageDimensionsFromMeta(null, imageMetadata);
         }
 
         if (imageUrl) {
@@ -88,16 +87,16 @@ export default class AttachmentImage extends PureComponent {
         }
     };
 
-    setImageDimensionsFromMeta = (imageUri, img) => {
-        const dimensions = calculateDimensions(img.height, img.width, this.maxImageWidth);
-        this.setImageDimensions(imageUri, dimensions, img.width, img.height);
+    setImageDimensionsFromMeta = (imageUri, imageMetadata) => {
+        const dimensions = calculateDimensions(imageMetadata.height, imageMetadata.width, this.maxImageWidth);
+        this.setImageDimensions(imageUri, dimensions, imageMetadata.width, imageMetadata.height);
     };
 
     setImageUrl = (imageURL) => {
-        const {imageUrl: attachmentImageUrl, metadata} = this.props;
+        const {imageMetadata} = this.props;
 
-        if (metadata?.images?.[attachmentImageUrl]) {
-            this.setImageDimensionsFromMeta(imageURL, metadata.images[attachmentImageUrl]);
+        if (imageMetadata) {
+            this.setImageDimensionsFromMeta(imageURL, imageMetadata);
             return;
         }
 
@@ -114,10 +113,10 @@ export default class AttachmentImage extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {imageMetadata, theme} = this.props;
         const {hasImage, height, imageUri, width} = this.state;
 
-        if (!hasImage) {
+        if (!hasImage || isGifTooLarge(imageMetadata)) {
             return null;
         }
 

@@ -18,7 +18,7 @@
     "intl": "1.2.5",
     "jail-monkey": "2.0.0",
     "jsc-android": "236355.1.1",
-    "mattermost-redux": "github:mattermost/mattermost-redux#477150436ac1871d0d63954c4f4f4d16ff692483",
+    "mattermost-redux": "github:mattermost/mattermost-redux#10399546e5cd0cb2b874ebe95436a2cdefd78eb8",
     "mime-db": "1.38.0",
     "moment-timezone": "0.5.23",
     "prop-types": "15.7.2",
@@ -65,7 +65,7 @@
     "redux-persist-transform-filter": "0.0.18",
     "redux-thunk": "2.3.0",
     "reselect": "4.0.0",
-    "rn-fetch-blob": "github:mattermost/react-native-fetch-blob#5b19784992ef2a1fa00c3a4c71fb005d7789b05c",
+    "rn-fetch-blob": "github:mattermost/react-native-fetch-blob#1800697e2e3834e80f7e5fa84edb5aa43c161bbc",
     "rn-placeholder": "github:mattermost/rn-placeholder#bfee66eb54f1f06d1425a0ad511a5e16559bf82c",
     "semver": "5.6.0",
     "shallow-equals": "1.0.0",
@@ -93,6 +93,7 @@
     "eslint-plugin-react": "7.12.4",
     "jest": "24.1.0",
     "jest-cli": "24.1.0",
+    "jest-enzyme": "7.0.2",
     "jsdom-global": "3.0.2",
     "metro-react-native-babel-preset": "0.51.1",
     "mmjstool": "github:mattermost/mattermost-utilities",
@@ -130,7 +131,8 @@
     ],
     "preset": "react-native",
     "setupFilesAfterEnv": [
-      "<rootDir>/test/setup.js"
+      "<rootDir>/test/setup.js",
+      "<rootDir>/node_modules/jest-enzyme/lib/index.js"
     ],
     "testPathIgnorePatterns": [
       "/node_modules/"
