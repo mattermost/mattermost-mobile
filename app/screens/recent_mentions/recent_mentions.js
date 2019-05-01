@@ -56,22 +56,6 @@ export default class RecentMentions extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.actions.clearSearch();
         props.actions.getRecentMentions();
-
-        this.state = {
-            managedConfig: {},
-        };
-    }
-
-    componentWillMount() {
-        this.listenerId = mattermostManaged.addEventListener('managedConfigDidChange', this.setManagedConfig);
-    }
-
-    componentDidMount() {
-        this.setManagedConfig();
-    }
-
-    componentWillUnmount() {
-        mattermostManaged.removeEventListener(this.listenerId);
     }
 
     goToThread = (post) => {
@@ -158,7 +142,7 @@ export default class RecentMentions extends PureComponent {
 
     renderPost = ({item, index}) => {
         const {postIds, theme} = this.props;
-        const {managedConfig} = this.state;
+
         if (isDateLine(item)) {
             return (
                 <DateHeader
@@ -184,24 +168,13 @@ export default class RecentMentions extends PureComponent {
                     navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
-                    managedConfig={managedConfig}
+                    managedConfig={mattermostManaged.getCachedConfig()}
                     showFullDate={false}
                     skipPinnedHeader={true}
                 />
                 {separator}
             </View>
         );
-    };
-
-    setManagedConfig = async (config) => {
-        let nextConfig = config;
-        if (!nextConfig) {
-            nextConfig = await mattermostManaged.getLocalConfig();
-        }
-
-        this.setState({
-            managedConfig: nextConfig,
-        });
     };
 
     showPermalinkView = (postId, isPermalink) => {

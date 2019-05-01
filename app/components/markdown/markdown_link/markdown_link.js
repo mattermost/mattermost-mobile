@@ -99,7 +99,7 @@ export default class MarkdownLink extends PureComponent {
     handleLongPress = async () => {
         const {formatMessage} = this.context.intl;
 
-        const config = await mattermostManaged.getLocalConfig();
+        const config = mattermostManaged.getCachedConfig();
 
         if (config.copyAndPasteProtection !== 'true') {
             const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});

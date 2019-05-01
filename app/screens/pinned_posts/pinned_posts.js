@@ -55,25 +55,12 @@ export default class PinnedPosts extends PureComponent {
         super(props);
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-
-        this.state = {
-            managedConfig: {},
-        };
-    }
-
-    componentWillMount() {
-        this.listenerId = mattermostManaged.addEventListener('managedConfigDidChange', this.setManagedConfig);
     }
 
     componentDidMount() {
         const {actions, currentChannelId} = this.props;
-        this.setManagedConfig();
         actions.clearSearch();
         actions.getPinnedPosts(currentChannelId);
-    }
-
-    componentWillUnmount() {
-        mattermostManaged.removeEventListener(this.listenerId);
     }
 
     goToThread = (post) => {
@@ -160,7 +147,6 @@ export default class PinnedPosts extends PureComponent {
 
     renderPost = ({item, index}) => {
         const {postIds, theme} = this.props;
-        const {managedConfig} = this.state;
         if (isDateLine(item)) {
             return (
                 <DateHeader
@@ -186,7 +172,7 @@ export default class PinnedPosts extends PureComponent {
                     navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
-                    managedConfig={managedConfig}
+                    managedConfig={mattermostManaged.getCachedConfig()}
                     showFullDate={false}
                     skipFlaggedHeader={false}
                     skipPinnedHeader={true}
@@ -194,17 +180,6 @@ export default class PinnedPosts extends PureComponent {
                 {separator}
             </React.Fragment>
         );
-    };
-
-    setManagedConfig = async (config) => {
-        let nextConfig = config;
-        if (!nextConfig) {
-            nextConfig = await mattermostManaged.getLocalConfig();
-        }
-
-        this.setState({
-            managedConfig: nextConfig,
-        });
     };
 
     showPermalinkView = (postId, isPermalink) => {

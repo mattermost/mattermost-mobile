@@ -57,25 +57,11 @@ export default class PostListBase extends PureComponent {
         siteURL: '',
     };
 
-    componentWillMount() {
-        this.listenerId = mattermostManaged.addEventListener('managedConfigDidChange', this.setManagedConfig);
-    }
-
-    componentDidMount() {
-        this.mounted = true;
-        this.setManagedConfig();
-    }
-
     componentDidUpdate() {
         if (this.props.deepLinkURL) {
             this.handleDeepLink(this.props.deepLinkURL);
             this.props.actions.setDeepLinkURL('');
         }
-    }
-
-    componentWillUnmount() {
-        this.mounted = false;
-        mattermostManaged.removeEventListener(this.listenerId);
     }
 
     handleClosePermalink = () => {
@@ -173,7 +159,6 @@ export default class PostListBase extends PureComponent {
             shouldRenderReplyButton,
             location,
         } = this.props;
-        const {managedConfig} = this.state;
 
         const highlight = highlightPostId === postId;
         return (
@@ -190,23 +175,10 @@ export default class PostListBase extends PureComponent {
                 shouldRenderReplyButton={shouldRenderReplyButton}
                 onPress={onPostPress}
                 navigator={navigator}
-                managedConfig={managedConfig}
+                managedConfig={mattermostManaged.getCachedConfig()}
                 location={location}
             />
         );
-    };
-
-    setManagedConfig = async (config) => {
-        let nextConfig = config;
-        if (!nextConfig) {
-            nextConfig = await mattermostManaged.getLocalConfig();
-        }
-
-        if (this.mounted) {
-            this.setState({
-                managedConfig: nextConfig,
-            });
-        }
     };
 
     showPermalinkView = (postId) => {
