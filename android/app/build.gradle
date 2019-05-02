@@ -229,7 +229,6 @@ dependencies {
     implementation project(':react-native-sentry')
     implementation project(':react-native-exception-handler')
     implementation project(':rn-fetch-blob')
-    implementation project(':react-native-recyclerview-list')
     implementation project(':react-native-webview')
     implementation project(':react-native-gesture-handler')
 

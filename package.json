@@ -46,7 +46,6 @@
     "react-native-notifications": "github:mattermost/react-native-notifications#c58499aedf9bd4c9a405196ec807019ed316f2bb",
     "react-native-passcode-status": "1.1.1",
     "react-native-permissions": "1.1.1",
-    "react-native-recyclerview-list": "mattermost/react-native-recyclerview-list#a2d26bc7b2623cae25e947ba3905f702434717bf",
     "react-native-safe-area": "0.5.0",
     "react-native-section-list-get-item-layout": "2.2.3",
     "react-native-sentry": "0.42.0",
