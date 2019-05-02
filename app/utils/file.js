@@ -10,6 +10,7 @@ import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 import {DeviceTypes} from 'app/constants/';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
+const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.(?<ext>[a-z]+)";/i;
 const {DOCUMENTS_PATH, IMAGES_PATH, VIDEOS_PATH} = DeviceTypes;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
@@ -233,4 +234,10 @@ export function getLocalFilePathFromFile(dir, file) {
     }
 
     return null;
+}
+
+export function getExtensionFromContentDisposition(contentDisposition) {
+    const match = CONTENT_DISPOSITION_REGEXP.exec(contentDisposition);
+
+    return match && match.groups.ext;
 }

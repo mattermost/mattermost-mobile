@@ -9,7 +9,10 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants';
-import {getExtensionFromMime} from 'app/utils/file';
+import {
+    getExtensionFromMime,
+    getExtensionFromContentDisposition,
+} from 'app/utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
 
 const {IMAGES_PATH} = DeviceTypes;
@@ -55,8 +58,13 @@ export default class ImageCacheManager {
                         throw new Error();
                     }
 
+                    const contentDisposition = this.downloadTask.respInfo.headers['Content-Disposition'];
                     const mimeType = this.downloadTask.respInfo.headers['Content-Type'];
-                    const ext = `.${getExtensionFromMime(mimeType) || getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
+                    const ext = '.' +
+                        getExtensionFromContentDisposition(contentDisposition) ||
+                        getExtensionFromMime(mimeType) ||
+                        getExtensionFromMime(DEFAULT_MIME_TYPE);
+
                     if (path.endsWith(ext)) {
                         notifyAll(uri, `${prefix}${path}`);
                     } else {
