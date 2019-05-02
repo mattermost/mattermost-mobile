@@ -17,6 +17,9 @@
  - Fixed an issue on iOS where users were unable to create channel name of 2 byte characters.
  - Fixed an issue on iOS where emoji appeared too close, with uneven spacing, and too small in the info modal.
  - Fixed an issue with MattermostShare error when sharing text that was over server's maximum post size.
+ 
+### Known Issues
+ - Buttons inside ephemeral posts are not clickable / functional on the mobile app.
 
 ## 1.18.1 Release
 - Release Date: April 18, 2019
