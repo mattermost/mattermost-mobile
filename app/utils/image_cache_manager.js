@@ -22,12 +22,39 @@ let siteUrl;
 export default class ImageCacheManager {
     static listeners = {};
 
+    static getCacheFile = async (name, uri) => {
+        const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
+        const defaultExt = `.${getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
+        const ext = filename.indexOf('.') === -1 ? defaultExt : filename.substring(filename.lastIndexOf('.'));
+        let path = `${IMAGES_PATH}/${Math.abs(hashCode(uri))}${ext}`;
+
+        try {
+            const isDir = await RNFetchBlob.fs.isDir(IMAGES_PATH);
+            if (!isDir) {
+                await RNFetchBlob.fs.mkdir(IMAGES_PATH);
+            }
+        } catch (error) {
+            // do nothing
+        }
+
+        let exists = await RNFetchBlob.fs.exists(path);
+        if (!exists) {
+            const pathWithDiffExt = await RNFetchBlob.fs.existsWithDiffExt(path);
+            if (pathWithDiffExt) {
+                exists = true;
+                path = pathWithDiffExt;
+            }
+        }
+
+        return {exists, path};
+    };
+
     static cache = async (filename, uri, listener) => {
         if (!listener) {
             console.warn('Unable to cache image when no listener is provided'); // eslint-disable-line no-console
         }
 
-        const {path, exists} = await getCacheFile(filename, uri);
+        const {path, exists} = await this.getCacheFile(filename, uri);
         const prefix = Platform.OS === 'android' ? 'file://' : '';
         let pathWithPrefix = `${prefix}${path}`;
 
@@ -91,33 +118,6 @@ export default class ImageCacheManager {
         return pathWithPrefix;
     };
 }
-
-const getCacheFile = async (name, uri) => {
-    const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
-    const defaultExt = `.${getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
-    const ext = filename.indexOf('.') === -1 ? defaultExt : filename.substring(filename.lastIndexOf('.'));
-    let path = `${IMAGES_PATH}/${Math.abs(hashCode(uri))}${ext}`;
-
-    try {
-        const isDir = await RNFetchBlob.fs.isDir(IMAGES_PATH);
-        if (!isDir) {
-            await RNFetchBlob.fs.mkdir(IMAGES_PATH);
-        }
-    } catch (error) {
-        // do nothing
-    }
-
-    let exists = await RNFetchBlob.fs.exists(path);
-    if (!exists) {
-        const pathWithDiffExt = await RNFetchBlob.fs.existsWithDiffExt(path);
-        if (pathWithDiffExt) {
-            exists = true;
-            path = pathWithDiffExt;
-        }
-    }
-
-    return {exists, path};
-};
 
 export const getSiteUrl = () => {
     return siteUrl;
