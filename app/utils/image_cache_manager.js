@@ -29,10 +29,12 @@ export default class ImageCacheManager {
 
         const {path, exists} = await getCacheFile(filename, uri);
         const prefix = Platform.OS === 'android' ? 'file://' : '';
+        let pathWithPrefix = `${prefix}${path}`;
+
         if (isDownloading(uri)) {
             addListener(uri, listener);
         } else if (exists) {
-            listener(`${prefix}${path}`);
+            listener(pathWithPrefix);
         } else {
             addListener(uri, listener);
             if (uri.startsWith('http')) {
@@ -65,17 +67,17 @@ export default class ImageCacheManager {
                         getExtensionFromMime(mimeType) ||
                         getExtensionFromMime(DEFAULT_MIME_TYPE);
 
-                    if (path.endsWith(ext)) {
-                        notifyAll(uri, `${prefix}${path}`);
-                    } else {
+                    if (!path.endsWith(ext)) {
                         const oldExt = path.substring(path.lastIndexOf('.'));
                         const newPath = path.replace(oldExt, ext);
                         await RNFetchBlob.fs.mv(path, newPath);
 
-                        notifyAll(uri, `${prefix}${newPath}`);
+                        pathWithPrefix = `${prefix}${newPath}`;
                     }
+
+                    notifyAll(uri, pathWithPrefix);
                 } catch (e) {
-                    RNFetchBlob.fs.unlink(`${prefix}${path}`);
+                    RNFetchBlob.fs.unlink(pathWithPrefix);
                     notifyAll(uri, uri);
                 }
             } else {
@@ -85,10 +87,12 @@ export default class ImageCacheManager {
 
             unsubscribe(uri);
         }
+
+        return pathWithPrefix;
     };
 }
 
-export const getCacheFile = async (name, uri) => {
+const getCacheFile = async (name, uri) => {
     const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
     const defaultExt = `.${getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
     const ext = filename.indexOf('.') === -1 ? defaultExt : filename.substring(filename.lastIndexOf('.'));
