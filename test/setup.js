@@ -82,7 +82,13 @@ jest.mock('rn-fetch-blob', () => ({
             DocumentDir: () => jest.fn(),
             CacheDir: () => jest.fn(),
         },
+        exists: jest.fn(),
+        existsWithDiffExt: jest.fn(),
+        unlink: jest.fn(),
+        mv: jest.fn(),
     },
+    fetch: jest.fn(),
+    config: jest.fn(),
 }));
 
 jest.mock('rn-fetch-blob/fs', () => ({
@@ -90,6 +96,10 @@ jest.mock('rn-fetch-blob/fs', () => ({
         DocumentDir: () => jest.fn(),
         CacheDir: () => jest.fn(),
     },
+    exists: jest.fn(),
+    existsWithDiffExt: jest.fn(),
+    unlink: jest.fn(),
+    mv: jest.fn(),
 }));
 
 global.requestAnimationFrame = (callback) => {
