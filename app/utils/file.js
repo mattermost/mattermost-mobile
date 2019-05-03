@@ -238,6 +238,19 @@ export function getLocalFilePathFromFile(dir, file) {
 
 export function getExtensionFromContentDisposition(contentDisposition) {
     const match = CONTENT_DISPOSITION_REGEXP.exec(contentDisposition);
+    let extension = match && match.groups.ext;
+    if (extension) {
+        if (!Object.keys(types).length) {
+            populateMaps();
+        }
 
-    return match && match.groups.ext;
+        extension = extension.toLowerCase();
+        if (types[extension]) {
+            return extension;
+        }
+
+        return null;
+    }
+
+    return null;
 }
