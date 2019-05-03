@@ -32,12 +32,12 @@ export default class ChannelSidebar extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
+            logChannelSwitch: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
-        channelIdsWithPosts: PropTypes.array,
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
@@ -167,23 +167,10 @@ export default class ChannelSidebar extends Component {
         }
     };
 
-    logTelemetry = (channelIdsWithPosts = [], channelId, currentChannelId) => {
-        if (channelId !== currentChannelId) {
-            const metrics = [];
-            if (channelIdsWithPosts.includes(channelId)) {
-                metrics.push('channel:switch_loaded');
-            } else {
-                metrics.push('channel:switch_initial');
-            }
-
-            telemetry.reset();
-            telemetry.start(metrics);
-        }
-    }
-
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        this.logTelemetry(this.props.channelIdsWithPosts, channel.id, currentChannelId);
-        const {setChannelLoading} = this.props.actions;
+        const {logChannelSwitch, setChannelLoading} = this.props.actions;
+
+        logChannelSwitch(channel.id, currentChannelId);
 
         tracker.channelSwitch = Date.now();
 

@@ -9,11 +9,9 @@ class Telemetry {
         this.metrics = [];
         this.currentMetrics = {};
         this.pendingSinceLaunchMetrics = [];
-
-        this.initialize();
     }
 
-    initialize = async () => true;
+    setAppStartTime = () => true;
 
     reset = () => true;
 

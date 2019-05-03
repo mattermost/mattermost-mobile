@@ -104,8 +104,6 @@ export default class PostList extends PureComponent {
             this.props.actions.setDeepLinkURL('');
         }
 
-        this.lastPostIndex = this.getLastPostIndex(this.props.postIds);
-
         telemetry.start(['posts:list_update']);
     }
 
@@ -191,31 +189,6 @@ export default class PostList extends PureComponent {
         }
     };
 
-    handleScrollToIndexFailed = () => {
-        requestAnimationFrame(() => {
-            this.hasDoneInitialScroll = false;
-            this.scrollToInitialIndexIfNeeded(1, 1);
-        });
-    };
-
-    keyExtractor = (item) => {
-        // All keys are strings (either post IDs or special keys)
-        return item;
-    };
-
-    getLastPostIndex = (postIds) => {
-        let index = 0;
-        for (let i = postIds.length - 1; i > 0; i--) {
-            const item = postIds[i];
-            if (!isStartOfNewMessages(item) && !isDateLine(item)) {
-                index = i;
-                break;
-            }
-        }
-
-        return index;
-    }
-
     renderItem = ({item, index}) => {
         if (isStartOfNewMessages(item)) {
             // postIds includes a date item after the new message indicator so 2
@@ -273,7 +246,7 @@ export default class PostList extends PureComponent {
             <Post
                 postId={postId}
                 highlight={this.props.highlightPostId === postId}
-                isLastPost={this.lastPostIndex === index}
+                isLastPost={this.state.lastPostIndex === index}
                 {...postProps}
             />
         );

@@ -17,6 +17,7 @@ if (Platform.OS === 'android') {
 
     if (LocalConfig.TelemetryEnabled) {
         const metricsSubscription = DeviceEventEmitter.addListener('nativeMetrics', (metrics) => {
+            telemetry.setAppStartTime(metrics.appReload);
             telemetry.include([
                 {name: 'start:process_packages', startTime: metrics.processPackagesStart, endTime: metrics.processPackagesEnd},
                 {name: 'start:content_appeared', startTime: metrics.appReload, endTime: metrics.appContentAppeared},

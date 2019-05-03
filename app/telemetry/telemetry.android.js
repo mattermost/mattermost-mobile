@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NativeModules} from 'react-native';
 import LocalConfig from 'assets/config'; // eslint-disable-line
 
 import {store} from 'app/mattermost';
@@ -12,8 +11,6 @@ import {
     setTraceRecord,
 } from './telemetry_utils';
 
-const {StartTime} = NativeModules;
-
 class Telemetry {
     constructor() {
         this.appStartTime = 0;
@@ -22,15 +19,10 @@ class Telemetry {
         this.metrics = [];
         this.currentMetrics = {};
         this.pendingSinceLaunchMetrics = [];
-
-        this.initialize();
     }
 
-    async initialize() {
-        if (StartTime) {
-            const nativeTimes = await StartTime.getNativeTimes();
-            this.appStartTime = nativeTimes.appStartTime;
-        }
+    setAppStartTime(startTime) {
+        this.appStartTime = startTime;
     }
 
     reset() {
@@ -156,7 +148,7 @@ class Telemetry {
         const deviceInfo = getDeviceInfo();
         deviceInfo.serverVersion = config.Version;
 
-        saveToTelemetryServer({traceEvents: metrics, deviceInfo});
+        saveToTelemetryServer({trace_events: metrics, device_info: deviceInfo});
 
         this.reset();
     }

@@ -60,24 +60,25 @@ public class MainApplication extends NavigationApplication implements INotificat
   public Boolean sharedExtensionIsOpened = false;
   public Boolean replyFromPushNotification = false;
 
-  public static long APP_START_TIME;
+  public long APP_START_TIME;
 
-  public static long RELOAD;
-  public static long CONTENT_APPEARED;
+  public long RELOAD;
+  public long CONTENT_APPEARED;
 
-  public static long PROCESS_PACKAGES_START;
-  public static long PROCESS_PACKAGES_END;
+  public long PROCESS_PACKAGES_START;
+  public long PROCESS_PACKAGES_END;
 
   @Override
   public boolean isDebug() {
     return BuildConfig.DEBUG;
   }
 
-  protected List<ReactPackage> getPackages() {
+  @NonNull
+  @Override
+  public List<ReactPackage> createAdditionalReactPackages() {
     // Add the packages you require here.
     // No need to add RnnPackage and MainReactPackage
-
-    List<ReactPackage> packages = Arrays.asList(
+    return Arrays.<ReactPackage>asList(
             new ImagePickerPackage(),
             new RNBottomSheetPackage(),
             new RNDeviceInfo(),
@@ -102,16 +103,6 @@ public class MainApplication extends NavigationApplication implements INotificat
             new RNCWebViewPackage(),
             new RNGestureHandlerPackage()
     );
-
-    // Uncomment to load module for build that has telemetry enabled
-    // packages.add(new StartTimePackage(this));
-
-    return packages;
-  }
-
-  @Override
-  public List<ReactPackage> createAdditionalReactPackages() {
-    return getPackages();
   }
 
   @Override

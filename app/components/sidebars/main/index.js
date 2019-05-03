@@ -3,7 +3,6 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import {createIdsSelector} from 'mattermost-redux/utils/helpers';
 
 import {joinChannel} from 'mattermost-redux/actions/channels';
 import {getTeams} from 'mattermost-redux/actions/teams';
@@ -13,22 +12,33 @@ import {getCurrentTeamId, getMyTeamsCount} from 'mattermost-redux/selectors/enti
 import {setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {isLandscape, isTablet, getDimensions} from 'app/selectors/device';
+import telemetry from 'app/telemetry';
 
 import MainSidebar from './main_sidebar.js';
 
-export const getChannelIdsWithPosts = createIdsSelector(
-    (state) => state.entities.posts.postsInChannel,
-    (postsInChannel) => {
-        return Object.keys(postsInChannel);
-    }
-);
+export function logChannelSwitch(channelId, currentChannelId) {
+    return (dispatch, getState) => {
+        if (channelId === currentChannelId) {
+            return;
+        }
+
+        const metrics = [];
+        if (getState().entities.posts.postsInChannel[channelId]) {
+            metrics.push('channel:switch_loaded');
+        } else {
+            metrics.push('channel:switch_initial');
+        }
+
+        telemetry.reset();
+        telemetry.start(metrics);
+    };
+}
 
 function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
 
     return {
         ...getDimensions(state),
-        channelIdsWithPosts: getChannelIdsWithPosts(state),
         currentTeamId: getCurrentTeamId(state),
         currentUserId,
         isLandscape: isLandscape(state),
@@ -43,6 +53,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getTeams,
             joinChannel,
+            logChannelSwitch,
             makeDirectChannel,
             setChannelDisplayName,
             setChannelLoading,

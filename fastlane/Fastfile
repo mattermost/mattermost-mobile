@@ -389,13 +389,6 @@ platform :android do
 
       beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
 
-      # Load telemetry module
-      find_replace_string(
-          path_to_file: "#{beta_dir}MainApplication.java",
-          old_string: '// packages.add(new StartTimePackage(this));',
-          new_string: 'packages.add(new StartTimePackage(this));'
-      )
-
       # Listen to telemetry react markers
       find_replace_string(
           path_to_file: "#{beta_dir}MainApplication.java",
