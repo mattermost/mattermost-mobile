@@ -151,8 +151,9 @@ describe('ImageCacheManager.cache', () => {
         const ext = 'jpg';
         const headers = {'Content-Type': 'image/jpeg'};
         RNFetchBlob.fetch.mockReturnValueOnce({respInfo: {respType: '', headers}});
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // first call in getCacheFile
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // seconds call in cache using MIME type from header
+        fileUtils.getExtensionFromMime.
+            mockReturnValueOnce(ext). // first call in getCacheFile
+            mockReturnValueOnce(ext); // seconds call in cache using MIME type from header
 
         const fileName = '';
         const fileUri = 'https://file-uri';
@@ -166,9 +167,10 @@ describe('ImageCacheManager.cache', () => {
 
         const ext = 'png';
         RNFetchBlob.fetch.mockReturnValueOnce({respInfo: {respType: '', headers: {}}});
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // first call in getCacheFile
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(null); // second call in cache using MIME type from header
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // third call in cache using DEFAULT_MIME_TYPE
+        fileUtils.getExtensionFromMime.
+            mockReturnValueOnce(ext). // first call in getCacheFile
+            mockReturnValueOnce(null). // second call in cache using MIME type from header
+            mockReturnValueOnce(ext); // third call in cache using DEFAULT_MIME_TYPE
 
         const fileName = '';
         const fileUri = 'https://file-uri';
@@ -190,8 +192,9 @@ describe('ImageCacheManager.cache', () => {
             const ext = 'bmp';
             const headers = {'Content-Type': 'image/bmp'};
             RNFetchBlob.fetch.mockReturnValueOnce({respInfo: {respType: '', headers}});
-            fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // first call in getCacheFile
-            fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // second call in cache using MIME type from header
+            fileUtils.getExtensionFromMime.
+                mockReturnValueOnce(ext). // first call in getCacheFile
+                mockReturnValueOnce(ext); // second call in cache using MIME type from header
 
             const path = await ImageCacheManager.cache(fileName, fileUri, emptyFunction); // eslint-disable-line no-await-in-loop
             expect(path.endsWith(`.${ext}`)).toEqual(true);
