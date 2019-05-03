@@ -8,7 +8,6 @@ import * as fileUtils from 'app/utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
 
 fileUtils.getExtensionFromMime = jest.fn();
-mattermostBucket.config = jest.fn().mockReturnValue({});
 
 describe('getCacheFile', () => {
     it('should return a path with correct extension for a non-cached file using file name', async () => {
@@ -109,8 +108,10 @@ describe('getCacheFile', () => {
 });
 
 describe('ImageCacheManager.cache', () => {
+    const imageCacheManagerUtils = require('app/utils/image_cache_manager');
+    imageCacheManagerUtils.isDownloading = jest.fn();
     RNFetchBlob.config.mockReturnValue(RNFetchBlob);
-    ImageCacheManager.isDownloading = jest.fn();
+    mattermostBucket.getPreference = jest.fn().mockReturnValue({});
 
     beforeEach(() => {
         ImageCacheManager.listeners = {};
@@ -150,8 +151,8 @@ describe('ImageCacheManager.cache', () => {
         const ext = 'jpg';
         const headers = {'Content-Type': 'image/jpeg'};
         RNFetchBlob.fetch.mockReturnValueOnce({respInfo: {respType: '', headers}});
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // call in getCacheFile
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // call in cache using MIME type from header
+        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // first call in getCacheFile
+        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // seconds call in cache using MIME type from header
 
         const fileName = '';
         const fileUri = 'https://file-uri';
@@ -165,9 +166,9 @@ describe('ImageCacheManager.cache', () => {
 
         const ext = 'png';
         RNFetchBlob.fetch.mockReturnValueOnce({respInfo: {respType: '', headers: {}}});
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // call in getCacheFile
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(null); // first call in cache using MIME type from header
-        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // second call in cache using DEFAULT_MIME_TYPE
+        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // first call in getCacheFile
+        fileUtils.getExtensionFromMime.mockReturnValueOnce(null); // second call in cache using MIME type from header
+        fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // third call in cache using DEFAULT_MIME_TYPE
 
         const fileName = '';
         const fileUri = 'https://file-uri';
@@ -189,8 +190,8 @@ describe('ImageCacheManager.cache', () => {
             const ext = 'bmp';
             const headers = {'Content-Type': 'image/bmp'};
             RNFetchBlob.fetch.mockReturnValueOnce({respInfo: {respType: '', headers}});
-            fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // call in getCacheFile
-            fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // call in cache using MIME type from header
+            fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // first call in getCacheFile
+            fileUtils.getExtensionFromMime.mockReturnValueOnce(ext); // second call in cache using MIME type from header
 
             const path = await ImageCacheManager.cache(fileName, fileUri, emptyFunction); // eslint-disable-line no-await-in-loop
             expect(path.endsWith(`.${ext}`)).toEqual(true);
@@ -225,7 +226,7 @@ describe('ImageCacheManager.cache', () => {
     });
 
     it('should add the listener if it is downloading', async () => {
-        ImageCacheManager.isDownloading = jest.fn().mockReturnValueOnce(true);
+        imageCacheManagerUtils.isDownloading.mockReturnValueOnce(true);
 
         const fileName = 'file.png';
         const fileUri = 'http://file-uri/file.png';
@@ -255,7 +256,7 @@ describe('ImageCacheManager.cache', () => {
 
         // Ensure isDownloading returns false so that we can proceed to
         // download the file even if there are existing listeners.
-        ImageCacheManager.isDownloading.mockReturnValueOnce(false);
+        imageCacheManagerUtils.isDownloading.mockReturnValueOnce(false);
 
         const fileName = 'file.png';
         const fileUri = 'http://file-uri/file.png';
@@ -275,7 +276,7 @@ describe('ImageCacheManager.cache', () => {
 
         // Ensure isDownloading returns false so that we can proceed to
         // download the file even if there are existing listeners.
-        ImageCacheManager.isDownloading.mockReturnValueOnce(false);
+        imageCacheManagerUtils.isDownloading.mockReturnValueOnce(false);
 
         const fileName = 'file.png';
         const fileUri = 'file://file-uri/file.png';

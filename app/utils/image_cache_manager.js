@@ -22,8 +22,6 @@ let siteUrl;
 export default class ImageCacheManager {
     static listeners = {};
 
-    static isDownloading = (uri) => Boolean(ImageCacheManager.listeners[uri]);
-
     static cache = async (filename, uri, listener) => {
         if (!listener) {
             console.warn('Unable to cache image when no listener is provided'); // eslint-disable-line no-console
@@ -33,7 +31,7 @@ export default class ImageCacheManager {
         const prefix = Platform.OS === 'android' ? 'file://' : '';
         let pathWithPrefix = `${prefix}${path}`;
 
-        if (ImageCacheManager.isDownloading(uri)) {
+        if (exports.isDownloading(uri)) {
             addListener(uri, listener);
         } else if (exists) {
             listener(pathWithPrefix);
@@ -131,6 +129,8 @@ export const getSiteUrl = () => {
 export const setSiteUrl = (url) => {
     siteUrl = url;
 };
+
+export const isDownloading = (uri) => Boolean(ImageCacheManager.listeners[uri]);
 
 const addListener = (uri, listener) => {
     if (!ImageCacheManager.listeners[uri]) {
