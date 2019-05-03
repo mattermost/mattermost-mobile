@@ -153,7 +153,7 @@ export default class PostListBase extends PureComponent {
             navigator: this.props.navigator,
             onHashtagPress: this.props.onHashtagPress,
             onPermalinkPress: this.handlePermalinkPress,
-            onPostPress: this.props.onPostPress,
+            onPress: this.props.onPostPress,
             renderReplies: this.props.renderReplies,
             shouldRenderReplyButton: this.props.shouldRenderReplyButton,
         };

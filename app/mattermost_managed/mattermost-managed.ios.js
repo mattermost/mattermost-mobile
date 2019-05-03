@@ -48,6 +48,7 @@ export default {
     getCachedConfig: () => {
         return cachedConfig;
     },
+    hasSafeAreaInsets: MattermostManaged.hasSafeAreaInsets,
     isDeviceSecure: async () => {
         try {
             return await LocalAuth.isDeviceSecure();
