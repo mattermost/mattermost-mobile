@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import 'react-native/Libraries/Core/InitializeCore';
-import {AppRegistry, DeviceEventEmitter, Platform} from 'react-native';
+import {AppRegistry, DeviceEventEmitter, Platform, YellowBox} from 'react-native';
 import 'react-native-gesture-handler';
 
 import LocalConfig from 'assets/config';
@@ -11,6 +11,12 @@ import telemetry from 'app/telemetry';
 
 import 'app/mattermost';
 import ShareExtension from 'share_extension/android';
+
+YellowBox.ignoreWarnings([
+    'Warning: componentWillMount is deprecated',
+    'Warning: componentWillUpdate is deprecated',
+    'Warning: componentWillReceiveProps is deprecated',
+]);
 
 if (Platform.OS === 'android') {
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);

@@ -78,6 +78,12 @@ export default class Post extends PureComponent {
         intl: intlShape.isRequired,
     };
 
+    constructor(props) {
+        super(props);
+
+        this.postBodyRef = React.createRef();
+    }
+
     goToUserProfile = () => {
         const {intl} = this.context;
         const {navigator, post, theme} = this.props;
@@ -228,8 +234,8 @@ export default class Post extends PureComponent {
     });
 
     showPostOptions = () => {
-        if (this.refs.postBody) {
-            this.refs.postBody.getWrappedInstance().showPostOptions();
+        if (this.postBodyRef?.current) {
+            this.postBodyRef.current.showPostOptions();
         }
     };
 
@@ -335,7 +341,7 @@ export default class Post extends PureComponent {
                         <View style={rightColumnStyle}>
                             {postHeader}
                             <PostBody
-                                ref={'postBody'}
+                                ref={this.postBodyRef}
                                 highlight={highlight}
                                 channelIsReadOnly={channelIsReadOnly}
                                 isLastPost={isLastPost}

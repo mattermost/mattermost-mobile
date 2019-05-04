@@ -14,4 +14,4 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {withRef: true})(SlideUpPanel);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(SlideUpPanel);

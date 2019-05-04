@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PostAttachmentOpenGraph should match snapshot with a single image file 1`] = `
-<ScrollView
+<ScrollViewMock
   horizontal={true}
   scrollEnabled={false}
   style={
@@ -66,5 +66,5 @@ exports[`PostAttachmentOpenGraph should match snapshot with a single image file 
       }
     }
   />
-</ScrollView>
+</ScrollViewMock>
 `;

@@ -75,7 +75,7 @@ import com.android.build.OutputFile
 project.ext.react = [
     entryFile: "index.js",
     bundleCommand: "ram-bundle",
-    bundleConfig: "packager-config.js"
+    bundleConfig: "metro.config.js"
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -107,7 +107,11 @@ def enableProguardInReleaseBuilds = false
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
     packagingOptions {
         pickFirst 'lib/x86_64/libjsc.so'
@@ -141,7 +145,7 @@ android {
             reset()
             enable enableSeparateBuildPerCPUArchitecture
             universalApk false  // If true, also generate a universal APK
-            include "armeabi-v7a", "x86"
+            include "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
     }
     buildTypes {
@@ -165,7 +169,7 @@ android {
         variant.outputs.each { output ->
             // For each separate APK per architecture, set a unique version code as described here:
             // http://tools.android.com/tech-docs/new-build-system/user-guide/apk-splits
-            def versionCodes = ["armeabi-v7a":1, "x86":2]
+            def versionCodes = ["armeabi-v7a":1, "x86":2, "arm64-v8a": 3, "x86_64": 4]
             def abi = output.getFilter(OutputFile.ABI)
             if (abi != null) {  // null for the universal-debug, universal-release variants
                 output.versionCodeOverride =
@@ -185,7 +189,7 @@ configurations.all {
     resolutionStrategy {
         eachDependency { DependencyResolveDetails details ->
             if (details.requested.name == 'android-jsc') {
-                details.useTarget group: details.requested.group, name: 'android-jsc-intl', version: 'r236355'
+                details.useTarget group: details.requested.group, name: 'android-jsc-intl', version: 'r241213'
             }
             if (details.requested.name == 'play-services-base') {
                 details.useTarget group: details.requested.group, name: details.requested.name, version: '15.0.1'
@@ -231,6 +235,8 @@ dependencies {
     implementation project(':rn-fetch-blob')
     implementation project(':react-native-webview')
     implementation project(':react-native-gesture-handler')
+    implementation project(':@react-native-community_async-storage')
+    implementation project(':@react-native-community_netinfo')
 
     // For animated GIF support
     implementation 'com.facebook.fresco:fresco:1.10.0'

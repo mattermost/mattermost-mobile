@@ -16,4 +16,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {withRef: true})(DraweSwiper);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(DraweSwiper);

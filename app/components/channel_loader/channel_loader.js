@@ -7,7 +7,7 @@ import {
     Platform,
     View,
 } from 'react-native';
-import Placeholder from 'rn-placeholder';
+import {ImageContent} from 'rn-placeholder';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -76,7 +76,7 @@ export default class ChannelLoader extends PureComponent {
                 key={key}
                 style={[style.section, {backgroundColor: bg}]}
             >
-                <Placeholder.ImageContent
+                <ImageContent
                     size={32}
                     animate='fade'
                     lineNumber={3}
@@ -133,6 +133,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                     paddingTop: 15,
                 },
             }),
+        },
+        flex: {
+            flex: 1,
         },
         section: {
             backgroundColor: theme.centerChannelBg,

@@ -301,7 +301,7 @@ export default class Search extends PureComponent {
     onNavigatorEvent = (event) => {
         if (event.id === 'backPress') {
             if (this.state.preview) {
-                this.refs.preview.getWrappedInstance().handleClose();
+                this.refs.preview.handleClose();
             } else {
                 this.props.navigator.dismissModal();
             }
