@@ -101,7 +101,7 @@ export default class MarkdownLink extends PureComponent {
 
         const config = mattermostManaged.getCachedConfig();
 
-        if (config.copyAndPasteProtection !== 'true') {
+        if (config?.copyAndPasteProtection !== 'true') {
             const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
             const actionText = formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'});
             BottomSheet.showBottomSheetWithOptions({

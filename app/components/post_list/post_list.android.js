@@ -19,7 +19,6 @@ export default class PostList extends PostListBase {
 
         this.state = {
             refreshing: false,
-            managedConfig: {},
             dataSource: new DataSource(props.postIds, this.keyExtractor),
         };
     }
