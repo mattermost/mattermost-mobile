@@ -8,7 +8,6 @@ const {BlurAppScreen, MattermostManaged} = NativeModules;
 const mattermostManagedEmitter = new NativeEventEmitter(MattermostManaged);
 
 const listeners = [];
-const emptyObject = {};
 let cachedConfig = {};
 
 export default {
@@ -39,7 +38,7 @@ export default {
     blurAppScreen: BlurAppScreen.enabled,
     getConfig: async () => {
         try {
-            cachedConfig = await MattermostManaged.getConfig() || emptyObject;
+            cachedConfig = await MattermostManaged.getConfig();
         } catch (error) {
             // do nothing...
         }
