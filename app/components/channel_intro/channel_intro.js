@@ -15,9 +15,11 @@ import {injectIntl, intlShape} from 'react-intl';
 
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
+import GuestTag from 'app/components/guest_tag';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {isGuest} from 'app/utils/users';
 
 class ChannelIntro extends PureComponent {
     static propTypes = {
@@ -104,12 +106,19 @@ class ChannelIntro extends PureComponent {
                 >
                     <View style={style.indicatorContainer}>
                         <Text style={style.displayName}>
-                            {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}
+                            {this.getDisplayName(member)}
                         </Text>
                         <BotTag
                             show={Boolean(member.is_bot)}
                             theme={theme}
                         />
+                        <GuestTag
+                            show={isGuest(member)}
+                            theme={theme}
+                        />
+                        <Text>
+                            {index === currentChannelMembers.length - 1 ? '' : ', '}
+                        </Text>
                     </View>
                 </TouchableOpacity>
             );

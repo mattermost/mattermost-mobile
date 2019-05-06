@@ -11,6 +11,7 @@ import {
 
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
+import GuestTag from 'app/components/guest_tag';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AtMentionItem extends PureComponent {
@@ -20,6 +21,7 @@ export default class AtMentionItem extends PureComponent {
         onPress: PropTypes.func.isRequired,
         userId: PropTypes.string.isRequired,
         username: PropTypes.string,
+        isGuest: PropTypes.bool,
         isBot: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     };
@@ -42,6 +44,7 @@ export default class AtMentionItem extends PureComponent {
             username,
             theme,
             isBot,
+            isGuest,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -64,6 +67,10 @@ export default class AtMentionItem extends PureComponent {
                 <Text style={style.rowUsername}>{`@${username}`}</Text>
                 <BotTag
                     show={isBot}
+                    theme={theme}
+                />
+                <GuestTag
+                    show={isGuest}
                     theme={theme}
                 />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
