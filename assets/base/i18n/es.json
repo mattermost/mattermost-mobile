@@ -251,7 +251,7 @@
   "mobile.file_upload.camera_video": "Capturar Vídeo",
   "mobile.file_upload.library": "Librería de Fotos",
   "mobile.file_upload.max_warning": "Se pueden subir un máximo de 5 archivos.",
-  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
+  "mobile.file_upload.unsupportedMimeType": "Sólo archivos con el siguiente tipo pueden ser cargados:\n{mimeTypes}",
   "mobile.file_upload.video": "Librería de Videos",
   "mobile.flagged_posts.empty_description": "Las banderas son una forma de marcar los mensajes para hacerles seguimiento. Tus banderas son personales, y no puede ser vistas por otros usuarios.",
   "mobile.flagged_posts.empty_title": "No hay Mensajes Marcados",

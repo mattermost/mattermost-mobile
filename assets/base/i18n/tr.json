@@ -251,7 +251,7 @@
   "mobile.file_upload.camera_video": "Görüntü Kaydet",
   "mobile.file_upload.library": "Fotoğraf Kitaplığı",
   "mobile.file_upload.max_warning": "En fazla 5 dosya yüklenebilir.",
-  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
+  "mobile.file_upload.unsupportedMimeType": "Yalnız belirtilen MIME türündeki dosyalar yüklenebilir:\n{mimeTypes}",
   "mobile.file_upload.video": "Görüntü Kitaplığı",
   "mobile.flagged_posts.empty_description": "İşaretler iletileri izlemek için kullanılır. İşaretleriniz kişiseldir ve diğer kullanıcılar tarafından görülemez.",
   "mobile.flagged_posts.empty_title": "Henüz İşaretlenmiş Bir İleti Yok",
