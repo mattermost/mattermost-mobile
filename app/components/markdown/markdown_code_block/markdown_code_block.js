@@ -84,7 +84,7 @@ export default class MarkdownCodeBlock extends React.PureComponent {
 
         const config = mattermostManaged.getCachedConfig();
 
-        if (config.copyAndPasteProtection !== 'true') {
+        if (config?.copyAndPasteProtection !== 'true') {
             const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
             const actionText = formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'});
             BottomSheet.showBottomSheetWithOptions({

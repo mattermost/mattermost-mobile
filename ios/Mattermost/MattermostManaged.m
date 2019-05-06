@@ -112,14 +112,22 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
 {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
   if (hasListeners) {
-    [self sendEventWithName:@"managedConfigDidChange" body:response];
+    @try {
+      [self sendEventWithName:@"managedConfigDidChange" body:response];
+    } @catch (NSException *exception) {
+      NSLog(@"Error sending event managedConfigDidChange to JS details=%@", exception.reason);
+    }
   }
 }
 
 - (void) remoteConfigChanged {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
   if (hasListeners) {
-    [self sendEventWithName:@"managedConfigDidChange" body:response];
+    @try {
+      [self sendEventWithName:@"managedConfigDidChange" body:response];
+    } @catch (NSException *exception) {
+      NSLog(@"Error sending event managedConfigDidChange to JS details=%@", exception.reason);
+    }
   }
 }
 
@@ -130,8 +138,7 @@ RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve
     resolve(response);
   }
   else {
-    NSError *error = [NSError errorWithDomain:@"Mattermost Managed" code:-1 userInfo:nil];
-    reject(@"no managed configuration", @"The MDM vendor has not sent any Managed configuration", error);
+    resolve(@{});
   }
 }
 

@@ -31,7 +31,6 @@ export default class PostList extends PostListBase {
         this.makeExtraData = makeExtraData();
 
         this.state = {
-            managedConfig: {},
             postListHeight: 0,
         };
     }
