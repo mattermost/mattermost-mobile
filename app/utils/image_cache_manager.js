@@ -9,7 +9,10 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 
 import {DeviceTypes} from 'app/constants';
-import {getExtensionFromMime} from 'app/utils/file';
+import {
+    getExtensionFromMime,
+    getExtensionFromContentDisposition,
+} from 'app/utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
 
 const {IMAGES_PATH} = DeviceTypes;
@@ -26,10 +29,12 @@ export default class ImageCacheManager {
 
         const {path, exists} = await getCacheFile(filename, uri);
         const prefix = Platform.OS === 'android' ? 'file://' : '';
-        if (isDownloading(uri)) {
+        let pathWithPrefix = `${prefix}${path}`;
+
+        if (exports.isDownloading(uri)) {
             addListener(uri, listener);
         } else if (exists) {
-            listener(`${prefix}${path}`);
+            listener(pathWithPrefix);
         } else {
             addListener(uri, listener);
             if (uri.startsWith('http')) {
@@ -55,20 +60,27 @@ export default class ImageCacheManager {
                         throw new Error();
                     }
 
+                    const contentDisposition = this.downloadTask.respInfo.headers['Content-Disposition'];
                     const mimeType = this.downloadTask.respInfo.headers['Content-Type'];
-                    const ext = `.${getExtensionFromMime(mimeType) || getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
-                    if (path.endsWith(ext)) {
-                        notifyAll(uri, `${prefix}${path}`);
-                    } else {
+                    const ext = `.${
+                        getExtensionFromContentDisposition(contentDisposition) ||
+                        getExtensionFromMime(mimeType) ||
+                        getExtensionFromMime(DEFAULT_MIME_TYPE)
+                    }`;
+
+                    if (!path.endsWith(ext)) {
                         const oldExt = path.substring(path.lastIndexOf('.'));
                         const newPath = path.replace(oldExt, ext);
                         await RNFetchBlob.fs.mv(path, newPath);
 
-                        notifyAll(uri, `${prefix}${newPath}`);
+                        pathWithPrefix = `${prefix}${newPath}`;
                     }
+
+                    notifyAll(uri, pathWithPrefix);
                 } catch (e) {
-                    RNFetchBlob.fs.unlink(`${prefix}${path}`);
+                    RNFetchBlob.fs.unlink(pathWithPrefix);
                     notifyAll(uri, uri);
+                    return null;
                 }
             } else {
                 // In case the uri we are trying to cache is already a local file just notify and return
@@ -77,6 +89,8 @@ export default class ImageCacheManager {
 
             unsubscribe(uri);
         }
+
+        return pathWithPrefix;
     };
 }
 
@@ -84,6 +98,7 @@ export const getCacheFile = async (name, uri) => {
     const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
     const defaultExt = `.${getExtensionFromMime(DEFAULT_MIME_TYPE)}`;
     const ext = filename.indexOf('.') === -1 ? defaultExt : filename.substring(filename.lastIndexOf('.'));
+
     let path = `${IMAGES_PATH}/${Math.abs(hashCode(uri))}${ext}`;
 
     try {
@@ -115,7 +130,7 @@ export const setSiteUrl = (url) => {
     siteUrl = url;
 };
 
-const isDownloading = (uri) => Boolean(ImageCacheManager.listeners[uri]);
+export const isDownloading = (uri) => Boolean(ImageCacheManager.listeners[uri]);
 
 const addListener = (uri, listener) => {
     if (!ImageCacheManager.listeners[uri]) {

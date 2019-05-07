@@ -21,7 +21,8 @@ public class MattermostPackage implements ReactPackage {
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.<NativeModule>asList(
                 MattermostManagedModule.getInstance(reactContext),
-                NotificationPreferencesModule.getInstance(mApplication, reactContext)
+                NotificationPreferencesModule.getInstance(mApplication, reactContext),
+                new RNTextInputResetModule(reactContext)
         );
     }
 

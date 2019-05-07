@@ -46,6 +46,10 @@ export default class Autocomplete extends PureComponent {
         keyboardOffset: 0,
     };
 
+    onChangeText = (value) => {
+        this.props.onChangeText(value, true);
+    }
+
     handleAtMentionCountChange = (atMentionCount) => {
         this.setState({atMentionCount});
     };
@@ -133,26 +137,31 @@ export default class Autocomplete extends PureComponent {
                         maxListHeight={maxListHeight}
                         onResultCountChange={this.handleAtMentionCountChange}
                         {...this.props}
+                        onChangeText={this.onChangeText}
                     />
                     <ChannelMention
                         maxListHeight={maxListHeight}
                         onResultCountChange={this.handleChannelMentionCountChange}
                         {...this.props}
+                        onChangeText={this.onChangeText}
                     />
                     <EmojiSuggestion
                         maxListHeight={maxListHeight}
                         onResultCountChange={this.handleEmojiCountChange}
                         {...this.props}
+                        onChangeText={this.onChangeText}
                     />
                     <SlashSuggestion
                         maxListHeight={maxListHeight}
                         onResultCountChange={this.handleCommandCountChange}
                         {...this.props}
+                        onChangeText={this.onChangeText}
                     />
                     {(this.props.isSearch && this.props.enableDateSuggestion) &&
                     <DateSuggestion
                         onResultCountChange={this.handleIsDateFilterChange}
                         {...this.props}
+                        onChangeText={this.onChangeText}
                     />
                     }
                 </View>

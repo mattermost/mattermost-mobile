@@ -104,3 +104,19 @@ function getItemMeasures(index, cb) {
         });
     });
 }
+
+const MAX_GIF_SIZE = 100 * 1024 * 1024;
+
+// isGifTooLarge returns true if we think that the GIF may cause the device to run out of memory when rendered
+// based on the image's dimensions and frame count.
+export function isGifTooLarge(imageMetadata) {
+    if (imageMetadata?.format !== 'gif') {
+        // Not a gif or from an older server that doesn't count frames
+        return false;
+    }
+
+    const {frame_count: frameCount, height, width} = imageMetadata;
+
+    // Try to estimate the in-memory size of the gif to prevent the device out of memory
+    return width * height * frameCount > MAX_GIF_SIZE;
+}

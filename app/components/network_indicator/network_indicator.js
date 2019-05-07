@@ -19,6 +19,7 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import FormattedText from 'app/components/formatted_text';
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
+import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
 import networkConnectionListener, {checkConnection} from 'app/utils/network';
 import {t} from 'app/utils/i18n';
@@ -35,6 +36,7 @@ const {
     IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
     IOSX_TOP_PORTRAIT,
+    STATUS_BAR_HEIGHT,
 } = ViewTypes;
 
 export default class NetworkIndicator extends PureComponent {
@@ -202,6 +204,8 @@ export default class NetworkIndicator extends PureComponent {
             return IOS_TOP_LANDSCAPE;
         } else if (isX) {
             return IOSX_TOP_PORTRAIT;
+        } else if (isLandscape && DeviceTypes.IS_TABLET && mattermostManaged.hasSafeAreaInsets) {
+            return IOS_TOP_LANDSCAPE + STATUS_BAR_HEIGHT;
         } else if (isLandscape) {
             return IOS_TOP_LANDSCAPE;
         }

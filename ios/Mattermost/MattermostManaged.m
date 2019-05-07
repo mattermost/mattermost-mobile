@@ -6,12 +6,12 @@
 // See License.txt for license information.
 //
 
-#import <React/RCTBridge.h>
-#import <React/RCTEventDispatcher.h>
 #import "RCTUITextView.h"
 #import "MattermostManaged.h"
 
-@implementation MattermostManaged
+@implementation MattermostManaged {
+  bool hasListeners;
+}
 
 RCT_EXPORT_MODULE();
 
@@ -20,7 +20,56 @@ RCT_EXPORT_MODULE();
   return YES;
 }
 
-@synthesize bridge = _bridge;
+- (void)startObserving {
+  hasListeners = YES;
+}
+
+- (void)stopObserving {
+  hasListeners = NO;
+}
+
+- (BOOL)hasSafeAreaInsets {
+  UIView *rootView = nil;
+
+  UIApplication *sharedApplication = RCTSharedApplication();
+  if (sharedApplication) {
+    UIWindow *window = RCTSharedApplication().keyWindow;
+    if (window) {
+      UIViewController *rootViewController = window.rootViewController;
+      if (rootViewController) {
+        rootView = rootViewController.view;
+      }
+    }
+  }
+
+  UIEdgeInsets safeAreaInsets = [self safeAreaInsetsForView:rootView];
+  return safeAreaInsets.bottom > 0;
+}
+
+- (UIEdgeInsets)safeAreaInsetsForView:(UIView *)view {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
+  if (@available(iOS 11.0, *)) {
+    if (view) {
+      return view.safeAreaInsets;
+    }
+  }
+#endif
+
+  UIEdgeInsets safeAreaInsets = UIEdgeInsetsMake(0, 0, 0, 0);
+
+  if (view) {
+    return safeAreaInsets;
+  }
+
+  return safeAreaInsets;
+}
+
+- (NSDictionary *)constantsToExport {
+
+  return @{
+           @"hasSafeAreaInsets": @([self hasSafeAreaInsets]),
+           };
+}
 
 - (void)dealloc
 {
@@ -28,15 +77,22 @@ RCT_EXPORT_MODULE();
   [[NSNotificationCenter defaultCenter] removeObserver:NSUserDefaultsDidChangeNotification];
 }
 
-- (void)setBridge:(RCTBridge *)bridge
+- (NSArray<NSString *> *)supportedEvents
 {
-  _bridge = bridge;
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedConfigDidChange:) name:@"managedConfigDidChange" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification
-                                                    object:nil
-                                                     queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
-                                                       [self remoteConfigChanged];
-                                                     }];
+  return @[@"managedConfigDidChange"];
+}
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedConfigDidChange:) name:@"managedConfigDidChange" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification
+                                                      object:nil
+                                                       queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
+                                                         [self remoteConfigChanged];
+                                                       }];
+  }
+  return self;
 }
 
 + (void)sendConfigChangedEvent {
@@ -55,12 +111,24 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
 - (void)managedConfigDidChange:(NSNotification *)notification
 {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [_bridge.eventDispatcher sendDeviceEventWithName:@"managedConfigDidChange" body:response];
+  if (hasListeners) {
+    @try {
+      [self sendEventWithName:@"managedConfigDidChange" body:response];
+    } @catch (NSException *exception) {
+      NSLog(@"Error sending event managedConfigDidChange to JS details=%@", exception.reason);
+    }
+  }
 }
 
 - (void) remoteConfigChanged {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [_bridge.eventDispatcher sendDeviceEventWithName:@"managedConfigDidChange" body:response];
+  if (hasListeners) {
+    @try {
+      [self sendEventWithName:@"managedConfigDidChange" body:response];
+    } @catch (NSException *exception) {
+      NSLog(@"Error sending event managedConfigDidChange to JS details=%@", exception.reason);
+    }
+  }
 }
 
 RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve
@@ -70,8 +138,7 @@ RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve
     resolve(response);
   }
   else {
-    NSError *error = [NSError errorWithDomain:@"Mattermost Managed" code:-1 userInfo:nil];
-    reject(@"no managed configuration", @"The MDM vendor has not sent any Managed configuration", error);
+    resolve(@{});
   }
 }
 
@@ -98,7 +165,7 @@ RCT_EXPORT_METHOD(quitApp)
       return NO;
     }
   }
-  
+
   return [super canPerformAction:action withSender:sender];
 }
 

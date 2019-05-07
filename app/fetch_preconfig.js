@@ -21,7 +21,7 @@ const HEADER_TOKEN = 'Token';
 
 let managedConfig;
 
-mattermostManaged.addEventListener('fetch_managed_config', (config) => {
+mattermostManaged.addEventListener('managedConfigDidChange', (config) => {
     managedConfig = config;
 });
 
