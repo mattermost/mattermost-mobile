@@ -129,7 +129,7 @@ export const getExtensionSortedDirectChannels = createSelector(
             if (channel.type === General.GM_CHANNEL) {
                 return completeDirectGroupInfo(currentUser.id, profiles, profilesInChannel, settings, channel);
             }
-            return completeDirectChannelDisplayName(currentUser.id, profiles, settings, channel);
+            return completeDirectChannelDisplayName(currentUser.id, profiles, profilesInChannel[id], settings, channel);
         }).sort(sortChannelsByDisplayName.bind(null, locale));
         return directChannels;
     }
