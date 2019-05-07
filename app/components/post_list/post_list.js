@@ -15,6 +15,7 @@ import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
+import telemetry from 'app/telemetry';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
@@ -48,6 +49,7 @@ export default class PostList extends PureComponent {
         highlightPostId: PropTypes.string,
         initialIndex: PropTypes.number,
         isSearchResult: PropTypes.bool,
+        lastPostIndex: PropTypes.number.isRequired,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
         navigator: PropTypes.object,
         onLoadMoreUp: PropTypes.func,
@@ -189,8 +191,20 @@ export default class PostList extends PureComponent {
         }
     };
 
+    handleScrollToIndexFailed = () => {
+        requestAnimationFrame(() => {
+            this.hasDoneInitialScroll = false;
+            this.scrollToInitialIndexIfNeeded(1, 1);
+        });
+    };
+
+    keyExtractor = (item) => {
+        // All keys are strings (either post IDs or special keys)
+        return item;
+    };
+
     renderItem = ({item, index}) => {
-        if (isStartOfNewMessages(item)) {
+        if (PostListUtils.isStartOfNewMessages(item)) {
             // postIds includes a date item after the new message indicator so 2
             // needs to be added to the index for the length check to be correct.
             const moreNewMessages = this.props.postIds.length === index + 2;
@@ -202,10 +216,10 @@ export default class PostList extends PureComponent {
                     moreMessages={moreNewMessages}
                 />
             );
-        } else if (isDateLine(item)) {
+        } else if (PostListUtils.isDateLine(item)) {
             return (
                 <DateHeader
-                    date={getDateForDateLine(item)}
+                    date={PostListUtils.getDateForDateLine(item)}
                     index={index}
                 />
             );
@@ -231,7 +245,7 @@ export default class PostList extends PureComponent {
             shouldRenderReplyButton: this.props.shouldRenderReplyButton,
         };
 
-        if (isCombinedUserActivityPost(item)) {
+        if (PostListUtils.isCombinedUserActivityPost(item)) {
             return (
                 <CombinedUserActivityPost
                     combinedId={item}
@@ -246,7 +260,7 @@ export default class PostList extends PureComponent {
             <Post
                 postId={postId}
                 highlight={this.props.highlightPostId === postId}
-                isLastPost={this.state.lastPostIndex === index}
+                isLastPost={this.props.lastPostIndex === index}
                 {...postProps}
             />
         );
