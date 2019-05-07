@@ -3,7 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
+
+import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 
 import PostList from 'app/components/post_list';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -80,6 +82,7 @@ export default class ChannelPeek extends PureComponent {
             <View style={style.container}>
                 <PostList
                     postIds={visiblePostIds}
+                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(visiblePostIds) : -1}
                     renderReplies={true}
                     indicateNewMessages={true}
                     currentUserId={currentUserId}

@@ -23,6 +23,7 @@ describe('PostList', () => {
         navigator: {
             showModal: jest.fn(),
         },
+        lastPostIndex: -1,
         postIds: ['post-id-1', 'post-id-2'],
         serverURL,
         siteURL: 'https://site-url.fake',

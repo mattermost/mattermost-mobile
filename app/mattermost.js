@@ -45,6 +45,7 @@ import {deleteFileCache} from 'app/utils/file';
 import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 import {t} from 'app/utils/i18n';
 import LocalConfig from 'assets/config';
+import telemetry from 'app/telemetry';
 
 import App from './app';
 import './fetch_preconfig';
@@ -435,6 +436,11 @@ const handleAppInActive = () => {
 AppState.addEventListener('change', handleAppStateChange);
 
 const launchEntry = () => {
+    telemetry.start([
+        'start:select_server_screen',
+        'start:channel_screen',
+    ]);
+
     Navigation.startSingleScreenApp({
         screen: {
             screen: 'Entry',
@@ -452,6 +458,8 @@ const launchEntry = () => {
         },
         animationType: 'fade',
     });
+
+    telemetry.startSinceLaunch(['start:splash_screen']);
 };
 
 configurePushNotifications();

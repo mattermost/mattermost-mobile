@@ -15,6 +15,7 @@ import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
+import telemetry from 'app/telemetry';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
@@ -48,6 +49,7 @@ export default class PostList extends PureComponent {
         highlightPostId: PropTypes.string,
         initialIndex: PropTypes.number,
         isSearchResult: PropTypes.bool,
+        lastPostIndex: PropTypes.number.isRequired,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
         navigator: PropTypes.object,
         onLoadMoreUp: PropTypes.func,
@@ -103,6 +105,8 @@ export default class PostList extends PureComponent {
             this.handleDeepLink(this.props.deepLinkURL);
             this.props.actions.setDeepLinkURL('');
         }
+
+        telemetry.start(['posts:list_update']);
     }
 
     componentWillUnmount() {
@@ -256,6 +260,7 @@ export default class PostList extends PureComponent {
             <Post
                 postId={postId}
                 highlight={this.props.highlightPostId === postId}
+                isLastPost={this.props.lastPostIndex === index}
                 {...postProps}
             />
         );

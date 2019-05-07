@@ -19,6 +19,7 @@ import {ListTypes, ViewTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
+import telemetry from 'app/telemetry';
 
 import TeamsListItem from './teams_list_item';
 
@@ -55,9 +56,15 @@ export default class TeamsList extends PureComponent {
     }
 
     selectTeam = (teamId) => {
+        const {actions, closeChannelDrawer, currentTeamId} = this.props;
+
+        if (teamId !== currentTeamId) {
+            telemetry.reset();
+            telemetry.start(['team:switch']);
+        }
+
         StatusBar.setHidden(false, 'slide');
         requestAnimationFrame(() => {
-            const {actions, closeChannelDrawer, currentTeamId} = this.props;
             if (teamId !== currentTeamId) {
                 tracker.teamSwitch = Date.now();
                 actions.handleTeamChange(teamId);
