@@ -476,6 +476,7 @@
   "post_info.bot": "BOT",
   "post_info.del": "Delete",
   "post_info.edit": "Edit",
+  "post_info.guest": "GUEST",
   "post_info.message.show_less": "Show less",
   "post_info.message.show_more": "Show more",
   "post_info.system": "System",
