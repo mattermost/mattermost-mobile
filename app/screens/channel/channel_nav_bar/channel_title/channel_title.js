@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import GuestTag from 'app/components/guest_tag';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
@@ -21,6 +22,7 @@ export default class ChannelTitle extends PureComponent {
         onPress: PropTypes.func,
         theme: PropTypes.object,
         isArchived: PropTypes.bool,
+        guests: PropTypes.string,
     };
 
     static defaultProps = {
@@ -43,9 +45,31 @@ export default class ChannelTitle extends PureComponent {
     }
 
     render() {
-        const {currentChannelName, displayName, isChannelMuted, onPress, theme} = this.props;
-        const channelName = displayName || currentChannelName;
+        const {currentChannelName, displayName, isChannelMuted, onPress, theme, guests} = this.props;
+
         const style = getStyle(theme);
+
+        let channelName = displayName || currentChannelName;
+        if (guests) {
+            const users = channelName.split(',');
+            const isGuest = guests.split(',').map((v) => v === 'GUEST');
+
+            channelName = [];
+            users.forEach((value, index) => {
+                channelName.push(
+                    <React.Fragment key={value}>
+                        {value}
+                        {isGuest[index] &&
+                            <GuestTag
+                                theme={this.props.theme}
+                                inTitle={true}
+                            />}
+                        {index + 1 !== users.length && <Text style={style.text}>{', '}</Text>}
+                    </React.Fragment>
+                );
+            });
+        }
+
         let icon;
         if (channelName) {
             icon = (
