@@ -10,7 +10,7 @@
     "@babel/polyfill": "7.4.4",
     "@babel/runtime": "7.4.4",
     "@react-native-community/async-storage": "1.3.4",
-    "@react-native-community/netinfo": "2.0.9",
+    "@react-native-community/netinfo": "2.0.10",
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#6c3136c18ae8bb7842f8491d160f370a334fd903",
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#3a2ac19cab725ad28b170fdc1d397dddedcf87eb",
