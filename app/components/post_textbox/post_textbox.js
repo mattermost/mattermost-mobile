@@ -383,6 +383,8 @@ export default class PostTextbox extends PureComponent {
 
                 this.setState(nextState, callback);
             }
+
+            EventEmitter.emit('scroll-to-bottom');
         }
     };
 

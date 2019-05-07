@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import PostList from './post_list.ios.js';
+import PostList from './post_list';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 jest.useFakeTimers();
