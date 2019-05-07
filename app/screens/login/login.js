@@ -28,6 +28,8 @@ import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
 
+import telemetry from 'app/telemetry';
+
 import {RequestStatus} from 'mattermost-redux/constants';
 
 const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
@@ -80,6 +82,8 @@ export default class Login extends PureComponent {
     }
 
     goToChannel = () => {
+        telemetry.remove(['start:overall']);
+
         const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 

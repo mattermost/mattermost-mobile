@@ -34,6 +34,8 @@ import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 
+import telemetry from 'app/telemetry';
+
 import LocalConfig from 'assets/config';
 
 export default class SelectServer extends PureComponent {
@@ -92,6 +94,9 @@ export default class SelectServer extends PureComponent {
 
         this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
         this.props.navigator.setOnNavigatorEvent(this.handleNavigatorEvent);
+
+        telemetry.end(['start:select_server_screen']);
+        telemetry.save();
     }
 
     componentWillUpdate(nextProps, nextState) {

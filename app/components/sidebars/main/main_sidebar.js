@@ -23,6 +23,8 @@ import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swipper';
 import TeamsList from './teams_list';
 
+import telemetry from 'app/telemetry';
+
 const DRAWER_INITIAL_OFFSET = 40;
 const DRAWER_LANDSCAPE_OFFSET = 150;
 
@@ -30,6 +32,7 @@ export default class ChannelSidebar extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
+            logChannelSwitch: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
@@ -165,11 +168,14 @@ export default class ChannelSidebar extends Component {
     };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {setChannelLoading} = this.props.actions;
+        const {logChannelSwitch, setChannelLoading} = this.props.actions;
+
+        logChannelSwitch(channel.id, currentChannelId);
 
         tracker.channelSwitch = Date.now();
 
         if (closeDrawer) {
+            telemetry.start(['channel:close_drawer']);
             this.closeChannelDrawer();
             setChannelLoading(channel.id !== currentChannelId);
         }

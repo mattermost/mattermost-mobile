@@ -9,6 +9,8 @@ import {
     View,
 } from 'react-native';
 
+import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
+
 import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
@@ -190,6 +192,7 @@ export default class ChannelPostList extends PureComponent {
             component = (
                 <PostList
                     postIds={visiblePostIds}
+                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(visiblePostIds) : -1}
                     extraData={loadMorePostsVisible}
                     onLoadMoreUp={this.loadMorePostsTop}
                     onPostPress={this.goToThread}

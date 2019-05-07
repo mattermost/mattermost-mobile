@@ -42,6 +42,7 @@ export default class Post extends PureComponent {
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
+        isLastPost: PropTypes.bool,
         consecutivePost: PropTypes.bool,
         hasComments: PropTypes.bool,
         isSearchResult: PropTypes.bool,
@@ -238,6 +239,7 @@ export default class Post extends PureComponent {
             channelIsReadOnly,
             commentedOnPost,
             highlight,
+            isLastPost,
             isLastReply,
             isSearchResult,
             onHashtagPress,
@@ -338,6 +340,7 @@ export default class Post extends PureComponent {
                                 ref={'postBody'}
                                 highlight={highlight}
                                 channelIsReadOnly={channelIsReadOnly}
+                                isLastPost={isLastPost}
                                 isSearchResult={isSearchResult}
                                 navigator={this.props.navigator}
                                 onFailedPostPress={this.handleFailedPostPress}

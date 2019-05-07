@@ -42,5 +42,9 @@
 
     "ShowSentryDebugOptions": false,
 
-    "CustomRequestHeaders": {}
+    "CustomRequestHeaders": {},
+
+    "TelemetryEnabled": false,
+    "TelemetryUrl": "",
+    "TelemetryApiKey": ""
 }

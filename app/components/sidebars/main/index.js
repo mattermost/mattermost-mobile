@@ -12,8 +12,27 @@ import {getCurrentTeamId, getMyTeamsCount} from 'mattermost-redux/selectors/enti
 import {setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {isLandscape, isTablet, getDimensions} from 'app/selectors/device';
+import telemetry from 'app/telemetry';
 
 import MainSidebar from './main_sidebar.js';
+
+export function logChannelSwitch(channelId, currentChannelId) {
+    return (dispatch, getState) => {
+        if (channelId === currentChannelId) {
+            return;
+        }
+
+        const metrics = [];
+        if (getState().entities.posts.postsInChannel[channelId]) {
+            metrics.push('channel:switch_loaded');
+        } else {
+            metrics.push('channel:switch_initial');
+        }
+
+        telemetry.reset();
+        telemetry.start(metrics);
+    };
+}
 
 function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
@@ -34,6 +53,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getTeams,
             joinChannel,
+            logChannelSwitch,
             makeDirectChannel,
             setChannelDisplayName,
             setChannelLoading,

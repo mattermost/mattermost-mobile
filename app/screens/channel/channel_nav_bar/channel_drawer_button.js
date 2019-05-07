@@ -17,6 +17,8 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
+import telemetry from 'app/telemetry';
+
 import {getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -69,6 +71,7 @@ class ChannelDrawerButton extends PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
+        telemetry.start(['channel:open_drawer']);
         this.props.openDrawer();
     });
 
