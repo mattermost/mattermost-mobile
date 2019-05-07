@@ -134,9 +134,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 },
             }),
         },
-        flex: {
-            flex: 1,
-        },
         section: {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
