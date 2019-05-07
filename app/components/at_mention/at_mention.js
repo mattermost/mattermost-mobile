@@ -99,7 +99,7 @@ export default class AtMention extends React.PureComponent {
 
         const config = mattermostManaged.getCachedConfig();
 
-        if (config.copyAndPasteProtection !== 'true') {
+        if (config?.copyAndPasteProtection !== 'true') {
             const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
             const actionText = formatMessage({id: 'mobile.mention.copy_mention', defaultMessage: 'Copy Mention'});
 

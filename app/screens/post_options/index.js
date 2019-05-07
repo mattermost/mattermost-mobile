@@ -96,7 +96,7 @@ function mapStateToProps(state, ownProps) {
         canAddReaction = false;
     }
 
-    if (!ownProps.isSystemMessage && ownProps.managedConfig.copyAndPasteProtection !== 'true' && post.message) {
+    if (!ownProps.isSystemMessage && ownProps.managedConfig?.copyAndPasteProtection !== 'true' && post.message) {
         canCopyText = true;
     }
 
