@@ -17,9 +17,9 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import DrawerLayout from 'app/components/sidebars/drawer_layout';
+import DrawerLayout, {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import UserStatus from 'app/components/user_status';
-import {NavigationTypes} from 'app/constants';
+import {DeviceTypes, NavigationTypes} from 'app/constants';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -41,6 +41,7 @@ export default class SettingsDrawer extends PureComponent {
         children: PropTypes.node,
         currentUser: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -349,6 +350,7 @@ export default class SettingsDrawer extends PureComponent {
 
     render() {
         const {children, deviceWidth} = this.props;
+        const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - DRAWER_INITIAL_OFFSET);
 
         return (
             <DrawerLayout
@@ -357,7 +359,7 @@ export default class SettingsDrawer extends PureComponent {
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}
                 drawerPosition='right'
-                drawerWidth={deviceWidth - DRAWER_INITIAL_OFFSET}
+                drawerWidth={drawerWidth}
                 useNativeAnimations={true}
             >
                 {children}
@@ -373,7 +375,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
         wrapper: {
-            flex: 1,
             paddingTop: 0,
         },
         block: {

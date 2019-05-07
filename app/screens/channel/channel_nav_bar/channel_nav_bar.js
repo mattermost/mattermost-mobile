@@ -41,13 +41,15 @@ export default class ChannelNavBar extends PureComponent {
         switch (Platform.OS) {
         case 'android':
             height = ANDROID_TOP_PORTRAIT;
-            if (isLandscape) {
+            if (DeviceTypes.IS_TABLET) {
                 height = ANDROID_TOP_LANDSCAPE;
             }
             break;
         case 'ios':
             height = IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT;
-            if (isLandscape) {
+            if (DeviceTypes.IS_TABLET && isLandscape) {
+                height -= 1;
+            } else if (isLandscape) {
                 height = IOS_TOP_LANDSCAPE;
             }
 
@@ -57,9 +59,17 @@ export default class ChannelNavBar extends PureComponent {
             break;
         }
 
+        let drawerButtonVisible = false;
+        if (!DeviceTypes.IS_TABLET) {
+            drawerButtonVisible = true;
+        }
+
         return (
             <View style={[style.header, padding, {height}]}>
-                <ChannelDrawerButton openDrawer={openChannelDrawer}/>
+                <ChannelDrawerButton
+                    openDrawer={openChannelDrawer}
+                    visible={drawerButtonVisible}
+                />
                 <ChannelTitle onPress={onPress}/>
                 <ChannelSearchButton
                     navigator={navigator}

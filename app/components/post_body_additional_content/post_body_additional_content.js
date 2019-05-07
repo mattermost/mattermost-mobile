@@ -156,6 +156,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
         let maxWidth = deviceSize - 78;
 
+        if (maxWidth > MAX_YOUTUBE_IMAGE_WIDTH) {
+            maxWidth = MAX_YOUTUBE_IMAGE_WIDTH;
+        }
+
         if (height <= MAX_YOUTUBE_IMAGE_HEIGHT) {
             maxHeight = height;
         } else {
