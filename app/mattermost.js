@@ -134,10 +134,6 @@ const resetBadgeAndVersion = () => {
 };
 
 const handleLogout = () => {
-    // Because we can logout while being offline we reset
-    // the Client online flag to true cause the network handler
-    // is not available at this point
-    Client4.setOnline(true);
     Client4.setCSRF(null);
     store.dispatch(closeWebSocket(false));
 

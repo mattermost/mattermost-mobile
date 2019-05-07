@@ -57,7 +57,7 @@ export default class PostBody extends PureComponent {
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPress: PropTypes.func,
-        postId: PropTypes.string.isRequired,
+        post: PropTypes.object.isRequired,
         postProps: PropTypes.object,
         postType: PropTypes.string,
         replyBarStyle: PropTypes.array,
@@ -112,7 +112,7 @@ export default class PostBody extends PureComponent {
             navigator,
             onHashtagPress,
             onPermalinkPress,
-            postId,
+            post,
         } = this.props;
 
         const options = {
@@ -126,7 +126,7 @@ export default class PostBody extends PureComponent {
                 modalPresentationStyle: 'overCurrentContext',
             },
             passProps: {
-                postId,
+                postId: post.id,
                 managedConfig,
                 onHashtagPress,
                 onPermalinkPress,
@@ -148,7 +148,7 @@ export default class PostBody extends PureComponent {
             isSystemMessage,
             managedConfig,
             navigator,
-            postId,
+            post,
             showAddReaction,
             location,
         } = this.props;
@@ -177,7 +177,7 @@ export default class PostBody extends PureComponent {
                 hasBeenDeleted,
                 isFlagged,
                 isSystemMessage,
-                postId,
+                post,
                 managedConfig,
                 showAddReaction,
                 location,
@@ -194,6 +194,16 @@ export default class PostBody extends PureComponent {
             PostAddChannelMember = require('app/components/post_add_channel_member').default;
         }
 
+        let userIds = postProps.add_channel_member.not_in_channel_user_ids;
+        let usernames = postProps.add_channel_member.not_in_channel_usernames;
+
+        if (!userIds) {
+            userIds = postProps.add_channel_member.user_ids;
+        }
+        if (!usernames) {
+            usernames = postProps.add_channel_member.usernames;
+        }
+
         return (
             <PostAddChannelMember
                 baseTextStyle={messageStyle}
@@ -201,8 +211,9 @@ export default class PostBody extends PureComponent {
                 onPostPress={onPress}
                 textStyles={textStyles}
                 postId={postProps.add_channel_member.post_id}
-                userIds={postProps.add_channel_member.user_ids}
-                usernames={postProps.add_channel_member.usernames}
+                userIds={userIds}
+                usernames={usernames}
+                noGroupsUsernames={postProps.add_channel_member.not_in_groups_usernames}
             />
         );
     };
@@ -212,7 +223,7 @@ export default class PostBody extends PureComponent {
             fileIds,
             isFailed,
             navigator,
-            postId,
+            post,
             showLongPost,
         } = this.props;
 
@@ -231,7 +242,7 @@ export default class PostBody extends PureComponent {
                     fileIds={fileIds}
                     isFailed={isFailed}
                     onLongPress={this.showPostOptions}
-                    postId={postId}
+                    postId={post.id}
                     navigator={navigator}
                 />
             );
@@ -241,6 +252,7 @@ export default class PostBody extends PureComponent {
 
     renderPostAdditionalContent = (blockStyles, messageStyle, textStyles) => {
         const {
+            isPostEphemeral,
             isReplyPost,
             isSystemMessage,
             message,
@@ -248,11 +260,11 @@ export default class PostBody extends PureComponent {
             navigator,
             onHashtagPress,
             onPermalinkPress,
-            postId,
+            post,
             postProps,
         } = this.props;
 
-        if (isSystemMessage) {
+        if (isSystemMessage && !isPostEphemeral) {
             return null;
         }
 
@@ -271,7 +283,7 @@ export default class PostBody extends PureComponent {
                 navigator={navigator}
                 message={message}
                 metadata={metadata}
-                postId={postId}
+                postId={post.id}
                 postProps={postProps}
                 textStyles={textStyles}
                 isReplyPost={isReplyPost}
@@ -286,7 +298,7 @@ export default class PostBody extends PureComponent {
             hasReactions,
             isSearchResult,
             navigator,
-            postId,
+            post,
             showLongPost,
         } = this.props;
 
@@ -300,7 +312,7 @@ export default class PostBody extends PureComponent {
 
         return (
             <Reactions
-                postId={postId}
+                postId={post.id}
                 navigator={navigator}
             />
         );
@@ -384,7 +396,7 @@ export default class PostBody extends PureComponent {
                         baseTextStyle={messageStyle}
                         blockStyles={blockStyles}
                         channelMentions={postProps.channel_mentions}
-                        imageMetadata={metadata?.images}
+                        imagesMetadata={metadata?.images}
                         isEdited={hasBeenEdited}
                         isReplyPost={isReplyPost}
                         isSearchResult={isSearchResult}

@@ -25,14 +25,6 @@ import {
 } from 'mattermost-redux/utils/channel_utils';
 import {createIdsSelector} from 'mattermost-redux/utils/helpers';
 
-export const getDefaultChannelForTeam = createSelector(
-    getAllChannels,
-    (state, teamId) => teamId,
-    (channels, teamId) => {
-        return Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
-    }
-);
-
 export const getChannelIdsForExtensionTeam = createIdsSelector(
     (state) => state.views.extension.selectedTeamId,
     getChannelsInTeam,

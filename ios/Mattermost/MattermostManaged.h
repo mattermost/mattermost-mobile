@@ -7,9 +7,10 @@
 //
 
 #import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
+#import <React/RCTUtils.h>
 
-
-@interface MattermostManaged : NSObject <RCTBridgeModule>
+@interface MattermostManaged : RCTEventEmitter <RCTBridgeModule>
 - (NSUserDefaults *)bucketByName:(NSString*)name;
 + (void)sendConfigChangedEvent;
 

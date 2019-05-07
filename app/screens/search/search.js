@@ -13,14 +13,13 @@ import {
 } from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
-import {RequestStatus} from 'mattermost-redux/constants';
-
 import {debounce} from 'mattermost-redux/actions/helpers';
+import {RequestStatus} from 'mattermost-redux/constants';
+import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
 
 import Autocomplete from 'app/components/autocomplete';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import DateHeader from 'app/components/post_list/date_header';
-import {isDateLine} from 'app/components/post_list/date_header/utils';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import PostListRetry from 'app/components/post_list_retry';
@@ -93,18 +92,11 @@ export default class Search extends PureComponent {
             channelName: '',
             cursorPosition: 0,
             value: props.initialValue,
-            managedConfig: {},
             recent: props.recent,
         };
     }
 
-    componentWillMount() {
-        this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);
-    }
-
     componentDidMount() {
-        this.setManagedConfig();
-
         if (this.props.initialValue) {
             this.search(this.props.initialValue);
         }
@@ -148,10 +140,6 @@ export default class Search extends PureComponent {
         }
     }
 
-    componentWillUnmount() {
-        mattermostManaged.removeEventListener(this.listenerId);
-    }
-
     archivedIndicator = (postID, style) => {
         const channelIsArchived = this.props.archivedPostIds.includes(postID);
         let archivedIndicator = null;
@@ -188,7 +176,7 @@ export default class Search extends PureComponent {
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
-        actions.loadThreadIfNecessary(rootId, channelId);
+        actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
         const options = {
@@ -366,7 +354,6 @@ export default class Search extends PureComponent {
 
     renderPost = ({item, index}) => {
         const {postIds, theme} = this.props;
-        const {managedConfig} = this.state;
         const style = getStyleFromTheme(theme);
 
         if (item.id) {
@@ -380,7 +367,7 @@ export default class Search extends PureComponent {
         if (isDateLine(item)) {
             return (
                 <DateHeader
-                    dateLineString={item}
+                    date={getDateForDateLine(item)}
                     index={index}
                 />
             );
@@ -403,7 +390,7 @@ export default class Search extends PureComponent {
                     navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
-                    managedConfig={managedConfig}
+                    managedConfig={mattermostManaged.getCachedConfig()}
                     skipPinnedHeader={true}
                 />
                 {separator}
@@ -457,17 +444,6 @@ export default class Search extends PureComponent {
 
     retry = () => {
         this.search(this.state.value.trim());
-    };
-
-    setManagedConfig = async (config) => {
-        let nextConfig = config;
-        if (!nextConfig) {
-            nextConfig = await mattermostManaged.getLocalConfig();
-        }
-
-        this.setState({
-            managedConfig: nextConfig,
-        });
     };
 
     showPermalinkView = (postId, isPermalink) => {

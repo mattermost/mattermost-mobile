@@ -18,5 +18,6 @@ export default {
     DOCUMENTS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Documents`,
     IMAGES_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Images`,
     IS_IPHONE_X: DeviceInfo.getModel().includes('iPhone X'),
+    IS_TABLET: DeviceInfo.isTablet(),
     VIDEOS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Videos`,
 };

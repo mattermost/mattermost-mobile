@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Text} from 'react-native';
 import PropTypes from 'prop-types';
 import Button from 'react-native-button';
 
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import ActionButtonText from './action_button_text';
 
 export default class ActionButton extends PureComponent {
     static propTypes = {
@@ -34,7 +34,10 @@ export default class ActionButton extends PureComponent {
                 containerStyle={style.button}
                 onPress={this.handleActionPress}
             >
-                <Text style={style.text}>{name}</Text>
+                <ActionButtonText
+                    message={name}
+                    style={style.text}
+                />
             </Button>
         );
     }
@@ -56,6 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.buttonColor,
             fontSize: 12,
             fontWeight: '600',
+            lineHeight: 13,
         },
     };
 });

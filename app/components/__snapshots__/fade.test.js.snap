@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Fade should render {opacity: 0} 1`] = `
+<AnimatedComponent
+  style={
+    Object {
+      "opacity": 0,
+      "transform": Array [
+        Object {
+          "scale": 0,
+        },
+      ],
+    }
+  }
+>
+  <Text>
+    text
+  </Text>
+</AnimatedComponent>
+`;
+
+exports[`Fade should render {opacity: 1} 1`] = `
+<AnimatedComponent
+  style={
+    Object {
+      "opacity": 1,
+      "transform": Array [
+        Object {
+          "scale": 1,
+        },
+      ],
+    }
+  }
+>
+  <Text>
+    text
+  </Text>
+</AnimatedComponent>
+`;

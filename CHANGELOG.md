@@ -1,12 +1,62 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.18.1 Release
+- Release Date: April 18, 2019
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Bug Fixes
+ - Fixed a crash issue caused by a malformed post textbox localize string.
+ - Fixed an issue where iOS crashed when trying to log in using SSO and the SSO provider set a cookie without an expiration date.
+
+## 1.18.0 Release
+- Release Date: April 16, 2019
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ - ``Bot`` tags were added for bot accounts feature in server v5.10 and mobile v1.18, meaning that mobile v1.17 and earlier don't support the tags.
+ 
+### Highlights
+ - Added support for Office365 single sign-on (SSO).
+ - Added support for Integrated Windows Authentication (IWA).
+
+### Improvements
+ - Added the ability for channel links to open inside the app.
+ - Added ability for emojis and hyperlinks to render in the message attachment title.
+ - Added Chinese support for words that trigger mentions.
+ - Added a setting to the system console to change the minimum length of hashtags.
+ - Added a reply option to long press context menu.
+
+### Bug Fixes
+ - Fixed an issue where blank spaces broke markdown tables.
+ - Fixed an issue where deactivated users appeared on "Add Members" modal but not on the search results.
+ - Fixed an issue on Android where extra text in the search box appeared after using the autocomplete drop-down.
+ - Fixed an issue with multiple text entries when typing with Shift+Letter on Android.
+ - Fixed an issue where push notifications badges did not always clear when read on another device.
+ - Fixed an issue where opening a single or group notification did not take the user into the channel where the notification came from.
+ - Fixed an issue where timezone did not automatically update on Android when travelling to another timezone.
+ - Fixed an issue where the user mention autocomplete drop-down was case sensitive.
+ - Fixed an issue where system admininistrators were able to see the full long press menu when long pressing a system message.
+ - Fixed an issue where users were not able to unflag posts from "Flagged Posts" when opened from a read-only channel.
+ - Fixed an issue where users were unable to create channel names of 2 byte characters.
+ 
+### Known Issues
+ - Content for ephemeral messages is not displayed on Mattermost Mobile Apps.
+
 ## 1.17.0 Release
 - Release Date: March 20, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Combatibility
  - If **DisableLegacyMfa** setting in ``config.json`` is set to ``true`` and [multi-factor authentication](https://docs.mattermost.com/deployment/auth.html) is enabled, ensure your users have upgraded to mobile app version 1.17 or later. See [Important Upgrade Notes](https://docs.mattermost.com/administration/important-upgrade-notes.html) for more details.
- - Fixed support for EMM connections using VPN on-demand to indicate that every request should wait for the VPN connection to be establish and to set the value in seconds for the timeout. See docs for more details on [setting AppConfig values](https://docs.mattermost.com/mobile/mobile-appconfig.html#mattermost-appconfig-values) for VPN support.
+ - If you are using an EMM provider via AppConfig, make sure to add two new settings, `useVPN` and `timeoutVPN`, to your AppConfig file. The settings were added for EMM connections using VPN on-demand - one to indicate if every request should wait for the VPN connection to be established, and another to set the timeout in seconds. See docs for more details on [setting AppConfig values](https://docs.mattermost.com/mobile/mobile-appconfig.html#mattermost-appconfig-values) for VPN support.
  - Mobile App v1.13+ is required for Mattermost Server v5.4+.
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.

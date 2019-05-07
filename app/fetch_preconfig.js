@@ -21,7 +21,7 @@ const HEADER_TOKEN = 'Token';
 
 let managedConfig;
 
-mattermostManaged.addEventListener('fetch_managed_config', (config) => {
+mattermostManaged.addEventListener('managedConfigDidChange', (config) => {
     managedConfig = config;
 });
 
@@ -37,15 +37,6 @@ const handleRedirectProtocol = (url, response) => {
 };
 
 Client4.doFetchWithResponse = async (url, options) => {
-    // Removing the check of this flag to be handled natively.
-    // In case Android presents the out of memory issue, consider uncommenting line 42-47.
-    // if (!Client4.online) {
-    //     throw new ClientError(Client4.getUrl(), {
-    //         message: 'no internet connection',
-    //         url,
-    //     });
-    // }
-
     const customHeaders = LocalConfig.CustomRequestHeaders;
     let waitsForConnectivity = false;
     let timeoutIntervalForResource = 30;

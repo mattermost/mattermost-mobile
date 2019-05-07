@@ -19,6 +19,8 @@ class ShareViewController: SLComposeServiceViewController {
   private var serverURL: String?
   private var message: String?
   private var publicURL: String?
+  private var maxPostAlertShown: Bool = false
+  private var tempContainerURL: URL? = UploadSessionManager.shared.tempContainerURL() as URL?
   
   fileprivate var selectedChannel: Item?
   fileprivate var selectedTeam: Item?
@@ -41,15 +43,28 @@ class ShareViewController: SLComposeServiceViewController {
   }
   
   override func isContentValid() -> Bool {
-    // Do validation of contentText and/or NSExtensionContext attachments here
-    if (attachments.count > 0) {
+    let maxMessageSize = store.getMaxPostSize()
+    self.charactersRemaining = NSNumber(value: Int(maxMessageSize) - contentText.count)
+    //Check content text size is not above max
+    if (contentText.count > maxMessageSize) {
+      if !maxPostAlertShown {
+        maxPostAlertShown = true
+        showErrorMessageAndStayOpen(title: "", message: "Content text shared in Mattermost must be less than \(maxMessageSize+1) characters.", VC: self)
+      }
+      return false
+    } else if (attachments.count > 0) { // Do validation of contentText and/or NSExtensionContext attachments here
+      let maxImagePixels = store.getMaxImagePixels()
+      if attachments.hasImageLargerThan(pixels: maxImagePixels) {
+        let readableMaxImagePixels = formatImagePixels(pixels: maxImagePixels)
+        showErrorMessage(title: "", message: "Image attachments shared in Mattermost must be less than \(readableMaxImagePixels).", VC: self)
+      }
       let maxFileSize = store.getMaxFileSize()
       if attachments.hasAttachementLargerThan(fileSize: maxFileSize) {
-        let readableMaxSize = formatFileSize(bytes: Double(maxFileSize))
-        showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxSize).", VC: self)
+        let readableMaxFileSize = formatFileSize(fileSize: maxFileSize)
+        showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxFileSize).", VC: self)
       }
     }
-
+    
     return serverURL != nil &&
       sessionToken != nil &&
       attachmentsCount() == attachments.count &&
@@ -121,6 +136,7 @@ class ShareViewController: SLComposeServiceViewController {
       channels.tapHandler = {
         let vc = ChannelsViewController()
         vc.channelDecks = channelDecks!
+        vc.navbarTitle = self.selectedTeam?.title
         vc.delegate = self
         self.pushConfigurationViewController(vc)
       }
@@ -161,10 +177,31 @@ class ShareViewController: SLComposeServiceViewController {
       if id == currentChannelId {
         item.selected = true
         selectedChannel = item
+        placeholder = "Write to \(item.title!)"
       }
       section.items.append(item)
     }
     return section
+  }
+
+  func getImagePixels(imageUrl: URL) -> UInt64 {
+    guard let imageData = try? Data(contentsOf: imageUrl) else {
+      return 0
+    }
+
+    guard let image = UIImage.init(data: imageData) else {
+      return 0
+    }
+
+    return getImagePixels(image: image)
+  }
+
+  func getImagePixels(image: UIImage) -> UInt64 {
+    guard let cgImage = image.cgImage else {
+        return 0
+    }
+
+    return UInt64(cgImage.width * cgImage.height)
   }
   
   func extractDataFromContext() {
@@ -193,7 +230,22 @@ class ShareViewController: SLComposeServiceViewController {
                 let attachment = self.saveAttachment(url: url)
                 if (attachment != nil) {
                   attachment?.type = kUTTypeImage as String
+                  attachment?.imagePixels = self.getImagePixels(imageUrl: url)
                   self.attachments.append(attachment!)
+                }
+              } else if let image = item as? UIImage {
+                if let data = image.pngData() {
+                  let tempImageURL = self.tempContainerURL?
+                    .appendingPathComponent(UUID().uuidString)
+                    .appendingPathExtension(".png")
+                  if (try? data.write(to: tempImageURL!)) != nil {
+                    let attachment = self.saveAttachment(url: tempImageURL!)
+                    if (attachment != nil) {
+                      attachment?.type = kUTTypeImage as String
+                      attachment?.imagePixels = self.getImagePixels(image: image)
+                      self.attachments.append(attachment!)
+                    }
+                  }
                 }
               }
             }
@@ -339,20 +391,22 @@ class ShareViewController: SLComposeServiceViewController {
   }
 
   func saveAttachment(url: URL) -> AttachmentItem? {
-    let tempURL: URL? = UploadSessionManager.shared.tempContainerURL() as URL?
     let fileMgr = FileManager.default
     let fileName = url.lastPathComponent
-    let tempFileURL = tempURL?.appendingPathComponent(fileName)
+    let tempFileURL = tempContainerURL?.appendingPathComponent(fileName)
 
     do {
-      try? FileManager.default.removeItem(at: tempFileURL!)
-      try fileMgr.copyItem(at: url, to: tempFileURL!)
-      let attr = try fileMgr.attributesOfItem(atPath: (tempFileURL?.path)!) as NSDictionary
+      if (tempFileURL != url) {
+        try? FileManager.default.removeItem(at: tempFileURL!)
+        try fileMgr.copyItem(at: url, to: tempFileURL!)
+      }
 
+      let attr = try fileMgr.attributesOfItem(atPath: (tempFileURL?.path)!) as NSDictionary
       let attachment = AttachmentItem()
       attachment.fileName = fileName
       attachment.fileURL = tempFileURL
       attachment.fileSize = attr.fileSize()
+
       return attachment
     } catch {
       return nil
@@ -370,23 +424,40 @@ class ShareViewController: SLComposeServiceViewController {
     alert.addAction(okAction)
     VC.present(alert, animated: true, completion: nil)
   }
-
-  func formatFileSize(bytes: Double) -> String {
-    guard bytes > 0 else {
-      return "0 bytes"
+  
+  func showErrorMessageAndStayOpen(title: String, message: String, VC: UIViewController) {
+    let alert: UIAlertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
+    let okAction = UIAlertAction(title: "OK", style: UIAlertAction.Style.default)
+    alert.addAction(okAction)
+    VC.present(alert, animated: true, completion: nil)
+  }
+  
+  func formatImagePixels(pixels: UInt64) -> String {
+    let suffixes = ["pixels", "KP", "MP", "GP", "TP", "PP", "EP", "ZP", "YP"]
+    let k: Double = 1000
+    return formatSize(size: Double(pixels), k: k, suffixes: suffixes)
+  }
+  
+  func formatFileSize(fileSize: UInt64) -> String {
+    let suffixes = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
+    let k: Double = 1024
+    return formatSize(size: Double(fileSize), k: k, suffixes: suffixes)
+  }
+  
+  func formatSize(size: Double, k: Double, suffixes: Array<String>) -> String {
+    guard size > 0 else {
+      return "0 \(suffixes[0])"
     }
 
     // Adapted from http://stackoverflow.com/a/18650828
-    let suffixes = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
-    let k: Double = 1024
-    let i = floor(log(bytes) / log(k))
+    let i = floor(log(size) / log(k))
 
-    // Format number with thousands separator and everything below 1 GB with no decimal places.
+    // Format number with thousands separator and everything below 1 giga with no decimal places.
     let numberFormatter = NumberFormatter()
     numberFormatter.maximumFractionDigits = i < 3 ? 0 : 1
     numberFormatter.numberStyle = .decimal
 
-    let numberString = numberFormatter.string(from: NSNumber(value: bytes / pow(k, i))) ?? "Unknown"
+    let numberString = numberFormatter.string(from: NSNumber(value: size / pow(k, i))) ?? "Unknown"
     let suffix = suffixes[Int(i)]
     return "\(numberString) \(suffix)"
   }

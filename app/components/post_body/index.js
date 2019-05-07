@@ -5,7 +5,6 @@ import {connect} from 'react-redux';
 
 import {General, Posts} from 'mattermost-redux/constants';
 import {getChannel, canManageChannelMembers, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
@@ -33,7 +32,7 @@ function makeMapStateToProps() {
     const memoizeHasEmojisOnly = memoizeResult((message, customEmojis) => hasEmojisOnly(message, customEmojis));
 
     return (state, ownProps) => {
-        const post = getPost(state, ownProps.postId) || {};
+        const post = ownProps.post;
         const channel = getChannel(state, post.channel_id) || {};
 
         let isFailed = post.failed;

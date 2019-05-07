@@ -17,6 +17,8 @@ import {DocumentPicker} from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
+import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+
 import {PermissionTypes} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -27,6 +29,7 @@ export default class AttachmentButton extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
         browseFileTypes: PropTypes.string,
+        validMimeTypes: PropTypes.array,
         canBrowseFiles: PropTypes.bool,
         canBrowsePhotoLibrary: PropTypes.bool,
         canBrowseVideoLibrary: PropTypes.bool,
@@ -39,6 +42,7 @@ export default class AttachmentButton extends PureComponent {
         navigator: PropTypes.object.isRequired,
         onShowFileMaxWarning: PropTypes.func,
         onShowFileSizeWarning: PropTypes.func,
+        onShowUnsupportedMimeTypeWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
         wrapper: PropTypes.bool,
@@ -47,6 +51,7 @@ export default class AttachmentButton extends PureComponent {
 
     static defaultProps = {
         browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
+        validMimeTypes: [],
         canBrowseFiles: true,
         canBrowsePhotoLibrary: true,
         canBrowseVideoLibrary: true,
@@ -321,7 +326,14 @@ export default class AttachmentButton extends PureComponent {
             file.fileName = fileInfo.filename;
         }
 
-        if (file.fileSize > this.props.maxFileSize) {
+        if (!file.type) {
+            file.type = lookupMimeType(file.fileName);
+        }
+
+        const {validMimeTypes} = this.props;
+        if (validMimeTypes.length && !validMimeTypes.includes(file.type)) {
+            this.props.onShowUnsupportedMimeTypeWarning();
+        } else if (file.fileSize > this.props.maxFileSize) {
             this.props.onShowFileSizeWarning(file.fileName);
         } else {
             this.props.uploadFiles(files);

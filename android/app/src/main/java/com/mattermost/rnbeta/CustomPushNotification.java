@@ -113,7 +113,7 @@ public class CustomPushNotification extends PushNotification {
             }
             synchronized (list) {
                 if (!"clear".equals(type)) {
-                    String senderName = getSenderName(data.getString("channel_name"), data.getString("message"));
+                    String senderName = getSenderName(data.getString("sender_name"), data.getString("channel_name"), data.getString("message"));
                     data.putLong("time", new Date().getTime());
                     data.putString("sender_name", senderName);
                 }
@@ -178,11 +178,13 @@ public class CustomPushNotification extends PushNotification {
         }
 
         Bundle bundle = mNotificationProps.asBundle();
+        String channelName = bundle.getString("channel_name");
+        String senderName = bundle.getString("sender_name");
         String version = bundle.getString("version");
 
         String title = null;
         if (version != null && version.equals("v2")) {
-            title = bundle.getString("channel_name");
+            title = channelName;
         } else {
             title = bundle.getString("title");
         }
@@ -234,12 +236,10 @@ public class CustomPushNotification extends PushNotification {
             CustomPushNotification.badgeCount = badgeCount;
             notification.setNumber(badgeCount);
             ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), CustomPushNotification.badgeCount);
-        } else {
-            // HERE ADD THE DOT INDICATOR STUFF
         }
 
         Notification.MessagingStyle messagingStyle = new Notification.MessagingStyle("You");
-        if (title != null && !title.startsWith("@")) {
+        if (title != null && (!title.startsWith("@") || channelName != senderName)) {
             messagingStyle
                     .setConversationTitle(title);
         }
@@ -253,12 +253,14 @@ public class CustomPushNotification extends PushNotification {
             list.add(bundle);
         }
 
-        for (Bundle data : list) {
+        int listCount = list.size() - 1;
+        for (int i = listCount; i >= 0; i--) {
+            Bundle data = list.get(i);
             String message = data.getString("message");
-            if (title == null || !title.startsWith("@")) {
-                message = removeSenderFromMessage(message);
+            if (title == null) {
+                message = removeSenderFromMessage(senderName, channelName, message); // generic message
             }
-            messagingStyle.addMessage(message, data.getLong("time"), data.getString("sender_name"));
+            messagingStyle.addMessage(message, data.getLong("time"), "");
         }
 
         notification
@@ -358,21 +360,23 @@ public class CustomPushNotification extends PushNotification {
         ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), CustomPushNotification.badgeCount);
     }
 
-    private String getSenderName(String channelName, String message) {
-        if (channelName != null && channelName.startsWith("@")) {
+    private String getSenderName(String senderName, String channelName, String message) {
+        if (senderName != null) {
+            return senderName;
+        } else if (channelName != null && channelName.startsWith("@")) {
             return channelName;
         }
 
-        String senderName = message.split(":")[0];
-        if (senderName != message) {
-            return senderName;
+        String name = message.split(":")[0];
+        if (name != message) {
+            return name;
         }
 
         return " ";
     }
 
-    private String removeSenderFromMessage(String message) {
-        String sender = String.format("%s: ", getSenderName("", message));
+    private String removeSenderFromMessage(String senderName, String channelName, String message) {
+        String sender = String.format("%s: ", getSenderName(senderName, channelName, message));
         return message.replaceFirst(sender, "");
     }
 }

@@ -18,8 +18,8 @@
     "intl": "1.2.5",
     "jail-monkey": "2.0.0",
     "jsc-android": "236355.1.1",
-    "mattermost-redux": "github:mattermost/mattermost-redux#0f5765a53adcb00dad1bd0434cd701859d01a94a",
-    "mime-db": "1.38.0",
+    "mattermost-redux": "github:mattermost/mattermost-redux#b854353ee96b875b6b87857932b83b1143131860",
+    "mime-db": "1.40.0",
     "moment-timezone": "0.5.23",
     "prop-types": "15.7.2",
     "react": "16.8.2",
@@ -43,7 +43,7 @@
     "react-native-linear-gradient": "2.5.3",
     "react-native-local-auth": "github:mattermost/react-native-local-auth#cc9ce2f468fbf7b431dfad3191a31aaa9227a6ab",
     "react-native-navigation": "github:migbot/react-native-navigation#03c623c373f818827a463ca0fe90f86f56e71b2f",
-    "react-native-notifications": "github:mattermost/react-native-notifications#fcfed22dfee7a02e43f4d8acc5cf6310fa18bd6a",
+    "react-native-notifications": "github:mattermost/react-native-notifications#c58499aedf9bd4c9a405196ec807019ed316f2bb",
     "react-native-passcode-status": "1.1.1",
     "react-native-permissions": "1.1.1",
     "react-native-recyclerview-list": "mattermost/react-native-recyclerview-list#a2d26bc7b2623cae25e947ba3905f702434717bf",
@@ -65,7 +65,7 @@
     "redux-persist-transform-filter": "0.0.18",
     "redux-thunk": "2.3.0",
     "reselect": "4.0.0",
-    "rn-fetch-blob": "github:mattermost/react-native-fetch-blob#5b19784992ef2a1fa00c3a4c71fb005d7789b05c",
+    "rn-fetch-blob": "github:mattermost/react-native-fetch-blob#1800697e2e3834e80f7e5fa84edb5aa43c161bbc",
     "rn-placeholder": "github:mattermost/rn-placeholder#bfee66eb54f1f06d1425a0ad511a5e16559bf82c",
     "semver": "5.6.0",
     "shallow-equals": "1.0.0",
@@ -93,8 +93,10 @@
     "eslint-plugin-react": "7.12.4",
     "jest": "24.1.0",
     "jest-cli": "24.1.0",
+    "jest-enzyme": "7.0.2",
     "jsdom-global": "3.0.2",
     "metro-react-native-babel-preset": "0.51.1",
+    "mmjstool": "github:mattermost/mattermost-utilities",
     "nyc": "13.3.0",
     "react-dom": "16.8.2",
     "redux-mock-store": "1.5.3",
@@ -110,7 +112,8 @@
     "test": "jest --forceExit --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "updatesnapshot": "jest --updateSnapshot"
+    "updatesnapshot": "jest --updateSnapshot",
+    "mmjstool": "mmjstool"
   },
   "rnpm": {
     "assets": [
@@ -128,7 +131,8 @@
     ],
     "preset": "react-native",
     "setupFilesAfterEnv": [
-      "<rootDir>/test/setup.js"
+      "<rootDir>/test/setup.js",
+      "<rootDir>/node_modules/jest-enzyme/lib/index.js"
     ],
     "testPathIgnorePatterns": [
       "/node_modules/"

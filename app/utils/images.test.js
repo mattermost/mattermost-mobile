@@ -1,13 +1,33 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {calculateDimensions} from 'app/utils/images';
+import {calculateDimensions, isGifTooLarge} from 'app/utils/images';
+import {
+    IMAGE_MAX_HEIGHT,
+    IMAGE_MIN_DIMENSION,
+} from 'app/constants/image';
 
 const PORTRAIT_VIEWPORT = 315;
-const IMAGE_MAX_HEIGHT = 350;
-const IMAGE_MIN_DIMENSION = 50;
 
 describe('Images calculateDimensions', () => {
+    it('image with falsy height should return null height and width', () => {
+        const falsyHeights = [0, null, undefined, NaN, '', false];
+        falsyHeights.forEach((falsyHeight) => {
+            const {height, width} = calculateDimensions(falsyHeight, 20, PORTRAIT_VIEWPORT);
+            expect(height).toEqual(null);
+            expect(width).toEqual(null);
+        });
+    });
+
+    it('image with falsy width should return null height and width', () => {
+        const falsyWidths = [0, null, undefined, NaN, '', false];
+        falsyWidths.forEach((falsyWidth) => {
+            const {height, width} = calculateDimensions(20, falsyWidth, PORTRAIT_VIEWPORT);
+            expect(height).toEqual(null);
+            expect(width).toEqual(null);
+        });
+    });
+
     it('image smaller than 50x50 should return 50x50', () => {
         const {height, width} = calculateDimensions(20, 20, PORTRAIT_VIEWPORT);
         expect(height).toEqual(IMAGE_MIN_DIMENSION);
@@ -67,4 +87,50 @@ describe('Images calculateDimensions', () => {
         const {height} = calculateDimensions(1334, 750, PORTRAIT_VIEWPORT, 500);
         expect(height).toEqual(500);
     });
+});
+
+describe('isGifTooLarge', () => {
+    const testCases = [
+        {
+            name: 'no image metadata',
+            imageMetadata: null,
+            expected: false,
+        },
+        {
+            name: 'not a gif',
+            imageMetadata: {format: 'png', frame_count: 0, height: 1000, width: 1000},
+            expected: false,
+        },
+        {
+            name: 'an image without a format/frame count',
+            imageMetadata: {height: 1000, width: 1000},
+            expected: false,
+        },
+        {
+            name: 'a static gif',
+            imageMetadata: {format: 'gif', frame_count: 1, height: 600, width: 500},
+            expected: false,
+        },
+        {
+            name: 'a regular animated gif',
+            imageMetadata: {format: 'gif', frame_count: 40, height: 600, width: 500},
+            expected: false,
+        },
+        {
+            name: 'a very large animated gif',
+            imageMetadata: {format: 'gif', frame_count: 40, height: 100000, width: 100000},
+            expected: true,
+        },
+        {
+            name: 'a very long animated gif',
+            imageMetadata: {format: 'gif', frame_count: 2000, height: 1000, width: 1000},
+            expected: true,
+        },
+    ];
+
+    for (const testCase of testCases) {
+        test(testCase.name, () => {
+            expect(isGifTooLarge(testCase.imageMetadata)).toBe(testCase.expected);
+        });
+    }
 });

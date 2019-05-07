@@ -12,9 +12,10 @@ import {
     View,
 } from 'react-native';
 
+import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
+
 import ChannelLoader from 'app/components/channel_loader';
 import DateHeader from 'app/components/post_list/date_header';
-import {isDateLine} from 'app/components/post_list/date_header/utils';
 import FailedNetworkAction from 'app/components/failed_network_action';
 import NoResults from 'app/components/no_results';
 import PostSeparator from 'app/components/post_separator';
@@ -56,22 +57,6 @@ export default class FlaggedPosts extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.actions.clearSearch();
         props.actions.getFlaggedPosts();
-
-        this.state = {
-            managedConfig: {},
-        };
-    }
-
-    componentWillMount() {
-        this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);
-    }
-
-    componentDidMount() {
-        this.setManagedConfig();
-    }
-
-    componentWillUnmount() {
-        mattermostManaged.removeEventListener(this.listenerId);
     }
 
     goToThread = (post) => {
@@ -80,7 +65,7 @@ export default class FlaggedPosts extends PureComponent {
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
-        actions.loadThreadIfNecessary(rootId, channelId);
+        actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
         const options = {
@@ -158,11 +143,11 @@ export default class FlaggedPosts extends PureComponent {
 
     renderPost = ({item, index}) => {
         const {postIds, theme} = this.props;
-        const {managedConfig} = this.state;
+
         if (isDateLine(item)) {
             return (
                 <DateHeader
-                    dateLineString={item}
+                    date={getDateForDateLine(item)}
                     index={index}
                 />
             );
@@ -185,7 +170,7 @@ export default class FlaggedPosts extends PureComponent {
                     navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
-                    managedConfig={managedConfig}
+                    managedConfig={mattermostManaged.getCachedConfig()}
                     showFullDate={false}
                     skipFlaggedHeader={true}
                     skipPinnedHeader={true}
@@ -193,17 +178,6 @@ export default class FlaggedPosts extends PureComponent {
                 {separator}
             </View>
         );
-    };
-
-    setManagedConfig = async (config) => {
-        let nextConfig = config;
-        if (!nextConfig) {
-            nextConfig = await mattermostManaged.getLocalConfig();
-        }
-
-        this.setState({
-            managedConfig: nextConfig,
-        });
     };
 
     showPermalinkView = (postId, isPermalink) => {
