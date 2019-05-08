@@ -7,7 +7,6 @@
   "license": "Apache 2.0",
   "private": true,
   "dependencies": {
-    "@babel/polyfill": "7.2.5",
     "@babel/runtime": "7.3.1",
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#6c3136c18ae8bb7842f8491d160f370a334fd903",
