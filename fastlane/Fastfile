@@ -157,13 +157,6 @@ lane :configure do
     json['SentryDsnAndroid'] = ENV['SENTRY_DSN_ANDROID']
   end
 
-  # Configure Telemetry if enabled
-  if ENV['BETA_BUILD'] == 'true' && ENV['TELEMETRY_ENABLED'] == 'true' && ENV['TELEMETRY_URL'] != '' && ENV['TELEMETRY_API_KEY'] != ''
-    json['TelemetryEnabled'] = true
-    json['TelemetryUrl'] = ENV['TELEMETRY_URL']
-    json['TelemetryApiKey'] = ENV['TELEMETRY_API_KEY']
-  end
-
   # Save the config.json file
   save_config_json(json)
 
@@ -361,6 +354,7 @@ platform :android do
   lane :build do
     unless configured
       configure
+      configure_telemetry_android
     end
     update_identifiers
     replace_assets
@@ -381,6 +375,27 @@ platform :android do
         build_type: 'Unsigned',
         project_dir: 'android/'
     )
+  end
+
+  desc 'Update config and module/listener for Android telemetry'
+  lane :configure_telemetry_android do
+    if ENV['TELEMETRY_ENABLED'] == 'true' && ENV['TELEMETRY_URL'] != '' && ENV['TELEMETRY_API_KEY'] != ''
+      # Update telemetry config
+      json = load_config_json
+      json['TelemetryEnabled'] = true
+      json['TelemetryUrl'] = ENV['TELEMETRY_URL']
+      json['TelemetryApiKey'] = ENV['TELEMETRY_API_KEY']
+      save_config_json(json)
+
+      beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
+
+      # Listen to telemetry react markers
+      find_replace_string(
+          path_to_file: "#{beta_dir}MainApplication.java",
+          old_string: '// addReactMarkerListener();',
+          new_string: 'addReactMarkerListener();'
+      )
+    end
   end
 
   lane :update_identifiers do
