@@ -8,7 +8,6 @@
 
 #import "RCTUITextView.h"
 #import "MattermostManaged.h"
-#import "EventEmitModule.h"
 
 @implementation MattermostManaged {
   bool hasListeners;
@@ -80,7 +79,7 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"managedConfigDidChange"];
+  return @[@"managedConfigDidChange", @"hardwareEnter"];
 }
 
 - (instancetype)init {
@@ -92,12 +91,20 @@ RCT_EXPORT_MODULE();
                                                        queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
                                                          [self remoteConfigChanged];
                                                        }];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleHardwareEnter:) name:@"hardwareEnter" object:nil];
   }
   return self;
 }
 
 + (void)sendConfigChangedEvent {
   [[NSNotificationCenter defaultCenter] postNotificationName:@"managedConfigDidChange"
+                                                      object:self
+                                                    userInfo:nil];
+}
+
++ (void)sendHardwareEnterEvent {
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"hardwareEnter"
                                                       object:self
                                                     userInfo:nil];
 }
@@ -132,6 +139,17 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
   }
 }
 
+- (void)handleHardwareEnter:(NSNotification *)notification
+{
+  if (hasListeners) {
+    @try {
+      [self sendEventWithName:@"hardwareEnter" body:nil];
+    } @catch (NSException *exception) {
+      NSLog(@"Error sending event hardwareEnter to JS details=%@", exception.reason);
+    }
+  }
+}
+
 RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
@@ -159,12 +177,12 @@ RCT_EXPORT_METHOD(quitApp)
 
 - (NSArray<UIKeyCommand *>*)keyCommands
 {
-  return @[[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:nil action:@selector(handleEnter:)]];
+  return @[[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:nil action:@selector(handleHardwareEnter:)]];
 }
 
-- (void)handleEnter:(UIKeyCommand *)sender
+- (void)handleHardwareEnter:(UIKeyCommand *)sender
 {
-  [EventEmitModule emitEventWithName:@"handleIosEnter" andPayload:nil];
+  [MattermostManaged sendHardwareEnterEvent];
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender

@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, BackHandler, findNodeHandle, Keyboard, NativeModules, Platform, Text, TextInput, View, NativeEventEmitter} from 'react-native';
+import {Alert, BackHandler, findNodeHandle, Keyboard, NativeModules, Platform, Text, TextInput, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import Button from 'react-native-button';
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -99,13 +99,10 @@ export default class PostTextbox extends PureComponent {
         Keyboard.addListener('keyboardDidShow', this.onKeyboardShow);
         Keyboard.addListener('keyboardDidHide', this.onKeyboardHide);
 
+        this.listenerId = mattermostManaged.addNativeListener('hardwareEnter', this.handleHardwareEnterKey);
+
         if (Platform.OS === 'android') {
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
-            this.listenerId = mattermostManaged.addEventListener('hardwareEnter', this.handleHardwareEnterKey);
-        } else if (Platform.OS === 'ios') {
-            const {EventEmitModule} = NativeModules;
-            this.eventEmitter = new NativeEventEmitter(EventEmitModule);
-            this.eventEmitter.addListener('handleIosEnter', this.handleHardwareEnterKey);
         }
     }
 
@@ -121,11 +118,10 @@ export default class PostTextbox extends PureComponent {
         Keyboard.removeListener('keyboardDidShow', this.onKeyboardShow);
         Keyboard.removeListener('keyboardDidHide', this.onKeyboardHide);
 
+        mattermostManaged.removeEventListener(this.listenerId);
+
         if (Platform.OS === 'android') {
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
-            mattermostManaged.removeEventListener(this.listenerId);
-        } else if (Platform.OS === 'ios') {
-            this.eventEmitter.removeListener('handleIosEnter', this.handleHardwareEnterKey);
         }
     }
 

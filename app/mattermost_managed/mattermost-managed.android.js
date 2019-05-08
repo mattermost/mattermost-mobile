@@ -11,6 +11,11 @@ const listeners = [];
 let cachedConfig = {};
 
 export default {
+    addNativeListener: (name, callback) => {
+        const listener = DeviceEventEmitter.addListener(name, callback);
+        listeners.push(listener);
+        return listener;
+    },
     addEventListener: (name, callback) => {
         const listener = DeviceEventEmitter.addListener(name, (config) => {
             cachedConfig = config;
