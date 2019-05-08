@@ -408,7 +408,7 @@ export function handleSelectChannelByName(channelName, teamName) {
     return async (dispatch, getState) => {
         const state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
-        const currentTeamName = currentTeams[currentTeamId].name;
+        const currentTeamName = currentTeams[currentTeamId]?.name;
         const {data: channel} = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const currentChannelId = getCurrentChannelId(state);
         if (channel && currentChannelId !== channel.id) {

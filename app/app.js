@@ -52,14 +52,6 @@ export default class App {
         this.token = null;
         this.url = null;
 
-        // Load polyfill for iOS 9
-        if (Platform.OS === 'ios') {
-            const majorVersionIOS = parseInt(Platform.Version, 10);
-            if (majorVersionIOS < 10) {
-                require('@babel/polyfill');
-            }
-        }
-
         // Usage deeplinking
         Linking.addEventListener('url', this.handleDeepLink);
 

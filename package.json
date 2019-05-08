@@ -7,7 +7,6 @@
   "license": "Apache 2.0",
   "private": true,
   "dependencies": {
-    "@babel/polyfill": "7.2.5",
     "@babel/runtime": "7.3.1",
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#6c3136c18ae8bb7842f8491d160f370a334fd903",
@@ -18,7 +17,7 @@
     "intl": "1.2.5",
     "jail-monkey": "2.0.0",
     "jsc-android": "236355.1.1",
-    "mattermost-redux": "github:mattermost/mattermost-redux#eeaf49df2660577a1491d472858f7f01ea76660f",
+    "mattermost-redux": "github:mattermost/mattermost-redux#a6b5a325126821c8e6fe22a3dbef747a4d325c5e",
     "mime-db": "1.40.0",
     "moment-timezone": "0.5.23",
     "prop-types": "15.7.2",
