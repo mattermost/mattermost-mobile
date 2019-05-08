@@ -11,8 +11,8 @@
  
 ### Bug Fixes
  - Fixed an issue where Android managed config was lost on the thread view.
- - Fixed an issue where contents of ephemeral posts from /giphy did not display on the mobile app.
- - Fixed several mobile app crash / fatal error issues.
+ - Fixed an issue where contents of ephemeral posts did not display on the mobile app.
+ - Fixed a few mobile app crash / fatal error issues.
  - Fixed an issue with an expanding animation when tapping on Jump to Channel in the channel list.
  - Fixed an issue on iOS where animated custom emoji weren't animated.
  - Fixed an issue on iOS where users were unable to create channel name of 2 byte characters.
