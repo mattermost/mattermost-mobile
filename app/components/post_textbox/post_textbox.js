@@ -9,7 +9,7 @@ import Button from 'react-native-button';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
-import mattermostManaged from 'app/mattermost_managed';
+import EventEmitterModule from 'app/event_emitter_module';
 
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
@@ -99,7 +99,7 @@ export default class PostTextbox extends PureComponent {
         Keyboard.addListener('keyboardDidShow', this.onKeyboardShow);
         Keyboard.addListener('keyboardDidHide', this.onKeyboardHide);
 
-        this.listenerId = mattermostManaged.addNativeListener('hardwareEnter', this.handleHardwareEnterKey);
+        this.listenerId = EventEmitterModule.addEventListener('hardwareEnter', this.handleHardwareEnterKey);
 
         if (Platform.OS === 'android') {
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -118,7 +118,7 @@ export default class PostTextbox extends PureComponent {
         Keyboard.removeListener('keyboardDidShow', this.onKeyboardShow);
         Keyboard.removeListener('keyboardDidHide', this.onKeyboardHide);
 
-        mattermostManaged.removeEventListener(this.listenerId);
+        EventEmitterModule.removeEventListener(this.listenerId);
 
         if (Platform.OS === 'android') {
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);

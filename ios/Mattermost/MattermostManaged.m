@@ -8,6 +8,7 @@
 
 #import "RCTUITextView.h"
 #import "MattermostManaged.h"
+#import "EventEmitterModule.h"
 
 @implementation MattermostManaged {
   bool hasListeners;
@@ -79,7 +80,7 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"managedConfigDidChange", @"hardwareEnter"];
+  return @[@"managedConfigDidChange"];
 }
 
 - (instancetype)init {
@@ -91,20 +92,12 @@ RCT_EXPORT_MODULE();
                                                        queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
                                                          [self remoteConfigChanged];
                                                        }];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleHardwareEnter:) name:@"hardwareEnter" object:nil];
   }
   return self;
 }
 
 + (void)sendConfigChangedEvent {
   [[NSNotificationCenter defaultCenter] postNotificationName:@"managedConfigDidChange"
-                                                      object:self
-                                                    userInfo:nil];
-}
-
-+ (void)sendHardwareEnterEvent {
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"hardwareEnter"
                                                       object:self
                                                     userInfo:nil];
 }
@@ -135,17 +128,6 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
       [self sendEventWithName:@"managedConfigDidChange" body:response];
     } @catch (NSException *exception) {
       NSLog(@"Error sending event managedConfigDidChange to JS details=%@", exception.reason);
-    }
-  }
-}
-
-- (void)handleHardwareEnter:(NSNotification *)notification
-{
-  if (hasListeners) {
-    @try {
-      [self sendEventWithName:@"hardwareEnter" body:nil];
-    } @catch (NSException *exception) {
-      NSLog(@"Error sending event hardwareEnter to JS details=%@", exception.reason);
     }
   }
 }
@@ -182,7 +164,7 @@ RCT_EXPORT_METHOD(quitApp)
 
 - (void)handleHardwareEnter:(UIKeyCommand *)sender
 {
-  [MattermostManaged sendHardwareEnterEvent];
+  [EventEmitterModule emitEventWithName:@"hardwareEnter"];
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender

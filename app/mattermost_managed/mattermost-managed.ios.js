@@ -11,11 +11,6 @@ const listeners = [];
 let cachedConfig = {};
 
 export default {
-    addNativeListener: (name, callback) => {
-        const listener = mattermostManagedEmitter.addListener(name, callback);
-        listeners.push(listener);
-        return listener;
-    },
     addEventListener: (name, callback) => {
         const listener = mattermostManagedEmitter.addListener(name, (config) => {
             cachedConfig = config;
