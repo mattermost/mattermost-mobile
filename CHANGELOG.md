@@ -15,7 +15,7 @@
  - Fixed a few mobile app crash / fatal error issues.
  - Fixed an issue with an expanding animation when tapping on Jump to Channel in the channel list.
  - Fixed an issue on iOS where animated custom emoji weren't animated.
- - Fixed an issue on iOS where users were unable to create channel name of 2 byte characters.
+ - Fixed an issue on iOS where users were unable to create channel name of 2 characters.
  - Fixed an issue on iOS where emoji appeared too close, with uneven spacing, and too small in the info modal.
  - Fixed an issue with MattermostShare error when sharing text that was over server's maximum post size.
  - Fixed an issue where users could upload a GIF as a profile image.
