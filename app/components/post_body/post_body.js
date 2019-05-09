@@ -102,7 +102,8 @@ export default class PostBody extends PureComponent {
         telemetry.end([
             'channel:switch_initial',
             'channel:switch_loaded',
-            'posts:list_update',
+            'post_list:permalink',
+            'post_list:thread',
             'team:switch',
             'start:overall',
         ]);

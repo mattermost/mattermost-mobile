@@ -17,6 +17,7 @@ import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
+import telemetry from 'app/telemetry';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -87,6 +88,7 @@ export default class ChannelPostList extends PureComponent {
     };
 
     goToThread = (post) => {
+        telemetry.start(['post_list:thread']);
         const {actions, channelId, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
 

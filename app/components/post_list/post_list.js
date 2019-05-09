@@ -105,8 +105,6 @@ export default class PostList extends PureComponent {
             this.handleDeepLink(this.props.deepLinkURL);
             this.props.actions.setDeepLinkURL('');
         }
-
-        telemetry.start(['posts:list_update']);
     }
 
     componentWillUnmount() {
@@ -147,6 +145,7 @@ export default class PostList extends PureComponent {
     };
 
     handlePermalinkPress = (postId, teamName) => {
+        telemetry.start(['post_list:permalink']);
         const {actions, onPermalinkPress} = this.props;
 
         if (onPermalinkPress) {
