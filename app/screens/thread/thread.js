@@ -5,7 +5,9 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform} from 'react-native';
 import {intlShape} from 'react-intl';
+
 import {General, RequestStatus} from 'mattermost-redux/constants';
+import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 
 import {THREAD} from 'app/constants/screen';
 
@@ -147,6 +149,7 @@ export default class Thread extends PureComponent {
                     renderFooter={this.renderFooter()}
                     indicateNewMessages={false}
                     postIds={postIds}
+                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
                     currentUserId={myMember && myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                     navigator={navigator}

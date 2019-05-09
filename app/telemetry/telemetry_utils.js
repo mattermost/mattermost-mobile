@@ -39,7 +39,8 @@ const presetTID = {
     'channel:close_drawer': 9,
     'channel:open_drawer': 10,
     'posts:loading': 11,
-    'posts:list_update': 12,
+    'post_list:thread': 12,
+    'post_list:permalink': 13,
 };
 
 export function setTraceRecord({
