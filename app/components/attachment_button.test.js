@@ -6,6 +6,7 @@ import {shallow} from 'enzyme';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
+import {VALID_MIME_TYPES} from 'app/screens/edit_profile/edit_profile';
 import AttachmentButton from './attachment_button';
 
 jest.mock('react-intl');
@@ -30,7 +31,7 @@ describe('AttachmentButton', () => {
     test('should not upload file with invalid MIME type', () => {
         const props = {
             ...baseProps,
-            validMimeTypes: ['image/jpeg'],
+            validMimeTypes: VALID_MIME_TYPES,
             onShowUnsupportedMimeTypeWarning: jest.fn(),
         };
 
@@ -51,7 +52,7 @@ describe('AttachmentButton', () => {
     test('should upload file with valid MIME type', () => {
         const props = {
             ...baseProps,
-            validMimeTypes: ['image/jpeg'],
+            validMimeTypes: VALID_MIME_TYPES,
             onShowUnsupportedMimeTypeWarning: jest.fn(),
         };
 
@@ -60,12 +61,14 @@ describe('AttachmentButton', () => {
         );
 
         const file = {
-            type: 'image/jpeg',
             fileSize: 10,
             fileName: 'test',
         };
-        wrapper.instance().uploadFiles([file]);
-        expect(props.onShowUnsupportedMimeTypeWarning).not.toHaveBeenCalled();
-        expect(props.uploadFiles).toHaveBeenCalled();
+        VALID_MIME_TYPES.forEach((mimeType) => {
+            file.type = mimeType;
+            wrapper.instance().uploadFiles([file]);
+            expect(props.onShowUnsupportedMimeTypeWarning).not.toHaveBeenCalled();
+            expect(props.uploadFiles).toHaveBeenCalled();
+        });
     });
 });
