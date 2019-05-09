@@ -8,7 +8,7 @@ import {createPost, removePost} from 'mattermost-redux/actions/posts';
 import {Posts} from 'mattermost-redux/constants';
 import {isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channels';
 import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getUser, getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
@@ -43,6 +43,7 @@ function makeMapStateToProps() {
 
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
+        const user = getUser(state, post.user_id);
         const isCommentMention = isPostCommentMention(state, post.id);
         let isFirstReply = true;
         let isLastReply = true;
@@ -72,6 +73,7 @@ function makeMapStateToProps() {
             channelIsReadOnly: isChannelReadOnlyById(state, post.channel_id),
             currentUserId,
             post,
+            isBot: (user ? user.is_bot : false),
             isFirstReply,
             isLastReply,
             consecutivePost: isConsecutivePost(post, previousPost),

@@ -64,6 +64,7 @@ export default class Post extends PureComponent {
         skipPinnedHeader: PropTypes.bool,
         isCommentMention: PropTypes.bool,
         location: PropTypes.string,
+        isBot: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -250,6 +251,7 @@ export default class Post extends PureComponent {
             onHashtagPress,
             onPermalinkPress,
             post,
+            isBot,
             renderReplies,
             shouldRenderReplyButton,
             showAddReaction,
@@ -274,7 +276,7 @@ export default class Post extends PureComponent {
         const isReplyPost = this.isReplyPost();
         const onUsernamePress =
             Config.ExperimentalUsernamePressIsMention && !channelIsReadOnly ? this.autofillUserMention : this.viewUserProfile;
-        const mergeMessage = consecutivePost && !hasComments;
+        const mergeMessage = consecutivePost && !hasComments && !isBot;
         const highlightFlagged = isFlagged && !skipFlaggedHeader;
         const hightlightPinned = post.is_pinned && !skipPinnedHeader;
 
