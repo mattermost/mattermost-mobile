@@ -77,6 +77,7 @@ export default class PostBody extends PureComponent {
         onFailedPostPress: emptyFunction,
         onPress: emptyFunction,
         replyBarStyle: [],
+        message: '',
     };
 
     static contextTypes = {

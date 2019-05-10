@@ -74,6 +74,7 @@ export default class PostList extends PureComponent {
         refreshing: false,
         serverURL: '',
         siteURL: '',
+        postIds: [],
     };
 
     constructor(props) {

@@ -38,6 +38,10 @@ export default class MoreChannels extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        channels: [],
+    };
+
     static contextTypes = {
         intl: intlShape.isRequired,
     };

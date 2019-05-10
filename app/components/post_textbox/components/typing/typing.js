@@ -19,6 +19,10 @@ export default class Typing extends PureComponent {
         typing: PropTypes.array.isRequired,
     };
 
+    static defaultProps = {
+        typing: [],
+    };
+
     state = {
         typingHeight: new Animated.Value(0),
     }

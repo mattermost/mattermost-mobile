@@ -228,17 +228,17 @@ export function cleanUpState(action, keepCurrent = false) {
     nextEntities.posts.postsInChannel = cleanUpPostsInChannel(payload.entities.posts.postsInChannel, lastChannelForTeam, keepCurrent ? currentChannelId : '');
     postIdsToKeep.push(...getAllFromPostsInChannel(nextEntities.posts.postsInChannel));
 
-    // Keep any posts that appear in search resutls
+    // Keep any posts that appear in search results
     let searchResults = [];
     let flaggedPosts = [];
     if (payload.entities.search) {
-        if (payload.entities.search.results.length) {
+        if (payload.entities.search.results?.length) {
             const {results} = payload.entities.search;
             searchResults = results;
             postIdsToKeep.push(...results);
         }
 
-        if (payload.entities.search.flagged.length) {
+        if (payload.entities.search.flagged?.length) {
             const {flagged} = payload.entities.search;
             flaggedPosts = flagged;
             postIdsToKeep.push(...flagged);

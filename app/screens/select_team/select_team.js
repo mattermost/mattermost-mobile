@@ -53,6 +53,10 @@ export default class SelectTeam extends PureComponent {
         teamsRequest: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        teams: [],
+    };
+
     constructor(props) {
         super(props);
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
