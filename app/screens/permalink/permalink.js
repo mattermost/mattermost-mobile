@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     Text,
     TouchableOpacity,
     View,
@@ -15,6 +16,7 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
@@ -393,6 +395,7 @@ export default class Permalink extends PureComponent {
                     onPermalinkPress={this.handlePermalinkPress}
                     onPostPress={this.goToThread}
                     postIds={postIdsState}
+                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIdsState) : -1}
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     navigator={navigator}

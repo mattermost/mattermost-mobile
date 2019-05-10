@@ -185,7 +185,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
             received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
 
-            if (received) {
+            if (received?.order) {
                 const count = received.order.length;
                 loadMorePostsVisible = count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
                 actions.push({
@@ -213,7 +213,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 
             received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
 
-            if (received) {
+            if (received?.order) {
                 const count = received.order.length;
                 loadMorePostsVisible = postsIds.length + count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
                 actions.push({
@@ -621,7 +621,7 @@ export function increasePostVisibility(channelId, postId) {
         }];
 
         let hasMorePost = false;
-        if (result) {
+        if (result?.order) {
             const count = result.order.length;
             hasMorePost = count >= pageSize;
 

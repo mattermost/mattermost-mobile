@@ -17,6 +17,10 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        currentUser: {},
+    };
+
     constructor(props) {
         super(props);
 

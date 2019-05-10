@@ -24,6 +24,11 @@ export default class AtMentionItem extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        firstName: '',
+        lastName: '',
+    };
+
     completeMention = () => {
         const {onPress, username} = this.props;
         onPress(username);

@@ -86,6 +86,10 @@ describe('cleanUpState', () => {
                     postsInThread: {},
                     reactions: {},
                 },
+                search: {
+                    results: ['post1', 'post2'],
+                    flagged: ['post1', 'post2', 'post3'],
+                },
             },
             views: {
                 team: {
@@ -101,6 +105,8 @@ describe('cleanUpState', () => {
         expect(result.payload.entities.posts.posts.post1).toBeDefined();
         expect(result.payload.entities.posts.posts.post2).toBeUndefined();
         expect(result.payload.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1'], recent: true}]);
+        expect(result.payload.entities.search.results).toEqual(['post1', 'post2']);
+        expect(result.payload.entities.search.flagged).toEqual(['post1', 'post2', 'post3']);
     });
 
     test('should keep failed pending post', () => {

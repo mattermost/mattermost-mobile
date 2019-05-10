@@ -44,6 +44,11 @@ export default class ChannelMention extends PureComponent {
     static defaultProps = {
         isSearch: false,
         value: '',
+        publicChannels: [],
+        privateChannels: [],
+        directAndGroupMessages: [],
+        myChannels: [],
+        otherChannels: [],
     };
 
     constructor(props) {

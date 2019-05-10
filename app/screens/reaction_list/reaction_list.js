@@ -35,6 +35,10 @@ export default class ReactionList extends PureComponent {
         userProfiles: PropTypes.array,
     };
 
+    static defaultProps = {
+        userProfiles: [],
+    };
+
     static contextTypes = {
         intl: intlShape.isRequired,
     };

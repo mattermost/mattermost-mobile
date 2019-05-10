@@ -61,6 +61,10 @@ export default class LastUsers extends React.PureComponent {
         usernames: PropTypes.array.isRequired,
     };
 
+    static defaultProps = {
+        usernames: [],
+    };
+
     constructor(props) {
         super(props);
 

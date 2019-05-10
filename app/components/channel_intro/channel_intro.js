@@ -29,6 +29,10 @@ class ChannelIntro extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        currentChannelMembers: [],
+    };
+
     goToUserProfile = (userId) => {
         const {intl, navigator, theme} = this.props;
         const options = {
