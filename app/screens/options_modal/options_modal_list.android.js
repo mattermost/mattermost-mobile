@@ -21,6 +21,10 @@ export default class OptionsModalList extends PureComponent {
         onItemPress: PropTypes.func,
     };
 
+    static defaultProps = {
+        items: [],
+    };
+
     handleCancelPress = preventDoubleTap(() => {
         if (this.props.onCancelPress) {
             this.props.onCancelPress();

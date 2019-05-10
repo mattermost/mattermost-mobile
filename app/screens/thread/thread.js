@@ -35,6 +35,10 @@ export default class Thread extends PureComponent {
         threadLoadingStatus: PropTypes.object,
     };
 
+    static defaultProps = {
+        postIds: [],
+    };
+
     state = {};
 
     static contextTypes = {

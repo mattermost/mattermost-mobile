@@ -246,13 +246,13 @@ function cleanupState(action, keepCurrent = false) {
     let searchResults = [];
     let flaggedPosts = [];
     if (payload.entities.search) {
-        if (payload.entities.search.results.length) {
+        if (payload.entities.search.results?.length) {
             const {results} = payload.entities.search;
             searchResults = results;
             postIdsToKeep.push(...results);
         }
 
-        if (payload.entities.search.flagged.length) {
+        if (payload.entities.search.flagged?.length) {
             const {flagged} = payload.entities.search;
             flaggedPosts = flagged;
             postIdsToKeep.push(...flagged);

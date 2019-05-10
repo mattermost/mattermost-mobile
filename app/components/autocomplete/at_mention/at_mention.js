@@ -41,6 +41,7 @@ export default class AtMention extends PureComponent {
         defaultChannel: {},
         isSearch: false,
         value: '',
+        inChannel: [],
     };
 
     constructor(props) {

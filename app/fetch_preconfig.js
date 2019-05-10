@@ -29,10 +29,12 @@ const handleRedirectProtocol = (url, response) => {
     const serverUrl = Client4.getUrl();
     const parsed = urlParse(url);
     const {redirects} = response.rnfbRespInfo;
-    const redirectUrl = urlParse(redirects[redirects.length - 1]);
+    if (redirects) {
+        const redirectUrl = urlParse(redirects[redirects.length - 1]);
 
-    if (serverUrl === parsed.origin && parsed.host === redirectUrl.host && parsed.protocol !== redirectUrl.protocol) {
-        Client4.setUrl(serverUrl.replace(parsed.protocol, redirectUrl.protocol));
+        if (serverUrl === parsed.origin && parsed.host === redirectUrl.host && parsed.protocol !== redirectUrl.protocol) {
+            Client4.setUrl(serverUrl.replace(parsed.protocol, redirectUrl.protocol));
+        }
     }
 };
 

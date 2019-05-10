@@ -55,6 +55,7 @@ export default class PostListBase extends PureComponent {
         refreshing: false,
         serverURL: '',
         siteURL: '',
+        postIds: [],
     };
 
     componentDidUpdate() {

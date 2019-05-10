@@ -27,6 +27,10 @@ export default class FileUploadPreview extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        files: [],
+    };
+
     buildFilePreviews = () => {
         return this.props.files.map((file) => {
             return (
