@@ -36,6 +36,10 @@ export default class PostAddChannelMember extends React.PureComponent {
         textStyles: PropTypes.object,
     };
 
+    static defaultProps = {
+        usernames: [],
+    };
+
     static contextTypes = {
         intl: intlShape,
     };

@@ -62,7 +62,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                 headerDefaultMessage='WORDS THAT TRIGGER MENTIONS'
                 theme={theme}
             >
-                {currentUser.first_name.length > 0 &&
+                {currentUser.first_name?.length > 0 &&
                 <View>
                     <SectionItem
                         label={(
