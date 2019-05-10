@@ -551,6 +551,7 @@ export default class ChannelInfo extends PureComponent {
                         type={currentChannel.type}
                         isArchived={currentChannel.delete_at !== 0}
                         isBot={isBot}
+                        isGroupConstrained={currentChannel.group_constrained}
                     />
                     }
                     <View style={style.rowsContainer}>
