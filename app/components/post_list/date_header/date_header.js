@@ -34,7 +34,7 @@ export default class DateHeader extends PureComponent {
         };
 
         if (timeZone) {
-            dateFormatProps.value = new Date(moment.tz(date, timeZone).toDate());
+            dateFormatProps.value = moment.tz(date, timeZone).toDate();
         }
 
         return (
