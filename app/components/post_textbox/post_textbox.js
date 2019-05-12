@@ -201,6 +201,7 @@ export default class PostTextbox extends PureComponent {
         this.setState({
             keyboardState: 'hidden',
         });
+        this.blur();
     };
 
     handleAndroidBack = () => {

@@ -9,11 +9,16 @@
 #import "EventEmitterModule.h"
 
 @implementation EventEmitterModule
+{
+  bool hasListeners;
+}
 
 RCT_EXPORT_MODULE();
 
 - (void)startObserving
 {
+  hasListeners = YES;
+
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(handleHardwareEnter:)
                                                name:@"hardwareEnter"
@@ -23,6 +28,8 @@ RCT_EXPORT_MODULE();
 - (void)stopObserving
 {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  
+  hasListeners = NO;
 }
 
 - (NSArray<NSString *> *)supportedEvents
@@ -32,8 +39,13 @@ RCT_EXPORT_MODULE();
 
 - (void)handleHardwareEnter:(NSNotification *)notification
 {
-  [self sendEventWithName:@"hardwareEnter"
-                     body:notification.userInfo];
+  if (hasListeners) {
+    @try {
+      [self sendEventWithName:@"hardwareEnter" body:nil];
+    } @catch (NSException *exception) {
+      NSLog(@"Error sending event hardwareEnter to JS details=%@", exception.reason);
+    }
+  }
 }
 
 + (void)emitEventWithName:(NSString *)name
