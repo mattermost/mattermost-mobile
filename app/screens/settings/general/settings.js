@@ -38,6 +38,11 @@ class Settings extends PureComponent {
         theme: PropTypes.object,
     };
 
+    static defaultProps = {
+        errors: [],
+        joinableTeams: [],
+    };
+
     constructor(props) {
         super(props);
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);

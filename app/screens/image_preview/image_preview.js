@@ -55,6 +55,10 @@ export default class ImagePreview extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        files: [],
+    };
+
     static contextTypes = {
         intl: intlShape,
     };

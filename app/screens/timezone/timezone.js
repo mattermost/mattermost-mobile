@@ -36,6 +36,10 @@ export default class Timezone extends PureComponent {
         }).isRequired,
     };
 
+    static defaultProps = {
+        timezones: [],
+    };
+
     static contextTypes = {
         intl: intlShape,
     };
@@ -71,7 +75,7 @@ export default class Timezone extends PureComponent {
             return;
         }
 
-        if (manualTimezone.length > 0) {
+        if (manualTimezone?.length > 0) {
             // Preserve state change in server if manualTimezone exists
             this.submitUser({
                 useAutomaticTimezone,
