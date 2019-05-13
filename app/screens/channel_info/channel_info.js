@@ -392,6 +392,7 @@ export default class ChannelInfo extends PureComponent {
             canManageUsers,
             canEditChannel,
             theme,
+            currentChannel,
         } = this.props;
 
         if (channelIsArchived) {
@@ -474,7 +475,7 @@ export default class ChannelInfo extends PureComponent {
                     />
                 </React.Fragment>
                 }
-                {canManageUsers &&
+                {canManageUsers && !currentChannel.group_constrained &&
                 <React.Fragment>
                     <View style={style.separator}/>
                     <ChannelInfoRow
@@ -551,6 +552,7 @@ export default class ChannelInfo extends PureComponent {
                         type={currentChannel.type}
                         isArchived={currentChannel.delete_at !== 0}
                         isBot={isBot}
+                        isGroupConstrained={currentChannel.group_constrained}
                     />
                     }
                     <View style={style.rowsContainer}>

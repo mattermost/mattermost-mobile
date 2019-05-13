@@ -56,7 +56,10 @@ function mapStateToProps(state) {
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
     const isFavorite = favoriteChannels && favoriteChannels.indexOf(currentChannel.id) > -1;
     const roles = getCurrentUserRoles(state);
-    const canManageUsers = currentChannel.hasOwnProperty('id') ? canManageChannelMembers(state) : false;
+    let canManageUsers = currentChannel.hasOwnProperty('id') ? canManageChannelMembers(state) : false;
+    if (currentChannel.group_constrained) {
+        canManageUsers = false;
+    }
     const currentUser = getUser(state, currentUserId);
 
     let status;
