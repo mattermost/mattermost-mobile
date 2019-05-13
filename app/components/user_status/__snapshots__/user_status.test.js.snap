@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UserStatus should match snapshot, away status 1`] = `
-<Component
+<Image
   source={
     Object {
       "testUri": "../../../dist/assets/images/status/away.png",
@@ -18,7 +18,7 @@ exports[`UserStatus should match snapshot, away status 1`] = `
 `;
 
 exports[`UserStatus should match snapshot, dnd status 1`] = `
-<Component
+<Image
   source={
     Object {
       "testUri": "../../../dist/assets/images/status/dnd.png",
@@ -35,7 +35,7 @@ exports[`UserStatus should match snapshot, dnd status 1`] = `
 `;
 
 exports[`UserStatus should match snapshot, online status 1`] = `
-<Component
+<Image
   source={
     Object {
       "testUri": "../../../dist/assets/images/status/online.png",
@@ -52,7 +52,7 @@ exports[`UserStatus should match snapshot, online status 1`] = `
 `;
 
 exports[`UserStatus should match snapshot, should default to offline status 1`] = `
-<Component
+<Image
   source={
     Object {
       "testUri": "../../../dist/assets/images/status/offline.png",

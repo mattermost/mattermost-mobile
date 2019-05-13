@@ -22,7 +22,8 @@ import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import com.gantix.JailMonkey.JailMonkeyPackage;
 import io.tradle.react.LocalAuthPackage;
-import com.github.godness84.RNRecyclerViewList.RNRecyclerviewListPackage;
+import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
+import com.reactnativecommunity.netinfo.NetInfoPackage;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 
@@ -45,12 +46,29 @@ import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
 
+import com.facebook.react.ReactPackage;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReactMarker;
+import com.facebook.react.bridge.ReactMarkerConstants;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+import android.support.annotation.Nullable;
+
 import android.util.Log;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
   public Boolean sharedExtensionIsOpened = false;
   public Boolean replyFromPushNotification = false;
+
+  public long APP_START_TIME;
+
+  public long RELOAD;
+  public long CONTENT_APPEARED;
+
+  public long PROCESS_PACKAGES_START;
+  public long PROCESS_PACKAGES_END;
 
   @Override
   public boolean isDebug() {
@@ -84,7 +102,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SharePackage(this),
             new KeychainPackage(),
             new InitializationPackage(this),
-            new RNRecyclerviewListPackage(),
+            new AsyncStoragePackage(),
+            new NetInfoPackage(),
             new RNCWebViewPackage(),
             new RNGestureHandlerPackage()
     );
@@ -111,6 +130,9 @@ public class MainApplication extends NavigationApplication implements INotificat
     setActivityCallbacks(notificationsLifecycleFacade);
 
     SoLoader.init(this, /* native exopackage */ false);
+
+    // Uncomment to listen to react markers for build that has telemetry enabled
+    // addReactMarkerListener();
   }
 
   @Override
@@ -134,5 +156,37 @@ public class MainApplication extends NavigationApplication implements INotificat
   @Override
   public IPushNotificationsDrawer getPushNotificationsDrawer(Context context, AppLaunchHelper defaultAppLaunchHelper) {
     return new CustomPushNotificationDrawer(context, defaultAppLaunchHelper);
+  }
+
+  private void addReactMarkerListener() {
+    ReactMarker.addListener(new ReactMarker.MarkerListener() {
+      @Override
+      public void logMarker(ReactMarkerConstants name, @Nullable String tag, int instanceKey) {
+        if (name.toString() == ReactMarkerConstants.RELOAD.toString()) {
+          APP_START_TIME = System.currentTimeMillis();
+          RELOAD = System.currentTimeMillis();
+        } else if (name.toString() == ReactMarkerConstants.PROCESS_PACKAGES_START.toString()) {
+          PROCESS_PACKAGES_START = System.currentTimeMillis();
+        } else if (name.toString() == ReactMarkerConstants.PROCESS_PACKAGES_END.toString()) {
+          PROCESS_PACKAGES_END = System.currentTimeMillis();
+        } else if (name.toString() == ReactMarkerConstants.CONTENT_APPEARED.toString()) {
+          CONTENT_APPEARED = System.currentTimeMillis();
+          ReactContext ctx = getReactGateway().getReactContext();
+
+          if (ctx != null) {
+            WritableMap map = Arguments.createMap();
+
+            map.putDouble("appReload", RELOAD);
+            map.putDouble("appContentAppeared", CONTENT_APPEARED);
+
+            map.putDouble("processPackagesStart", PROCESS_PACKAGES_START);
+            map.putDouble("processPackagesEnd", PROCESS_PACKAGES_END);
+
+            ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
+                    emit("nativeMetrics", map);
+          }
+        }
+      }
+    });
   }
 }

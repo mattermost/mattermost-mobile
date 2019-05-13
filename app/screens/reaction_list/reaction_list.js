@@ -35,6 +35,10 @@ export default class ReactionList extends PureComponent {
         userProfiles: PropTypes.array,
     };
 
+    static defaultProps = {
+        userProfiles: [],
+    };
+
     static contextTypes = {
         intl: intlShape.isRequired,
     };
@@ -124,7 +128,7 @@ export default class ReactionList extends PureComponent {
         this.setState({selected: emoji});
 
         if (this.slideUpPanel) {
-            this.slideUpPanel.getWrappedInstance().scrollToTop();
+            this.slideUpPanel.scrollToTop();
         }
     };
 

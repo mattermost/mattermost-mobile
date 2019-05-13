@@ -8,10 +8,10 @@ exports[`PostOptions should match snapshot, no option for system message to user
     }
   }
 >
-  <Connect(SlideUpPanel)
+  <ForwardRef(forwardConnectRef)
     allowStayMiddle={false}
-    initialPosition={274}
-    marginFromTop={326}
+    initialPosition={250}
+    marginFromTop={350}
     onRequestClose={[Function]}
   >
     <PostOption
@@ -34,7 +34,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       onPress={[Function]}
       text="Add Reaction"
     />
-  </Connect(SlideUpPanel)>
+  </ForwardRef(forwardConnectRef)>
 </View>
 `;
 
@@ -46,10 +46,10 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     }
   }
 >
-  <Connect(SlideUpPanel)
+  <ForwardRef(forwardConnectRef)
     allowStayMiddle={false}
-    initialPosition={324}
-    marginFromTop={276}
+    initialPosition={300}
+    marginFromTop={300}
     onRequestClose={[Function]}
   >
     <PostOption
@@ -78,7 +78,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       onPress={[Function]}
       text="Delete"
     />
-  </Connect(SlideUpPanel)>
+  </ForwardRef(forwardConnectRef)>
 </View>
 `;
 
@@ -90,10 +90,10 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     }
   }
 >
-  <Connect(SlideUpPanel)
+  <ForwardRef(forwardConnectRef)
     allowStayMiddle={false}
-    initialPosition={324}
-    marginFromTop={276}
+    initialPosition={300}
+    marginFromTop={300}
     onRequestClose={[Function]}
   >
     <PostOption
@@ -122,6 +122,6 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       onPress={[Function]}
       text="Delete"
     />
-  </Connect(SlideUpPanel)>
+  </ForwardRef(forwardConnectRef)>
 </View>
 `;

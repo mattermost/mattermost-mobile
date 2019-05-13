@@ -10,6 +10,7 @@ import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 import {DeviceTypes} from 'app/constants/';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
+const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
 const {DOCUMENTS_PATH, IMAGES_PATH, VIDEOS_PATH} = DeviceTypes;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
@@ -230,6 +231,25 @@ function populateMaps() {
 export function getLocalFilePathFromFile(dir, file) {
     if (dir && file && file.caption && file.data && file.data.id) {
         return `${dir}/${file.data.id}-${decodeURIComponent(file.caption).replace(/\s+/g, '-')}`;
+    }
+
+    return null;
+}
+
+export function getExtensionFromContentDisposition(contentDisposition) {
+    const match = CONTENT_DISPOSITION_REGEXP.exec(contentDisposition);
+    let extension = match && match[1];
+    if (extension) {
+        if (!Object.keys(types).length) {
+            populateMaps();
+        }
+
+        extension = extension.toLowerCase();
+        if (types[extension]) {
+            return extension;
+        }
+
+        return null;
     }
 
     return null;

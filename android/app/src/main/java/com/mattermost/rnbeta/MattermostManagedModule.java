@@ -56,10 +56,10 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
                 Object result = Arguments.fromBundle(config);
                 promise.resolve(result);
             } else {
-                throw new Exception("The MDM vendor has not sent any Managed configuration");
+                promise.resolve(Arguments.createMap());
             }
         } catch (Exception e) {
-            promise.reject("no managed configuration", e);
+            promise.resolve(Arguments.createMap());
         }
     }
 }

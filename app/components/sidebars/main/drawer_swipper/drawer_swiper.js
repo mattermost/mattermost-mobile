@@ -59,6 +59,7 @@ export default class DrawerSwiper extends Component {
     showTeamsPage = () => {
         if (this.refs.swiper) {
             this.refs.swiper.scrollToIndex(0, true);
+            this.swiperPageSelected(0);
         }
     };
 

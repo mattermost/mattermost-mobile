@@ -9,12 +9,15 @@ import {
     View,
 } from 'react-native';
 
+import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
+
 import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
+import telemetry from 'app/telemetry';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -85,6 +88,7 @@ export default class ChannelPostList extends PureComponent {
     };
 
     goToThread = (post) => {
+        telemetry.start(['post_list:thread']);
         const {actions, channelId, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
 
@@ -190,6 +194,7 @@ export default class ChannelPostList extends PureComponent {
             component = (
                 <PostList
                     postIds={visiblePostIds}
+                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(visiblePostIds) : -1}
                     extraData={loadMorePostsVisible}
                     onLoadMoreUp={this.loadMorePostsTop}
                     onPostPress={this.goToThread}

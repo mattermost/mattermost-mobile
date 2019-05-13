@@ -76,10 +76,6 @@ post-install:
 	@# Need to copy custom RNDocumentPicker.m that implements direct access to the document picker in iOS
 	@cp ./native_modules/RNDocumentPicker.m node_modules/react-native-document-picker/ios/RNDocumentPicker/RNDocumentPicker.m
 
-	@# Need to copy custom RNCWebViewManager.java and RNCWEKWebView.m that implements IWA support for the WebView to avoid forking the lib
-	@cp ./native_modules/RNCWebViewManager.java node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManager.java
-	@cp ./native_modules/RNCWKWebView.m node_modules/react-native-webview/ios/RNCWKWebView.m
-
 	# Need to copy custom RNCookieManagerIOS.m that fixes a crash when cookies does not have expiration date set
 	@cp ./native_modules/RNCookieManagerIOS.m node_modules/react-native-cookies/ios/RNCookieManagerIOS/RNCookieManagerIOS.m
 

@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable global-require*/
-import {AsyncStorage, Linking, NativeModules, Platform, Text} from 'react-native';
+import {Linking, NativeModules, Platform, Text} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
 
 import {loadMe} from 'mattermost-redux/actions/users';
@@ -51,14 +52,6 @@ export default class App {
         this.currentUserId = null;
         this.token = null;
         this.url = null;
-
-        // Load polyfill for iOS 9
-        if (Platform.OS === 'ios') {
-            const majorVersionIOS = parseInt(Platform.Version, 10);
-            if (majorVersionIOS < 10) {
-                require('@babel/polyfill');
-            }
-        }
 
         // Usage deeplinking
         Linking.addEventListener('url', this.handleDeepLink);

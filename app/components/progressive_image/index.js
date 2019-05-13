@@ -13,4 +13,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ProgressiveImage);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(ProgressiveImage);

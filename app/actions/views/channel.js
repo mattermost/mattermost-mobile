@@ -34,6 +34,8 @@ import {
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
+import telemetry from 'app/telemetry';
+
 import {
     getChannelByName,
     getDirectChannelName,
@@ -183,7 +185,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
             received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
 
-            if (received) {
+            if (received?.order) {
                 const count = received.order.length;
                 loadMorePostsVisible = count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
                 actions.push({
@@ -211,7 +213,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 
             received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
 
-            if (received) {
+            if (received?.order) {
                 const count = received.order.length;
                 loadMorePostsVisible = postsIds.length + count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
                 actions.push({
@@ -406,7 +408,7 @@ export function handleSelectChannelByName(channelName, teamName) {
     return async (dispatch, getState) => {
         const state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
-        const currentTeamName = currentTeams[currentTeamId].name;
+        const currentTeamName = currentTeams[currentTeamId]?.name;
         const {data: channel} = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const currentChannelId = getCurrentChannelId(state);
         if (channel && currentChannelId !== channel.id) {
@@ -536,6 +538,12 @@ export function leaveChannel(channel, reset = false) {
 }
 
 export function setChannelLoading(loading = true) {
+    if (loading) {
+        telemetry.start(['channel:loading']);
+    } else {
+        telemetry.end(['channel:loading']);
+    }
+
     return {
         type: ViewTypes.SET_CHANNEL_LOADER,
         loading,
@@ -593,6 +601,9 @@ export function increasePostVisibility(channelId, postId) {
             return true;
         }
 
+        telemetry.reset();
+        telemetry.start(['posts:loading']);
+
         dispatch({
             type: ViewTypes.LOADING_POSTS,
             data: true,
@@ -610,7 +621,7 @@ export function increasePostVisibility(channelId, postId) {
         }];
 
         let hasMorePost = false;
-        if (result) {
+        if (result?.order) {
             const count = result.order.length;
             hasMorePost = count >= pageSize;
 
@@ -630,6 +641,9 @@ export function increasePostVisibility(channelId, postId) {
         }
 
         dispatch(batchActions(actions));
+        telemetry.end(['posts:loading']);
+        telemetry.save();
+
         return hasMorePost;
     };
 }

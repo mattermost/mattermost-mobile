@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NetInfo, Platform} from 'react-native';
-
+import {Platform} from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';

@@ -12,7 +12,7 @@ import AttachmentActions from './attachment_actions';
 import AttachmentAuthor from './attachment_author';
 import AttachmentFields from './attachment_fields';
 import AttachmentImage from './attachment_image';
-import AttachmentPreText from './attachement_pretext';
+import AttachmentPreText from './attachment_pretext';
 import AttachmentText from './attachment_text';
 import AttachmentThumbnail from './attachment_thumbnail';
 import AttachmentTitle from './attachment_title';
@@ -119,7 +119,7 @@ export default class MessageAttachment extends PureComponent {
                         deviceHeight={deviceHeight}
                         deviceWidth={deviceWidth}
                         imageUrl={attachment.image_url}
-                        metadata={metadata}
+                        imageMetadata={metadata?.images?.[attachment.image_url]}
                         navigator={navigator}
                         theme={theme}
                     />

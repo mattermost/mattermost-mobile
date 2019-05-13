@@ -24,6 +24,8 @@ import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown'
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+import telemetry from 'app/telemetry';
+
 let FileAttachmentList;
 let PostAddChannelMember;
 let PostBodyAdditionalContent;
@@ -43,6 +45,7 @@ export default class PostBody extends PureComponent {
         highlight: PropTypes.bool,
         isFailed: PropTypes.bool,
         isFlagged: PropTypes.bool,
+        isLastPost: PropTypes.bool,
         isPending: PropTypes.bool,
         isPostAddChannelMember: PropTypes.bool,
         isPostEphemeral: PropTypes.bool,
@@ -74,6 +77,7 @@ export default class PostBody extends PureComponent {
         onFailedPostPress: emptyFunction,
         onPress: emptyFunction,
         replyBarStyle: [],
+        message: '',
     };
 
     static contextTypes = {
@@ -95,6 +99,18 @@ export default class PostBody extends PureComponent {
         isLongPost: false,
     };
 
+    logTelemetry = () => {
+        telemetry.end([
+            'channel:switch_initial',
+            'channel:switch_loaded',
+            'post_list:permalink',
+            'post_list:thread',
+            'team:switch',
+            'start:overall',
+        ]);
+        telemetry.save();
+    }
+
     measurePost = (event) => {
         const {height} = event.nativeEvent.layout;
         const {showLongPost} = this.props;
@@ -103,6 +119,10 @@ export default class PostBody extends PureComponent {
             this.setState({
                 isLongPost: true,
             });
+        }
+
+        if (this.props.isLastPost) {
+            this.logTelemetry();
         }
     };
 
@@ -396,7 +416,7 @@ export default class PostBody extends PureComponent {
                         baseTextStyle={messageStyle}
                         blockStyles={blockStyles}
                         channelMentions={postProps.channel_mentions}
-                        imageMetadata={metadata?.images}
+                        imagesMetadata={metadata?.images}
                         isEdited={hasBeenEdited}
                         isReplyPost={isReplyPost}
                         isSearchResult={isSearchResult}

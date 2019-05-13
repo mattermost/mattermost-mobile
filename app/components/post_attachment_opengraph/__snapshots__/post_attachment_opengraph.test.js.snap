@@ -93,7 +93,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
     <TouchableWithoutFeedback
       onPress={[Function]}
     >
-      <Component
+      <Image
         resizeMode="contain"
         style={
           Array [
@@ -267,7 +267,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
   <TouchableWithoutFeedback
     onPress={[Function]}
   >
-    <Component
+    <Image
       resizeMode="contain"
       style={
         Array [

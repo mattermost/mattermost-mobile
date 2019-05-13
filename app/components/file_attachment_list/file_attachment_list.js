@@ -5,7 +5,6 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     Keyboard,
-    Platform,
     ScrollView,
     StyleSheet,
 } from 'react-native';
@@ -13,9 +12,10 @@ import {
 import {Client4} from 'mattermost-redux/client';
 
 import {isDocument, isGif, isVideo} from 'app/utils/file';
-import {getCacheFile} from 'app/utils/image_cache_manager';
+import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex} from 'app/utils/images';
 import {preventDoubleTap} from 'app/utils/tap';
+import {emptyFunction} from 'app/utils/general';
 
 import FileAttachment from './file_attachment';
 
@@ -99,18 +99,12 @@ export default class FileAttachmentList extends Component {
                 }
 
                 let uri;
-                let cache;
                 if (file.localPath) {
                     uri = file.localPath;
                 } else if (isGif(file)) {
-                    cache = await getCacheFile(file.name, Client4.getFileUrl(file.id)); // eslint-disable-line no-await-in-loop
+                    uri = await ImageCacheManager.cache(file.name, Client4.getFileUrl(file.id), emptyFunction); // eslint-disable-line no-await-in-loop
                 } else {
-                    cache = await getCacheFile(file.name, Client4.getFilePreviewUrl(file.id)); // eslint-disable-line no-await-in-loop
-                }
-
-                if (cache) {
-                    const prefix = Platform.OS === 'android' ? 'file://' : '';
-                    uri = `${prefix}${cache.path}`;
+                    uri = await ImageCacheManager.cache(file.name, Client4.getFilePreviewUrl(file.id), emptyFunction); // eslint-disable-line no-await-in-loop
                 }
 
                 results.push({

@@ -284,7 +284,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}
                 >
-                    {currentUser.first_name.length > 0 &&
+                    {currentUser.first_name?.length > 0 &&
                     <View>
                         <SectionItem
                             label={(

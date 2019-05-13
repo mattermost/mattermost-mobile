@@ -16,6 +16,8 @@ import {
     I18nManager,
 } from 'react-native';
 
+import telemetry from 'app/telemetry';
+
 const MIN_SWIPE_DISTANCE = 3;
 const DEVICE_WIDTH = parseFloat(Dimensions.get('window').width);
 const THRESHOLD = DEVICE_WIDTH / 2;
@@ -234,6 +236,9 @@ export default class DrawerLayout extends Component {
             ...options,
         }).start(() => {
             if (this.props.onDrawerOpen) {
+                telemetry.end(['channel:open_drawer']);
+                telemetry.save();
+
                 this.props.onDrawerOpen();
             }
             this._emitStateChanged(IDLE);
@@ -250,6 +255,7 @@ export default class DrawerLayout extends Component {
             ...options,
         }).start(() => {
             if (this.props.onDrawerClose) {
+                telemetry.end(['channel:close_drawer']);
                 this.props.onDrawerClose();
             }
             this._emitStateChanged(IDLE);

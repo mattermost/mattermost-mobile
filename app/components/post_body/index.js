@@ -99,4 +99,4 @@ function makeMapStateToProps() {
     };
 }
 
-export default connect(makeMapStateToProps, null, null, {withRef: true})(PostBody);
+export default connect(makeMapStateToProps, null, null, {forwardRef: true})(PostBody);

@@ -8,12 +8,12 @@ const {BlurAppScreen, MattermostManaged} = NativeModules;
 const mattermostManagedEmitter = new NativeEventEmitter(MattermostManaged);
 
 const listeners = [];
-let localConfig;
+let cachedConfig = {};
 
 export default {
     addEventListener: (name, callback) => {
         const listener = mattermostManagedEmitter.addListener(name, (config) => {
-            localConfig = config;
+            cachedConfig = config;
             if (callback && typeof callback === 'function') {
                 callback(config);
             }
@@ -36,18 +36,19 @@ export default {
     },
     authenticate: LocalAuth.authenticate,
     blurAppScreen: BlurAppScreen.enabled,
-    getConfig: MattermostManaged.getConfig,
-    getLocalConfig: async () => {
-        if (!localConfig) {
-            try {
-                localConfig = await MattermostManaged.getConfig();
-            } catch (error) {
-                // do nothing...
-            }
+    getConfig: async () => {
+        try {
+            cachedConfig = await MattermostManaged.getConfig();
+        } catch (error) {
+            // do nothing...
         }
 
-        return localConfig || {};
+        return cachedConfig;
     },
+    getCachedConfig: () => {
+        return cachedConfig;
+    },
+    hasSafeAreaInsets: MattermostManaged.hasSafeAreaInsets,
     isDeviceSecure: async () => {
         try {
             return await LocalAuth.isDeviceSecure();

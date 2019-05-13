@@ -23,6 +23,8 @@ import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swipper';
 import TeamsList from './teams_list';
 
+import telemetry from 'app/telemetry';
+
 const DRAWER_INITIAL_OFFSET = 40;
 const DRAWER_LANDSCAPE_OFFSET = 150;
 
@@ -30,6 +32,7 @@ export default class ChannelSidebar extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
+            logChannelSwitch: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
@@ -165,11 +168,14 @@ export default class ChannelSidebar extends Component {
     };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {setChannelLoading} = this.props.actions;
+        const {logChannelSwitch, setChannelLoading} = this.props.actions;
+
+        logChannelSwitch(channel.id, currentChannelId);
 
         tracker.channelSwitch = Date.now();
 
         if (closeDrawer) {
+            telemetry.start(['channel:close_drawer']);
             this.closeChannelDrawer();
             setChannelLoading(channel.id !== currentChannelId);
         }
@@ -270,14 +276,14 @@ export default class ChannelSidebar extends Component {
     };
 
     showTeams = () => {
-        if (this.drawerSwiper && this.swiperIndex === 1 && this.props.teamsCount > 1) {
-            this.drawerSwiper.getWrappedInstance().showTeamsPage();
+        if (this.drawerSwiper && this.props.teamsCount > 1) {
+            this.drawerSwiper.showTeamsPage();
         }
     };
 
     resetDrawer = () => {
-        if (this.drawerSwiper && this.swiperIndex !== 1) {
-            this.drawerSwiper.getWrappedInstance().resetPage();
+        if (this.drawerSwiper) {
+            this.drawerSwiper.resetPage();
         }
     };
 
@@ -302,9 +308,9 @@ export default class ChannelSidebar extends Component {
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {
             if (multipleTeams) {
-                this.drawerSwiper.getWrappedInstance().runOnLayout();
+                this.drawerSwiper.runOnLayout();
             } else if (!openDrawerOffset) {
-                this.drawerSwiper.getWrappedInstance().scrollToStart();
+                this.drawerSwiper.scrollToStart();
             }
         }
 

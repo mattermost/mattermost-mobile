@@ -32,6 +32,8 @@ import PushNotifications from 'app/push_notifications';
 import tracker from 'app/utils/time_tracker';
 import LocalConfig from 'assets/config';
 
+import telemetry from 'app/telemetry';
+
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
@@ -104,6 +106,8 @@ export default class Channel extends PureComponent {
         }
 
         EventEmitter.emit('renderDrawer');
+
+        telemetry.end(['start:channel_screen']);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -147,8 +151,8 @@ export default class Channel extends PureComponent {
     };
 
     blurPostTextBox = () => {
-        if (this.postTextbox && this.postTextbox.getWrappedInstance()) {
-            this.postTextbox.getWrappedInstance().blur();
+        if (this.postTextbox) {
+            this.postTextbox.blur();
         }
     };
 
@@ -180,13 +184,13 @@ export default class Channel extends PureComponent {
 
     channelSidebarRef = (ref) => {
         if (ref) {
-            this.channelSidebar = ref.getWrappedInstance();
+            this.channelSidebar = ref;
         }
     };
 
     settingsSidebarRef = (ref) => {
         if (ref) {
-            this.settingsSidebar = ref.getWrappedInstance();
+            this.settingsSidebar = ref;
         }
     };
 

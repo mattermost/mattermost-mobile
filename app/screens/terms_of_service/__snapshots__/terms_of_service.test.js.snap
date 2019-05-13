@@ -3,7 +3,7 @@
 exports[`TermsOfService should enable/disable navigator buttons on setNavigatorButtons true/false 1`] = `
 <React.Fragment>
   <Connect(StatusBar) />
-  <ScrollView
+  <ScrollViewMock
     contentContainerStyle={
       Object {
         "paddingBottom": 50,
@@ -225,14 +225,14 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       }
       value="Terms Text"
     />
-  </ScrollView>
+  </ScrollViewMock>
 </React.Fragment>
 `;
 
 exports[`TermsOfService should enable/disable navigator buttons on setNavigatorButtons true/false 2`] = `
 <React.Fragment>
   <Connect(StatusBar) />
-  <ScrollView
+  <ScrollViewMock
     contentContainerStyle={
       Object {
         "paddingBottom": 50,
@@ -477,7 +477,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       }
       value="Terms Text"
     />
-  </ScrollView>
+  </ScrollViewMock>
 </React.Fragment>
 `;
 
@@ -556,7 +556,7 @@ exports[`TermsOfService should match snapshot for get terms 1`] = `
 exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
 <React.Fragment>
   <Connect(StatusBar) />
-  <ScrollView
+  <ScrollViewMock
     contentContainerStyle={
       Object {
         "paddingBottom": 50,
@@ -778,6 +778,6 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
       }
       value="Terms Text"
     />
-  </ScrollView>
+  </ScrollViewMock>
 </React.Fragment>
 `;
