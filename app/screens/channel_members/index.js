@@ -22,7 +22,7 @@ function makeMapStateToProps() {
             currentChannelMembers = getChannelMembers(state, currentChannel.id, true);
         }
 
-        const canManageUsers = currentChannel.group_constrained ? false : canManageChannelMembers(state);
+        const canManageUsers = canManageChannelMembers(state) && !currentChannel.group_constrained;
 
         return {
             canManageUsers,
