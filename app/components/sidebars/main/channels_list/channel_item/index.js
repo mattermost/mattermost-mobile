@@ -33,7 +33,7 @@ function makeMapStateToProps() {
 
         if (channel.type === General.DM_CHANNEL) {
             if (ownProps.isSearchResult) {
-                isBot = channel.isBot;
+                isBot = Boolean(channel.isBot);
             } else {
                 const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
                 const teammate = getUser(state, teammateId);

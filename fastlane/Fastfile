@@ -605,7 +605,7 @@ def submit_to_store
 
     if ENV['BETA_BUILD'] == 'true'
       pretext = '#### New iOS beta published to TestFlight'
-      msg = 'Sign up as a beta tester [here](https://mattermost-fastlane.herokuapp.com/)'
+      msg = 'Sign up as a beta tester [here](https://testflight.apple.com/join/Q7Rx7K9P)'
     end
 
     version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
