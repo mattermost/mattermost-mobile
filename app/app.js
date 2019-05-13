@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable global-require*/
-import {AsyncStorage, Linking, NativeModules, Platform, Text} from 'react-native';
+import {Linking, NativeModules, Platform, Text} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
 
 import {loadMe} from 'mattermost-redux/actions/users';

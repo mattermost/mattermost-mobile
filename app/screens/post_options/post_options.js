@@ -56,7 +56,7 @@ export default class PostOptions extends PureComponent {
 
     closeWithAnimation = () => {
         if (this.slideUpPanel) {
-            this.slideUpPanel.getWrappedInstance().closeWithAnimation();
+            this.slideUpPanel.closeWithAnimation();
         } else {
             this.close();
         }

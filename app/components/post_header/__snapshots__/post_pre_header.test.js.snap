@@ -27,7 +27,7 @@ exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
       }
     }
   >
-    <Component
+    <Image
       id="flagIcon"
       source={
         Object {
@@ -96,7 +96,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
       }
     }
   >
-    <Component
+    <Image
       id="pinIcon"
       source={
         Object {
@@ -118,7 +118,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
         }
       }
     />
-    <Component
+    <Image
       id="flagIcon"
       source={
         Object {
@@ -185,7 +185,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
       }
     }
   >
-    <Component
+    <Image
       id="pinIcon"
       source={
         Object {
@@ -250,7 +250,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
       }
     }
   >
-    <Component
+    <Image
       id="flagIcon"
       source={
         Object {
@@ -315,7 +315,7 @@ exports[`PostPreHeader should match snapshot when pinned and not flagged 1`] = `
       }
     }
   >
-    <Component
+    <Image
       id="pinIcon"
       source={
         Object {

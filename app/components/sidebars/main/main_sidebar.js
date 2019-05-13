@@ -276,14 +276,14 @@ export default class ChannelSidebar extends Component {
     };
 
     showTeams = () => {
-        if (this.drawerSwiper && this.swiperIndex === 1 && this.props.teamsCount > 1) {
-            this.drawerSwiper.getWrappedInstance().showTeamsPage();
+        if (this.drawerSwiper && this.props.teamsCount > 1) {
+            this.drawerSwiper.showTeamsPage();
         }
     };
 
     resetDrawer = () => {
-        if (this.drawerSwiper && this.swiperIndex !== 1) {
-            this.drawerSwiper.getWrappedInstance().resetPage();
+        if (this.drawerSwiper) {
+            this.drawerSwiper.resetPage();
         }
     };
 
@@ -308,9 +308,9 @@ export default class ChannelSidebar extends Component {
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {
             if (multipleTeams) {
-                this.drawerSwiper.getWrappedInstance().runOnLayout();
+                this.drawerSwiper.runOnLayout();
             } else if (!openDrawerOffset) {
-                this.drawerSwiper.getWrappedInstance().scrollToStart();
+                this.drawerSwiper.scrollToStart();
             }
         }
 

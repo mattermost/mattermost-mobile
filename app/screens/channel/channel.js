@@ -151,8 +151,8 @@ export default class Channel extends PureComponent {
     };
 
     blurPostTextBox = () => {
-        if (this.postTextbox && this.postTextbox.getWrappedInstance()) {
-            this.postTextbox.getWrappedInstance().blur();
+        if (this.postTextbox) {
+            this.postTextbox.blur();
         }
     };
 
@@ -184,13 +184,13 @@ export default class Channel extends PureComponent {
 
     channelSidebarRef = (ref) => {
         if (ref) {
-            this.channelSidebar = ref.getWrappedInstance();
+            this.channelSidebar = ref;
         }
     };
 
     settingsSidebarRef = (ref) => {
         if (ref) {
-            this.settingsSidebar = ref.getWrappedInstance();
+            this.settingsSidebar = ref;
         }
     };
 

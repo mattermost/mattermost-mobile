@@ -128,7 +128,7 @@ export default class ReactionList extends PureComponent {
         this.setState({selected: emoji});
 
         if (this.slideUpPanel) {
-            this.slideUpPanel.getWrappedInstance().scrollToTop();
+            this.slideUpPanel.scrollToTop();
         }
     };
 

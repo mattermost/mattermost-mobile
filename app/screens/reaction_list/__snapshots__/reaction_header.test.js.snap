@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ReactionHeader should match snapshot 1`] = `
-<Handler>
+<NativeViewGestureHandler>
   <AnimatedComponent
     style={
       Object {
@@ -13,7 +13,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
       }
     }
   >
-    <ScrollView
+    <ScrollViewMock
       alwaysBounceHorizontal={false}
       horizontal={true}
       overScrollMode="never"
@@ -86,9 +86,9 @@ exports[`ReactionHeader should match snapshot 1`] = `
           }
         }
       />
-    </ScrollView>
+    </ScrollViewMock>
   </AnimatedComponent>
-</Handler>
+</NativeViewGestureHandler>
 `;
 
 exports[`ReactionHeader should match snapshot, renderContent 1`] = `
