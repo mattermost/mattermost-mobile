@@ -30,7 +30,6 @@ import {
     getCurrentChannelId,
     getMyChannelMember,
     getRedirectChannelNameForTeam,
-    getChannelByName as getChannelByNameSelector,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
@@ -42,6 +41,7 @@ import {
     getUserIdFromChannelName,
     isDirectChannel,
     isGroupChannel,
+    getChannelByName as getChannelByNameSelector,
 } from 'mattermost-redux/utils/channel_utils';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
