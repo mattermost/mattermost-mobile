@@ -6,7 +6,7 @@ exports[`thread should match snapshot, has root post 1`] = `
   keyboardOffset={20}
 >
   <Connect(StatusBar) />
-  <KeyboardLayout>
+  <ForwardRef(forwardConnectRef)>
     <React.Fragment>
       <Connect(PostList)
         currentUserId="member_user_id"
@@ -64,7 +64,7 @@ exports[`thread should match snapshot, has root post 1`] = `
         valueEvent="onThreadTextBoxValueChange"
       />
     </React.Fragment>
-  </KeyboardLayout>
+  </ForwardRef(forwardConnectRef)>
   <KeyboardTrackingView
     onKeyboardHeightChange={[Function]}
     scrollViewNativeID="threadPostList"
@@ -109,13 +109,13 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
   keyboardOffset={20}
 >
   <Connect(StatusBar) />
-  <KeyboardLayout>
+  <ForwardRef(forwardConnectRef)>
     <Loading
       color="grey"
       size="large"
       style={Object {}}
     />
-  </KeyboardLayout>
+  </ForwardRef(forwardConnectRef)>
 </Connect(SafeAreaIos)>
 `;
 
@@ -214,12 +214,12 @@ exports[`thread should match snapshot, render footer 3`] = `
   keyboardOffset={20}
 >
   <Connect(StatusBar) />
-  <KeyboardLayout>
+  <ForwardRef(forwardConnectRef)>
     <Loading
       color="grey"
       size="large"
       style={Object {}}
     />
-  </KeyboardLayout>
+  </ForwardRef(forwardConnectRef)>
 </Connect(SafeAreaIos)>
 `;
