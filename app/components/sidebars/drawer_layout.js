@@ -28,7 +28,7 @@ const DRAGGING = 'Dragging';
 const SETTLING = 'Settling';
 const emptyObject = {};
 
-export const TABLET_WIDTH = 250;
+export const TABLET_WIDTH = 220;
 
 export type PropType = {
     children: any,
