@@ -66,6 +66,7 @@ export default class PostList extends PureComponent {
         siteURL: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         location: PropTypes.string,
+        scrollViewNativeID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -320,6 +321,7 @@ export default class PostList extends PureComponent {
             highlightPostId,
             postIds,
             refreshing,
+            scrollViewNativeID,
         } = this.props;
 
         const refreshControl = {refreshing};
@@ -339,6 +341,8 @@ export default class PostList extends PureComponent {
                 extraData={this.makeExtraData(channelId, highlightPostId, this.props.extraData)}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 inverted={true}
+                keyboardDismissMode={'interactive'}
+                keyboardShouldPersistTaps={'handled'}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.props.renderFooter}
                 maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
@@ -351,6 +355,7 @@ export default class PostList extends PureComponent {
                 renderItem={this.renderItem}
                 scrollEventThrottle={60}
                 {...refreshControl}
+                nativeID={scrollViewNativeID}
             />
         );
     }

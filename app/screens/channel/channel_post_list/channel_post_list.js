@@ -4,6 +4,7 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
+    Keyboard,
     Platform,
     StyleSheet,
     View,
@@ -92,6 +93,7 @@ export default class ChannelPostList extends PureComponent {
         const {actions, channelId, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
 
+        Keyboard.dismiss();
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
@@ -114,7 +116,9 @@ export default class ChannelPostList extends PureComponent {
         if (Platform.OS === 'android') {
             navigator.showModal(options);
         } else {
-            navigator.push(options);
+            requestAnimationFrame(() => {
+                navigator.push(options);
+            });
         }
     };
 
@@ -207,6 +211,7 @@ export default class ChannelPostList extends PureComponent {
                     navigator={navigator}
                     renderFooter={this.renderFooter}
                     refreshing={refreshing}
+                    scrollViewNativeID={'channelPostList'}
                 />
             );
         }

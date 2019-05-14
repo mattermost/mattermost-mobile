@@ -6,12 +6,13 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
+    Keyboard,
+    Platform,
     Text,
     TouchableHighlight,
     View,
-    Platform,
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {changeOpacity} from 'app/utils/theme';
@@ -26,7 +27,7 @@ import {ListTypes} from 'app/constants';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
-class FilteredList extends Component {
+export default class FilteredList extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getProfilesInTeam: PropTypes.func.isRequired,
@@ -39,7 +40,6 @@ class FilteredList extends Component {
         currentUserId: PropTypes.string,
         currentChannel: PropTypes.object,
         groupChannelMemberDetails: PropTypes.object,
-        intl: intlShape.isRequired,
         teammateNameDisplay: PropTypes.string,
         onSelectChannel: PropTypes.func.isRequired,
         otherChannels: PropTypes.array,
@@ -59,10 +59,25 @@ class FilteredList extends Component {
         pastDirectMessages: [],
     };
 
-    constructor(props) {
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
+    constructor(props, context) {
         super(props);
+
+        this.keyboardDismissProp = Platform.select({
+            android: {
+                onScrollBeginDrag: Keyboard.dismiss,
+            },
+            ios: {
+                keyboardDismissMode: 'on-drag',
+            },
+        });
+
+        this.intl = context.intl;
         this.state = {
-            dataSource: this.buildData(props),
+            dataSource: this.buildData(context, props),
         };
     }
 
@@ -81,7 +96,7 @@ class FilteredList extends Component {
             const {actions, currentTeam} = this.props;
             const {term} = nextProps;
             const {searchChannels, searchProfiles} = actions;
-            const dataSource = this.buildData(this.props, term);
+            const dataSource = this.buildData(this.context, this.props, term);
 
             this.setState({dataSource, term});
             clearTimeout(this.searchTimeoutId);
@@ -112,7 +127,6 @@ class FilteredList extends Component {
     createChannelElement = (channel) => {
         return (
             <ChannelItem
-                ref={channel.id}
                 channelId={channel.id}
                 channel={channel}
                 isSearchResult={true}
@@ -172,7 +186,7 @@ class FilteredList extends Component {
         },
     });
 
-    buildUnreadChannelsForSearch = (props, term) => {
+    buildUnreadChannelsForSearch = (context, props, term) => {
         const {unreadChannels} = props.channels;
 
         return this.filterChannels(unreadChannels, term).map((item) => {
@@ -181,7 +195,7 @@ class FilteredList extends Component {
         });
     };
 
-    buildCurrentDMSForSearch = (props, term) => {
+    buildCurrentDMSForSearch = (context, props, term) => {
         const {channels, teammateNameDisplay, profiles, statuses, pastDirectMessages, groupChannelMemberDetails} = props;
         const {favoriteChannels} = channels;
 
@@ -232,10 +246,10 @@ class FilteredList extends Component {
             };
         });
 
-        return this.filterChannels([...favoriteDms, ...dms, ...groupChannels], term).sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
+        return this.filterChannels([...favoriteDms, ...dms, ...groupChannels], term).sort(sortChannelsByDisplayName.bind(null, context.intl.locale));
     }
 
-    buildMembersForSearch = (props, term) => {
+    buildMembersForSearch = (context, props, term) => {
         const {channels, currentUserId, teammateNameDisplay, profiles, teamProfiles, statuses, pastDirectMessages, restrictDms} = props;
         const {favoriteChannels, unreadChannels} = channels;
 
@@ -270,10 +284,10 @@ class FilteredList extends Component {
 
         const fakeDms = this.filterChannels([...members], term);
 
-        return [...fakeDms].sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
+        return [...fakeDms].sort(sortChannelsByDisplayName.bind(null, context.intl.locale));
     }
 
-    buildChannelsForSearch = (props, term) => {
+    buildChannelsForSearch = (context, props, term) => {
         const {
             favoriteChannels,
             publicChannels,
@@ -285,10 +299,10 @@ class FilteredList extends Component {
         });
 
         return this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term).
-            sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
+            sort(sortChannelsByDisplayName.bind(null, context.intl.locale));
     }
 
-    buildOtherMembersForSearch = (props, term) => {
+    buildOtherMembersForSearch = (context, props, term) => {
         const {otherChannels} = props;
 
         const notMemberOf = otherChannels.map((o) => {
@@ -301,7 +315,7 @@ class FilteredList extends Component {
         return this.filterChannels(notMemberOf, term);
     }
 
-    buildSectionsForSearch = (props, term) => {
+    buildSectionsForSearch = (context, props, term) => {
         const items = [];
         const {searchOrder, styles} = props;
         const sectionBuilders = this.getSectionBuilders();
@@ -311,7 +325,7 @@ class FilteredList extends Component {
             if (sectionBuilders.hasOwnProperty(section)) {
                 const sectionBuilder = sectionBuilders[section];
                 const {builder, defaultMessage, id} = sectionBuilder;
-                const data = builder(props, term);
+                const data = builder(context, props, term);
 
                 if (data.length) {
                     const title = this.renderTitle(styles, id, defaultMessage, null, previousDataLength > 0, true);
@@ -324,12 +338,12 @@ class FilteredList extends Component {
         return items;
     };
 
-    buildData = (props, term) => {
+    buildData = (context, props, term) => {
         if (!props.currentChannel) {
             return null;
         }
 
-        return this.buildSectionsForSearch(props, term);
+        return this.buildSectionsForSearch(context, props, term);
     };
 
     renderSectionAction = (styles, action) => {
@@ -364,7 +378,7 @@ class FilteredList extends Component {
     };
 
     renderTitle = (styles, id, defaultMessage, action, topDivider, bottomDivider) => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.intl;
 
         return {
             id,
@@ -386,7 +400,6 @@ class FilteredList extends Component {
 
     render() {
         const {styles} = this.props;
-
         const {dataSource} = this.state;
 
         return (
@@ -394,12 +407,11 @@ class FilteredList extends Component {
                 style={styles.container}
             >
                 <FlatList
-                    ref='list'
                     data={dataSource}
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
                     onViewableItemsChanged={this.updateUnreadIndicators}
-                    keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+                    {...this.keyboardDismissProp}
                     keyboardShouldPersistTaps='always'
                     maxToRenderPerBatch={10}
                     viewabilityConfig={VIEWABILITY_CONFIG}
@@ -408,5 +420,3 @@ class FilteredList extends Component {
         );
     }
 }
-
-export default injectIntl(FilteredList);

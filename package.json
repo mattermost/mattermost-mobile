@@ -40,6 +40,7 @@
     "react-native-image-gallery": "github:mattermost/react-native-image-gallery#c1a9f7118e90cc87d47620bc0584c9cac4b0cf38",
     "react-native-image-picker": "0.28.1",
     "react-native-keyboard-aware-scroll-view": "0.8.0",
+    "react-native-keyboard-tracking-view": "github:enahum/react-native-keyboard-tracking-view#fde3d36f42947013b1b775384b1e79661b3ac6d5",
     "react-native-keychain": "3.1.3",
     "react-native-linear-gradient": "2.5.4",
     "react-native-local-auth": "github:mattermost/react-native-local-auth#cc9ce2f468fbf7b431dfad3191a31aaa9227a6ab",

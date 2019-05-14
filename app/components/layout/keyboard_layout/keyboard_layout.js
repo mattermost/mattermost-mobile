@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Keyboard,
+    LayoutAnimation,
     Platform,
     StyleSheet,
     View,
@@ -12,43 +12,44 @@ import {
 
 import * as CustomPropTypes from 'app/constants/custom_prop_types';
 
+const KEYBOARD_HIDDEN_STATE = 3;
+const HW_KEYBOARD_OFFSET = 34;
+const HW_KEYBOARD_OFFSET_LANDSCAPE = 22;
+
 export default class KeyboardLayout extends PureComponent {
     static propTypes = {
         children: PropTypes.node,
+        isLandscape: PropTypes.bool.isRequired,
         style: CustomPropTypes.Style,
     };
 
     constructor(props) {
         super(props);
-        this.subscriptions = [];
+
         this.state = {
             keyboardHeight: 0,
         };
     }
 
-    componentDidMount() {
-        if (Platform.OS === 'ios') {
-            this.subscriptions = [
-                Keyboard.addListener('keyboardWillShow', this.onKeyboardWillShow),
-                Keyboard.addListener('keyboardWillHide', this.onKeyboardWillHide),
-            ];
+    setKeyboardHeight = (event) => {
+        if (!event) {
+            return;
         }
-    }
 
-    componentWillUnmount() {
-        this.subscriptions.forEach((sub) => sub.remove());
-    }
+        const {isLandscape} = this.props;
+        const animationConfig = LayoutAnimation.create(
+            10,
+            LayoutAnimation.Types.keyboard,
+            LayoutAnimation.Properties.scaleY,
+        );
 
-    onKeyboardWillHide = () => {
-        this.setState({
-            keyboardHeight: 0,
-        });
-    };
+        LayoutAnimation.configureNext(animationConfig);
 
-    onKeyboardWillShow = (e) => {
-        this.setState({
-            keyboardHeight: e?.endCoordinates?.height || 0,
-        });
+        let keyboardHeight = event.height;
+        if (event.hasInsets && event.state && event.state !== KEYBOARD_HIDDEN_STATE && !keyboardHeight) {
+            keyboardHeight = isLandscape ? HW_KEYBOARD_OFFSET_LANDSCAPE : HW_KEYBOARD_OFFSET;
+        }
+        this.setState({keyboardHeight});
     };
 
     render() {

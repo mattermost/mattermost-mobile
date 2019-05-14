@@ -6,19 +6,23 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Dimensions,
+    Keyboard,
     Platform,
     StyleSheet,
     View,
 } from 'react-native';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {app} from 'app/mattermost';
 
+import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
-import EmptyToolbar from 'app/components/start/empty_toolbar';
 import ChannelLoader from 'app/components/channel_loader';
+import EmptyToolbar from 'app/components/start/empty_toolbar';
+import FileUploadPreview from 'app/components/file_upload_preview';
 import MainSidebar from 'app/components/sidebars/main';
 import SettingsSidebar from 'app/components/sidebars/settings';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -76,6 +80,9 @@ export default class Channel extends PureComponent {
 
     constructor(props) {
         super(props);
+
+        this.keyboardLayout = React.createRef();
+        this.postTextbox = React.createRef();
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
@@ -146,13 +153,9 @@ export default class Channel extends PureComponent {
         EventEmitter.off('leave_team', this.handleLeaveTeam);
     }
 
-    attachPostTextBox = (ref) => {
-        this.postTextbox = ref;
-    };
-
     blurPostTextBox = () => {
-        if (this.postTextbox) {
-            this.postTextbox.blur();
+        if (this.postTextbox?.current) {
+            this.postTextbox.current.blur();
         }
     };
 
@@ -233,12 +236,28 @@ export default class Channel extends PureComponent {
             },
         };
 
+        Keyboard.dismiss();
+
         if (Platform.OS === 'android') {
             navigator.showModal(options);
         } else {
-            navigator.push(options);
+            requestAnimationFrame(() => {
+                navigator.push(options);
+            });
         }
     });
+
+    handleAutoComplete = (value) => {
+        if (this.postTextbox?.current) {
+            this.postTextbox.current.handleTextChange(value, true);
+        }
+    };
+
+    handleKeyboardHeightChange = (e) => {
+        if (e?.nativeEvent && this.keyboardLayout?.current) {
+            this.keyboardLayout.current.setKeyboardHeight(e?.nativeEvent);
+        }
+    };
 
     handleLeaveTeam = () => {
         this.props.actions.selectDefaultTeam();
@@ -334,15 +353,27 @@ export default class Channel extends PureComponent {
                             openSettingsDrawer={this.openSettingsSidebar}
                             onPress={this.goToChannelInfo}
                         />
-                        <KeyboardLayout>
-                            <View style={style.flex}>
-                                <ChannelPostList navigator={navigator}/>
-                            </View>
-                            <PostTextbox
-                                ref={this.attachPostTextBox}
-                                navigator={navigator}
+                        <KeyboardLayout ref={this.keyboardLayout}>
+                            <ChannelPostList navigator={navigator}/>
+                            <FileUploadPreview channelId={currentChannelId}/>
+                            <Autocomplete
+                                maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                                onChangeText={this.handleAutoComplete}
+                                cursorPositionEvent={'onChannelTextBoxCursorChange'}
+                                valueEvent={'onChannelTextBoxValueChange'}
                             />
                         </KeyboardLayout>
+                        <KeyboardTrackingView
+                            onKeyboardHeightChange={this.handleKeyboardHeightChange}
+                            scrollViewNativeID={'channelPostList'}
+                        >
+                            <PostTextbox
+                                cursorPositionEvent={'onChannelTextBoxCursorChange'}
+                                valueEvent={'onChannelTextBoxValueChange'}
+                                ref={this.postTextbox}
+                                navigator={navigator}
+                            />
+                        </KeyboardTrackingView>
                         <ChannelLoader
                             style={[style.channelLoader, loaderDimensions]}
                             maxRows={isLandscape ? 4 : 6}

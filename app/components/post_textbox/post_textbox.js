@@ -11,9 +11,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import AttachmentButton from 'app/components/attachment_button';
-import Autocomplete from 'app/components/autocomplete';
 import Fade from 'app/components/fade';
-import FileUploadPreview from 'app/components/file_upload_preview';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -25,9 +23,6 @@ import SendButton from 'app/components/send_button';
 import Typing from './components/typing';
 
 const {RNTextInputReset} = NativeModules;
-
-const AUTOCOMPLETE_MARGIN = 20;
-const AUTOCOMPLETE_MAX_HEIGHT = 200;
 
 export default class PostTextbox extends PureComponent {
     static propTypes = {
@@ -65,6 +60,8 @@ export default class PostTextbox extends PureComponent {
         userIsOutOfOffice: PropTypes.bool.isRequired,
         channelIsArchived: PropTypes.bool,
         onCloseChannel: PropTypes.func,
+        cursorPositionEvent: PropTypes.string,
+        valueEvent: PropTypes.string,
     };
 
     static defaultProps = {
@@ -80,14 +77,14 @@ export default class PostTextbox extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.input = React.createRef();
+
         this.state = {
             contentHeight: INITIAL_HEIGHT,
             cursorPosition: 0,
             keyboardType: 'default',
-            fileSizeWarning: null,
             top: 0,
             value: props.value,
-            showFileMaxWarning: false,
         };
     }
 
@@ -116,8 +113,8 @@ export default class PostTextbox extends PureComponent {
     }
 
     blur = () => {
-        if (this.refs.input) {
-            this.refs.input.blur();
+        if (this.input?.current) {
+            this.input.current.blur();
         }
     };
 
@@ -209,6 +206,12 @@ export default class PostTextbox extends PureComponent {
 
     handlePostDraftSelectionChanged = (event) => {
         const cursorPosition = event.nativeEvent.selection.end;
+        const {cursorPositionEvent} = this.props;
+
+        if (cursorPositionEvent) {
+            EventEmitter.emit(cursorPositionEvent, cursorPosition);
+        }
+
         this.setState({
             cursorPosition,
         });
@@ -273,21 +276,26 @@ export default class PostTextbox extends PureComponent {
         this.setState({
             value: completed,
         });
-    }
+    };
 
     handleTextChange = (value, autocomplete = false) => {
         const {
             actions,
             channelId,
             rootId,
+            valueEvent,
         } = this.props;
 
         // Workaround for some Android keyboards that don't play well with cursors (e.g. Samsung keyboards)
-        if (autocomplete && Platform.OS === 'android') {
-            RNTextInputReset.resetKeyboardInput(findNodeHandle(this.refs.input));
+        if (autocomplete && Platform.OS === 'android' & this.input?.current) {
+            RNTextInputReset.resetKeyboardInput(findNodeHandle(this.input.current));
         }
 
         this.checkMessageLength(value);
+        if (!autocomplete && valueEvent) {
+            EventEmitter.emit(valueEvent, value);
+        }
+
         this.setState({value});
 
         if (value) {
@@ -443,11 +451,10 @@ export default class PostTextbox extends PureComponent {
     };
 
     onShowFileMaxWarning = () => {
-        this.setState({showFileMaxWarning: true}, () => {
-            setTimeout(() => {
-                this.setState({showFileMaxWarning: false});
-            }, 3000);
-        });
+        EventEmitter.emit('fileMaxWarning', true);
+        setTimeout(() => {
+            EventEmitter.emit('fileMaxWarning', false);
+        }, 3000);
     };
 
     onShowFileSizeWarning = (filename) => {
@@ -460,11 +467,10 @@ export default class PostTextbox extends PureComponent {
             filename,
         });
 
-        this.setState({fileSizeWarning}, () => {
-            setTimeout(() => {
-                this.setState({fileSizeWarning: null});
-            }, 3000);
-        });
+        EventEmitter.emit('fileSizeWarning', fileSizeWarning);
+        setTimeout(() => {
+            EventEmitter.emit('fileSizeWarning', null);
+        }, 3000);
     };
 
     onCloseChannelPress = () => {
@@ -506,7 +512,6 @@ export default class PostTextbox extends PureComponent {
         const {intl} = this.context;
         const {
             canUploadFiles,
-            channelId,
             channelDisplayName,
             channelIsLoading,
             channelIsReadOnly,
@@ -533,10 +538,6 @@ export default class PostTextbox extends PureComponent {
 
         const {
             contentHeight,
-            cursorPosition,
-            fileSizeWarning,
-            showFileMaxWarning,
-            top,
             value,
         } = this.state;
 
@@ -575,20 +576,6 @@ export default class PostTextbox extends PureComponent {
         return (
             <React.Fragment>
                 <Typing/>
-                <FileUploadPreview
-                    channelId={channelId}
-                    files={files}
-                    fileSizeWarning={fileSizeWarning}
-                    rootId={rootId}
-                    showFileMaxWarning={showFileMaxWarning}
-                />
-                <Autocomplete
-                    cursorPosition={cursorPosition}
-                    maxHeight={Math.min(top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
-                    onChangeText={this.handleTextChange}
-                    value={this.state.value}
-                    rootId={rootId}
-                />
                 {!channelIsArchived && (
                     <View
                         style={style.inputWrapper}

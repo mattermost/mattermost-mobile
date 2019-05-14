@@ -44,7 +44,6 @@ export default class List extends PureComponent {
 
     static contextTypes = {
         intl: intlShape,
-        unreadChannelIds: [],
     };
 
     constructor(props) {
