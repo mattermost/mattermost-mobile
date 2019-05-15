@@ -258,11 +258,7 @@ export default class ChannelSidebar extends Component {
         this.swiperIndex = index;
 
         if (this.drawerRef?.current) {
-            if (this.swiperIndex === 0) {
-                this.drawerRef.current.canClose = false;
-            } else {
-                this.drawerRef.current.canClose = true;
-            }
+            this.drawerRef.current.canClose = this.swiperIndex !== 0;
         }
     };
 

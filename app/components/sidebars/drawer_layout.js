@@ -139,79 +139,79 @@ export default class DrawerLayout extends Component {
     }
 
     renderDrawer = () => {
-        if (!this.props.isTablet) {
-            const { accessibilityViewIsModal, drawerShown } = this.state;
-
-            const {
-                drawerBackgroundColor,
-                drawerWidth,
-                drawerPosition,
-            } = this.props;
-
-            /**
-             * We need to use the "original" drawer position here
-             * as RTL turns position left and right on its own
-             **/
-            const dynamicDrawerStyles = {
-                backgroundColor: drawerBackgroundColor,
-                width: drawerWidth,
-                left: drawerPosition === 'left' ? 0 : null,
-                right: drawerPosition === 'right' ? 0 : null,
-            };
-
-            /* Drawer styles */
-            let outputRange;
-
-            if (this.getDrawerPosition() === 'left') {
-                outputRange = [-drawerWidth, 0];
-            } else {
-                outputRange = [drawerWidth, 0];
-            }
-
-            const drawerTranslateX = this.openValue.interpolate({
-                inputRange: [0, 1],
-                outputRange,
-                extrapolate: 'clamp',
-            });
-            const animatedDrawerStyles = {
-                transform: [{ translateX: drawerTranslateX }],
-            };
-
-            /* Overlay styles */
-            const overlayOpacity = this.openValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 0.7],
-                extrapolate: 'clamp',
-            });
-            const animatedOverlayStyles = { opacity: overlayOpacity };
-            const pointerEvents = drawerShown ? 'auto' : 'none';
-
-            return (
-                <React.Fragment>
-                    <TouchableWithoutFeedback
-                        pointerEvents={pointerEvents}
-                        onPress={this._onOverlayClick}
-                    >
-                        <Animated.View
-                            pointerEvents={pointerEvents}
-                            style={[styles.overlay, animatedOverlayStyles]}
-                        />
-                    </TouchableWithoutFeedback>
-                    <Animated.View
-                        accessibilityViewIsModal={accessibilityViewIsModal}
-                        style={[
-                            styles.drawer,
-                            dynamicDrawerStyles,
-                            animatedDrawerStyles,
-                        ]}
-                    >
-                        {this.props.renderNavigationView(drawerWidth)}
-                    </Animated.View>
-                </React.Fragment>
-            )
+        if (this.props.isTablet) {
+            return null;
         }
 
-        return null;
+        const { accessibilityViewIsModal, drawerShown } = this.state;
+
+        const {
+            drawerBackgroundColor,
+            drawerWidth,
+            drawerPosition,
+        } = this.props;
+
+        /**
+         * We need to use the "original" drawer position here
+         * as RTL turns position left and right on its own
+         **/
+        const dynamicDrawerStyles = {
+            backgroundColor: drawerBackgroundColor,
+            width: drawerWidth,
+            left: drawerPosition === 'left' ? 0 : null,
+            right: drawerPosition === 'right' ? 0 : null,
+        };
+
+        /* Drawer styles */
+        let outputRange;
+
+        if (this.getDrawerPosition() === 'left') {
+            outputRange = [-drawerWidth, 0];
+        } else {
+            outputRange = [drawerWidth, 0];
+        }
+
+        const drawerTranslateX = this.openValue.interpolate({
+            inputRange: [0, 1],
+            outputRange,
+            extrapolate: 'clamp',
+        });
+        const animatedDrawerStyles = {
+            transform: [{ translateX: drawerTranslateX }],
+        };
+
+        /* Overlay styles */
+        const overlayOpacity = this.openValue.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 0.7],
+            extrapolate: 'clamp',
+        });
+        const animatedOverlayStyles = { opacity: overlayOpacity };
+        const pointerEvents = drawerShown ? 'auto' : 'none';
+
+        return (
+            <React.Fragment>
+                <TouchableWithoutFeedback
+                    pointerEvents={pointerEvents}
+                    onPress={this._onOverlayClick}
+                >
+                    <Animated.View
+                        pointerEvents={pointerEvents}
+                        style={[styles.overlay, animatedOverlayStyles]}
+                    />
+                </TouchableWithoutFeedback>
+                <Animated.View
+                    accessibilityViewIsModal={accessibilityViewIsModal}
+                    style={[
+                        styles.drawer,
+                        dynamicDrawerStyles,
+                        animatedDrawerStyles,
+                    ]}
+                >
+                    {this.props.renderNavigationView(drawerWidth)}
+                </Animated.View>
+            </React.Fragment>
+        );
     };
 
     renderDrawerForTablet = () => {
