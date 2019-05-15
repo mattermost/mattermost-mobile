@@ -30,7 +30,7 @@ import {
     getCurrentChannelId,
     getMyChannelMember,
     getRedirectChannelNameForTeam,
-    getChannelsNameMapInCurrentTeam,
+    getChannelsNameMapInTeam,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
@@ -341,7 +341,7 @@ export function selectDefaultChannel(teamId) {
     return (dispatch, getState) => {
         const state = getState();
 
-        let channelsInTeam = getChannelsNameMapInCurrentTeam(state, teamId);
+        const channelsInTeam = getChannelsNameMapInTeam(state, teamId);
         const channel = getChannelByNameSelector(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
 
         let channelId;
@@ -350,9 +350,8 @@ export function selectDefaultChannel(teamId) {
         } else {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
-            const {channels} = state.entities.channels;
-            channelsInTeam = Object.values(channels).filter((c) => c.team_id === teamId);
-            const firstChannel = channelsInTeam.length ? channelsInTeam[0].id : {id: ''};
+            const channels = Object.values(channelsInTeam);
+            const firstChannel = channels.length ? channels[0].id : {id: ''};
 
             channelId = firstChannel.id;
         }
