@@ -120,11 +120,13 @@ NSString* const NotificationClearAction = @"clear";
   UIApplicationState state = [UIApplication sharedApplication].applicationState;
   NSString* action = [userInfo objectForKey:@"type"];
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
+  NSString* ackId = [userInfo objectForKey:@"ack_id"];
 
   if (action && [action isEqualToString: NotificationClearAction]) {
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
     [self cleanNotificationsFromChannel:channelId andUpdateBadge:NO];
     RuntimeUtils *utils = [[RuntimeUtils alloc] init];
+    [[UploadSession shared] notificationReceiptWithNotificationId:ackId receivedAt:round([[NSDate date] timeIntervalSince1970] * 1000.0) type:action];
     [utils delayWithSeconds:0.2 closure:^(void) {
       // This is to notify the NotificationCenter that something has changed.
       completionHandler(UIBackgroundFetchResultNewData);
