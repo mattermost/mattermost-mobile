@@ -61,8 +61,11 @@ export default class FileUploadPreview extends PureComponent {
         });
     };
 
-    handleFileMaxWarning = (show) => {
-        this.setState({showFileMaxWarning: show});
+    handleFileMaxWarning = () => {
+        this.setState({showFileMaxWarning: true});
+        setTimeout(() => {
+            this.setState({showFileMaxWarning: false});
+        }, 3000);
     };
 
     handleFileSizeWarning = (message) => {

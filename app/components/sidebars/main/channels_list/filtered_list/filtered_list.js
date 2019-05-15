@@ -12,7 +12,7 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import {intlShape} from 'react-intl';
+import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {changeOpacity} from 'app/utils/theme';
@@ -27,7 +27,7 @@ import {ListTypes} from 'app/constants';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
-export default class FilteredList extends Component {
+class FilteredList extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getProfilesInTeam: PropTypes.func.isRequired,
@@ -40,6 +40,7 @@ export default class FilteredList extends Component {
         currentUserId: PropTypes.string,
         currentChannel: PropTypes.object,
         groupChannelMemberDetails: PropTypes.object,
+        intl: intlShape.isRequired,
         teammateNameDisplay: PropTypes.string,
         onSelectChannel: PropTypes.func.isRequired,
         otherChannels: PropTypes.array,
@@ -59,11 +60,7 @@ export default class FilteredList extends Component {
         pastDirectMessages: [],
     };
 
-    static contextTypes = {
-        intl: intlShape.isRequired,
-    };
-
-    constructor(props, context) {
+    constructor(props) {
         super(props);
 
         this.keyboardDismissProp = Platform.select({
@@ -75,9 +72,8 @@ export default class FilteredList extends Component {
             },
         });
 
-        this.intl = context.intl;
         this.state = {
-            dataSource: this.buildData(context, props),
+            dataSource: this.buildData(props),
         };
     }
 
@@ -96,7 +92,7 @@ export default class FilteredList extends Component {
             const {actions, currentTeam} = this.props;
             const {term} = nextProps;
             const {searchChannels, searchProfiles} = actions;
-            const dataSource = this.buildData(this.context, this.props, term);
+            const dataSource = this.buildData(this.props, term);
 
             this.setState({dataSource, term});
             clearTimeout(this.searchTimeoutId);
@@ -186,7 +182,7 @@ export default class FilteredList extends Component {
         },
     });
 
-    buildUnreadChannelsForSearch = (context, props, term) => {
+    buildUnreadChannelsForSearch = (props, term) => {
         const {unreadChannels} = props.channels;
 
         return this.filterChannels(unreadChannels, term).map((item) => {
@@ -195,7 +191,7 @@ export default class FilteredList extends Component {
         });
     };
 
-    buildCurrentDMSForSearch = (context, props, term) => {
+    buildCurrentDMSForSearch = (props, term) => {
         const {channels, teammateNameDisplay, profiles, statuses, pastDirectMessages, groupChannelMemberDetails} = props;
         const {favoriteChannels} = channels;
 
@@ -246,10 +242,10 @@ export default class FilteredList extends Component {
             };
         });
 
-        return this.filterChannels([...favoriteDms, ...dms, ...groupChannels], term).sort(sortChannelsByDisplayName.bind(null, context.intl.locale));
+        return this.filterChannels([...favoriteDms, ...dms, ...groupChannels], term).sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
     }
 
-    buildMembersForSearch = (context, props, term) => {
+    buildMembersForSearch = (props, term) => {
         const {channels, currentUserId, teammateNameDisplay, profiles, teamProfiles, statuses, pastDirectMessages, restrictDms} = props;
         const {favoriteChannels, unreadChannels} = channels;
 
@@ -284,10 +280,10 @@ export default class FilteredList extends Component {
 
         const fakeDms = this.filterChannels([...members], term);
 
-        return [...fakeDms].sort(sortChannelsByDisplayName.bind(null, context.intl.locale));
+        return [...fakeDms].sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
     }
 
-    buildChannelsForSearch = (context, props, term) => {
+    buildChannelsForSearch = (props, term) => {
         const {
             favoriteChannels,
             publicChannels,
@@ -299,10 +295,10 @@ export default class FilteredList extends Component {
         });
 
         return this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term).
-            sort(sortChannelsByDisplayName.bind(null, context.intl.locale));
+            sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
     }
 
-    buildOtherMembersForSearch = (context, props, term) => {
+    buildOtherMembersForSearch = (props, term) => {
         const {otherChannels} = props;
 
         const notMemberOf = otherChannels.map((o) => {
@@ -315,7 +311,7 @@ export default class FilteredList extends Component {
         return this.filterChannels(notMemberOf, term);
     }
 
-    buildSectionsForSearch = (context, props, term) => {
+    buildSectionsForSearch = (props, term) => {
         const items = [];
         const {searchOrder, styles} = props;
         const sectionBuilders = this.getSectionBuilders();
@@ -325,7 +321,7 @@ export default class FilteredList extends Component {
             if (sectionBuilders.hasOwnProperty(section)) {
                 const sectionBuilder = sectionBuilders[section];
                 const {builder, defaultMessage, id} = sectionBuilder;
-                const data = builder(context, props, term);
+                const data = builder(props, term);
 
                 if (data.length) {
                     const title = this.renderTitle(styles, id, defaultMessage, null, previousDataLength > 0, true);
@@ -338,12 +334,12 @@ export default class FilteredList extends Component {
         return items;
     };
 
-    buildData = (context, props, term) => {
+    buildData = (props, term) => {
         if (!props.currentChannel) {
             return null;
         }
 
-        return this.buildSectionsForSearch(context, props, term);
+        return this.buildSectionsForSearch(props, term);
     };
 
     renderSectionAction = (styles, action) => {
@@ -378,7 +374,7 @@ export default class FilteredList extends Component {
     };
 
     renderTitle = (styles, id, defaultMessage, action, topDivider, bottomDivider) => {
-        const {formatMessage} = this.intl;
+        const {formatMessage} = this.props.intl;
 
         return {
             id,
@@ -420,3 +416,5 @@ export default class FilteredList extends Component {
         );
     }
 }
+
+export default injectIntl(FilteredList);

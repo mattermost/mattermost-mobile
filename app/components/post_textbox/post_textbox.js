@@ -113,7 +113,7 @@ export default class PostTextbox extends PureComponent {
     }
 
     blur = () => {
-        if (this.input?.current) {
+        if (this.input.current) {
             this.input.current.blur();
         }
     };
@@ -451,10 +451,7 @@ export default class PostTextbox extends PureComponent {
     };
 
     onShowFileMaxWarning = () => {
-        EventEmitter.emit('fileMaxWarning', true);
-        setTimeout(() => {
-            EventEmitter.emit('fileMaxWarning', false);
-        }, 3000);
+        EventEmitter.emit('fileMaxWarning');
     };
 
     onShowFileSizeWarning = (filename) => {
