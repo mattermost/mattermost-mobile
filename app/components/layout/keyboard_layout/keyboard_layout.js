@@ -57,6 +57,9 @@ export default class KeyboardLayout extends PureComponent {
 
         if (Platform.OS === 'ios') {
             // iOS doesn't resize the app automatically
+            // TODO: Find out why showing the keyboard another screen changes the position in the channel screen
+            // TODO: Make this happen natively
+            // TODO: handle the keyboard in other screens without the inputAccessoryView
             layoutStyle.push({paddingBottom: this.state.keyboardHeight});
         }
 

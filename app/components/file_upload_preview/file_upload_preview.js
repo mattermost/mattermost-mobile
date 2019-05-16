@@ -24,7 +24,6 @@ export default class FileUploadPreview extends PureComponent {
         files: PropTypes.array.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
         rootId: PropTypes.string,
-        showFileMaxWarning: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     };
 

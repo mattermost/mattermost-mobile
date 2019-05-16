@@ -7,7 +7,6 @@ import {
     AppState,
     Dimensions,
     InteractionManager,
-    Keyboard,
     NativeModules,
     Platform,
     YellowBox,
@@ -415,7 +414,6 @@ const handleAppActive = async () => {
     }
 
     app.setInBackgroundSince(null);
-    Keyboard.dismiss();
 };
 
 const handleAppInActive = () => {

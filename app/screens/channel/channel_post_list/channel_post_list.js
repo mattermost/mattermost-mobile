@@ -20,6 +20,8 @@ import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
 
+// const SCROLLVIEW_NATIVE_ID = 'channelPostList';
+
 let ChannelIntro = null;
 let LoadMorePosts = null;
 

@@ -287,7 +287,7 @@ export default class PostTextbox extends PureComponent {
         } = this.props;
 
         // Workaround for some Android keyboards that don't play well with cursors (e.g. Samsung keyboards)
-        if (autocomplete && Platform.OS === 'android' & this.input?.current) {
+        if (autocomplete && Platform.OS === 'android' && this.input?.current) {
             RNTextInputReset.resetKeyboardInput(findNodeHandle(this.input.current));
         }
 
