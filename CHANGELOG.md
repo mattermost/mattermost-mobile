@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
-## 1.18.1 Release
-- Release Date: April 18, 2019
+## 1.19.0 Release
+- Release Date: May 16, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Combatibility
@@ -10,6 +10,29 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Bug Fixes
+ - Fixed an issue where Android managed config was lost on the thread view.
+ - Fixed an issue where contents of ephemeral posts did not display on the mobile app.
+ - Fixed a few mobile app crash / fatal error issues.
+ - Fixed an issue with an expanding animation when tapping on Jump to Channel in the channel list.
+ - Fixed an issue on iOS where animated custom emoji weren't animated.
+ - Fixed an issue on iOS where users were unable to create channel name of 2 characters.
+ - Fixed an issue on iOS where emoji appeared too close, with uneven spacing, and too small in the info modal.
+ - Added an error handler when sharing text that was over server's maximum post size with the iOS Share Extension.
+ - Fixed an issue where users could upload a GIF as a profile image.
+ 
+### Known Issues
+ - Buttons inside ephemeral posts are not clickable / functional on the mobile app.
+
+## 1.18.1 Release
+- Release Date: April 18, 2019
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes 
  - Fixed a crash issue caused by a malformed post textbox localize string.
  - Fixed an issue where iOS crashed when trying to log in using SSO and the SSO provider set a cookie without an expiration date.
 

@@ -237,6 +237,20 @@ platform :ios do
         display_name: app_name
     )
 
+    # Set the notification service extension bundle identifier
+    notification_bundle_id = ENV['NOTIFICATION_SERVICE_IDENTIFIER'] || 'com.mattermost.rnbeta.NotificationService'
+    update_app_identifier(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'NotificationService/Info.plist',
+        app_identifier: notification_bundle_id
+    )
+
+    find_replace_string(
+        path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
+        old_string: 'com.mattermost.rnbeta.NotificationService',
+        new_string: notification_bundle_id
+    )
+
     # Set the share extension bundle identifier
     extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'com.mattermost.rnbeta.MattermostShare'
     update_app_identifier(
@@ -296,6 +310,11 @@ platform :ios do
 
     update_app_group_identifiers(
         entitlements_file: './ios/MattermostShare/MattermostShare.entitlements',
+        app_group_identifiers: [app_group_id]
+    )
+
+    update_app_group_identifiers(
+        entitlements_file: './ios/NotificationService/NotificationService.entitlements',
         app_group_identifiers: [app_group_id]
     )
 
@@ -381,11 +400,11 @@ platform :android do
   lane :configure_telemetry_android do
     if ENV['TELEMETRY_ENABLED'] == 'true' && ENV['TELEMETRY_URL'] != '' && ENV['TELEMETRY_API_KEY'] != ''
       # Update telemetry config
-      json = load_config_json
+      json = load_config_json('../dist/assets/config.json')
       json['TelemetryEnabled'] = true
       json['TelemetryUrl'] = ENV['TELEMETRY_URL']
       json['TelemetryApiKey'] = ENV['TELEMETRY_API_KEY']
-      save_config_json(json)
+      save_config_json('../dist/assets/config.json', json)
 
       beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
 
