@@ -28,7 +28,7 @@ const DRAGGING = 'Dragging';
 const SETTLING = 'Settling';
 const emptyObject = {};
 
-export const TABLET_WIDTH = 220;
+export const TABLET_WIDTH = 250;
 
 export type PropType = {
     children: any,
@@ -217,7 +217,7 @@ export default class DrawerLayout extends Component {
     renderDrawerForTablet = () => {
         const {accessibilityViewIsModal} = this.state;
         const {
-            drawerWidth,
+            drawerWidth: width,
             isTablet,
         } = this.props;
 
@@ -225,9 +225,9 @@ export default class DrawerLayout extends Component {
             return (
                 <Animated.View
                     accessibilityViewIsModal={accessibilityViewIsModal}
-                    style={styles.tablet}
+                    style={[styles.tablet, {width}]}
                 >
-                    {this.props.renderNavigationView(drawerWidth)}
+                    {this.props.renderNavigationView(width)}
                 </Animated.View>
             );
         }
@@ -488,7 +488,6 @@ const styles = StyleSheet.create({
     },
     tablet: {
         height: '100%',
-        width: TABLET_WIDTH,
         zIndex: 0,
     },
     main: {

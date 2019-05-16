@@ -17,7 +17,7 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import DrawerLayout, {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
+import DrawerLayout from 'app/components/sidebars/drawer_layout';
 import UserStatus from 'app/components/user_status';
 import {DeviceTypes, NavigationTypes} from 'app/constants';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
@@ -30,6 +30,7 @@ import UserInfo from './user_info';
 import StatusLabel from './status_label';
 
 const DRAWER_INITIAL_OFFSET = 80;
+const DRAWER_TABLET_WIDTH = 300;
 
 export default class SettingsDrawer extends PureComponent {
     static propTypes = {
@@ -350,7 +351,7 @@ export default class SettingsDrawer extends PureComponent {
 
     render() {
         const {children, deviceWidth} = this.props;
-        const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - DRAWER_INITIAL_OFFSET);
+        const drawerWidth = DeviceTypes.IS_TABLET ? DRAWER_TABLET_WIDTH : (deviceWidth - DRAWER_INITIAL_OFFSET);
 
         return (
             <DrawerLayout

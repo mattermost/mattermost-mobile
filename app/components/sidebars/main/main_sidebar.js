@@ -348,6 +348,7 @@ export default class ChannelSidebar extends Component {
 
         return (
             <SafeAreaView
+                navBarBackgroundColor={theme.sidebarBg}
                 backgroundColor={theme.sidebarHeaderBg}
                 footerColor={theme.sidebarHeaderBg}
                 navigator={navigator}
@@ -368,7 +369,7 @@ export default class ChannelSidebar extends Component {
     render() {
         const {children, deviceWidth} = this.props;
         const {openDrawerOffset} = this.state;
-        const drawerWith = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
+        const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
 
         return (
             <DrawerLayout
@@ -376,7 +377,7 @@ export default class ChannelSidebar extends Component {
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}
-                drawerWidth={drawerWith}
+                drawerWidth={drawerWidth}
                 useNativeAnimations={true}
                 isTablet={DeviceTypes.IS_TABLET}
             >
