@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';
@@ -62,6 +63,10 @@ export default class ChannelPostList extends PureComponent {
         this.isLoadingMoreTop = false;
     }
 
+    componentDidMount() {
+        EventEmitter.on('goToThread', this.goToThread);
+    }
+
     componentWillReceiveProps(nextProps) {
         const {postIds: nextPostIds} = nextProps;
 
@@ -81,6 +86,10 @@ export default class ChannelPostList extends PureComponent {
         if (prevProps.channelId !== this.props.channelId && tracker.channelSwitch) {
             this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
         }
+    }
+
+    componentWillUnmount() {
+        EventEmitter.off('goToThread', this.goToThread);
     }
 
     getVisiblePostIds = (props) => {

@@ -3,9 +3,11 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, Clipboard, Platform, StyleSheet, View} from 'react-native';
+import {Alert, Clipboard, StyleSheet, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
@@ -23,8 +25,6 @@ export default class PostOptions extends PureComponent {
             removePost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired,
             unpinPost: PropTypes.func.isRequired,
-            selectPost: PropTypes.func.isRequired,
-            loadThreadIfNecessary: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
         canReply: PropTypes.bool,
@@ -292,35 +292,12 @@ export default class PostOptions extends PureComponent {
     };
 
     handleReply = () => {
-        const {actions, post, navigator, theme} = this.props;
-        const rootId = (post.root_id || post.id);
-        const channelId = post.channel_id;
-
-        actions.loadThreadIfNecessary(rootId, channelId);
-        actions.selectPost(rootId);
-
-        const options = {
-            screen: 'Thread',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelId,
-                rootId,
-            },
-        };
-
-        if (Platform.OS === 'android') {
-            navigator.showModal(options);
-        } else {
-            navigator.push(options);
-        }
-    }
+        const {post} = this.props;
+        this.closeWithAnimation();
+        setTimeout(() => {
+            EventEmitter.emit('goToThread', post);
+        }, 250);
+    };
 
     handleAddReactionToPost = (emoji) => {
         const {actions, post} = this.props;
