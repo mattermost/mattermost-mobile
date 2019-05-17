@@ -1,5 +1,34 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.20.0 Release
+- Release Date: June 16, 2019
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Highlights
+
+
+### Improvements
+ - Channel drawer is now open all the time at a fixed width on tablet devices.
+ - Increased double tap delay for post action buttons.
+ - Implemented assets for Adaptive icons.
+ - Users are now brought to the bottom of the channel when posting a message.
+
+### Bug Fixes
+ - Fixed an issue where a post wasn't immediately removed when deleting another user's post.
+ - Fixed an issue where the cursor jumped back when typing after auto-completing a slash command.
+ - Fixed an issue where the iOS app didn’t properly restore its connection after disconnect.
+ - Fixed an issue where the long press menu persisted after returning from thread.
+ - Fixed an issue on Android where the "Write to [channel name]" was cut off for group messages with several users.
+ 
+### Known Issues
+ - Buttons inside ephemeral posts are not clickable / functional on the mobile app.
+ 
+
 ## 1.19.0 Release
 - Release Date: May 16, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
