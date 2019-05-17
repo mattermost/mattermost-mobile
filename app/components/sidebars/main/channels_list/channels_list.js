@@ -132,8 +132,9 @@ export default class ChannelsList extends PureComponent {
                     ref='search_bar'
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                    inputCollapsedMargin={0}
                     backgroundColor='transparent'
-                    inputHeight={34}
+                    inputHeight={33}
                     inputStyle={searchBarInput}
                     placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
@@ -144,6 +145,8 @@ export default class ChannelsList extends PureComponent {
                     onCancelButtonPress={this.cancelSearch}
                     onChangeText={this.onSearch}
                     onFocus={this.onSearchFocused}
+                    searchIconCollapsedMargin={5}
+                    searchIconExpandedMargin={5}
                     value={term}
                     leftComponent={(
                         <SwitchTeamsButton
@@ -158,10 +161,8 @@ export default class ChannelsList extends PureComponent {
             <View
                 style={styles.container}
             >
-                <View style={styles.statusBar}>
-                    <View style={styles.headerContainer}>
-                        {title}
-                    </View>
+                <View style={styles.headerContainer}>
+                    {title}
                 </View>
                 {list}
             </View>
@@ -175,13 +176,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.sidebarBg,
             flex: 1,
         },
-        statusBar: {
-            backgroundColor: theme.sidebarHeaderBg,
-        },
         headerContainer: {
             alignItems: 'center',
             paddingLeft: 10,
-            backgroundColor: theme.sidebarHeaderBg,
+            backgroundColor: theme.sidebarBg,
             flexDirection: 'row',
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),

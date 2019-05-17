@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {batchActions} from 'redux-batched-actions';
-import {AsyncStorage, Platform} from 'react-native';
+import {Platform} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
 

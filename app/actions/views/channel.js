@@ -30,7 +30,7 @@ import {
     getCurrentChannelId,
     getMyChannelMember,
     getRedirectChannelNameForTeam,
-    getChannelByName as getChannelByNameSelector,
+    getChannelsNameMapInTeam,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
@@ -42,6 +42,7 @@ import {
     getUserIdFromChannelName,
     isDirectChannel,
     isGroupChannel,
+    getChannelByName as getChannelByNameSelector,
 } from 'mattermost-redux/utils/channel_utils';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
@@ -340,15 +341,17 @@ export function selectDefaultChannel(teamId) {
     return (dispatch, getState) => {
         const state = getState();
 
-        const channel = getChannelByNameSelector(state, getRedirectChannelNameForTeam(state, teamId));
+        const channelsInTeam = getChannelsNameMapInTeam(state, teamId);
+        const channel = getChannelByNameSelector(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
+
         let channelId;
         if (channel) {
             channelId = channel.id;
         } else {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
-            const channelsInTeam = Object.values(state.entities.channels).filter((c) => c.team_id === teamId);
-            const firstChannel = channelsInTeam.length ? channelsInTeam[0].id : {id: ''};
+            const channels = Object.values(channelsInTeam);
+            const firstChannel = channels.length ? channels[0].id : {id: ''};
 
             channelId = firstChannel.id;
         }

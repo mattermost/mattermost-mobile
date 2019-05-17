@@ -41,7 +41,6 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
           "fontWeight": "600",
         }
       }
-      timeZone="America/New_York"
       value={1970-01-18T17:19:12.392Z}
       weekday="short"
       year="numeric"

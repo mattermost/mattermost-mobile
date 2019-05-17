@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
-
-export const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 export const MAX_CONTENT_HEIGHT = 100;
 export const MAX_FILE_COUNT = 5;
 export const IS_REACTION_REGEX = /(^\+:([^:\s]*):)$/i;

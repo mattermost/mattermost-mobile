@@ -134,18 +134,18 @@ export default class AtMention extends PureComponent {
         return [{
             completeHandle: 'all',
             id: t('suggestion.mention.all'),
-            defaultMessage: 'Notifies everyone in the channel, use in {townsquare} to notify the whole team',
+            defaultMessage: 'Notifies everyone in this channel',
             values: {
                 townsquare: this.props.defaultChannel.display_name,
             },
         }, {
             completeHandle: 'channel',
             id: t('suggestion.mention.channel'),
-            defaultMessage: 'Notifies everyone in the channel',
+            defaultMessage: 'Notifies everyone in this channel',
         }, {
             completeHandle: 'here',
             id: t('suggestion.mention.here'),
-            defaultMessage: 'Notifies everyone in the channel and online',
+            defaultMessage: 'Notifies everyone online in this channel',
         }];
     };
 

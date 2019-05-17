@@ -82,6 +82,10 @@ desc 'Increment version number for both Android and iOS'
 lane :set_app_version do
   version_number = ENV['VERSION_NUMBER']
   unless version_number.nil? || version_number.empty?
+    package = load_config_json('../package.json')
+    package['version'] = version_number
+    save_config_json('../package.json', package)
+
     android_set_version_name(
         gradle_file: './android/app/build.gradle',
         version_name: version_number
@@ -140,7 +144,7 @@ end
 
 desc 'Configure the app before building'
 lane :configure do
-  json = load_config_json
+  json = load_config_json('../dist/assets/config.json')
 
   # Set the Segment API Key
   unless ENV['SEGMENT_API_KEY'].nil? || ENV['SEGMENT_API_KEY'].empty?
@@ -158,7 +162,7 @@ lane :configure do
   end
 
   # Save the config.json file
-  save_config_json(json)
+  save_config_json('../dist/assets/config.json', json)
 
   configured = true
 end
@@ -233,6 +237,20 @@ platform :ios do
         display_name: app_name
     )
 
+    # Set the notification service extension bundle identifier
+    notification_bundle_id = ENV['NOTIFICATION_SERVICE_IDENTIFIER'] || 'com.mattermost.rnbeta.NotificationService'
+    update_app_identifier(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'NotificationService/Info.plist',
+        app_identifier: notification_bundle_id
+    )
+
+    find_replace_string(
+        path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
+        old_string: 'com.mattermost.rnbeta.NotificationService',
+        new_string: notification_bundle_id
+    )
+
     # Set the share extension bundle identifier
     extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'com.mattermost.rnbeta.MattermostShare'
     update_app_identifier(
@@ -295,9 +313,10 @@ platform :ios do
         app_group_identifiers: [app_group_id]
     )
 
-    # Save changes to the config.json file
-    config_json = load_config_json
-    save_config_json(config_json)
+    update_app_group_identifiers(
+        entitlements_file: './ios/NotificationService/NotificationService.entitlements',
+        app_group_identifiers: [app_group_id]
+    )
 
     # Sync the provisioning profiles using match
     if ENV['SYNC_PROVISIONING_PROFILES'] == 'true'
@@ -381,11 +400,11 @@ platform :android do
   lane :configure_telemetry_android do
     if ENV['TELEMETRY_ENABLED'] == 'true' && ENV['TELEMETRY_URL'] != '' && ENV['TELEMETRY_API_KEY'] != ''
       # Update telemetry config
-      json = load_config_json
+      json = load_config_json('../dist/assets/config.json')
       json['TelemetryEnabled'] = true
       json['TelemetryUrl'] = ENV['TELEMETRY_URL']
       json['TelemetryApiKey'] = ENV['TELEMETRY_API_KEY']
-      save_config_json(json)
+      save_config_json('../dist/assets/config.json', json)
 
       beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
 
@@ -507,15 +526,13 @@ platform :android do
   end
 end
 
-def load_config_json
-  config_path = '../dist/assets/config.json'
-  config_file = File.read(config_path)
+def load_config_json(json_path)
+  config_file = File.read(json_path)
   JSON.parse(config_file)
 end
 
-def save_config_json(json)
-  config_path = '../dist/assets/config.json'
-  File.open(config_path, 'w') do |f|
+def save_config_json(json_path, json)
+  File.open(json_path, 'w') do |f|
     f.write(JSON.pretty_generate(json))
   end
 end
