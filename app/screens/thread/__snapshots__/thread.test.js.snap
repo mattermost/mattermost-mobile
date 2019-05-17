@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`thread should match snapshot, has root post 1`] = `
-<Connect(SafeAreaIos)
-  excludeHeader={true}
-  keyboardOffset={20}
->
-  <Connect(StatusBar) />
-  <ForwardRef(forwardConnectRef)>
+<React.Fragment>
+  <Connect(SafeAreaIos)
+    excludeHeader={true}
+    keyboardOffset={20}
+  >
+    <Connect(StatusBar) />
     <React.Fragment>
       <Connect(PostList)
         currentUserId="member_user_id"
@@ -64,9 +64,8 @@ exports[`thread should match snapshot, has root post 1`] = `
         valueEvent="onThreadTextBoxValueChange"
       />
     </React.Fragment>
-  </ForwardRef(forwardConnectRef)>
+  </Connect(SafeAreaIos)>
   <KeyboardTrackingView
-    onKeyboardHeightChange={[Function]}
     scrollViewNativeID="threadPostList"
   >
     <ForwardRef(forwardConnectRef)
@@ -100,23 +99,23 @@ exports[`thread should match snapshot, has root post 1`] = `
       valueEvent="onThreadTextBoxValueChange"
     />
   </KeyboardTrackingView>
-</Connect(SafeAreaIos)>
+</React.Fragment>
 `;
 
 exports[`thread should match snapshot, no root post, loading 1`] = `
-<Connect(SafeAreaIos)
-  excludeHeader={true}
-  keyboardOffset={20}
->
-  <Connect(StatusBar) />
-  <ForwardRef(forwardConnectRef)>
+<React.Fragment>
+  <Connect(SafeAreaIos)
+    excludeHeader={true}
+    keyboardOffset={20}
+  >
+    <Connect(StatusBar) />
     <Loading
       color="grey"
       size="large"
       style={Object {}}
     />
-  </ForwardRef(forwardConnectRef)>
-</Connect(SafeAreaIos)>
+  </Connect(SafeAreaIos)>
+</React.Fragment>
 `;
 
 exports[`thread should match snapshot, render footer 1`] = `
@@ -209,17 +208,17 @@ exports[`thread should match snapshot, render footer 2`] = `
 `;
 
 exports[`thread should match snapshot, render footer 3`] = `
-<Connect(SafeAreaIos)
-  excludeHeader={true}
-  keyboardOffset={20}
->
-  <Connect(StatusBar) />
-  <ForwardRef(forwardConnectRef)>
+<React.Fragment>
+  <Connect(SafeAreaIos)
+    excludeHeader={true}
+    keyboardOffset={20}
+  >
+    <Connect(StatusBar) />
     <Loading
       color="grey"
       size="large"
       style={Object {}}
     />
-  </ForwardRef(forwardConnectRef)>
-</Connect(SafeAreaIos)>
+  </Connect(SafeAreaIos)>
+</React.Fragment>
 `;
