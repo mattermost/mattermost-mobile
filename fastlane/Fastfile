@@ -44,8 +44,6 @@ end
 after_all do |lane|
   if lane.to_s == 'build'
     submit_to_store
-  elsif lane.to_s == 'build_pr'
-    upload_to_s3
   end
 
   if ENV['RESET_GIT_BRANCH'] == 'true'
@@ -217,6 +215,7 @@ platform :ios do
     update_identifiers
     replace_assets
     build_ios
+    upload_file_to_s3({:os_type => "iOS"})
   end
 
   desc 'Build an unsigned ipa'
@@ -379,6 +378,8 @@ platform :android do
     replace_assets
     link_sentry_android
     build_android
+    move_apk_to_root
+    upload_file_to_s3({:os_type => "Android"})
   end
 
   desc 'Build an unsigned apk'
@@ -508,6 +509,15 @@ platform :android do
     )
   end
 
+  def move_apk_to_root
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
+
+    unless apk_path.nil?
+      sh "mv #{apk_path} \"../#{app_name}.apk\""
+    end
+  end
+
   def link_sentry_android
     if ENV['SENTRY_ENABLED'] == 'true'
       url = 'https://sentry.io'
@@ -571,9 +581,11 @@ def send_message_to_mattermost(options)
 end
 
 def submit_to_store
-  app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
   apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
   ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH]
+
+  s3_region = ENV['AWS_REGION']
+  s3_bucket = ENV['AWS_BUCKET_NAME']
 
   # Submit to Google Play if required
   if !apk_path.nil? && ENV['SUBMIT_ANDROID_TO_GOOGLE_PLAY'] == 'true'
@@ -584,20 +596,19 @@ def submit_to_store
         apk: apk_path
     )
 
-    build_number = android_get_version_code(
-        gradle_file: './android/app/build.gradle'
-    )
-    version_number = android_get_version_name(
-        gradle_file: './android/app/build.gradle'
-    )
+    version_number = android_get_version_name(gradle_file: './android/app/build.gradle')
+    build_number = android_get_version_code(gradle_file: './android/app/build.gradle')
+
+    s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
+    public_link = "https://#{s3_bucket}/#{s3_folder}/Mattermost.apk"
 
     # Send a build message to Mattermost
     pretext = '#### New Android released ready to be published'
-    msg = 'release has been cut and is on the Beta track ready to be published.'
+    msg = "Release has been cut and is on the Beta track ready to be published.\nDownload link: #{public_link}"
 
     if ENV['BETA_BUILD'] == 'true'
       pretext = '#### New Android beta published to Google Play'
-      msg = 'Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta)'
+      msg = 'Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta).\nDownload link: #{public_link}'
     end
 
     send_message_to_mattermost({
@@ -618,17 +629,20 @@ def submit_to_store
 
     pilot
 
+    version_number = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
+    build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+
+    s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
+    public_link = "https://#{s3_bucket}/#{s3_folder}/Mattermost.ipa"
+
     # Send a build message to Mattermost
     pretext = '#### New iOS released ready to be published'
-    msg = 'release has been cut and is on TestFlight ready to be published.'
+    msg = "Release has been cut and is on TestFlight ready to be published.\nDownload link: #{public_link}"
 
     if ENV['BETA_BUILD'] == 'true'
       pretext = '#### New iOS beta published to TestFlight'
-      msg = 'Sign up as a beta tester [here](https://testflight.apple.com/join/Q7Rx7K9P)'
+      msg = "Sign up as a beta tester [here](https://testflight.apple.com/join/Q7Rx7K9P).\nDownload link: #{public_link}"
     end
-
-    version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
-    build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
 
     send_message_to_mattermost({
                                    :version_number => version_number,
@@ -641,56 +655,88 @@ def submit_to_store
                                    :success => true,
                                })
   end
+end
 
-  unless apk_path.nil?
-    sh "mv #{apk_path} \"../#{app_name}.apk\""
+def qa_build_message(options)
+  abbreviated_commit_hash = last_git_commit[:abbreviated_commit_hash]
+  os_type = options[:os_type]
+  install_url = options[:install_url]
+
+  unless ENV['MATTERMOST_WEBHOOK_URL'].nil? || ENV['MATTERMOST_WEBHOOK_URL'].empty?
+    os_type = options[:os_type]
+
+    if os_type == 'Android'
+      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [Android APK Link](#{install_url})"
+      mattermost(message: msg, username: 'Fastlane', icon_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300')
+    elsif os_type == 'iOS'
+      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [iOS pList Link](#{install_url})"
+      mattermost(message: msg, username: 'Fastlane', icon_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png')
+    end
+  else
+    UI.success("PR Built for #{os_type}: #{install_url}")
   end
 end
 
-def upload_to_s3
-  unless ENV['AWS_BUCKET_NAME'].nil? || ENV['AWS_BUCKET_NAME'].empty? || ENV['AWS_REGION'].nil? || ENV['AWS_REGION'].empty?
-    apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
-    ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH]
+desc 'Upload file to s3'
+lane :upload_file_to_s3 do |options|
+  os_type = options[:os_type]
+  filename = options[:filename]
+  filename_plist = ""
+
+  if filename.nil? || filename.empty?
+    UI.message("Filename empty")
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    if os_type == 'Android'
+      filename = "#{app_name}.apk"
+    elsif os_type == 'iOS'
+      filename = "#{app_name}.ipa"
+      filename_plist = "#{app_name}.plist"
+    end
+  end
+  
+
+  build_folder_path = Dir[File.expand_path('..')].first
+  file_path = "#{build_folder_path}/#{filename}"
+
+  unless ENV['AWS_BUCKET_NAME'].nil? || ENV['AWS_BUCKET_NAME'].empty? || ENV['AWS_REGION'].nil? || ENV['AWS_REGION'].empty? || file_path.nil?
     s3_region = ENV['AWS_REGION']
-    s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}"
     s3_bucket = ENV['AWS_BUCKET_NAME']
-    s3 = Aws::S3::Resource.new(region: s3_region)
-    abbreviated_commit_hash = last_git_commit[:abbreviated_commit_hash]
-    filename = ENV['BRANCH_TO_BUILD']
+    s3_folder = ''
 
-    unless apk_path.nil?
-      apk_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{filename}.apk")
-      apk_obj.upload_file("#{apk_path}")
-
-      android_install_path = "https://#{s3_bucket}/#{s3_folder}/#{filename}.apk"
-
-      if ENV['MATTERMOST_WEBHOOK_URL'] && !ENV['MATTERMOST_WEBHOOK_URL'].nil? && !ENV['MATTERMOST_WEBHOOK_URL'].empty?
-        msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [Android APK Link](#{android_install_path})"
-        mattermost(message: msg, username: 'Fastlane', icon_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300')
+    if ENV['BRANCH_TO_BUILD'] == 'pr'
+      s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}"
+    else
+      if os_type == 'Android'
+        version_number = android_get_version_name(gradle_file: './android/app/build.gradle')
+        build_number = android_get_version_code(gradle_file: './android/app/build.gradle')
       else
-        UI.success("PR Built for Android: #{android_install_path}")
+        version_number = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
+        build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
       end
+
+      s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
     end
 
-    unless ipa_path.nil?
-      current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+    s3 = Aws::S3::Resource.new(region: s3_region)
+    file_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{filename}")
+    file_obj.upload_file("#{file_path}")
+
+    if ENV['BRANCH_TO_BUILD'] == 'pr'
       plist_template = File.read('plist.erb')
       plist_body = ERB.new(plist_template).result(binding)
 
-      plist_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{filename}.plist")
+      plist_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{filename_plist}")
       plist_obj.put(body: plist_body)
 
-      ipa_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{filename}.ipa")
-      ipa_obj.upload_file("#{ipa_path}")
+      ios_plist_install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket}/#{s3_folder}/#{filename}.plist"
 
-      ios_install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket}/#{s3_folder}/#{filename}.plist"
-
-      unless ENV['MATTERMOST_WEBHOOK_URL'].nil? || ENV['MATTERMOST_WEBHOOK_URL'].empty?
-        msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [iOS pList Link](#{ios_install_url})"
-        mattermost(message: msg, username: 'Fastlane', icon_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png')
-      else
-        UI.success("PR Built for iOS: #{ios_install_url}")
-      end
+      qa_build_message({
+        :os_type => os_type,
+        :install_url => ios_plist_install_url
+      })
     end
+
+    UI.success("S3 bucket @#{s3_bucket}, object @#{s3_folder}/#{filename}")
+    UI.success("S3 public path: https://#{s3_bucket}/#{s3_folder}/#{filename}")
   end
 end
