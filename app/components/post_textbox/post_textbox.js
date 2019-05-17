@@ -89,19 +89,17 @@ export default class PostTextbox extends PureComponent {
             top: 0,
             value: props.value,
             showFileMaxWarning: false,
-            keyboardState: 'hidden',
         };
     }
 
     componentDidMount() {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.on(event, this.handleInsertTextToDraft);
-        Keyboard.addListener('keyboardDidShow', this.onKeyboardShow);
-        Keyboard.addListener('keyboardDidHide', this.onKeyboardHide);
 
         this.listenerId = EventEmitterModule.addEventListener('hardwareEnter', this.handleHardwareEnterKey);
 
         if (Platform.OS === 'android') {
+            Keyboard.addListener('keyboardDidHide', this.onKeyboardHide);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
@@ -115,12 +113,11 @@ export default class PostTextbox extends PureComponent {
     componentWillUnmount() {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.off(event, this.handleInsertTextToDraft);
-        Keyboard.removeListener('keyboardDidShow', this.onKeyboardShow);
-        Keyboard.removeListener('keyboardDidHide', this.onKeyboardHide);
 
         EventEmitterModule.removeEventListener(this.listenerId);
 
         if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.onKeyboardHide);
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
@@ -186,21 +183,12 @@ export default class PostTextbox extends PureComponent {
     };
 
     handleHardwareEnterKey = () => {
-        if (this.state.keyboardState === 'hidden') {
+        if (this.refs.input.isFocused()) {
             this.handleSendMessage();
         }
     };
 
-    onKeyboardShow = () => {
-        this.setState({
-            keyboardState: 'shown',
-        });
-    };
-
     onKeyboardHide = () => {
-        this.setState({
-            keyboardState: 'hidden',
-        });
         this.blur();
     };
 

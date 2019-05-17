@@ -254,9 +254,16 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
     public void onKeyUp(int keyCode, KeyEvent event) {
         super.onKeyUp(keyCode, event);
 
+        if (mVisibleActivity == null) return;
+
+        int keyboardStatus = mVisibleActivity.getResources().getConfiguration().hardKeyboardHidden;
+
         ReactContext ctx = getRunningReactContext();
 
-        if (!event.isShiftPressed() && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+        if (keyboardStatus == Configuration.HARDKEYBOARDHIDDEN_NO
+                && !event.isShiftPressed()
+                && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+
             if (ctx != null) {
                 ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
                         emit("hardwareEnter", null);
