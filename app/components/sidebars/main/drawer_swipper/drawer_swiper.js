@@ -12,9 +12,8 @@ import Swiper from 'app/components/swiper';
 export default class DrawerSwiper extends Component {
     static propTypes = {
         children: PropTypes.node.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
+        drawerWidth: PropTypes.number.isRequired,
         onPageSelected: PropTypes.func,
-        openDrawerOffset: PropTypes.number,
         showTeams: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         drawerOpened: PropTypes.bool,
@@ -25,11 +24,12 @@ export default class DrawerSwiper extends Component {
         openDrawerOffset: 0,
     };
 
+    swiperRef = React.createRef();
+
     shouldComponentUpdate(nextProps) {
-        const {deviceWidth, openDrawerOffset, showTeams, theme} = this.props;
-        return nextProps.deviceWidth !== deviceWidth ||
+        const {drawerWidth, showTeams, theme} = this.props;
+        return nextProps.drawerWidth !== drawerWidth ||
             nextProps.showTeams !== showTeams ||
-            nextProps.openDrawerOffset !== openDrawerOffset ||
             nextProps.theme !== theme ||
             nextProps.drawerOpened !== this.props.drawerOpened;
     }
@@ -40,15 +40,15 @@ export default class DrawerSwiper extends Component {
         }
     };
 
-    resetPage = () => {
-        if (this.refs.swiper) {
-            this.refs.swiper.scrollToIndex(1, false);
+    resetPage = (animated = false) => {
+        if (this.swiperRef?.current) {
+            this.swiperRef.current.scrollToIndex(1, animated);
         }
     };
 
     scrollToStart = () => {
-        if (this.refs.swiper) {
-            this.refs.swiper.scrollToStart();
+        if (this.swiperRef?.current) {
+            this.swiperRef.current.scrollToStart();
         }
     };
 
@@ -57,8 +57,8 @@ export default class DrawerSwiper extends Component {
     };
 
     showTeamsPage = () => {
-        if (this.refs.swiper) {
-            this.refs.swiper.scrollToIndex(0, true);
+        if (this.swiperRef?.current) {
+            this.swiperRef.current.scrollToIndex(0, true);
             this.swiperPageSelected(0);
         }
     };
@@ -66,8 +66,7 @@ export default class DrawerSwiper extends Component {
     render() {
         const {
             children,
-            deviceWidth,
-            openDrawerOffset,
+            drawerWidth,
             showTeams,
             theme,
         } = this.props;
@@ -76,11 +75,11 @@ export default class DrawerSwiper extends Component {
 
         return (
             <Swiper
-                ref='swiper'
+                ref={this.swiperRef}
                 initialPage={initialPage}
                 onIndexChanged={this.swiperPageSelected}
                 paginationStyle={style.pagination}
-                width={deviceWidth - openDrawerOffset}
+                width={drawerWidth}
                 style={{backgroundColor: theme.sidebarBg}}
                 activeDotColor={theme.sidebarText}
                 dotColor={changeOpacity(theme.sidebarText, 0.5)}

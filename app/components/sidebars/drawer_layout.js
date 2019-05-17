@@ -26,6 +26,9 @@ const VX_MAX = 0.1;
 const IDLE = 'Idle';
 const DRAGGING = 'Dragging';
 const SETTLING = 'Settling';
+const emptyObject = {};
+
+export const TABLET_WIDTH = 250;
 
 export type PropType = {
     children: any,
@@ -41,6 +44,7 @@ export type PropType = {
     renderNavigationView: () => any,
     statusBarBackgroundColor?: string,
     useNativeAnimations?: boolean,
+    isTablet?: boolean,
 };
 
 export type StateType = {
@@ -79,6 +83,7 @@ export default class DrawerLayout extends Component {
         drawerWidth: 0,
         drawerPosition: 'left',
         useNativeAnimations: false,
+        isTablet: false,
     };
 
     static positions = {
@@ -89,13 +94,41 @@ export default class DrawerLayout extends Component {
     constructor(props: PropType, context: any) {
         super(props, context);
 
+        this._panResponder = PanResponder.create({
+            onMoveShouldSetPanResponder: this._shouldSetPanResponder,
+            onPanResponderGrant: this._panResponderGrant,
+            onPanResponderMove: this._panResponderMove,
+            onPanResponderTerminationRequest: () => false,
+            onPanResponderRelease: this._panResponderRelease,
+            onPanResponderTerminate: () => {},
+        });
+
         this.canClose = true;
+        this.openValue = new Animated.Value(0);
         this.state = {
             accessibilityViewIsModal: false,
             drawerShown: false,
-            openValue: new Animated.Value(0),
         };
+        this.openValue.addListener(this.handleOpenValueChanged);
     }
+
+    handleOpenValueChanged = ({ value }) => {
+        const drawerShown = value > 0;
+        const accessibilityViewIsModal = drawerShown;
+
+        if (drawerShown !== this.state.drawerShown) {
+            this.setState({ drawerShown, accessibilityViewIsModal });
+        }
+
+        if (this.props.keyboardDismissMode === 'on-drag') {
+            Keyboard.dismiss();
+        }
+
+        this._lastOpenValue = value;
+        if (this.props.onDrawerSlide) {
+            this.props.onDrawerSlide({ nativeEvent: { offset: value } });
+        }
+    };
 
     getDrawerPosition() {
         const { drawerPosition } = this.props;
@@ -105,38 +138,12 @@ export default class DrawerLayout extends Component {
             : drawerPosition;
     }
 
-    componentWillMount() {
-        const { openValue } = this.state;
+    renderDrawer = () => {
+        if (this.props.isTablet) {
+            return null;
+        }
 
-        openValue.addListener(({ value }) => {
-            const drawerShown = value > 0;
-            const accessibilityViewIsModal = drawerShown;
-            if (drawerShown !== this.state.drawerShown) {
-                this.setState({ drawerShown, accessibilityViewIsModal });
-            }
-
-            if (this.props.keyboardDismissMode === 'on-drag') {
-                Keyboard.dismiss();
-            }
-
-            this._lastOpenValue = value;
-            if (this.props.onDrawerSlide) {
-                this.props.onDrawerSlide({ nativeEvent: { offset: value } });
-            }
-        });
-
-        this._panResponder = PanResponder.create({
-            onMoveShouldSetPanResponder: this._shouldSetPanResponder,
-            onPanResponderGrant: this._panResponderGrant,
-            onPanResponderMove: this._panResponderMove,
-            onPanResponderTerminationRequest: () => false,
-            onPanResponderRelease: this._panResponderRelease,
-            onPanResponderTerminate: () => {},
-        });
-    }
-
-    render() {
-        const { accessibilityViewIsModal, drawerShown, openValue } = this.state;
+        const { accessibilityViewIsModal, drawerShown } = this.state;
 
         const {
             drawerBackgroundColor,
@@ -164,7 +171,7 @@ export default class DrawerLayout extends Component {
             outputRange = [drawerWidth, 0];
         }
 
-        const drawerTranslateX = openValue.interpolate({
+        const drawerTranslateX = this.openValue.interpolate({
             inputRange: [0, 1],
             outputRange,
             extrapolate: 'clamp',
@@ -174,7 +181,7 @@ export default class DrawerLayout extends Component {
         };
 
         /* Overlay styles */
-        const overlayOpacity = openValue.interpolate({
+        const overlayOpacity = this.openValue.interpolate({
             inputRange: [0, 1],
             outputRange: [0, 0.7],
             extrapolate: 'clamp',
@@ -183,13 +190,7 @@ export default class DrawerLayout extends Component {
         const pointerEvents = drawerShown ? 'auto' : 'none';
 
         return (
-            <View
-                style={{ flex: 1, backgroundColor: 'transparent' }}
-                {...this._panResponder.panHandlers}
-            >
-                <Animated.View style={styles.main}>
-                    {this.props.children}
-                </Animated.View>
+            <React.Fragment>
                 <TouchableWithoutFeedback
                     pointerEvents={pointerEvents}
                     onPress={this._onOverlayClick}
@@ -207,8 +208,52 @@ export default class DrawerLayout extends Component {
                         animatedDrawerStyles,
                     ]}
                 >
-                    {this.props.renderNavigationView()}
+                    {this.props.renderNavigationView(drawerWidth)}
                 </Animated.View>
+            </React.Fragment>
+        );
+    };
+
+    renderDrawerForTablet = () => {
+        const {accessibilityViewIsModal} = this.state;
+        const {
+            drawerWidth: width,
+            isTablet,
+        } = this.props;
+
+        if (isTablet) {
+            return (
+                <Animated.View
+                    accessibilityViewIsModal={accessibilityViewIsModal}
+                    style={[styles.tablet, {width}]}
+                >
+                    {this.props.renderNavigationView(width)}
+                </Animated.View>
+            );
+        }
+
+        return null;
+    };
+
+    render() {
+        const {isTablet} = this.props;
+        const panHandlers = isTablet ? emptyObject : this._panResponder.panHandlers;
+        const containerStyles = [styles.container];
+
+        if (isTablet) {
+            containerStyles.push(styles.tabletContainer);
+        }
+
+        return (
+            <View
+                style={containerStyles}
+                {...panHandlers}
+            >
+                {this.renderDrawerForTablet()}
+                <Animated.View style={styles.main}>
+                    {this.props.children}
+                </Animated.View>
+                {this.renderDrawer()}
             </View>
         );
     }
@@ -227,37 +272,42 @@ export default class DrawerLayout extends Component {
     };
 
     openDrawer = (options: DrawerMovementOptionType = {}) => {
-        this._emitStateChanged(SETTLING);
-        Animated.spring(this.state.openValue, {
-            toValue: 1,
-            bounciness: 0,
-            restSpeedThreshold: 0.1,
-            useNativeDriver: this.props.useNativeAnimations,
-            ...options,
-        }).start(() => {
-            if (this.props.onDrawerOpen) {
-                telemetry.end(['channel:open_drawer']);
-                telemetry.save();
+        if (!this.props.isTablet) {
+            this._emitStateChanged(SETTLING);
+            Animated.spring(this.openValue, {
+                toValue: 1,
+                bounciness: 0,
+                restSpeedThreshold: 0.1,
+                useNativeDriver: this.props.useNativeAnimations,
+                ...options,
+            }).start(() => {
+                this.handleOpenValueChanged({value: 1});
+                if (this.props.onDrawerOpen) {
+                    telemetry.end(['channel:open_drawer']);
+                    telemetry.save();
 
-                this.props.onDrawerOpen();
-            }
-            this._emitStateChanged(IDLE);
-        });
+                    this.props.onDrawerOpen();
+                }
+                this._emitStateChanged(IDLE);
+            });
+        }
     };
 
     closeDrawer = (options: DrawerMovementOptionType = {}) => {
         this._emitStateChanged(SETTLING);
-        Animated.spring(this.state.openValue, {
+        Animated.spring(this.openValue, {
             toValue: 0,
             bounciness: 0,
             restSpeedThreshold: 1,
             useNativeDriver: this.props.useNativeAnimations,
             ...options,
         }).start(() => {
+            this.handleOpenValueChanged({value: 0});
             if (this.props.onDrawerClose) {
                 telemetry.end(['channel:close_drawer']);
                 this.props.onDrawerClose();
             }
+
             this._emitStateChanged(IDLE);
         });
     };
@@ -347,7 +397,7 @@ export default class DrawerLayout extends Component {
             openValue = 0;
         }
 
-        this.state.openValue.setValue(openValue);
+        this.openValue.setValue(openValue);
     };
 
     _panResponderRelease = (
@@ -423,11 +473,22 @@ export default class DrawerLayout extends Component {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
+    tabletContainer: {
+        flexDirection: 'row',
+    },
     drawer: {
         position: 'absolute',
         top: 0,
         bottom: 0,
         zIndex: 1001,
+    },
+    tablet: {
+        height: '100%',
+        zIndex: 0,
     },
     main: {
         flex: 1,
@@ -437,7 +498,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         position: 'absolute',
         top: 0,
-        left: 0,
+        left: -350,
         bottom: 0,
         right: 0,
         zIndex: 1000,

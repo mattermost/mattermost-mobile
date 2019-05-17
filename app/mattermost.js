@@ -149,8 +149,19 @@ const restartApp = async () => {
     Navigation.dismissModal({animationType: 'none'});
 
     try {
+        const window = Dimensions.get('window');
+
+        handleOrientationChange({window});
         await store.dispatch(loadConfigAndLicense());
         await store.dispatch(loadMe());
+
+        if (Platform.OS === 'ios') {
+            StatusBarManager.getHeight(
+                (data) => {
+                    handleStatusBarHeightChange(data.height);
+                }
+            );
+        }
     } catch (e) {
         console.warn('Failed to load initial data while restarting', e); // eslint-disable-line no-console
     }

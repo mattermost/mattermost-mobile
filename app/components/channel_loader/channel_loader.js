@@ -11,6 +11,7 @@ import {ImageContent} from 'rn-placeholder';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import {DeviceTypes} from 'app/constants';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -99,7 +100,12 @@ export default class ChannelLoader extends PureComponent {
     };
 
     render() {
-        const {channelIsLoading, maxRows, style: styleProp, theme} = this.props;
+        const {
+            channelIsLoading,
+            maxRows,
+            style: styleProp,
+            theme,
+        } = this.props;
 
         if (!channelIsLoading) {
             return null;
@@ -107,9 +113,14 @@ export default class ChannelLoader extends PureComponent {
 
         const style = getStyleSheet(theme);
         const bg = this.props.backgroundColor || theme.centerChannelBg;
+        const containerStyle = [style.container];
+
+        if (DeviceTypes.IS_TABLET) {
+            containerStyle.push(style.tablet);
+        }
 
         return (
-            <View style={[style.container, styleProp, {backgroundColor: bg}]}>
+            <View style={[containerStyle, styleProp, {backgroundColor: bg}]}>
                 {Array(maxRows).fill().map((item, index) => this.buildSections({
                     key: index,
                     style,
@@ -125,12 +136,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
+        },
+        tablet: {
             ...Platform.select({
                 android: {
-                    top: 0,
+                    paddingTop: 25,
                 },
                 ios: {
-                    paddingTop: 15,
+                    paddingTop: 30,
                 },
             }),
         },
