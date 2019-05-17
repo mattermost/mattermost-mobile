@@ -185,7 +185,7 @@ export default class PostTextbox extends PureComponent {
     };
 
     handleHardwareEnterKey = () => {
-        if (this.refs.input.isFocused()) {
+        if (this.input.current.isFocused()) {
             this.handleSendMessage();
         }
     };
