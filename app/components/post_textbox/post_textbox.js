@@ -101,7 +101,7 @@ export default class PostTextbox extends PureComponent {
         this.listenerId = EventEmitterModule.addEventListener('hardwareEnter', this.handleHardwareEnterKey);
 
         if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.onKeyboardHide);
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboardHide);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
@@ -119,7 +119,7 @@ export default class PostTextbox extends PureComponent {
         EventEmitterModule.removeEventListener(this.listenerId);
 
         if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.onKeyboardHide);
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboardHide);
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
@@ -185,12 +185,14 @@ export default class PostTextbox extends PureComponent {
     };
 
     handleHardwareEnterKey = () => {
-        if (this.input.current.isFocused()) {
-            this.handleSendMessage();
+        if (this.input?.current) {
+            if (this.input.current.isFocused()) {
+                this.handleSendMessage();
+            }
         }
     };
 
-    onKeyboardHide = () => {
+    handleAndroidKeyboardHide = () => {
         this.blur();
     };
 
