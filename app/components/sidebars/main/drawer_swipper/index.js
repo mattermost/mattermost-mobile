@@ -5,13 +5,10 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {getDimensions} from 'app/selectors/device';
-
 import DraweSwiper from './drawer_swiper';
 
 function mapStateToProps(state) {
     return {
-        ...getDimensions(state),
         theme: getTheme(state),
     };
 }

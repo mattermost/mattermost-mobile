@@ -32,8 +32,6 @@ describe('PostOptions', () => {
         removePost: jest.fn(),
         unflagPost: jest.fn(),
         unpinPost: jest.fn(),
-        selectPost: jest.fn(),
-        loadThreadIfNecessary: jest.fn(),
     };
 
     const post = {
@@ -96,9 +94,12 @@ describe('PostOptions', () => {
 
     test('should load thread', () => {
         const wrapper = getWrapper();
+        const instance = wrapper.instance();
+
+        instance.closeWithAnimation = jest.fn();
 
         wrapper.findWhere((node) => node.key() === 'reply').simulate('press');
-        expect(actions.loadThreadIfNecessary).toBeCalled();
+        expect(instance.closeWithAnimation).toBeCalled();
     });
 
     test('should not show reply option', () => {

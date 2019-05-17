@@ -12,7 +12,7 @@ import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import AttachmentButton from 'app/components/attachment_button';
 import Fade from 'app/components/fade';
-import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -22,6 +22,7 @@ import SendButton from 'app/components/send_button';
 
 import Typing from './components/typing';
 
+const PLACEHOLDER_COLOR = changeOpacity('#000', 0.5);
 const {RNTextInputReset} = NativeModules;
 
 export default class PostTextbox extends PureComponent {
@@ -80,7 +81,6 @@ export default class PostTextbox extends PureComponent {
         this.input = React.createRef();
 
         this.state = {
-            contentHeight: INITIAL_HEIGHT,
             cursorPosition: 0,
             keyboardType: 'default',
             top: 0,
@@ -183,19 +183,6 @@ export default class PostTextbox extends PureComponent {
             return true;
         }
         return false;
-    };
-
-    handleContentSizeChange = (event) => {
-        if (Platform.OS === 'android') {
-            let contentHeight = event.nativeEvent.contentSize.height;
-            if (contentHeight < INITIAL_HEIGHT) {
-                contentHeight = INITIAL_HEIGHT;
-            }
-
-            this.setState({
-                contentHeight,
-            });
-        }
     };
 
     handleEndEditing = (e) => {
@@ -379,14 +366,12 @@ export default class PostTextbox extends PureComponent {
 
             let callback;
             if (Platform.OS === 'android') {
-                // Shrink the input textbox since the layout events lag slightly
-                const nextState = {
-                    contentHeight: INITIAL_HEIGHT,
-                };
-
                 // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
                 // are typed successively without blurring the input
-                nextState.keyboardType = 'email-address';
+                const nextState = {
+                    keyboardType: 'email-address',
+                };
+
                 callback = () => this.setState({keyboardType: 'default'});
 
                 this.setState(nextState, callback);
@@ -533,12 +518,7 @@ export default class PostTextbox extends PureComponent {
             );
         }
 
-        const {
-            contentHeight,
-            value,
-        } = this.state;
-
-        const textInputHeight = Math.min(contentHeight, MAX_CONTENT_HEIGHT);
+        const {value} = this.state;
         const textValue = channelIsLoading ? '' : value;
 
         let placeholder;
@@ -570,6 +550,10 @@ export default class PostTextbox extends PureComponent {
             inputContainerStyle.push(style.inputContainerWithoutFileUpload);
         }
 
+        if (channelIsReadOnly) {
+            inputContainerStyle.push(style.readonlyContainer);
+        }
+
         return (
             <React.Fragment>
                 <Typing/>
@@ -579,20 +563,18 @@ export default class PostTextbox extends PureComponent {
                         onLayout={this.handleLayout}
                     >
                         {!channelIsReadOnly && attachmentButton}
-                        <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
+                        <View style={inputContainerStyle}>
                             <TextInput
-                                ref='input'
+                                ref={this.input}
                                 value={textValue}
                                 onChangeText={this.handleTextChange}
                                 onSelectionChange={this.handlePostDraftSelectionChanged}
                                 placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
-                                placeholderTextColor={changeOpacity('#000', 0.5)}
+                                placeholderTextColor={PLACEHOLDER_COLOR}
                                 multiline={true}
-                                numberOfLines={5}
                                 blurOnSubmit={false}
                                 underlineColorAndroid='transparent'
-                                style={[style.input, Platform.OS === 'android' ? {height: textInputHeight} : {maxHeight: MAX_CONTENT_HEIGHT}]}
-                                onContentSizeChange={this.handleContentSizeChange}
+                                style={style.input}
                                 keyboardType={this.state.keyboardType}
                                 onEndEditing={this.handleEndEditing}
                                 disableFullscreenUI={true}
@@ -620,11 +602,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: '#000',
             flex: 1,
             fontSize: 14,
+            maxHeight: MAX_CONTENT_HEIGHT,
             paddingBottom: 8,
             paddingLeft: 12,
             paddingRight: 12,
             paddingTop: 8,
-            textAlignVertical: 'top',
         },
         hidden: {
             position: 'absolute',
@@ -690,6 +672,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 7,
             color: 'white',
             fontWeight: 'bold',
+        },
+        readonlyContainer: {
+            marginLeft: 10,
         },
     };
 });

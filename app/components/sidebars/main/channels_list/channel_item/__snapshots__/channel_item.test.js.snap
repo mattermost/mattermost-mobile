@@ -87,7 +87,7 @@ exports[`ChannelItem should match snapshot 1`] = `
                 "fontWeight": "600",
                 "height": "100%",
                 "lineHeight": 44,
-                "paddingRight": 40,
+                "paddingRight": 10,
                 "textAlignVertical": "center",
               },
               Object {
@@ -202,7 +202,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
                 "fontWeight": "600",
                 "height": "100%",
                 "lineHeight": 44,
-                "paddingRight": 40,
+                "paddingRight": 10,
                 "textAlignVertical": "center",
               },
               Object {
@@ -317,7 +317,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
                 "fontWeight": "600",
                 "height": "100%",
                 "lineHeight": 44,
-                "paddingRight": 40,
+                "paddingRight": 10,
                 "textAlignVertical": "center",
               },
               Object {
@@ -432,7 +432,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
                 "fontWeight": "600",
                 "height": "100%",
                 "lineHeight": 44,
-                "paddingRight": 40,
+                "paddingRight": 10,
                 "textAlignVertical": "center",
               },
               Object {
@@ -536,7 +536,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
                 "fontWeight": "600",
                 "height": "100%",
                 "lineHeight": 44,
-                "paddingRight": 40,
+                "paddingRight": 10,
                 "textAlignVertical": "center",
               },
               Object {
@@ -646,7 +646,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
                 "fontWeight": "600",
                 "height": "100%",
                 "lineHeight": 44,
-                "paddingRight": 40,
+                "paddingRight": 10,
                 "textAlignVertical": "center",
               },
               Object {
@@ -752,7 +752,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
                 "fontWeight": "600",
                 "height": "100%",
                 "lineHeight": 44,
-                "paddingRight": 40,
+                "paddingRight": 10,
                 "textAlignVertical": "center",
               },
               Object {

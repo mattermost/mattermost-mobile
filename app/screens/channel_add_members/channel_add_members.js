@@ -34,11 +34,16 @@ export default class ChannelAddMembers extends PureComponent {
             searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string.isRequired,
+        currentChannelGroupConstrained: PropTypes.bool,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         profilesNotInChannel: PropTypes.array.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
+    };
+
+    static defaultProps = {
+        currentChannelGroupConstrained: false,
     };
 
     static contextTypes = {
@@ -112,11 +117,12 @@ export default class ChannelAddMembers extends PureComponent {
         const {loading, term} = this.state;
         if (this.next && !loading && !term) {
             this.setState({loading: true}, () => {
-                const {actions, currentChannelId, currentTeamId} = this.props;
+                const {actions, currentChannelId, currentChannelGroupConstrained, currentTeamId} = this.props;
 
                 actions.getProfilesNotInChannel(
                     currentTeamId,
                     currentChannelId,
+                    currentChannelGroupConstrained,
                     this.page + 1,
                     General.PROFILE_CHUNK_SIZE
                 ).then(this.onProfilesLoaded);
@@ -258,8 +264,8 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     searchProfiles = (term) => {
-        const {actions, currentChannelId, currentTeamId} = this.props;
-        const options = {not_in_channel_id: currentChannelId, team_id: currentTeamId};
+        const {actions, currentChannelId, currentChannelGroupConstrained, currentTeamId} = this.props;
+        const options = {not_in_channel_id: currentChannelId, team_id: currentTeamId, group_constrained: currentChannelGroupConstrained};
         this.setState({loading: true});
 
         actions.searchProfiles(term.toLowerCase(), options).then(({data}) => {
