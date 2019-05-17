@@ -604,7 +604,7 @@ def submit_to_store
 
     # Send a build message to Mattermost
     pretext = '#### New Android released ready to be published'
-    msg = 'Release has been cut and is on the Beta track ready to be published.\nDownload link: #{public_link}'
+    msg = "Release has been cut and is on the Beta track ready to be published.\nDownload link: #{public_link}"
 
     if ENV['BETA_BUILD'] == 'true'
       pretext = '#### New Android beta published to Google Play'
