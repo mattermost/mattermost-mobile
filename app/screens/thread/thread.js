@@ -14,7 +14,6 @@ import {THREAD} from 'app/constants/screen';
 
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
@@ -22,6 +21,10 @@ import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
 import {setNavigatorStyles} from 'app/utils/theme';
 import DeletedPost from 'app/components/deleted_post';
+
+const THREAD_POST_TEXTBOX_CURSOR_CHANGE = 'onThreadTextBoxCursorChange';
+const THREAD_POST_TEXTBOX_VALUE_CHANGE = 'onThreadTextBoxValueChange';
+const SCROLLVIEW_NATIVE_ID = 'threadPostList';
 
 export default class Thread extends PureComponent {
     static propTypes = {
@@ -63,7 +66,6 @@ export default class Thread extends PureComponent {
             title = formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: displayName});
         }
 
-        this.keyboardLayout = React.createRef();
         this.postTextbox = React.createRef();
 
         this.props.navigator.setTitle({
@@ -107,12 +109,6 @@ export default class Thread extends PureComponent {
     handleAutoComplete = (value) => {
         if (this.postTextbox?.current) {
             this.postTextbox.current.handleTextChange(value, true);
-        }
-    };
-
-    handleKeyboardHeightChange = (e) => {
-        if (e?.nativeEvent && this.keyboardLayout?.current) {
-            this.keyboardLayout.current.setKeyboardHeight(e?.nativeEvent);
         }
     };
 
@@ -183,7 +179,7 @@ export default class Thread extends PureComponent {
                         navigator={navigator}
                         onPostPress={this.hideKeyboard}
                         location={THREAD}
-                        scrollViewNativeID={'threadPostList'}
+                        scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
                     />
                     <FileUploadPreview
                         channelId={channelId}
@@ -192,18 +188,15 @@ export default class Thread extends PureComponent {
                     <Autocomplete
                         maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                         onChangeText={this.handleAutoComplete}
-                        cursorPositionEvent={'onThreadTextBoxCursorChange'}
-                        valueEvent={'onThreadTextBoxValueChange'}
+                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
                         rootId={rootId}
                     />
                 </React.Fragment>
             );
 
             postTextBox = (
-                <KeyboardTrackingView
-                    onKeyboardHeightChange={this.handleKeyboardHeightChange}
-                    scrollViewNativeID={'threadPostList'}
-                >
+                <KeyboardTrackingView scrollViewNativeID={SCROLLVIEW_NATIVE_ID}>
                     <PostTextbox
                         ref={this.postTextbox}
                         channelIsArchived={channelIsArchived}
@@ -211,8 +204,8 @@ export default class Thread extends PureComponent {
                         channelId={channelId}
                         navigator={navigator}
                         onCloseChannel={this.onCloseChannel}
-                        cursorPositionEvent={'onThreadTextBoxCursorChange'}
-                        valueEvent={'onThreadTextBoxValueChange'}
+                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
                     />
                 </KeyboardTrackingView>
             );
@@ -223,16 +216,16 @@ export default class Thread extends PureComponent {
         }
 
         return (
-            <SafeAreaView
-                excludeHeader={true}
-                keyboardOffset={20}
-            >
-                <StatusBar/>
-                <KeyboardLayout ref={this.keyboardLayout}>
+            <React.Fragment>
+                <SafeAreaView
+                    excludeHeader={true}
+                    keyboardOffset={20}
+                >
+                    <StatusBar/>
                     {content}
-                </KeyboardLayout>
+                </SafeAreaView>
                 {postTextBox}
-            </SafeAreaView>
+            </React.Fragment>
         );
     }
 }

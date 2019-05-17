@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    LayoutAnimation,
+    Keyboard,
     Platform,
     StyleSheet,
     View,
@@ -12,44 +12,43 @@ import {
 
 import * as CustomPropTypes from 'app/constants/custom_prop_types';
 
-const KEYBOARD_HIDDEN_STATE = 3;
-const HW_KEYBOARD_OFFSET = 34;
-const HW_KEYBOARD_OFFSET_LANDSCAPE = 22;
-
 export default class KeyboardLayout extends PureComponent {
     static propTypes = {
         children: PropTypes.node,
-        isLandscape: PropTypes.bool.isRequired,
         style: CustomPropTypes.Style,
     };
 
     constructor(props) {
         super(props);
-
+        this.subscriptions = [];
         this.state = {
             keyboardHeight: 0,
         };
     }
 
-    setKeyboardHeight = (event) => {
-        if (!event) {
-            return;
+    componentDidMount() {
+        if (Platform.OS === 'ios') {
+            this.subscriptions = [
+                Keyboard.addListener('keyboardWillShow', this.onKeyboardWillShow),
+                Keyboard.addListener('keyboardWillHide', this.onKeyboardWillHide),
+            ];
         }
+    }
 
-        const {isLandscape} = this.props;
-        const animationConfig = LayoutAnimation.create(
-            10,
-            LayoutAnimation.Types.keyboard,
-            LayoutAnimation.Properties.scaleY,
-        );
+    componentWillUnmount() {
+        this.subscriptions.forEach((sub) => sub.remove());
+    }
 
-        LayoutAnimation.configureNext(animationConfig);
+    onKeyboardWillHide = () => {
+        this.setState({
+            keyboardHeight: 0,
+        });
+    };
 
-        let keyboardHeight = event.height;
-        if (event.hasInsets && event.state && event.state !== KEYBOARD_HIDDEN_STATE && !keyboardHeight) {
-            keyboardHeight = isLandscape ? HW_KEYBOARD_OFFSET_LANDSCAPE : HW_KEYBOARD_OFFSET;
-        }
-        this.setState({keyboardHeight});
+    onKeyboardWillShow = (e) => {
+        this.setState({
+            keyboardHeight: e?.endCoordinates?.height || 0,
+        });
     };
 
     render() {
@@ -57,9 +56,6 @@ export default class KeyboardLayout extends PureComponent {
 
         if (Platform.OS === 'ios') {
             // iOS doesn't resize the app automatically
-            // TODO: Find out why showing the keyboard another screen changes the position in the channel screen
-            // TODO: Make this happen natively
-            // TODO: handle the keyboard in other screens without the inputAccessoryView
             layoutStyle.push({paddingBottom: this.state.keyboardHeight});
         }
 

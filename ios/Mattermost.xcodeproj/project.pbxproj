@@ -50,9 +50,9 @@
 		72FB67307C2E4BA197BEC567 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CF19152887874B7E996210B1 /* libz.tbd */; };
 		74D116AD208A8D5600CF8A79 /* libRNKeychain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74D116AA208A8D3100CF8A79 /* libRNKeychain.a */; };
 		7BD159C40A68467FB5A17141 /* FontAwesome5_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC1D660B55BE462A9C3B8028 /* FontAwesome5_Solid.ttf */; };
-		7F11AA56228848F6001C9540 /* libKeyboardTrackingView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F11AA10228848D8001C9540 /* libKeyboardTrackingView.a */; };
 		7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */; };
 		7F151D41221B069200FAD8F3 /* 0155-keys.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F151D40221B069200FAD8F3 /* 0155-keys.png */; };
+		7F1967FF228E379000D19270 /* libKeyboardTrackingView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F11AA10228848D8001C9540 /* libKeyboardTrackingView.a */; };
 		7F1A56B4227E38B600EF7A90 /* libRNCAsyncStorage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F1A569B227E389600EF7A90 /* libRNCAsyncStorage.a */; };
 		7F240A1C220D3A2300637665 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F240A1B220D3A2300637665 /* ShareViewController.swift */; };
 		7F240A1F220D3A2300637665 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F240A1D220D3A2300637665 /* MainInterface.storyboard */; };
@@ -899,7 +899,7 @@
 			files = (
 				7FABE04622137F5C00D0F595 /* libUploadAttachments.a in Frameworks */,
 				74D116AD208A8D5600CF8A79 /* libRNKeychain.a in Frameworks */,
-				7F11AA56228848F6001C9540 /* libKeyboardTrackingView.a in Frameworks */,
+				7F1967FF228E379000D19270 /* libKeyboardTrackingView.a in Frameworks */,
 				37ABD3C81F4CE142001FDE6B /* libART.a in Frameworks */,
 				375218501F4B9EE70035444B /* libRCTCameraRoll.a in Frameworks */,
 				7F43D5E01F6BF994001FC614 /* libRNSVG.a in Frameworks */,

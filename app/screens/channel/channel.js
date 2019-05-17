@@ -25,7 +25,6 @@ import EmptyToolbar from 'app/components/start/empty_toolbar';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import MainSidebar from 'app/components/sidebars/main';
 import SettingsSidebar from 'app/components/sidebars/settings';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import NetworkIndicator from 'app/components/network_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
@@ -48,6 +47,9 @@ const {
     IOS_TOP_PORTRAIT,
     IOSX_TOP_PORTRAIT,
 } = ViewTypes;
+
+const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
+const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
 
 let ClientUpgradeListener;
 
@@ -81,8 +83,12 @@ export default class Channel extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.keyboardLayout = React.createRef();
         this.postTextbox = React.createRef();
+        this.keyboardTracker = React.createRef();
+
+        props.navigator.setStyle({
+            screenBackgroundColor: props.theme.centerChannelBg,
+        });
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
@@ -146,6 +152,10 @@ export default class Channel extends PureComponent {
         // When the team changes emit the event to render the drawer content
         if (this.props.currentChannelId && !prevProps.currentChannelId) {
             EventEmitter.emit('renderDrawer');
+        }
+
+        if (this.props.currentChannelId !== prevProps.currentChannelId) {
+            this.updateNativeScrollView();
         }
     }
 
@@ -253,12 +263,6 @@ export default class Channel extends PureComponent {
         }
     };
 
-    handleKeyboardHeightChange = (e) => {
-        if (e?.nativeEvent && this.keyboardLayout?.current) {
-            this.keyboardLayout.current.setKeyboardHeight(e?.nativeEvent);
-        }
-    };
-
     handleLeaveTeam = () => {
         this.props.actions.selectDefaultTeam();
     };
@@ -295,6 +299,10 @@ export default class Channel extends PureComponent {
 
     retryLoadChannels = () => {
         this.loadChannels(this.props.currentTeamId);
+    };
+
+    updateNativeScrollView = () => {
+        this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
     };
 
     render() {
@@ -353,33 +361,34 @@ export default class Channel extends PureComponent {
                             openSettingsDrawer={this.openSettingsSidebar}
                             onPress={this.goToChannelInfo}
                         />
-                        <KeyboardLayout ref={this.keyboardLayout}>
-                            <ChannelPostList navigator={navigator}/>
-                            <FileUploadPreview channelId={currentChannelId}/>
-                            <Autocomplete
-                                maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
-                                onChangeText={this.handleAutoComplete}
-                                cursorPositionEvent={'onChannelTextBoxCursorChange'}
-                                valueEvent={'onChannelTextBoxValueChange'}
-                            />
-                        </KeyboardLayout>
-                        <KeyboardTrackingView
-                            onKeyboardHeightChange={this.handleKeyboardHeightChange}
-                            scrollViewNativeID={'channelPostList'}
-                        >
-                            <PostTextbox
-                                cursorPositionEvent={'onChannelTextBoxCursorChange'}
-                                valueEvent={'onChannelTextBoxValueChange'}
-                                ref={this.postTextbox}
-                                navigator={navigator}
-                            />
-                        </KeyboardTrackingView>
+                        <ChannelPostList
+                            navigator={navigator}
+                            updateNativeScrollView={this.updateNativeScrollView}
+                        />
+                        <FileUploadPreview channelId={currentChannelId}/>
+                        <Autocomplete
+                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                            onChangeText={this.handleAutoComplete}
+                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                        />
                         <ChannelLoader
                             style={[style.channelLoader, loaderDimensions]}
                             maxRows={isLandscape ? 4 : 6}
                         />
                         {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
                     </SafeAreaView>
+                    <KeyboardTrackingView
+                        ref={this.keyboardTracker}
+                        scrollViewNativeID={currentChannelId}
+                    >
+                        <PostTextbox
+                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                            ref={this.postTextbox}
+                            navigator={navigator}
+                        />
+                    </KeyboardTrackingView>
                 </SettingsSidebar>
                 <InteractiveDialogController
                     navigator={navigator}
