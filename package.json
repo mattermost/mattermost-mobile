@@ -102,8 +102,10 @@
     "react-test-renderer": "16.8.6",
     "redux-mock-store": "1.5.3",
     "remote-redux-devtools": "0.5.16",
+    "shelljs": "0.8.3",
     "socketcluster": "14.3.3",
-    "underscore": "1.9.1"
+    "underscore": "1.9.1",
+    "yargs": "13.2.2"
   },
   "scripts": {
     "start": "node ./node_modules/react-native/local-cli/cli.js start",
@@ -114,7 +116,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "updatesnapshot": "jest --updateSnapshot",
-    "mmjstool": "mmjstool"
+    "mmjstool": "mmjstool",
+    "e2e:android": "node ./e2e/script/e2e_init.js --android --install"
   },
   "rnpm": {
     "assets": [
