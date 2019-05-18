@@ -44,6 +44,7 @@ export default class ChannelPostList extends PureComponent {
         postVisibility: PropTypes.number,
         refreshing: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
+        updateNativeScrollView: PropTypes.func,
     };
 
     static defaultProps = {
@@ -86,6 +87,11 @@ export default class ChannelPostList extends PureComponent {
     componentDidUpdate(prevProps) {
         if (prevProps.channelId !== this.props.channelId && tracker.channelSwitch) {
             this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
+        }
+
+        if (!prevProps.postIds?.length && this.props.postIds.length > 0) {
+            // This is needed to re-bind the scrollview natively when getting the fist posts
+            this.props.updateNativeScrollView();
         }
     }
 

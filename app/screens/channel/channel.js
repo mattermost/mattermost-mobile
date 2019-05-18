@@ -154,7 +154,7 @@ export default class Channel extends PureComponent {
             EventEmitter.emit('renderDrawer');
         }
 
-        if (this.props.currentChannelId !== prevProps.currentChannelId) {
+        if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
             this.updateNativeScrollView();
         }
     }
@@ -302,7 +302,9 @@ export default class Channel extends PureComponent {
     };
 
     updateNativeScrollView = () => {
-        this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
+        if (this.keyboardTracker?.current) {
+            this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
+        }
     };
 
     render() {
