@@ -63,14 +63,10 @@ class FilteredList extends Component {
     constructor(props) {
         super(props);
 
-        this.keyboardDismissProp = Platform.select({
-            android: {
-                onScrollBeginDrag: Keyboard.dismiss,
-            },
-            ios: {
-                keyboardDismissMode: 'on-drag',
-            },
-        });
+        this.keyboardDismissProp = {
+            keyboardDismissMode: Platform.OS === 'ios' ? 'interactive' : 'none',
+            onScrollBeginDrag: Keyboard.dismiss,
+        };
 
         this.state = {
             dataSource: this.buildData(props),
@@ -408,7 +404,7 @@ class FilteredList extends Component {
                     keyExtractor={(item) => item.id}
                     onViewableItemsChanged={this.updateUnreadIndicators}
                     {...this.keyboardDismissProp}
-                    keyboardShouldPersistTaps='always'
+                    keyboardShouldPersistTaps={'always'}
                     maxToRenderPerBatch={10}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />
