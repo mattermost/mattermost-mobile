@@ -120,9 +120,9 @@ export default class DrawerLayout extends Component {
             this.setState({ drawerShown, accessibilityViewIsModal });
         }
 
-            if (this.props.keyboardDismissMode === 'on-drag' || drawerShown) {
-                Keyboard.dismiss();
-            }
+        if (this.props.keyboardDismissMode === 'on-drag' || drawerShown) {
+            Keyboard.dismiss();
+        }
 
         this._lastOpenValue = value;
         if (this.props.onDrawerSlide) {
