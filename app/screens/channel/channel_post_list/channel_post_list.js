@@ -90,7 +90,7 @@ export default class ChannelPostList extends PureComponent {
         }
 
         if (!prevProps.postIds?.length && this.props.postIds?.length > 0) {
-            // This is needed to re-bind the scrollview natively when getting the fist posts
+            // This is needed to re-bind the scrollview natively when getting the first posts
             this.props.updateNativeScrollView();
         }
     }
