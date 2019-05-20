@@ -4,6 +4,7 @@ build-ios
 *.zip
 server.PID
 mattermost.keystore
+tmp/
 
 # OSX
 #
