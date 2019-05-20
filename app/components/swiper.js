@@ -4,12 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    View,
-    ScrollView,
-    ViewPagerAndroid,
-    Platform,
-    StyleSheet,
     InteractionManager,
+    ScrollView,
+    StyleSheet,
+    View,
 } from 'react-native';
 
 export default class Swiper extends PureComponent {
@@ -91,34 +89,20 @@ export default class Swiper extends PureComponent {
         this.updateIndex(e.nativeEvent.contentOffset.x);
     };
 
-    onPageScrollStateChanged = (e) => {
-        switch (e) {
-        case 'dragging':
-            this.props.onScrollBegin();
-            break;
-        }
-    };
-
     scrollByWidth = (width) => {
         this.offset = width * this.state.index;
 
-        if (Platform.OS === 'ios') {
-            setTimeout(() => {
-                if (this.scrollView) {
-                    this.scrollView.scrollTo({x: width * this.state.index, animated: false});
-                }
-            }, 0);
-        } else if (this.scrollView) {
-            this.scrollView.setPageWithoutAnimation(this.state.index);
-        }
+        setTimeout(() => {
+            if (this.scrollView) {
+                this.scrollView.scrollTo({x: width * this.state.index, animated: false});
+            }
+        }, 0);
     };
 
     scrollToStart = () => {
-        if (Platform.OS === 'ios') {
-            InteractionManager.runAfterInteractions(() => {
-                this.scrollView.scrollTo({x: 0, animated: false});
-            });
-        }
+        InteractionManager.runAfterInteractions(() => {
+            this.scrollView.scrollTo({x: 0, animated: false});
+        });
     };
 
     refScrollView = (view) => {
@@ -131,39 +115,24 @@ export default class Swiper extends PureComponent {
             scrollEnabled,
         } = this.props;
 
-        if (Platform.OS === 'ios') {
-            return (
-                <ScrollView
-                    ref={this.refScrollView}
-                    bounces={false}
-                    horizontal={true}
-                    removeClippedSubviews={true}
-                    automaticallyAdjustContentInsets={true}
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={[styles.wrapperIOS, this.props.style]}
-                    onScrollBeginDrag={this.onScrollBegin}
-                    onMomentumScrollEnd={this.onScrollEnd}
-                    pagingEnabled={scrollEnabled}
-                    keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-                    scrollEnabled={scrollEnabled}
-                >
-                    {pages}
-                </ScrollView>
-            );
-        }
         return (
-            <ViewPagerAndroid
+            <ScrollView
                 ref={this.refScrollView}
-                initialPage={this.props.initialPage}
-                onPageSelected={this.onScrollEnd}
-                onPageScrollStateChanged={this.onPageScrollStateChanged}
+                bounces={false}
+                horizontal={true}
+                removeClippedSubviews={true}
+                automaticallyAdjustContentInsets={true}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={[styles.wrapper, this.props.style]}
+                onScrollBeginDrag={this.onScrollBegin}
+                onMomentumScrollEnd={this.onScrollEnd}
+                pagingEnabled={scrollEnabled}
+                keyboardShouldPersistTaps={keyboardShouldPersistTaps}
                 scrollEnabled={scrollEnabled}
-                key={pages.length}
-                style={[styles.wrapperAndroid, this.props.style]}
             >
                 {pages}
-            </ViewPagerAndroid>
+            </ScrollView>
         );
     };
 
@@ -212,21 +181,9 @@ export default class Swiper extends PureComponent {
             return;
         }
 
-        if (Platform.OS === 'ios') {
-            this.scrollView.scrollTo({x: (index * this.props.width), animated});
-        } else {
-            this.scrollView[animated ? 'setPage' : 'setPageWithoutAnimation'](index);
-        }
-
-        // trigger onScrollEnd manually in android or if not animated
-        if (!animated || Platform.OS === 'android') {
-            setImmediate(() => {
-                this.onScrollEnd({
-                    nativeEvent: {
-                        position: index,
-                    },
-                });
-            });
+        this.scrollView.scrollTo({x: (index * this.props.width), animated});
+        if (index === 0) {
+            this.offset = 0;
         }
     };
 
@@ -278,12 +235,8 @@ const styles = StyleSheet.create({
         position: 'relative',
         flex: 1,
     },
-    wrapperIOS: {
+    wrapper: {
         backgroundColor: 'transparent',
-    },
-    wrapperAndroid: {
-        backgroundColor: 'transparent',
-        flex: 1,
     },
     slide: {
         flex: 1,

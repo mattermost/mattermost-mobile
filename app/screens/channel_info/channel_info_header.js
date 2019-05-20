@@ -31,6 +31,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
+        isGroupConstrained: PropTypes.bool,
     };
 
     render() {
@@ -48,6 +49,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             type,
             isArchived,
             isBot,
+            isGroupConstrained,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -111,6 +113,14 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             value={header}
                         />
                     </View>
+                }
+                {isGroupConstrained &&
+                    <Text style={style.createdBy}>
+                        <FormattedText
+                            id='mobile.routes.channelInfo.groupManaged'
+                            defaultMessage='Members are managed by linked groups'
+                        />
+                    </Text>
                 }
                 {creator &&
                     <Text style={style.createdBy}>

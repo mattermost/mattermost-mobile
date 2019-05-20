@@ -76,6 +76,7 @@ export default class Search extends Component {
         shadowRadius: PropTypes.number,
         shadowVisible: PropTypes.bool,
         leftComponent: PropTypes.element,
+        inputCollapsedMargin: PropTypes.number,
     };
 
     static defaultProps = {
@@ -99,6 +100,7 @@ export default class Search extends Component {
         shadowVisible: false,
         value: '',
         leftComponent: null,
+        inputCollapsedMargin: 10,
     };
 
     constructor(props) {
@@ -310,7 +312,7 @@ export default class Search extends Component {
                 Animated.timing(
                     this.inputFocusWidthAnimated,
                     {
-                        toValue: this.contentWidth - this.state.leftComponentWidth - 10,
+                        toValue: this.contentWidth - this.state.leftComponentWidth - this.props.inputCollapsedMargin,
                         duration: 200,
                     }
                 ),
@@ -347,7 +349,7 @@ export default class Search extends Component {
                     Animated.timing(
                         this.iconSearchAnimated,
                         {
-                            toValue: this.props.searchIconCollapsedMargin + this.state.leftComponentWidth,
+                            toValue: (this.props.searchIconCollapsedMargin + this.state.leftComponentWidth),
                             duration: 200,
                         }
                     ) : null),
@@ -395,7 +397,7 @@ export default class Search extends Component {
                     </Animated.View> :
                     null
                 )}
-                <Animated.View style={{backgroundColor, right: this.inputFocusAnimated}}>
+                <Animated.View style={{backgroundColor, right: this.inputFocusAnimated, borderRadius: 2}}>
                     <AnimatedTextInput
                         ref='input_keyword'
                         style={[
@@ -414,7 +416,6 @@ export default class Search extends Component {
                                 shadowOpacity: this.shadowOpacityAnimated,
                                 shadowRadius: this.props.shadowRadius,
                             },
-
                         ]}
                         autoFocus={this.props.autoFocus}
                         editable={this.props.editable}

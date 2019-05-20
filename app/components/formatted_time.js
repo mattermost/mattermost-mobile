@@ -5,6 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
+import moment from 'moment-timezone';
 
 export default class FormattedTime extends React.PureComponent {
     static propTypes = {
@@ -28,8 +29,7 @@ export default class FormattedTime extends React.PureComponent {
         } = this.props;
 
         if (timeZone) {
-            return intl.formatDate(value, {
-                timeZone,
+            return intl.formatDate(moment.tz(value, timeZone).toDate(), {
                 hour: 'numeric',
                 minute: 'numeric',
                 hour12,
@@ -37,17 +37,11 @@ export default class FormattedTime extends React.PureComponent {
         }
 
         // If no timezone is defined fallback to the previous implementation
-        const date = new Date(value);
-        const militaryTime = !hour12;
-        const hour = militaryTime ? date.getHours() : (date.getHours() % 12 || 12);
-        let minute = date.getMinutes();
-        minute = minute >= 10 ? minute : ('0' + minute);
-        let time = '';
-        if (!militaryTime) {
-            time = (date.getHours() >= 12 ? ' PM' : ' AM');
-        }
-
-        return hour + ':' + minute + time;
+        return intl.formatDate(new Date(value), {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12,
+        });
     };
 
     render() {

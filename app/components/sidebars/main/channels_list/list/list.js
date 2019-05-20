@@ -32,6 +32,7 @@ let UnreadIndicator = null;
 
 export default class List extends PureComponent {
     static propTypes = {
+        canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
         navigator: PropTypes.object,
@@ -85,7 +86,7 @@ export default class List extends PureComponent {
     }
 
     getSectionConfigByType = (props, sectionType) => {
-        const {canCreatePrivateChannels} = props;
+        const {canCreatePrivateChannels, canJoinPublicChannels} = props;
 
         switch (sectionType) {
         case SidebarSectionTypes.UNREADS:
@@ -100,7 +101,7 @@ export default class List extends PureComponent {
             };
         case SidebarSectionTypes.PUBLIC:
             return {
-                action: this.goToMoreChannels,
+                action: canJoinPublicChannels ? this.goToMoreChannels : null,
                 id: t('sidebar.channels'),
                 defaultMessage: 'PUBLIC CHANNELS',
             };

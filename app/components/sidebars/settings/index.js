@@ -8,7 +8,7 @@ import {logout, setStatus} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
-import {getDimensions} from 'app/selectors/device';
+import {isLandscape, getDimensions} from 'app/selectors/device';
 
 import SettingsSidebar from './settings_sidebar';
 
@@ -18,6 +18,7 @@ function mapStateToProps(state) {
 
     return {
         ...getDimensions(state),
+        isLandscape: isLandscape(state),
         currentUser,
         status,
         theme: getTheme(state),
@@ -33,4 +34,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(SettingsSidebar);
+export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(SettingsSidebar);

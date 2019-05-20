@@ -56,7 +56,7 @@ exports[`thread should match snapshot, has root post 1`] = `
         />
       }
     />
-    <Connect(PostTextbox)
+    <ForwardRef(forwardConnectRef)
       channelId="channel_id"
       channelIsArchived={false}
       navigator={

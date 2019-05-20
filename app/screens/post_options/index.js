@@ -11,7 +11,6 @@ import {
     unflagPost,
     unpinPost,
     removePost,
-    selectPost,
 } from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
 import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
@@ -22,7 +21,6 @@ import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles'
 import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
 import {canEditPost} from 'mattermost-redux/utils/post_utils';
 
-import {loadThreadIfNecessary} from 'app/actions/views/channel';
 import {THREAD} from 'app/constants/screen';
 import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions} from 'app/selectors/device';
@@ -127,8 +125,6 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
-            selectPost,
-            loadThreadIfNecessary,
         }, dispatch),
     };
 }

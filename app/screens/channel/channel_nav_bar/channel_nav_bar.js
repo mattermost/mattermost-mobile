@@ -42,15 +42,27 @@ export default class ChannelNavBar extends PureComponent {
             break;
         case 'ios':
             height = IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT;
+            if (DeviceTypes.IS_TABLET && isLandscape) {
+                height -= 1;
+            }
+
             if (DeviceTypes.IS_IPHONE_X && isLandscape) {
                 padding.paddingHorizontal = 10;
             }
             break;
         }
 
+        let drawerButtonVisible = false;
+        if (!DeviceTypes.IS_TABLET) {
+            drawerButtonVisible = true;
+        }
+
         return (
             <View style={[style.header, padding, {height}]}>
-                <ChannelDrawerButton openDrawer={openChannelDrawer}/>
+                <ChannelDrawerButton
+                    openDrawer={openChannelDrawer}
+                    visible={drawerButtonVisible}
+                />
                 <ChannelTitle onPress={onPress}/>
                 <ChannelSearchButton
                     navigator={navigator}
