@@ -22,7 +22,7 @@ before_all do |lane, options|
   end
 
   # Block to ensure we are on the right branch
-  branch = ENV['BRANCH_TO_BUILD'] || 'master'
+  branch = ENV['BRANCH_TO_BUILD'] || ENV['GIT_BRANCH']
   begin
     ensure_git_branch(
         branch: branch
@@ -693,7 +693,7 @@ lane :upload_file_to_s3 do |options|
       filename_plist = "#{app_name}.plist"
     end
   end
-  
+
 
   build_folder_path = Dir[File.expand_path('..')].first
   file_path = "#{build_folder_path}/#{filename}"

@@ -53,40 +53,37 @@ export default class EditChannelInfo extends PureComponent {
         editing: false,
     };
 
+    constructor(props) {
+        super(props);
+
+        this.nameInput = React.createRef();
+        this.urlInput = React.createRef();
+        this.purposeInput = React.createRef();
+        this.headerInput = React.createRef();
+        this.lastText = React.createRef();
+        this.scroll = React.createRef();
+    }
+
     blur = () => {
-        if (this.nameInput) {
-            this.nameInput.blur();
+        if (this.nameInput?.current) {
+            this.nameInput.current.blur();
         }
 
         // TODO: uncomment below once the channel URL field is added
-        // if (this.urlInput) {
-        //     this.urlInput.blur();
+        // if (this.urlInput?.current) {
+        //     this.urlInput.current.blur();
         // }
-        if (this.purposeInput) {
-            this.purposeInput.blur();
+
+        if (this.purposeInput?.current) {
+            this.purposeInput.current.blur();
         }
-        if (this.headerInput) {
-            this.headerInput.blur();
+        if (this.headerInput?.current) {
+            this.headerInput.current.blur();
         }
-        if (this.scroll) {
-            this.scroll.scrollToPosition(0, 0, true);
+
+        if (this.scroll?.current) {
+            this.scroll.current.scrollToPosition(0, 0, true);
         }
-    };
-
-    channelNameRef = (ref) => {
-        this.nameInput = ref;
-    };
-
-    channelURLRef = (ref) => {
-        this.urlInput = ref;
-    };
-
-    channelPurposeRef = (ref) => {
-        this.purposeInput = ref;
-    };
-
-    channelHeaderRef = (ref) => {
-        this.headerInput = ref;
     };
 
     close = (goBack = false) => {
@@ -97,10 +94,6 @@ export default class EditChannelInfo extends PureComponent {
                 animationType: 'slide-down',
             });
         }
-    };
-
-    lastTextRef = (ref) => {
-        this.lastText = ref;
     };
 
     canUpdate = (displayName, channelURL, purpose, header) => {
@@ -167,13 +160,9 @@ export default class EditChannelInfo extends PureComponent {
         }
     };
 
-    scrollRef = (ref) => {
-        this.scroll = ref;
-    };
-
     scrollToEnd = () => {
-        if (this.scroll && this.lastText) {
-            this.scroll.scrollToFocusedInput(findNodeHandle(this.lastText));
+        if (this.scroll?.current && this.lastText?.current) {
+            this.scroll.current.scrollToFocusedInput(findNodeHandle(this.lastText.current));
         }
     };
 
@@ -223,7 +212,7 @@ export default class EditChannelInfo extends PureComponent {
             <View style={style.container}>
                 <StatusBar/>
                 <KeyboardAwareScrollView
-                    ref={this.scrollRef}
+                    ref={this.scroll}
                     style={style.container}
                 >
                     {displayError}
@@ -240,7 +229,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={style.inputContainer}>
                                         <TextInputWithLocalizedPlaceholder
-                                            ref={this.channelNameRef}
+                                            ref={this.nameInput}
                                             value={displayName}
                                             onChangeText={this.onDisplayNameChangeText}
                                             style={style.input}
@@ -269,7 +258,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={style.inputContainer}>
                                         <TextInputWithLocalizedPlaceholder
-                                            ref={this.channelURLRef}
+                                            ref={this.urlInput}
                                             value={channelURL}
                                             onChangeText={this.onDisplayURLChangeText}
                                             style={style.input}
@@ -299,7 +288,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={style.inputContainer}>
                                         <TextInputWithLocalizedPlaceholder
-                                            ref={this.channelPurposeRef}
+                                            ref={this.purposeInput}
                                             value={purpose}
                                             onChangeText={this.onPurposeChangeText}
                                             style={[style.input, {height: 110}]}
@@ -337,7 +326,7 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <View style={style.inputContainer}>
                                 <TextInputWithLocalizedPlaceholder
-                                    ref={this.channelHeaderRef}
+                                    ref={this.headerInput}
                                     value={header}
                                     onChangeText={this.onHeaderChangeText}
                                     style={[style.input, {height: 110}]}
@@ -353,7 +342,7 @@ export default class EditChannelInfo extends PureComponent {
                                     disableFullscreenUI={true}
                                 />
                             </View>
-                            <View ref={this.lastTextRef}>
+                            <View ref={this.lastText}>
                                 <FormattedText
                                     style={style.helpText}
                                     id='channel_modal.headerHelp'
