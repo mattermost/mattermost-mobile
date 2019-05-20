@@ -18,22 +18,22 @@ function mapStateToProps(state) {
     const currentUserId = getCurrentUserId(state);
     const myChannelMember = getMyCurrentChannelMembership(state);
 
-    let guests = '';
+    let isTeammateGuest = false;
+    let hasGuests = false;
     if (currentChannel && currentChannel.type === General.DM_CHANNEL) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
         if (isGuest(teammate)) {
-            guests = 'GUEST';
+            isTeammateGuest = true;
         }
     } else if (currentChannel && currentChannel.type === General.GM_CHANNEL) {
-        const groupGuests = [];
         for (const username of currentChannel.display_name.split(',')) {
-            const user = getUserByUsername(state, username);
+            const user = getUserByUsername(state, username.trim());
             if (isGuest(user)) {
-                groupGuests.push('GUEST');
+                hasGuests = true;
+                break;
             }
         }
-        guests = groupGuests.join(',');
     }
 
     return {
@@ -42,7 +42,8 @@ function mapStateToProps(state) {
         displayName: state.views.channel.displayName,
         isChannelMuted: isChannelMuted(myChannelMember),
         theme: getTheme(state),
-        guests,
+        isGuest: isTeammateGuest,
+        hasGuests,
     };
 }
 

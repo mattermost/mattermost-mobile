@@ -14,9 +14,7 @@ import ChannelTitle from './channel_title';
 import SettingDrawerButton from './settings_drawer_button';
 
 const {
-    ANDROID_TOP_LANDSCAPE,
     ANDROID_TOP_PORTRAIT,
-    IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
     STATUS_BAR_HEIGHT,
 } = ViewTypes;
@@ -41,16 +39,9 @@ export default class ChannelNavBar extends PureComponent {
         switch (Platform.OS) {
         case 'android':
             height = ANDROID_TOP_PORTRAIT;
-            if (isLandscape) {
-                height = ANDROID_TOP_LANDSCAPE;
-            }
             break;
         case 'ios':
             height = IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT;
-            if (isLandscape) {
-                height = IOS_TOP_LANDSCAPE;
-            }
-
             if (DeviceTypes.IS_IPHONE_X && isLandscape) {
                 padding.paddingHorizontal = 10;
             }

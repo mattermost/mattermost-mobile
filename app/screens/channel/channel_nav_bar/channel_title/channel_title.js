@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import GuestTag from 'app/components/guest_tag';
+import FormattedText from 'app/components/formatted_text';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
@@ -22,7 +23,8 @@ export default class ChannelTitle extends PureComponent {
         onPress: PropTypes.func,
         theme: PropTypes.object,
         isArchived: PropTypes.bool,
-        guests: PropTypes.string,
+        isGuest: PropTypes.bool.isRequired,
+        hasGuests: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -45,29 +47,33 @@ export default class ChannelTitle extends PureComponent {
     }
 
     render() {
-        const {currentChannelName, displayName, isChannelMuted, onPress, theme, guests} = this.props;
+        const {currentChannelName, displayName, isChannelMuted, onPress, theme, isGuest, hasGuests} = this.props;
 
         const style = getStyle(theme);
 
-        let channelName = displayName || currentChannelName;
-        if (guests) {
-            const users = channelName.split(',');
-            const isGuest = guests.split(',').map((v) => v === 'GUEST');
-
-            channelName = [];
-            users.forEach((value, index) => {
-                channelName.push(
-                    <React.Fragment key={value}>
-                        {value}
-                        {isGuest[index] &&
-                            <GuestTag
-                                theme={this.props.theme}
-                                inTitle={true}
-                            />}
-                        {index + 1 !== users.length && <Text style={style.text}>{', '}</Text>}
-                    </React.Fragment>
-                );
-            });
+        const channelName = displayName || currentChannelName;
+        let guestBadge = null;
+        if (isGuest) {
+            guestBadge = (
+                <GuestTag
+                    theme={this.props.theme}
+                    inTitle={true}
+                />
+            );
+        }
+        let hasGuestsText = null;
+        if (hasGuests) {
+            hasGuestsText = (
+                <View style={style.guestsWrapper}>
+                    <FormattedText
+                        id='post_info.hasGuests'
+                        numberOfLines={1}
+                        ellipsizeMode='tail'
+                        defaultMessage='This group message has guests'
+                        style={style.guestsText}
+                    />
+                </View>
+            );
         }
 
         let icon;
@@ -106,9 +112,11 @@ export default class ChannelTitle extends PureComponent {
                     >
                         {channelName}
                     </Text>
+                    {guestBadge}
                     {icon}
                     {mutedIcon}
                 </View>
+                {hasGuestsText}
             </TouchableOpacity>
         );
     }
@@ -147,6 +155,18 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             fontSize: 17,
             color: theme.sidebarHeaderTextColor,
             paddingRight: 7,
+        },
+        guestsWrapper: {
+            alignItems: 'flex-start',
+            flex: 1,
+            position: 'relative',
+            top: -1,
+            width: '90%',
+        },
+        guestsText: {
+            color: theme.sidebarHeaderTextColor,
+            fontSize: 14,
+            opacity: 0.6,
         },
     };
 });
