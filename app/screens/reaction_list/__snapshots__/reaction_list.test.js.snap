@@ -8,7 +8,7 @@ exports[`ReactionList should match snapshot 1`] = `
     }
   }
 >
-  <Connect(SlideUpPanel)
+  <ForwardRef(forwardConnectRef)
     header={[Function]}
     headerHeight={37.5}
     initialPosition={0.55}
@@ -158,7 +158,7 @@ exports[`ReactionList should match snapshot 1`] = `
         }
       />
     </View>
-  </Connect(SlideUpPanel)>
+  </ForwardRef(forwardConnectRef)>
 </View>
 `;
 

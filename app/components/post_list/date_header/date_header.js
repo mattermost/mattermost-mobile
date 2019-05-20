@@ -7,6 +7,7 @@ import {
     View,
     ViewPropTypes,
 } from 'react-native';
+import moment from 'moment-timezone';
 
 import FormattedDate from 'app/components/formatted_date';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -33,7 +34,7 @@ export default class DateHeader extends PureComponent {
         };
 
         if (timeZone) {
-            dateFormatProps.timeZone = timeZone;
+            dateFormatProps.value = moment.tz(date, timeZone).toDate();
         }
 
         return (

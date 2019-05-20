@@ -241,7 +241,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.sidebarText, 0.4),
             fontSize: 14,
             fontWeight: '600',
-            paddingRight: 40,
+            paddingRight: 10,
             height: '100%',
             flex: 1,
             textAlignVertical: 'center',

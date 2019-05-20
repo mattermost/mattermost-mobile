@@ -94,7 +94,13 @@ public class CustomPushNotification extends PushNotification {
         Bundle data = mNotificationProps.asBundle();
         final String channelId = data.getString("channel_id");
         final String type = data.getString("type");
+        final String ackId = data.getString("ack_id");
         int notificationId = MESSAGE_NOTIFICATION_ID;
+
+        if (ackId != null) {
+            notificationReceiptDelivery(ackId, type);
+        }
+
         if (channelId != null) {
             notificationId = channelId.hashCode();
             Object objCount = channelIdToNotificationCount.get(channelId);
@@ -378,5 +384,9 @@ public class CustomPushNotification extends PushNotification {
     private String removeSenderFromMessage(String senderName, String channelName, String message) {
         String sender = String.format("%s: ", getSenderName(senderName, channelName, message));
         return message.replaceFirst(sender, "");
+    }
+
+    private void notificationReceiptDelivery(String ackId, String type) {
+        ReceiptDelivery.send(context, ackId, type);
     }
 }

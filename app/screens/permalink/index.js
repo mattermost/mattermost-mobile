@@ -79,4 +79,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(makeMapStateToProps, mapDispatchToProps, null, {withRef: true})(Permalink);
+export default connect(makeMapStateToProps, mapDispatchToProps, null, {forwardRef: true})(Permalink);

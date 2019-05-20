@@ -17,4 +17,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {withRef: true})(Autocomplete);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(Autocomplete);

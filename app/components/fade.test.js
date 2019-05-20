@@ -5,7 +5,7 @@ import React from 'react';
 import {Animated, Text} from 'react-native';
 import {shallow} from 'enzyme';
 
-import Fade, {FADE_DURATION} from './fade';
+import Fade from './fade';
 
 jest.useFakeTimers();
 
@@ -28,15 +28,6 @@ describe('Fade', () => {
         );
     }
 
-    function getAnimValue(begin, end) {
-        const animValue = new Animated.Value(begin);
-
-        animValue.setValue(end);
-        animValue.stopTracking();
-
-        return animValue;
-    }
-
     test('should render {opacity: 1}', () => {
         const wrapper = getWrapper({visible: true});
 
@@ -49,15 +40,6 @@ describe('Fade', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper).toHaveStyle('opacity', new Animated.Value(0));
-    });
-
-    test('should change opacity from 1 to 0', () => {
-        const wrapper = getWrapper({visible: true});
-
-        expect(wrapper).toHaveStyle('opacity', new Animated.Value(1));
-        wrapper.setProps({visible: false});
-        jest.advanceTimersByTime(FADE_DURATION);
-        expect(wrapper).toHaveStyle('opacity', getAnimValue(1, 0));
     });
 
     test('should not change opacity when disabled flag is switched', () => {

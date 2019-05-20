@@ -9,11 +9,11 @@ import {
     Alert,
     Animated,
     AppState,
-    NetInfo,
     Platform,
     StyleSheet,
     View,
 } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import FormattedText from 'app/components/formatted_text';
