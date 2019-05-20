@@ -41,6 +41,7 @@ export default class PostHeader extends PureComponent {
         theme: PropTypes.object.isRequired,
         username: PropTypes.string,
         isBot: PropTypes.bool,
+        isGuest: PropTypes.bool,
         userTimezone: PropTypes.string,
         enableTimezone: PropTypes.bool,
     };
@@ -65,7 +66,7 @@ export default class PostHeader extends PureComponent {
             fromAutoResponder,
             overrideUsername,
             isBot,
-            isGuest
+            isGuest,
         } = this.props;
 
         if (fromWebHook) {
