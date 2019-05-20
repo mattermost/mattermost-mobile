@@ -66,7 +66,7 @@ export default class ChannelTitle extends PureComponent {
             hasGuestsText = (
                 <View style={style.guestsWrapper}>
                     <FormattedText
-                        id='post_info.hasGuests'
+                        id='channel_title.hasGuests'
                         numberOfLines={1}
                         ellipsizeMode='tail'
                         defaultMessage='This group message has guests'
