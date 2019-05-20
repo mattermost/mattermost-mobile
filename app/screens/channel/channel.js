@@ -6,22 +6,25 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Dimensions,
+    Keyboard,
     Platform,
     StyleSheet,
     View,
 } from 'react-native';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {app} from 'app/mattermost';
 
+import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
-import EmptyToolbar from 'app/components/start/empty_toolbar';
 import ChannelLoader from 'app/components/channel_loader';
+import EmptyToolbar from 'app/components/start/empty_toolbar';
+import FileUploadPreview from 'app/components/file_upload_preview';
 import MainSidebar from 'app/components/sidebars/main';
 import SettingsSidebar from 'app/components/sidebars/settings';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import NetworkIndicator from 'app/components/network_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
@@ -44,6 +47,9 @@ const {
     IOS_TOP_PORTRAIT,
     IOSX_TOP_PORTRAIT,
 } = ViewTypes;
+
+const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
+const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
 
 let ClientUpgradeListener;
 
@@ -76,6 +82,13 @@ export default class Channel extends PureComponent {
 
     constructor(props) {
         super(props);
+
+        this.postTextbox = React.createRef();
+        this.keyboardTracker = React.createRef();
+
+        props.navigator.setStyle({
+            screenBackgroundColor: props.theme.centerChannelBg,
+        });
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
@@ -140,19 +153,19 @@ export default class Channel extends PureComponent {
         if (this.props.currentChannelId && !prevProps.currentChannelId) {
             EventEmitter.emit('renderDrawer');
         }
+
+        if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
+            this.updateNativeScrollView();
+        }
     }
 
     componentWillUnmount() {
         EventEmitter.off('leave_team', this.handleLeaveTeam);
     }
 
-    attachPostTextBox = (ref) => {
-        this.postTextbox = ref;
-    };
-
     blurPostTextBox = () => {
-        if (this.postTextbox) {
-            this.postTextbox.blur();
+        if (this.postTextbox?.current) {
+            this.postTextbox.current.blur();
         }
     };
 
@@ -233,12 +246,22 @@ export default class Channel extends PureComponent {
             },
         };
 
+        Keyboard.dismiss();
+
         if (Platform.OS === 'android') {
             navigator.showModal(options);
         } else {
-            navigator.push(options);
+            requestAnimationFrame(() => {
+                navigator.push(options);
+            });
         }
     });
+
+    handleAutoComplete = (value) => {
+        if (this.postTextbox?.current) {
+            this.postTextbox.current.handleTextChange(value, true);
+        }
+    };
 
     handleLeaveTeam = () => {
         this.props.actions.selectDefaultTeam();
@@ -276,6 +299,12 @@ export default class Channel extends PureComponent {
 
     retryLoadChannels = () => {
         this.loadChannels(this.props.currentTeamId);
+    };
+
+    updateNativeScrollView = () => {
+        if (this.keyboardTracker?.current) {
+            this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
+        }
     };
 
     render() {
@@ -334,21 +363,34 @@ export default class Channel extends PureComponent {
                             openSettingsDrawer={this.openSettingsSidebar}
                             onPress={this.goToChannelInfo}
                         />
-                        <KeyboardLayout>
-                            <View style={style.flex}>
-                                <ChannelPostList navigator={navigator}/>
-                            </View>
-                            <PostTextbox
-                                ref={this.attachPostTextBox}
-                                navigator={navigator}
-                            />
-                        </KeyboardLayout>
+                        <ChannelPostList
+                            navigator={navigator}
+                            updateNativeScrollView={this.updateNativeScrollView}
+                        />
+                        <FileUploadPreview channelId={currentChannelId}/>
+                        <Autocomplete
+                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                            onChangeText={this.handleAutoComplete}
+                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                        />
                         <ChannelLoader
                             style={[style.channelLoader, loaderDimensions]}
                             maxRows={isLandscape ? 4 : 6}
                         />
                         {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
                     </SafeAreaView>
+                    <KeyboardTrackingView
+                        ref={this.keyboardTracker}
+                        scrollViewNativeID={currentChannelId}
+                    >
+                        <PostTextbox
+                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                            ref={this.postTextbox}
+                            navigator={navigator}
+                        />
+                    </KeyboardTrackingView>
                 </SettingsSidebar>
                 <InteractiveDialogController
                     navigator={navigator}

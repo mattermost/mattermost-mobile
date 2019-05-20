@@ -4,6 +4,7 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
+    Keyboard,
     Platform,
     StyleSheet,
     View,
@@ -43,6 +44,7 @@ export default class ChannelPostList extends PureComponent {
         postVisibility: PropTypes.number,
         refreshing: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
+        updateNativeScrollView: PropTypes.func,
     };
 
     static defaultProps = {
@@ -86,6 +88,11 @@ export default class ChannelPostList extends PureComponent {
         if (prevProps.channelId !== this.props.channelId && tracker.channelSwitch) {
             this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
         }
+
+        if (!prevProps.postIds?.length && this.props.postIds?.length > 0) {
+            // This is needed to re-bind the scrollview natively when getting the first posts
+            this.props.updateNativeScrollView();
+        }
     }
 
     componentWillUnmount() {
@@ -101,6 +108,7 @@ export default class ChannelPostList extends PureComponent {
         const {actions, channelId, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
 
+        Keyboard.dismiss();
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
@@ -123,7 +131,9 @@ export default class ChannelPostList extends PureComponent {
         if (Platform.OS === 'android') {
             navigator.showModal(options);
         } else {
-            navigator.push(options);
+            requestAnimationFrame(() => {
+                navigator.push(options);
+            });
         }
     };
 
@@ -216,6 +226,7 @@ export default class ChannelPostList extends PureComponent {
                     navigator={navigator}
                     renderFooter={this.renderFooter}
                     refreshing={refreshing}
+                    scrollViewNativeID={channelId}
                 />
             );
         }

@@ -6,10 +6,11 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
+    Keyboard,
+    Platform,
     Text,
     TouchableHighlight,
     View,
-    Platform,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -61,6 +62,12 @@ class FilteredList extends Component {
 
     constructor(props) {
         super(props);
+
+        this.keyboardDismissProp = {
+            keyboardDismissMode: Platform.OS === 'ios' ? 'interactive' : 'none',
+            onScrollBeginDrag: Keyboard.dismiss,
+        };
+
         this.state = {
             dataSource: this.buildData(props),
         };
@@ -112,7 +119,6 @@ class FilteredList extends Component {
     createChannelElement = (channel) => {
         return (
             <ChannelItem
-                ref={channel.id}
                 channelId={channel.id}
                 channel={channel}
                 isSearchResult={true}
@@ -386,7 +392,6 @@ class FilteredList extends Component {
 
     render() {
         const {styles} = this.props;
-
         const {dataSource} = this.state;
 
         return (
@@ -394,13 +399,12 @@ class FilteredList extends Component {
                 style={styles.container}
             >
                 <FlatList
-                    ref='list'
                     data={dataSource}
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
                     onViewableItemsChanged={this.updateUnreadIndicators}
-                    keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
-                    keyboardShouldPersistTaps='always'
+                    {...this.keyboardDismissProp}
+                    keyboardShouldPersistTaps={'always'}
                     maxToRenderPerBatch={10}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />

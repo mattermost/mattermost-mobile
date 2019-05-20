@@ -439,6 +439,7 @@ export default class PostBody extends PureComponent {
                         scrollEnabled={false}
                         showsVerticalScrollIndicator={false}
                         showsHorizontalScrollIndicator={false}
+                        keyboardShouldPersistTaps={'always'}
                     >
                         {messageComponent}
                     </ScrollView>

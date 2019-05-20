@@ -10,6 +10,8 @@ import {
     View,
 } from 'react-native';
 
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
 import FormattedText from 'app/components/formatted_text';
 
 import FileUploadItem from './file_upload_item';
@@ -21,15 +23,28 @@ export default class FileUploadPreview extends PureComponent {
         deviceHeight: PropTypes.number.isRequired,
         files: PropTypes.array.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
-        fileSizeWarning: PropTypes.string,
         rootId: PropTypes.string,
-        showFileMaxWarning: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         files: [],
     };
+
+    state = {
+        fileSizeWarning: null,
+        showFileMaxWarning: false,
+    };
+
+    componentDidMount() {
+        EventEmitter.on('fileMaxWarning', this.handleFileMaxWarning);
+        EventEmitter.on('fileSizeWarning', this.handleFileSizeWarning);
+    }
+
+    componentWillUnmount() {
+        EventEmitter.off('fileMaxWarning', this.handleFileMaxWarning);
+        EventEmitter.off('fileSizeWarning', this.handleFileSizeWarning);
+    }
 
     buildFilePreviews = () => {
         return this.props.files.map((file) => {
@@ -45,15 +60,25 @@ export default class FileUploadPreview extends PureComponent {
         });
     };
 
+    handleFileMaxWarning = () => {
+        this.setState({showFileMaxWarning: true});
+        setTimeout(() => {
+            this.setState({showFileMaxWarning: false});
+        }, 3000);
+    };
+
+    handleFileSizeWarning = (message) => {
+        this.setState({fileSizeWarning: message});
+    };
+
     render() {
         const {
-            showFileMaxWarning,
-            fileSizeWarning,
             channelIsLoading,
             filesUploadingForCurrentChannel,
             deviceHeight,
             files,
         } = this.props;
+        const {fileSizeWarning, showFileMaxWarning} = this.state;
 
         if (
             !fileSizeWarning && !showFileMaxWarning &&
@@ -69,6 +94,7 @@ export default class FileUploadPreview extends PureComponent {
                         horizontal={true}
                         style={style.scrollView}
                         contentContainerStyle={style.scrollViewContent}
+                        keyboardShouldPersistTaps={'handled'}
                     >
                         {this.buildFilePreviews()}
                     </ScrollView>

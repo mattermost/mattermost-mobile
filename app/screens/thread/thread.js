@@ -3,22 +3,28 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform} from 'react-native';
+import {Keyboard, Platform} from 'react-native';
 import {intlShape} from 'react-intl';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 
 import {THREAD} from 'app/constants/screen';
 
+import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
+import FileUploadPreview from 'app/components/file_upload_preview';
 import Loading from 'app/components/loading';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
-import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {setNavigatorStyles} from 'app/utils/theme';
 import DeletedPost from 'app/components/deleted_post';
+
+const THREAD_POST_TEXTBOX_CURSOR_CHANGE = 'onThreadTextBoxCursorChange';
+const THREAD_POST_TEXTBOX_VALUE_CHANGE = 'onThreadTextBoxValueChange';
+const SCROLLVIEW_NATIVE_ID = 'threadPostList';
 
 export default class Thread extends PureComponent {
     static propTypes = {
@@ -47,16 +53,20 @@ export default class Thread extends PureComponent {
         intl: intlShape,
     };
 
-    componentWillMount() {
-        const {channelType, displayName} = this.props;
-        const {intl} = this.context;
+    constructor(props, context) {
+        super(props);
+
+        const {channelType, displayName} = props;
+        const {formatMessage} = context.intl;
         let title;
 
         if (channelType === General.DM_CHANNEL) {
-            title = intl.formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
+            title = formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
         } else {
-            title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: displayName});
+            title = formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: displayName});
         }
+
+        this.postTextbox = React.createRef();
 
         this.props.navigator.setTitle({
             title,
@@ -96,8 +106,18 @@ export default class Thread extends PureComponent {
         }
     };
 
+    handleAutoComplete = (value) => {
+        if (this.postTextbox?.current) {
+            this.postTextbox.current.handleTextChange(value, true);
+        }
+    };
+
     hasRootPost = () => {
         return this.props.postIds.includes(this.props.rootId);
+    };
+
+    hideKeyboard = () => {
+        Keyboard.dismiss();
     };
 
     renderFooter = () => {
@@ -141,34 +161,53 @@ export default class Thread extends PureComponent {
             navigator,
             postIds,
             rootId,
-            theme,
             channelIsArchived,
         } = this.props;
-        const style = getStyle(theme);
+
         let content;
         let postTextBox;
         if (this.hasRootPost()) {
             content = (
-                <PostList
-                    renderFooter={this.renderFooter()}
-                    indicateNewMessages={false}
-                    postIds={postIds}
-                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
-                    currentUserId={myMember && myMember.user_id}
-                    lastViewedAt={this.state.lastViewedAt}
-                    navigator={navigator}
-                    location={THREAD}
-                />
+                <React.Fragment>
+                    <PostList
+                        renderFooter={this.renderFooter()}
+                        indicateNewMessages={false}
+                        postIds={postIds}
+                        lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
+                        currentUserId={myMember && myMember.user_id}
+                        lastViewedAt={this.state.lastViewedAt}
+                        navigator={navigator}
+                        onPostPress={this.hideKeyboard}
+                        location={THREAD}
+                        scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
+                    />
+                    <FileUploadPreview
+                        channelId={channelId}
+                        rootId={rootId}
+                    />
+                    <Autocomplete
+                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        onChangeText={this.handleAutoComplete}
+                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
+                        rootId={rootId}
+                    />
+                </React.Fragment>
             );
 
             postTextBox = (
-                <PostTextbox
-                    channelIsArchived={channelIsArchived}
-                    rootId={rootId}
-                    channelId={channelId}
-                    navigator={navigator}
-                    onCloseChannel={this.onCloseChannel}
-                />
+                <KeyboardTrackingView scrollViewNativeID={SCROLLVIEW_NATIVE_ID}>
+                    <PostTextbox
+                        ref={this.postTextbox}
+                        channelIsArchived={channelIsArchived}
+                        rootId={rootId}
+                        channelId={channelId}
+                        navigator={navigator}
+                        onCloseChannel={this.onCloseChannel}
+                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
+                    />
+                </KeyboardTrackingView>
             );
         } else {
             content = (
@@ -177,25 +216,16 @@ export default class Thread extends PureComponent {
         }
 
         return (
-            <SafeAreaView
-                excludeHeader={true}
-                keyboardOffset={20}
-            >
-                <StatusBar/>
-                <KeyboardLayout style={style.container}>
+            <React.Fragment>
+                <SafeAreaView
+                    excludeHeader={true}
+                    keyboardOffset={20}
+                >
+                    <StatusBar/>
                     {content}
-                    {postTextBox}
-                </KeyboardLayout>
-            </SafeAreaView>
+                </SafeAreaView>
+                {postTextBox}
+            </React.Fragment>
         );
     }
 }
-
-const getStyle = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-    };
-});

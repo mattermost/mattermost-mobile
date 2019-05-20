@@ -292,6 +292,12 @@ export default class MoreChannels extends PureComponent {
         );
     };
 
+    renderItem = (props) => {
+        return (
+            <ChannelListRow {...props}/>
+        );
+    }
+
     searchChannels = (text) => {
         const {actions, channels, currentTeamId} = this.props;
 
@@ -363,7 +369,7 @@ export default class MoreChannels extends PureComponent {
                         noResults={this.renderNoResults()}
                         onLoadMore={more}
                         onRowPress={this.onSelectChannel}
-                        renderItem={ChannelListRow}
+                        renderItem={this.renderItem}
                         theme={theme}
                     />
                 </React.Fragment>
