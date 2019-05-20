@@ -249,6 +249,7 @@ i18n-extract-ci:
 	echo '{}' > tmp/fake-webapp-dir/i18n/en.json
 	npm run mmjstool -- i18n extract-mobile --webapp-dir tmp/fake-webapp-dir --mobile-dir .
 	diff tmp/en.json assets/base/i18n/en.json
+	rm -rf tmp
 
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
