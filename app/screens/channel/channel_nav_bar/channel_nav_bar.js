@@ -14,7 +14,9 @@ import ChannelTitle from './channel_title';
 import SettingDrawerButton from './settings_drawer_button';
 
 const {
+    ANDROID_TOP_LANDSCAPE,
     ANDROID_TOP_PORTRAIT,
+    IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
     STATUS_BAR_HEIGHT,
 } = ViewTypes;
@@ -36,18 +38,27 @@ export default class ChannelNavBar extends PureComponent {
         const padding = {paddingHorizontal: 0};
 
         let height;
+        let canHaveSubtitle = true;
         switch (Platform.OS) {
         case 'android':
             height = ANDROID_TOP_PORTRAIT;
+            if (!DeviceTypes.IS_TABLET && isLandscape) {
+                height = ANDROID_TOP_LANDSCAPE;
+                canHaveSubtitle = false;
+            }
             break;
         case 'ios':
             height = IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT;
             if (DeviceTypes.IS_TABLET && isLandscape) {
                 height -= 1;
+            } else if (isLandscape) {
+                height = IOS_TOP_LANDSCAPE;
+                canHaveSubtitle = false;
             }
 
             if (DeviceTypes.IS_IPHONE_X && isLandscape) {
                 padding.paddingHorizontal = 10;
+                canHaveSubtitle = false;
             }
             break;
         }
@@ -63,7 +74,10 @@ export default class ChannelNavBar extends PureComponent {
                     openDrawer={openChannelDrawer}
                     visible={drawerButtonVisible}
                 />
-                <ChannelTitle onPress={onPress}/>
+                <ChannelTitle
+                    onPress={onPress}
+                    canHaveSubtitle={canHaveSubtitle}
+                />
                 <ChannelSearchButton
                     navigator={navigator}
                     theme={theme}

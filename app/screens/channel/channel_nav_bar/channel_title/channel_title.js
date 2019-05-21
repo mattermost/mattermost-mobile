@@ -25,6 +25,7 @@ export default class ChannelTitle extends PureComponent {
         isArchived: PropTypes.bool,
         isGuest: PropTypes.bool.isRequired,
         hasGuests: PropTypes.bool.isRequired,
+        canHaveSubtitle: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -47,7 +48,7 @@ export default class ChannelTitle extends PureComponent {
     }
 
     render() {
-        const {currentChannelName, displayName, isChannelMuted, onPress, theme, isGuest, hasGuests} = this.props;
+        const {currentChannelName, displayName, isChannelMuted, onPress, theme, isGuest, hasGuests, canHaveSubtitle} = this.props;
 
         const style = getStyle(theme);
 
@@ -62,7 +63,7 @@ export default class ChannelTitle extends PureComponent {
             );
         }
         let hasGuestsText = null;
-        if (hasGuests) {
+        if (hasGuests && canHaveSubtitle) {
             hasGuestsText = (
                 <View style={style.guestsWrapper}>
                     <FormattedText
