@@ -13,22 +13,25 @@
 
 
 ### Improvements
- - Channel drawer is now open all the time at a fixed width on tablet devices.
- - Increased double tap delay for post action buttons.
+ - Channel drawer now remains open at a fixed width on tablet devices.
+ - Increased the double tap delay for post action buttons.
  - Implemented assets for Adaptive icons.
  - Users are now brought to the bottom of the channel when posting a message.
+ - If the keyboard is open, swiping down past it now closes it.
 
 ### Bug Fixes
  - Fixed an issue where a post wasn't immediately removed when deleting another user's post.
  - Fixed an issue where the cursor jumped back when typing after auto-completing a slash command.
  - Fixed an issue where the iOS app didn’t properly restore its connection after disconnect.
- - Fixed an issue where the long press menu persisted after returning from thread.
+ - Fixed an issue where the long press menu persisted after returning from a thread.
  - Fixed an issue on Android where the "Write to [channel name]" was cut off for group messages with several users.
+ - Fixed an issue where users were not able to flag or unflag posts in a read-only channel.
+ - Fixed an issue where the progress indicator was negative while downloading a video.
+ - Fixed an issue where the edit post modal didn’t have an autocorrect.
  
 ### Known Issues
  - Buttons inside ephemeral posts are not clickable / functional on the mobile app.
  
-
 ## 1.19.0 Release
 - Release Date: May 16, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
