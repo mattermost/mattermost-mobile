@@ -10,7 +10,11 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Highlights
+
+#### Tablet Improvements
  - Channel sidebar now remains open at a fixed width on tablet devices.
+ 
+#### iOS Keyboard Dismissal
  - If the keyboard is open, swiping down past it now closes it.
 
 ### Improvements
