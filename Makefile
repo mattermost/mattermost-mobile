@@ -229,7 +229,7 @@ test: | pre-run check-style ## Runs tests
 
 build-pr: | can-build-pr stop pre-build check-style i18n-extract-ci ## Build a PR from the mattermost-mobile repo
 	$(call start_packager)
-	@echo "Building App from PR ${PR_ID}"
+	@echo "Test Building App from PR ${PR_ID}"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane build_pr pr:PR-${PR_ID}
 	$(call stop_packager)
 
