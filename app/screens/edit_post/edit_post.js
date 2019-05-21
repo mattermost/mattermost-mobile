@@ -186,8 +186,6 @@ export default class EditPost extends PureComponent {
                             numberOfLines={10}
                             style={[style.input, {height}]}
                             autoFocus={true}
-                            autoCapitalize='none'
-                            autoCorrect={false}
                             placeholder={{id: t('edit_post.editPost'), defaultMessage: 'Edit the post...'}}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                             underlineColorAndroid='transparent'
