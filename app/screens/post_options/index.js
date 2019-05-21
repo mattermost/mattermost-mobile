@@ -27,7 +27,7 @@ import {getDimensions} from 'app/selectors/device';
 
 import PostOptions from './post_options';
 
-function mapStateToProps(state, ownProps) {
+export function mapStateToProps(state, ownProps) {
     const post = ownProps.post;
     const channel = getChannel(state, post.channel_id) || {};
     const config = getConfig(state);
@@ -72,10 +72,6 @@ function mapStateToProps(state, ownProps) {
         ) {
             canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
         }
-    }
-
-    if (ownProps.channelIsReadOnly) {
-        canFlag = false;
     }
 
     if (ownProps.isSystemMessage) {
