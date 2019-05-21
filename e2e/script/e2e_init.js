@@ -35,9 +35,9 @@ try {
 
     exitCode = 0;
 
-    describe('Success: completed E2E tests!');
+    logStep('Success: completed E2E tests!');
 } catch {
-    describe('Failed: error encountered');
+    logStep('Failed: error encountered');
 } finally {
     stopPackagerServer();
     stopAppiumServer();
@@ -47,7 +47,7 @@ exit(exitCode);
 
 // Helper functions
 
-function describe(message) {
+function logStep(message) {
     echo(`
     ---------------------------------------
     ${message}
@@ -56,7 +56,7 @@ function describe(message) {
 }
 
 function installTestFramework() {
-    describe('Installing end-to-end framework');
+    logStep('Installing end-to-end framework');
 
     if (
         retryExec(
@@ -114,7 +114,7 @@ function stopPackagerServer() {
 }
 
 function testAndroid() {
-    describe('Running E2E tests');
+    logStep('Running E2E tests');
     if (
         exec('$(npm bin)/tape ./e2e/android/index.js | tap-spec').code
     ) {
