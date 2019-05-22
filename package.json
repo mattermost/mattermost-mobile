@@ -97,7 +97,7 @@
     "jest-enzyme": "7.0.2",
     "jsdom-global": "3.0.2",
     "metro-react-native-babel-preset": "0.54.0",
-    "mmjstool": "github:mattermost/mattermost-utilities",
+    "mmjstool": "github:mattermost/mattermost-utilities#b55348242168df75da500fd813d4105c44eaea08",
     "nyc": "14.1.1",
     "react-dom": "16.8.6",
     "react-test-renderer": "16.8.6",
