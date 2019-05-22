@@ -618,7 +618,7 @@ def submit_to_store
 
     if ENV['BETA_BUILD'] == 'true'
       pretext = '#### New Android beta published to Google Play'
-      msg = 'Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta).\nDownload link: #{public_link}'
+      msg = "Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta).\nDownload link: #{public_link}"
     end
 
     send_message_to_mattermost({
