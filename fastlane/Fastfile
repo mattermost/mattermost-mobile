@@ -519,6 +519,7 @@ platform :android do
 
     unless apk_path.nil?
       sh "mv #{apk_path} \"../#{app_name_sub}.apk\""
+      lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH] = "../#{app_name_sub}.apk"
     end
   end
 
