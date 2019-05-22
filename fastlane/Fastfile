@@ -610,7 +610,7 @@ def submit_to_store
     build_number = android_get_version_code(gradle_file: './android/app/build.gradle')
 
     s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
-    public_link = "https://#{s3_bucket}/#{s3_folder}/#{app_name_sub}}.apk"
+    public_link = "https://#{s3_bucket}/#{s3_folder}/#{app_name_sub}.apk"
 
     # Send a build message to Mattermost
     pretext = '#### New Android released ready to be published'
