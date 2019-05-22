@@ -3,6 +3,7 @@ fastlane_version '2.71.0'
 fastlane_require 'aws-sdk-s3'
 fastlane_require 'erb'
 fastlane_require 'json'
+fastlane_require 'pathname'
 
 skip_docs
 
@@ -515,11 +516,12 @@ platform :android do
   def move_apk_to_root
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
+    new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{app_name_sub}.apk"
     apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
 
     unless apk_path.nil?
-      sh "mv #{apk_path} \"../#{app_name_sub}.apk\""
-      lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH] = "../#{app_name_sub}.apk"
+      sh "mv #{apk_path} #{new_apk_path}"
+      lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH] = new_apk_path
     end
   end
 
