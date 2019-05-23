@@ -2,7 +2,10 @@ package com.mattermost.rnbeta;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import com.facebook.react.common.LifecycleState;
 import com.reactnativenavigation.controllers.SplashActivity;
+import com.reactnativenavigation.NavigationApplication;
+import com.reactnativenavigation.react.ReactGateway;
 
 public class MainActivity extends SplashActivity {
     @Override
@@ -22,6 +25,18 @@ public class MainActivity extends SplashActivity {
             finish();
             return;
         }
+    }
+
+    @Override
+    protected void onResume() {
+        ReactGateway reactGateway = NavigationApplication.instance.getReactGateway();
+        if (reactGateway.hasStartedCreatingContext() 
+            && reactGateway.getReactInstanceManager().getLifecycleState() == LifecycleState.BEFORE_CREATE) {
+            System.exit(0);
+            return;
+        }
+        
+        super.onResume();
     }
 
     @Override
