@@ -18,11 +18,9 @@
  - If the keyboard is open, swiping down past it now closes it.
 
 ### Improvements
- - Channel drawer now remains open at a fixed width on tablet devices.
  - Increased the double tap delay for post action buttons.
  - Implemented assets for Adaptive icons.
  - Users are now brought to the bottom of the channel when posting a message.
- - If the keyboard is open, swiping down past it now closes it.
 
 ### Bug Fixes
  - Fixed an issue where a post wasn't immediately removed when deleting another user's post.
@@ -33,6 +31,7 @@
  - Fixed an issue where users were not able to flag or unflag posts in a read-only channel.
  - Fixed an issue where the progress indicator was negative while downloading a video.
  - Fixed an issue where the edit post modal didn’t have an autocorrect.
+ - Fixed an issue where the 'I forgot my password' option was available on the mobile client even with Email Authentication disabled on the server.
  
 ### Known Issues
  - Buttons inside ephemeral posts are not clickable / functional on the mobile app.
