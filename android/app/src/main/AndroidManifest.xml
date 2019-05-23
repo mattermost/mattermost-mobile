@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mattermost.rnbeta">
+    package="com.mattermost.rnbeta"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -42,8 +43,9 @@
                android:enabled="true"
                android:exported="false" />
         <activity
+                tools:replace="android:configChanges"
                 android:name="com.reactnativenavigation.controllers.NavigationActivity"
-                android:configChanges="keyboard|keyboardHidden|orientation|screenSize"/>
+                android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|density"/>
         <activity
                 android:name="com.mattermost.share.ShareActivity"
                 android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
