@@ -19,7 +19,7 @@ describe('ChannelLoader', () => {
         actions: {
             handleSelectChannel: jest.fn(),
             setChannelLoading: jest.fn(),
-        }
+        },
     };
 
     test('should match snapshot', () => {
