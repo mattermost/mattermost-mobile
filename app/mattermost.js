@@ -339,11 +339,46 @@ const handleAuthentication = async (vendor) => {
             mattermostManaged.quitApp();
             return false;
         }
+    } else {
+        await showNotSecuredAlert(vendor);
+
+        mattermostManaged.quitApp();
+        return false;
     }
 
     app.setPerformingEMMAuthentication(false);
     return true;
 };
+
+function showNotSecuredAlert(vendor) {
+    const translations = app.getTranslations();
+
+    return new Promise((resolve) => {
+        const options = [];
+
+        if (Platform.OS === 'android') {
+            options.push({
+                text: translations[t('mobile.managed.settings')],
+                onPress: () => {
+                    mattermostManaged.goToSecuritySettings();
+                },
+            });
+        }
+
+        options.push({
+            text: translations[t('mobile.managed.exit')],
+            onPress: resolve,
+            style: 'cancel',
+        });
+
+        Alert.alert(
+            translations[t('mobile.managed.blocked_by')].replace('{vendor}', vendor),
+            Platform.OS === 'ios' ? translations[t('mobile.managed.not_secured.ios')] : translations[t('mobile.managed.not_secured.android')],
+            options,
+            {cancelable: false, onDismiss: resolve},
+        );
+    });
+}
 
 const handleSwitchToDefaultChannel = (teamId) => {
     store.dispatch(selectDefaultChannel(teamId));
@@ -415,7 +450,7 @@ const handleAppActive = async () => {
     if (app.emmEnabled && app.inBackgroundSince && authExpired) {
         try {
             const config = await mattermostManaged.getConfig();
-            const authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
+            const authNeeded = config.inAppPinCode === 'true';
             if (authNeeded) {
                 await handleAuthentication(config.vendor);
             }

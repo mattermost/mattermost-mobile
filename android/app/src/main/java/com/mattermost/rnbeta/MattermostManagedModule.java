@@ -1,7 +1,9 @@
 package com.mattermost.rnbeta;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.facebook.react.bridge.Arguments;
@@ -61,5 +63,12 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
         } catch (Exception e) {
             promise.resolve(Arguments.createMap());
         }
+    }
+
+    @ReactMethod
+    // Close the current activity and open the security settings.
+    public void goToSecuritySettings() {
+        getCurrentActivity().finish();
+        getReactApplicationContext().startActivity(new Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS));
     }
 }
