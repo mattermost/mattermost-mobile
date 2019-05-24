@@ -36,6 +36,7 @@ describe('user_profile', () => {
         theme: Preferences.THEMES.default,
         enableTimezone: false,
         militaryTime: false,
+        isMyUser: false,
     };
 
     const user = {
