@@ -5,47 +5,33 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
-    Dimensions,
     Keyboard,
     Platform,
     StyleSheet,
     View,
 } from 'react-native';
-import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {app} from 'app/mattermost';
 
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
-import InteractiveDialogController from 'app/components/interactive_dialog_controller';
-import ChannelLoader from 'app/components/channel_loader';
 import EmptyToolbar from 'app/components/start/empty_toolbar';
-import FileUploadPreview from 'app/components/file_upload_preview';
+import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import MainSidebar from 'app/components/sidebars/main';
-import SettingsSidebar from 'app/components/sidebars/settings';
-import NetworkIndicator from 'app/components/network_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
-import StatusBar from 'app/components/status_bar';
-import {DeviceTypes} from 'app/constants';
+import SettingsSidebar from 'app/components/sidebars/settings';
+
 import {preventDoubleTap} from 'app/utils/tap';
-import PostTextbox from 'app/components/post_textbox';
 import PushNotifications from 'app/push_notifications';
 import tracker from 'app/utils/time_tracker';
-import LocalConfig from 'assets/config';
-
 import telemetry from 'app/telemetry';
 
-import ChannelNavBar from './channel_nav_bar';
-import ChannelPostList from './channel_post_list';
+import LocalConfig from 'assets/config';
 
-const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
-const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
+export let ClientUpgradeListener;
 
-let ClientUpgradeListener;
-
-export default class Channel extends PureComponent {
+export default class ChannelBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadChannelsIfNecessary: PropTypes.func.isRequired,
@@ -273,7 +259,7 @@ export default class Channel extends PureComponent {
         }
     };
 
-    render() {
+    renderChannel(drawerContent) {
         const {
             channelsRequestFailed,
             currentChannelId,
@@ -281,8 +267,6 @@ export default class Channel extends PureComponent {
             navigator,
             theme,
         } = this.props;
-
-        const {height} = Dimensions.get('window');
 
         if (!currentChannelId) {
             if (channelsRequestFailed) {
@@ -309,11 +293,6 @@ export default class Channel extends PureComponent {
             );
         }
 
-        const channelLoaderStyle = [style.channelLoader, {height}];
-        if (Platform.OS === 'ios' && (DeviceTypes.IS_IPHONE_X || DeviceTypes.IS_TABLET)) {
-            channelLoaderStyle.push(style.iOSHomeIndicator);
-        }
-
         return (
             <MainSidebar
                 ref={this.channelSidebarRef}
@@ -325,43 +304,7 @@ export default class Channel extends PureComponent {
                     blurPostTextBox={this.blurPostTextBox}
                     navigator={navigator}
                 >
-                    <SafeAreaView navigator={navigator}>
-                        <StatusBar/>
-                        <NetworkIndicator/>
-                        <ChannelNavBar
-                            navigator={navigator}
-                            openChannelDrawer={this.openChannelSidebar}
-                            openSettingsDrawer={this.openSettingsSidebar}
-                            onPress={this.goToChannelInfo}
-                        />
-                        <ChannelPostList
-                            navigator={navigator}
-                            updateNativeScrollView={this.updateNativeScrollView}
-                        />
-                        <FileUploadPreview channelId={currentChannelId}/>
-                        <Autocomplete
-                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
-                            onChangeText={this.handleAutoComplete}
-                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        />
-                        <ChannelLoader
-                            height={height}
-                            style={channelLoaderStyle}
-                        />
-                        {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
-                    </SafeAreaView>
-                    <KeyboardTrackingView
-                        ref={this.keyboardTracker}
-                        scrollViewNativeID={currentChannelId}
-                    >
-                        <PostTextbox
-                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                            ref={this.postTextbox}
-                            navigator={navigator}
-                        />
-                    </KeyboardTrackingView>
+                    {drawerContent}
                 </SettingsSidebar>
                 <InteractiveDialogController
                     navigator={navigator}
@@ -372,7 +315,7 @@ export default class Channel extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
+export const style = StyleSheet.create({
     flex: {
         flex: 1,
     },

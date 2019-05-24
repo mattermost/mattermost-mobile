@@ -8,7 +8,7 @@ import Preferences from 'mattermost-redux/constants/preferences';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import PostList from 'app/components/post_list';
 
-import Thread from './thread.js';
+import Thread from './thread.ios';
 
 jest.mock('react-intl');
 
