@@ -142,7 +142,7 @@ export default class NetworkIndicator extends PureComponent {
         const {connection} = this.props.actions;
         clearTimeout(this.connectionRetryTimeout);
 
-        NetInfo.isConnected.fetch().then(async (isConnected) => {
+        NetInfo.fetch().then(async ({isConnected}) => {
             const {hasInternet, serverReachable} = await checkConnection(isConnected);
 
             connection(hasInternet);
@@ -233,7 +233,6 @@ export default class NetworkIndicator extends PureComponent {
     handleAppStateChange = async (appState) => {
         const {actions, currentChannelId} = this.props;
         const active = appState === 'active';
-
         if (active) {
             this.connect(true);
 
