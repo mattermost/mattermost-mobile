@@ -43,6 +43,7 @@ export default class UserProfile extends PureComponent {
         militaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
+        fromSettings: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -83,6 +84,13 @@ export default class UserProfile extends PureComponent {
 
     close = () => {
         const {navigator, theme} = this.props;
+
+        if (this.props.fromSettings) {
+            this.props.navigator.dismissModal({
+                animationType: 'slide-down',
+            });
+            return;
+        }
 
         navigator.resetTo({
             screen: 'Channel',
@@ -227,7 +235,9 @@ export default class UserProfile extends PureComponent {
             },
         };
 
-        navigator.push(options);
+        requestAnimationFrame(() => {
+            navigator.push(options);
+        });
     };
 
     onNavigatorEvent = (event) => {

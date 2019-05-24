@@ -186,7 +186,7 @@ export default class SettingsDrawer extends PureComponent {
         this.openModal(
             'UserProfile',
             formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
-            {userId}
+            {userId, fromSettings: true}
         );
     });
 
