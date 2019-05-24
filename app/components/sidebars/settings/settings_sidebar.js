@@ -294,6 +294,15 @@ export default class SettingsDrawer extends PureComponent {
                         <View style={style.separator}/>
                         <View style={style.block}>
                             <DrawerItem
+                                defaultMessage='Edit Profile'
+                                i18nId='mobile.routes.edit_profile'
+                                iconName='ios-person'
+                                iconType='ion'
+                                onPress={this.goToEditProfile}
+                                separator={true}
+                                theme={theme}
+                            />
+                            <DrawerItem
                                 defaultMessage='Settings'
                                 i18nId='mobile.routes.settings'
                                 iconName='ios-options'
