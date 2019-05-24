@@ -179,6 +179,17 @@ export default class SettingsDrawer extends PureComponent {
         );
     });
 
+    goToUserProfile = preventDoubleTap(() => {
+        const userId = this.props.currentUser.id;
+        const {formatMessage} = this.context.intl;
+
+        this.openModal(
+            'UserProfile',
+            formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
+            {userId}
+        );
+    });
+
     goToSettings = preventDoubleTap(() => {
         const {intl} = this.context;
 
@@ -258,7 +269,7 @@ export default class SettingsDrawer extends PureComponent {
                         contentContainerStyle={style.wrapper}
                     >
                         <UserInfo
-                            onPress={this.goToEditProfile}
+                            onPress={this.goToUserProfile}
                             user={currentUser}
                         />
                         <View style={style.block}>
