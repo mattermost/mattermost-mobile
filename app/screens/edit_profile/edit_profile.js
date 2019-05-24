@@ -92,6 +92,7 @@ export default class EditProfile extends PureComponent {
         currentUser: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        commandType: PropTypes.string.isRequired,
     };
 
     static contextTypes = {
