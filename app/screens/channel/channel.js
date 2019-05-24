@@ -28,7 +28,7 @@ import SettingsSidebar from 'app/components/sidebars/settings';
 import NetworkIndicator from 'app/components/network_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {DeviceTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import PostTextbox from 'app/components/post_textbox';
 import PushNotifications from 'app/push_notifications';
@@ -39,14 +39,6 @@ import telemetry from 'app/telemetry';
 
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
-
-const {
-    ANDROID_TOP_LANDSCAPE,
-    ANDROID_TOP_PORTRAIT,
-    IOS_TOP_LANDSCAPE,
-    IOS_TOP_PORTRAIT,
-    IOSX_TOP_PORTRAIT,
-} = ViewTypes;
 
 const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
 const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
@@ -167,32 +159,6 @@ export default class Channel extends PureComponent {
         if (this.postTextbox?.current) {
             this.postTextbox.current.blur();
         }
-    };
-
-    channelLoaderDimensions = () => {
-        const {isLandscape} = this.props;
-        let top = 0;
-        let {height} = Dimensions.get('window');
-        switch (Platform.OS) {
-        case 'android':
-            if (isLandscape) {
-                top = ANDROID_TOP_LANDSCAPE;
-            } else {
-                top = ANDROID_TOP_PORTRAIT;
-                height -= 84;
-            }
-            break;
-        case 'ios':
-            if (isLandscape) {
-                top = IOS_TOP_LANDSCAPE;
-            } else {
-                height = DeviceTypes.IS_IPHONE_X ? (height - IOSX_TOP_PORTRAIT) : (height - IOS_TOP_PORTRAIT);
-                top = DeviceTypes.IS_IPHONE_X ? IOSX_TOP_PORTRAIT : IOS_TOP_PORTRAIT;
-            }
-            break;
-        }
-
-        return {height, top};
     };
 
     channelSidebarRef = (ref) => {
@@ -316,6 +282,8 @@ export default class Channel extends PureComponent {
             theme,
         } = this.props;
 
+        const {height} = Dimensions.get('window');
+
         if (!currentChannelId) {
             if (channelsRequestFailed) {
                 const PostListRetry = require('app/components/post_list_retry').default;
@@ -333,7 +301,7 @@ export default class Channel extends PureComponent {
                     <View style={style.flex}>
                         <EmptyToolbar
                             theme={theme}
-                            isLandscape={this.props.isLandscape}
+                            isLandscape={isLandscape}
                         />
                         <Loading channelIsLoading={true}/>
                     </View>
@@ -341,7 +309,10 @@ export default class Channel extends PureComponent {
             );
         }
 
-        const loaderDimensions = this.channelLoaderDimensions();
+        const channelLoaderStyle = [style.channelLoader, {height}];
+        if (Platform.OS === 'ios' && (DeviceTypes.IS_IPHONE_X || DeviceTypes.IS_TABLET)) {
+            channelLoaderStyle.push(style.iOSHomeIndicator);
+        }
 
         return (
             <MainSidebar
@@ -375,8 +346,8 @@ export default class Channel extends PureComponent {
                             valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                         />
                         <ChannelLoader
-                            style={[style.channelLoader, loaderDimensions]}
-                            maxRows={isLandscape ? 4 : 6}
+                            height={height}
+                            style={channelLoaderStyle}
                         />
                         {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
                     </SafeAreaView>
@@ -409,5 +380,8 @@ const style = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         flex: 1,
+    },
+    iOSHomeIndicator: {
+        paddingBottom: 5,
     },
 });
