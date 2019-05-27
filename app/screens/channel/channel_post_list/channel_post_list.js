@@ -89,7 +89,7 @@ export default class ChannelPostList extends PureComponent {
             this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
         }
 
-        if (!prevProps.postIds?.length && this.props.postIds?.length > 0) {
+        if (!prevProps.postIds?.length && this.props.postIds?.length > 0 && this.props.updateNativeScrollView) {
             // This is needed to re-bind the scrollview natively when getting the first posts
             this.props.updateNativeScrollView();
         }

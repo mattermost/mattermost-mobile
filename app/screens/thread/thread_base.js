@@ -5,28 +5,14 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Keyboard, Platform} from 'react-native';
 import {intlShape} from 'react-intl';
-import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
-import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 
-import {THREAD} from 'app/constants/screen';
-
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
-import FileUploadPreview from 'app/components/file_upload_preview';
 import Loading from 'app/components/loading';
-import PostList from 'app/components/post_list';
-import PostTextbox from 'app/components/post_textbox';
-import SafeAreaView from 'app/components/safe_area_view';
-import StatusBar from 'app/components/status_bar';
 import {setNavigatorStyles} from 'app/utils/theme';
 import DeletedPost from 'app/components/deleted_post';
 
-const THREAD_POST_TEXTBOX_CURSOR_CHANGE = 'onThreadTextBoxCursorChange';
-const THREAD_POST_TEXTBOX_VALUE_CHANGE = 'onThreadTextBoxValueChange';
-const SCROLLVIEW_NATIVE_ID = 'threadPostList';
-
-export default class Thread extends PureComponent {
+export default class ThreadBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired,
@@ -46,8 +32,6 @@ export default class Thread extends PureComponent {
     static defaultProps = {
         postIds: [],
     };
-
-    state = {};
 
     static contextTypes = {
         intl: intlShape,
@@ -71,6 +55,10 @@ export default class Thread extends PureComponent {
         this.props.navigator.setTitle({
             title,
         });
+
+        this.state = {
+            lastViewedAt: props.myMember && props.myMember.last_viewed_at,
+        };
     }
 
     componentWillReceiveProps(nextProps) {
@@ -153,79 +141,4 @@ export default class Thread extends PureComponent {
             },
         });
     };
-
-    render() {
-        const {
-            channelId,
-            myMember,
-            navigator,
-            postIds,
-            rootId,
-            channelIsArchived,
-        } = this.props;
-
-        let content;
-        let postTextBox;
-        if (this.hasRootPost()) {
-            content = (
-                <React.Fragment>
-                    <PostList
-                        renderFooter={this.renderFooter()}
-                        indicateNewMessages={false}
-                        postIds={postIds}
-                        lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
-                        currentUserId={myMember && myMember.user_id}
-                        lastViewedAt={this.state.lastViewedAt}
-                        navigator={navigator}
-                        onPostPress={this.hideKeyboard}
-                        location={THREAD}
-                        scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
-                    />
-                    <FileUploadPreview
-                        channelId={channelId}
-                        rootId={rootId}
-                    />
-                    <Autocomplete
-                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
-                        onChangeText={this.handleAutoComplete}
-                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
-                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
-                        rootId={rootId}
-                    />
-                </React.Fragment>
-            );
-
-            postTextBox = (
-                <KeyboardTrackingView scrollViewNativeID={SCROLLVIEW_NATIVE_ID}>
-                    <PostTextbox
-                        ref={this.postTextbox}
-                        channelIsArchived={channelIsArchived}
-                        rootId={rootId}
-                        channelId={channelId}
-                        navigator={navigator}
-                        onCloseChannel={this.onCloseChannel}
-                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
-                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
-                    />
-                </KeyboardTrackingView>
-            );
-        } else {
-            content = (
-                <Loading/>
-            );
-        }
-
-        return (
-            <React.Fragment>
-                <SafeAreaView
-                    excludeHeader={true}
-                    keyboardOffset={20}
-                >
-                    <StatusBar/>
-                    {content}
-                </SafeAreaView>
-                {postTextBox}
-            </React.Fragment>
-        );
-    }
 }

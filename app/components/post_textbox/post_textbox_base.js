@@ -3,7 +3,17 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, BackHandler, findNodeHandle, Keyboard, NativeModules, Platform, Text, TextInput, View} from 'react-native';
+import {
+    Alert,
+    BackHandler,
+    findNodeHandle,
+    Keyboard,
+    NativeModules,
+    Platform,
+    Text,
+    TextInput,
+    View,
+} from 'react-native';
 import {intlShape} from 'react-intl';
 import Button from 'react-native-button';
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -12,20 +22,19 @@ import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import AttachmentButton from 'app/components/attachment_button';
 import Fade from 'app/components/fade';
-import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
-import {confirmOutOfOfficeDisabled} from 'app/utils/status';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
 import SendButton from 'app/components/send_button';
 
-import Typing from './components/typing';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import {t} from 'app/utils/i18n';
+import {confirmOutOfOfficeDisabled} from 'app/utils/status';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const PLACEHOLDER_COLOR = changeOpacity('#000', 0.5);
 const {RNTextInputReset} = NativeModules;
 
-export default class PostTextbox extends PureComponent {
+export default class PostTextBoxBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addReactionToLatestPost: PropTypes.func.isRequired,
@@ -172,6 +181,60 @@ export default class PostTextbox extends PureComponent {
         }
     };
 
+    getAttachmentButton = () => {
+        const {canUploadFiles, channelIsReadOnly, files, maxFileSize, navigator, theme} = this.props;
+        let attachmentButton = null;
+
+        if (canUploadFiles && !channelIsReadOnly) {
+            attachmentButton = (
+                <AttachmentButton
+                    blurTextBox={this.blur}
+                    theme={theme}
+                    navigator={navigator}
+                    fileCount={files.length}
+                    maxFileSize={maxFileSize}
+                    maxFileCount={MAX_FILE_COUNT}
+                    onShowFileMaxWarning={this.onShowFileMaxWarning}
+                    onShowFileSizeWarning={this.onShowFileSizeWarning}
+                    uploadFiles={this.handleUploadFiles}
+                />
+            );
+        }
+
+        return attachmentButton;
+    };
+
+    getInputContainerStyle = () => {
+        const {canUploadFiles, channelIsReadOnly, theme} = this.props;
+        const style = getStyleSheet(theme);
+        const inputContainerStyle = [style.inputContainer];
+
+        if (!canUploadFiles) {
+            inputContainerStyle.push(style.inputContainerWithoutFileUpload);
+        }
+
+        if (channelIsReadOnly) {
+            inputContainerStyle.push(style.readonlyContainer);
+        }
+
+        return inputContainerStyle;
+    };
+
+    getPlaceHolder = () => {
+        const {channelIsReadOnly, rootId} = this.props;
+        let placeholder;
+
+        if (channelIsReadOnly) {
+            placeholder = {id: t('mobile.create_post.read_only'), defaultMessage: 'This channel is read-only.'};
+        } else if (rootId) {
+            placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
+        } else {
+            placeholder = {id: t('create_post.write'), defaultMessage: 'Write to {channelDisplayName}'};
+        }
+
+        return placeholder;
+    };
+
     handleAndroidKeyboard = () => {
         this.blur();
     };
@@ -270,20 +333,31 @@ export default class PostTextbox extends PureComponent {
             actions,
             channelId,
             rootId,
+            cursorPositionEvent,
             valueEvent,
         } = this.props;
 
-        // Workaround for some Android keyboards that don't play well with cursors (e.g. Samsung keyboards)
-        if (autocomplete && Platform.OS === 'android' && this.input?.current) {
-            RNTextInputReset.resetKeyboardInput(findNodeHandle(this.input.current));
-        }
-
-        this.checkMessageLength(value);
-        if (!autocomplete && valueEvent) {
+        if (valueEvent) {
             EventEmitter.emit(valueEvent, value);
         }
 
-        this.setState({value});
+        const nextState = {value};
+
+        // Workaround for some Android keyboards that don't play well with cursors (e.g. Samsung keyboards)
+        if (autocomplete && this.input?.current) {
+            if (Platform.OS === 'android') {
+                RNTextInputReset.resetKeyboardInput(findNodeHandle(this.input.current));
+            } else {
+                nextState.cursorPosition = value.length;
+                if (cursorPositionEvent) {
+                    EventEmitter.emit(cursorPositionEvent, nextState.cursorPosition);
+                }
+            }
+        }
+
+        this.checkMessageLength(value);
+
+        this.setState(nextState);
 
         if (value) {
             actions.userTyping(channelId, rootId);
@@ -464,24 +538,26 @@ export default class PostTextbox extends PureComponent {
     };
 
     archivedView = (theme, style) => {
-        return (<View style={style.archivedWrapper}>
-            <FormattedMarkdownText
-                id='archivedChannelMessage'
-                defaultMessage='You are viewing an **archived channel**. New messages cannot be posted.'
-                theme={theme}
-                style={style.archivedText}
-            />
-            <Button
-                containerStyle={style.closeButton}
-                onPress={this.onCloseChannelPress}
-            >
-                <FormattedText
-                    id='center_panel.archived.closeChannel'
-                    defaultMessage='Close Channel'
-                    style={style.closeButtonText}
+        return (
+            <View style={style.archivedWrapper}>
+                <FormattedMarkdownText
+                    id='archivedChannelMessage'
+                    defaultMessage='You are viewing an **archived channel**. New messages cannot be posted.'
+                    theme={theme}
+                    style={style.archivedText}
                 />
-            </Button>
-        </View>);
+                <Button
+                    containerStyle={style.closeButton}
+                    onPress={this.onCloseChannelPress}
+                >
+                    <FormattedText
+                        id='center_panel.archived.closeChannel'
+                        defaultMessage='Close Channel'
+                        style={style.closeButtonText}
+                    />
+                </Button>
+            </View>
+        );
     };
 
     handleLayout = (e) => {
@@ -490,110 +566,67 @@ export default class PostTextbox extends PureComponent {
         });
     };
 
-    render() {
+    renderDeactivatedChannel = () => {
         const {intl} = this.context;
-        const {
-            canUploadFiles,
-            channelDisplayName,
-            channelIsLoading,
-            channelIsReadOnly,
-            deactivatedChannel,
-            files,
-            maxFileSize,
-            navigator,
-            rootId,
-            theme,
-            channelIsArchived,
-        } = this.props;
+        const style = getStyleSheet(this.props.theme);
 
+        return (
+            <Text style={style.deactivatedMessage}>
+                {intl.formatMessage({
+                    id: 'create_post.deactivated',
+                    defaultMessage: 'You are viewing an archived channel with a deactivated user.',
+                })}
+            </Text>
+        );
+    }
+
+    renderTextBox = () => {
+        const {intl} = this.context;
+        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme} = this.props;
         const style = getStyleSheet(theme);
-        if (deactivatedChannel) {
-            return (
-                <Text style={style.deactivatedMessage}>
-                    {intl.formatMessage({
-                        id: 'create_post.deactivated',
-                        defaultMessage: 'You are viewing an archived channel with a deactivated user.',
-                    })}
-                </Text>
-            );
+
+        if (channelIsArchived) {
+            return this.archivedView(theme, style);
         }
 
         const {value} = this.state;
         const textValue = channelIsLoading ? '' : value;
-
-        let placeholder;
-        if (channelIsReadOnly) {
-            placeholder = {id: t('mobile.create_post.read_only'), defaultMessage: 'This channel is read-only.'};
-        } else if (rootId) {
-            placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
-        } else {
-            placeholder = {id: t('create_post.write'), defaultMessage: 'Write to {channelDisplayName}'};
-        }
-
-        let attachmentButton = null;
-        const inputContainerStyle = [style.inputContainer];
-        if (canUploadFiles) {
-            attachmentButton = (
-                <AttachmentButton
-                    blurTextBox={this.blur}
-                    theme={theme}
-                    navigator={navigator}
-                    fileCount={files.length}
-                    maxFileSize={maxFileSize}
-                    maxFileCount={MAX_FILE_COUNT}
-                    onShowFileMaxWarning={this.onShowFileMaxWarning}
-                    onShowFileSizeWarning={this.onShowFileSizeWarning}
-                    uploadFiles={this.handleUploadFiles}
-                />
-            );
-        } else {
-            inputContainerStyle.push(style.inputContainerWithoutFileUpload);
-        }
-
-        if (channelIsReadOnly) {
-            inputContainerStyle.push(style.readonlyContainer);
-        }
+        const placeholder = this.getPlaceHolder();
 
         return (
-            <React.Fragment>
-                <Typing/>
-                {!channelIsArchived && (
-                    <View
-                        style={style.inputWrapper}
-                        onLayout={this.handleLayout}
-                    >
-                        {!channelIsReadOnly && attachmentButton}
-                        <View style={inputContainerStyle}>
-                            <TextInput
-                                ref={this.input}
-                                value={textValue}
-                                onChangeText={this.handleTextChange}
-                                onSelectionChange={this.handlePostDraftSelectionChanged}
-                                placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
-                                placeholderTextColor={PLACEHOLDER_COLOR}
-                                multiline={true}
-                                blurOnSubmit={false}
-                                underlineColorAndroid='transparent'
-                                style={style.input}
-                                keyboardType={this.state.keyboardType}
-                                onEndEditing={this.handleEndEditing}
-                                disableFullscreenUI={true}
-                                editable={!channelIsReadOnly}
-                            />
-                            <Fade visible={this.isSendButtonVisible()}>
-                                <SendButton
-                                    disabled={this.isFileLoading()}
-                                    handleSendMessage={this.handleSendMessage}
-                                    theme={theme}
-                                />
-                            </Fade>
-                        </View>
-                    </View>
-                )}
-                {channelIsArchived && this.archivedView(theme, style)}
-            </React.Fragment>
+            <View
+                style={style.inputWrapper}
+                onLayout={this.handleLayout}
+            >
+                {this.getAttachmentButton()}
+                <View style={this.getInputContainerStyle()}>
+                    <TextInput
+                        ref={this.input}
+                        value={textValue}
+                        onChangeText={this.handleTextChange}
+                        onSelectionChange={this.handlePostDraftSelectionChanged}
+                        placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
+                        placeholderTextColor={PLACEHOLDER_COLOR}
+                        multiline={true}
+                        blurOnSubmit={false}
+                        underlineColorAndroid='transparent'
+                        style={style.input}
+                        keyboardType={this.state.keyboardType}
+                        onEndEditing={this.handleEndEditing}
+                        disableFullscreenUI={true}
+                        editable={!channelIsReadOnly}
+                    />
+                    <Fade visible={this.isSendButtonVisible()}>
+                        <SendButton
+                            disabled={this.isFileLoading()}
+                            handleSendMessage={this.handleSendMessage}
+                            theme={theme}
+                        />
+                    </Fade>
+                </View>
+            </View>
         );
-    }
+    };
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
