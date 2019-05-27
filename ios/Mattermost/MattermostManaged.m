@@ -8,6 +8,7 @@
 
 #import "RCTUITextView.h"
 #import "MattermostManaged.h"
+#import <UploadAttachments/Constants.h>
 
 @implementation MattermostManaged {
   bool hasListeners;
@@ -85,6 +86,8 @@ RCT_EXPORT_MODULE();
 - (instancetype)init {
   self = [super init];
   if (self) {
+    _sharedUserDefaults = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedConfigDidChange:) name:@"managedConfigDidChange" object:nil];
     [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification
                                                       object:nil
@@ -122,6 +125,13 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
 
 - (void) remoteConfigChanged {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
+  NSDictionary *group = [self.sharedUserDefaults dictionaryForKey:configurationKey];
+  
+  if (response && ![response isEqualToDictionary:group]) {
+    // copies the managed configuration so it is accessible in the Extensions
+    [self.sharedUserDefaults setObject:response forKey:configurationKey];
+  }
+  
   if (hasListeners) {
     @try {
       [self sendEventWithName:@"managedConfigDidChange" body:response];
