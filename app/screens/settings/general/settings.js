@@ -78,7 +78,7 @@ class Settings extends PureComponent {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'About',
-            title: intl.formatMessage({id: 'about.title', defaultMessage: 'About Mattermost'}),
+            title: intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: this.props.config.SiteName || 'Mattermost'}),
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
@@ -302,7 +302,8 @@ class Settings extends PureComponent {
                     />
                     }
                     <SettingsItem
-                        defaultMessage='About Mattermost'
+                        defaultMessage='About {appTitle}'
+                        messageValues={{appTitle: this.props.config.SiteName || 'Mattermost'}}
                         i18nId={t('about.title')}
                         iconName='ios-information-circle'
                         iconType='ion'

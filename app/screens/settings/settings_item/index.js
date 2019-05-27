@@ -14,6 +14,7 @@ import getStyleSheet from './style';
 export default class SettingsItem extends PureComponent {
     static propTypes = {
         defaultMessage: PropTypes.string.isRequired,
+        messageValues: PropTypes.object,
         i18nId: PropTypes.string,
         iconName: PropTypes.string,
         iconType: PropTypes.oneOf(['fontawesome', 'foundation', 'ion', 'material']),
@@ -35,6 +36,7 @@ export default class SettingsItem extends PureComponent {
         const {
             centered,
             defaultMessage,
+            messageValues,
             i18nId,
             isDestructor,
             theme,
@@ -57,6 +59,7 @@ export default class SettingsItem extends PureComponent {
 
         return (
             <FormattedText
+                values={messageValues}
                 id={i18nId}
                 defaultMessage={defaultMessage}
                 style={textStyle}
