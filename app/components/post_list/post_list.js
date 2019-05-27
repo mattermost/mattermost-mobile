@@ -83,6 +83,7 @@ export default class PostList extends PureComponent {
 
         this.hasDoneInitialScroll = false;
         this.contentOffsetY = 0;
+        this.shouldScrollToBottom = false;
         this.makeExtraData = makeExtraData();
         this.flatListRef = React.createRef();
 
@@ -92,7 +93,7 @@ export default class PostList extends PureComponent {
     }
 
     componentDidMount() {
-        EventEmitter.on('scroll-to-bottom', this.scrollToBottom);
+        EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -102,15 +103,22 @@ export default class PostList extends PureComponent {
         }
     }
 
-    componentDidUpdate() {
-        if (this.props.deepLinkURL) {
-            this.handleDeepLink(this.props.deepLinkURL);
-            this.props.actions.setDeepLinkURL('');
+    componentDidUpdate(prevProps) {
+        const {actions, channelId, deepLinkURL, postIds} = this.props;
+
+        if (deepLinkURL && deepLinkURL !== prevProps.deepLinkURL) {
+            this.handleDeepLink(deepLinkURL);
+            actions.setDeepLinkURL('');
+        }
+
+        if (this.shouldScrollToBottom && prevProps.channelId === channelId && prevProps.postIds.length === postIds.length) {
+            this.scrollToBottom();
+            this.shouldScrollToBottom = false;
         }
     }
 
     componentWillUnmount() {
-        EventEmitter.off('scroll-to-bottom', this.scrollToBottom);
+        EventEmitter.off('scroll-to-bottom', this.handleSetScrollToBottom);
     }
 
     handleClosePermalink = () => {
@@ -198,6 +206,10 @@ export default class PostList extends PureComponent {
             this.scrollToInitialIndexIfNeeded(1, 1);
         });
     };
+
+    handleSetScrollToBottom = () => {
+        this.shouldScrollToBottom = true;
+    }
 
     keyExtractor = (item) => {
         // All keys are strings (either post IDs or special keys)

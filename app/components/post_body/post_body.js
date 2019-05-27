@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Keyboard,
     ScrollView,
     TouchableOpacity,
     View,
@@ -204,7 +205,10 @@ export default class PostBody extends PureComponent {
             },
         };
 
-        navigator.showModal(options);
+        Keyboard.dismiss();
+        requestAnimationFrame(() => {
+            navigator.showModal(options);
+        });
     };
 
     renderAddChannelMember = (style, messageStyle, textStyles) => {
