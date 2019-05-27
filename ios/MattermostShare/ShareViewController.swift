@@ -33,7 +33,7 @@ class ShareViewController: SLComposeServiceViewController {
     title = Bundle.main.displayName
     placeholder = "Write a message..."
 
-    let config = getConfig()
+    let config = getManagedConfig()
     if let inAppPinCode = config["inAppPinCode"] as? String, inAppPinCode == "true" {
       self.auth(vendor: config["vendor"] as? String)
     } else {

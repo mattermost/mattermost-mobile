@@ -1,5 +1,5 @@
 let configurationKey = "com.apple.configuration.managed"
 
-func getConfig() -> [String : Any] {
-    return UserDefaults.standard.dictionary(forKey: configurationKey) ?? [:]
+func getManagedConfig() -> [String : Any] {
+  return UserDefaults.init(suiteName: APP_GROUP_ID)?.dictionary(forKey: configurationKey) ?? [:]
 }

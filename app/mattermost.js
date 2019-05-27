@@ -261,9 +261,9 @@ export const handleManagedConfig = async (eventFromEmmServer = false) => {
 
         if (config && Object.keys(config).length) {
             app.setEMMEnabled(true);
-            authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
-            blurApplicationScreen = config.blurApplicationScreen && config.blurApplicationScreen === 'true';
-            jailbreakProtection = config.jailbreakProtection && config.jailbreakProtection === 'true';
+            authNeeded = config.inAppPinCode === 'true';
+            blurApplicationScreen = config.blurApplicationScreen === 'true';
+            jailbreakProtection = config.jailbreakProtection === 'true';
             vendor = config.vendor || 'Mattermost';
 
             if (!state.entities.general.credentials.token) {

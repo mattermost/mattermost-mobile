@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7F80232C229C91AD0034D6D4 /* Constants.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7FABE054221387B500D0F595 /* Constants.h */; };
 		7FABE04E2213818A00D0F595 /* MattermostBucket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE04C2213818900D0F595 /* MattermostBucket.m */; };
 		7FABE055221387B500D0F595 /* Constants.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE053221387B400D0F595 /* Constants.m */; };
 		7FABE058221388D700D0F595 /* UploadSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE057221388D600D0F595 /* UploadSessionManager.swift */; };
@@ -24,6 +25,7 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				7F80232C229C91AD0034D6D4 /* Constants.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
