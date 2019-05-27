@@ -2,6 +2,7 @@ import UIKit
 import Social
 import MobileCoreServices
 import UploadAttachments
+import LocalAuthentication
 
 extension Bundle {
   var displayName: String? {
@@ -31,6 +32,44 @@ class ShareViewController: SLComposeServiceViewController {
 
     title = Bundle.main.displayName
     placeholder = "Write a message..."
+
+    let config = getManagedConfig()
+    if let inAppPinCode = config["inAppPinCode"] as? String, inAppPinCode == "true" {
+      self.auth(vendor: config["vendor"] as? String)
+    } else {
+      self.loadData()
+    }
+  }
+
+  func auth(vendor: String?) {
+    let context = LAContext()
+
+    var error: NSError?
+    if !context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+      if let error = error, error.code == kLAErrorPasscodeNotSet {
+        self.showErrorMessage(
+          title: "",
+          message: "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.",
+          VC: self
+        )
+      } else {
+        self.showErrorMessage(title: "", message: "Unable to authenticate device owner for Mattermost", VC: self)
+      }
+
+      return
+    }
+
+    let reason = "Secured by " + (vendor ?? "Mattermost")
+    context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, error in
+      if success {
+        self.loadData()
+      } else {
+        self.showErrorMessage(title: "", message: "Unable to authenticate device owner for Mattermost", VC: self)
+      }
+    }
+  }
+
+  func loadData() {
     entities = store.getEntities(true) as [AnyHashable:Any]?
     sessionToken = store.getToken()
     serverURL = store.getServerUrl()
