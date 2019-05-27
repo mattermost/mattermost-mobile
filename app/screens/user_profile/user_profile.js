@@ -86,7 +86,7 @@ export default class UserProfile extends PureComponent {
         const {navigator, theme} = this.props;
 
         if (this.props.fromSettings) {
-            this.props.navigator.dismissModal({
+            navigator.dismissModal({
                 animationType: 'slide-down',
             });
             return;
