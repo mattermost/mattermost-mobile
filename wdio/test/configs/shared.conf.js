@@ -1,0 +1,46 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+exports.config = {
+
+    // ====================
+    // Runner and framework
+    // Configuration
+    // ====================
+    runner: 'local',
+    framework: 'mocha',
+    mochaOpts: {
+        ui: 'bdd',
+        timeout: 90000,
+    },
+    sync: true,
+    logLevel: 'error',
+    deprecationWarnings: true,
+    bail: 0,
+    waitforTimeout: 30000,
+    connectionRetryTimeout: 90000,
+    connectionRetryCount: 1,
+    reporters: ['spec'],
+
+    // ====================
+    // Appium Configuration
+    // ====================
+    services: ['appium'],
+
+    // appium: {
+    //     args: {
+    //         autoGrantPermissions: true,
+    //         appActivity: '.MainActivity',
+    //         appWaitActivity: 'com.reactnativenavigation.controllers.NavigationActivity',
+    //     },
+    // },
+
+    port: 4723,
+
+    // ====================
+    // Some hooks
+    // ====================
+    before: () => {
+        var chai = require('chai');
+        global.expect = chai.expect;
+    },
+};
