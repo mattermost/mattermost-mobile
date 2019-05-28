@@ -20,24 +20,11 @@ exports.config = {
     connectionRetryTimeout: 90000,
     connectionRetryCount: 1,
     reporters: ['spec'],
-
-    // ====================
-    // Appium Configuration
-    // ====================
     services: ['appium'],
-
-    // appium: {
-    //     args: {
-    //         autoGrantPermissions: true,
-    //         appActivity: '.MainActivity',
-    //         appWaitActivity: 'com.reactnativenavigation.controllers.NavigationActivity',
-    //     },
-    // },
-
     port: 4723,
 
     // ====================
-    // Some hooks
+    // Hooks
     // ====================
     before: () => {
         var chai = require('chai');

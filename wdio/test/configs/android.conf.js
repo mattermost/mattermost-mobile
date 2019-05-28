@@ -16,7 +16,7 @@ config.specs = ['./test/specs/**/*.test.js'];
 config.capabilities = [
     {
         automationName: 'UiAutomator2',
-        deviceName: 'Android Emulator', //'Pixel_8.1',
+        deviceName: 'Android Emulator',
         platformName: 'Android',
         platformVersion: '8.1',
         orientation: 'PORTRAIT',
