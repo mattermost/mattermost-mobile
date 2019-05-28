@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:android": "./node_modules/.bin/wdio test/configs/android.conf.js"
+    "test:android": "./scripts/runAndroidTests.sh"
   },
   "author": "",
   "license": "ISC",
