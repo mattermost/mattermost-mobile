@@ -75,6 +75,8 @@ export default class Entry extends PureComponent {
             launchLogin: false,
             launchChannel: false,
         };
+
+        this.unsubscribeFromStore = null;
     }
 
     componentDidMount() {
@@ -127,6 +129,7 @@ export default class Entry extends PureComponent {
     handleHydrationComplete = () => {
         if (this.unsubscribeFromStore) {
             this.unsubscribeFromStore();
+            this.unsubscribeFromStore = null;
         }
 
         this.autoUpdateTimezone();
