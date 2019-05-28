@@ -3,4 +3,4 @@
 //
 
 #import "StoreManager.h"
-#import "Constants.h"
+#import "MattermostConstants.h"
