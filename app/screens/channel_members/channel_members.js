@@ -225,7 +225,7 @@ export default class ChannelMembers extends PureComponent {
         });
     };
 
-    renderItem = (props) => {
+    renderSelectableItem = (props) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = this.state.selectedIds[props.id];
         const enabled = props.id !== this.props.currentUserId;
@@ -237,6 +237,18 @@ export default class ChannelMembers extends PureComponent {
                 selectable={true}
                 selected={selected}
                 enabled={enabled}
+            />
+        );
+    }
+
+    renderUnselectableItem = (props) => {
+        // The list will re-render when the selection changes because it's passed into the list as extraData
+        return (
+            <UserListRow
+                key={props.id}
+                {...props}
+                selectable={false}
+                enabled={false}
             />
         );
     };
@@ -292,7 +304,7 @@ export default class ChannelMembers extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme} = this.props;
+        const {theme, canManageUsers} = this.props;
         const {
             removing,
             loading,
@@ -374,7 +386,7 @@ export default class ChannelMembers extends PureComponent {
                     noResults={this.renderNoResults()}
                     onLoadMore={this.getProfiles}
                     onRowPress={this.handleSelectProfile}
-                    renderItem={this.renderItem}
+                    renderItem={canManageUsers ? this.renderSelectableItem : this.renderUnselectableItem}
                     theme={theme}
                 />
             </KeyboardLayout>
