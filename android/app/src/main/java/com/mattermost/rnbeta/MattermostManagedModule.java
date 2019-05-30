@@ -68,7 +68,14 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
     @ReactMethod
     // Close the current activity and open the security settings.
     public void goToSecuritySettings() {
-        getCurrentActivity().finish();
         getReactApplicationContext().startActivity(new Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS));
+        getCurrentActivity().finish();
+        System.exit(0);
+    }
+
+    @ReactMethod
+    public void quitApp() {
+        getCurrentActivity().finish();
+        System.exit(0);
     }
 }
