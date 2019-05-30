@@ -73,15 +73,13 @@ export default class FileUploadItem extends PureComponent {
         const {actions, channelId, file, rootId} = this.props;
         const response = JSON.parse(res.data);
         if (res.respInfo.status === 200 || res.respInfo.status === 201) {
-            this.setState({progress: 100}, () => {
-                const data = response.file_infos.map((f) => {
-                    return {
-                        ...f,
-                        clientId: file.clientId,
-                    };
-                });
-                actions.uploadComplete(data, channelId, rootId);
+            const data = response.file_infos.map((f) => {
+                return {
+                    ...f,
+                    clientId: file.clientId,
+                };
             });
+            actions.uploadComplete(data, channelId, rootId);
         } else {
             actions.uploadFailed([file.clientId], channelId, rootId, response.message);
         }
