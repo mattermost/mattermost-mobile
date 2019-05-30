@@ -8,7 +8,7 @@
 
 #import "RCTUITextView.h"
 #import "MattermostManaged.h"
-#import <UploadAttachments/Constants.h>
+#import <UploadAttachments/MMMConstants.h>
 
 @implementation MattermostManaged {
   bool hasListeners;
