@@ -153,11 +153,12 @@ export default class SettingsDrawer extends PureComponent {
     goToEditProfile = preventDoubleTap(() => {
         const {currentUser} = this.props;
         const {formatMessage} = this.context.intl;
+        const commandType = 'ShowModal';
 
         this.openModal(
             'EditProfile',
             formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
-            {currentUser}
+            {currentUser, commandType}
         );
     });
 

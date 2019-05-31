@@ -45,7 +45,7 @@ describe('edit_profile', () => {
             nickname: 'Dragon',
             position: 'position',
         },
-        commandType: 'showModal',
+        commandType: 'ShowModal',
     };
 
     test('should match snapshot', async () => {

@@ -219,6 +219,7 @@ export default class UserProfile extends PureComponent {
     goToEditProfile = () => {
         const {user: currentUser} = this.props;
         const {formatMessage} = this.context.intl;
+        const commandType = 'Push';
 
         const {navigator, theme} = this.props;
         const options = {
@@ -226,7 +227,7 @@ export default class UserProfile extends PureComponent {
             title: formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
             animated: true,
             backButtonTitle: '',
-            passProps: {currentUser},
+            passProps: {currentUser, commandType},
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
