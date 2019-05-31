@@ -32,6 +32,8 @@
  - Fixed an issue where the progress indicator was negative while downloading a video.
  - Fixed an issue where the edit post modal didn’t have an autocorrect.
  - Fixed an issue where the 'I forgot my password' option was available on the mobile client even with Email Authentication disabled on the server.
+ - Fixed an issue with large separation between placeholders on iPad when a channel was loading.
+ - Fixed an issue where "Show More" was not removed after the post was edited to a single line.
  
 ### Known Issues
  - Buttons inside ephemeral posts are not clickable / functional on the mobile app.
