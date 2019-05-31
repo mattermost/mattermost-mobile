@@ -76,8 +76,11 @@ post-install:
 	@# Need to copy custom RNDocumentPicker.m that implements direct access to the document picker in iOS
 	@cp ./native_modules/RNDocumentPicker.m node_modules/react-native-document-picker/ios/RNDocumentPicker/RNDocumentPicker.m
 
-	# Need to copy custom RNCookieManagerIOS.m that fixes a crash when cookies does not have expiration date set
+	@# Need to copy custom RNCookieManagerIOS.m that fixes a crash when cookies does not have expiration date set
 	@cp ./native_modules/RNCookieManagerIOS.m node_modules/react-native-cookies/ios/RNCookieManagerIOS/RNCookieManagerIOS.m
+
+	@# Need to copy custom RNCNetInfo.m that checks for internet connectivity instead of reaching a host by default
+	@cp ./native_modules/RNCNetInfo.m node_modules/@react-native-community/netinfo/ios/RNCNetInfo.m
 
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
