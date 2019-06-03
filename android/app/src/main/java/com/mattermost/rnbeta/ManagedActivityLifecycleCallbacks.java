@@ -32,7 +32,7 @@ public class ManagedActivityLifecycleCallbacks implements ActivityLifecycleCallb
 
                 // Check current configuration settings, change your app's UI and
                 // functionality as necessary.
-                Log.i("ReactNative", "Managed Configuration Changed");
+                Log.i(TAG, "Managed Configuration Changed");
                 sendConfigChanged(managedConfig);
             }
         }
