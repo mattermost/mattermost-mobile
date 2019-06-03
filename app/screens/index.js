@@ -1,71 +1,90 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import React from 'react';
 import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
 import Channel from 'app/screens/channel';
 import Entry from 'app/screens/entry';
+import Root from 'app/components/root';
 import SelectServer from 'app/screens/select_server';
-import {wrapWithContextProvider} from 'app/utils/wrap_context_provider';
+
+// TODO remove dummy navigator object
+const navigator = {
+    push: () => {}, // eslint-disable-line no-empty-function
+    setOnNavigatorEvent: () => {}, // eslint-disable-line no-empty-function
+};
 
 export function registerScreens(store, Provider) {
-    Navigation.registerComponent('About', () => wrapWithContextProvider(require('app/screens/about').default), store, Provider);
-    Navigation.registerComponent('AddReaction', () => wrapWithContextProvider(require('app/screens/add_reaction').default), store, Provider);
-    Navigation.registerComponent('AdvancedSettings', () => wrapWithContextProvider(require('app/screens/settings/advanced_settings').default), store, Provider);
-    Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel, false), store, Provider);
-    Navigation.registerComponent('ChannelAddMembers', () => wrapWithContextProvider(require('app/screens/channel_add_members').default), store, Provider);
-    Navigation.registerComponent('ChannelInfo', () => wrapWithContextProvider(require('app/screens/channel_info').default), store, Provider);
-    Navigation.registerComponent('ChannelMembers', () => wrapWithContextProvider(require('app/screens/channel_members').default), store, Provider);
-    Navigation.registerComponent('ChannelPeek', () => wrapWithContextProvider(require('app/screens/channel_peek').default), store, Provider);
-    Navigation.registerComponent('ClientUpgrade', () => wrapWithContextProvider(require('app/screens/client_upgrade').default), store, Provider);
-    Navigation.registerComponent('ClockDisplay', () => wrapWithContextProvider(require('app/screens/clock_display').default), store, Provider);
-    Navigation.registerComponent('Code', () => wrapWithContextProvider(require('app/screens/code').default), store, Provider);
-    Navigation.registerComponent('CreateChannel', () => wrapWithContextProvider(require('app/screens/create_channel').default), store, Provider);
-    Navigation.registerComponent('DisplaySettings', () => wrapWithContextProvider(require('app/screens/settings/display_settings').default), store, Provider);
-    Navigation.registerComponent('EditChannel', () => wrapWithContextProvider(require('app/screens/edit_channel').default), store, Provider);
-    Navigation.registerComponent('EditPost', () => wrapWithContextProvider(require('app/screens/edit_post').default), store, Provider);
-    Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(require('app/screens/edit_profile').default), store, Provider);
-    Navigation.registerComponent('Entry', () => Entry, store, Provider);
-    Navigation.registerComponent('ExpandedAnnouncementBanner', () => wrapWithContextProvider(require('app/screens/expanded_announcement_banner').default), store, Provider);
-    Navigation.registerComponent('FlaggedPosts', () => wrapWithContextProvider(require('app/screens/flagged_posts').default), store, Provider);
-    Navigation.registerComponent('ForgotPassword', () => wrapWithContextProvider(require('app/screens/forgot_password').default), store, Provider);
-    Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(require('app/screens/image_preview').default), store, Provider);
-    Navigation.registerComponent('InteractiveDialog', () => wrapWithContextProvider(require('app/screens/interactive_dialog').default), store, Provider);
-    Navigation.registerComponent('Login', () => wrapWithContextProvider(require('app/screens/login').default), store, Provider);
-    Navigation.registerComponent('LoginOptions', () => wrapWithContextProvider(require('app/screens/login_options').default), store, Provider);
-    Navigation.registerComponent('LongPost', () => wrapWithContextProvider(require('app/screens/long_post').default), store, Provider);
-    Navigation.registerComponent('MFA', () => wrapWithContextProvider(require('app/screens/mfa').default), store, Provider);
-    Navigation.registerComponent('MoreChannels', () => wrapWithContextProvider(require('app/screens/more_channels').default), store, Provider);
-    Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(require('app/screens/more_dms').default), store, Provider);
-    Navigation.registerComponent('Notification', () => wrapWithContextProvider(require('app/screens/notification').default), store, Provider);
-    Navigation.registerComponent('NotificationSettings', () => wrapWithContextProvider(require('app/screens/settings/notification_settings').default), store, Provider);
-    Navigation.registerComponent('NotificationSettingsAutoResponder', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_auto_responder').default), store, Provider);
-    Navigation.registerComponent('NotificationSettingsEmail', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_email').default), store, Provider);
-    Navigation.registerComponent('NotificationSettingsMentions', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_mentions').default), store, Provider);
-    Navigation.registerComponent('NotificationSettingsMentionsKeywords', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_mentions_keywords').default), store, Provider);
-    Navigation.registerComponent('NotificationSettingsMobile', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_mobile').default), store, Provider);
-    Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(require('app/screens/options_modal').default), store, Provider);
-    Navigation.registerComponent('Permalink', () => wrapWithContextProvider(require('app/screens/permalink').default), store, Provider);
-    Navigation.registerComponent('PinnedPosts', () => wrapWithContextProvider(require('app/screens/pinned_posts').default), store, Provider);
-    Navigation.registerComponent('PostOptions', () => gestureHandlerRootHOC(wrapWithContextProvider(require('app/screens/post_options').default)), store, Provider);
-    Navigation.registerComponent('ReactionList', () => gestureHandlerRootHOC(wrapWithContextProvider(require('app/screens/reaction_list').default)), store, Provider);
-    Navigation.registerComponent('RecentMentions', () => wrapWithContextProvider(require('app/screens/recent_mentions').default), store, Provider);
-    Navigation.registerComponent('Root', () => require('app/screens/root').default, store, Provider);
-    Navigation.registerComponent('Search', () => wrapWithContextProvider(require('app/screens/search').default), store, Provider);
-    Navigation.registerComponent('SelectorScreen', () => wrapWithContextProvider(require('app/screens/selector_screen').default), store, Provider);
-    Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);
-    Navigation.registerComponent('SelectTeam', () => wrapWithContextProvider(require('app/screens/select_team').default), store, Provider);
-    Navigation.registerComponent('SelectTimezone', () => wrapWithContextProvider(require('app/screens/timezone/select_timezone').default), store, Provider);
-    Navigation.registerComponent('Settings', () => wrapWithContextProvider(require('app/screens/settings/general').default), store, Provider);
-    Navigation.registerComponent('SSO', () => wrapWithContextProvider(require('app/screens/sso').default), store, Provider);
-    Navigation.registerComponent('Table', () => wrapWithContextProvider(require('app/screens/table').default), store, Provider);
-    Navigation.registerComponent('TableImage', () => wrapWithContextProvider(require('app/screens/table_image').default), store, Provider);
-    Navigation.registerComponent('TermsOfService', () => wrapWithContextProvider(require('app/screens/terms_of_service').default), store, Provider);
-    Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(require('app/screens/text_preview').default), store, Provider);
-    Navigation.registerComponent('ThemeSettings', () => wrapWithContextProvider(require('app/screens/theme').default), store, Provider);
-    Navigation.registerComponent('Thread', () => wrapWithContextProvider(require('app/screens/thread').default), store, Provider);
-    Navigation.registerComponent('TimezoneSettings', () => wrapWithContextProvider(require('app/screens/timezone').default), store, Provider);
-    Navigation.registerComponent('ErrorTeamsList', () => wrapWithContextProvider(require('app/screens/error_teams_list').default), store, Provider);
-    Navigation.registerComponent('UserProfile', () => wrapWithContextProvider(require('app/screens/user_profile').default), store, Provider);
+    // TODO consolidate this with app/utils/wrap_context_provider
+    const wrapper = (Comp) => (props) => ( // eslint-disable-line react/display-name
+        <Provider store={store}>
+            <Root navigator={navigator}>
+                <Comp
+                    {...props}
+                    navigator={navigator}
+                />
+            </Root>
+        </Provider>
+    );
+
+    Navigation.registerComponent('About', () => wrapper(require('app/screens/about').default), () => require('app/screens/about').default);
+    Navigation.registerComponent('AddReaction', () => wrapper(require('app/screens/add_reaction').default), () => require('app/screens/add_reaction').default);
+    Navigation.registerComponent('AdvancedSettings', () => wrapper(require('app/screens/settings/advanced_settings').default), () => require('app/screens/settings/advanced_settings').default);
+    Navigation.registerComponent('Channel', () => wrapper(Channel), () => Channel);
+    Navigation.registerComponent('ChannelAddMembers', () => wrapper(require('app/screens/channel_add_members').default), () => require('app/screens/channel_add_members').default);
+    Navigation.registerComponent('ChannelInfo', () => wrapper(require('app/screens/channel_info').default), () => require('app/screens/channel_info').default);
+    Navigation.registerComponent('ChannelMembers', () => wrapper(require('app/screens/channel_members').default), () => require('app/screens/channel_members').default);
+    Navigation.registerComponent('ChannelPeek', () => wrapper(require('app/screens/channel_peek').default), () => require('app/screens/channel_peek').default);
+    Navigation.registerComponent('ClientUpgrade', () => wrapper(require('app/screens/client_upgrade').default), () => require('app/screens/client_upgrade').default);
+    Navigation.registerComponent('ClockDisplay', () => wrapper(require('app/screens/clock_display').default), () => require('app/screens/clock_display').default);
+    Navigation.registerComponent('Code', () => wrapper(require('app/screens/code').default), () => require('app/screens/code').default);
+    Navigation.registerComponent('CreateChannel', () => wrapper(require('app/screens/create_channel').default), () => require('app/screens/create_channel').default);
+    Navigation.registerComponent('DisplaySettings', () => wrapper(require('app/screens/settings/display_settings').default), () => require('app/screens/settings/display_settings').default);
+    Navigation.registerComponent('EditChannel', () => wrapper(require('app/screens/edit_channel').default), () => require('app/screens/edit_channel').default);
+    Navigation.registerComponent('EditPost', () => wrapper(require('app/screens/edit_post').default), () => require('app/screens/edit_post').default);
+    Navigation.registerComponent('EditProfile', () => wrapper(require('app/screens/edit_profile').default), () => require('app/screens/edit_profile').default);
+    Navigation.registerComponent('Entry', () => wrapper(Entry), () => Entry);
+    Navigation.registerComponent('ExpandedAnnouncementBanner', () => wrapper(require('app/screens/expanded_announcement_banner').default), () => require('app/screens/expanded_announcement_banner').default);
+    Navigation.registerComponent('FlaggedPosts', () => wrapper(require('app/screens/flagged_posts').default), () => require('app/screens/flagged_posts').default);
+    Navigation.registerComponent('ForgotPassword', () => wrapper(require('app/screens/forgot_password').default), () => require('app/screens/forgot_password').default);
+    Navigation.registerComponent('ImagePreview', () => wrapper(require('app/screens/image_preview').default), () => require('app/screens/image_preview').default);
+    Navigation.registerComponent('InteractiveDialog', () => wrapper(require('app/screens/interactive_dialog').default), () => require('app/screens/interactive_dialog').default);
+    Navigation.registerComponent('Login', () => wrapper(require('app/screens/login').default), () => require('app/screens/login').default);
+    Navigation.registerComponent('LoginOptions', () => wrapper(require('app/screens/login_options').default), () => require('app/screens/login_options').default);
+    Navigation.registerComponent('LongPost', () => wrapper(require('app/screens/long_post').default), () => require('app/screens/long_post').default);
+    Navigation.registerComponent('MFA', () => wrapper(require('app/screens/mfa').default), () => require('app/screens/mfa').default);
+    Navigation.registerComponent('MoreChannels', () => wrapper(require('app/screens/more_channels').default), () => require('app/screens/more_channels').default);
+    Navigation.registerComponent('MoreDirectMessages', () => wrapper(require('app/screens/more_dms').default), () => require('app/screens/more_dms').default);
+    Navigation.registerComponent('Notification', () => wrapper(require('app/screens/notification').default), () => require('app/screens/notification').default);
+    Navigation.registerComponent('NotificationSettings', () => wrapper(require('app/screens/settings/notification_settings').default), () => require('app/screens/settings/notification_settings').default);
+    Navigation.registerComponent('NotificationSettingsAutoResponder', () => wrapper(require('app/screens/settings/notification_settings_auto_responder').default), () => require('app/screens/settings/notification_settings_auto_responder').default);
+    Navigation.registerComponent('NotificationSettingsEmail', () => wrapper(require('app/screens/settings/notification_settings_email').default), () => require('app/screens/settings/notification_settings_email').default);
+    Navigation.registerComponent('NotificationSettingsMentions', () => wrapper(require('app/screens/settings/notification_settings_mentions').default), () => require('app/screens/settings/notification_settings_mentions').default);
+    Navigation.registerComponent('NotificationSettingsMentionsKeywords', () => wrapper(require('app/screens/settings/notification_settings_mentions_keywords').default), () => require('app/screens/settings/notification_settings_mentions_keywords').default);
+    Navigation.registerComponent('NotificationSettingsMobile', () => wrapper(require('app/screens/settings/notification_settings_mobile').default), () => require('app/screens/settings/notification_settings_mobile').default);
+    Navigation.registerComponent('OptionsModal', () => wrapper(require('app/screens/options_modal').default), () => require('app/screens/options_modal').default);
+    Navigation.registerComponent('Permalink', () => wrapper(require('app/screens/permalink').default), () => require('app/screens/permalink').default);
+    Navigation.registerComponent('PinnedPosts', () => wrapper(require('app/screens/pinned_posts').default), () => require('app/screens/pinned_posts').default);
+    Navigation.registerComponent('PostOptions', () => gestureHandlerRootHOC(wrapper(require('app/screens/post_options').default)), () => require('app/screens/post_options').default);
+    Navigation.registerComponent('ReactionList', () => gestureHandlerRootHOC(wrapper(require('app/screens/reaction_list').default)), () => require('app/screens/reaction_list').default);
+    Navigation.registerComponent('RecentMentions', () => wrapper(require('app/screens/recent_mentions').default), () => require('app/screens/recent_mentions').default);
+    Navigation.registerComponent('Root', () => wrapper(Root), () => Root);
+    Navigation.registerComponent('Search', () => wrapper(require('app/screens/search').default), () => require('app/screens/search').default);
+    Navigation.registerComponent('SelectorScreen', () => wrapper(require('app/screens/selector_screen').default), () => require('app/screens/selector_screen').default);
+    Navigation.registerComponent('SelectServer', () => wrapper(SelectServer), () => SelectServer);
+    Navigation.registerComponent('SelectTeam', () => wrapper(require('app/screens/select_team').default), () => require('app/screens/select_team').default);
+    Navigation.registerComponent('SelectTimezone', () => wrapper(require('app/screens/timezone/select_timezone').default), () => require('app/screens/timezone/select_timezone').default);
+    Navigation.registerComponent('Settings', () => wrapper(require('app/screens/settings/general').default), () => require('app/screens/settings/general').default);
+    Navigation.registerComponent('SSO', () => wrapper(require('app/screens/sso').default), () => require('app/screens/sso').default);
+    Navigation.registerComponent('Table', () => wrapper(require('app/screens/table').default), () => require('app/screens/table').default);
+    Navigation.registerComponent('TableImage', () => wrapper(require('app/screens/table_image').default), () => require('app/screens/table_image').default);
+    Navigation.registerComponent('TermsOfService', () => wrapper(require('app/screens/terms_of_service').default), () => require('app/screens/terms_of_service').default);
+    Navigation.registerComponent('TextPreview', () => wrapper(require('app/screens/text_preview').default), () => require('app/screens/text_preview').default);
+    Navigation.registerComponent('ThemeSettings', () => wrapper(require('app/screens/theme').default), () => require('app/screens/theme').default);
+    Navigation.registerComponent('Thread', () => wrapper(require('app/screens/thread').default), () => require('app/screens/thread').default);
+    Navigation.registerComponent('TimezoneSettings', () => wrapper(require('app/screens/timezone').default), () => require('app/screens/timezone').default);
+    Navigation.registerComponent('ErrorTeamsList', () => wrapper(require('app/screens/error_teams_list').default), () => require('app/screens/error_teams_list').default);
+    Navigation.registerComponent('UserProfile', () => wrapper(require('app/screens/user_profile').default), () => require('app/screens/user_profile').default);
 }

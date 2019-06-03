@@ -17,7 +17,7 @@
 #else
 #import "RNSentry.h" // This is used for versions of react < 0.40
 #endif
-#import "RCCManager.h"
+#import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import "RNNotifications.h"
 #import <UploadAttachments/UploadAttachments-Swift.h>
 #import <UserNotifications/UserNotifications.h>
@@ -53,13 +53,11 @@ NSString* const NotificationClearAction = @"clear";
     [[NSUserDefaults standardUserDefaults] synchronize];
   }
 
-  NSURL *jsCodeLocation;
-
-  jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
+  NSURL *jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
+  [ReactNativeNavigation bootstrap:jsCodeLocation launchOptions:launchOptions];
 
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   self.window.backgroundColor = [UIColor whiteColor];
-  [[RCCManager sharedInstance] initBridgeWithBundleURL:jsCodeLocation launchOptions:launchOptions];
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
 
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
