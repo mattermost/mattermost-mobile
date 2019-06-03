@@ -146,7 +146,7 @@ class Telemetry {
 
         const {config} = store.getState().entities.general;
         const deviceInfo = getDeviceInfo();
-        deviceInfo.serverVersion = config.Version;
+        deviceInfo.server_version = config.Version;
 
         saveToTelemetryServer({trace_events: metrics, device_info: deviceInfo});
 
