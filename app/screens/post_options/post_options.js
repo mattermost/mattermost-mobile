@@ -270,7 +270,7 @@ export default class PostOptions extends PureComponent {
         const {navigator, theme} = this.props;
 
         this.close();
-        requestAnimationFrame(() => {
+        setTimeout(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
                 navigator.showModal({
                     screen: 'AddReaction',
@@ -288,7 +288,7 @@ export default class PostOptions extends PureComponent {
                     },
                 });
             });
-        });
+        }, 300);
     };
 
     handleReply = () => {
@@ -368,7 +368,7 @@ export default class PostOptions extends PureComponent {
         const {navigator, post, theme} = this.props;
 
         this.close();
-        requestAnimationFrame(() => {
+        setTimeout(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
                 navigator.showModal({
                     screen: 'EditPost',
@@ -386,7 +386,7 @@ export default class PostOptions extends PureComponent {
                     },
                 });
             });
-        });
+        }, 300);
     };
 
     handleUnflagPost = () => {

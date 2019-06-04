@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Keyboard} from 'react-native';
+
 import {
     IMAGE_MAX_HEIGHT,
     IMAGE_MIN_DIMENSION,
@@ -75,18 +77,21 @@ export function previewImageAtIndex(navigator, components, index, files) {
 }
 
 function goToImagePreview(navigator, passProps) {
-    navigator.showModal({
-        screen: 'ImagePreview',
-        title: '',
-        animationType: 'none',
-        passProps,
-        navigatorStyle: {
-            navBarHidden: true,
-            statusBarHidden: false,
-            statusBarHideWithNavBar: false,
-            screenBackgroundColor: 'transparent',
-            modalPresentationStyle: 'overCurrentContext',
-        },
+    Keyboard.dismiss();
+    requestAnimationFrame(() => {
+        navigator.showModal({
+            screen: 'ImagePreview',
+            title: '',
+            animationType: 'none',
+            passProps,
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext',
+            },
+        });
     });
 }
 

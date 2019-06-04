@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Keyboard,
     ScrollView,
     TouchableOpacity,
     View,
@@ -115,9 +116,9 @@ export default class PostBody extends PureComponent {
         const {height} = event.nativeEvent.layout;
         const {showLongPost} = this.props;
 
-        if (!showLongPost && height >= this.state.maxHeight) {
+        if (!showLongPost) {
             this.setState({
-                isLongPost: true,
+                isLongPost: height >= this.state.maxHeight,
             });
         }
 
@@ -204,7 +205,10 @@ export default class PostBody extends PureComponent {
             },
         };
 
-        navigator.showModal(options);
+        Keyboard.dismiss();
+        requestAnimationFrame(() => {
+            navigator.showModal(options);
+        });
     };
 
     renderAddChannelMember = (style, messageStyle, textStyles) => {
@@ -439,6 +443,7 @@ export default class PostBody extends PureComponent {
                         scrollEnabled={false}
                         showsVerticalScrollIndicator={false}
                         showsHorizontalScrollIndicator={false}
+                        keyboardShouldPersistTaps={'always'}
                     >
                         {messageComponent}
                     </ScrollView>

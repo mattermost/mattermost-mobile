@@ -26,6 +26,8 @@ exports[`PostList setting channel deep link 1`] = `
   initialNumToRender={15}
   inverted={true}
   keyExtractor={[Function]}
+  keyboardDismissMode="interactive"
+  keyboardShouldPersistTaps="handled"
   maintainVisibleContentPosition={
     Object {
       "autoscrollToTopThreshold": 60,
@@ -74,6 +76,8 @@ exports[`PostList setting permalink deep link 1`] = `
   initialNumToRender={15}
   inverted={true}
   keyExtractor={[Function]}
+  keyboardDismissMode="interactive"
+  keyboardShouldPersistTaps="handled"
   maintainVisibleContentPosition={
     Object {
       "autoscrollToTopThreshold": 60,
@@ -122,6 +126,8 @@ exports[`PostList should match snapshot 1`] = `
   initialNumToRender={15}
   inverted={true}
   keyExtractor={[Function]}
+  keyboardDismissMode="interactive"
+  keyboardShouldPersistTaps="handled"
   maintainVisibleContentPosition={
     Object {
       "autoscrollToTopThreshold": 60,

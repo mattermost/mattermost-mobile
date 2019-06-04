@@ -275,6 +275,18 @@ export default class SelectorScreen extends PureComponent {
         );
     };
 
+    renderChannelItem = (props) => {
+        return <ChannelListRow {...props}/>;
+    };
+
+    renderOptionItem = (props) => {
+        return <OptionListRow {...props}/>;
+    };
+
+    renderUserItem = (props) => {
+        return <UserListRow {...props}/>;
+    };
+
     render() {
         const {formatMessage} = this.context.intl;
         const {theme, dataSource} = this.props;
@@ -294,11 +306,11 @@ export default class SelectorScreen extends PureComponent {
 
         let rowComponent;
         if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-            rowComponent = UserListRow;
+            rowComponent = this.renderUserItem;
         } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-            rowComponent = ChannelListRow;
+            rowComponent = this.renderChannelItem;
         } else {
-            rowComponent = OptionListRow;
+            rowComponent = this.renderOptionItem;
         }
 
         const {data, listType} = this.getDataResults();

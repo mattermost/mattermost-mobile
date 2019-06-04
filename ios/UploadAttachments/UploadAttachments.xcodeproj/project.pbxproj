@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7F80232C229C91AD0034D6D4 /* Constants.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7FABE054221387B500D0F595 /* Constants.h */; };
 		7FABE04E2213818A00D0F595 /* MattermostBucket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE04C2213818900D0F595 /* MattermostBucket.m */; };
-		7FABE055221387B500D0F595 /* Constants.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE053221387B400D0F595 /* Constants.m */; };
+		7FABE055221387B500D0F595 /* MMMConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE053221387B400D0F595 /* MMMConstants.m */; };
 		7FABE058221388D700D0F595 /* UploadSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE057221388D600D0F595 /* UploadSessionManager.swift */; };
 		7FABE05B2213892200D0F595 /* AttachmentItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE0592213892100D0F595 /* AttachmentItem.swift */; };
 		7FABE05C2213892200D0F595 /* AttachmentArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE05A2213892100D0F595 /* AttachmentArray.swift */; };
@@ -24,6 +25,7 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				7F80232C229C91AD0034D6D4 /* Constants.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -34,8 +36,8 @@
 		7FABE04B2213818900D0F595 /* UploadAttachments-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UploadAttachments-Bridging-Header.h"; sourceTree = "<group>"; };
 		7FABE04C2213818900D0F595 /* MattermostBucket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MattermostBucket.m; sourceTree = "<group>"; };
 		7FABE04D2213818A00D0F595 /* MattermostBucket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MattermostBucket.h; sourceTree = "<group>"; };
-		7FABE053221387B400D0F595 /* Constants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Constants.m; sourceTree = "<group>"; };
-		7FABE054221387B500D0F595 /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
+		7FABE053221387B400D0F595 /* MMMConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMMConstants.m; sourceTree = "<group>"; };
+		7FABE054221387B500D0F595 /* MMMConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMMConstants.h; sourceTree = "<group>"; };
 		7FABE057221388D600D0F595 /* UploadSessionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UploadSessionManager.swift; sourceTree = "<group>"; };
 		7FABE0592213892100D0F595 /* AttachmentItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttachmentItem.swift; sourceTree = "<group>"; };
 		7FABE05A2213892100D0F595 /* AttachmentArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttachmentArray.swift; sourceTree = "<group>"; };
@@ -77,8 +79,8 @@
 			children = (
 				7FABE05A2213892100D0F595 /* AttachmentArray.swift */,
 				7FABE0592213892100D0F595 /* AttachmentItem.swift */,
-				7FABE054221387B500D0F595 /* Constants.h */,
-				7FABE053221387B400D0F595 /* Constants.m */,
+				7FABE054221387B500D0F595 /* MMMConstants.h */,
+				7FABE053221387B400D0F595 /* MMMConstants.m */,
 				7FABE04D2213818A00D0F595 /* MattermostBucket.h */,
 				7FABE04C2213818900D0F595 /* MattermostBucket.m */,
 				7FABE0F92214674200D0F595 /* StoreManager.h */,
@@ -176,7 +178,7 @@
 				7FABE058221388D700D0F595 /* UploadSessionManager.swift in Sources */,
 				7FABE0F7221466F900D0F595 /* UploadManager.swift in Sources */,
 				7FABE04E2213818A00D0F595 /* MattermostBucket.m in Sources */,
-				7FABE055221387B500D0F595 /* Constants.m in Sources */,
+				7FABE055221387B500D0F595 /* MMMConstants.m in Sources */,
 				7FABE05B2213892200D0F595 /* AttachmentItem.swift in Sources */,
 				7FABE0FC2214800F00D0F595 /* UploadSession.swift in Sources */,
 			);

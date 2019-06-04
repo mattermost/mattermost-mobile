@@ -1,5 +1,5 @@
 #import "StoreManager.h"
-#import "Constants.h"
+#import "MMMConstants.h"
 
 @implementation StoreManager
 +(instancetype)shared {

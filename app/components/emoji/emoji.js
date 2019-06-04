@@ -65,7 +65,7 @@ export default class Emoji extends React.PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const {displayTextOnly, emojiName, imageUrl} = nextProps;
-        if (emojiName !== this.props.emojiName) {
+        if (emojiName !== this.props.emojiName && this.mounted) {
             this.setState({
                 imageUrl: null,
             });
@@ -82,9 +82,11 @@ export default class Emoji extends React.PureComponent {
     }
 
     setImageUrl = (imageUrl) => {
-        this.setState({
-            imageUrl,
-        });
+        if (this.mounted) {
+            this.setState({
+                imageUrl,
+            });
+        }
     };
 
     render() {

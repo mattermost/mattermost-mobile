@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Keyboard,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -25,6 +26,7 @@ export default class ChannelSearchButton extends PureComponent {
     handlePress = preventDoubleTap(async () => {
         const {actions, navigator} = this.props;
 
+        Keyboard.dismiss();
         await actions.clearSearch();
         await actions.showSearchModal(navigator);
     });

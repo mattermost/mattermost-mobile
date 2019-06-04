@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
 import {
+    Alert,
     Image,
     NativeModules,
     PermissionsAndroid,
@@ -175,6 +176,10 @@ export default class ExtensionPost extends PureComponent {
                         } catch (err) {
                             return this.onClose({nativeEvent: true});
                         }
+                    } else {
+                        await this.showNotSecuredAlert(vendor);
+
+                        return this.onClose({nativeEvent: true});
                     }
                 }
             }
@@ -184,6 +189,43 @@ export default class ExtensionPost extends PureComponent {
 
         return this.initialize();
     };
+
+    showNotSecuredAlert(vendor) {
+        const {formatMessage} = this.context.intl;
+
+        return new Promise((resolve) => {
+            Alert.alert(
+                formatMessage({
+                    id: 'mobile.managed.blocked_by',
+                    defaultMessage: 'Blocked by {vendor}',
+                }, {vendor}),
+                formatMessage({
+                    id: 'mobile.managed.not_secured.android',
+                    defaultMessage: 'This device must be secured with a screen lock to use Mattermost.',
+                }),
+                [
+                    {
+                        text: formatMessage({
+                            id: 'mobile.managed.settings',
+                            defaultMessage: 'Go to settings',
+                        }),
+                        onPress: () => {
+                            mattermostManaged.goToSecuritySettings();
+                        },
+                    },
+                    {
+                        text: formatMessage({
+                            id: 'mobile.managed.exit',
+                            defaultMessage: 'Exit',
+                        }),
+                        onPress: resolve,
+                        style: 'cancel',
+                    },
+                ],
+                {onDismiss: resolve}
+            );
+        });
+    }
 
     getInputRef = (ref) => {
         this.input = ref;
