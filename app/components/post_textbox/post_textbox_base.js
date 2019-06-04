@@ -105,7 +105,7 @@ export default class PostTextBoxBase extends PureComponent {
         this.listenerId = EventEmitterModule.addEventListener('hardwareEnter', this.handleHardwareEnterKey);
 
         if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboardHide);
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
@@ -123,7 +123,7 @@ export default class PostTextBoxBase extends PureComponent {
         EventEmitterModule.removeEventListener(this.listenerId);
 
         if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboardHide);
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
@@ -196,10 +196,6 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handleAndroidKeyboardHide = () => {
-        this.blur();
-    };
-
     getAttachmentButton = () => {
         const {canUploadFiles, channelIsReadOnly, files, maxFileSize, navigator, theme} = this.props;
         let attachmentButton = null;
@@ -252,6 +248,10 @@ export default class PostTextBoxBase extends PureComponent {
         }
 
         return placeholder;
+    };
+
+    handleAndroidKeyboard = () => {
+        this.blur();
     };
 
     handleAndroidBack = () => {
@@ -359,7 +359,7 @@ export default class PostTextBoxBase extends PureComponent {
         const nextState = {value};
 
         // Workaround for some Android keyboards that don't play well with cursors (e.g. Samsung keyboards)
-        if (autocomplete && this.input.current) {
+        if (autocomplete && this.input?.current) {
             if (Platform.OS === 'android') {
                 RNTextInputReset.resetKeyboardInput(findNodeHandle(this.input.current));
             } else {
