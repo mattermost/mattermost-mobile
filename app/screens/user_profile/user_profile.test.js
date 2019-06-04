@@ -110,7 +110,7 @@ describe('user_profile', () => {
         }, 16);
     });
 
-    test('should call goToEditProfile', async () => {
+    test('should call goToEditProfile', () => {
         const props = {
             ...baseProps,
             navigator: {
@@ -130,7 +130,7 @@ describe('user_profile', () => {
         wrapper.instance().onNavigatorEvent(event);
         setTimeout(() => {
             expect(props.navigator.push).toHaveBeenCalledTimes(1);
-        }, 16);
+        }, 0);
     });
 
     test('should close', async () => {
