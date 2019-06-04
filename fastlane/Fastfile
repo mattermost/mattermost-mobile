@@ -304,7 +304,7 @@ platform :ios do
     )
 
     find_replace_string(
-        path_to_file: './ios/UploadAttachments/UploadAttachments/Constants.m',
+        path_to_file: './ios/UploadAttachments/UploadAttachments/MMMConstants.m',
         old_string: 'group.com.mattermost.rnbeta',
         new_string: app_group_id
     )
