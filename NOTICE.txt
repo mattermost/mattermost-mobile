@@ -43,6 +43,76 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
+## @react-native-community/async-storage
+
+This product contains 'async-storage' by Krzysztof Borowy.
+
+Asynchronous, persistent, key-value storage system for React Native.
+
+* HOMEPAGE:
+  * https://github.com/react-native-community/react-native-async-storage#readme
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) 2015-present, Facebook, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## @react-native-community/netinfo
+
+This product contains 'netinfo' by Matt Oakes.
+
+React Native Network Info API for iOS & Android
+
+* HOMEPAGE:
+  * https://github.com/react-native-community/react-native-netinfo#readme
+
+* LICENSE: MIT
+
+MIT License
+
+Copyright (c) 2015-present, Facebook, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
 ## analytics-react-native
 
 This product contains 'analytics-react-native' by Javier Alvarez.
@@ -1597,12 +1667,12 @@ SOFTWARE.
 
 ## react-native-keyboard-tracking-view
 
-This product contains a modified version of 'react-native-keyboard-tracking-view' by Wix.com.
+This product contains a modified version of 'react-native-keyboard-tracking-view' by Artal Druk.
 
-a strongly specified, highly compatible variant of Markdown
+React Native UI component which tracks the keyboard
 
 * HOMEPAGE:
-  * wix/react-native-keyboard-tracking-view
+  * https://github.com/wix/react-native-keyboard-tracking-view
 
 * LICENSE: MIT
 
@@ -1721,7 +1791,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 
 ## react-native-navigation
 
-This product contains a modified version of 'react-native-navigation' by Daniel Zlotin.
+This product contains a modified version of 'react-native-navigation' by Wix.com.
 
 React Native Navigation - truly native navigation for iOS and Android
 
@@ -1792,7 +1862,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This product contains 'react-native-passcode-status' by Mark Vayngrib.
 
-check passcode status on device
+check if device-level passcode is supported/enabled/disabled
 
 * HOMEPAGE:
   * https://github.com/tradle/react-native-passcode-status
@@ -2122,7 +2192,7 @@ SOFTWARE.
 
 ## react-native-webview
 
-This product contains 'react-native-webview' by Jamon Holmgren.
+This product contains a modified version of 'react-native-webview' by Jamon Holmgren.
 
 React Native WebView component for iOS, Android, and Windows 10 (coming soon)
 
@@ -2521,7 +2591,7 @@ Display some placeholder stuff before rendering your text or media content in Re
 
 * LICENSE: MIT
 
-Copyright (c) 2004-2018 Marvin Frachet
+Copyright (c) 2004-Today Marvin Frachet
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
