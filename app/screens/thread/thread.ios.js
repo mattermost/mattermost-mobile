@@ -54,7 +54,6 @@ export default class ThreadIOS extends ThreadBase {
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
                         <FileUploadPreview
-                            channelId={channelId}
                             rootId={rootId}
                         />
                         <Autocomplete
