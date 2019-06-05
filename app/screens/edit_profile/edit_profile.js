@@ -92,14 +92,11 @@ export default class EditProfile extends PureComponent {
         currentUser: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        commandType: PropTypes.string.isRequired,
     };
 
     static contextTypes = {
         intl: intlShape,
-    };
-
-    leftButton = {
-        id: 'close-settings',
     };
 
     rightButton = {
@@ -113,11 +110,8 @@ export default class EditProfile extends PureComponent {
 
         const {email, first_name: firstName, last_name: lastName, nickname, position, username} = props.currentUser;
         const buttons = {
-            leftButtons: [this.leftButton],
             rightButtons: [this.rightButton],
         };
-
-        this.leftButton.title = context.intl.formatMessage({id: t('mobile.account.settings.cancel'), defaultMessage: 'Cancel'});
         this.rightButton.title = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
@@ -164,9 +158,13 @@ export default class EditProfile extends PureComponent {
     };
 
     close = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'slide-down',
-        });
+        if (this.props.commandType === 'Push') {
+            this.props.navigator.pop();
+        } else {
+            this.props.navigator.dismissModal({
+                animationType: 'slide-down',
+            });
+        }
     };
 
     emitCanUpdateAccount = (enabled) => {

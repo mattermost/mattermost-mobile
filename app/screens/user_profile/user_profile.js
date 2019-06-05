@@ -42,11 +42,33 @@ export default class UserProfile extends PureComponent {
         bot: PropTypes.object,
         militaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
+        isMyUser: PropTypes.bool.isRequired,
+        fromSettings: PropTypes.bool,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
     };
+
+    rightButton = {
+        id: 'edit-profile',
+        showAsAction: 'always',
+    };
+
+    constructor(props, context) {
+        super(props);
+
+        if (props.isMyUser) {
+            this.rightButton.title = context.intl.formatMessage({id: 'mobile.routes.user_profile.edit', defaultMessage: 'Edit'});
+
+            const buttons = {
+                rightButtons: [this.rightButton],
+            };
+
+            props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+            props.navigator.setButtons(buttons);
+        }
+    }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
@@ -62,6 +84,13 @@ export default class UserProfile extends PureComponent {
 
     close = () => {
         const {navigator, theme} = this.props;
+
+        if (this.props.fromSettings) {
+            navigator.dismissModal({
+                animationType: 'slide-down',
+            });
+            return;
+        }
 
         navigator.resetTo({
             screen: 'Channel',
@@ -185,6 +214,44 @@ export default class UserProfile extends PureComponent {
             hydrated = hydrated.replace(/{username}/, username);
             Linking.openURL(hydrated);
         };
+    };
+
+    goToEditProfile = () => {
+        const {user: currentUser} = this.props;
+        const {formatMessage} = this.context.intl;
+        const commandType = 'Push';
+
+        const {navigator, theme} = this.props;
+        const options = {
+            screen: 'EditProfile',
+            title: formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
+            animated: true,
+            backButtonTitle: '',
+            passProps: {currentUser, commandType},
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        };
+
+        requestAnimationFrame(() => {
+            navigator.push(options);
+        });
+    };
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            switch (event.id) {
+            case this.rightButton.id:
+                this.goToEditProfile();
+                break;
+            case 'close-settings':
+                this.close();
+                break;
+            }
+        }
     };
 
     renderAdditionalOptions = () => {
