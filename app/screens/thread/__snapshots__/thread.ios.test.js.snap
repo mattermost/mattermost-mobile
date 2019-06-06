@@ -56,7 +56,6 @@ exports[`thread should match snapshot, has root post 1`] = `
         nativeID="threadAccessoriesContainer"
       >
         <Connect(FileUploadPreview)
-          channelId="channel_id"
           rootId="root_id"
         />
         <ForwardRef(forwardConnectRef)
