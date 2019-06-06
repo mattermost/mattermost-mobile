@@ -15,7 +15,6 @@ const AUTOCOMPLETE_MAX_HEIGHT = 200;
 export default class PostTextBoxAndroid extends PostTextBoxBase {
     render() {
         const {
-            channelId,
             deactivatedChannel,
             files,
             rootId,
@@ -31,7 +30,6 @@ export default class PostTextBoxAndroid extends PostTextBoxBase {
             <React.Fragment>
                 <Typing/>
                 <FileUploadPreview
-                    channelId={channelId}
                     files={files}
                     rootId={rootId}
                 />
