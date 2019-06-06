@@ -6,6 +6,7 @@ import {
     ChannelTypes,
     FileTypes,
     PostTypes,
+    UserTypes,
 } from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
@@ -348,6 +349,44 @@ function lastChannelViewTime(state = {}, action) {
     }
 }
 
+function keepChannelIdAsUnread(state = null, action) {
+    switch (action.type) {
+    case ViewTypes.SELECT_CHANNEL_WITH_MEMBER: {
+        const member = action.member;
+        const channel = action.channel;
+
+        if (!member || !channel) {
+            return state;
+        }
+
+        const msgCount = channel.total_msg_count - member.msg_count;
+        const hadMentions = member.mention_count > 0;
+        const hadUnreads = member.notify_props.mark_unread !== ViewTypes.NotificationLevels.MENTION && msgCount > 0;
+
+        if (hadMentions || hadUnreads) {
+            return {
+                id: member.channel_id,
+                hadMentions,
+            };
+        }
+
+        return null;
+    }
+
+    case ViewTypes.RECEIVED_FOCUSED_POST: {
+        if (state && action.channelId !== state.id) {
+            return null;
+        }
+        return state;
+    }
+
+    case UserTypes.LOGOUT_SUCCESS:
+        return null;
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     displayName,
     drafts,
@@ -360,4 +399,5 @@ export default combineReducers({
     retryFailed,
     loadMorePostsVisible,
     lastChannelViewTime,
+    keepChannelIdAsUnread,
 });
