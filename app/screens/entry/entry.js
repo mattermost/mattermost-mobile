@@ -13,30 +13,19 @@ import DeviceInfo from 'react-native-device-info';
 
 import {setSystemEmojis} from 'mattermost-redux/actions/emojis';
 import {Client4} from 'mattermost-redux/client';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {
     app,
     store,
 } from 'app/mattermost';
-import {ViewTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import {stripTrailingSlashes} from 'app/utils/url';
-import {wrapWithContextProvider} from 'app/utils/wrap_context_provider';
 
 import ChannelLoader from 'app/components/channel_loader';
 import EmptyToolbar from 'app/components/start/empty_toolbar';
 import Loading from 'app/components/loading';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
-
-const lazyLoadSelectServer = () => {
-    return require('app/screens/select_server').default;
-};
-
-const lazyLoadChannel = () => {
-    return require('app/screens/channel').default;
-};
 
 const lazyLoadPushNotifications = () => {
     return require('app/utils/push_notifications').configurePushNotifications;
@@ -61,7 +50,6 @@ export default class Entry extends PureComponent {
         isLandscape: PropTypes.bool,
         enableTimezone: PropTypes.bool,
         deviceTimezone: PropTypes.string,
-        initializeModules: PropTypes.func,
         actions: PropTypes.shape({
             autoUpdateTimezone: PropTypes.func.isRequired,
             setDeviceToken: PropTypes.func.isRequired,
@@ -70,11 +58,6 @@ export default class Entry extends PureComponent {
 
     constructor(props) {
         super(props);
-
-        this.state = {
-            launchLogin: false,
-            launchChannel: false,
-        };
 
         this.unsubscribeFromStore = null;
     }
@@ -87,31 +70,7 @@ export default class Entry extends PureComponent {
         } else {
             this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
         }
-
-        EventEmitter.on(ViewTypes.LAUNCH_LOGIN, this.handleLaunchLogin);
-        EventEmitter.on(ViewTypes.LAUNCH_CHANNEL, this.handleLaunchChannel);
     }
-
-    componentWillUnmount() {
-        EventEmitter.off(ViewTypes.LAUNCH_LOGIN, this.handleLaunchLogin);
-        EventEmitter.off(ViewTypes.LAUNCH_CHANNEL, this.handleLaunchChannel);
-    }
-
-    handleLaunchLogin = (initializeModules) => {
-        this.setState({launchLogin: true});
-
-        if (initializeModules) {
-            this.props.initializeModules();
-        }
-    };
-
-    handleLaunchChannel = (initializeModules) => {
-        this.setState({launchChannel: true});
-
-        if (initializeModules) {
-            this.props.initializeModules();
-        }
-    };
 
     listenForHydration = () => {
         const {getState} = store;
@@ -245,38 +204,11 @@ export default class Entry extends PureComponent {
         setSystemEmojis(EmojiIndicesByAlias);
     };
 
-    renderLogin = () => {
-        const SelectServer = lazyLoadSelectServer();
-        const props = {
-            allowOtherServers: app.allowOtherServers,
-            navigator: this.props.navigator,
-        };
-
-        return wrapWithContextProvider(SelectServer)(props);
-    };
-
-    renderChannel = () => {
-        const ChannelScreen = lazyLoadChannel();
-        const props = {
-            navigator: this.props.navigator,
-        };
-
-        return wrapWithContextProvider(ChannelScreen, false)(props);
-    };
-
     render() {
         const {
             navigator,
             isLandscape,
         } = this.props;
-
-        if (this.state.launchLogin) {
-            return this.renderLogin();
-        }
-
-        if (this.state.launchChannel) {
-            return this.renderChannel();
-        }
 
         let toolbar = null;
         let loading = null;

@@ -14,6 +14,7 @@ import SelectServer from 'app/screens/select_server';
 const navigator = {
     push: () => {}, // eslint-disable-line no-empty-function
     setOnNavigatorEvent: () => {}, // eslint-disable-line no-empty-function
+    setStyle: () => {}, // eslint-disable-line no-empty-function
 };
 
 export function registerScreens(store, Provider) {

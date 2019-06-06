@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {Navigation} from 'react-native-navigation';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -36,15 +37,17 @@ const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa
 
 export default class Login extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object,
-        theme: PropTypes.object,
         actions: PropTypes.shape({
             handleLoginIdChanged: PropTypes.func.isRequired,
             handlePasswordChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
+        navigator: PropTypes.object.isRequired, // TODO remove me
+        theme: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
@@ -56,6 +59,24 @@ export default class Login extends PureComponent {
         intl: intlShape.isRequired,
     };
 
+    static options(passProps) {
+        return {
+            topBar: {
+                backButton: {
+                    color: passProps.theme.sidebarHeaderTextColor,
+                    title: '',
+                },
+                background: {
+                    color: passProps.theme.sidebarHeaderBg,
+                },
+                title: {
+                    color: passProps.theme.sidebarHeaderTextColor,
+                },
+                visible: true,
+            },
+        };
+    }
+
     constructor(props) {
         super(props);
 
@@ -66,7 +87,16 @@ export default class Login extends PureComponent {
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
+
         setMfaPreflightDone(false);
+
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: this.context.intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'}),
+                },
+            },
+        });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -84,25 +114,11 @@ export default class Login extends PureComponent {
     goToChannel = () => {
         telemetry.remove(['start:overall']);
 
-        const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         this.scheduleSessionExpiredNotification();
 
-        navigator.resetTo({
-            screen: 'Channel',
-            title: '',
-            animated: false,
-            backButtonTitle: '',
-            navigatorStyle: {
-                animated: true,
-                animationType: 'fade',
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        });
+        this.props.actions.resetToChannel();
     };
 
     goToMfa = () => {
