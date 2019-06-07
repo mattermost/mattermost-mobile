@@ -16,11 +16,17 @@
  
 #### iOS Keyboard Dismissal
  - If the keyboard is open, swiping down past it now closes it.
+ 
+#### Profile Telemetry for Android Beta Builds
+ - To improve Android app performance, we are collecting trace events and device information, collectively known as metrics, to identify slow performing key areas. Those metrics will be sent only from users using Android app beta build starting in version v1.20, who are logged in to servers that allow sending [diagnostic information](https://docs.mattermost.com/administration/config-settings.html#enable-diagnostics-and-error-reporting).
 
 ### Improvements
  - Increased the double tap delay for post action buttons.
  - Implemented assets for Adaptive icons.
  - Users are now brought to the bottom of the channel when posting a message.
+ - Users can now execute actions while the keyboard is open.
+ - Added support on iOS for IPv6 on LTE networks.
+ - LDAP Groups Sync removals with v5.12 servers.
 
 ### Bug Fixes
  - Fixed an issue where a post wasn't immediately removed when deleting another user's post.
@@ -36,7 +42,8 @@
  - Fixed an issue where "Show More" was not removed after the post was edited to a single line.
  
 ### Known Issues
- - Buttons inside ephemeral posts are not clickable / functional on the mobile app.
+  - Buttons inside ephemeral posts are not clickable / functional on the mobile app. [MM-15084](https://mattermost.atlassian.net/browse/MM-15084)
+  - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
  
 ## 1.19.0 Release
 - Release Date: May 16, 2019
