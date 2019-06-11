@@ -36,15 +36,16 @@ const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa
 
 export default class Login extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object,
-        theme: PropTypes.object,
         actions: PropTypes.shape({
             handleLoginIdChanged: PropTypes.func.isRequired,
             handlePasswordChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
+        navigator: PropTypes.object.isRequired, // TODO remove me
+        theme: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
@@ -66,6 +67,7 @@ export default class Login extends PureComponent {
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
+
         setMfaPreflightDone(false);
     }
 
@@ -84,25 +86,11 @@ export default class Login extends PureComponent {
     goToChannel = () => {
         telemetry.remove(['start:overall']);
 
-        const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         this.scheduleSessionExpiredNotification();
 
-        navigator.resetTo({
-            screen: 'Channel',
-            title: '',
-            animated: false,
-            backButtonTitle: '',
-            navigatorStyle: {
-                animated: true,
-                animationType: 'fade',
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        });
+        this.props.actions.resetToChannel();
     };
 
     goToMfa = () => {

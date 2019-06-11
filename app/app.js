@@ -8,15 +8,14 @@ import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'reac
 
 import {loadMe} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
-import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import {getCurrentLocale} from 'app/selectors/i18n';
 
 import {getTranslations as getLocalTranslations} from 'app/i18n';
-import {store, handleManagedConfig} from 'app/mattermost';
+import {store, handleManagedConfig, initializeModules} from 'app/mattermost';
 import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 import {setCSRFFromCookie} from 'app/utils/security';
 
@@ -302,12 +301,14 @@ export default class App {
 
         switch (screen) {
         case 'SelectServer':
-            EventEmitter.emit(ViewTypes.LAUNCH_LOGIN, true);
+            dispatch(resetToSelectServer(this.allowOtherServers));
             break;
         case 'Channel':
-            EventEmitter.emit(ViewTypes.LAUNCH_CHANNEL, true);
+            dispatch(resetToChannel());
             break;
         }
+
+        initializeModules();
 
         this.setAppStarted(true);
     }
