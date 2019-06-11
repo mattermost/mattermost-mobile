@@ -129,7 +129,10 @@ public class MainApplication extends NavigationApplication implements INotificat
     super.onCreate();
     instance = this;
 
-    registerActivityLifecycleCallbacks(new ManagedActivityLifecycleCallbacks());
+    // TODO: Right now I get a black screen when resuming the app from the
+    // background if these callbacks are registered. I'm commenting this out
+    // to move forward and will come back to this at a later date.
+    //registerActivityLifecycleCallbacks(new ManagedActivityLifecycleCallbacks());
 
     // Delete any previous temp files created by the app
     File tempFolder = new File(getApplicationContext().getCacheDir(), "mmShare");
