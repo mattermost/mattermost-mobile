@@ -376,8 +376,8 @@ platform :android do
   lane :build do
     unless configured
       configure
-      configure_telemetry_android
     end
+    configure_telemetry_android
     update_identifiers
     replace_assets
     link_sentry_android

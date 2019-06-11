@@ -26,6 +26,7 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {selectDefaultChannel} from 'app/actions/views/channel';
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {handleLoginIdChanged} from 'app/actions/views/login';
@@ -75,7 +76,7 @@ const lazyLoadAnalytics = () => {
     };
 };
 
-const initializeModules = () => {
+export const initializeModules = () => {
     const {
         StatusBarSizeIOS,
         initializeErrorHandling,
@@ -141,7 +142,7 @@ const handleLogout = () => {
     app.clearNativeCache();
     deleteFileCache();
     resetBadgeAndVersion();
-    launchSelectServer();
+    store.dispatch(resetToSelectServer(app.allowOtherServers));
 };
 
 const restartApp = async () => {
@@ -165,7 +166,7 @@ const restartApp = async () => {
         console.warn('Failed to load initial data while restarting', e); // eslint-disable-line no-console
     }
 
-    launchChannel();
+    store.dispatch(resetToChannel());
 };
 
 const handleServerVersionChanged = async (serverVersion) => {
@@ -384,59 +385,6 @@ const handleSwitchToDefaultChannel = (teamId) => {
     store.dispatch(selectDefaultChannel(teamId));
 };
 
-const launchSelectServer = () => {
-    Navigation.setRoot({
-        root: {
-            stack: {
-                children: [{
-                    component: {
-                        name: 'SelectServer',
-                        passProps: {
-                            allowOtherServers: app.allowOtherServers,
-                        },
-                    },
-                }],
-                options: {
-                    layout: {
-                        backgroundColor: 'transparent',
-                    },
-                    statusBar: {
-                        visible: true,
-                    },
-                    topBar: {
-                        visible: false,
-                    },
-                },
-            },
-        },
-    });
-};
-
-const launchChannel = () => {
-    Navigation.setRoot({
-        root: {
-            stack: {
-                children: [{
-                    component: {
-                        name: 'Channel',
-                    },
-                }],
-                options: {
-                    layout: {
-                        backgroundColor: 'transparent',
-                    },
-                    statusBar: {
-                        visible: true,
-                    },
-                    topBar: {
-                        visible: false,
-                    },
-                },
-            },
-        },
-    });
-};
-
 const handleAppStateChange = (appState) => {
     const isActive = appState === 'active';
 
@@ -506,9 +454,6 @@ const launchEntry = () => {
                     children: [{
                         component: {
                             name: 'Entry',
-                            passProps: {
-                                initializeModules,
-                            },
                         },
                     }],
                     options: {
