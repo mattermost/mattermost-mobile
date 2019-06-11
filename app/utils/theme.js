@@ -19,12 +19,21 @@ export function concatStyles(...styles) {
     return [].concat(styles);
 }
 
-export function setNavigatorStyles(navigator, theme) {
-    navigator.setStyle({
-        navBarTextColor: theme.sidebarHeaderTextColor,
-        navBarBackgroundColor: theme.sidebarHeaderBg,
-        navBarButtonColor: theme.sidebarHeaderTextColor,
-        screenBackgroundColor: theme.centerChannelBg,
+export function setNavigatorStyles(componentId, theme) {
+    Navigation.mergeOptions(componentId, {
+        topBar: {
+            title: {
+                color: theme.sidebarHeaderTextColor
+            },
+            background: {
+                color: theme.sidebarHeaderBg
+            },
+            leftButtonColor: theme.sidebarHeaderTextColor,
+            rightButtonColor: theme.sidebarHeaderTextColor,
+        },
+        layout: {
+            backgroundColor: theme.centerChannelBg,
+        },
     });
 }
 

@@ -79,14 +79,14 @@ export default class MoreDirectMessages extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {navigator, theme} = this.props;
+        const {componentId, theme} = this.props;
         const {selectedCount, startingConversation} = this.state;
         const canStart = selectedCount > 0 && !startingConversation;
 
         this.updateNavigationButtons(canStart);
 
         if (theme !== prevProps.theme) {
-            setNavigatorStyles(navigator, theme);
+            setNavigatorStyles(componentId, theme);
         }
     }
 

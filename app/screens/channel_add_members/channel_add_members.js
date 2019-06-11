@@ -88,14 +88,14 @@ export default class ChannelAddMembers extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {navigator, theme} = this.props;
+        const {componentId, theme} = this.props;
         const {adding, selectedIds} = this.state;
         const enabled = Object.keys(selectedIds).length > 0 && !adding;
 
         this.enableAddOption(enabled);
 
         if (theme !== prevProps.theme) {
-            setNavigatorStyles(navigator, theme);
+            setNavigatorStyles(componentId, theme);
         }
     }
 

@@ -92,7 +92,7 @@ export default class MoreChannels extends PureComponent {
         let channels;
 
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         if (nextProps.channels !== this.props.channels) {

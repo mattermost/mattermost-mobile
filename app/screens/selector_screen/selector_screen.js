@@ -85,7 +85,7 @@ export default class SelectorScreen extends PureComponent {
 
     componentDidUpdate(prevProps) {
         if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.navigator, this.props.theme);
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 

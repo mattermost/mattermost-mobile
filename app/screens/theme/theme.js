@@ -56,7 +56,7 @@ export default class Theme extends React.PureComponent {
 
     componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
-            setNavigatorStyles(this.props.navigator, this.props.theme);
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 

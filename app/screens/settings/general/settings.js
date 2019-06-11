@@ -180,7 +180,7 @@ class Settings extends PureComponent {
 
     onNavigatorEvent = (event) => {
         if (event.id === 'willAppear') {
-            setNavigatorStyles(this.props.navigator, this.props.theme);
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
 
         if (event.type === 'NavBarButtonPress') {
