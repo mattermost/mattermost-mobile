@@ -163,9 +163,6 @@ export default class SelectServer extends PureComponent {
         Navigation.push(componentId, {
             component: {
                 name: screen,
-                passProps: {
-                    theme,
-                },
                 options: {
                     popGesture: !LocalConfig.AutoSelectServerUrl,
                     topBar: {

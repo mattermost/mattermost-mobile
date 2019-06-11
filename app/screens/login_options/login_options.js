@@ -68,6 +68,7 @@ export default class LoginOptions extends PureComponent {
                             color: theme.sidebarHeaderTextColor,
                             text: intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'}),
                         },
+                        visible: true,
                     },
                 },
             },
@@ -325,6 +326,6 @@ const style = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         paddingHorizontal: 15,
-        paddingVertical: 50,
+        flex: 1,
     },
 });

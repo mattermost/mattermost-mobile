@@ -16,20 +16,25 @@ export function resetToChannel() {
                         component: {
                             name: 'Channel',
                             options: {
-                                layout: {
-                                    backgroundColor: theme.centerChannelBg,
+                                topBar: {
+                                    backButton: {
+                                        color: theme.sidebarHeaderTextColor,
+                                        title: '',
+                                    },
+                                    background: {
+                                        color: theme.sidebarHeaderBg,
+                                    },
+                                    statusBar: {
+                                        visible: true,
+                                    },
+                                    title: {
+                                        color: theme.sidebarHeaderTextColor,
+                                    },
+                                    visible: false,
                                 },
                             },
                         },
                     }],
-                    options: {
-                        statusBar: {
-                            visible: true,
-                        },
-                        topBar: {
-                            visible: false,
-                        },
-                    },
                 },
             },
         });
@@ -37,7 +42,9 @@ export function resetToChannel() {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    return () => {
+    return (dispatch, getState) => {
+        const theme = getTheme(getState());
+
         Navigation.setRoot({
             root: {
                 stack: {
@@ -47,19 +54,23 @@ export function resetToSelectServer(allowOtherServers) {
                             passProps: {
                                 allowOtherServers,
                             },
+                            options: {
+                                topBar: {
+                                    backButton: {
+                                        color: theme.sidebarHeaderTextColor,
+                                        title: '',
+                                    },
+                                    background: {
+                                        color: theme.sidebarHeaderBg,
+                                    },
+                                    statusBar: {
+                                        visible: true,
+                                    },
+                                    visible: false,
+                                },
+                            },
                         },
                     }],
-                    options: {
-                        layout: {
-                            backgroundColor: 'transparent',
-                        },
-                        statusBar: {
-                            visible: true,
-                        },
-                        topBar: {
-                            visible: false,
-                        },
-                    },
                 },
             },
         });

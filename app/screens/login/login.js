@@ -18,7 +18,6 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Navigation} from 'react-native-navigation';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -45,7 +44,6 @@ export default class Login extends PureComponent {
             login: PropTypes.func.isRequired,
             resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired, // TODO remove me
         theme: PropTypes.object,
         config: PropTypes.object.isRequired,
@@ -59,24 +57,6 @@ export default class Login extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    static options(passProps) {
-        return {
-            topBar: {
-                backButton: {
-                    color: passProps.theme.sidebarHeaderTextColor,
-                    title: '',
-                },
-                background: {
-                    color: passProps.theme.sidebarHeaderBg,
-                },
-                title: {
-                    color: passProps.theme.sidebarHeaderTextColor,
-                },
-                visible: true,
-            },
-        };
-    }
-
     constructor(props) {
         super(props);
 
@@ -89,14 +69,6 @@ export default class Login extends PureComponent {
         Dimensions.addEventListener('change', this.orientationDidChange);
 
         setMfaPreflightDone(false);
-
-        Navigation.mergeOptions(this.props.componentId, {
-            topBar: {
-                title: {
-                    text: this.context.intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'}),
-                },
-            },
-        });
     }
 
     componentWillReceiveProps(nextProps) {
