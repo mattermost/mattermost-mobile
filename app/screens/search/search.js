@@ -12,6 +12,7 @@ import {
     View,
 } from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -85,8 +86,6 @@ export default class Search extends PureComponent {
     constructor(props) {
         super(props);
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-
         this.contentOffsetY = 0;
         this.state = {
             channelName: '',
@@ -97,6 +96,8 @@ export default class Search extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         if (this.props.initialValue) {
             this.search(this.props.initialValue);
         }
@@ -137,6 +138,16 @@ export default class Search extends PureComponent {
                     });
                 }
             }, 250);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'backPress') {
+            if (this.state.preview) {
+                this.refs.preview.handleClose();
+            } else {
+                this.props.navigator.dismissModal();
+            }
         }
     }
 
@@ -297,16 +308,6 @@ export default class Search extends PureComponent {
             this.props.actions.getMorePostsForSearch();
         }
     }, 100);
-
-    onNavigatorEvent = (event) => {
-        if (event.id === 'backPress') {
-            if (this.state.preview) {
-                this.refs.preview.handleClose();
-            } else {
-                this.props.navigator.dismissModal();
-            }
-        }
-    };
 
     previewPost = (post) => {
         Keyboard.dismiss();

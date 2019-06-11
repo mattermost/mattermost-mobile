@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
+import {Navigation} from 'react-native-navigation';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -81,6 +82,8 @@ export default class SelectServer extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         const {allowOtherServers, serverUrl} = this.props;
         if (!allowOtherServers && serverUrl) {
             // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
@@ -93,7 +96,6 @@ export default class SelectServer extends PureComponent {
         }
 
         this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
-        this.props.navigator.setOnNavigatorEvent(this.handleNavigatorEvent);
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
@@ -121,6 +123,12 @@ export default class SelectServer extends PureComponent {
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
+    }
+
+    componentDidDisappear() {
+        this.setState({
+            connected: false,
+        });
     }
 
     blur = () => {
@@ -241,16 +249,6 @@ export default class SelectServer extends PureComponent {
             }, 350);
         } else {
             this.goToNextScreen(screen, title);
-        }
-    };
-
-    handleNavigatorEvent = (event) => {
-        switch (event.id) {
-        case 'didDisappear':
-            this.setState({
-                connected: false,
-            });
-            break;
         }
     };
 

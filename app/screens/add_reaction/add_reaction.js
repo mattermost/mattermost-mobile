@@ -7,6 +7,7 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import EmojiPicker from 'app/components/emoji_picker';
 import {emptyFunction} from 'app/utils/general';
@@ -14,6 +15,7 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class AddReaction extends PureComponent {
     static propTypes = {
+        componentId: PropTypes.string.isRequired,
         closeButton: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         onEmojiPress: PropTypes.func,
@@ -31,10 +33,13 @@ export default class AddReaction extends PureComponent {
     constructor(props) {
         super(props);
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons({
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
         });
+    }
+
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -43,20 +48,16 @@ export default class AddReaction extends PureComponent {
         }
     }
 
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'close-edit-post') {
+            this.close();
+        }
+    }
+
     close = () => {
         this.props.navigator.dismissModal({
             animationType: 'slide-down',
         });
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-edit-post':
-                this.close();
-                break;
-            }
-        }
     };
 
     handleEmojiPress = (emoji) => {

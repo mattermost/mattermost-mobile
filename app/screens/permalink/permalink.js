@@ -13,6 +13,7 @@ import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import {Navigation} from 'react-native-navigation';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -57,6 +58,7 @@ export default class Permalink extends PureComponent {
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         channelId: PropTypes.string,
         channelIsArchived: PropTypes.bool,
         channelName: PropTypes.string,
@@ -131,8 +133,6 @@ export default class Permalink extends PureComponent {
             loading = false;
         }
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-
         this.state = {
             title: channelName,
             loading,
@@ -146,6 +146,8 @@ export default class Permalink extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.mounted = true;
 
         if (this.state.loading) {
@@ -161,6 +163,12 @@ export default class Permalink extends PureComponent {
 
     componentWillUnmount() {
         this.mounted = false;
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'backPress') {
+            this.handleClose();
+        }
     }
 
     goToThread = preventDoubleTap((post) => {
@@ -312,16 +320,6 @@ export default class Permalink extends PureComponent {
 
         if (this.mounted) {
             this.setState({loading: false});
-        }
-    };
-
-    onNavigatorEvent = (event) => {
-        switch (event.id) {
-        case 'backPress':
-            this.handleClose();
-            break;
-        default:
-            break;
         }
     };
 

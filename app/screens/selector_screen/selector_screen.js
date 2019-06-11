@@ -35,6 +35,7 @@ export default class SelectorScreen extends PureComponent {
             searchProfiles: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
         }),
+        componentId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         data: PropTypes.arrayOf(PropTypes.object),
         dataSource: PropTypes.string,
@@ -65,8 +66,6 @@ export default class SelectorScreen extends PureComponent {
             searchResults: [],
             term: '',
         };
-
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     }
 
     componentDidMount() {

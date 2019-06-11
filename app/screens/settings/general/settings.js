@@ -11,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import {Navigation} from 'react-native-navigation';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
@@ -27,6 +28,7 @@ class Settings extends PureComponent {
             clearErrors: PropTypes.func.isRequired,
             purgeOfflineStore: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
@@ -43,9 +45,20 @@ class Settings extends PureComponent {
         joinableTeams: [],
     };
 
-    constructor(props) {
-        super(props);
-        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
+    componentDidAppear() {
+        setNavigatorStyles(this.props.componentId, this.props.theme);
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'close-settings') {
+            this.props.navigator.dismissModal({
+                animationType: 'slide-down',
+            });
+        }
     }
 
     errorEmailBody = () => {
@@ -177,20 +190,6 @@ class Settings extends PureComponent {
             },
         });
     });
-
-    onNavigatorEvent = (event) => {
-        if (event.id === 'willAppear') {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
-
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'close-settings') {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
-            }
-        }
-    };
 
     openErrorEmail = preventDoubleTap(() => {
         const {config} = this.props;

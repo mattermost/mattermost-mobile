@@ -3,6 +3,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -11,6 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 
 export default class NotificationSettingsMentionsKeywords extends PureComponent {
     static propTypes = {
+        componentId: PropTypes.string.isRequired,
         keywords: PropTypes.string,
         navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
@@ -23,8 +25,10 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
         this.state = {
             keywords: props.keywords,
         };
+    }
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -45,15 +49,9 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
         return this.setState({keywords});
     };
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'ScreenChangedEvent') {
-            switch (event.id) {
-            case 'willDisappear':
-                this.props.onBack(this.state.keywords);
-                break;
-            }
-        }
-    };
+    componentDidDisappear() {
+        this.props.onBack(this.state.keywords);
+    }
 
     render() {
         const {theme} = this.props;

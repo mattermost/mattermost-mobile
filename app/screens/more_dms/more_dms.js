@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {Platform, View} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
@@ -39,6 +40,7 @@ export default class MoreDirectMessages extends PureComponent {
             searchProfiles: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         allProfiles: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
@@ -70,11 +72,12 @@ export default class MoreDirectMessages extends PureComponent {
             selectedCount: 0,
         };
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         this.updateNavigationButtons(false, context);
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.getProfiles();
     }
 
@@ -87,6 +90,14 @@ export default class MoreDirectMessages extends PureComponent {
 
         if (theme !== prevProps.theme) {
             setNavigatorStyles(componentId, theme);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === START_BUTTON) {
+            this.startConversation();
+        } else if (buttonId === CLOSE_BUTTON) {
+            this.close();
         }
     }
 
@@ -233,16 +244,6 @@ export default class MoreDirectMessages extends PureComponent {
         }
 
         return !result.error;
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === START_BUTTON) {
-                this.startConversation();
-            } else if (event.id === CLOSE_BUTTON) {
-                this.close();
-            }
-        }
     };
 
     onSearch = (text) => {

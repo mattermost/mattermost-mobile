@@ -27,6 +27,7 @@ export default class Theme extends React.PureComponent {
         actions: PropTypes.shape({
             savePreferences: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         allowedThemes: PropTypes.arrayOf(PropTypes.object),
         customTheme: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,

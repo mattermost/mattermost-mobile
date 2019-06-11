@@ -17,6 +17,7 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 
 export default class TextPreview extends React.PureComponent {
     static propTypes = {
+        componentId: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,

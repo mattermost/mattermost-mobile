@@ -9,6 +9,7 @@ import {
     Platform,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
@@ -33,6 +34,7 @@ export default class ChannelAddMembers extends PureComponent {
             handleAddChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         currentChannelGroupConstrained: PropTypes.bool,
         currentTeamId: PropTypes.string.isRequired,
@@ -72,13 +74,14 @@ export default class ChannelAddMembers extends PureComponent {
             showAsAction: 'always',
         };
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons({
             rightButtons: [this.addButton],
         });
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         const {actions, currentTeamId} = this.props;
 
         actions.getTeamStats(currentTeamId);
@@ -96,6 +99,12 @@ export default class ChannelAddMembers extends PureComponent {
 
         if (theme !== prevProps.theme) {
             setNavigatorStyles(componentId, theme);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === this.addButton.id) {
+            this.handleAddMembersPress();
         }
     }
 
@@ -186,14 +195,6 @@ export default class ChannelAddMembers extends PureComponent {
         this.setState({
             loading: false,
         });
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === this.addButton.id) {
-                this.handleAddMembersPress();
-            }
-        }
     };
 
     onSearch = (text) => {

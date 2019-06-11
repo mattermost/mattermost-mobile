@@ -8,6 +8,7 @@ import {
     Keyboard,
     InteractionManager,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -56,6 +57,7 @@ export default class EditChannel extends PureComponent {
             getChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }),
+        componentId: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -102,11 +104,12 @@ export default class EditChannel extends PureComponent {
             rightButtons: [this.rightButton],
         };
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.emitCanUpdateChannel(false);
     }
 
@@ -136,6 +139,17 @@ export default class EditChannel extends PureComponent {
                 this.setState({error: updateChannelRequest.error, updating: false});
                 break;
             }
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'close-edit-channel':
+            this.close();
+            break;
+        case 'edit-channel':
+            this.onUpdateChannel();
+            break;
         }
     }
 
@@ -235,19 +249,6 @@ export default class EditChannel extends PureComponent {
         const data = await this.props.actions.patchChannel(id, channel);
         if (data.error && data.error.server_error_id === 'store.sql_channel.update.archived_channel.app_error') {
             this.props.actions.getChannel(id);
-        }
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-edit-channel':
-                this.close();
-                break;
-            case 'edit-channel':
-                this.onUpdateChannel();
-                break;
-            }
         }
     };
 

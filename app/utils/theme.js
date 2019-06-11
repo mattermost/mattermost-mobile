@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {StyleSheet} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import * as ThemeUtils from 'mattermost-redux/utils/theme_utils';
 
@@ -23,10 +24,10 @@ export function setNavigatorStyles(componentId, theme) {
     Navigation.mergeOptions(componentId, {
         topBar: {
             title: {
-                color: theme.sidebarHeaderTextColor
+                color: theme.sidebarHeaderTextColor,
             },
             background: {
-                color: theme.sidebarHeaderBg
+                color: theme.sidebarHeaderBg,
             },
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,

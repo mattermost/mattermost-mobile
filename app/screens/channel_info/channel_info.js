@@ -43,6 +43,7 @@ export default class ChannelInfo extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }),
+        componentId: PropTypes.string.isRequired,
         viewArchivedChannels: PropTypes.bool.isRequired,
         canDeleteChannel: PropTypes.bool.isRequired,
         currentChannel: PropTypes.object.isRequired,

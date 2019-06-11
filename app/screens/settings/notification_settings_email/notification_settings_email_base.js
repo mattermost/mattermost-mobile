@@ -4,6 +4,7 @@
 import {PureComponent} from 'react';
 import {Platform} from 'react-native';
 import PropTypes from 'prop-types';
+import {Navigation} from 'react-native-navigation';
 
 import {Preferences} from 'mattermost-redux/constants';
 import {getEmailInterval} from 'mattermost-redux/utils/notify_props';
@@ -17,10 +18,10 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             savePreferences: PropTypes.func.isRequired,
             updateMe: PropTypes.func.isRequired,
         }),
+        componentId: PropTypes.string.isRequired,
         currentUser: PropTypes.object.isRequired,
         emailInterval: PropTypes.string.isRequired,
         enableEmailBatching: PropTypes.bool.isRequired,
-        navigator: PropTypes.object,
         sendEmailNotifications: PropTypes.bool.isRequired,
         siteName: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -33,7 +34,6 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             currentUser,
             emailInterval,
             enableEmailBatching,
-            navigator,
             sendEmailNotifications,
         } = props;
 
@@ -44,8 +44,10 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
             showEmailNotificationsModal: false,
         };
+    }
 
-        navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -74,15 +76,11 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         }
     }
 
-    onNavigatorEvent = (event) => {
-        if (Platform.OS === 'ios' && event.type === 'ScreenChangedEvent') {
-            switch (event.id) {
-            case 'willDisappear':
-                this.saveEmailNotifyProps();
-                break;
-            }
+    componentDidDisappear() {
+        if (Platform.OS === 'ios') {
+            this.saveEmailNotifyProps();
         }
-    };
+    }
 
     setEmailInterval = (value) => {
         this.setState({newInterval: value});

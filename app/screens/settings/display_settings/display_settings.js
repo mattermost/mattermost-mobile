@@ -8,6 +8,7 @@ import {
     Platform,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
@@ -18,6 +19,7 @@ import ClockDisplay from 'app/screens/clock_display';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
+        componentId: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
@@ -32,9 +34,12 @@ export default class DisplaySettings extends PureComponent {
         showClockDisplaySettings: false,
     };
 
-    constructor(props) {
-        super(props);
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
+    componentDidAppear() {
+        setNavigatorStyles(this.props.componentId, this.props.theme);
     }
 
     closeClockDisplaySettings = () => {
@@ -99,12 +104,6 @@ export default class DisplaySettings extends PureComponent {
             },
         });
     });
-
-    onNavigatorEvent = (event) => {
-        if (event.id === 'willAppear') {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
-    };
 
     render() {
         const {theme, enableTimezone, enableTheme} = this.props;
