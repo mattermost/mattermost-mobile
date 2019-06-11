@@ -57,7 +57,7 @@ export default class EditChannel extends PureComponent {
             getChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }),
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,

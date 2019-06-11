@@ -17,7 +17,7 @@ export default class ThreadBase extends PureComponent {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         channelType: PropTypes.string,
         displayName: PropTypes.string,

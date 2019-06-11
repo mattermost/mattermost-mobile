@@ -12,7 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 
 export default class NotificationSettingsMentionsKeywords extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         keywords: PropTypes.string,
         navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,

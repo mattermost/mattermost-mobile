@@ -11,7 +11,7 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMentionsBase extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,

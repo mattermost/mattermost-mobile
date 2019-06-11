@@ -34,7 +34,7 @@ export default class ChannelAddMembers extends PureComponent {
             handleAddChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         currentChannelId: PropTypes.string.isRequired,
         currentChannelGroupConstrained: PropTypes.bool,
         currentTeamId: PropTypes.string.isRequired,

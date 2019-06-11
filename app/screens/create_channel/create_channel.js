@@ -18,7 +18,7 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class CreateChannel extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,

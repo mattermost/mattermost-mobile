@@ -33,7 +33,7 @@ export default class ChannelMembers extends PureComponent {
             handleRemoveChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         canManageUsers: PropTypes.bool.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         currentChannelMembers: PropTypes.array,

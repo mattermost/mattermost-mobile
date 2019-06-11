@@ -18,7 +18,7 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             savePreferences: PropTypes.func.isRequired,
             updateMe: PropTypes.func.isRequired,
         }),
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         emailInterval: PropTypes.string.isRequired,
         enableEmailBatching: PropTypes.bool.isRequired,

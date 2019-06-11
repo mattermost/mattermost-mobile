@@ -37,7 +37,7 @@ export default class TermsOfService extends PureComponent {
             getTermsOfService: PropTypes.func.isRequired,
             updateMyTermsOfServiceStatus: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         closeButton: PropTypes.object,
         navigator: PropTypes.object,
         siteName: PropTypes.string,

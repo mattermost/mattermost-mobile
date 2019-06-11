@@ -33,7 +33,7 @@ export default class ErrorTeamsList extends PureComponent {
             logout: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         navigator: PropTypes.object,
         theme: PropTypes.object,
     };

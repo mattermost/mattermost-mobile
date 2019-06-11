@@ -35,15 +35,13 @@ describe('SelectTeam', () => {
         actions,
         currentChannelId: 'someId',
         currentUrl: 'test',
-        navigator: {
-            setOnNavigatorEvent: jest.fn(),
-        },
         userWithoutTeams: false,
         teams: [],
         theme: Preferences.THEMES.default,
         teamsRequest: {
             status: RequestStatus.FAILURE,
         },
+        componentId: 'component-id',
     };
 
     test('should match snapshot for fail of teams', async () => {

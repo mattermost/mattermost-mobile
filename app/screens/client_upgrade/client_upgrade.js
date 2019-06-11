@@ -27,7 +27,7 @@ export default class ClientUpgrade extends PureComponent {
             logError: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         currentVersion: PropTypes.string,
         closeAction: PropTypes.func,
         userCheckedForUpgrade: PropTypes.bool,

@@ -40,7 +40,7 @@ export default class MoreDirectMessages extends PureComponent {
             searchProfiles: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         allProfiles: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,

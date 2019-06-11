@@ -28,7 +28,7 @@ import noResultsImage from 'assets/images/no_results/pin.png';
 
 export default class PinnedPosts extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
             loadChannelsByTeamName: PropTypes.func.isRequired,

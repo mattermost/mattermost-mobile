@@ -46,7 +46,7 @@ export default class SelectTeam extends PureComponent {
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,

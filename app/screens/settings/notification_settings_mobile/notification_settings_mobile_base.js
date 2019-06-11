@@ -12,7 +12,7 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMobileBase extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,

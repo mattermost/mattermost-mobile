@@ -15,7 +15,7 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class AddReaction extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         closeButton: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         onEmojiPress: PropTypes.func,

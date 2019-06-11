@@ -24,23 +24,6 @@ exports[`ReactionList should match snapshot 1`] = `
     >
       <ReactionRow
         emojiName="+1"
-        navigator={
-          Object {
-            "setOnNavigatorEvent": [MockFunction] {
-              "calls": Array [
-                Array [
-                  [Function],
-                ],
-              ],
-              "results": Array [
-                Object {
-                  "type": "return",
-                  "value": undefined,
-                },
-              ],
-            },
-          }
-        }
         teammateNameDisplay="username"
         theme={
           Object {
@@ -96,23 +79,6 @@ exports[`ReactionList should match snapshot 1`] = `
     >
       <ReactionRow
         emojiName="smile"
-        navigator={
-          Object {
-            "setOnNavigatorEvent": [MockFunction] {
-              "calls": Array [
-                Array [
-                  [Function],
-                ],
-              ],
-              "results": Array [
-                Object {
-                  "type": "return",
-                  "value": undefined,
-                },
-              ],
-            },
-          }
-        }
         teammateNameDisplay="username"
         theme={
           Object {
@@ -174,23 +140,6 @@ Array [
   >
     <ReactionRow
       emojiName="+1"
-      navigator={
-        Object {
-          "setOnNavigatorEvent": [MockFunction] {
-            "calls": Array [
-              Array [
-                [Function],
-              ],
-            ],
-            "results": Array [
-              Object {
-                "type": "return",
-                "value": undefined,
-              },
-            ],
-          },
-        }
-      }
       teammateNameDisplay="username"
       theme={
         Object {
@@ -246,23 +195,6 @@ Array [
   >
     <ReactionRow
       emojiName="smile"
-      navigator={
-        Object {
-          "setOnNavigatorEvent": [MockFunction] {
-            "calls": Array [
-              Array [
-                [Function],
-              ],
-            ],
-            "results": Array [
-              Object {
-                "type": "return",
-                "value": undefined,
-              },
-            ],
-          },
-        }
-      }
       teammateNameDisplay="username"
       theme={
         Object {

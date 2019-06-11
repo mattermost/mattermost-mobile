@@ -52,19 +52,6 @@ exports[`edit_profile should match snapshot 1`] = `
             },
           ],
         },
-        "setOnNavigatorEvent": [MockFunction] {
-          "calls": Array [
-            Array [
-              [Function],
-            ],
-          ],
-          "results": Array [
-            Object {
-              "type": "return",
-              "value": undefined,
-            },
-          ],
-        },
       }
     }
     onShowFileSizeWarning={[Function]}

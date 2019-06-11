@@ -31,11 +31,11 @@ describe('TermsOfService', () => {
             dismissAllModals: jest.fn(),
             dismissModal: jest.fn(),
             setButtons: jest.fn(),
-            setOnNavigatorEvent: jest.fn(),
         },
         theme: Preferences.THEMES.default,
         closeButton: {},
         siteName: 'Mattermost',
+        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {

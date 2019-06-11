@@ -27,7 +27,7 @@ class NotificationSettings extends PureComponent {
         actions: PropTypes.shape({
             updateMe: PropTypes.func.isRequired,
         }),
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,

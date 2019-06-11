@@ -29,7 +29,7 @@ export default class ReactionList extends PureComponent {
         actions: PropTypes.shape({
             getMissingProfilesByIds: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         navigator: PropTypes.object,
         reactions: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,

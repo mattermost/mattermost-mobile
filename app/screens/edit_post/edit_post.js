@@ -23,7 +23,7 @@ export default class EditPost extends PureComponent {
         actions: PropTypes.shape({
             editPost: PropTypes.func.isRequired,
         }),
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         closeButton: PropTypes.object,
         deviceHeight: PropTypes.number,
         deviceWidth: PropTypes.number,

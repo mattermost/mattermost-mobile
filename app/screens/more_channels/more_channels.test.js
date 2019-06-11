@@ -12,7 +12,6 @@ jest.mock('react-intl');
 
 describe('MoreChannels', () => {
     const navigator = {
-        setOnNavigatorEvent: jest.fn(),
         setButtons: jest.fn(),
         dismissModal: jest.fn(),
         push: jest.fn(),
@@ -35,6 +34,7 @@ describe('MoreChannels', () => {
         currentTeamId: 'current_team_id',
         navigator,
         theme: Preferences.THEMES.default,
+        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {

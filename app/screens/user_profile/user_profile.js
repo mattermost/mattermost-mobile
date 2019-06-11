@@ -34,7 +34,7 @@ export default class UserProfile extends PureComponent {
             setChannelDisplayName: PropTypes.func.isRequired,
             loadBot: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         navigator: PropTypes.object,

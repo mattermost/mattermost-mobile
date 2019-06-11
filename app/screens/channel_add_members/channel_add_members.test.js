@@ -24,9 +24,9 @@ describe('ChannelAddMembers', () => {
         navigator: {
             pop: jest.fn(),
             setButtons: jest.fn(),
-            setOnNavigatorEvent: jest.fn(),
         },
         theme: Preferences.THEMES.default,
+        componentId: 'component-id',
     };
 
     test('should render without error and call functions on mount', () => {
@@ -39,8 +39,6 @@ describe('ChannelAddMembers', () => {
         expect(baseProps.navigator.setButtons).toBeCalledTimes(2);
         expect(baseProps.navigator.setButtons.mock.calls[0][0]).toEqual({rightButtons: [button]});
         expect(baseProps.navigator.setButtons.mock.calls[1][0]).toEqual({rightButtons: [button]});
-
-        expect(baseProps.navigator.setOnNavigatorEvent).toBeCalledTimes(1);
     });
 
     test('should match state on clearSearch', () => {

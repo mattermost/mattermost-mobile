@@ -131,9 +131,6 @@ describe('Theme', () => {
         allowedThemes,
         isLandscape: false,
         isTablet: false,
-        navigator: {
-            setOnNavigatorEvent: jest.fn(),
-        },
         teamId: 'test-team',
         theme: Preferences.THEMES.default,
         userId: 'test-user',

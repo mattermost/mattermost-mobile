@@ -30,7 +30,7 @@ export default class MoreChannels extends PureComponent {
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         canCreateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.array,
         closeButton: PropTypes.object,

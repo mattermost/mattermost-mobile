@@ -124,19 +124,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
               },
             ],
           },
-          "setOnNavigatorEvent": [MockFunction] {
-            "calls": Array [
-              Array [
-                [Function],
-              ],
-            ],
-            "results": Array [
-              Object {
-                "type": "return",
-                "value": undefined,
-              },
-            ],
-          },
         }
       }
       textStyles={
@@ -370,19 +357,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
                 "type": "return",
                 "value": undefined,
               },
-              Object {
-                "type": "return",
-                "value": undefined,
-              },
-            ],
-          },
-          "setOnNavigatorEvent": [MockFunction] {
-            "calls": Array [
-              Array [
-                [Function],
-              ],
-            ],
-            "results": Array [
               Object {
                 "type": "return",
                 "value": undefined,
@@ -671,19 +645,6 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
                 "type": "return",
                 "value": undefined,
               },
-              Object {
-                "type": "return",
-                "value": undefined,
-              },
-            ],
-          },
-          "setOnNavigatorEvent": [MockFunction] {
-            "calls": Array [
-              Array [
-                [Function],
-              ],
-            ],
-            "results": Array [
               Object {
                 "type": "return",
                 "value": undefined,

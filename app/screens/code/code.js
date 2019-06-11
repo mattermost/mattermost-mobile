@@ -18,7 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 
 export default class Code extends React.PureComponent {
     static propTypes = {
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,

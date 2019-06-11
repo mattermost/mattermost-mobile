@@ -19,7 +19,7 @@ import ClockDisplay from 'app/screens/clock_display';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string.isRequired,
+        componentId: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
