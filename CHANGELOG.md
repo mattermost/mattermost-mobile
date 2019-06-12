@@ -26,7 +26,7 @@
  - Users are now brought to the bottom of the channel when posting a message.
  - Users can now execute actions while the keyboard is open.
  - Added support on iOS for IPv6 on LTE networks.
- - LDAP Groups Sync removals with v5.12 servers.
+ - Added support for LDAP Group constrained feature with v5.12 servers.
 
 ### Bug Fixes
  - Fixed an issue where a post wasn't immediately removed when deleting another user's post.
