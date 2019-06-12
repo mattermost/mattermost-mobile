@@ -62,7 +62,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
-    componentDidDisappear() {
+    componentWillUnmount() {
         this.saveUserNotifyProps();
     }
 
