@@ -35,7 +35,7 @@ export default class App {
         this.startAppFromPushNotification = false;
         this.isNotificationsConfigured = false;
         this.allowOtherServers = true;
-        this.appStarted = false;
+        this.launchEntry = true;
         this.emmEnabled = false;
         this.performingEMMAuthentication = false;
         this.translations = null;
@@ -276,7 +276,7 @@ export default class App {
     };
 
     startApp = () => {
-        if (this.appStarted || this.waitForRehydration) {
+        if (this.waitForRehydration) {
             return;
         }
 

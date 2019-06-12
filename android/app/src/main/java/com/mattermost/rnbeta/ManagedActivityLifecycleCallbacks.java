@@ -50,10 +50,6 @@ public class ManagedActivityLifecycleCallbacks implements ActivityLifecycleCallb
         if (managedConfig != null && activity != null) {
             activity.registerReceiver(restrictionsReceiver, restrictionsFilter);
         }
-
-        if (activity != null) {
-            activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        }
     }
 
     @Override
