@@ -17,7 +17,7 @@ function mapStateToProps(state, ownProps) {
     const {serverVersion} = state.entities.general;
     const {service} = ownProps.currentUser;
 
-    const firstNameDisabled = (service === 'ldap' && config.LdapFristNameAttributeSet === 'true') ||
+    const firstNameDisabled = (service === 'ldap' && config.LdapFirstNameAttributeSet === 'true') ||
         (service === 'saml' && config.SamlFirstNameAttributeSet === 'true');
 
     const lastNameDisabled = (service === 'ldap' && config.LdapLastNameAttributeSet === 'true') ||
