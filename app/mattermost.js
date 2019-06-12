@@ -481,15 +481,15 @@ const fromPushNotification = Platform.OS === 'android' && Initialization.replyFr
 
 if (startedSharedExtension || fromPushNotification) {
     // Hold on launching Entry screen
-    app.setAppStarted(true);
+    app.canLaunchEntry(false);
 
     // Listen for when the user opens the app
     new NativeEventsReceiver().appLaunched(() => {
-        app.setAppStarted(false);
+        app.canLaunchEntry(true);
         launchEntry();
     });
 }
 
-if (!app.appStarted) {
+if (app.canLaunchEntry) {
     launchEntry();
 }

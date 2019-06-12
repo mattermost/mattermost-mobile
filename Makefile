@@ -160,19 +160,11 @@ run-android: | check-device-android pre-run prepare-android-build ## Runs the ap
 	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
         echo Starting React Native packager server; \
     	npm start & echo Running Android app in development; \
-    	if [ ! -z ${VARIANT} ]; then \
-    		react-native run-android --no-packager --variant=${VARIANT}; \
-    	else \
-    		react-native run-android --no-packager; \
-    	fi; \
+		npm run android; \
     	wait; \
     else \
     	echo Running Android app in development; \
-        if [ ! -z ${VARIANT} ]; then \
-			react-native run-android --no-packager --variant=${VARIANT}; \
-		else \
-			react-native run-android --no-packager; \
-		fi; \
+        npm run android; \
     fi
 
 build: | stop pre-build check-style i18n-extract-ci ## Builds the app for Android & iOS

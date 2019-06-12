@@ -2,12 +2,14 @@ package com.mattermost.rnbeta;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import com.reactnativenavigation.controllers.SplashActivity;
 
-public class MainActivity extends SplashActivity {
+import com.reactnativenavigation.NavigationActivity;
+
+public class MainActivity extends NavigationActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.launch_screen);
 
         /**
          * Reference: https://stackoverflow.com/questions/7944338/resume-last-activity-when-launcher-icon-is-clicked
@@ -22,10 +24,5 @@ public class MainActivity extends SplashActivity {
             finish();
             return;
         }
-    }
-
-    @Override
-    public int getSplashLayout() {
-        return R.layout.launch_screen;
     }
 }
