@@ -35,7 +35,7 @@ export default class App {
         this.startAppFromPushNotification = false;
         this.isNotificationsConfigured = false;
         this.allowOtherServers = true;
-        this.launchEntry = true;
+        this.canLaunchEntry = true;
         this.emmEnabled = false;
         this.performingEMMAuthentication = false;
         this.translations = null;
