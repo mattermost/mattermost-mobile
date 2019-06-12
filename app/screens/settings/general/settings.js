@@ -122,6 +122,7 @@ class Settings extends PureComponent {
 
     goToDisplaySettings = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
+
         // TODO: Ensure all styles used in app/utils/theme's setNavigatorStyles
         // are passed to DisplaySettings when this push call is updated to RNN v2
         // then remove setNavigatorStyles call in app/screens/settings/display_settings/display_settings.js
