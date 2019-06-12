@@ -38,6 +38,8 @@ export default class DisplaySettings extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
+    // TODO: Remove this once styles are passed in push call in
+    // app/screens/settings/general/settings.js
     componentDidAppear() {
         setNavigatorStyles(this.props.componentId, this.props.theme);
     }

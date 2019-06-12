@@ -194,6 +194,9 @@ export default class SettingsDrawer extends PureComponent {
     goToSettings = preventDoubleTap(() => {
         const {intl} = this.context;
 
+        // TODO: Ensure all styles used in app/utils/theme's setNavigatorStyles
+        // are passed to Settings when this showModal call is updated to RNN v2,
+        // then remove setNavigatorStyles call in app/screens/settings/general/settings.js
         this.openModal(
             'Settings',
             intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),

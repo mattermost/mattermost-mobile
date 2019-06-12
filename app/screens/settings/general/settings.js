@@ -49,6 +49,8 @@ class Settings extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
+    // TODO: Remove this once styles are passed in push/showModal call in
+    // app/components/sidebars/settings/settings_sidebar.js
     componentDidAppear() {
         setNavigatorStyles(this.props.componentId, this.props.theme);
     }
@@ -120,6 +122,9 @@ class Settings extends PureComponent {
 
     goToDisplaySettings = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
+        // TODO: Ensure all styles used in app/utils/theme's setNavigatorStyles
+        // are passed to DisplaySettings when this push call is updated to RNN v2
+        // then remove setNavigatorStyles call in app/screens/settings/display_settings/display_settings.js
         navigator.push({
             screen: 'DisplaySettings',
             title: intl.formatMessage({id: 'user.settings.modal.display', defaultMessage: 'Display'}),
