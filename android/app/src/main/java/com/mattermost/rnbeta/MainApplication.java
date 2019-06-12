@@ -145,14 +145,6 @@ public class MainApplication extends NavigationApplication implements INotificat
     // addReactMarkerListener();
   }
 
-  // TODO: Need to test if this is needed for RNN v2
-  // @Override
-  // public boolean clearHostOnActivityDestroy(Activity activity) {
-  //   // This solves the issue where the splash screen does not go away
-  //   // after the app is killed by the OS cause of memory or a long time in the background
-  //   return false;
-  // }
-
   @Override
   public IPushNotification getPushNotification(Context context, Bundle bundle, AppLifecycleFacade defaultFacade, AppLaunchHelper defaultAppLaunchHelper) {
     return new CustomPushNotification(
