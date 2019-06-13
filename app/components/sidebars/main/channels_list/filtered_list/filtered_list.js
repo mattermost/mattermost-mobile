@@ -301,15 +301,17 @@ class FilteredList extends Component {
     }
 
     buildArchivedForSearch = (props, term) => {
-        const {archivedChannels} = props;
+        const {currentChannel, archivedChannels} = props;
 
-        const archived = archivedChannels.map((o) => {
+        let archived = archivedChannels.map((o) => {
             return {
                 ...o,
                 fake: true,
             };
         });
-
+        if (!term) { // when there is no search text, display an archived channel only if we are in it.
+            archived = archived.filter((channel) => channel.id === currentChannel.id);
+        }
         return this.filterChannels(archived, term);
     }
 
