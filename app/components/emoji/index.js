@@ -33,7 +33,8 @@ function mapStateToProps(state, ownProps) {
             config.EnableCustomEmoji !== 'true' ||
             config.ExperimentalEnablePostMetadata === 'true' ||
             getCurrentUserId(state) === '' ||
-            !isMinimumServerVersion(Client4.getServerVersion(), 4, 7);
+            !isMinimumServerVersion(Client4.getServerVersion(), 4, 7) ||
+            isMinimumServerVersion(Client4.getServerVersion(), 5, 12);
     }
 
     return {
