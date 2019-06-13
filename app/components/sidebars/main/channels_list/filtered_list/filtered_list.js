@@ -78,6 +78,7 @@ class FilteredList extends Component {
         if (this.props.restrictDms) {
             this.props.actions.getProfilesInTeam(this.props.currentTeam.id);
         }
+        this.props.actions.searchChannels(this.props.currentTeam.id, '');
     }
 
     shouldComponentUpdate(nextProps, nextState) {
