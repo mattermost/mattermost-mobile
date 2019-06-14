@@ -178,6 +178,7 @@ export default class SelectServer extends PureComponent {
                             text: title,
                         },
                         visible: !LocalConfig.AutoSelectServerUrl,
+                        height: LocalConfig.AutoSelectServerUrl ? 0 : null,
                     },
                 },
             },
