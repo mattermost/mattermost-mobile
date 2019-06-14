@@ -251,7 +251,6 @@ export default class ExtensionPost extends PureComponent {
                 if (passwordParsed.length === 2) {
                     const [token, url] = passwordParsed;
 
-                    // if for any case the url and the token aren't valid proceed with re-hydration
                     if (url && url !== 'undefined' && token && token !== 'undefined') {
                         this.token = token;
                         this.url = url;
