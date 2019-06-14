@@ -21,7 +21,6 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
-import {Navigation} from 'react-native-navigation';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -131,12 +130,6 @@ export default class SelectServer extends PureComponent {
         this.certificateListener.remove();
 
         this.navigationEventListener.remove();
-    }
-
-    componentDidDisappear() {
-        this.setState({
-            connected: false,
-        });
     }
 
     componentDidDisappear() {
