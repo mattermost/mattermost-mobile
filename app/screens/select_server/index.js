@@ -6,14 +6,15 @@ import {connect} from 'react-redux';
 
 import {getPing, resetPing, setServerVersion} from 'mattermost-redux/actions/general';
 import {login} from 'mattermost-redux/actions/users';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
+import {resetToChannel} from 'app/actions/navigation';
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
 import {loadConfigAndLicense} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import getClientUpgrade from 'app/selectors/client_upgrade';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import SelectServer from './select_server';
 
@@ -46,6 +47,7 @@ function mapDispatchToProps(dispatch) {
             resetPing,
             setLastUpgradeCheck,
             setServerVersion,
+            resetToChannel,
         }, dispatch),
     };
 }

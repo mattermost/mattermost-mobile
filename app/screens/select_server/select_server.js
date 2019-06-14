@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
+import {Navigation} from 'react-native-navigation';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
@@ -49,17 +50,19 @@ export default class SelectServer extends PureComponent {
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
             setServerVersion: PropTypes.func.isRequired,
         }).isRequired,
         allowOtherServers: PropTypes.bool,
+        componentId: PropTypes.string.isRequired,
         config: PropTypes.object,
         currentVersion: PropTypes.string,
         hasConfigAndLicense: PropTypes.bool.isRequired,
         latestVersion: PropTypes.string,
         license: PropTypes.object,
         minVersion: PropTypes.string,
-        navigator: PropTypes.object,
+        navigator: PropTypes.object.isRequired, // TODO remove me
         serverUrl: PropTypes.string.isRequired,
         theme: PropTypes.object,
     };
@@ -99,6 +102,8 @@ export default class SelectServer extends PureComponent {
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
+
+        this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -119,10 +124,19 @@ export default class SelectServer extends PureComponent {
     }
 
     componentWillUnmount() {
-        this.certificateListener.remove();
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
+
+        this.certificateListener.remove();
+
+        this.navigationEventListener.remove();
+    }
+
+    componentDidDisappear() {
+        this.setState({
+            connected: false,
+        });
     }
 
     componentDidDisappear() {
@@ -153,18 +167,29 @@ export default class SelectServer extends PureComponent {
     };
 
     goToNextScreen = (screen, title) => {
-        const {navigator, theme} = this.props;
-        navigator.push({
-            screen,
-            title,
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarHidden: LocalConfig.AutoSelectServerUrl,
-                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
+        const {componentId, theme} = this.props;
+
+        Navigation.push(componentId, {
+            component: {
+                name: screen,
+                options: {
+                    popGesture: !LocalConfig.AutoSelectServerUrl,
+                    topBar: {
+                        backButton: {
+                            color: theme.sidebarHeaderTextColor,
+                            title: '',
+                        },
+                        background: {
+                            color: theme.sidebarHeaderBg,
+                        },
+                        title: {
+                            color: theme.sidebarHeaderTextColor,
+                            text: title,
+                        },
+                        visible: !LocalConfig.AutoSelectServerUrl,
+                        height: LocalConfig.AutoSelectServerUrl ? 0 : null,
+                    },
+                },
             },
         });
     };
@@ -285,28 +310,13 @@ export default class SelectServer extends PureComponent {
     };
 
     loginWithCertificate = async () => {
-        const {navigator} = this.props;
-
         tracker.initialLoad = Date.now();
 
         await this.props.actions.login('credential', 'password');
         await this.props.actions.handleSuccessfulLogin();
         this.scheduleSessionExpiredNotification();
 
-        navigator.resetTo({
-            screen: 'Channel',
-            title: '',
-            animated: false,
-            backButtonTitle: '',
-            navigatorStyle: {
-                animated: true,
-                animationType: 'fade',
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        });
+        this.props.actions.resetToChannel();
     };
 
     pingServer = (url, retryWithHttp = true) => {

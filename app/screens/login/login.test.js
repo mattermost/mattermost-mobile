@@ -3,6 +3,8 @@
 
 import React from 'react';
 
+import {RequestStatus} from 'mattermost-redux/constants';
+
 import FormattedText from 'app/components/formatted_text';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
@@ -21,12 +23,14 @@ describe('Login', () => {
         loginId: '',
         password: '',
         loginRequest: {},
+        navigator: {},
         actions: {
             handleLoginIdChanged: jest.fn(),
             handlePasswordChanged: jest.fn(),
             handleSuccessfulLogin: jest.fn(),
             scheduleExpiredNotification: jest.fn(),
             login: jest.fn(),
+            resetToChannel: jest.fn(),
         },
     };
 
@@ -71,5 +75,43 @@ describe('Login', () => {
         const wrapper = shallowWithIntl(<Login {...props}/>);
 
         expect(wrapper.find(FormattedText).find({id: 'login.forgot'}).exists()).toBe(false);
+    });
+
+    test('should send the user to the login screen after login', (done) => {
+        let props = {
+            ...baseProps,
+            loginRequest: {
+                status: RequestStatus.NOT_STARTED,
+            },
+        };
+
+        props.actions.handleSuccessfulLogin.mockImplementation(() => Promise.resolve());
+        props.actions.resetToChannel.mockImplementation(() => {
+            done();
+        });
+
+        const wrapper = shallowWithIntl(<Login {...props}/>);
+
+        expect(props.actions.resetToChannel).not.toHaveBeenCalled();
+
+        props = {
+            ...props,
+            loginRequest: {
+                status: RequestStatus.STARTED,
+            },
+        };
+        wrapper.setProps(props);
+
+        expect(props.actions.resetToChannel).not.toHaveBeenCalled();
+
+        props = {
+            ...props,
+            loginRequest: {
+                status: RequestStatus.SUCCESS,
+            },
+        };
+        wrapper.setProps(props);
+
+        // This test times out if resetToChannel hasn't been called
     });
 });
