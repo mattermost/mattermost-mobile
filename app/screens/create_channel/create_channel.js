@@ -8,6 +8,7 @@ import {
     Keyboard,
     InteractionManager,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -17,6 +18,7 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class CreateChannel extends PureComponent {
     static propTypes = {
+        componentId: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -72,17 +74,17 @@ export default class CreateChannel extends PureComponent {
             buttons.leftButtons = [this.left];
         }
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
         this.emitCanCreateChannel(false);
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         const {createChannelRequest} = nextProps;
@@ -106,6 +108,17 @@ export default class CreateChannel extends PureComponent {
                 this.setState({error: createChannelRequest.error, creating: false});
                 break;
             }
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'close-new-channel':
+            this.close(!this.props.closeButton);
+            break;
+        case 'create-channel':
+            this.onCreateChannel();
+            break;
         }
     }
 
@@ -147,19 +160,6 @@ export default class CreateChannel extends PureComponent {
         Keyboard.dismiss();
         const {displayName, purpose, header} = this.state;
         this.props.actions.handleCreateChannel(displayName, purpose, header, this.props.channelType);
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-new-channel':
-                this.close(!this.props.closeButton);
-                break;
-            case 'create-channel':
-                this.onCreateChannel();
-                break;
-            }
-        }
     };
 
     onDisplayNameChange = (displayName) => {

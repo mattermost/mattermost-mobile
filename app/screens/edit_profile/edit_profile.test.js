@@ -18,7 +18,6 @@ jest.mock('app/utils/theme', () => {
 
 describe('edit_profile', () => {
     const navigator = {
-        setOnNavigatorEvent: jest.fn(),
         setButtons: jest.fn(),
         dismissModal: jest.fn(),
         push: jest.fn(),
@@ -46,6 +45,7 @@ describe('edit_profile', () => {
             position: 'position',
         },
         commandType: 'ShowModal',
+        componentId: 'component-id',
     };
 
     test('should match snapshot', async () => {
@@ -59,7 +59,6 @@ describe('edit_profile', () => {
     test('should match state on handleRemoveProfileImage', () => {
         const newNavigator = {
             dismissModal: jest.fn(),
-            setOnNavigatorEvent: jest.fn(),
             setButtons: jest.fn(),
         };
         const wrapper = shallow(

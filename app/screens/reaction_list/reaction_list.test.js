@@ -17,11 +17,11 @@ describe('ReactionList', () => {
             getMissingProfilesByIds: jest.fn(),
         },
         allUserIds: ['user_id_1', 'user_id_2'],
-        navigator: {setOnNavigatorEvent: jest.fn()},
         reactions: {'user_id_1-smile': {emoji_name: 'smile', user_id: 'user_id_1'}, 'user_id_2-+1': {emoji_name: '+1', user_id: 'user_id_2'}},
         theme: Preferences.THEMES.default,
         teammateNameDisplay: 'username',
         userProfiles: [{id: 'user_id_1', username: 'username_1'}, {id: 'user_id_2', username: 'username_2'}],
+        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {

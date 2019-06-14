@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -45,6 +46,7 @@ export default class SelectTeam extends PureComponent {
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,
@@ -59,7 +61,6 @@ export default class SelectTeam extends PureComponent {
 
     constructor(props) {
         super(props);
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         this.state = {
             loading: false,
@@ -71,16 +72,31 @@ export default class SelectTeam extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.getTeams();
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         if (this.props.teams !== nextProps.teams) {
             this.buildData(nextProps);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        const {logout} = this.props.actions;
+
+        switch (buttonId) {
+        case 'close-teams':
+            this.close();
+            break;
+        case 'logout':
+            InteractionManager.runAfterInteractions(logout);
+            break;
         }
     }
 
@@ -129,21 +145,6 @@ export default class SelectTeam extends PureComponent {
                 disableTermsModal: true,
             },
         });
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            const {logout} = this.props.actions;
-
-            switch (event.id) {
-            case 'close-teams':
-                this.close();
-                break;
-            case 'logout':
-                InteractionManager.runAfterInteractions(logout);
-                break;
-            }
-        }
     };
 
     onSelectTeam = async (team) => {

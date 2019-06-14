@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
 
@@ -16,6 +17,7 @@ import DialogElement from './dialog_element.js';
 
 export default class InteractiveDialog extends PureComponent {
     static propTypes = {
+        componentId: PropTypes.string,
         url: PropTypes.string.isRequired,
         callbackId: PropTypes.string,
         elements: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -36,8 +38,6 @@ export default class InteractiveDialog extends PureComponent {
     constructor(props) {
         super(props);
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-
         const values = {};
         props.elements.forEach((e) => {
             values[e.name] = e.default || null;
@@ -50,19 +50,21 @@ export default class InteractiveDialog extends PureComponent {
         };
     }
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'submit-dialog':
-                this.handleSubmit();
-                break;
-            case 'close-dialog':
-                this.notifyOnCancelIfNeeded();
-                this.handleHide();
-                break;
-            }
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'submit-dialog':
+            this.handleSubmit();
+            break;
+        case 'close-dialog':
+            this.notifyOnCancelIfNeeded();
+            this.handleHide();
+            break;
         }
-    };
+    }
 
     handleSubmit = async () => {
         const {elements} = this.props;

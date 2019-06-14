@@ -17,6 +17,7 @@ export default class ThreadBase extends PureComponent {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         channelType: PropTypes.string,
         displayName: PropTypes.string,
@@ -63,7 +64,7 @@ export default class ThreadBase extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         if (this.props.postIds !== nextProps.postIds && !nextProps.postIds.length) {

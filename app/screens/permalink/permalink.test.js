@@ -16,7 +16,6 @@ describe('Permalink', () => {
         dismissModal: jest.fn(),
         push: jest.fn(),
         resetTo: jest.fn(),
-        setOnNavigatorEvent: jest.fn(),
     };
 
     const actions = {
@@ -48,6 +47,7 @@ describe('Permalink', () => {
         onPress: jest.fn(),
         postIds: ['post_id_1', 'focused_post_id', 'post_id_3'],
         theme: Preferences.THEMES.default,
+        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {
@@ -82,7 +82,7 @@ describe('Permalink', () => {
         );
 
         wrapper.instance().handleClose = jest.fn();
-        wrapper.instance().onNavigatorEvent({id: 'backPress'});
+        wrapper.instance().navigationButtonPressed({buttonId: 'backPress'});
         expect(wrapper.instance().handleClose).toHaveBeenCalledTimes(1);
     });
 

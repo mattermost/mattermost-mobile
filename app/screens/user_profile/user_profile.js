@@ -10,6 +10,7 @@ import {
     Linking,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
@@ -33,6 +34,7 @@ export default class UserProfile extends PureComponent {
             setChannelDisplayName: PropTypes.func.isRequired,
             loadBot: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         navigator: PropTypes.object,
@@ -65,20 +67,32 @@ export default class UserProfile extends PureComponent {
                 rightButtons: [this.rightButton],
             };
 
-            props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
             props.navigator.setButtons(buttons);
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         if (this.props.user && this.props.user.is_bot) {
             this.props.actions.loadBot(this.props.user.id);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case this.rightButton.id:
+            this.goToEditProfile();
+            break;
+        case 'close-settings':
+            this.close();
+            break;
         }
     }
 
@@ -239,19 +253,6 @@ export default class UserProfile extends PureComponent {
         requestAnimationFrame(() => {
             navigator.push(options);
         });
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case this.rightButton.id:
-                this.goToEditProfile();
-                break;
-            case 'close-settings':
-                this.close();
-                break;
-            }
-        }
     };
 
     renderAdditionalOptions = () => {

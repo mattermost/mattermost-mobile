@@ -4,12 +4,14 @@
 import {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
 import {getNotificationProps} from 'app/utils/notify_props';
 import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMentionsBase extends PureComponent {
     static propTypes = {
+        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
@@ -27,27 +29,25 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         const {currentUser} = props;
         const notifyProps = getNotificationProps(currentUser);
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-
         this.goingBack = true; //use to identify if the navigator is popping this screen
         this.state = this.setStateFromNotifyProps(notifyProps);
     }
 
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
     }
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'ScreenChangedEvent' && this.goingBack) {
-            switch (event.id) {
-            case 'willDisappear':
-                this.saveUserNotifyProps();
-                break;
-            }
+    componentDidDisappear() {
+        if (this.goingBack) {
+            this.saveUserNotifyProps();
         }
-    };
+    }
 
     setStateFromNotifyProps = (notifyProps) => {
         const mentionKeys = (notifyProps.mention_keys || '').split(',');

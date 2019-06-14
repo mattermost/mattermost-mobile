@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
@@ -32,6 +33,7 @@ export default class ChannelMembers extends PureComponent {
             handleRemoveChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         canManageUsers: PropTypes.bool.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         currentChannelMembers: PropTypes.array,
@@ -67,7 +69,6 @@ export default class ChannelMembers extends PureComponent {
             title: context.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'}),
         };
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         if (props.canManageUsers) {
             props.navigator.setButtons({
                 rightButtons: [this.removeButton],
@@ -76,18 +77,26 @@ export default class ChannelMembers extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.getProfiles();
     }
 
     componentDidUpdate(prevProps) {
-        const {navigator, theme} = this.props;
+        const {componentId, theme} = this.props;
         const {removing, selectedIds} = this.state;
         const enabled = Object.keys(selectedIds).length > 0 && !removing;
 
         this.enableRemoveOption(enabled);
 
         if (theme !== prevProps.theme) {
-            setNavigatorStyles(navigator, theme);
+            setNavigatorStyles(componentId, theme);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === this.removeButton.id) {
+            this.handleRemoveMembersPress();
         }
     }
 
@@ -186,14 +195,6 @@ export default class ChannelMembers extends PureComponent {
 
         this.page += 1;
         this.setState({loading: false, profiles: [...profiles, ...data]});
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === this.removeButton.id) {
-                this.handleRemoveMembersPress();
-            }
-        }
     };
 
     onSearch = (text) => {

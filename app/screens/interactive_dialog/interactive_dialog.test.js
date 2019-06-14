@@ -21,9 +21,9 @@ describe('InteractiveDialog', () => {
             submitInteractiveDialog: jest.fn(),
         },
         navigator: {
-            setOnNavigatorEvent: jest.fn(),
             dismissModal: jest.fn(),
         },
+        componentId: 'component-id',
     };
 
     test('should set default values', async () => {
@@ -74,7 +74,7 @@ describe('InteractiveDialog', () => {
             cancelled: true,
         };
 
-        wrapper.instance().onNavigatorEvent({type: 'NavBarButtonPress', id: 'close-dialog'});
+        wrapper.instance().navigationButtonPressed({buttonId: 'close-dialog'});
         expect(submitInteractiveDialog).toHaveBeenCalledTimes(1);
         expect(submitInteractiveDialog).toHaveBeenCalledWith(dialog);
     });
@@ -89,7 +89,7 @@ describe('InteractiveDialog', () => {
             />,
         );
 
-        wrapper.instance().onNavigatorEvent({type: 'NavBarButtonPress', id: 'close-dialog'});
+        wrapper.instance().navigationButtonPressed({buttonId: 'close-dialog'});
         expect(submitInteractiveDialog).not.toHaveBeenCalled();
     });
 });

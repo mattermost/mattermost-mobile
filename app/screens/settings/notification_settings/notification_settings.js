@@ -27,6 +27,7 @@ class NotificationSettings extends PureComponent {
         actions: PropTypes.shape({
             updateMe: PropTypes.func.isRequired,
         }),
+        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
@@ -38,7 +39,7 @@ class NotificationSettings extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         const {updateMeRequest, intl} = nextProps;

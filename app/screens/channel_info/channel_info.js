@@ -43,6 +43,7 @@ export default class ChannelInfo extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }),
+        componentId: PropTypes.string,
         viewArchivedChannels: PropTypes.bool.isRequired,
         canDeleteChannel: PropTypes.bool.isRequired,
         currentChannel: PropTypes.object.isRequired,
@@ -82,7 +83,7 @@ export default class ChannelInfo extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         let isFavorite = this.state.isFavorite;

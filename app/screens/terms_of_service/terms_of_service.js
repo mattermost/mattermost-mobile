@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
 import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
@@ -36,6 +37,7 @@ export default class TermsOfService extends PureComponent {
             getTermsOfService: PropTypes.func.isRequired,
             updateMyTermsOfServiceStatus: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         closeButton: PropTypes.object,
         navigator: PropTypes.object,
         siteName: PropTypes.string,
@@ -72,37 +74,36 @@ export default class TermsOfService extends PureComponent {
         this.rightButton.title = context.intl.formatMessage({id: 'terms_of_service.agreeButton', defaultMessage: 'I Agree'});
         this.leftButton.icon = props.closeButton;
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         this.setNavigatorButtons(false);
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.getTerms();
     }
 
     componentDidUpdate(prevProps) {
         if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.navigator, this.props.theme);
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-terms-of-service':
-                this.closeTermsAndLogout();
-                break;
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'close-terms-of-service':
+            this.closeTermsAndLogout();
+            break;
 
-            case 'reject-terms-of-service':
-                this.handleRejectTerms();
-                break;
+        case 'reject-terms-of-service':
+            this.handleRejectTerms();
+            break;
 
-            case 'accept-terms-of-service':
-                this.handleAcceptTerms();
-                break;
-            }
+        case 'accept-terms-of-service':
+            this.handleAcceptTerms();
+            break;
         }
-    };
+    }
 
     setNavigatorButtons = (enabled = true) => {
         const buttons = {

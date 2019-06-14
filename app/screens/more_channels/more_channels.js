@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {Platform, View} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
@@ -29,6 +30,7 @@ export default class MoreChannels extends PureComponent {
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         canCreateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.array,
         closeButton: PropTypes.object,
@@ -79,11 +81,12 @@ export default class MoreChannels extends PureComponent {
             buttons.rightButtons = [this.rightButton];
         }
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.doGetChannels();
     }
 
@@ -92,7 +95,7 @@ export default class MoreChannels extends PureComponent {
         let channels;
 
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         if (nextProps.channels !== this.props.channels) {
@@ -104,6 +107,17 @@ export default class MoreChannels extends PureComponent {
 
         if (channels) {
             this.setState({channels});
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'close-more-channels':
+            this.close();
+            break;
+        case 'create-pub-channel':
+            this.onCreateChannel();
+            break;
         }
     }
 
@@ -164,19 +178,6 @@ export default class MoreChannels extends PureComponent {
 
         this.page += 1;
         this.setState({loading: false});
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-more-channels':
-                this.close();
-                break;
-            case 'create-pub-channel':
-                this.onCreateChannel();
-                break;
-            }
-        }
     };
 
     onSelectChannel = async (id) => {

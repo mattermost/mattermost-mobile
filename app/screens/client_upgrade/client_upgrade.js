@@ -12,6 +12,7 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -26,6 +27,7 @@ export default class ClientUpgrade extends PureComponent {
             logError: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         currentVersion: PropTypes.string,
         closeAction: PropTypes.func,
         userCheckedForUpgrade: PropTypes.bool,
@@ -44,13 +46,14 @@ export default class ClientUpgrade extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         this.state = {
             upgradeType: UpgradeTypes.NO_UPGRADE,
         };
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         if (this.props.userCheckedForUpgrade) {
             this.checkUpgrade(this.props);
         }
@@ -58,7 +61,15 @@ export default class ClientUpgrade extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'close-upgrade') {
+            this.props.navigator.dismissModal({
+                animationType: 'slide-down',
+            });
         }
     }
 
@@ -115,16 +126,6 @@ export default class ClientUpgrade extends PureComponent {
 
             return false;
         });
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'close-upgrade') {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
-            }
-        }
     };
 
     renderMustUpgrade() {

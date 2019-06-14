@@ -11,6 +11,7 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
 
@@ -54,9 +55,12 @@ export default class RecentMentions extends PureComponent {
     constructor(props) {
         super(props);
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.actions.clearSearch();
         props.actions.getRecentMentions();
+    }
+
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
     goToThread = (post) => {
@@ -108,15 +112,13 @@ export default class RecentMentions extends PureComponent {
 
     keyExtractor = (item) => item;
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'close-settings') {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
-            }
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'close-settings') {
+            this.props.navigator.dismissModal({
+                animationType: 'slide-down',
+            });
         }
-    };
+    }
 
     previewPost = (post) => {
         Keyboard.dismiss();

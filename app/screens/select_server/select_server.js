@@ -84,6 +84,8 @@ export default class SelectServer extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         const {allowOtherServers, serverUrl} = this.props;
         if (!allowOtherServers && serverUrl) {
             // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it

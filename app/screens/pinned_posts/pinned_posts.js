@@ -11,6 +11,7 @@ import {
     SafeAreaView,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
 
@@ -27,6 +28,7 @@ import noResultsImage from 'assets/images/no_results/pin.png';
 
 export default class PinnedPosts extends PureComponent {
     static propTypes = {
+        componentId: PropTypes.string,
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
             loadChannelsByTeamName: PropTypes.func.isRequired,
@@ -52,16 +54,20 @@ export default class PinnedPosts extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    constructor(props) {
-        super(props);
-
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-    }
-
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         const {actions, currentChannelId} = this.props;
         actions.clearSearch();
         actions.getPinnedPosts(currentChannelId);
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'close-settings') {
+            this.props.navigator.dismissModal({
+                animationType: 'slide-down',
+            });
+        }
     }
 
     goToThread = (post) => {
@@ -112,16 +118,6 @@ export default class PinnedPosts extends PureComponent {
     };
 
     keyExtractor = (item) => item;
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'close-settings') {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
-            }
-        }
-    };
 
     previewPost = (post) => {
         Keyboard.dismiss();

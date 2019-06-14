@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Dimensions, Keyboard, NativeModules, View} from 'react-native';
 import SafeArea from 'react-native-safe-area';
+import {Navigation} from 'react-native-navigation';
 
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
@@ -33,10 +34,6 @@ export default class SafeAreaIos extends PureComponent {
     constructor(props) {
         super(props);
 
-        if (props.navigator) {
-            props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        }
-
         this.state = {
             keyboard: false,
             safeAreaInsets: {
@@ -56,6 +53,8 @@ export default class SafeAreaIos extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         Dimensions.addEventListener('change', this.getSafeAreaInsets);
         this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
@@ -68,6 +67,14 @@ export default class SafeAreaIos extends PureComponent {
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
         this.mounted = false;
+    }
+
+    componentDidAppear() {
+        this.getSafeAreaInsets();
+    }
+
+    componentDidDisappear() {
+        this.getSafeAreaInsets();
     }
 
     getStatusBarHeight = () => {
@@ -104,15 +111,6 @@ export default class SafeAreaIos extends PureComponent {
 
     keyboardWillShow = () => {
         this.setState({keyboard: true});
-    };
-
-    onNavigatorEvent = (event) => {
-        switch (event.id) {
-        case 'willAppear':
-        case 'didDisappear':
-            this.getSafeAreaInsets();
-            break;
-        }
     };
 
     renderTopBar = () => {

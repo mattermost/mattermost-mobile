@@ -17,8 +17,8 @@ describe('DisplaySettings', () => {
         enableTimezone: false,
         navigator: {
             push: jest.fn(),
-            setOnNavigatorEvent: jest.fn(),
         },
+        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {

@@ -11,6 +11,7 @@ import {
 import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {Navigation} from 'react-native-navigation';
 
 import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
@@ -65,10 +66,14 @@ export default class LongPost extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    constructor(props) {
-        super(props);
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'backPress') {
+            this.handleClose();
+        }
     }
 
     goToThread = preventDoubleTap((post) => {
@@ -114,16 +119,6 @@ export default class LongPost extends PureComponent {
             this.handleClose();
         } else {
             this.goToThread(post);
-        }
-    };
-
-    onNavigatorEvent = (event) => {
-        switch (event.id) {
-        case 'backPress':
-            this.handleClose();
-            break;
-        default:
-            break;
         }
     };
 

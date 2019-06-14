@@ -8,6 +8,7 @@ import {Alert, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {DocumentPickerUtil} from 'react-native-document-picker';
+import {Navigation} from 'react-native-navigation';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -114,7 +115,6 @@ export default class EditProfile extends PureComponent {
         };
         this.rightButton.title = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
 
         this.state = {
@@ -125,6 +125,21 @@ export default class EditProfile extends PureComponent {
             position,
             username,
         };
+    }
+
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'update-profile':
+            this.submitUser();
+            break;
+        case 'close-settings':
+            this.close();
+            break;
+        }
     }
 
     canUpdate = (updatedField) => {
@@ -274,19 +289,6 @@ export default class EditProfile extends PureComponent {
         this.setState(field, () => {
             this.emitCanUpdateAccount(this.canUpdate(field));
         });
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'update-profile':
-                this.submitUser();
-                break;
-            case 'close-settings':
-                this.close();
-                break;
-            }
-        }
     };
 
     onShowFileSizeWarning = (filename) => {

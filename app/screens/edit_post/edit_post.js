@@ -7,6 +7,7 @@ import {
     Platform,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import ErrorText from 'app/components/error_text';
 import Loading from 'app/components/loading';
@@ -22,6 +23,7 @@ export default class EditPost extends PureComponent {
         actions: PropTypes.shape({
             editPost: PropTypes.func.isRequired,
         }),
+        componentId: PropTypes.string,
         closeButton: PropTypes.object,
         deviceHeight: PropTypes.number,
         deviceWidth: PropTypes.number,
@@ -50,7 +52,6 @@ export default class EditPost extends PureComponent {
         this.state = {message: props.post.message};
         this.rightButton.title = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons({
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
             rightButtons: [this.rightButton],
@@ -58,12 +59,14 @@ export default class EditPost extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.focus();
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         const {editPostRequest} = nextProps;
@@ -84,6 +87,17 @@ export default class EditPost extends PureComponent {
                 this.setState({error: editPostRequest.error, editing: false});
                 break;
             }
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'close-edit-post':
+            this.close();
+            break;
+        case 'edit-post':
+            this.onEditPost();
+            break;
         }
     }
 
@@ -119,19 +133,6 @@ export default class EditPost extends PureComponent {
         const {message} = this.state;
         const post = Object.assign({}, this.props.post, {message});
         this.props.actions.editPost(post);
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-edit-post':
-                this.close();
-                break;
-            case 'edit-post':
-                this.onEditPost();
-                break;
-            }
-        }
     };
 
     onPostChangeText = (message) => {

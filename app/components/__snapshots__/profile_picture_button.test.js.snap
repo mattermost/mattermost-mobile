@@ -21,7 +21,6 @@ exports[`profile_picture_button should match snapshot 1`] = `
       "dismissModal": [MockFunction],
       "push": [MockFunction],
       "setButtons": [MockFunction],
-      "setOnNavigatorEvent": [MockFunction],
     }
   }
   theme={
