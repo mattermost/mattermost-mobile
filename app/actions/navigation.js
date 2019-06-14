@@ -16,6 +16,9 @@ export function resetToChannel() {
                         component: {
                             name: 'Channel',
                             options: {
+                                statusBar: {
+                                    visible: true,
+                                },
                                 topBar: {
                                     backButton: {
                                         color: theme.sidebarHeaderTextColor,
@@ -24,13 +27,11 @@ export function resetToChannel() {
                                     background: {
                                         color: theme.sidebarHeaderBg,
                                     },
-                                    statusBar: {
-                                        visible: true,
-                                    },
                                     title: {
                                         color: theme.sidebarHeaderTextColor,
                                     },
                                     visible: false,
+                                    height: 0,
                                 },
                             },
                         },
@@ -55,6 +56,9 @@ export function resetToSelectServer(allowOtherServers) {
                                 allowOtherServers,
                             },
                             options: {
+                                statusBar: {
+                                    visible: true,
+                                },
                                 topBar: {
                                     backButton: {
                                         color: theme.sidebarHeaderTextColor,
@@ -63,10 +67,8 @@ export function resetToSelectServer(allowOtherServers) {
                                     background: {
                                         color: theme.sidebarHeaderBg,
                                     },
-                                    statusBar: {
-                                        visible: true,
-                                    },
                                     visible: false,
+                                    height: 0,
                                 },
                             },
                         },

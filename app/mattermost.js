@@ -465,6 +465,7 @@ const launchEntry = () => {
                         },
                         topBar: {
                             visible: false,
+                            height: 0,
                         },
                     },
                 },
