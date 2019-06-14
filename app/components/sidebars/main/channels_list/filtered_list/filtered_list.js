@@ -303,16 +303,14 @@ class FilteredList extends Component {
     buildArchivedForSearch = (props, term) => {
         const {currentChannel, archivedChannels} = props;
 
-        let archived = archivedChannels.map((o) => {
-            return {
-                ...o,
-                fake: true,
-            };
-        });
-        if (!term) { // when there is no search text, display an archived channel only if we are in it.
-            archived = archived.filter((channel) => channel.id === currentChannel.id);
-        }
-        return this.filterChannels(archived, term);
+        return this.filterChannels(archivedChannels.reduce((acc, channel) => {
+            // when there is no search text, display an archived channel only if we are in it at the moment.
+            if (term || channel.id === currentChannel.id) {
+                acc.push({...channel});
+            }
+
+            return acc;
+        }, []), term);
     }
 
     buildOtherMembersForSearch = (props, term) => {

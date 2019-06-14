@@ -14,7 +14,7 @@ import {
     getCurrentChannel,
     getGroupChannels,
     getArchivedChannels,
-    getOtherUnArchivedChannels,
+    getOtherChannels,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
@@ -113,7 +113,7 @@ function mapStateToProps(state) {
         currentChannel: getCurrentChannel(state),
         currentTeam: getCurrentTeam(state),
         currentUserId,
-        otherChannels: getOtherUnArchivedChannels(state),
+        otherChannels: getOtherChannels(state, false),
         archivedChannels: getArchivedChannels(state),
         groupChannelMemberDetails: getGroupChannelMemberDetails(state),
         profiles,
