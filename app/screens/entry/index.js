@@ -6,9 +6,10 @@ import {connect} from 'react-redux';
 import {setDeviceToken} from 'mattermost-redux/actions/general';
 import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 
 import {isLandscape} from 'app/selectors/device';
-import {getDeviceTimezone, isTimezoneEnabled} from 'app/utils/timezone';
+import {getDeviceTimezone} from 'app/utils/timezone';
 
 const lazyLoadEntry = () => {
     return require('./entry').default;
