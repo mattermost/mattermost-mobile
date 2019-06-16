@@ -23,7 +23,7 @@ describe('Login', () => {
         loginId: '',
         password: '',
         loginRequest: {},
-        navigator: {},
+        componentId: 'component-id',
         actions: {
             handleLoginIdChanged: jest.fn(),
             handlePasswordChanged: jest.fn(),
@@ -31,6 +31,7 @@ describe('Login', () => {
             scheduleExpiredNotification: jest.fn(),
             login: jest.fn(),
             resetToChannel: jest.fn(),
+            goToScreen: jest.fn(),
         },
     };
 

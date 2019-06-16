@@ -8,7 +8,7 @@ import {login} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
-import {resetToChannel} from 'app/actions/navigation';
+import {resetToChannel, goToScreen} from 'app/actions/navigation';
 import LoginActions from 'app/actions/views/login';
 
 import Login from './login.js';
@@ -32,6 +32,7 @@ function mapDispatchToProps(dispatch) {
             ...LoginActions,
             login,
             resetToChannel,
+            goToScreen,
         }, dispatch),
     };
 }

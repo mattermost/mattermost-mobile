@@ -12,7 +12,6 @@ import {
     Text,
 } from 'react-native';
 import Button from 'react-native-button';
-import {Navigation} from 'react-native-navigation';
 
 import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
@@ -26,11 +25,12 @@ import logo from 'assets/images/logo.png';
 
 export default class LoginOptions extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
         componentId: PropTypes.string.isRequired,
-        navigator: PropTypes.object.isRequired, // TODO remove me
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
-        theme: PropTypes.object,
     };
 
     static contextTypes = {
@@ -45,54 +45,26 @@ export default class LoginOptions extends PureComponent {
         Dimensions.removeEventListener('change', this.orientationDidChange);
     }
 
+    goToNextScreen = (screen, title, passProps = {}) => {
+        const {actions, componentId} = this.props;
+
+        actions.goToScreen(componentId, screen, title, passProps);
+    }
+
     goToLogin = preventDoubleTap(() => {
         const {intl} = this.context;
-        const {componentId, theme} = this.props;
+        const screen = 'Login';
+        const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
-        Navigation.push(componentId, {
-            component: {
-                name: 'Login',
-                passProps: {
-                    theme,
-                },
-                options: {
-                    topBar: {
-                        backButton: {
-                            color: theme.sidebarHeaderTextColor,
-                            title: '',
-                        },
-                        background: {
-                            color: theme.sidebarHeaderBg,
-                        },
-                        title: {
-                            color: theme.sidebarHeaderTextColor,
-                            text: intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'}),
-                        },
-                        visible: true,
-                    },
-                },
-            },
-        });
+        this.goToNextScreen(screen, title);
     });
 
     goToSSO = (ssoType) => {
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
-        navigator.push({
-            screen: 'SSO',
-            title: intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                ssoType,
-            },
-        });
+        const screen = 'SSO';
+        const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
+
+        this.goToNextScreen(screen, title, {ssoType});
     };
 
     orientationDidChange = () => {
