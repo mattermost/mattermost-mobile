@@ -32,7 +32,7 @@ import telemetry from 'app/telemetry';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
+export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
 export default class Login extends PureComponent {
     static propTypes = {

@@ -45,26 +45,22 @@ export default class LoginOptions extends PureComponent {
         Dimensions.removeEventListener('change', this.orientationDidChange);
     }
 
-    goToNextScreen = (screen, title, passProps = {}) => {
-        const {actions, componentId} = this.props;
-
-        actions.goToScreen(componentId, screen, title, passProps);
-    }
-
     goToLogin = preventDoubleTap(() => {
+        const {actions, componentId} = this.props;
         const {intl} = this.context;
         const screen = 'Login';
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
-        this.goToNextScreen(screen, title);
+        actions.goToScreen(componentId, screen, title);
     });
 
     goToSSO = (ssoType) => {
+        const {actions, componentId} = this.props;
         const {intl} = this.context;
         const screen = 'SSO';
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
 
-        this.goToNextScreen(screen, title, {ssoType});
+        actions.goToScreen(componentId, screen, title, {ssoType});
     };
 
     orientationDidChange = () => {
