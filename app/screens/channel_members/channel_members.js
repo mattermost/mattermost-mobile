@@ -225,20 +225,34 @@ export default class ChannelMembers extends PureComponent {
         });
     };
 
-    renderItem = (props) => {
-        // The list will re-render when the selection changes because it's passed into the list as extraData
-        const selected = this.state.selectedIds[props.id];
-        const enabled = props.id !== this.props.currentUserId;
-
+    renderItem = (props, selectProps) => {
         return (
             <UserListRow
                 key={props.id}
                 {...props}
-                selectable={true}
-                selected={selected}
-                enabled={enabled}
+                {...selectProps}
             />
         );
+    }
+
+    renderSelectableItem = (props) => {
+        // The list will re-render when the selection changes because selectedIds is passed into the list as extraData
+        const selectProps = {
+            selectable: true,
+            selected: this.state.selectedIds[props.id],
+            enabled: props.id !== this.props.currentUserId,
+        };
+
+        this.renderItem(props, selectProps);
+    }
+
+    renderUnselectableItem = (props) => {
+        const selectProps = {
+            selectable: false,
+            enabled: false,
+        };
+
+        this.renderItem(props, selectProps);
     };
 
     renderLoading = () => {
@@ -292,7 +306,7 @@ export default class ChannelMembers extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme} = this.props;
+        const {theme, canManageUsers} = this.props;
         const {
             removing,
             loading,
@@ -374,7 +388,7 @@ export default class ChannelMembers extends PureComponent {
                     noResults={this.renderNoResults()}
                     onLoadMore={this.getProfiles}
                     onRowPress={this.handleSelectProfile}
-                    renderItem={this.renderItem}
+                    renderItem={canManageUsers ? this.renderSelectableItem : this.renderUnselectableItem}
                     theme={theme}
                 />
             </KeyboardLayout>
