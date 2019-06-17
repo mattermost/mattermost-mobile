@@ -13,4 +13,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ChannelsList);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(ChannelsList);

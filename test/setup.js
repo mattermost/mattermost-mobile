@@ -42,6 +42,14 @@ jest.mock('react-native-device-info', () => {
     };
 });
 
+jest.mock('react-native-cookies', () => ({
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    openURL: jest.fn(),
+    canOpenURL: jest.fn(),
+    getInitialURL: jest.fn(),
+}));
+
 let logs;
 let warns;
 let errors;

@@ -4,7 +4,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Keyboard,
     ScrollView,
     StyleSheet,
 } from 'react-native';
@@ -123,7 +122,6 @@ export default class FileAttachmentList extends Component {
     };
 
     handlePreviewPress = preventDoubleTap((idx) => {
-        Keyboard.dismiss();
         previewImageAtIndex(this.props.navigator, this.items, idx, this.galleryFiles);
     });
 
@@ -176,6 +174,7 @@ export default class FileAttachmentList extends Component {
                 horizontal={true}
                 scrollEnabled={fileIds.length > 1}
                 style={[(isFailed && styles.failed)]}
+                keyboardShouldPersistTaps={'always'}
             >
                 {this.renderItems()}
             </ScrollView>

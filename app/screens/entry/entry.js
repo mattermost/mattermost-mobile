@@ -75,11 +75,18 @@ export default class Entry extends PureComponent {
             launchLogin: false,
             launchChannel: false,
         };
+
+        this.unsubscribeFromStore = null;
     }
 
     componentDidMount() {
         Client4.setUserAgent(DeviceInfo.getUserAgent());
-        this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
+
+        if (store.getState().views.root.hydrationComplete) {
+            this.handleHydrationComplete();
+        } else {
+            this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
+        }
 
         EventEmitter.on(ViewTypes.LAUNCH_LOGIN, this.handleLaunchLogin);
         EventEmitter.on(ViewTypes.LAUNCH_CHANNEL, this.handleLaunchChannel);
@@ -107,13 +114,6 @@ export default class Entry extends PureComponent {
     };
 
     listenForHydration = () => {
-        const {
-            actions: {
-                autoUpdateTimezone,
-            },
-            enableTimezone,
-            deviceTimezone,
-        } = this.props;
         const {getState} = store;
         const state = getState();
 
@@ -122,23 +122,40 @@ export default class Entry extends PureComponent {
         }
 
         if (state.views.root.hydrationComplete) {
+            this.handleHydrationComplete();
+        }
+    };
+
+    handleHydrationComplete = () => {
+        if (this.unsubscribeFromStore) {
             this.unsubscribeFromStore();
+            this.unsubscribeFromStore = null;
+        }
 
-            if (enableTimezone) {
-                autoUpdateTimezone(deviceTimezone);
-            }
+        this.autoUpdateTimezone();
+        this.setAppCredentials();
+        this.setStartupThemes();
+        this.handleNotification();
+        this.loadSystemEmojis();
 
-            this.setAppCredentials();
-            this.setStartupThemes();
-            this.handleNotification();
-            this.loadSystemEmojis();
-
-            if (Platform.OS === 'android') {
-                this.launchForAndroid();
-                return;
-            }
-
+        if (Platform.OS === 'android') {
+            this.launchForAndroid();
+        } else {
             this.launchForiOS();
+        }
+    };
+
+    autoUpdateTimezone = () => {
+        const {
+            actions: {
+                autoUpdateTimezone,
+            },
+            enableTimezone,
+            deviceTimezone,
+        } = this.props;
+
+        if (enableTimezone) {
+            autoUpdateTimezone(deviceTimezone);
         }
     };
 

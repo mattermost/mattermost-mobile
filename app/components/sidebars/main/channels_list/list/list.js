@@ -5,6 +5,8 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     InteractionManager,
+    Keyboard,
+    Platform,
     SectionList,
     Text,
     TouchableHighlight,
@@ -17,7 +19,7 @@ import {General} from 'mattermost-redux/constants';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {ListTypes} from 'app/constants';
+import {DeviceTypes, ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -45,7 +47,6 @@ export default class List extends PureComponent {
 
     static contextTypes = {
         intl: intlShape,
-        unreadChannelIds: [],
     };
 
     constructor(props) {
@@ -55,6 +56,11 @@ export default class List extends PureComponent {
             sections: this.buildSections(props),
             showIndicator: false,
             width: 0,
+        };
+
+        this.keyboardDismissProp = {
+            keyboardDismissMode: Platform.OS === 'ios' ? 'interactive' : 'none',
+            onScrollBeginDrag: this.scrollBeginDrag,
         };
 
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
@@ -136,7 +142,7 @@ export default class List extends PureComponent {
                 defaultMessage: 'CHANNELS',
             };
         }
-    }
+    };
 
     buildSections = (props) => {
         const {
@@ -210,7 +216,7 @@ export default class List extends PureComponent {
                 modalPresentationStyle: 'overCurrentContext',
             },
         });
-    }
+    };
 
     goToCreatePublicChannel = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
@@ -309,6 +315,9 @@ export default class List extends PureComponent {
 
     onSelectChannel = (channel, currentChannelId) => {
         const {onSelectChannel} = this.props;
+        if (DeviceTypes.IS_TABLET) {
+            Keyboard.dismiss();
+        }
         onSelectChannel(channel, currentChannelId);
     };
 
@@ -410,6 +419,12 @@ export default class List extends PureComponent {
         });
     };
 
+    scrollBeginDrag = () => {
+        if (DeviceTypes.IS_TABLET) {
+            Keyboard.dismiss();
+        }
+    };
+
     render() {
         const {styles, theme} = this.props;
         const {sections, width, showIndicator} = this.state;
@@ -426,10 +441,11 @@ export default class List extends PureComponent {
                     renderSectionHeader={this.renderSectionHeader}
                     keyExtractor={this.keyExtractor}
                     onViewableItemsChanged={this.updateUnreadIndicators}
-                    keyboardDismissMode='on-drag'
                     maxToRenderPerBatch={10}
                     stickySectionHeadersEnabled={false}
                     viewabilityConfig={VIEWABILITY_CONFIG}
+                    keyboardShouldPersistTaps={'always'}
+                    {...this.keyboardDismissProp}
                 />
                 {showIndicator &&
                 <UnreadIndicator

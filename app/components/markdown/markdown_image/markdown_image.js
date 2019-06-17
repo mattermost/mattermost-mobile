@@ -114,6 +114,11 @@ export default class MarkdownImage extends React.Component {
             return;
         }
 
+        if (!width || !height) {
+            this.setState({failed: true});
+            return;
+        }
+
         this.setState({
             failed: false,
             originalHeight: height,

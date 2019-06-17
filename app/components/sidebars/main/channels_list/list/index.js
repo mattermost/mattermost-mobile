@@ -19,13 +19,13 @@ import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selecto
 import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
 import Permissions from 'mattermost-redux/constants/permissions';
 
-import {SidebarSectionTypes} from 'app/constants/view';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 import List from './list';
 
 const filterZeroUnreads = memoizeResult((sections) => {
     return sections.filter((s) => {
-        if (s.type === SidebarSectionTypes.UNREADS) {
+        if (s.type === ViewTypes.SidebarSectionTypes.UNREADS) {
             return s.items.length > 0;
         }
         return true;
@@ -40,11 +40,12 @@ function mapStateToProps(state) {
     const isAdmin = checkIsAdmin(roles);
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const sidebarPrefs = getSidebarPreferences(state);
-    const unreadChannelIds = getSortedUnreadChannelIds(state, null);
+    const lastUnreadChannel = DeviceTypes.IS_TABLET ? state.views.channel.keepChannelIdAsUnread : null;
+    const unreadChannelIds = getSortedUnreadChannelIds(state, lastUnreadChannel);
     const favoriteChannelIds = getSortedFavoriteChannelIds(state);
     const orderedChannelIds = filterZeroUnreads(getOrderedChannelIds(
         state,
-        null,
+        lastUnreadChannel,
         sidebarPrefs.grouping,
         sidebarPrefs.sorting,
         true, // The mobile app should always display the Unreads section regardless of user settings (MM-13420)

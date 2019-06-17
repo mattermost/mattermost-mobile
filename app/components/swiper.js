@@ -182,9 +182,7 @@ export default class Swiper extends PureComponent {
         }
 
         this.scrollView.scrollTo({x: (index * this.props.width), animated});
-        if (index === 0) {
-            this.offset = 0;
-        }
+        this.updateIndex(this.props.width * index);
     };
 
     updateIndex = (offset) => {

@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Keyboard,
     Platform,
     TouchableHighlight,
     View,
@@ -104,11 +105,14 @@ export default class Post extends PureComponent {
             },
         };
 
-        if (Platform.OS === 'ios') {
-            navigator.push(options);
-        } else {
-            navigator.showModal(options);
-        }
+        Keyboard.dismiss();
+        requestAnimationFrame(() => {
+            if (Platform.OS === 'ios') {
+                navigator.push(options);
+            } else {
+                navigator.showModal(options);
+            }
+        });
     };
 
     autofillUserMention = (username) => {

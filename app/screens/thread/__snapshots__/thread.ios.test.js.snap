@@ -1,64 +1,81 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`thread should match snapshot, has root post 1`] = `
-<Connect(SafeAreaIos)
-  excludeHeader={true}
-  keyboardOffset={20}
->
-  <Connect(StatusBar) />
-  <KeyboardLayout
-    style={
-      Object {
-        "backgroundColor": "#ffffff",
-        "flex": 1,
-      }
-    }
+<React.Fragment>
+  <Connect(SafeAreaIos)
+    excludeHeader={true}
   >
-    <Connect(PostList)
-      currentUserId="member_user_id"
-      indicateNewMessages={false}
-      lastPostIndex={-1}
-      location="thread"
-      navigator={
-        Object {
-          "dismissModal": [MockFunction],
-          "pop": [MockFunction],
-          "resetTo": [MockFunction],
-          "setTitle": [MockFunction] {
-            "calls": Array [
-              Array [
+    <Connect(StatusBar) />
+    <React.Fragment>
+      <Connect(PostList)
+        currentUserId="member_user_id"
+        indicateNewMessages={false}
+        lastPostIndex={2}
+        lastViewedAt={0}
+        location="thread"
+        navigator={
+          Object {
+            "dismissModal": [MockFunction],
+            "pop": [MockFunction],
+            "resetTo": [MockFunction],
+            "setTitle": [MockFunction] {
+              "calls": Array [
+                Array [
+                  Object {
+                    "title": undefined,
+                  },
+                ],
+              ],
+              "results": Array [
                 Object {
-                  "title": undefined,
+                  "type": "return",
+                  "value": undefined,
                 },
               ],
-            ],
-            "results": Array [
-              Object {
-                "type": "return",
-                "value": undefined,
-              },
-            ],
-          },
+            },
+          }
         }
-      }
-      postIds={
-        Array [
-          "root_id",
-          "post_id_1",
-          "post_id_2",
-        ]
-      }
-      renderFooter={
-        <Loading
-          color="grey"
-          size="large"
-          style={Object {}}
+        onPostPress={[Function]}
+        postIds={
+          Array [
+            "root_id",
+            "post_id_1",
+            "post_id_2",
+          ]
+        }
+        renderFooter={
+          <Loading
+            color="grey"
+            size="large"
+            style={Object {}}
+          />
+        }
+        scrollViewNativeID="threadPostList"
+      />
+      <View
+        nativeID="threadAccessoriesContainer"
+      >
+        <Connect(FileUploadPreview)
+          rootId="root_id"
         />
-      }
-    />
+        <ForwardRef(forwardConnectRef)
+          cursorPositionEvent="onThreadTextBoxCursorChange"
+          maxHeight={200}
+          onChangeText={[Function]}
+          rootId="root_id"
+          valueEvent="onThreadTextBoxValueChange"
+        />
+      </View>
+    </React.Fragment>
+  </Connect(SafeAreaIos)>
+  <KeyboardTrackingView
+    accessoriesContainerID="threadAccessoriesContainer"
+    scrollViewNativeID="threadPostList"
+  >
     <ForwardRef(forwardConnectRef)
       channelId="channel_id"
       channelIsArchived={false}
+      cursorPositionEvent="onThreadTextBoxCursorChange"
       navigator={
         Object {
           "dismissModal": [MockFunction],
@@ -83,84 +100,32 @@ exports[`thread should match snapshot, has root post 1`] = `
       }
       onCloseChannel={[Function]}
       rootId="root_id"
+      valueEvent="onThreadTextBoxValueChange"
     />
-  </KeyboardLayout>
-</Connect(SafeAreaIos)>
+  </KeyboardTrackingView>
+</React.Fragment>
 `;
 
 exports[`thread should match snapshot, no root post, loading 1`] = `
-<Connect(SafeAreaIos)
-  excludeHeader={true}
-  keyboardOffset={20}
->
-  <Connect(StatusBar) />
-  <KeyboardLayout
-    style={
-      Object {
-        "backgroundColor": "#ffffff",
-        "flex": 1,
-      }
-    }
+<React.Fragment>
+  <Connect(SafeAreaIos)
+    excludeHeader={true}
   >
+    <Connect(StatusBar) />
     <Loading
       color="grey"
       size="large"
       style={Object {}}
     />
-  </KeyboardLayout>
-</Connect(SafeAreaIos)>
+  </Connect(SafeAreaIos)>
+</React.Fragment>
 `;
 
 exports[`thread should match snapshot, render footer 1`] = `
 <Connect(PostList)
   currentUserId="member_user_id"
   indicateNewMessages={false}
-  lastPostIndex={-1}
-  location="thread"
-  navigator={
-    Object {
-      "dismissModal": [MockFunction],
-      "pop": [MockFunction],
-      "resetTo": [MockFunction],
-      "setTitle": [MockFunction] {
-        "calls": Array [
-          Array [
-            Object {
-              "title": undefined,
-            },
-          ],
-        ],
-        "results": Array [
-          Object {
-            "type": "return",
-            "value": undefined,
-          },
-        ],
-      },
-    }
-  }
-  postIds={
-    Array [
-      "root_id",
-      "post_id_1",
-      "post_id_2",
-    ]
-  }
-  renderFooter={
-    <Loading
-      color="grey"
-      size="large"
-      style={Object {}}
-    />
-  }
-/>
-`;
-
-exports[`thread should match snapshot, render footer 2`] = `
-<Connect(PostList)
-  currentUserId="member_user_id"
-  indicateNewMessages={false}
-  lastPostIndex={-1}
+  lastPostIndex={2}
   lastViewedAt={0}
   location="thread"
   navigator={
@@ -185,6 +150,55 @@ exports[`thread should match snapshot, render footer 2`] = `
       },
     }
   }
+  onPostPress={[Function]}
+  postIds={
+    Array [
+      "root_id",
+      "post_id_1",
+      "post_id_2",
+    ]
+  }
+  renderFooter={
+    <Loading
+      color="grey"
+      size="large"
+      style={Object {}}
+    />
+  }
+  scrollViewNativeID="threadPostList"
+/>
+`;
+
+exports[`thread should match snapshot, render footer 2`] = `
+<Connect(PostList)
+  currentUserId="member_user_id"
+  indicateNewMessages={false}
+  lastPostIndex={2}
+  lastViewedAt={0}
+  location="thread"
+  navigator={
+    Object {
+      "dismissModal": [MockFunction],
+      "pop": [MockFunction],
+      "resetTo": [MockFunction],
+      "setTitle": [MockFunction] {
+        "calls": Array [
+          Array [
+            Object {
+              "title": undefined,
+            },
+          ],
+        ],
+        "results": Array [
+          Object {
+            "type": "return",
+            "value": undefined,
+          },
+        ],
+      },
+    }
+  }
+  onPostPress={[Function]}
   postIds={
     Array [
       "root_id",
@@ -193,28 +207,21 @@ exports[`thread should match snapshot, render footer 2`] = `
     ]
   }
   renderFooter={null}
+  scrollViewNativeID="threadPostList"
 />
 `;
 
 exports[`thread should match snapshot, render footer 3`] = `
-<Connect(SafeAreaIos)
-  excludeHeader={true}
-  keyboardOffset={20}
->
-  <Connect(StatusBar) />
-  <KeyboardLayout
-    style={
-      Object {
-        "backgroundColor": "#ffffff",
-        "flex": 1,
-      }
-    }
+<React.Fragment>
+  <Connect(SafeAreaIos)
+    excludeHeader={true}
   >
+    <Connect(StatusBar) />
     <Loading
       color="grey"
       size="large"
       style={Object {}}
     />
-  </KeyboardLayout>
-</Connect(SafeAreaIos)>
+  </Connect(SafeAreaIos)>
+</React.Fragment>
 `;

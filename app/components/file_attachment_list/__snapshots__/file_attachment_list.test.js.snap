@@ -3,6 +3,7 @@
 exports[`PostAttachmentOpenGraph should match snapshot with a single image file 1`] = `
 <ScrollViewMock
   horizontal={true}
+  keyboardShouldPersistTaps="always"
   scrollEnabled={false}
   style={
     Array [

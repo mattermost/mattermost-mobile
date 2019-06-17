@@ -394,6 +394,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             {
                 type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
                 data: channelId,
+                channel,
                 member,
             },
         ]));
@@ -411,7 +412,8 @@ export function handleSelectChannelByName(channelName, teamName) {
     return async (dispatch, getState) => {
         const state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
-        const currentTeamName = currentTeams[currentTeamId]?.name;
+        const currentTeam = currentTeams[currentTeamId];
+        const currentTeamName = currentTeam?.name;
         const {data: channel} = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const currentChannelId = getCurrentChannelId(state);
         if (channel && currentChannelId !== channel.id) {

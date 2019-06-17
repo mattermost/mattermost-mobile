@@ -153,11 +153,12 @@ export default class SettingsDrawer extends PureComponent {
     goToEditProfile = preventDoubleTap(() => {
         const {currentUser} = this.props;
         const {formatMessage} = this.context.intl;
+        const commandType = 'ShowModal';
 
         this.openModal(
             'EditProfile',
             formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
-            {currentUser}
+            {currentUser, commandType}
         );
     });
 
@@ -176,6 +177,17 @@ export default class SettingsDrawer extends PureComponent {
         this.openModal(
             'RecentMentions',
             intl.formatMessage({id: 'search_header.title2', defaultMessage: 'Recent Mentions'}),
+        );
+    });
+
+    goToUserProfile = preventDoubleTap(() => {
+        const userId = this.props.currentUser.id;
+        const {formatMessage} = this.context.intl;
+
+        this.openModal(
+            'UserProfile',
+            formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
+            {userId, fromSettings: true}
         );
     });
 
@@ -258,7 +270,7 @@ export default class SettingsDrawer extends PureComponent {
                         contentContainerStyle={style.wrapper}
                     >
                         <UserInfo
-                            onPress={this.goToEditProfile}
+                            onPress={this.goToUserProfile}
                             user={currentUser}
                         />
                         <View style={style.block}>
@@ -293,6 +305,15 @@ export default class SettingsDrawer extends PureComponent {
                         </View>
                         <View style={style.separator}/>
                         <View style={style.block}>
+                            <DrawerItem
+                                defaultMessage='Edit Profile'
+                                i18nId='mobile.routes.edit_profile'
+                                iconName='ios-person'
+                                iconType='ion'
+                                onPress={this.goToEditProfile}
+                                separator={true}
+                                theme={theme}
+                            />
                             <DrawerItem
                                 defaultMessage='Settings'
                                 i18nId='mobile.routes.settings'

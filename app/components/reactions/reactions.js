@@ -186,6 +186,7 @@ export default class Reactions extends PureComponent {
                 alwaysBounceHorizontal={false}
                 horizontal={true}
                 overScrollMode='never'
+                keyboardShouldPersistTaps={'always'}
             >
                 {reactionElements}
             </ScrollView>

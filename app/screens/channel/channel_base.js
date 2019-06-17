@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
-    Dimensions,
+    Keyboard,
     Platform,
     StyleSheet,
     View,
@@ -16,38 +16,22 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {app} from 'app/mattermost';
 
-import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import EmptyToolbar from 'app/components/start/empty_toolbar';
-import ChannelLoader from 'app/components/channel_loader';
+import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import MainSidebar from 'app/components/sidebars/main';
-import SettingsSidebar from 'app/components/sidebars/settings';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import NetworkIndicator from 'app/components/network_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
-import StatusBar from 'app/components/status_bar';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import SettingsSidebar from 'app/components/sidebars/settings';
+
 import {preventDoubleTap} from 'app/utils/tap';
-import PostTextbox from 'app/components/post_textbox';
 import PushNotifications from 'app/push_notifications';
 import tracker from 'app/utils/time_tracker';
-import LocalConfig from 'assets/config';
-
 import telemetry from 'app/telemetry';
 
-import ChannelNavBar from './channel_nav_bar';
-import ChannelPostList from './channel_post_list';
+import LocalConfig from 'assets/config';
 
-const {
-    ANDROID_TOP_LANDSCAPE,
-    ANDROID_TOP_PORTRAIT,
-    IOS_TOP_LANDSCAPE,
-    IOS_TOP_PORTRAIT,
-    IOSX_TOP_PORTRAIT,
-} = ViewTypes;
+export let ClientUpgradeListener;
 
-let ClientUpgradeListener;
-
-export default class Channel extends PureComponent {
+export default class ChannelBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadChannelsIfNecessary: PropTypes.func.isRequired,
@@ -76,6 +60,13 @@ export default class Channel extends PureComponent {
 
     constructor(props) {
         super(props);
+
+        this.postTextbox = React.createRef();
+        this.keyboardTracker = React.createRef();
+
+        props.navigator.setStyle({
+            screenBackgroundColor: props.theme.centerChannelBg,
+        });
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
@@ -140,46 +131,20 @@ export default class Channel extends PureComponent {
         if (this.props.currentChannelId && !prevProps.currentChannelId) {
             EventEmitter.emit('renderDrawer');
         }
+
+        if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
+            this.updateNativeScrollView();
+        }
     }
 
     componentWillUnmount() {
         EventEmitter.off('leave_team', this.handleLeaveTeam);
     }
 
-    attachPostTextBox = (ref) => {
-        this.postTextbox = ref;
-    };
-
     blurPostTextBox = () => {
-        if (this.postTextbox) {
-            this.postTextbox.blur();
+        if (this.postTextbox?.current) {
+            this.postTextbox.current.blur();
         }
-    };
-
-    channelLoaderDimensions = () => {
-        const {isLandscape} = this.props;
-        let top = 0;
-        let {height} = Dimensions.get('window');
-        switch (Platform.OS) {
-        case 'android':
-            if (isLandscape) {
-                top = ANDROID_TOP_LANDSCAPE;
-            } else {
-                top = ANDROID_TOP_PORTRAIT;
-                height -= 84;
-            }
-            break;
-        case 'ios':
-            if (isLandscape) {
-                top = IOS_TOP_LANDSCAPE;
-            } else {
-                height = DeviceTypes.IS_IPHONE_X ? (height - IOSX_TOP_PORTRAIT) : (height - IOS_TOP_PORTRAIT);
-                top = DeviceTypes.IS_IPHONE_X ? IOSX_TOP_PORTRAIT : IOS_TOP_PORTRAIT;
-            }
-            break;
-        }
-
-        return {height, top};
     };
 
     channelSidebarRef = (ref) => {
@@ -233,12 +198,22 @@ export default class Channel extends PureComponent {
             },
         };
 
+        Keyboard.dismiss();
+
         if (Platform.OS === 'android') {
             navigator.showModal(options);
         } else {
-            navigator.push(options);
+            requestAnimationFrame(() => {
+                navigator.push(options);
+            });
         }
     });
+
+    handleAutoComplete = (value) => {
+        if (this.postTextbox?.current) {
+            this.postTextbox.current.handleTextChange(value, true);
+        }
+    };
 
     handleLeaveTeam = () => {
         this.props.actions.selectDefaultTeam();
@@ -278,7 +253,13 @@ export default class Channel extends PureComponent {
         this.loadChannels(this.props.currentTeamId);
     };
 
-    render() {
+    updateNativeScrollView = () => {
+        if (this.keyboardTracker?.current) {
+            this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
+        }
+    };
+
+    renderChannel(drawerContent) {
         const {
             channelsRequestFailed,
             currentChannelId,
@@ -304,15 +285,13 @@ export default class Channel extends PureComponent {
                     <View style={style.flex}>
                         <EmptyToolbar
                             theme={theme}
-                            isLandscape={this.props.isLandscape}
+                            isLandscape={isLandscape}
                         />
                         <Loading channelIsLoading={true}/>
                     </View>
                 </SafeAreaView>
             );
         }
-
-        const loaderDimensions = this.channelLoaderDimensions();
 
         return (
             <MainSidebar
@@ -325,30 +304,7 @@ export default class Channel extends PureComponent {
                     blurPostTextBox={this.blurPostTextBox}
                     navigator={navigator}
                 >
-                    <SafeAreaView navigator={navigator}>
-                        <StatusBar/>
-                        <NetworkIndicator/>
-                        <ChannelNavBar
-                            navigator={navigator}
-                            openChannelDrawer={this.openChannelSidebar}
-                            openSettingsDrawer={this.openSettingsSidebar}
-                            onPress={this.goToChannelInfo}
-                        />
-                        <KeyboardLayout>
-                            <View style={style.flex}>
-                                <ChannelPostList navigator={navigator}/>
-                            </View>
-                            <PostTextbox
-                                ref={this.attachPostTextBox}
-                                navigator={navigator}
-                            />
-                        </KeyboardLayout>
-                        <ChannelLoader
-                            style={[style.channelLoader, loaderDimensions]}
-                            maxRows={isLandscape ? 4 : 6}
-                        />
-                        {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
-                    </SafeAreaView>
+                    {drawerContent}
                 </SettingsSidebar>
                 <InteractiveDialogController
                     navigator={navigator}
@@ -359,7 +315,7 @@ export default class Channel extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
+export const style = StyleSheet.create({
     flex: {
         flex: 1,
     },
@@ -367,5 +323,8 @@ const style = StyleSheet.create({
         position: 'absolute',
         width: '100%',
         flex: 1,
+    },
+    iOSHomeIndicator: {
+        paddingBottom: 5,
     },
 });

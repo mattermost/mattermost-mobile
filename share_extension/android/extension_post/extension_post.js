@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
 import {
+    Alert,
     Image,
     NativeModules,
     PermissionsAndroid,
@@ -20,7 +21,9 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
 import RNFetchBlob from 'rn-fetch-blob';
+import {getGenericPassword} from 'react-native-keychain';
 
+import {Client4} from 'mattermost-redux/client';
 import {Preferences} from 'mattermost-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
@@ -28,8 +31,10 @@ import Loading from 'app/components/loading';
 import PaperPlane from 'app/components/paper_plane';
 import {MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import mattermostManaged from 'app/mattermost_managed';
+import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 import {getExtensionFromMime} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
+import {setCSRFFromCookie} from 'app/utils/security';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -44,6 +49,7 @@ import {
 import ChannelButton from './channel_button';
 import TeamButton from './team_button';
 
+const {Initialization} = NativeModules;
 const defaultTheme = Preferences.THEMES.default;
 const extensionSvg = {
     csv: ExcelSvg,
@@ -69,8 +75,6 @@ export default class ExtensionPost extends PureComponent {
         maxFileSize: PropTypes.number.isRequired,
         navigation: PropTypes.object.isRequired,
         teamId: PropTypes.string.isRequired,
-        token: PropTypes.string,
-        url: PropTypes.string,
     };
 
     static contextTypes = {
@@ -175,6 +179,10 @@ export default class ExtensionPost extends PureComponent {
                         } catch (err) {
                             return this.onClose({nativeEvent: true});
                         }
+                    } else {
+                        await this.showNotSecuredAlert(vendor);
+
+                        return this.onClose({nativeEvent: true});
                     }
                 }
             }
@@ -183,6 +191,80 @@ export default class ExtensionPost extends PureComponent {
         }
 
         return this.initialize();
+    };
+
+    showNotSecuredAlert(vendor) {
+        const {formatMessage} = this.context.intl;
+
+        return new Promise((resolve) => {
+            Alert.alert(
+                formatMessage({
+                    id: 'mobile.managed.blocked_by',
+                    defaultMessage: 'Blocked by {vendor}',
+                }, {vendor}),
+                formatMessage({
+                    id: 'mobile.managed.not_secured.android',
+                    defaultMessage: 'This device must be secured with a screen lock to use Mattermost.',
+                }),
+                [
+                    {
+                        text: formatMessage({
+                            id: 'mobile.managed.settings',
+                            defaultMessage: 'Go to settings',
+                        }),
+                        onPress: () => {
+                            mattermostManaged.goToSecuritySettings();
+                        },
+                    },
+                    {
+                        text: formatMessage({
+                            id: 'mobile.managed.exit',
+                            defaultMessage: 'Exit',
+                        }),
+                        onPress: resolve,
+                        style: 'cancel',
+                    },
+                ],
+                {onDismiss: resolve}
+            );
+        });
+    }
+
+    getAppCredentials = async () => {
+        try {
+            const credentials = await avoidNativeBridge(
+                () => {
+                    return Initialization.credentialsExist;
+                },
+                () => {
+                    return Initialization.credentials;
+                },
+                () => {
+                    return getGenericPassword();
+                }
+            );
+
+            if (credentials) {
+                const passwordParsed = credentials.password.split(',');
+
+                // password == token, url
+                if (passwordParsed.length === 2) {
+                    const [token, url] = passwordParsed;
+
+                    if (url && url !== 'undefined' && token && token !== 'undefined') {
+                        this.token = token;
+                        this.url = url;
+                        Client4.setUrl(url);
+                        Client4.setToken(token);
+                        await setCSRFFromCookie(url);
+                    }
+                }
+            }
+        } catch (error) {
+            return null;
+        }
+
+        return null;
     };
 
     getInputRef = (ref) => {
@@ -252,6 +334,8 @@ export default class ExtensionPost extends PureComponent {
     };
 
     initialize = async () => {
+        await this.getAppCredentials();
+
         const hasPermission = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
         let granted;
         if (!hasPermission) {
@@ -269,8 +353,8 @@ export default class ExtensionPost extends PureComponent {
     };
 
     loadData = async (items) => {
-        const {actions, maxFileSize, teamId, token, url} = this.props;
-        if (token && url) {
+        const {actions, maxFileSize, teamId} = this.props;
+        if (this.token && this.url) {
             const text = [];
             const files = [];
             let totalSize = 0;
@@ -337,14 +421,14 @@ export default class ExtensionPost extends PureComponent {
 
     onPost = () => {
         const {channelId, files, value} = this.state;
-        const {currentUserId, token, url} = this.props;
+        const {currentUserId} = this.props;
 
         const data = {
             channelId,
             currentUserId,
             files,
-            token,
-            url,
+            token: this.token,
+            url: this.url,
             value,
         };
 
@@ -500,7 +584,7 @@ export default class ExtensionPost extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {maxFileSize, token, url} = this.props;
+        const {maxFileSize} = this.props;
         const {error, hasPermission, files, totalSize, loaded} = this.state;
 
         if (!loaded) {
@@ -513,7 +597,7 @@ export default class ExtensionPost extends PureComponent {
             return this.renderErrorMessage(error);
         }
 
-        if (token && url) {
+        if (this.token && this.url) {
             if (hasPermission === false) {
                 const storage = formatMessage({
                     id: 'mobile.extension.permission',

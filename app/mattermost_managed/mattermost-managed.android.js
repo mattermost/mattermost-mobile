@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BackHandler, NativeModules, DeviceEventEmitter} from 'react-native';
+import {NativeModules, DeviceEventEmitter} from 'react-native';
 import LocalAuth from 'react-native-local-auth';
 import JailMonkey from 'jail-monkey';
 
@@ -48,6 +48,7 @@ export default {
     getCachedConfig: () => {
         return cachedConfig;
     },
+    goToSecuritySettings: MattermostManaged.goToSecuritySettings,
     isDeviceSecure: async () => {
         try {
             return await LocalAuth.isDeviceSecure();
@@ -62,5 +63,5 @@ export default {
 
         return JailMonkey.trustFall();
     },
-    quitApp: BackHandler.exitApp,
+    quitApp: MattermostManaged.quitApp,
 };

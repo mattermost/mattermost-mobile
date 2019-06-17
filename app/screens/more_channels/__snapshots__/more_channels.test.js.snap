@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`MoreChannels should match snapshot 1`] = `
-<KeyboardLayout>
+<ForwardRef(forwardConnectRef)>
   <Connect(StatusBar) />
   <React.Fragment>
     <View
@@ -110,5 +110,5 @@ exports[`MoreChannels should match snapshot 1`] = `
       }
     />
   </React.Fragment>
-</KeyboardLayout>
+</ForwardRef(forwardConnectRef)>
 `;

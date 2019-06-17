@@ -8,7 +8,7 @@ import Preferences from 'mattermost-redux/constants/preferences';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import PostList from 'app/components/post_list';
 
-import Thread from './thread.js';
+import ThreadIOS from './thread.ios';
 
 jest.mock('react-intl');
 
@@ -37,7 +37,7 @@ describe('thread', () => {
 
     test('should match snapshot, has root post', () => {
         const wrapper = shallow(
-            <Thread {...baseProps}/>,
+            <ThreadIOS {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -46,7 +46,7 @@ describe('thread', () => {
     test('should match snapshot, no root post, loading', () => {
         const newPostIds = ['post_id_1', 'post_id_2'];
         const wrapper = shallow(
-            <Thread
+            <ThreadIOS
                 {...baseProps}
                 postIds={newPostIds}
             />,
@@ -75,7 +75,7 @@ describe('thread', () => {
         };
         const newNavigator = {...navigator};
         const wrapper = shallow(
-            <Thread
+            <ThreadIOS
                 {...baseProps}
                 navigator={newNavigator}
             />,
@@ -88,7 +88,7 @@ describe('thread', () => {
 
     test('should match snapshot, render footer', () => {
         const wrapper = shallow(
-            <Thread {...baseProps}/>,
+            <ThreadIOS {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 

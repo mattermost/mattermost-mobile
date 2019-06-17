@@ -120,7 +120,7 @@ export default class DrawerLayout extends Component {
             this.setState({ drawerShown, accessibilityViewIsModal });
         }
 
-        if (this.props.keyboardDismissMode === 'on-drag') {
+        if (this.props.keyboardDismissMode === 'on-drag' || drawerShown) {
             Keyboard.dismiss();
         }
 
@@ -306,6 +306,7 @@ export default class DrawerLayout extends Component {
             if (this.props.onDrawerClose) {
                 telemetry.end(['channel:close_drawer']);
                 this.props.onDrawerClose();
+                this.canClose = true;
             }
 
             this._emitStateChanged(IDLE);
