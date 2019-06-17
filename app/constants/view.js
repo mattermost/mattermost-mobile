@@ -20,6 +20,13 @@ export const SidebarSectionTypes = {
     ALPHA: 'alpha',
 };
 
+export const NotificationLevels = {
+    DEFAULT: 'default',
+    ALL: 'all',
+    MENTION: 'mention',
+    NONE: 'none',
+};
+
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
     SERVER_URL_CHANGED: null,
@@ -109,4 +116,6 @@ export default {
     PROFILE_PICTURE_SIZE: 32,
     DATA_SOURCE_USERS: 'users',
     DATA_SOURCE_CHANNELS: 'channels',
+    NotificationLevels,
+    SidebarSectionTypes,
 };

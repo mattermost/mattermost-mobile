@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Animated} from 'react-native';
 
-export const FADE_DURATION = 300;
+export const FADE_DURATION = 100;
 
 export default class Fade extends PureComponent {
     static propTypes = {
@@ -28,6 +28,7 @@ export default class Fade extends PureComponent {
                 {
                     toValue: prevProps.visible ? 0 : 1,
                     duration: FADE_DURATION,
+                    useNativeDriver: true,
                 }
             ).start();
         }

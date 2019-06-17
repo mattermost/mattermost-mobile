@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {FlatList, Platform, SectionList, Text, View} from 'react-native';
+import {FlatList, Keyboard, Platform, SectionList, Text, View} from 'react-native';
 
 import {ListTypes} from 'app/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
@@ -26,10 +26,7 @@ export default class CustomList extends PureComponent {
         onLoadMore: PropTypes.func,
         onRowPress: PropTypes.func,
         onRowSelect: PropTypes.func,
-        renderItem: PropTypes.oneOfType([
-            PropTypes.func,
-            PropTypes.element,
-        ]).isRequired,
+        renderItem: PropTypes.func.isRequired,
         selectable: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         shouldRenderSeparator: PropTypes.bool,
@@ -45,6 +42,14 @@ export default class CustomList extends PureComponent {
         super(props);
 
         this.contentOffsetY = 0;
+        this.keyboardDismissProp = Platform.select({
+            android: {
+                onScrollBeginDrag: Keyboard.dismiss,
+            },
+            ios: {
+                keyboardDismissMode: 'on-drag',
+            },
+        });
         this.state = {};
     }
 
@@ -98,12 +103,6 @@ export default class CustomList extends PureComponent {
             props.onPress = onRowPress;
         }
 
-        // Allow passing in a component like UserListRow or ChannelListRow
-        if (this.props.renderItem.prototype.isReactComponent) {
-            const RowComponent = this.props.renderItem;
-            return <RowComponent {...props}/>;
-        }
-
         return this.props.renderItem(props);
     };
 
@@ -117,7 +116,7 @@ export default class CustomList extends PureComponent {
                 data={data}
                 extraData={extraData}
                 keyboardShouldPersistTaps='always'
-                keyboardDismissMode='interactive'
+                {...this.keyboardDismissProp}
                 keyExtractor={this.keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 ItemSeparatorComponent={this.renderSeparator}
@@ -169,7 +168,7 @@ export default class CustomList extends PureComponent {
                 contentContainerStyle={style.container}
                 extraData={loading}
                 keyboardShouldPersistTaps='always'
-                keyboardDismissMode='interactive'
+                {...this.keyboardDismissProp}
                 keyExtractor={this.keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 ItemSeparatorComponent={this.renderSeparator}

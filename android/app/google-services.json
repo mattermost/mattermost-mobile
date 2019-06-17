@@ -26,7 +26,7 @@
       ],
       "services": {
         "analytics_service": {
-          "status": 1
+          "status": 0
         },
         "appinvite_service": {
           "status": 1,
@@ -57,7 +57,7 @@
       ],
       "services": {
         "analytics_service": {
-          "status": 1
+          "status": 0
         },
         "appinvite_service": {
           "status": 1,
@@ -88,7 +88,7 @@
       ],
       "services": {
         "analytics_service": {
-          "status": 1
+          "status": 0
         },
         "appinvite_service": {
           "status": 1,

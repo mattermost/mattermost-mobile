@@ -13,6 +13,7 @@ import {
     getChannelsWithUnreadSection,
     getCurrentChannel,
     getGroupChannels,
+    getArchivedChannels,
     getOtherChannels,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
@@ -24,7 +25,7 @@ import Config from 'assets/config';
 
 import FilteredList from './filtered_list';
 
-const DEFAULT_SEARCH_ORDER = ['unreads', 'dms', 'channels', 'members', 'nonmembers'];
+const DEFAULT_SEARCH_ORDER = ['unreads', 'dms', 'channels', 'members', 'nonmembers', 'archived'];
 
 const pastDirectMessages = createSelector(
     getDirectShowPreferences,
@@ -112,7 +113,8 @@ function mapStateToProps(state) {
         currentChannel: getCurrentChannel(state),
         currentTeam: getCurrentTeam(state),
         currentUserId,
-        otherChannels: getOtherChannels(state),
+        otherChannels: getOtherChannels(state, false),
+        archivedChannels: getArchivedChannels(state),
         groupChannelMemberDetails: getGroupChannelMemberDetails(state),
         profiles,
         teamProfiles,

@@ -19,7 +19,6 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import FormattedText from 'app/components/formatted_text';
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
-import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
 import networkConnectionListener, {checkConnection} from 'app/utils/network';
 import {t} from 'app/utils/i18n';
@@ -36,7 +35,6 @@ const {
     IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
     IOSX_TOP_PORTRAIT,
-    STATUS_BAR_HEIGHT,
 } = ViewTypes;
 
 export default class NetworkIndicator extends PureComponent {
@@ -142,7 +140,7 @@ export default class NetworkIndicator extends PureComponent {
         const {connection} = this.props.actions;
         clearTimeout(this.connectionRetryTimeout);
 
-        NetInfo.isConnected.fetch().then(async (isConnected) => {
+        NetInfo.fetch().then(async ({isConnected}) => {
             const {hasInternet, serverReachable} = await checkConnection(isConnected);
 
             connection(hasInternet);
@@ -204,9 +202,7 @@ export default class NetworkIndicator extends PureComponent {
             return IOS_TOP_LANDSCAPE;
         } else if (isX) {
             return IOSX_TOP_PORTRAIT;
-        } else if (isLandscape && DeviceTypes.IS_TABLET && mattermostManaged.hasSafeAreaInsets) {
-            return IOS_TOP_LANDSCAPE + STATUS_BAR_HEIGHT;
-        } else if (isLandscape) {
+        } else if (isLandscape && !DeviceTypes.IS_TABLET) {
             return IOS_TOP_LANDSCAPE;
         }
 
@@ -233,7 +229,6 @@ export default class NetworkIndicator extends PureComponent {
     handleAppStateChange = async (appState) => {
         const {actions, currentChannelId} = this.props;
         const active = appState === 'active';
-
         if (active) {
             this.connect(true);
 

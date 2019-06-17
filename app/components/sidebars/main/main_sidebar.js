@@ -63,6 +63,7 @@ export default class ChannelSidebar extends Component {
 
         this.swiperIndex = 1;
         this.drawerRef = React.createRef();
+        this.channelListRef = React.createRef();
         this.state = {
             show: false,
             openDrawerOffset,
@@ -142,6 +143,7 @@ export default class ChannelSidebar extends Component {
     handleDrawerClose = () => {
         this.setState({
             drawerOpened: false,
+            searching: false,
         });
         this.resetDrawer();
         Keyboard.dismiss();
@@ -283,6 +285,14 @@ export default class ChannelSidebar extends Component {
         if (this.drawerSwiper) {
             this.drawerSwiper.resetPage();
         }
+
+        if (this.drawerRef?.current) {
+            this.drawerRef.current.canClose = true;
+        }
+
+        if (this.channelListRef?.current) {
+            this.channelListRef.current.cancelSearch();
+        }
     };
 
     renderNavigationView = (drawerWidth) => {
@@ -334,6 +344,7 @@ export default class ChannelSidebar extends Component {
                 style={style.swiperContent}
             >
                 <ChannelsList
+                    ref={this.channelListRef}
                     navigator={navigator}
                     onSelectChannel={this.selectChannel}
                     onJoinChannel={this.joinChannel}
