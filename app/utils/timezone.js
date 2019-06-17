@@ -17,7 +17,3 @@ export function getUtcOffsetForTimeZone(timezone) {
     return moment.tz(timezone).utcOffset();
 }
 
-export function isTimezoneEnabled(state) {
-    const {config} = state.entities.general;
-    return config.ExperimentalTimezone === 'true';
-}
