@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:android": "./scripts/runAndroidTests.sh"
+    "test:android": "./scripts/run_android_tests.sh"
   },
   "author": "",
   "license": "Apache 2.0",

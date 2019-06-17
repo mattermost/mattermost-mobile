@@ -22,12 +22,11 @@ config.capabilities = [
         orientation: 'PORTRAIT',
         maxInstances: 1,
         app: join(process.cwd(), '../Mattermost_Beta.apk'),
-        fullReset: false,
+        fullReset: true,
         noReset: false,
         newCommandTimeout: 240,
         autoGrantPermissions: true,
         appActivity: '.MainActivity',
-        appWaitActivity: 'com.reactnativenavigation.controllers.NavigationActivity',
     },
 ];
 
