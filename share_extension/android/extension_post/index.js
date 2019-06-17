@@ -16,8 +16,7 @@ import ExtensionPost from './extension_post';
 
 function mapStateToProps(state) {
     const config = getConfig(state);
-    const {credentials} = state.entities.general;
-    const {token, url} = credentials;
+
     let channel = getCurrentChannel(state);
     if (channel && channel.delete_at !== 0) {
         channel = getDefaultChannel(state);
@@ -29,8 +28,6 @@ function mapStateToProps(state) {
         currentUserId: getCurrentUserId(state),
         maxFileSize: getAllowedServerMaxFileSize(config),
         teamId: getCurrentTeamId(state),
-        token,
-        url,
     };
 }
 
