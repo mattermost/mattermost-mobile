@@ -44,6 +44,7 @@ class FilteredList extends Component {
         teammateNameDisplay: PropTypes.string,
         onSelectChannel: PropTypes.func.isRequired,
         otherChannels: PropTypes.array,
+        archivedChannels: PropTypes.array,
         profiles: PropTypes.object,
         teamProfiles: PropTypes.object,
         searchOrder: PropTypes.array.isRequired,
@@ -176,6 +177,11 @@ class FilteredList extends Component {
             id: t('mobile.channel_list.not_member'),
             defaultMessage: 'NOT A MEMBER',
         },
+        archived: {
+            builder: this.buildArchivedForSearch,
+            id: t('mobile.channel_list.archived'),
+            defaultMessage: 'ARCHIVED',
+        },
     });
 
     buildUnreadChannelsForSearch = (props, term) => {
@@ -292,6 +298,19 @@ class FilteredList extends Component {
 
         return this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term).
             sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
+    }
+
+    buildArchivedForSearch = (props, term) => {
+        const {currentChannel, archivedChannels} = props;
+
+        return this.filterChannels(archivedChannels.reduce((acc, channel) => {
+            // when there is no search text, display an archived channel only if we are in it at the moment.
+            if (term || channel.id === currentChannel.id) {
+                acc.push({...channel});
+            }
+
+            return acc;
+        }, []), term);
     }
 
     buildOtherMembersForSearch = (props, term) => {

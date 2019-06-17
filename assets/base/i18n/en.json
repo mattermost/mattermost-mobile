@@ -165,6 +165,7 @@
   "mobile.channel_info.publicChannel": "Public Channel",
   "mobile.channel_list.alertNo": "No",
   "mobile.channel_list.alertYes": "Yes",
+  "mobile.channel_list.archived": "ARCHIVED",
   "mobile.channel_list.channels": "CHANNELS",
   "mobile.channel_list.closeDM": "Close Direct Message",
   "mobile.channel_list.closeGM": "Close Group Message",
