@@ -88,9 +88,12 @@ export default class EditProfile extends PureComponent {
             removeProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
         }).isRequired,
-        config: PropTypes.object.isRequired,
         currentUser: PropTypes.object.isRequired,
+        firstNameDisabled: PropTypes.bool.isRequired,
+        lastNameDisabled: PropTypes.bool.isRequired,
         navigator: PropTypes.object.isRequired,
+        nicknameDisabled: PropTypes.bool.isRequired,
+        positionDisabled: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -318,16 +321,12 @@ export default class EditProfile extends PureComponent {
 
     renderFirstNameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {firstNameDisabled, theme} = this.props;
         const {firstName} = this.state;
-
-        const {auth_service: service} = currentUser;
-        const disabled = (service === 'ldap' && config.LdapFristNameAttributeSet === 'true') ||
-            (service === 'saml' && config.SamlFirstNameAttributeSet === 'true');
 
         return (
             <TextSetting
-                disabled={disabled}
+                disabled={firstNameDisabled}
                 id='firstName'
                 label={holders.firstName}
                 disabledText={formatMessage({
@@ -343,17 +342,13 @@ export default class EditProfile extends PureComponent {
 
     renderLastNameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {lastNameDisabled, theme} = this.props;
         const {lastName} = this.state;
-
-        const {auth_service: service} = currentUser;
-        const disabled = (service === 'ldap' && config.LdapLastNameAttributeSet === 'true') ||
-            (service === 'saml' && config.SamlLastNameAttributeSet === 'true');
 
         return (
             <View>
                 <TextSetting
-                    disabled={disabled}
+                    disabled={lastNameDisabled}
                     id='lastName'
                     label={holders.lastName}
                     disabledText={formatMessage({
@@ -455,16 +450,12 @@ export default class EditProfile extends PureComponent {
 
     renderNicknameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {nicknameDisabled, theme} = this.props;
         const {nickname} = this.state;
-
-        const {auth_service: service} = currentUser;
-        const disabled = (service === 'ldap' && config.LdapNicknameAttributeSet === 'true') ||
-            (service === 'saml' && config.SamlNicknameAttributeSet === 'true');
 
         return (
             <TextSetting
-                disabled={disabled}
+                disabled={nicknameDisabled}
                 id='nickname'
                 label={holders.nickname}
                 disabledText={formatMessage({
@@ -481,15 +472,12 @@ export default class EditProfile extends PureComponent {
 
     renderPositionSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {positionDisabled, theme} = this.props;
         const {position} = this.state;
-
-        const {auth_service: service} = currentUser;
-        const disabled = (service === 'ldap' || service === 'saml') && config.PositionAttribute === 'true';
 
         return (
             <TextSetting
-                disabled={disabled}
+                disabled={positionDisabled}
                 id='position'
                 label={holders.position}
                 disabledText={formatMessage({
