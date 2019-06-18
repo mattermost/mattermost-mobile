@@ -32,7 +32,7 @@ To help with testing app updates before they're released, you can:
 
 ### Contribute Code 
 
-1. Look in [GitHub issues](https://github.com/mattermost/mattermost-server/issues?utf8=%E2%9C%93&q=label%3A%22Help+Wanted%22+label%3A%22Tech%2FReact+Native%22+is%3Aopen+is%3Aissue) for issues marked as [Help Wanted]
+1. Look in [GitHub issues](https://mattermost.com/pl/help-wanted-mattermost-mobile) for issues marked as [Help Wanted]
 2. Comment to let people know you’re working on it
 3. Follow [these instructions](https://developers.mattermost.com/contribute/mobile/developer-setup/) to set up your developer environment
 4. Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) on our team site to ask questions
