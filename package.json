@@ -32,7 +32,7 @@
     "react-native-calendars": "github:mattermost/react-native-calendars#4937ec5a3bf7e86f9f35fcd85eb4aa6133f45b58",
     "react-native-circular-progress": "1.1.0",
     "react-native-cookies": "github:joeferraro/react-native-cookies#f11374745deba9f18f7b8a9bb4b0b2573026f522",
-    "react-native-device-info": "github:mattermost/react-native-device-info#5be3656f4e0ca5c3544618e5df3e9a498f183483",
+    "react-native-device-info": "github:mattermost/react-native-device-info#7acc6130cafe129a78b1e28d760db5c647aa82a0",
     "react-native-doc-viewer": "2.7.8",
     "react-native-document-picker": "2.3.0",
     "react-native-exception-handler": "2.10.7",
