@@ -14,9 +14,11 @@ import {
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import {intlShape} from 'react-intl';
 
+import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import PostAttachmentImage from 'app/components/post_attachment_image';
 import ProgressiveImage from 'app/components/progressive_image';
 
+import {DeviceTypes} from 'app/constants';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
@@ -293,7 +295,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
     getViewPortWidth = (props) => {
         const {deviceHeight, deviceWidth, isReplyPost} = props;
         const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
-        return deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
+        const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
+        const tabletOffset = DeviceTypes.IS_TABLET ? TABLET_WIDTH : 0;
+
+        return viewPortWidth - tabletOffset;
     };
 
     setImageSize = (uri, originalWidth, originalHeight) => {

@@ -49,11 +49,11 @@ export default class ChannelsList extends PureComponent {
         });
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (!nextProps.drawerOpened && this.props.drawerOpened) {
-            this.cancelSearch();
+    cancelSearch = () => {
+        if (this.refs.search_bar) {
+            this.refs.search_bar.cancel();
         }
-    }
+    };
 
     onSelectChannel = (channel, currentChannelId) => {
         if (channel.fake) {
@@ -62,9 +62,7 @@ export default class ChannelsList extends PureComponent {
             this.props.onSelectChannel(channel, currentChannelId);
         }
 
-        if (this.refs.search_bar) {
-            this.refs.search_bar.cancel();
-        }
+        this.cancelSearch();
     };
 
     onSearch = (term) => {
@@ -79,7 +77,7 @@ export default class ChannelsList extends PureComponent {
         this.props.onSearchStart();
     };
 
-    cancelSearch = () => {
+    onSearchCancel = () => {
         this.props.onSearchEnds();
         this.setState({searching: false});
         this.onSearch('');
@@ -142,7 +140,7 @@ export default class ChannelsList extends PureComponent {
                     titleCancelColor={theme.sidebarHeaderTextColor}
                     selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     onSearchButtonPress={this.onSearch}
-                    onCancelButtonPress={this.cancelSearch}
+                    onCancelButtonPress={this.onSearchCancel}
                     onChangeText={this.onSearch}
                     onFocus={this.onSearchFocused}
                     searchIconCollapsedMargin={5}

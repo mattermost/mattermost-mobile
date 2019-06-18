@@ -384,7 +384,7 @@ class ShareViewController: SLComposeServiceViewController {
       return nil
     }
     
-    let channelsInTeamBySections = store.getChannelsBySections(forTeamId) as NSDictionary
+    let channelsInTeamBySections = store.getChannelsBySections(forTeamId, excludeArchived: true) as NSDictionary
     channelDecks.append(buildChannelSection(
       channels: channelsInTeamBySections.object(forKey: "public") as! NSArray,
       currentChannelId: selectedChannel?.id ?? currentChannel?.object(forKey: "id") as! String,

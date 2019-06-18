@@ -31,9 +31,10 @@ describe('edit_profile', () => {
 
     const baseProps = {
         actions,
-        config: {
-            ShowEmailAddress: true,
-        },
+        firstNameDisabled: true,
+        lastNameDisabled: true,
+        nicknameDisabled: true,
+        positionDisabled: true,
         theme: Preferences.THEMES.default,
         navigator,
         currentUser: {

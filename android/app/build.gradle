@@ -123,7 +123,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative57_5"
-        versionCode 196
+        versionCode 198
         versionName "1.20.0"
         multiDexEnabled = true
         ndk {

@@ -53,7 +53,7 @@ export default class ChannelIOS extends ChannelBase {
                         updateNativeScrollView={this.updateNativeScrollView}
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                        <FileUploadPreview channelId={currentChannelId}/>
+                        <FileUploadPreview/>
                         <Autocomplete
                             maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                             onChangeText={this.handleAutoComplete}

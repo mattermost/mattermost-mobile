@@ -134,7 +134,8 @@ RCT_EXPORT_METHOD(
                 [cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *allCookies) {
                     NSMutableDictionary *cookies = [NSMutableDictionary dictionary];
                     for(NSHTTPCookie *currentCookie in allCookies) {
-                        if([currentCookie.domain containsString:topLevelDomain]) {
+                        NSString *domainWithDot = [NSString stringWithFormat:@".%@", currentCookie.domain];
+                        if([currentCookie.domain containsString:topLevelDomain] || [domainWithDot containsString:topLevelDomain]) {
                             [cookies setObject:currentCookie.value forKey:currentCookie.name];
                         }
                     }

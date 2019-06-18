@@ -31,7 +31,7 @@
   return channel;
 }
 
--(NSDictionary *)getChannelsBySections:(NSString *)forTeamId {
+-(NSDictionary *)getChannelsBySections:(NSString *)forTeamId excludeArchived:(BOOL)excludeArchived {
   NSDictionary *channelsStore = [self.entities objectForKey:@"channels"];
   NSString *currentUserId = [self getCurrentUserId];
   NSString *currentChannelId = [self getCurrentChannelId];
@@ -44,6 +44,12 @@
   
   for (NSString * key in channels) {
     NSMutableDictionary *channel = [[channels objectForKey:key] mutableCopy];
+
+    NSNumber *deleteAt = [channel objectForKey:@"delete_at"];
+    if (excludeArchived && ![deleteAt isEqualToNumber:@0]) {
+      continue;
+    }
+
     NSString *team_id = [channel objectForKey:@"team_id"];
     NSString *channelType = [channel objectForKey:@"type"];
     BOOL isDM = [channelType isEqualToString:@"D"];
