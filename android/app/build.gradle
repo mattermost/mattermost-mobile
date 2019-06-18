@@ -114,8 +114,8 @@ android {
     }
 
     packagingOptions {
-        pickFirst 'lib/x86_64/libjsc.so'
-        pickFirst 'lib/arm64-v8a/libjsc.so'
+        pickFirst '**/libjsc.so'
+        pickFirst '**/libc++_shared.so'
     }
 
     defaultConfig {
@@ -193,9 +193,6 @@ repositories {
 configurations.all {
     resolutionStrategy {
         eachDependency { DependencyResolveDetails details ->
-            if (details.requested.name == 'android-jsc') {
-                details.useTarget group: details.requested.group, name: 'android-jsc-intl', version: 'r241213'
-            }
             if (details.requested.name == 'play-services-base') {
                 details.useTarget group: details.requested.group, name: details.requested.name, version: '15.0.1'
             }
@@ -213,6 +210,9 @@ configurations.all {
 }
 
 dependencies {
+    // Make sure to put android-jsc at the top
+    implementation "org.webkit:android-jsc:r241213"
+
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation 'com.android.support:design:28.0.0'
