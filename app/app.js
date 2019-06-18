@@ -30,6 +30,7 @@ export default class App {
         // Usage: app.js
         this.shouldRelaunchWhenActive = false;
         this.inBackgroundSince = null;
+        this.previousAppState = null;
 
         // Usage: screen/entry.js
         this.startAppFromPushNotification = false;

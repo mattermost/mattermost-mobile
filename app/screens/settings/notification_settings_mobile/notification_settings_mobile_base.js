@@ -12,6 +12,9 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMobileBase extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            updateMe: PropTypes.func.isRequired,
+        }),
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
         currentUser: PropTypes.object.isRequired,
@@ -88,12 +91,12 @@ export default class NotificationSettingsMobileBase extends PureComponent {
         this.saveUserNotifyProps();
     }
 
-    setMobilePush = (push) => {
-        this.setState({push});
+    setMobilePush = (push, callback) => {
+        this.setState({push}, callback);
     };
 
-    setMobilePushStatus = (value) => {
-        this.setState({push_status: value});
+    setMobilePushStatus = (value, callback) => {
+        this.setState({push_status: value}, callback);
     };
 
     saveUserNotifyProps = () => {

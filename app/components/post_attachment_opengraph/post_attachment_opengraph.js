@@ -12,6 +12,9 @@ import {
     View,
 } from 'react-native';
 
+import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
+import {DeviceTypes} from 'app/constants';
+
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {getNearestPoint} from 'app/utils/opengraph';
@@ -162,8 +165,9 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         const {deviceHeight, deviceWidth, isReplyPost} = this.props;
         const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
         const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
+        const tabletOffset = DeviceTypes.IS_TABLET ? TABLET_WIDTH : 0;
 
-        return viewPortWidth;
+        return viewPortWidth - tabletOffset;
     };
 
     goToLink = () => {

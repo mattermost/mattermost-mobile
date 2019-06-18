@@ -429,6 +429,7 @@ export default class PostOptions extends PureComponent {
                     marginFromTop={marginFromTop > 0 ? marginFromTop : 0}
                     onRequestClose={this.close}
                     initialPosition={initialPosition}
+                    key={marginFromTop}
                 >
                     {options}
                 </SlideUpPanel>

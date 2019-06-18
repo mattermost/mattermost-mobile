@@ -5,8 +5,6 @@ import React, {PureComponent} from 'react';
 import {Provider} from 'react-redux';
 import {IntlProvider} from 'react-intl';
 
-import {Client4} from 'mattermost-redux/client';
-
 import {getTranslations} from 'app/i18n';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {store} from 'app/mattermost';
@@ -42,8 +40,6 @@ export default class ShareApp extends PureComponent {
                 this.unsubscribeFromStore();
             }
 
-            this.setCredentialsForClient();
-
             dispatch(extensionSelectTeamId(currentTeamId));
 
             if (this.mounted) {
@@ -51,16 +47,6 @@ export default class ShareApp extends PureComponent {
             }
         }
     };
-
-    setCredentialsForClient() {
-        const state = store.getState();
-        const {credentials} = state.entities.general;
-
-        if (credentials.token && credentials.url) {
-            Client4.setToken(credentials.token);
-            Client4.setUrl(credentials.url);
-        }
-    }
 
     render() {
         if (!this.state.init) {

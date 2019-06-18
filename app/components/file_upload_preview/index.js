@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {getDimensions} from 'app/selectors/device';
@@ -13,12 +14,14 @@ import FileUploadPreview from './file_upload_preview';
 function mapStateToProps(state, ownProps) {
     const {deviceHeight} = getDimensions(state);
     const currentDraft = ownProps.rootId ? getThreadDraft(state, ownProps.rootId) : getCurrentChannelDraft(state);
+    const channelId = getCurrentChannelId(state);
 
     return {
+        channelId,
         channelIsLoading: state.views.channel.loading,
         deviceHeight,
         files: currentDraft.files,
-        filesUploadingForCurrentChannel: checkForFileUploadingInChannel(state, ownProps.channelId, ownProps.rootId),
+        filesUploadingForCurrentChannel: checkForFileUploadingInChannel(state, channelId, ownProps.rootId),
         theme: getTheme(state),
     };
 }
