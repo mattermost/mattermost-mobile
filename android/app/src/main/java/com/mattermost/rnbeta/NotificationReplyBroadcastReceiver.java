@@ -36,13 +36,17 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            final CharSequence message = getReplyMessage(intent);
+            if (message == null) {
+                return;
+            }
+
             mContext = context;
             bundle = NotificationIntentAdapter.extractPendingNotificationDataFromIntent(intent);
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
             final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
             final int notificationId = intent.getIntExtra(CustomPushNotification.NOTIFICATION_ID, -1);
-            final CharSequence message = getReplyMessage(intent);
             final KeychainModule keychainModule = new KeychainModule(reactApplicationContext);
 
             keychainModule.getGenericPasswordForOptions(null, new ResolvePromise() {
