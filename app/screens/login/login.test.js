@@ -117,10 +117,7 @@ describe('Login', () => {
         // This test times out if resetToChannel hasn't been called
     });
 
-    test('should go to MFA screen when login response returns MFA error', (done) => {
-        baseProps.actions.goToScreen.mockImplementation(() => {
-            done();
-        });
+    test('should go to MFA screen when login response returns MFA error', () => {
         const mfaError = {
             error: {
                 server_error_id: mfaExpectedErrors[0],
@@ -138,11 +135,7 @@ describe('Login', () => {
             );
     });
 
-    test('should go to ForgotPassword screen when forgotPassword is called', (done) => {
-        baseProps.actions.goToScreen.mockImplementation(() => {
-            done();
-        });
-
+    test('should go to ForgotPassword screen when forgotPassword is called', () => {
         const wrapper = shallowWithIntl(<Login {...baseProps}/>);
         wrapper.instance().forgotPassword();
 
