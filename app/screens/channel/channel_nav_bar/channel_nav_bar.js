@@ -3,9 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform, View} from 'react-native';
+import {Dimensions, Platform, View} from 'react-native';
 
 import {DeviceTypes, ViewTypes} from 'app/constants';
+import mattermostManaged from 'app/mattermost_managed';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDrawerButton from './channel_drawer_button';
@@ -29,6 +30,30 @@ export default class ChannelNavBar extends PureComponent {
         openSettingsDrawer: PropTypes.func.isRequired,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+    };
+
+    state = {
+        isSplitView: false,
+    };
+
+    componentDidMount() {
+        this.mounted = true;
+        this.handleDimensions();
+        Dimensions.addEventListener('change', this.handleDimensions);
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+        Dimensions.removeEventListener('change', this.handleDimensions);
+    }
+
+    handleDimensions = () => {
+        if (DeviceTypes.IS_TABLET && this.mounted) {
+            mattermostManaged.isRunningInSplitView().then((result) => {
+                const isSplitView = Boolean(result.isSplitView);
+                this.setState({isSplitView});
+            });
+        }
     };
 
     render() {
@@ -60,7 +85,7 @@ export default class ChannelNavBar extends PureComponent {
         }
 
         let drawerButtonVisible = false;
-        if (!DeviceTypes.IS_TABLET) {
+        if (!DeviceTypes.IS_TABLET || this.state.isSplitView) {
             drawerButtonVisible = true;
         }
 
