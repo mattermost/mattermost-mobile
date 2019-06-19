@@ -9,6 +9,7 @@ import FormattedText from 'app/components/formatted_text';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 
+import {mfaExpectedErrors} from 'app/screens/login/login';
 import Login from './login';
 
 describe('Login', () => {
@@ -23,7 +24,7 @@ describe('Login', () => {
         loginId: '',
         password: '',
         loginRequest: {},
-        navigator: {},
+        componentId: 'component-id',
         actions: {
             handleLoginIdChanged: jest.fn(),
             handlePasswordChanged: jest.fn(),
@@ -31,6 +32,7 @@ describe('Login', () => {
             scheduleExpiredNotification: jest.fn(),
             login: jest.fn(),
             resetToChannel: jest.fn(),
+            goToScreen: jest.fn(),
         },
     };
 
@@ -113,5 +115,35 @@ describe('Login', () => {
         wrapper.setProps(props);
 
         // This test times out if resetToChannel hasn't been called
+    });
+
+    test('should go to MFA screen when login response returns MFA error', () => {
+        const mfaError = {
+            error: {
+                server_error_id: mfaExpectedErrors[0],
+            },
+        };
+
+        const wrapper = shallowWithIntl(<Login {...baseProps}/>);
+        wrapper.instance().checkLoginResponse(mfaError);
+
+        expect(baseProps.actions.goToScreen).
+            toHaveBeenCalledWith(
+                baseProps.componentId,
+                'MFA',
+                'Multi-factor Authentication',
+            );
+    });
+
+    test('should go to ForgotPassword screen when forgotPassword is called', () => {
+        const wrapper = shallowWithIntl(<Login {...baseProps}/>);
+        wrapper.instance().forgotPassword();
+
+        expect(baseProps.actions.goToScreen).
+            toHaveBeenCalledWith(
+                baseProps.componentId,
+                'ForgotPassword',
+                'Password Reset',
+            );
     });
 });

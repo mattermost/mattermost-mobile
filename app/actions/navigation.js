@@ -3,6 +3,8 @@
 
 import {Navigation} from 'react-native-navigation';
 
+import merge from 'deepmerge';
+
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 export function resetToChannel() {
@@ -16,6 +18,9 @@ export function resetToChannel() {
                         component: {
                             name: 'Channel',
                             options: {
+                                layout: {
+                                    backgroundColor: 'transparent',
+                                },
                                 statusBar: {
                                     visible: true,
                                 },
@@ -74,6 +79,40 @@ export function resetToSelectServer(allowOtherServers) {
                         },
                     }],
                 },
+            },
+        });
+    };
+}
+
+export function goToScreen(componentId, name, title, passProps = {}, options = {}) {
+    return (dispatch, getState) => {
+        const theme = getTheme(getState());
+        const defaultOptions = {
+            layout: {
+                backgroundColor: theme.centerChannelBg,
+            },
+            topBar: {
+                animate: true,
+                visible: true,
+                backButton: {
+                    color: theme.sidebarHeaderTextColor,
+                    title: '',
+                },
+                background: {
+                    color: theme.sidebarHeaderBg,
+                },
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                    text: title,
+                },
+            },
+        };
+
+        Navigation.push(componentId, {
+            component: {
+                name,
+                passProps,
+                options: merge(defaultOptions, options),
             },
         });
     };

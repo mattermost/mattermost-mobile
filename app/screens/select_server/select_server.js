@@ -22,6 +22,8 @@ import {
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
 
+import merge from 'deepmerge';
+
 import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
@@ -61,9 +63,7 @@ export default class SelectServer extends PureComponent {
         latestVersion: PropTypes.string,
         license: PropTypes.object,
         minVersion: PropTypes.string,
-        navigator: PropTypes.object.isRequired, // TODO remove me
         serverUrl: PropTypes.string.isRequired,
-        theme: PropTypes.object,
     };
 
     static contextTypes = {
@@ -101,8 +101,6 @@ export default class SelectServer extends PureComponent {
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
-
-        this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -159,32 +157,18 @@ export default class SelectServer extends PureComponent {
         return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
     };
 
-    goToNextScreen = (screen, title) => {
-        const {componentId, theme} = this.props;
-
-        Navigation.push(componentId, {
-            component: {
-                name: screen,
-                options: {
-                    popGesture: !LocalConfig.AutoSelectServerUrl,
-                    topBar: {
-                        backButton: {
-                            color: theme.sidebarHeaderTextColor,
-                            title: '',
-                        },
-                        background: {
-                            color: theme.sidebarHeaderBg,
-                        },
-                        title: {
-                            color: theme.sidebarHeaderTextColor,
-                            text: title,
-                        },
-                        visible: !LocalConfig.AutoSelectServerUrl,
-                        height: LocalConfig.AutoSelectServerUrl ? 0 : null,
-                    },
-                },
+    goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
+        const {actions, componentId} = this.props;
+        const defaultOptions = {
+            popGesture: !LocalConfig.AutoSelectServerUrl,
+            topBar: {
+                visible: !LocalConfig.AutoSelectServerUrl,
+                height: LocalConfig.AutoSelectServerUrl ? 0 : null,
             },
-        });
+        };
+        const options = merge(defaultOptions, navOptions);
+
+        actions.goToScreen(componentId, screen, title, passProps, options);
     };
 
     handleAndroidKeyboard = () => {
@@ -272,26 +256,19 @@ export default class SelectServer extends PureComponent {
 
     handleShowClientUpgrade = (upgradeType) => {
         const {formatMessage} = this.context.intl;
-        const {theme} = this.props;
+        const screen = 'ClientUpgrade';
+        const title = formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'});
+        const passProps = {
+            closeAction: this.handleLoginOptions,
+            upgradeType,
+        };
+        const options = {
+            statusBar: {
+                visible: false,
+            },
+        };
 
-        this.props.navigator.push({
-            screen: 'ClientUpgrade',
-            title: formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'}),
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarHidden: LocalConfig.AutoSelectServerUrl,
-                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
-                statusBarHidden: true,
-                statusBarHideWithNavBar: true,
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-            },
-            passProps: {
-                closeAction: this.handleLoginOptions,
-                upgradeType,
-            },
-        });
+        this.goToNextScreen(screen, title, passProps, options);
     };
 
     handleTextChanged = (url) => {

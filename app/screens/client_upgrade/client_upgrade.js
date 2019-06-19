@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
+import {Navigation} from 'react-native-navigation';
 import PropTypes from 'prop-types';
 import {
     Alert,
@@ -12,7 +13,6 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import {Navigation} from 'react-native-navigation';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -34,7 +34,6 @@ export default class ClientUpgrade extends PureComponent {
         downloadLink: PropTypes.string.isRequired,
         forceUpgrade: PropTypes.bool,
         latestVersion: PropTypes.string,
-        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         upgradeType: PropTypes.string,
     };
@@ -67,9 +66,7 @@ export default class ClientUpgrade extends PureComponent {
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-upgrade') {
-            this.props.navigator.dismissModal({
-                animationType: 'slide-down',
-            });
+            Navigation.dismissModal(this.props.componentId);
         }
     }
 
@@ -95,12 +92,18 @@ export default class ClientUpgrade extends PureComponent {
     }
 
     handleClose = () => {
-        if (this.props.closeAction) {
-            this.props.closeAction();
-        } else if (this.props.userCheckedForUpgrade) {
-            this.props.navigator.pop();
+        const {
+            closeAction,
+            userCheckedForUpgrade,
+            componentId,
+        } = this.props;
+
+        if (closeAction) {
+            closeAction();
+        } else if (userCheckedForUpgrade) {
+            Navigation.pop(componentId);
         } else {
-            this.props.navigator.dismissModal();
+            Navigation.dismissModal(componentId);
         }
     };
 

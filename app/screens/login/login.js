@@ -32,7 +32,7 @@ import telemetry from 'app/telemetry';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
+export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
 export default class Login extends PureComponent {
     static propTypes = {
@@ -43,8 +43,9 @@ export default class Login extends PureComponent {
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
             resetToChannel: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
-        navigator: PropTypes.object.isRequired, // TODO remove me
+        componentId: PropTypes.string.isRequired,
         theme: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
@@ -94,23 +95,12 @@ export default class Login extends PureComponent {
     };
 
     goToMfa = () => {
+        const {componentId, actions} = this.props;
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
+        const screen = 'MFA';
+        const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
 
-        this.setState({isLoading: false});
-
-        navigator.push({
-            screen: 'MFA',
-            title: intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(componentId, screen, title);
     };
 
     blur = () => {
@@ -297,20 +287,12 @@ export default class Login extends PureComponent {
     };
 
     forgotPassword = () => {
+        const {actions, componentId} = this.props;
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
-        navigator.push({
-            screen: 'ForgotPassword',
-            title: intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        const screen = 'ForgotPassword';
+        const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
+
+        actions.goToScreen(componentId, screen, title);
     }
 
     render() {

@@ -6,10 +6,9 @@ import {connect} from 'react-redux';
 
 import {getPing, resetPing, setServerVersion} from 'mattermost-redux/actions/general';
 import {login} from 'mattermost-redux/actions/users';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
-import {resetToChannel} from 'app/actions/navigation';
+import {resetToChannel, goToScreen} from 'app/actions/navigation';
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
 import {loadConfigAndLicense} from 'app/actions/views/root';
@@ -31,7 +30,6 @@ function mapStateToProps(state) {
         latestVersion,
         license,
         minVersion,
-        theme: getTheme(state),
     };
 }
 
@@ -48,6 +46,7 @@ function mapDispatchToProps(dispatch) {
             setLastUpgradeCheck,
             setServerVersion,
             resetToChannel,
+            goToScreen,
         }, dispatch),
     };
 }

@@ -26,6 +26,7 @@ describe('ChannelMembers', () => {
             searchProfiles: jest.fn(),
         },
         navigator,
+        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {
