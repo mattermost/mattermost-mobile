@@ -10,6 +10,15 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
+ - Fixed a few mobile app crash / fatal error issues.
+ - Fixed an issue where sharing a GIF via keyboard resulted in an error screen.
+ - Fixed an issue where long-press menu could not be dragged up when rotating the device to landscape view while the menu was open.
+ - Fixed an issue on Android where push notification settings were only saved after closing the settings page.
+ - Fixed an issue where users on View Members list had an icon that appeared to be selectable but was not.
+ - Fixed an issue where "Jump To" showed archived channels the user did not belong to instead of the ones the user was a member of.
+ - Fixed an issue where changing the Timezone manually to "Set automatically" did not work on the mobile app.
+ - Fixed an issue where setting a position field for AD/LDAP sync in the System Console did not block user from changing it in account settings.
+ - 
 
 ### Known Issues
   - Buttons inside ephemeral posts are not clickable / functional on the mobile app. [MM-15084](https://mattermost.atlassian.net/browse/MM-15084)
