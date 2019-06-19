@@ -4,8 +4,8 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 
-import {isTimezoneEnabled} from 'app/utils/timezone';
 import {isThemeSwitchingEnabled} from 'app/utils/theme';
 
 import DisplaySettings from './display_settings';

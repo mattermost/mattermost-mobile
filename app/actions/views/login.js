@@ -7,12 +7,13 @@ import {getSessions} from 'mattermost-redux/actions/users';
 import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {Client4} from 'mattermost-redux/client';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {ViewTypes} from 'app/constants';
 import {app} from 'app/mattermost';
 import PushNotifications from 'app/push_notifications';
-import {getDeviceTimezone, isTimezoneEnabled} from 'app/utils/timezone';
+import {getDeviceTimezone} from 'app/utils/timezone';
 import {setCSRFFromCookie} from 'app/utils/security';
 
 export function handleLoginIdChanged(loginId) {
