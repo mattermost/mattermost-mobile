@@ -61,6 +61,7 @@ export default class MoreDirectMessages extends PureComponent {
         this.searchTimeoutId = 0;
         this.next = true;
         this.page = -1;
+        this.mounted = false;
 
         this.state = {
             profiles: [],
@@ -77,8 +78,13 @@ export default class MoreDirectMessages extends PureComponent {
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
+        this.mounted = true;
 
         this.getProfiles();
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     componentDidUpdate(prevProps) {
@@ -111,7 +117,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     getProfiles = debounce(() => {
         const {loading, term} = this.state;
-        if (this.next && !loading && !term) {
+        if (this.next && !loading && !term && this.mounted) {
             this.setState({loading: true}, () => {
                 const {actions, currentTeamId, restrictDirectMessage} = this.props;
 
@@ -182,13 +188,15 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     loadedProfiles = ({data}) => {
-        const {profiles} = this.state;
-        if (data && !data.length) {
-            this.next = false;
-        }
+        if (this.mounted) {
+            const {profiles} = this.state;
+            if (data && !data.length) {
+                this.next = false;
+            }
 
-        this.page += 1;
-        this.setState({loading: false, profiles: [...profiles, ...data]});
+            this.page += 1;
+            this.setState({loading: false, profiles: [...profiles, ...data]});
+        }
     };
 
     makeDirectChannel = async (id) => {
@@ -318,14 +326,14 @@ export default class MoreDirectMessages extends PureComponent {
 
     updateNavigationButtons = (startEnabled, context = this.context) => {
         const {formatMessage} = context.intl;
-        this.props.navigator.setButtons({
-            rightButtons: [{
-                id: START_BUTTON,
-                title: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
-                showAsAction: 'always',
-                disabled: !startEnabled,
-            }],
-        });
+        // this.props.navigator.setButtons({
+        //     rightButtons: [{
+        //         id: START_BUTTON,
+        //         title: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
+        //         showAsAction: 'always',
+        //         disabled: !startEnabled,
+        //     }],
+        // });
     };
 
     renderItem = (props) => {
