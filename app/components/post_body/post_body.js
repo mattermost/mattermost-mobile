@@ -400,6 +400,38 @@ export default class PostBody extends PureComponent {
                     theme={theme}
                 />
             );
+        } else if (postType === Posts.POST_TYPES.PURPOSE_CHANGE || postType === Posts.POST_TYPES.HEADER_CHANGE ||
+            postType === Posts.POST_TYPES.DISPLAYNAME_CHANGE || postType === Posts.POST_TYPES.CHANNEL_DELETED) {
+            const username = this.props.post.props['username'];
+            const prefixUsername = (announcement, name) => {
+                const stripped = announcement.replace(new RegExp(`@${name}`, 'g'), name);
+                const decorated = stripped.replace(new RegExp(name, 'g'), `@${name}`);
+                return decorated;
+            };
+            const messageData = prefixUsername(message, username);
+            messageComponent = (
+                <View
+                    style={[style.messageContainer, (isReplyPost && style.reply), (isPendingOrFailedPost && style.pendingPost)]}
+                    onLayout={this.measurePost}
+                    removeClippedSubviews={isLongPost}
+                >
+                    <Markdown
+                        baseTextStyle={messageStyle}
+                        blockStyles={blockStyles}
+                        channelMentions={postProps.channel_mentions}
+                        imagesMetadata={metadata?.images}
+                        isEdited={hasBeenEdited}
+                        isReplyPost={isReplyPost}
+                        isSearchResult={isSearchResult}
+                        navigator={navigator}
+                        onHashtagPress={onHashtagPress}
+                        onPermalinkPress={onPermalinkPress}
+                        onPostPress={onPress}
+                        textStyles={textStyles}
+                        value={messageData}
+                    />
+                </View>
+            );
         } else if (isEmojiOnly) {
             messageComponent = (
                 <MarkdownEmoji
