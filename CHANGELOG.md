@@ -10,10 +10,9 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixing an issue where some android devices are crashing because of the version of JSC.
- - Fixing an issue with missing messages when notifications are turned off and socket is reconnected.
+ - Fixed an issue where some Android devices were crashing.
+ - Fixed an issue with missing messages when notifications were turned off and socket was reconnected.
  
-
 ## 1.20.0 Release
 - Release Date: June 16, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
