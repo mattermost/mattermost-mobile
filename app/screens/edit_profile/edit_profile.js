@@ -242,7 +242,7 @@ export default class EditProfile extends PureComponent {
         this.props.navigator.dismissModal({
             animationType: 'none',
         });
-    }
+    };
 
     uploadProfileImage = async () => {
         const {profileImage} = this.state;
@@ -539,7 +539,7 @@ export default class EditProfile extends PureComponent {
                 </ProfilePictureButton>
             </View>
         );
-    }
+    };
 
     render() {
         const {theme} = this.props;
