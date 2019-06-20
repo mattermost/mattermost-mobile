@@ -143,9 +143,9 @@ export default class AttachmentButton extends PureComponent {
             },
         };
 
-        const hasPermission = await this.hasPhotoPermission(source);
+        const hasCameraPermission = await this.hasPhotoPermission(source);
 
-        if (hasPermission) {
+        if (hasCameraPermission) {
             ImagePicker.launchCamera(options, (response) => {
                 if (response.error || response.didCancel) {
                     return;
