@@ -74,7 +74,7 @@ export default class CreateChannel extends PureComponent {
             buttons.leftButtons = [this.left];
         }
 
-        // props.navigator.setButtons(buttons);
+        props.navigator.setButtons(buttons);
     }
 
     componentDidMount() {
@@ -141,7 +141,7 @@ export default class CreateChannel extends PureComponent {
             buttons.leftButtons = [this.left];
         }
 
-        // this.props.navigator.setButtons(buttons);
+        this.props.navigator.setButtons(buttons);
     };
 
     emitCreating = (loading) => {
@@ -153,7 +153,7 @@ export default class CreateChannel extends PureComponent {
             buttons.leftButtons = [this.left];
         }
 
-        // this.props.navigator.setButtons(buttons);
+        this.props.navigator.setButtons(buttons);
     };
 
     onCreateChannel = () => {

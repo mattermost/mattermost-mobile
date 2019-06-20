@@ -82,7 +82,7 @@ export default class MoreChannels extends PureComponent {
             buttons.rightButtons = [this.rightButton];
         }
 
-        // props.navigator.setButtons(buttons);
+        props.navigator.setButtons(buttons);
     }
 
     componentDidMount() {
@@ -173,7 +173,7 @@ export default class MoreChannels extends PureComponent {
             buttons.rightButtons = [{...this.rightButton, disabled: !createEnabled}];
         }
 
-        // this.props.navigator.setButtons(buttons);
+        this.props.navigator.setButtons(buttons);
     };
 
     loadedChannels = ({data}) => {
