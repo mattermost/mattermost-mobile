@@ -53,8 +53,6 @@ export default class SafeAreaIos extends PureComponent {
     }
 
     componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-
         Dimensions.addEventListener('change', this.getSafeAreaInsets);
         this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
@@ -67,14 +65,6 @@ export default class SafeAreaIos extends PureComponent {
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
         this.mounted = false;
-    }
-
-    componentDidAppear() {
-        this.getSafeAreaInsets();
-    }
-
-    componentDidDisappear() {
-        this.getSafeAreaInsets();
     }
 
     getStatusBarHeight = () => {

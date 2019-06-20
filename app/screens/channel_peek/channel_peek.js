@@ -21,12 +21,11 @@ export default class ChannelPeek extends PureComponent {
         currentUserId: PropTypes.string,
         lastViewedAt: PropTypes.number,
         navigator: PropTypes.object,
-        postIds: PropTypes.array.isRequired,
+        postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        postIds: [],
         postVisibility: 15,
     };
 
@@ -65,7 +64,7 @@ export default class ChannelPeek extends PureComponent {
     }
 
     getVisiblePostIds = (props) => {
-        return props.postIds.slice(0, 15);
+        return props.postIds?.slice(0, 15) || [];
     };
 
     render() {

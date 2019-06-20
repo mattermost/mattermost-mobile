@@ -45,10 +45,10 @@ export default class SelectTeam extends PureComponent {
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
-        navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object,
@@ -124,27 +124,15 @@ export default class SelectTeam extends PureComponent {
     };
 
     close = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'slide-down',
-        });
+        Navigation.dismissModal(this.props.componentId);
     };
 
     goToChannelView = () => {
-        const {navigator, theme} = this.props;
+        const passProps = {
+            disableTermsModal: true,
+        };
 
-        navigator.resetTo({
-            screen: 'Channel',
-            animated: false,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                disableTermsModal: true,
-            },
-        });
+        this.props.actions.resetToChannel(passProps);
     };
 
     onSelectTeam = async (team) => {

@@ -7,7 +7,7 @@ import merge from 'deepmerge';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-export function resetToChannel() {
+export function resetToChannel(passProps = {}) {
     return (dispatch, getState) => {
         const theme = getTheme(getState());
 
@@ -17,6 +17,7 @@ export function resetToChannel() {
                     children: [{
                         component: {
                             name: 'Channel',
+                            passProps,
                             options: {
                                 layout: {
                                     backgroundColor: 'transparent',
@@ -25,6 +26,8 @@ export function resetToChannel() {
                                     visible: true,
                                 },
                                 topBar: {
+                                    visible: false,
+                                    height: 0,
                                     backButton: {
                                         color: theme.sidebarHeaderTextColor,
                                         title: '',
@@ -35,8 +38,6 @@ export function resetToChannel() {
                                     title: {
                                         color: theme.sidebarHeaderTextColor,
                                     },
-                                    visible: false,
-                                    height: 0,
                                 },
                             },
                         },
@@ -84,6 +85,48 @@ export function resetToSelectServer(allowOtherServers) {
     };
 }
 
+export function resetToTeams(name, title, passProps = {}, options = {}) {
+    return (dispatch, getState) => {
+        const theme = getTheme(getState());
+        const defaultOptions = {
+            layout: {
+                backgroundColor: theme.centerChannelBg,
+            },
+            statusBar: {
+                visible: true,
+            },
+            topBar: {
+                visible: true,
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                    text: title,
+                },
+                backButton: {
+                    color: theme.sidebarHeaderTextColor,
+                    title: '',
+                },
+                background: {
+                    color: theme.sidebarHeaderBg,
+                },
+            },
+        };
+
+        Navigation.setRoot({
+            root: {
+                stack: {
+                    children: [{
+                        component: {
+                            name,
+                            passProps,
+                            options: merge(defaultOptions, options),
+                        },
+                    }],
+                },
+            },
+        });
+    };
+}
+
 export function goToScreen(componentId, name, title, passProps = {}, options = {}) {
     return (dispatch, getState) => {
         const theme = getTheme(getState());
@@ -105,6 +148,67 @@ export function goToScreen(componentId, name, title, passProps = {}, options = {
                     color: theme.sidebarHeaderTextColor,
                     text: title,
                 },
+            },
+        };
+
+        Navigation.push(componentId, {
+            component: {
+                name,
+                passProps,
+                options: merge(defaultOptions, options),
+            },
+        });
+    };
+}
+
+export function showModal(name, title, passProps = {}, options = {}) {
+    return (dispatch, getState) => {
+        const theme = getTheme(getState());
+        const defaultOptions = {
+            layout: {
+                backgroundColor: theme.centerChannelBg,
+            },
+            statusBar: {
+                visible: true,
+            },
+            topBar: {
+                animate: true,
+                visible: true,
+                backButton: {
+                    color: theme.sidebarHeaderTextColor,
+                    title: '',
+                },
+                background: {
+                    color: theme.sidebarHeaderBg,
+                },
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                    text: title,
+                },
+            },
+        };
+
+        Navigation.showModal({
+            stack: {
+                children: [{
+                    component: {
+                        name,
+                        passProps,
+                        options: merge(defaultOptions, options),
+                    },
+                }],
+            },
+        });
+    };
+}
+
+export function peek(componentId, name, passProps = {}, options = {}) {
+    return () => {
+        const defaultOptions = {
+            preview: {
+                commit: false,
+                height: 300,
+                width: 300,
             },
         };
 

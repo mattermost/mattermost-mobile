@@ -39,6 +39,7 @@ export default class ChannelBase extends PureComponent {
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
+            peek: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string,
         channelsRequestFailed: PropTypes.bool,
@@ -259,7 +260,7 @@ export default class ChannelBase extends PureComponent {
         }
     };
 
-    renderChannel(drawerContent) {
+    renderChannel(drawerContent, optionalProps = {}) {
         const {
             channelsRequestFailed,
             currentChannelId,
@@ -298,6 +299,7 @@ export default class ChannelBase extends PureComponent {
                 ref={this.channelSidebarRef}
                 blurPostTextBox={this.blurPostTextBox}
                 navigator={navigator}
+                {...optionalProps}
             >
                 <SettingsSidebar
                     ref={this.settingsSidebarRef}
