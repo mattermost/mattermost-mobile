@@ -60,8 +60,8 @@ export default class ChannelItem extends PureComponent {
     });
 
     onPreview = ({reactTag}) => {
-        if (Platform.OS === 'ios') {
-            const {channelId, previewChannel} = this.props;
+        const {channelId, previewChannel} = this.props;
+        if (previewChannel) {
             const {intl} = this.context;
             const passProps = {
                 channelId,
