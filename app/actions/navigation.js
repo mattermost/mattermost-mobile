@@ -226,9 +226,9 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
                     alpha: {
                         from: 0,
                         to: 1,
-                        duration: 250
-                    }
-                }
+                        duration: 250,
+                    },
+                },
             },
             dismissModal: {
                 alpha: {
@@ -240,9 +240,9 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
                     alpha: {
                         from: 1,
                         to: 0,
-                        duration: 250
-                    }
-                }
+                        duration: 250,
+                    },
+                },
             },
         },
     };
@@ -253,7 +253,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
                 component: {
                     name,
                     passProps,
-                    options: defaultOptions,
+                    options: merge(defaultOptions, options),
                 },
             }],
         },
