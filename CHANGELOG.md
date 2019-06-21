@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
 ## 1.20.1 Release
-- Release Date: TBD
+- Release Date: June 21, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Combatibility
@@ -11,7 +11,7 @@
 
 ### Bug Fixes
  - Fixed an issue where some Android devices were crashing.
- - Fixed an issue with missing messages when notifications were turned off and socket was reconnected.
+ - Fixed an issue where messages were missing after reconnecting the network.
  
 ## 1.20.0 Release
 - Release Date: June 16, 2019
