@@ -36,6 +36,7 @@ export default {
     },
     authenticate: LocalAuth.auth,
     blurAppScreen: MattermostManaged.blurAppScreen,
+    isRunningInSplitView: MattermostManaged.isRunningInSplitView,
     getConfig: async () => {
         try {
             cachedConfig = await MattermostManaged.getConfig();

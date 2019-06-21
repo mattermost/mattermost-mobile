@@ -52,6 +52,7 @@ export default {
         return cachedConfig;
     },
     hasSafeAreaInsets: MattermostManaged.hasSafeAreaInsets,
+    isRunningInSplitView: MattermostManaged.isRunningInSplitView,
     isDeviceSecure: async () => {
         try {
             return await LocalAuth.isDeviceSecure();

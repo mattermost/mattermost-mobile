@@ -5,6 +5,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     BackHandler,
+    Dimensions,
     Keyboard,
     StyleSheet,
     View,
@@ -17,6 +18,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import SafeAreaView from 'app/components/safe_area_view';
 import DrawerLayout, {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes} from 'app/constants';
+import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 
@@ -69,15 +71,19 @@ export default class ChannelSidebar extends Component {
             openDrawerOffset,
             drawerOpened: false,
             searching: false,
+            isSplitView: false,
         };
     }
 
     componentDidMount() {
+        this.mounted = true;
         this.props.actions.getTeams();
+        this.handleDimensions();
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.on('renderDrawer', this.handleShowDrawerContent);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
+        Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -97,7 +103,7 @@ export default class ChannelSidebar extends Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const {currentTeamId, deviceWidth, isLandscape, teamsCount} = this.props;
-        const {openDrawerOffset, show, searching} = this.state;
+        const {openDrawerOffset, isSplitView, show, searching} = this.state;
 
         if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching) {
             return true;
@@ -105,14 +111,17 @@ export default class ChannelSidebar extends Component {
 
         return nextProps.currentTeamId !== currentTeamId ||
             nextProps.isLandscape !== isLandscape || nextProps.deviceWidth !== deviceWidth ||
-            nextProps.teamsCount !== teamsCount;
+            nextProps.teamsCount !== teamsCount ||
+            nextState.isSplitView !== isSplitView;
     }
 
     componentWillUnmount() {
+        this.mounted = false;
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         EventEmitter.off('renderDrawer', this.handleShowDrawerContent);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+        Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     handleAndroidBack = () => {
@@ -122,6 +131,15 @@ export default class ChannelSidebar extends Component {
         }
 
         return false;
+    };
+
+    handleDimensions = () => {
+        if (DeviceTypes.IS_TABLET && this.mounted) {
+            mattermostManaged.isRunningInSplitView().then((result) => {
+                const isSplitView = Boolean(result.isSplitView);
+                this.setState({isSplitView});
+            });
+        }
     };
 
     handleShowDrawerContent = () => {
@@ -380,6 +398,7 @@ export default class ChannelSidebar extends Component {
     render() {
         const {children, deviceWidth} = this.props;
         const {openDrawerOffset} = this.state;
+        const isTablet = DeviceTypes.IS_TABLET && !this.state.isSplitView;
         const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
 
         return (
@@ -390,7 +409,7 @@ export default class ChannelSidebar extends Component {
                 onDrawerOpen={this.handleDrawerOpen}
                 drawerWidth={drawerWidth}
                 useNativeAnimations={true}
-                isTablet={DeviceTypes.IS_TABLET}
+                isTablet={isTablet}
             >
                 {children}
             </DrawerLayout>

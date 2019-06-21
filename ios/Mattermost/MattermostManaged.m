@@ -6,7 +6,6 @@
 // See License.txt for license information.
 //
 
-#import "RCTUITextView.h"
 #import "MattermostManaged.h"
 #import <UploadAttachments/Constants.h>
 
@@ -152,31 +151,19 @@ RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve
   }
 }
 
+RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  BOOL isRunningInFullScreen = CGRectEqualToRect(
+                                                 [UIApplication sharedApplication].delegate.window.frame,
+                                                 [UIApplication sharedApplication].delegate.window.screen.bounds);
+  resolve(@{
+            @"isSplitView": @(!isRunningInFullScreen)
+            });
+}
+
 RCT_EXPORT_METHOD(quitApp)
 {
   exit(0);
-}
-
-@end
-
-@implementation RCTUITextView (DisableCopyPaste)
-
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
-{
-  NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  if(response) {
-    NSString *copyPasteProtection = response[@"copyAndPasteProtection"];
-    BOOL prevent = action == @selector(paste:) ||
-    action == @selector(copy:) ||
-    action == @selector(cut:) ||
-    action == @selector(_share:);
-
-    if ([copyPasteProtection isEqual: @"true"] && prevent) {
-      return NO;
-    }
-  }
-
-  return [super canPerformAction:action withSender:sender];
 }
 
 @end
