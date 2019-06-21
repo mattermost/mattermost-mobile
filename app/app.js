@@ -198,10 +198,11 @@ export default class App {
         const username = `${deviceToken}, ${currentUserId}`;
         const password = `${token},${url}`;
 
+        this.token = token;
+        this.url = url;
+
         if (this.waitForRehydration) {
             this.waitForRehydration = false;
-            this.token = token;
-            this.url = url;
         }
 
         // Only save to keychain if the url and token are set

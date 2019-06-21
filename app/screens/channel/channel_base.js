@@ -48,6 +48,7 @@ export default class ChannelBase extends PureComponent {
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
         disableTermsModal: PropTypes.bool,
+        skipMetrics: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -88,7 +89,7 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentDidMount() {
-        if (tracker.initialLoad) {
+        if (tracker.initialLoad && !this.props.skipMetrics) {
             this.props.actions.recordLoadTime('Start time', 'initialLoad');
         }
 
@@ -98,7 +99,9 @@ export default class ChannelBase extends PureComponent {
 
         EventEmitter.emit('renderDrawer');
 
-        telemetry.end(['start:channel_screen']);
+        if (!this.props.skipMetrics) {
+            telemetry.end(['start:channel_screen']);
+        }
     }
 
     componentWillReceiveProps(nextProps) {

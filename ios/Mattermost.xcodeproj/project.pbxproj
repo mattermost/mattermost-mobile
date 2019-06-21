@@ -80,6 +80,7 @@
 		7F581D35221ED5C60099E66B /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F581D34221ED5C60099E66B /* NotificationService.swift */; };
 		7F581D39221ED5C60099E66B /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7F581D32221ED5C60099E66B /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7F581F78221EEA7C0099E66B /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
+		7F5BA34722B99B7B005B05D3 /* Mattermost+RCTUITextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F5BA34622B99B7B005B05D3 /* Mattermost+RCTUITextView.m */; };
 		7F5CA9A0208FE3B9004F91CE /* libRNDocumentPicker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F5CA991208FE38F004F91CE /* libRNDocumentPicker.a */; };
 		7F642DF02093533300F3165E /* libRNDeviceInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F642DED2093530B00F3165E /* libRNDeviceInfo.a */; };
 		7F72F2EE2211220500F98FFF /* GenericPreview.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7F72F2ED2211220500F98FFF /* GenericPreview.xib */; };
@@ -819,6 +820,8 @@
 		7F581D34221ED5C60099E66B /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		7F581D36221ED5C60099E66B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7F581F77221EEA5A0099E66B /* NotificationService.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationService.entitlements; sourceTree = "<group>"; };
+		7F5BA34522B99B7B005B05D3 /* Mattermost+RCTUITextView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Mattermost+RCTUITextView.h"; path = "Mattermost/Mattermost+RCTUITextView.h"; sourceTree = "<group>"; };
+		7F5BA34622B99B7B005B05D3 /* Mattermost+RCTUITextView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "Mattermost+RCTUITextView.m"; path = "Mattermost/Mattermost+RCTUITextView.m"; sourceTree = "<group>"; };
 		7F5CA956208FE38F004F91CE /* RNDocumentPicker.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNDocumentPicker.xcodeproj; path = "../node_modules/react-native-document-picker/ios/RNDocumentPicker.xcodeproj"; sourceTree = "<group>"; };
 		7F63D27B1E6C957C001FAE12 /* RCTPushNotification.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTPushNotification.xcodeproj; path = "../node_modules/react-native/Libraries/PushNotificationIOS/RCTPushNotification.xcodeproj"; sourceTree = "<group>"; };
 		7F63D2C21E6DD98A001FAE12 /* Mattermost.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Mattermost.entitlements; path = Mattermost/Mattermost.entitlements; sourceTree = "<group>"; };
@@ -1112,6 +1115,8 @@
 				7FEB109C1F61019C0039A015 /* UIImage+ImageEffects.m */,
 				7F151D40221B069200FAD8F3 /* 0155-keys.png */,
 				7F292AA51E8ABB1100A450A3 /* splash.png */,
+				7F5BA34522B99B7B005B05D3 /* Mattermost+RCTUITextView.h */,
+				7F5BA34622B99B7B005B05D3 /* Mattermost+RCTUITextView.m */,
 			);
 			name = Mattermost;
 			sourceTree = "<group>";
@@ -2618,6 +2623,7 @@
 				7FEB10981F6101710039A015 /* BlurAppScreen.m in Sources */,
 				7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */,
 				7F240ACD220D460300637665 /* MattermostBucketModule.m in Sources */,
+				7F5BA34722B99B7B005B05D3 /* Mattermost+RCTUITextView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
