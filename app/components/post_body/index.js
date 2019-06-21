@@ -17,6 +17,7 @@ import {
     isPostEphemeral,
     isSystemMessage,
     canDeletePost,
+    hasReactions,
 } from 'mattermost-redux/utils/post_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
@@ -83,7 +84,7 @@ function makeMapStateToProps() {
             fileIds: post.file_ids,
             hasBeenDeleted: post.state === Posts.POST_DELETED,
             hasBeenEdited: isEdited(post),
-            hasReactions: post.has_reactions,
+            hasReactions: hasReactions(post),
             isFailed,
             isPending,
             isPostAddChannelMember,

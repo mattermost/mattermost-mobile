@@ -8,6 +8,7 @@ import {selectPost} from 'mattermost-redux/actions/posts';
 import {makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {hasReactions} from 'mattermost-redux/utils/post_utils';
 
 import {loadThreadIfNecessary} from 'app/actions/views/channel';
 
@@ -22,7 +23,7 @@ function makeMapStateToProps() {
 
         return {
             channelName: channel ? channel.display_name : '',
-            hasReactions: post ? post.has_reactions : false,
+            hasReactions: hasReactions(post),
             inThreadView: Boolean(state.entities.posts.selectedPostId),
             fileIds: post ? post.file_ids : false,
             theme: getTheme(state),
