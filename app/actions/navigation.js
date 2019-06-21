@@ -202,6 +202,64 @@ export function showModal(name, title, passProps = {}, options = {}) {
     };
 }
 
+export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
+    const defaultOptions = {
+        modalPresentationStyle: 'overCurrentContext',
+        layout: {
+            backgroundColor: 'transparent',
+        },
+        statusBar: {
+            visible: true,
+        },
+        topBar: {
+            visible: false,
+            height: 0,
+        },
+        animations: {
+            showModal: {
+                alpha: {
+                    from: 0,
+                    to: 1,
+                    duration: 250,
+                },
+                content: {
+                    alpha: {
+                        from: 0,
+                        to: 1,
+                        duration: 250
+                    }
+                }
+            },
+            dismissModal: {
+                alpha: {
+                    from: 1,
+                    to: 0,
+                    duration: 250,
+                },
+                content: {
+                    alpha: {
+                        from: 1,
+                        to: 0,
+                        duration: 250
+                    }
+                }
+            },
+        },
+    };
+
+    Navigation.showModal({
+        stack: {
+            children: [{
+                component: {
+                    name,
+                    passProps,
+                    options: defaultOptions,
+                },
+            }],
+        },
+    });
+}
+
 export function peek(componentId, name, passProps = {}, options = {}) {
     return () => {
         const defaultOptions = {
