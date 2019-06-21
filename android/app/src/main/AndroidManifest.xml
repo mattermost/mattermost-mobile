@@ -44,7 +44,8 @@
                android:exported="false" />
         <activity
                 android:name="com.reactnativenavigation.controllers.NavigationActivity"
-                android:configChanges="keyboard|keyboardHidden|orientation|screenSize"/>
+                android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+                android:resizeableActivity="true"/>
         <activity
                 android:name="com.mattermost.share.ShareActivity"
                 android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
