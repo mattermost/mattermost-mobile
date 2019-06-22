@@ -56,8 +56,6 @@ NSString* const NotificationClearAction = @"clear";
   NSURL *jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
   [ReactNativeNavigation bootstrap:jsCodeLocation launchOptions:launchOptions];
 
-  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-  self.window.backgroundColor = [UIColor whiteColor];
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
 
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
