@@ -146,7 +146,7 @@ export default class Search extends PureComponent {
             if (this.state.preview) {
                 this.refs.preview.handleClose();
             } else {
-                this.props.navigator.dismissModal();
+                Navigation.dismissModal(this.props.componentId);
             }
         }
     }
@@ -176,9 +176,8 @@ export default class Search extends PureComponent {
     };
 
     cancelSearch = preventDoubleTap(() => {
-        const {navigator} = this.props;
         this.handleTextChanged('', true);
-        navigator.dismissModal({animationType: 'slide-down'});
+        Navigation.dismissModal(this.props.componentId);
     });
 
     goToThread = (post) => {
@@ -211,7 +210,7 @@ export default class Search extends PureComponent {
 
     handleHashtagPress = (hashtag) => {
         if (this.showingPermalink) {
-            this.props.navigator.dismissModal();
+            Navigation.dismissModal(this.props.componentId);
             this.handleClosePermalink();
         }
 

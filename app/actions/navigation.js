@@ -250,6 +250,45 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
     });
 }
 
+export function showSearchModal(initialValue = '') {
+    return (dispatch, getState) => {
+        const theme = getTheme(getState());
+        const options = {
+            layout: {
+                backgroundColor: theme.centerChannelBg,
+            },
+            statusBar: {
+                visible: true,
+            },
+            topBar: {
+                visible: false,
+                height: 0,
+                backButton: {
+                    color: theme.sidebarHeaderTextColor,
+                    title: '',
+                },
+                background: {
+                    color: theme.sidebarHeaderBg,
+                },
+            },
+        };
+
+        Navigation.showModal({
+            stack: {
+                children: [{
+                    component: {
+                        name: 'Search',
+                        passProps: {
+                            initialValue,
+                        },
+                        options,
+                    },
+                }],
+            },
+        });
+    };
+}
+
 export function peek(componentId, name, passProps = {}, options = {}) {
     return () => {
         const defaultOptions = {
