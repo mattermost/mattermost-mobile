@@ -19,6 +19,7 @@ import Permissions from 'react-native-permissions';
 
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 import {PermissionTypes} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -439,21 +440,7 @@ export default class AttachmentButton extends PureComponent {
             });
         }
 
-        this.props.navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                items,
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
+        showModalOverCurrentContext('OptionsModal', {items});
     };
 
     render() {

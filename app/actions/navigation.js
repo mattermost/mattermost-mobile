@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import merge from 'deepmerge';
@@ -203,6 +204,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
 }
 
 export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
+    const animationsEnabled = (Platform.OS === 'android').toString();
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
@@ -217,31 +219,19 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
         },
         animations: {
             showModal: {
+                enabled: animationsEnabled,
                 alpha: {
                     from: 0,
                     to: 1,
                     duration: 250,
                 },
-                content: {
-                    alpha: {
-                        from: 0,
-                        to: 1,
-                        duration: 250,
-                    },
-                },
             },
             dismissModal: {
+                enabled: animationsEnabled,
                 alpha: {
                     from: 1,
                     to: 0,
                     duration: 250,
-                },
-                content: {
-                    alpha: {
-                        from: 1,
-                        to: 0,
-                        duration: 250,
-                    },
                 },
             },
         },
