@@ -18,7 +18,6 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import app from 'app/app';
-import {showModal, showModalOverCurrentContext} from 'app/actions/navigation';
 import SafeAreaView from 'app/components/safe_area_view';
 import DrawerLayout from 'app/components/sidebars/drawer_layout';
 import UserStatus from 'app/components/user_status';
@@ -40,6 +39,8 @@ export default class SettingsDrawer extends PureComponent {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
+            showModal: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
@@ -109,6 +110,7 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     handleSetStatus = preventDoubleTap(() => {
+        const {actions} = this.props;
         const items = [{
             action: () => this.setStatus(General.ONLINE),
             text: {
@@ -135,7 +137,7 @@ export default class SettingsDrawer extends PureComponent {
             },
         }];
 
-        showModalOverCurrentContext('OptionsModal', {items});
+        actions.showModalOverCurrentContext('OptionsModal', {items});
     });
 
     goToEditProfile = preventDoubleTap(() => {
@@ -197,6 +199,7 @@ export default class SettingsDrawer extends PureComponent {
     openModal = (screen, title, passProps) => {
         this.closeSettingsSidebar();
 
+        const {actions} = this.props;
         const options = {
             topBar: {
                 leftButtons: [{
@@ -206,7 +209,9 @@ export default class SettingsDrawer extends PureComponent {
             },
         };
 
-        InteractionManager.runAfterInteractions(() => showModal(screen, title, passProps, options));
+        InteractionManager.runAfterInteractions(() => {
+            actions.showModal(screen, title, passProps, options);
+        });
     };
 
     renderUserStatusIcon = (userId) => {
