@@ -59,6 +59,11 @@ export const app = new App();
 export const store = configureStore(initialState);
 registerScreens(store, Provider);
 
+// Keep track of the latest componentId to appear
+Navigation.events().registerComponentDidAppearListener(({componentId}) => {
+    app.setNavigationComponentId(componentId);
+});
+
 const lazyLoadExternalModules = () => {
     const StatusBarSizeIOS = require('react-native-status-bar-size');
     const initializeErrorHandling = require('app/utils/error_handling').initializeErrorHandling;
