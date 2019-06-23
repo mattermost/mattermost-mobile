@@ -189,6 +189,15 @@ export function popTopScreen() {
     };
 }
 
+export function popToRoot() {
+    return (dispatch, getState) => {
+        const state = getState();
+        const componentId = state.navigation.componentIds[0];
+
+        Navigation.popToRoot(componentId);
+    };
+}
+
 export function showModal(name, title, passProps = {}, options = {}) {
     return (dispatch, getState) => {
         const theme = getTheme(getState());
@@ -292,6 +301,12 @@ export function dismissModal(options = {}) {
         const componentId = state.navigation.componentIds[0];
 
         Navigation.dismissModal(componentId, options);
+    };
+}
+
+export function dismissAllModals(options = {}) {
+    return () => {
+        Navigation.dismissAllModals(options);
     };
 }
 

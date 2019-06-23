@@ -35,6 +35,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getRedirectLocation: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
@@ -45,7 +46,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
         isReplyPost: PropTypes.bool,
         link: PropTypes.string,
         message: PropTypes.string.isRequired,
-        navigator: PropTypes.object.isRequired,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         openGraphData: PropTypes.object,
@@ -183,7 +183,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             return null;
         }
 
-        const {isReplyPost, link, metadata, navigator, openGraphData, showLinkPreviews, theme} = this.props;
+        const {isReplyPost, link, metadata, openGraphData, showLinkPreviews, theme} = this.props;
         const attachments = this.getMessageAttachment();
         if (attachments) {
             return attachments;
@@ -202,7 +202,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 <PostAttachmentOpenGraph
                     isReplyPost={isReplyPost}
                     link={link}
-                    navigator={navigator}
                     openGraphData={openGraphData}
                     imagesMetadata={metadata && metadata.images}
                     theme={theme}
@@ -339,7 +338,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
             deviceHeight,
             deviceWidth,
             metadata,
-            navigator,
             onHashtagPress,
             onPermalinkPress,
             textStyles,
@@ -360,7 +358,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     deviceHeight={deviceHeight}
                     deviceWidth={deviceWidth}
                     metadata={metadata}
-                    navigator={navigator}
                     postId={postId}
                     textStyles={textStyles}
                     theme={theme}
@@ -409,7 +406,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
     handlePreviewImage = (imageRef) => {
         const {shortenedLink} = this.state;
         let {link} = this.props;
-        const {navigator} = this.props;
+        const {actions} = this.props;
         if (shortenedLink) {
             link = shortenedLink;
         }
@@ -431,7 +428,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             },
         }];
 
-        previewImageAtIndex(navigator, [imageRef], 0, files);
+        previewImageAtIndex([imageRef], 0, files, actions.showModalOverCurrentContext);
     };
 
     playYouTubeVideo = () => {
