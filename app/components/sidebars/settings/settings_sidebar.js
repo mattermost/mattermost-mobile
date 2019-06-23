@@ -12,10 +12,13 @@ import {
     View,
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {Navigation} from 'react-native-navigation';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import app from 'app/app';
+import {showModal, showModalOverCurrentContext} from 'app/actions/navigation';
 import SafeAreaView from 'app/components/safe_area_view';
 import DrawerLayout from 'app/components/sidebars/drawer_layout';
 import UserStatus from 'app/components/user_status';
@@ -43,7 +46,6 @@ export default class SettingsDrawer extends PureComponent {
         currentUser: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-        navigator: PropTypes.object,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
@@ -133,21 +135,7 @@ export default class SettingsDrawer extends PureComponent {
             },
         }];
 
-        this.props.navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                items,
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
+        showModalOverCurrentContext('OptionsModal', {items});
     });
 
     goToEditProfile = preventDoubleTap(() => {
@@ -194,9 +182,6 @@ export default class SettingsDrawer extends PureComponent {
     goToSettings = preventDoubleTap(() => {
         const {intl} = this.context;
 
-        // TODO: Ensure all styles used in app/utils/theme's setNavigatorStyles
-        // are passed to Settings when this showModal call is updated to RNN v2,
-        // then remove setNavigatorStyles call in app/screens/settings/general/settings.js
         this.openModal(
             'Settings',
             intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
@@ -210,32 +195,18 @@ export default class SettingsDrawer extends PureComponent {
     });
 
     openModal = (screen, title, passProps) => {
-        const {navigator, theme} = this.props;
-
         this.closeSettingsSidebar();
 
-        InteractionManager.runAfterInteractions(() => {
-            navigator.showModal({
-                screen,
-                title,
-                animationType: 'slide-up',
-                animated: true,
-                backButtonTitle: '',
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg,
-                },
-                navigatorButtons: {
-                    leftButtons: [{
-                        id: 'close-settings',
-                        icon: this.closeButton,
-                    }],
-                },
-                passProps,
-            });
-        });
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton,
+                }],
+            },
+        };
+
+        InteractionManager.runAfterInteractions(() => showModal(screen, title, passProps, options));
     };
 
     renderUserStatusIcon = (userId) => {
@@ -254,7 +225,7 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     renderNavigationView = () => {
-        const {currentUser, navigator, theme} = this.props;
+        const {currentUser, theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -264,7 +235,6 @@ export default class SettingsDrawer extends PureComponent {
                 footerColor={theme.centerChannelBg}
                 footerComponent={<View style={style.container}/>}
                 headerComponent={<View style={style.container}/>}
-                navigator={navigator}
                 theme={theme}
             >
                 <View style={style.container}>
@@ -359,12 +329,10 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     setStatus = (status) => {
-        const {status: currentUserStatus, navigator} = this.props;
+        const {status: currentUserStatus} = this.props;
 
         if (currentUserStatus === General.OUT_OF_OFFICE) {
-            navigator.dismissModal({
-                animationType: 'none',
-            });
+            Navigation.dismissModal(app.navigationComponentId);
             this.closeSettingsSidebar();
             this.confirmReset(status);
             return;

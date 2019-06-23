@@ -186,6 +186,8 @@ export function showModal(name, title, passProps = {}, options = {}) {
                     color: theme.sidebarHeaderTextColor,
                     text: title,
                 },
+                leftButtonColor: theme.sidebarHeaderTextColor,
+                rightButtonColor: theme.sidebarHeaderTextColor,
             },
         };
 
