@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goToScreen} from 'app/actions/navigation';
-
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+
+import {goToScreen} from 'app/actions/navigation';
 
 import LoginOptions from './login_options';
 

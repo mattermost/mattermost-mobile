@@ -56,8 +56,8 @@ export default class Search extends PureComponent {
             getMorePostsForSearch: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         initialValue: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
@@ -147,7 +147,7 @@ export default class Search extends PureComponent {
             if (this.state.preview) {
                 this.refs.preview.handleClose();
             } else {
-                Navigation.dismissModal(this.props.componentId);
+                this.props.actions.dismissModal();
             }
         }
     }
@@ -178,7 +178,7 @@ export default class Search extends PureComponent {
 
     cancelSearch = preventDoubleTap(() => {
         this.handleTextChanged('', true);
-        Navigation.dismissModal(this.props.componentId);
+        this.props.actions.dismissModal();
     });
 
     goToThread = (post) => {
@@ -211,7 +211,7 @@ export default class Search extends PureComponent {
 
     handleHashtagPress = (hashtag) => {
         if (this.showingPermalink) {
-            Navigation.dismissModal(this.props.componentId);
+            this.props.actions.dismissModal();
             this.handleClosePermalink();
         }
 

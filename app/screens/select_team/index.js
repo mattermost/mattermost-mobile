@@ -8,7 +8,7 @@ import {getTeams, joinTeam} from 'mattermost-redux/actions/teams';
 import {logout} from 'mattermost-redux/actions/users';
 import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 
-import {resetToChannel} from 'app/actions/navigation';
+import {resetToChannel, dismissModal} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
 import SelectTeam from './select_team.js';
@@ -28,6 +28,7 @@ function mapDispatchToProps(dispatch) {
             joinTeam,
             logout,
             resetToChannel,
+            dismissModal,
         }, dispatch),
     };
 }

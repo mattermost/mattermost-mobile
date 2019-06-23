@@ -46,8 +46,9 @@ export default class SelectTeam extends PureComponent {
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
             resetToChannel: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
+        componentId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
@@ -124,7 +125,7 @@ export default class SelectTeam extends PureComponent {
     };
 
     close = () => {
-        Navigation.dismissModal(this.props.componentId);
+        this.props.actions.dismissModal();
     };
 
     goToChannelView = () => {

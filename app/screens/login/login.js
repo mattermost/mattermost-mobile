@@ -45,7 +45,6 @@ export default class Login extends PureComponent {
             resetToChannel: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
         theme: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
@@ -95,12 +94,12 @@ export default class Login extends PureComponent {
     };
 
     goToMfa = () => {
-        const {componentId, actions} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
 
-        actions.goToScreen(componentId, screen, title);
+        actions.goToScreen(screen, title);
     };
 
     blur = () => {
@@ -287,12 +286,12 @@ export default class Login extends PureComponent {
     };
 
     forgotPassword = () => {
-        const {actions, componentId} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'ForgotPassword';
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
 
-        actions.goToScreen(componentId, screen, title);
+        actions.goToScreen(screen, title);
     }
 
     render() {

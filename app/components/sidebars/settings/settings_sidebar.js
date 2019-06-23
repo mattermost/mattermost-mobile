@@ -12,12 +12,10 @@ import {
     View,
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import {Navigation} from 'react-native-navigation';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import app from 'app/app';
 import SafeAreaView from 'app/components/safe_area_view';
 import DrawerLayout from 'app/components/sidebars/drawer_layout';
 import UserStatus from 'app/components/user_status';
@@ -41,6 +39,7 @@ export default class SettingsDrawer extends PureComponent {
             setStatus: PropTypes.func.isRequired,
             showModal: PropTypes.func.isRequired,
             showModalOverCurrentContext: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
@@ -334,10 +333,10 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     setStatus = (status) => {
-        const {status: currentUserStatus} = this.props;
+        const {status: currentUserStatus, actions} = this.props;
 
         if (currentUserStatus === General.OUT_OF_OFFICE) {
-            Navigation.dismissModal(app.navigationComponentId);
+            actions.dismissModal();
             this.closeSettingsSidebar();
             this.confirmReset(status);
             return;

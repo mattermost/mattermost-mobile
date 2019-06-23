@@ -12,8 +12,6 @@ import {Navigation} from 'react-native-navigation';
 
 import {Client4} from 'mattermost-redux/client';
 
-import {setButtons} from 'app/actions/navigation';
-
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -90,8 +88,10 @@ export default class EditProfile extends PureComponent {
             setProfileImageUri: PropTypes.func.isRequired,
             removeProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
         currentUser: PropTypes.object.isRequired,
         firstNameDisabled: PropTypes.bool.isRequired,
         lastNameDisabled: PropTypes.bool.isRequired,
@@ -120,7 +120,7 @@ export default class EditProfile extends PureComponent {
         };
         this.rightButton.title = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
-        setButtons(buttons);
+        props.actions.setButtons(buttons);
 
         this.state = {
             email,
@@ -178,11 +178,11 @@ export default class EditProfile extends PureComponent {
     };
 
     close = () => {
-        const {componentId, commandType} = this.props;
+        const {commandType, actions} = this.props;
         if (commandType === 'Push') {
-            Navigation.pop(componentId);
+            actions.popTopScreen();
         } else {
-            Navigation.dismissModal(componentId);
+            actions.dismissModal();
         }
     };
 
@@ -191,7 +191,7 @@ export default class EditProfile extends PureComponent {
             rightButtons: [{...this.rightButton, disabled: !enabled}],
         };
 
-        setButtons(buttons);
+        this.props.actions.setButtons(buttons);
     };
 
     handleRequestError = (error) => {
@@ -255,7 +255,7 @@ export default class EditProfile extends PureComponent {
     handleRemoveProfileImage = () => {
         this.setState({profileImageRemove: true});
         this.emitCanUpdateAccount(true);
-        Navigation.dismissModal(this.props.componentId);
+        this.props.actions.dismissModal();
     }
 
     uploadProfileImage = async () => {

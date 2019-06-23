@@ -26,7 +26,12 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
+import {
+    addTopScreenComponentId,
+    removeTopScreenComponentId,
+    resetToChannel,
+    resetToSelectServer,
+} from 'app/actions/navigation';
 import {selectDefaultChannel} from 'app/actions/views/channel';
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {handleLoginIdChanged} from 'app/actions/views/login';
@@ -58,11 +63,6 @@ YellowBox.ignoreWarnings(['Require cycle: node_modules/react-native/Libraries/Ne
 export const app = new App();
 export const store = configureStore(initialState);
 registerScreens(store, Provider);
-
-// Keep track of the latest componentId to appear
-Navigation.events().registerComponentDidAppearListener(({componentId}) => {
-    app.setNavigationComponentId(componentId);
-});
 
 const lazyLoadExternalModules = () => {
     const StatusBarSizeIOS = require('react-native-status-bar-size');
@@ -452,6 +452,14 @@ const launchEntry = () => {
             'start:select_server_screen',
             'start:channel_screen',
         ]);
+
+        // Keep track of the latest componentId to appear and disappear
+        Navigation.events().registerComponentDidAppearListener(({componentId}) => {
+            store.dispatch(addTopScreenComponentId(componentId));
+        });
+        Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
+            store.dispatch(removeTopScreenComponentId(componentId));
+        });
 
         Navigation.setRoot({
             root: {

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {shallow} from 'enzyme';
-import {Navigation} from 'react-native-navigation';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -16,23 +15,15 @@ jest.mock('app/utils/theme', () => {
         changeOpacity: jest.fn(),
     };
 });
-jest.mock('react-native-navigation', () => {
-    return {
-        Navigation: {
-            dismissModal: jest.fn(),
-            mergeOptions: jest.fn(),
-            events: jest.fn().mockReturnValue({
-                bindComponent: jest.fn(),
-            }),
-        },
-    };
-});
 
 describe('edit_profile', () => {
     const actions = {
         updateUser: jest.fn(),
         setProfileImageUri: jest.fn(),
         removeProfileImage: jest.fn(),
+        popTopScreen: jest.fn(),
+        dismissModal: jest.fn(),
+        setButtons: jest.fn(),
     };
 
     const baseProps = {
@@ -79,6 +70,6 @@ describe('edit_profile', () => {
         expect(instance.emitCanUpdateAccount).toHaveBeenCalledTimes(1);
         expect(instance.emitCanUpdateAccount).toBeCalledWith(true);
 
-        expect(Navigation.dismissModal).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.dismissModal).toHaveBeenCalledTimes(1);
     });
 });

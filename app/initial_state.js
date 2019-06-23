@@ -158,7 +158,9 @@ const state = {
     device: {
         connection: true,
     },
-    navigation: '',
+    navigation: {
+        componentIds: [],
+    },
     views: {
         channel: {
             drafts: {},

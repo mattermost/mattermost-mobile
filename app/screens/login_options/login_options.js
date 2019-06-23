@@ -28,7 +28,6 @@ export default class LoginOptions extends PureComponent {
         actions: PropTypes.shape({
             goToScreen: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
     };
@@ -46,21 +45,21 @@ export default class LoginOptions extends PureComponent {
     }
 
     goToLogin = preventDoubleTap(() => {
-        const {actions, componentId} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'Login';
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
-        actions.goToScreen(componentId, screen, title);
+        actions.goToScreen(screen, title);
     });
 
     goToSSO = (ssoType) => {
-        const {actions, componentId} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'SSO';
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
 
-        actions.goToScreen(componentId, screen, title, {ssoType});
+        actions.goToScreen(screen, title, {ssoType});
     };
 
     orientationDidChange = () => {

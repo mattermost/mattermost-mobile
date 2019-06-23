@@ -9,7 +9,6 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -23,7 +22,9 @@ const DURATION = 200;
 
 export default class OptionsModal extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string.isRequired,
+        actions: PropTypes.shape({
+            dismissModal: PropTypes.func.isRequired,
+        }).isRequired,
         items: PropTypes.array.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -68,12 +69,12 @@ export default class OptionsModal extends PureComponent {
             toValue: this.props.deviceHeight,
             duration: DURATION,
         }).start(() => {
-            Navigation.dismissModal(this.props.componentId);
+            this.props.actions.dismissModal();
         });
     };
 
     onItemPress = () => {
-        Navigation.dismissModal(this.props.componentId);
+        this.props.actions.dismissModal();
     }
 
     render() {

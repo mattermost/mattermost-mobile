@@ -14,7 +14,6 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
-import {Navigation} from 'react-native-navigation';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -31,8 +30,8 @@ export default class Mfa extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             login: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
         loginRequest: PropTypes.object.isRequired,
@@ -57,7 +56,7 @@ export default class Mfa extends PureComponent {
         // In case the login is successful the previous scene (login) will take care of the transition
         if (this.props.loginRequest.status === RequestStatus.STARTED &&
             nextProps.loginRequest.status === RequestStatus.FAILURE) {
-            Navigation.pop(this.props.componentId);
+            this.props.actions.popTopScreen();
         }
     }
 

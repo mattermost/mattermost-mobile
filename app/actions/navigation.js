@@ -8,6 +8,22 @@ import merge from 'deepmerge';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {NavigationTypes} from 'app/constants';
+
+export function addTopScreenComponentId(componentId) {
+    return {
+        type: NavigationTypes.ADD_TOP_SCREEN_COMPONENT_ID,
+        componentId,
+    };
+}
+
+export function removeTopScreenComponentId(componentId) {
+    return {
+        type: NavigationTypes.REMOVE_TOP_SCREEN_COMPONENT_ID,
+        componentId,
+    };
+}
+
 export function resetToChannel(passProps = {}) {
     return (dispatch, getState) => {
         const theme = getTheme(getState());
@@ -128,9 +144,11 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
     };
 }
 
-export function goToScreen(componentId, name, title, passProps = {}, options = {}) {
+export function goToScreen(name, title, passProps = {}, options = {}) {
     return (dispatch, getState) => {
-        const theme = getTheme(getState());
+        const state = getState();
+        const componentId = state.navigation.componentIds[0];
+        const theme = getTheme(state);
         const defaultOptions = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
@@ -159,6 +177,15 @@ export function goToScreen(componentId, name, title, passProps = {}, options = {
                 options: merge(defaultOptions, options),
             },
         });
+    };
+}
+
+export function popTopScreen() {
+    return (dispatch, getState) => {
+        const state = getState();
+        const componentId = state.navigation.componentIds[0];
+
+        Navigation.pop(componentId);
     };
 }
 
@@ -259,8 +286,19 @@ export function showSearchModal(initialValue = '') {
     };
 }
 
-export function peek(componentId, name, passProps = {}, options = {}) {
-    return () => {
+export function dismissModal(options = {}) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const componentId = state.navigation.componentIds[0];
+
+        Navigation.dismissModal(componentId, options);
+    };
+}
+
+export function peek(name, passProps = {}, options = {}) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const componentId = state.navigation.componentIds[0];
         const defaultOptions = {
             preview: {
                 commit: false,
@@ -277,10 +315,15 @@ export function peek(componentId, name, passProps = {}, options = {}) {
     };
 }
 
-export function setButtons(componentId, buttons = {leftButtons: [], rightButtons: []}) {
-    Navigation.mergeOptions(componentId, {
-        topBar: {
-            ...buttons,
-        },
-    });
+export function setButtons(buttons = {leftButtons: [], rightButtons: []}) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const componentId = state.navigation.componentIds[0];
+
+        Navigation.mergeOptions(componentId, {
+            topBar: {
+                ...buttons,
+            },
+        });
+    };
 }

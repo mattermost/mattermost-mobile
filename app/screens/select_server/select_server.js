@@ -56,7 +56,6 @@ export default class SelectServer extends PureComponent {
             setServerVersion: PropTypes.func.isRequired,
         }).isRequired,
         allowOtherServers: PropTypes.bool,
-        componentId: PropTypes.string.isRequired,
         config: PropTypes.object,
         currentVersion: PropTypes.string,
         hasConfigAndLicense: PropTypes.bool.isRequired,
@@ -158,7 +157,7 @@ export default class SelectServer extends PureComponent {
     };
 
     goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
-        const {actions, componentId} = this.props;
+        const {actions} = this.props;
         const defaultOptions = {
             popGesture: !LocalConfig.AutoSelectServerUrl,
             topBar: {
@@ -168,7 +167,7 @@ export default class SelectServer extends PureComponent {
         };
         const options = merge(defaultOptions, navOptions);
 
-        actions.goToScreen(componentId, screen, title, passProps, options);
+        actions.goToScreen(screen, title, passProps, options);
     };
 
     handleAndroidKeyboard = () => {

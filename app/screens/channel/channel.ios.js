@@ -26,10 +26,10 @@ const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
 
 export default class ChannelIOS extends ChannelBase {
     previewChannel = (passProps, options) => {
-        const {actions, componentId} = this.props;
+        const {actions} = this.props;
         const screen = 'ChannelPeek';
 
-        actions.peek(componentId, screen, passProps, options);
+        actions.peek(screen, passProps, options);
     };
 
     optionalProps = {previewChannel: this.previewChannel};

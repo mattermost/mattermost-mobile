@@ -58,7 +58,6 @@ export default class Permalink extends PureComponent {
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         channelId: PropTypes.string,
         channelIsArchived: PropTypes.bool,
         channelName: PropTypes.string,
