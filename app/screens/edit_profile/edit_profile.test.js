@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {shallow} from 'enzyme';
+import {Navigation} from 'react-native-navigation';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -15,14 +16,19 @@ jest.mock('app/utils/theme', () => {
         changeOpacity: jest.fn(),
     };
 });
+jest.mock('react-native-navigation', () => {
+    return {
+        Navigation: {
+            dismissModal: jest.fn(),
+            mergeOptions: jest.fn(),
+            events: jest.fn().mockReturnValue({
+                bindComponent: jest.fn(),
+            }),
+        },
+    };
+});
 
 describe('edit_profile', () => {
-    const navigator = {
-        setButtons: jest.fn(),
-        dismissModal: jest.fn(),
-        push: jest.fn(),
-    };
-
     const actions = {
         updateUser: jest.fn(),
         setProfileImageUri: jest.fn(),
@@ -36,7 +42,6 @@ describe('edit_profile', () => {
         nicknameDisabled: true,
         positionDisabled: true,
         theme: Preferences.THEMES.default,
-        navigator,
         currentUser: {
             first_name: 'Dwight',
             last_name: 'Schrute',
@@ -58,14 +63,9 @@ describe('edit_profile', () => {
     });
 
     test('should match state on handleRemoveProfileImage', () => {
-        const newNavigator = {
-            dismissModal: jest.fn(),
-            setButtons: jest.fn(),
-        };
         const wrapper = shallow(
             <EditProfile
                 {...baseProps}
-                navigator={newNavigator}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
@@ -79,7 +79,6 @@ describe('edit_profile', () => {
         expect(instance.emitCanUpdateAccount).toHaveBeenCalledTimes(1);
         expect(instance.emitCanUpdateAccount).toBeCalledWith(true);
 
-        expect(newNavigator.dismissModal).toHaveBeenCalledTimes(1);
-        expect(newNavigator.dismissModal).toBeCalledWith({animationType: 'none'});
+        expect(Navigation.dismissModal).toHaveBeenCalledTimes(1);
     });
 });

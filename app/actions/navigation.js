@@ -276,3 +276,11 @@ export function peek(componentId, name, passProps = {}, options = {}) {
         });
     };
 }
+
+export function setButtons(componentId, buttons = {leftButtons: [], rightButtons: []}) {
+    Navigation.mergeOptions(componentId, {
+        topBar: {
+            ...buttons,
+        },
+    });
+}
