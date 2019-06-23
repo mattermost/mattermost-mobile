@@ -204,88 +204,56 @@ export function showModal(name, title, passProps = {}, options = {}) {
 }
 
 export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
-    const animationsEnabled = (Platform.OS === 'android').toString();
-    const defaultOptions = {
-        modalPresentationStyle: 'overCurrentContext',
-        layout: {
-            backgroundColor: 'transparent',
-        },
-        statusBar: {
-            visible: true,
-        },
-        topBar: {
-            visible: false,
-            height: 0,
-        },
-        animations: {
-            showModal: {
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 0,
-                    to: 1,
-                    duration: 250,
-                },
-            },
-            dismissModal: {
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 1,
-                    to: 0,
-                    duration: 250,
-                },
-            },
-        },
-    };
-
-    Navigation.showModal({
-        stack: {
-            children: [{
-                component: {
-                    name,
-                    passProps,
-                    options: merge(defaultOptions, options),
-                },
-            }],
-        },
-    });
-}
-
-export function showSearchModal(initialValue = '') {
-    return (dispatch, getState) => {
-        const theme = getTheme(getState());
-        const options = {
+    return (dispatch) => {
+        const title = '';
+        const animationsEnabled = (Platform.OS === 'android').toString();
+        const defaultOptions = {
+            modalPresentationStyle: 'overCurrentContext',
             layout: {
-                backgroundColor: theme.centerChannelBg,
-            },
-            statusBar: {
-                visible: true,
+                backgroundColor: 'transparent',
             },
             topBar: {
                 visible: false,
                 height: 0,
-                backButton: {
-                    color: theme.sidebarHeaderTextColor,
-                    title: '',
+            },
+            animations: {
+                showModal: {
+                    enabled: animationsEnabled,
+                    alpha: {
+                        from: 0,
+                        to: 1,
+                        duration: 250,
+                    },
                 },
-                background: {
-                    color: theme.sidebarHeaderBg,
+                dismissModal: {
+                    enabled: animationsEnabled,
+                    alpha: {
+                        from: 1,
+                        to: 0,
+                        duration: 250,
+                    },
                 },
             },
         };
+        const mergeOptions = merge(defaultOptions, options);
 
-        Navigation.showModal({
-            stack: {
-                children: [{
-                    component: {
-                        name: 'Search',
-                        passProps: {
-                            initialValue,
-                        },
-                        options,
-                    },
-                }],
+        dispatch(showModal(name, title, passProps, mergeOptions));
+    };
+}
+
+export function showSearchModal(initialValue = '') {
+    return (dispatch) => {
+        const name = 'Search';
+        const title = '';
+        const passProps = {initialValue};
+        const options = {
+            topBar: {
+                visible: false,
+                height: 0,
             },
-        });
+        };
+
+        dispatch(showModal(name, title, passProps, options));
     };
 }
 
@@ -294,8 +262,6 @@ export function peek(componentId, name, passProps = {}, options = {}) {
         const defaultOptions = {
             preview: {
                 commit: false,
-                height: 300,
-                width: 300,
             },
         };
 

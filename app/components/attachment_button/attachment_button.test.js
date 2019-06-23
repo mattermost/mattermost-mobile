@@ -13,6 +13,9 @@ jest.mock('react-intl');
 
 describe('AttachmentButton', () => {
     const baseProps = {
+        actions: {
+            showModalOverCurrentContext: jest.fn(),
+        },
         theme: Preferences.THEMES.default,
         navigator: {},
         blurTextBox: jest.fn(),

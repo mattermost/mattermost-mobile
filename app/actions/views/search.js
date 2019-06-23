@@ -14,6 +14,8 @@ export function handleSearchDraftChanged(text) {
     };
 }
 
+// TODO: Remove this once all screens/components call
+// app/actions/navigation's showSearchModal
 export function showSearchModal(navigator, initialValue = '') {
     return (dispatch, getState) => {
         const theme = getTheme(getState());

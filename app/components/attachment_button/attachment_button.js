@@ -19,7 +19,6 @@ import Permissions from 'react-native-permissions';
 
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
-import {showModalOverCurrentContext} from 'app/actions/navigation';
 import {PermissionTypes} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -28,6 +27,9 @@ const ShareExtension = NativeModules.MattermostShare;
 
 export default class AttachmentButton extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            showModalOverCurrentContext: PropTypes.func.isRequired,
+        }).isRequired,
         blurTextBox: PropTypes.func.isRequired,
         browseFileTypes: PropTypes.string,
         validMimeTypes: PropTypes.array,
@@ -367,6 +369,7 @@ export default class AttachmentButton extends PureComponent {
             maxFileCount,
             onShowFileMaxWarning,
             extraOptions,
+            actions,
         } = this.props;
 
         if (fileCount === maxFileCount) {
@@ -440,7 +443,7 @@ export default class AttachmentButton extends PureComponent {
             });
         }
 
-        showModalOverCurrentContext('OptionsModal', {items});
+        actions.showModalOverCurrentContext('OptionsModal', {items});
     };
 
     render() {
