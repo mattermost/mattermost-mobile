@@ -4,14 +4,13 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {dismissModal, showModalOverCurrentContext} from 'app/actions/navigation';
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 import AttachmentButton from './attachment_button';
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            dismissModal,
             showModalOverCurrentContext,
         }, dispatch),
     };
