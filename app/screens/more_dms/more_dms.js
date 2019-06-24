@@ -39,13 +39,14 @@ export default class MoreDirectMessages extends PureComponent {
             getProfilesInTeam: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         allProfiles: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        navigator: PropTypes.object,
         restrictDirectMessage: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -108,7 +109,7 @@ export default class MoreDirectMessages extends PureComponent {
     }
 
     close = () => {
-        this.props.navigator.dismissModal({animationType: 'slide-down'});
+        this.props.actions.dismissModal();
     };
 
     clearSearch = () => {
@@ -326,12 +327,12 @@ export default class MoreDirectMessages extends PureComponent {
 
     updateNavigationButtons = (startEnabled, context = this.context) => {
         const {formatMessage} = context.intl;
-        this.props.navigator.setButtons({
+        this.props.actions.setButtons({
             rightButtons: [{
                 id: START_BUTTON,
-                title: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
+                text: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
-                disabled: !startEnabled,
+                enabled: startEnabled,
             }],
         });
     };
