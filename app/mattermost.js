@@ -26,12 +26,7 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {
-    addTopScreenComponentId,
-    removeTopScreenComponentId,
-    resetToChannel,
-    resetToSelectServer,
-} from 'app/actions/navigation';
+import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {selectDefaultChannel} from 'app/actions/views/channel';
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {handleLoginIdChanged} from 'app/actions/views/login';
@@ -53,6 +48,7 @@ import LocalConfig from 'assets/config';
 import telemetry from 'app/telemetry';
 
 import App from './app';
+import EphemeralStore from 'app/store/ephemeral_store';
 import './fetch_preconfig';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 60 * 1000;
@@ -455,10 +451,10 @@ const launchEntry = () => {
 
         // Keep track of the latest componentId to appear and disappear
         Navigation.events().registerComponentDidAppearListener(({componentId}) => {
-            store.dispatch(addTopScreenComponentId(componentId));
+            EphemeralStore.addComponentIdToStack(componentId);
         });
         Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
-            store.dispatch(removeTopScreenComponentId(componentId));
+            EphemeralStore.removeComponentIdFromStack(componentId);
         });
 
         Navigation.setRoot({

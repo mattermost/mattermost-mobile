@@ -8,21 +8,7 @@ import merge from 'deepmerge';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {NavigationTypes} from 'app/constants';
-
-export function addTopScreenComponentId(componentId) {
-    return {
-        type: NavigationTypes.ADD_TOP_SCREEN_COMPONENT_ID,
-        componentId,
-    };
-}
-
-export function removeTopScreenComponentId(componentId) {
-    return {
-        type: NavigationTypes.REMOVE_TOP_SCREEN_COMPONENT_ID,
-        componentId,
-    };
-}
+import EphemeralStore from 'app/store/ephemeral_store';
 
 export function resetToChannel(passProps = {}) {
     return (dispatch, getState) => {
@@ -147,7 +133,7 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
 export function goToScreen(name, title, passProps = {}, options = {}) {
     return (dispatch, getState) => {
         const state = getState();
-        const componentId = state.navigation.componentIds[0];
+        const componentId = EphemeralStore.getTopComponentId();
         const theme = getTheme(state);
         const defaultOptions = {
             layout: {
@@ -181,18 +167,16 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
 }
 
 export function popTopScreen() {
-    return (dispatch, getState) => {
-        const state = getState();
-        const componentId = state.navigation.componentIds[0];
+    return () => {
+        const componentId = EphemeralStore.getTopComponentId();
 
         Navigation.pop(componentId);
     };
 }
 
 export function popToRoot() {
-    return (dispatch, getState) => {
-        const state = getState();
-        const componentId = state.navigation.componentIds[0];
+    return () => {
+        const componentId = EphemeralStore.getTopComponentId();
 
         Navigation.popToRoot(componentId);
     };
@@ -296,9 +280,8 @@ export function showSearchModal(initialValue = '') {
 }
 
 export function dismissModal(options = {}) {
-    return (dispatch, getState) => {
-        const state = getState();
-        const componentId = state.navigation.componentIds[0];
+    return () => {
+        const componentId = EphemeralStore.getTopComponentId();
 
         Navigation.dismissModal(componentId, options);
     };
@@ -311,9 +294,8 @@ export function dismissAllModals(options = {}) {
 }
 
 export function peek(name, passProps = {}, options = {}) {
-    return (dispatch, getState) => {
-        const state = getState();
-        const componentId = state.navigation.componentIds[0];
+    return () => {
+        const componentId = EphemeralStore.getTopComponentId();
         const defaultOptions = {
             preview: {
                 commit: false,
@@ -331,9 +313,8 @@ export function peek(name, passProps = {}, options = {}) {
 }
 
 export function setButtons(buttons = {leftButtons: [], rightButtons: []}) {
-    return (dispatch, getState) => {
-        const state = getState();
-        const componentId = state.navigation.componentIds[0];
+    return () => {
+        const componentId = EphemeralStore.getTopComponentId();
 
         Navigation.mergeOptions(componentId, {
             topBar: {

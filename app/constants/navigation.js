@@ -9,8 +9,6 @@ const NavigationTypes = keyMirror({
     NAVIGATION_NO_TEAMS: null,
     RESTART_APP: null,
     NAVIGATION_ERROR_TEAMS: null,
-    ADD_TOP_SCREEN_COMPONENT_ID: null,
-    REMOVE_TOP_SCREEN_COMPONENT_ID: null,
 });
 
 export default NavigationTypes;
