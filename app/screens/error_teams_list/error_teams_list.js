@@ -32,9 +32,9 @@ export default class ErrorTeamsList extends PureComponent {
             connection: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
-        navigator: PropTypes.object,
         theme: PropTypes.object,
     };
 
@@ -64,21 +64,10 @@ export default class ErrorTeamsList extends PureComponent {
     }
 
     goToChannelView = () => {
-        const {navigator, theme} = this.props;
-
-        navigator.resetTo({
-            screen: 'Channel',
-            animated: false,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                disableTermsModal: true,
-            },
-        });
+        const passProps = {
+            disableTermsModal: true,
+        };
+        this.props.actions.resetToChannel(passProps);
     };
 
     getUserInfo = async () => {
