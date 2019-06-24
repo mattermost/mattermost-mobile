@@ -18,8 +18,10 @@ import ClockDisplay from 'app/screens/clock_display';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
         componentId: PropTypes.string,
-        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
@@ -38,22 +40,13 @@ export default class DisplaySettings extends PureComponent {
     };
 
     goToClockDisplaySettings = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
 
         if (Platform.OS === 'ios') {
-            navigator.push({
-                screen: 'ClockDisplay',
-                title: intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'}),
-                animated: true,
-                backButtonTitle: '',
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg,
-                },
-            });
+            const screen = 'ClockDisplay';
+            const title = intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'});
+            actions.goToScreen(screen, title);
             return;
         }
 
@@ -61,39 +54,21 @@ export default class DisplaySettings extends PureComponent {
     });
 
     goToTimezoneSettings = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
+        const screen = 'TimezoneSettings';
+        const title = intl.formatMessage({id: 'mobile.advanced_settings.timezone', defaultMessage: 'Timezone'});
 
-        navigator.push({
-            screen: 'TimezoneSettings',
-            title: intl.formatMessage({id: 'mobile.advanced_settings.timezone', defaultMessage: 'Timezone'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(screen, title);
     });
 
     goToThemeSettings = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
+        const screen = 'ThemeSettings';
+        const title = intl.formatMessage({id: 'mobile.display_settings.theme', defaultMessage: 'Theme'});
 
-        navigator.push({
-            screen: 'ThemeSettings',
-            title: intl.formatMessage({id: 'mobile.display_settings.theme', defaultMessage: 'Theme'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(screen, title);
     });
 
     render() {
