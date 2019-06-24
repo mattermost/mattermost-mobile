@@ -9,6 +9,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -22,12 +23,11 @@ const DURATION = 200;
 
 export default class OptionsModal extends PureComponent {
     static propTypes = {
+        componentId: PropTypes.string.isRequired,
         items: PropTypes.array.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        navigator: PropTypes.object,
         onCancelPress: PropTypes.func,
-        onItemPress: PropTypes.func,
         title: PropTypes.oneOfType([
             PropTypes.string,
             PropTypes.object,
@@ -36,7 +36,6 @@ export default class OptionsModal extends PureComponent {
 
     static defaultProps = {
         onCancelPress: emptyFunction,
-        onItemPress: emptyFunction,
     };
 
     constructor(props) {
@@ -69,16 +68,17 @@ export default class OptionsModal extends PureComponent {
             toValue: this.props.deviceHeight,
             duration: DURATION,
         }).start(() => {
-            this.props.navigator.dismissModal({
-                animationType: 'none',
-            });
+            Navigation.dismissModal(this.props.componentId);
         });
     };
+
+    onItemPress = () => {
+        Navigation.dismissModal(this.props.componentId);
+    }
 
     render() {
         const {
             items,
-            onItemPress,
             title,
         } = this.props;
 
@@ -89,7 +89,7 @@ export default class OptionsModal extends PureComponent {
                         <OptionsModalList
                             items={items}
                             onCancelPress={this.handleCancel}
-                            onItemPress={onItemPress}
+                            onItemPress={this.onItemPress}
                             title={title}
                         />
                     </AnimatedView>

@@ -54,6 +54,7 @@ export default class MoreChannels extends PureComponent {
         this.searchTimeoutId = 0;
         this.page = -1;
         this.next = true;
+        this.mounted = false;
 
         this.state = {
             channels: props.channels.slice(0, General.CHANNELS_CHUNK_SIZE),
@@ -86,8 +87,12 @@ export default class MoreChannels extends PureComponent {
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
-
+        this.mounted = true;
         this.doGetChannels();
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -138,7 +143,7 @@ export default class MoreChannels extends PureComponent {
         const {actions, currentTeamId} = this.props;
         const {loading, term} = this.state;
 
-        if (this.next && !loading && !term) {
+        if (this.next && !loading && !term && this.mounted) {
             this.setState({loading: true}, () => {
                 actions.getChannels(
                     currentTeamId,
@@ -172,12 +177,14 @@ export default class MoreChannels extends PureComponent {
     };
 
     loadedChannels = ({data}) => {
-        if (data && !data.length) {
-            this.next = false;
-        }
+        if (this.mounted) {
+            if (data && !data.length) {
+                this.next = false;
+            }
 
-        this.page += 1;
-        this.setState({loading: false});
+            this.page += 1;
+            this.setState({loading: false});
+        }
     };
 
     onSelectChannel = async (id) => {

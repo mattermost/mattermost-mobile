@@ -25,6 +25,15 @@ const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
 const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
 
 export default class ChannelIOS extends ChannelBase {
+    previewChannel = (passProps, options) => {
+        const {actions, componentId} = this.props;
+        const screen = 'ChannelPeek';
+
+        actions.peek(componentId, screen, passProps, options);
+    };
+
+    optionalProps = {previewChannel: this.previewChannel};
+
     render() {
         const {height} = Dimensions.get('window');
         const {
@@ -82,6 +91,6 @@ export default class ChannelIOS extends ChannelBase {
             </React.Fragment>
         );
 
-        return this.renderChannel(drawerContent);
+        return this.renderChannel(drawerContent, this.optionalProps);
     }
 }

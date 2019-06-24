@@ -27,6 +27,9 @@ const ShareExtension = NativeModules.MattermostShare;
 
 export default class AttachmentButton extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            showModalOverCurrentContext: PropTypes.func.isRequired,
+        }).isRequired,
         blurTextBox: PropTypes.func.isRequired,
         browseFileTypes: PropTypes.string,
         validMimeTypes: PropTypes.array,
@@ -366,6 +369,7 @@ export default class AttachmentButton extends PureComponent {
             maxFileCount,
             onShowFileMaxWarning,
             extraOptions,
+            actions,
         } = this.props;
 
         if (fileCount === maxFileCount) {
@@ -439,21 +443,7 @@ export default class AttachmentButton extends PureComponent {
             });
         }
 
-        this.props.navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                items,
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
+        actions.showModalOverCurrentContext('OptionsModal', {items});
     };
 
     render() {

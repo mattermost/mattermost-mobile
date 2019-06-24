@@ -14,6 +14,9 @@ import {getTranslations} from 'app/i18n';
 
 export default class Root extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            resetToTeams: PropTypes.func.isRequired,
+        }).isRequired,
         children: PropTypes.node,
         navigator: PropTypes.object,
         excludeEvents: PropTypes.bool,
@@ -83,28 +86,24 @@ export default class Root extends PureComponent {
     }
 
     navigateToTeamsPage = (screen) => {
-        const {currentUrl, navigator, theme} = this.props;
+        const {currentUrl, theme, actions} = this.props;
         const {intl} = this.refs.provider.getChildContext();
 
-        let navigatorButtons;
         let passProps = {theme};
+        const options = {topBar: {}};
         if (Platform.OS === 'android') {
-            navigatorButtons = {
-                rightButtons: [{
-                    title: intl.formatMessage({id: 'sidebar_right_menu.logout', defaultMessage: 'Logout'}),
-                    id: 'logout',
-                    buttonColor: theme.sidebarHeaderTextColor,
-                    showAsAction: 'always',
-                }],
-            };
+            options.topBar.rightButtons = [{
+                id: 'logout',
+                text: intl.formatMessage({id: 'sidebar_right_menu.logout', defaultMessage: 'Logout'}),
+                color: theme.sidebarHeaderTextColor,
+                showAsAction: 'always',
+            }];
         } else {
-            navigatorButtons = {
-                leftButtons: [{
-                    title: intl.formatMessage({id: 'sidebar_right_menu.logout', defaultMessage: 'Logout'}),
-                    id: 'logout',
-                    buttonColor: theme.sidebarHeaderTextColor,
-                }],
-            };
+            options.topBar.leftButtons = [{
+                id: 'logout',
+                text: intl.formatMessage({id: 'sidebar_right_menu.logout', defaultMessage: 'Logout'}),
+                color: theme.sidebarHeaderTextColor,
+            }];
         }
 
         if (screen === 'SelectTeam') {
@@ -115,20 +114,9 @@ export default class Root extends PureComponent {
             };
         }
 
-        navigator.resetTo({
-            screen,
-            title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
-            animated: false,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            navigatorButtons,
-            passProps,
-        });
+        const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
+
+        actions.resetToTeams(screen, title, passProps, options);
     }
 
     handleNotificationTapped = async () => {
