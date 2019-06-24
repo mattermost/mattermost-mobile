@@ -9,6 +9,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
