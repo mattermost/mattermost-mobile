@@ -108,12 +108,13 @@ export default class TermsOfService extends PureComponent {
     }
 
     setNavigatorButtons = (enabled = true) => {
+        const {actions, componentId} = this.props;
         const buttons = {
             leftButtons: [{...this.leftButton, enabled}],
             rightButtons: [{...this.rightButton, enabled}],
         };
 
-        this.props.actions.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     enableNavigatorLogout = () => {
