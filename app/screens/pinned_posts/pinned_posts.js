@@ -35,12 +35,14 @@ export default class PinnedPosts extends PureComponent {
             getPinnedPosts: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
             showSearchModal: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string.isRequired,
         didFail: PropTypes.bool,
         isLoading: PropTypes.bool,
-        navigator: PropTypes.object,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
     };
@@ -63,38 +65,24 @@ export default class PinnedPosts extends PureComponent {
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-settings') {
-            this.props.navigator.dismissModal({
-                animationType: 'slide-down',
-            });
+            this.props.actions.dismissModal();
         }
     }
 
     goToThread = (post) => {
-        const {actions, navigator, theme} = this.props;
+        const {actions} = this.props;
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
-
+        const screen = 'Thread';
+        const title = '';
+        const passProps = {
+            channelId,
+            rootId,
+        };
         Keyboard.dismiss();
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
-
-        const options = {
-            screen: 'Thread',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelId,
-                rootId,
-            },
-        };
-
-        navigator.push(options);
+        actions.goToScreen(screen, title, passProps);
     };
 
     handleClosePermalink = () => {
@@ -109,11 +97,11 @@ export default class PinnedPosts extends PureComponent {
     };
 
     handleHashtagPress = async (hashtag) => {
-        const {actions, navigator} = this.props;
+        const {actions} = this.props;
 
-        await navigator.dismissModal();
+        await actions.dismissModal();
 
-        actions.showSearchModal(navigator, '#' + hashtag);
+        actions.showSearchModal('#' + hashtag);
     };
 
     keyExtractor = (item) => item;
@@ -165,7 +153,6 @@ export default class PinnedPosts extends PureComponent {
                     previewPost={this.previewPost}
                     highlightPinnedOrFlagged={true}
                     goToThread={this.goToThread}
-                    navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={mattermostManaged.getCachedConfig()}
@@ -179,29 +166,24 @@ export default class PinnedPosts extends PureComponent {
     };
 
     showPermalinkView = (postId, isPermalink) => {
-        const {actions, navigator} = this.props;
+        const {actions} = this.props;
 
         actions.selectFocusedPostId(postId);
 
         if (!this.showingPermalink) {
+            const screen = 'Permalink';
+            const passProps = {
+                isPermalink,
+                onClose: this.handleClosePermalink,
+            };
             const options = {
-                screen: 'Permalink',
-                animationType: 'none',
-                backButtonTitle: '',
-                overrideBackPress: true,
-                navigatorStyle: {
-                    navBarHidden: true,
-                    screenBackgroundColor: changeOpacity('#000', 0.2),
-                    modalPresentationStyle: 'overCurrentContext',
-                },
-                passProps: {
-                    isPermalink,
-                    onClose: this.handleClosePermalink,
+                layout: {
+                    backgroundColor: changeOpacity('#000', 0.2),
                 },
             };
 
             this.showingPermalink = true;
-            navigator.showModal(options);
+            actions.showModalOverCurrentContext(screen, passProps, options);
         }
     };
 
