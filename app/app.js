@@ -62,10 +62,6 @@ export default class App {
         this.getAppCredentials();
     }
 
-    setNavigationComponentId = (componentId) => {
-        this.navigationComponentId = componentId;
-    }
-
     setFontFamily = () => {
         // Set a global font for Android
         if (Platform.OS === 'android') {

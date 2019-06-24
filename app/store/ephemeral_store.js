@@ -6,7 +6,7 @@ class EphemeralStore {
         this.componentIdStack = [];
     }
 
-    getTopComponentId = () => this.componetIdStack[0];
+    getTopComponentId = () => this.componentIdStack[0];
 
     addComponentIdToStack = (componentId) => {
         this.componentIdStack.unshift(componentId);
