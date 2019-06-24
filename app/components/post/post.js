@@ -35,7 +35,6 @@ export default class Post extends PureComponent {
             insertToDraft: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
             showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         channelIsReadOnly: PropTypes.bool,
@@ -99,11 +98,7 @@ export default class Post extends PureComponent {
 
         Keyboard.dismiss();
         requestAnimationFrame(() => {
-            if (Platform.OS === 'ios') {
-                actions.goToScreen(screen, title, passProps);
-            } else {
-                actions.showModal(screen, title, passProps);
-            }
+            actions.goToScreen(screen, title, passProps);
         });
     };
 
