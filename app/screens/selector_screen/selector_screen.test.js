@@ -67,6 +67,7 @@ describe('SelectorScreen', () => {
         getChannels,
         searchProfiles,
         searchChannels,
+        popTopScreen: jest.fn(),
     };
 
     const baseProps = {
