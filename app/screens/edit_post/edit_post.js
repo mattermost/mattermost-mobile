@@ -116,7 +116,7 @@ export default class EditPost extends PureComponent {
 
     emitEditing = (loading) => {
         const {actions, componentId} = this.props;
-        this.props.actions.setButtons(componentId, {
+        actions.setButtons(componentId, {
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
             rightButtons: [{...this.rightButton, enabled: !loading}],
         });
