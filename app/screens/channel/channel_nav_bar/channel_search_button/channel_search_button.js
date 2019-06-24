@@ -19,7 +19,6 @@ export default class ChannelSearchButton extends PureComponent {
             clearSearch: PropTypes.func.isRequired,
             showSearchModal: PropTypes.func.isRequired,
         }).isRequired,
-        navigator: PropTypes.object,
         theme: PropTypes.object,
     };
 
