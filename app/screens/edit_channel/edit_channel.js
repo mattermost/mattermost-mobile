@@ -56,9 +56,10 @@ export default class EditChannel extends PureComponent {
             patchChannel: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
-        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -104,7 +105,7 @@ export default class EditChannel extends PureComponent {
             rightButtons: [this.rightButton],
         };
 
-        props.navigator.setButtons(buttons);
+        props.actions.setButtons(buttons);
     }
 
     componentDidMount() {
@@ -161,7 +162,7 @@ export default class EditChannel extends PureComponent {
             this.props.actions.setChannelDisplayName(this.state.displayName);
         }
 
-        this.props.navigator.pop({animated: true});
+        this.props.actions.popTopScreen();
     };
 
     emitCanUpdateChannel = (enabled) => {
@@ -169,7 +170,7 @@ export default class EditChannel extends PureComponent {
             rightButtons: [{...this.rightButton, disabled: !enabled}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        this.props.actions.setButtons(buttons);
     };
 
     emitUpdating = (loading) => {
@@ -177,7 +178,7 @@ export default class EditChannel extends PureComponent {
             rightButtons: [{...this.rightButton, disabled: loading}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        this.props.actions.setButtons(buttons);
     };
 
     validateDisplayName = (displayName) => {
@@ -277,7 +278,6 @@ export default class EditChannel extends PureComponent {
                 purpose: oldPurpose,
                 type,
             },
-            navigator,
             theme,
             currentTeamUrl,
             deviceWidth,
@@ -294,7 +294,6 @@ export default class EditChannel extends PureComponent {
 
         return (
             <EditChannelInfo
-                navigator={navigator}
                 theme={theme}
                 enableRightButton={this.emitCanUpdateChannel}
                 error={error}
