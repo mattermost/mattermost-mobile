@@ -57,6 +57,10 @@ export default class Permalink extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            dismissAllModal: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         channelIsArchived: PropTypes.bool,
@@ -67,7 +71,6 @@ export default class Permalink extends PureComponent {
         focusedPostId: PropTypes.string.isRequired,
         isPermalink: PropTypes.bool,
         myMembers: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
         onClose: PropTypes.func,
         onPress: PropTypes.func,
         postIds: PropTypes.array,
@@ -171,39 +174,29 @@ export default class Permalink extends PureComponent {
     }
 
     goToThread = preventDoubleTap((post) => {
-        const {actions, navigator, theme} = this.props;
+        const {actions} = this.props;
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
+        const screen = 'Thread';
+        const title = '';
+        const passProps = {
+            channelId,
+            rootId,
+        };
 
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        const options = {
-            screen: 'Thread',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelId,
-                rootId,
-            },
-        };
-
-        navigator.push(options);
+        actions.goToScreen(screen, title, passProps);
     });
 
     handleClose = () => {
-        const {actions, navigator, onClose} = this.props;
+        const {actions, onClose} = this.props;
         if (this.refs.view) {
             this.mounted = false;
             this.refs.view.zoomOut().then(() => {
                 actions.selectPost('');
-                navigator.dismissModal({animationType: 'none'});
+                actions.dismissModal();
 
                 if (onClose) {
                     onClose();
@@ -232,7 +225,7 @@ export default class Permalink extends PureComponent {
 
     jumpToChannel = (channelId, channelDisplayName) => {
         if (channelId) {
-            const {actions, channelTeamId, currentTeamId, navigator, onClose, theme} = this.props;
+            const {actions, channelTeamId, currentTeamId, onClose} = this.props;
             const currentChannelId = this.props.channelId;
             const {
                 handleSelectChannel,
@@ -246,23 +239,13 @@ export default class Permalink extends PureComponent {
             if (channelId === currentChannelId) {
                 EventEmitter.emit('reset_channel');
             } else {
-                navigator.resetTo({
-                    screen: 'Channel',
-                    animated: true,
-                    animationType: 'fade',
-                    navigatorStyle: {
-                        navBarHidden: true,
-                        statusBarHidden: false,
-                        statusBarHideWithNavBar: false,
-                        screenBackgroundColor: theme.centerChannelBg,
-                    },
-                    passProps: {
-                        disableTermsModal: true,
-                    },
-                });
+                const passProps = {
+                    disableTermsModal: true,
+                };
+                actions.resetToChannel(passProps);
             }
 
-            navigator.dismissAllModals({animationType: 'slide-down'});
+            actions.dismissAllModals();
 
             if (onClose) {
                 onClose();
@@ -350,7 +333,6 @@ export default class Permalink extends PureComponent {
         const {
             currentUserId,
             focusedPostId,
-            navigator,
             theme,
         } = this.props;
         const {
@@ -395,7 +377,6 @@ export default class Permalink extends PureComponent {
                     lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIdsState) : -1}
                     currentUserId={currentUserId}
                     lastViewedAt={0}
-                    navigator={navigator}
                     highlightPinnedOrFlagged={false}
                 />
             );

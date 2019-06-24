@@ -17,6 +17,12 @@ import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {
+    goToScreen,
+    dismissModal,
+    dismissAllModal,
+    resetToChannel,
+} from 'app/actions/navigation';
+import {
     handleSelectChannel,
     loadThreadIfNecessary,
     setChannelDisplayName,
@@ -75,6 +81,10 @@ function mapDispatchToProps(dispatch) {
             setChannelDisplayName,
             setChannelLoading,
             showSearchModal,
+            goToScreen,
+            dismissModal,
+            dismissAllModal,
+            resetToChannel,
         }, dispatch),
     };
 }

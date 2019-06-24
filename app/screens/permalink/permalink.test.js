@@ -11,13 +11,6 @@ import Permalink from './permalink.js';
 jest.mock('react-intl');
 
 describe('Permalink', () => {
-    const navigator = {
-        dismissAllModals: jest.fn(),
-        dismissModal: jest.fn(),
-        push: jest.fn(),
-        resetTo: jest.fn(),
-    };
-
     const actions = {
         getPostsAround: jest.fn(),
         getPostThread: jest.fn(),
@@ -29,6 +22,10 @@ describe('Permalink', () => {
         selectPost: jest.fn(),
         setChannelDisplayName: jest.fn(),
         setChannelLoading: jest.fn(),
+        goToScreen: jest.fn(),
+        dismissModal: jest.fn(),
+        dismissAllModal: jest.fn(),
+        resetToChannel: jest.fn(),
     };
 
     const baseProps = {
@@ -42,7 +39,6 @@ describe('Permalink', () => {
         focusedPostId: 'focused_post_id',
         isPermalink: true,
         myMembers: {},
-        navigator,
         onClose: jest.fn(),
         onPress: jest.fn(),
         postIds: ['post_id_1', 'focused_post_id', 'post_id_3'],
