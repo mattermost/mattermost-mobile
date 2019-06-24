@@ -321,3 +321,29 @@ export function setButtons(componentId, buttons = {leftButtons: [], rightButtons
         });
     };
 }
+
+export function showOverlay(name, passProps, options = {}) {
+    return () => {
+        const defaultOptions = {
+            overlay: {
+                position: 'top',
+                autoDismissTimerSec: 5,
+                dismissWithSwipe: true,
+            },
+        };
+
+        Navigation.showOverlay({
+            component: {
+                name,
+                passProps,
+                options: merge(defaultOptions, options),
+            },
+        });
+    };
+}
+
+export function dismissOverlay(componentId) {
+    return () => {
+        Navigation.dismissOverlay(componentId);
+    };
+}

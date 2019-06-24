@@ -30,33 +30,26 @@ export default class Notification extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadFromPushNotification: PropTypes.func.isRequired,
+            dismissOverlay: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         channel: PropTypes.object,
         config: PropTypes.object,
         deviceWidth: PropTypes.number.isRequired,
         notification: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string,
-        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object,
     };
 
     notificationTapped = () => {
-        const {actions, navigator, notification} = this.props;
+        const {actions, notification, componentId} = this.props;
 
         EventEmitter.emit('close_channel_drawer');
         InteractionManager.runAfterInteractions(() => {
-            navigator.dismissInAppNotification();
+            actions.dismissOverlay(componentId);
             if (!notification.localNotification) {
                 actions.loadFromPushNotification(notification);
-
-                if (Platform.OS === 'android') {
-                    navigator.dismissModal({animation: 'none'});
-                }
-
-                navigator.popToRoot({
-                    animated: false,
-                });
             }
         });
     };

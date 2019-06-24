@@ -16,9 +16,11 @@ export default class Root extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             resetToTeams: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            popToRoot: PropTypes.func.isRequired,
+            showOverlay: PropTypes.func.isRequired,
         }).isRequired,
         children: PropTypes.node,
-        navigator: PropTypes.object,
         excludeEvents: PropTypes.bool,
         currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string,
@@ -54,18 +56,15 @@ export default class Root extends PureComponent {
 
     handleInAppNotification = (notification) => {
         const {data} = notification;
-        const {currentChannelId, navigator} = this.props;
+        const {actions, currentChannelId} = this.props;
 
         if (data && data.channel_id !== currentChannelId) {
-            navigator.showInAppNotification({
-                screen: 'Notification',
-                position: 'top',
-                autoDismissTimerSec: 5,
-                dismissWithSwipe: true,
-                passProps: {
-                    notification,
-                },
-            });
+            const screen = 'Notification';
+            const passProps = {
+                notification,
+            };
+
+            actions.showOverlay(screen, passProps);
         }
     };
 
@@ -120,15 +119,13 @@ export default class Root extends PureComponent {
     }
 
     handleNotificationTapped = async () => {
-        const {navigator} = this.props;
+        const {actions} = this.props;
 
         if (Platform.OS === 'android') {
-            navigator.dismissModal({animation: 'none'});
+            actions.dismissModal();
         }
 
-        navigator.popToRoot({
-            animated: false,
-        });
+        actions.popToRoot();
     };
 
     render() {
