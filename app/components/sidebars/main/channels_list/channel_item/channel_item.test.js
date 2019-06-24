@@ -31,7 +31,6 @@ describe('ChannelItem', () => {
         isUnread: true,
         hasDraft: false,
         mentions: 0,
-        navigator: {push: () => {}}, // eslint-disable-line no-empty-function
         onSelectChannel: () => {}, // eslint-disable-line no-empty-function
         shouldHideChannel: false,
         showUnreadForMsgs: true,

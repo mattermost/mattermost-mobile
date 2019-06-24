@@ -38,7 +38,6 @@ export default class ChannelIOS extends ChannelBase {
         const {height} = Dimensions.get('window');
         const {
             currentChannelId,
-            navigator,
         } = this.props;
 
         const channelLoaderStyle = [style.channelLoader, {height}];
@@ -48,17 +47,15 @@ export default class ChannelIOS extends ChannelBase {
 
         const drawerContent = (
             <React.Fragment>
-                <SafeAreaView navigator={navigator}>
+                <SafeAreaView>
                     <StatusBar/>
                     <NetworkIndicator/>
                     <ChannelNavBar
-                        navigator={navigator}
                         openChannelDrawer={this.openChannelSidebar}
                         openSettingsDrawer={this.openSettingsSidebar}
                         onPress={this.goToChannelInfo}
                     />
                     <ChannelPostList
-                        navigator={navigator}
                         updateNativeScrollView={this.updateNativeScrollView}
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
@@ -74,7 +71,7 @@ export default class ChannelIOS extends ChannelBase {
                         height={height}
                         style={channelLoaderStyle}
                     />
-                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
+                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
                 </SafeAreaView>
                 <KeyboardTrackingView
                     ref={this.keyboardTracker}
@@ -85,7 +82,6 @@ export default class ChannelIOS extends ChannelBase {
                         cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                         valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                         ref={this.postTextbox}
-                        navigator={navigator}
                     />
                 </KeyboardTrackingView>
             </React.Fragment>

@@ -46,7 +46,6 @@ const lazyLoadReplyPushNotifications = () => {
 export default class Entry extends PureComponent {
     static propTypes = {
         theme: PropTypes.object,
-        navigator: PropTypes.object,
         isLandscape: PropTypes.bool,
         enableTimezone: PropTypes.bool,
         deviceTimezone: PropTypes.string,
@@ -206,7 +205,6 @@ export default class Entry extends PureComponent {
 
     render() {
         const {
-            navigator,
             isLandscape,
         } = this.props;
 
@@ -243,7 +241,6 @@ export default class Entry extends PureComponent {
             <SafeAreaView
                 navBarBackgroundColor={app.toolbarBackground}
                 backgroundColor={backgroundColor}
-                navigator={navigator}
             >
                 {toolbar}
                 {loading}

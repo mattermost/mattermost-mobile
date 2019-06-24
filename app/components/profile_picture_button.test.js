@@ -10,15 +10,8 @@ import ProfilePictureButton from './profile_picture_button.js';
 import {Client4} from 'mattermost-redux/client';
 
 describe('profile_picture_button', () => {
-    const navigator = {
-        setButtons: jest.fn(),
-        dismissModal: jest.fn(),
-        push: jest.fn(),
-    };
-
     const baseProps = {
         theme: Preferences.THEMES.default,
-        navigator,
         currentUser: {
             first_name: 'Dwight',
             last_name: 'Schrute',
