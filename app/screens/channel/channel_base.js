@@ -10,8 +10,9 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-
+import {Navigation} from 'react-native-navigation';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {app} from 'app/mattermost';
@@ -40,12 +41,15 @@ export default class ChannelBase extends PureComponent {
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
             peek: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
+            showModal: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
         channelsRequestFailed: PropTypes.bool,
         currentTeamId: PropTypes.string,
         isLandscape: PropTypes.bool,
-        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
         disableTermsModal: PropTypes.bool,
@@ -65,8 +69,10 @@ export default class ChannelBase extends PureComponent {
         this.postTextbox = React.createRef();
         this.keyboardTracker = React.createRef();
 
-        props.navigator.setStyle({
-            screenBackgroundColor: props.theme.centerChannelBg,
+        Navigation.mergeOptions(props.componentId, {
+            layout: {
+                backgroundColor: props.theme.centerChannelBg,
+            },
         });
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
@@ -104,8 +110,10 @@ export default class ChannelBase extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            this.props.navigator.setStyle({
-                screenBackgroundColor: nextProps.theme.centerChannelBg,
+            Navigation.mergeOptions(this.props.componentId, {
+                layout: {
+                    backgroundColor: nextProps.theme.centerChannelBg,
+                },
             });
         }
 
@@ -161,51 +169,34 @@ export default class ChannelBase extends PureComponent {
     };
 
     showTermsOfServiceModal = async () => {
-        const {navigator, theme} = this.props;
+        const {actions, theme} = this.props;
         const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
-        navigator.showModal({
-            screen: 'TermsOfService',
-            animationType: 'slide-up',
-            title: '',
-            backButtonTitle: '',
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.centerChannelColor,
-                navBarBackgroundColor: theme.centerChannelBg,
-                navBarButtonColor: theme.buttonBg,
-                screenBackgroundColor: theme.centerChannelBg,
-                modalPresentationStyle: 'overCurrentContext',
+        const screen = 'TermsOfService';
+        const passProps = {
+            closeButton,
+        };
+        const options = {
+            layout: {
+                backgroundColor: theme.centerChannelBg,
             },
-            overrideBackPress: true,
-            passProps: {
-                closeButton,
-            },
-        });
+        };
+
+        actions.showModalOverCurrentContext(screen, passProps, options);
     };
 
     goToChannelInfo = preventDoubleTap(() => {
+        const {actions} = this.props;
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
-        const options = {
-            screen: 'ChannelInfo',
-            title: intl.formatMessage({id: 'mobile.routes.channelInfo', defaultMessage: 'Info'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        };
+        const screen = 'ChannelInfo';
+        const title = intl.formatMessage({id: 'mobile.routes.channelInfo', defaultMessage: 'Info'});
 
         Keyboard.dismiss();
 
         if (Platform.OS === 'android') {
-            navigator.showModal(options);
+            actions.showModal(screen, title);
         } else {
             requestAnimationFrame(() => {
-                navigator.push(options);
+                actions.goToScreen(screen, title);
             });
         }
     });
@@ -265,7 +256,6 @@ export default class ChannelBase extends PureComponent {
             channelsRequestFailed,
             currentChannelId,
             isLandscape,
-            navigator,
             theme,
         } = this.props;
 
@@ -282,7 +272,7 @@ export default class ChannelBase extends PureComponent {
 
             const Loading = require('app/components/channel_loader').default;
             return (
-                <SafeAreaView navigator={navigator}>
+                <SafeAreaView>
                     <View style={style.flex}>
                         <EmptyToolbar
                             theme={theme}
@@ -298,18 +288,15 @@ export default class ChannelBase extends PureComponent {
             <MainSidebar
                 ref={this.channelSidebarRef}
                 blurPostTextBox={this.blurPostTextBox}
-                navigator={navigator}
                 {...optionalProps}
             >
                 <SettingsSidebar
                     ref={this.settingsSidebarRef}
                     blurPostTextBox={this.blurPostTextBox}
-                    navigator={navigator}
                 >
                     {drawerContent}
                 </SettingsSidebar>
                 <InteractiveDialogController
-                    navigator={navigator}
                     theme={theme}
                 />
             </MainSidebar>
