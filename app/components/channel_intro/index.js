@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
@@ -10,6 +11,7 @@ import {getCurrentUserId, getUser, makeGetProfilesInChannel} from 'mattermost-re
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {goToScreen, showModal} from 'app/actions/navigation';
 import {getChannelMembersForDm} from 'app/selectors/channel';
 
 import ChannelIntro from './channel_intro';
@@ -52,4 +54,13 @@ function makeMapStateToProps() {
     };
 }
 
-export default connect(makeMapStateToProps)(ChannelIntro);
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            goToScreen,
+            showModal,
+        }, dispatch),
+    };
+}
+
+export default connect(makeMapStateToProps, mapDispatchToProps)(ChannelIntro);
