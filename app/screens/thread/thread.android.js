@@ -19,7 +19,6 @@ export default class ThreadAndroid extends ThreadBase {
         const {
             channelId,
             myMember,
-            navigator,
             postIds,
             rootId,
             channelIsArchived,
@@ -36,7 +35,6 @@ export default class ThreadAndroid extends ThreadBase {
                     currentUserId={myMember && myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                     lastPostIndex={-1}
-                    navigator={navigator}
                     onPostPress={this.hideKeyboard}
                     location={THREAD}
                 />
@@ -47,7 +45,6 @@ export default class ThreadAndroid extends ThreadBase {
                     channelIsArchived={channelIsArchived}
                     rootId={rootId}
                     channelId={channelId}
-                    navigator={navigator}
                     onCloseChannel={this.onCloseChannel}
                 />
             );

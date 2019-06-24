@@ -10,6 +10,8 @@ import {selectPost} from 'mattermost-redux/actions/posts';
 import {makeGetChannel, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 import {makeGetPostIdsForThread} from 'mattermost-redux/selectors/entities/posts';
 
+import {popTopScreen, resetToChannel} from 'app/actions/navigation';
+
 import Thread from './thread';
 
 function makeMapStateToProps() {
@@ -37,6 +39,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             selectPost,
+            popTopScreen,
+            resetToChannel,
         }, dispatch),
     };
 }
