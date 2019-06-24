@@ -28,6 +28,7 @@ const ShareExtension = NativeModules.MattermostShare;
 export default class AttachmentButton extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            dismissModal: PropTypes.func.isRequired,
             showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         blurTextBox: PropTypes.func.isRequired,
@@ -42,7 +43,6 @@ export default class AttachmentButton extends PureComponent {
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
         maxFileSize: PropTypes.number.isRequired,
-        navigator: PropTypes.object.isRequired,
         onShowFileMaxWarning: PropTypes.func,
         onShowFileSizeWarning: PropTypes.func,
         onShowUnsupportedMimeTypeWarning: PropTypes.func,
@@ -344,9 +344,7 @@ export default class AttachmentButton extends PureComponent {
     };
 
     handleFileAttachmentOption = (action) => {
-        this.props.navigator.dismissModal({
-            animationType: 'none',
-        });
+        this.props.actions.dismissModal();
 
         // Have to wait to launch the library attachment action.
         // If we call the action after dismissModal with no delay then the

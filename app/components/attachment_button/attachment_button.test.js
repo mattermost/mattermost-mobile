@@ -14,10 +14,10 @@ jest.mock('react-intl');
 describe('AttachmentButton', () => {
     const baseProps = {
         actions: {
+            dismissModal: jest.fn(),
             showModalOverCurrentContext: jest.fn(),
         },
         theme: Preferences.THEMES.default,
-        navigator: {},
         blurTextBox: jest.fn(),
         maxFileSize: 10,
         uploadFiles: jest.fn(),
