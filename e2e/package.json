@@ -1,0 +1,21 @@
+{
+  "name": "wdio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:android": "./scripts/run_android_tests.sh"
+  },
+  "author": "",
+  "license": "Apache 2.0",
+  "devDependencies": {
+    "@wdio/appium-service": "5.8.1",
+    "@wdio/cli": "5.8.1",
+    "@wdio/local-runner": "5.8.1",
+    "@wdio/mocha-framework": "5.8.1",
+    "@wdio/spec-reporter": "5.8.0",
+    "@wdio/sync": "5.8.1",
+    "chai": "4.2.0",
+    "webdriverio": "5.8.1"
+  }
+}

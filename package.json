@@ -140,7 +140,8 @@
       "<rootDir>/node_modules/jest-enzyme/lib/index.js"
     ],
     "testPathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/e2e/"
     ],
     "moduleNameMapper": {
       "assets/images/video_player/(.*).png": "<rootDir>/dist/assets/images/video_player/$1@2x.png"
