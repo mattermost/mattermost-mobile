@@ -36,10 +36,12 @@ export default class TermsOfService extends PureComponent {
             logout: PropTypes.func.isRequired,
             getTermsOfService: PropTypes.func.isRequired,
             updateMyTermsOfServiceStatus: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            dismissAllModals: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         closeButton: PropTypes.object,
-        navigator: PropTypes.object,
         siteName: PropTypes.string,
         theme: PropTypes.object,
     };
@@ -71,7 +73,7 @@ export default class TermsOfService extends PureComponent {
             termsText: '',
         };
 
-        this.rightButton.title = context.intl.formatMessage({id: 'terms_of_service.agreeButton', defaultMessage: 'I Agree'});
+        this.rightButton.text = context.intl.formatMessage({id: 'terms_of_service.agreeButton', defaultMessage: 'I Agree'});
         this.leftButton.icon = props.closeButton;
 
         this.setNavigatorButtons(false);
@@ -107,26 +109,26 @@ export default class TermsOfService extends PureComponent {
 
     setNavigatorButtons = (enabled = true) => {
         const buttons = {
-            leftButtons: [{...this.leftButton, disabled: !enabled}],
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            leftButtons: [{...this.leftButton, enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        this.props.actions.setButtons(buttons);
     };
 
     enableNavigatorLogout = () => {
         const buttons = {
-            leftButtons: [{...this.leftButton, id: 'close-terms-of-service', disabled: false}],
-            rightButtons: [{...this.rightButton, disabled: true}],
+            leftButtons: [{...this.leftButton, id: 'close-terms-of-service', enabled: true}],
+            rightButtons: [{...this.rightButton, enabled: false}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        this.props.actions.setButtons(buttons);
     };
 
     closeTermsAndLogout = () => {
         const {actions} = this.props;
 
-        this.props.navigator.dismissAllModals();
+        actions.dismissAllModals();
         actions.logout();
     };
 
@@ -163,9 +165,7 @@ export default class TermsOfService extends PureComponent {
         this.registerUserAction(
             true,
             () => {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
+                this.props.actions.dismissModal();
             },
             this.handleAcceptTerms
         );
@@ -234,7 +234,7 @@ export default class TermsOfService extends PureComponent {
     };
 
     render() {
-        const {navigator, theme} = this.props;
+        const {theme} = this.props;
         const styles = getStyleSheet(theme);
 
         const blockStyles = getMarkdownBlockStyles(theme);
@@ -267,7 +267,6 @@ export default class TermsOfService extends PureComponent {
                 >
                     <Markdown
                         baseTextStyle={styles.baseText}
-                        navigator={navigator}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         value={this.state.termsText}
