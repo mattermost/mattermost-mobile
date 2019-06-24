@@ -47,7 +47,7 @@ export default class CreateChannel extends PureComponent {
 
     rightButton = {
         id: 'create-channel',
-        disabled: true,
+        enabled: false,
         showAsAction: 'always',
     };
 
@@ -62,7 +62,7 @@ export default class CreateChannel extends PureComponent {
             header: '',
         };
 
-        this.rightButton.title = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
+        this.rightButton.text = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
 
         if (props.closeButton) {
             this.left = {...this.leftButton, icon: props.closeButton};
@@ -76,7 +76,7 @@ export default class CreateChannel extends PureComponent {
             buttons.leftButtons = [this.left];
         }
 
-        props.actions.setButtons(buttons);
+        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
@@ -134,27 +134,29 @@ export default class CreateChannel extends PureComponent {
     };
 
     emitCanCreateChannel = (enabled) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         };
 
         if (this.left) {
             buttons.leftButtons = [this.left];
         }
 
-        this.props.actions.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     emitCreating = (loading) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: loading}],
+            rightButtons: [{...this.rightButton, enabled: !loading}],
         };
 
         if (this.left) {
             buttons.leftButtons = [this.left];
         }
 
-        this.props.actions.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     onCreateChannel = () => {

@@ -64,14 +64,14 @@ export default class ChannelMembers extends PureComponent {
         };
 
         this.removeButton = {
-            disabled: true,
+            enabled: false,
             id: 'remove-members',
             showAsAction: 'always',
-            title: context.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'}),
+            text: context.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'}),
         };
 
         if (props.canManageUsers) {
-            props.actions.setButtons({
+            props.actions.setButtons(props.componentId, {
                 rightButtons: [this.removeButton],
             });
         }
@@ -110,10 +110,10 @@ export default class ChannelMembers extends PureComponent {
     };
 
     enableRemoveOption = (enabled) => {
-        const {actions, canManageUsers} = this.props;
+        const {actions, canManageUsers, componentId} = this.props;
         if (canManageUsers) {
-            actions.setButtons({
-                rightButtons: [{...this.removeButton, disabled: !enabled}],
+            actions.setButtons(componentId, {
+                rightButtons: [{...this.removeButton, enabled}],
             });
         }
     };

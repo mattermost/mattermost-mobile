@@ -69,13 +69,13 @@ export default class ChannelAddMembers extends PureComponent {
         };
 
         this.addButton = {
-            disabled: true,
+            enalbed: false,
             id: 'add-members',
-            title: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
+            text: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
             showAsAction: 'always',
         };
 
-        props.actions.setButtons({
+        props.actions.setButtons(props.componentId, {
             rightButtons: [this.addButton],
         });
     }
@@ -118,8 +118,9 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     enableAddOption = (enabled) => {
-        this.props.actions.setButtons({
-            rightButtons: [{...this.addButton, disabled: !enabled}],
+        const {actions, componentId} = this.props;
+        actions.setButtons(componentId, {
+            rightButtons: [{...this.addButton, enabled}],
         });
     };
 

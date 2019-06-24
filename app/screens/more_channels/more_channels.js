@@ -67,7 +67,7 @@ export default class MoreChannels extends PureComponent {
 
         this.rightButton = {
             id: 'create-pub-channel',
-            title: context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+            text: context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
             showAsAction: 'always',
         };
 
@@ -84,7 +84,7 @@ export default class MoreChannels extends PureComponent {
             buttons.rightButtons = [this.rightButton];
         }
 
-        props.actions.setButtons(buttons);
+        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
@@ -166,16 +166,16 @@ export default class MoreChannels extends PureComponent {
     getChannels = debounce(this.doGetChannels, 100);
 
     headerButtons = (createEnabled) => {
-        const {actions, canCreateChannels} = this.props;
+        const {actions, canCreateChannels, componentId} = this.props;
         const buttons = {
             leftButtons: [this.leftButton],
         };
 
         if (canCreateChannels) {
-            buttons.rightButtons = [{...this.rightButton, disabled: !createEnabled}];
+            buttons.rightButtons = [{...this.rightButton, enabled: createEnabled}];
         }
 
-        actions.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     loadedChannels = ({data}) => {

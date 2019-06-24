@@ -33,10 +33,10 @@ describe('ChannelAddMembers', () => {
         expect(baseProps.actions.getTeamStats).toBeCalledTimes(1);
         expect(baseProps.actions.getTeamStats).toBeCalledWith(baseProps.currentTeamId);
 
-        const button = {disabled: true, id: 'add-members', title: 'Add', showAsAction: 'always'};
+        const button = {enabled: false, id: 'add-members', text: 'Add', showAsAction: 'always'};
         expect(baseProps.actions.setButtons).toBeCalledTimes(2);
-        expect(baseProps.actions.setButtons.mock.calls[0][0]).toEqual({rightButtons: [button]});
-        expect(baseProps.actions.setButtons.mock.calls[1][0]).toEqual({rightButtons: [button]});
+        expect(baseProps.actions.setButtons.mock.calls[0][0]).toEqual(baseProps.componentId, {rightButtons: [button]});
+        expect(baseProps.actions.setButtons.mock.calls[1][0]).toEqual(baseProps.componentId, {rightButtons: [button]});
     });
 
     test('should match state on clearSearch', () => {

@@ -75,7 +75,7 @@ export default class EditChannel extends PureComponent {
 
     rightButton = {
         id: 'edit-channel',
-        disabled: true,
+        enabled: false,
         showAsAction: 'always',
     };
 
@@ -99,13 +99,13 @@ export default class EditChannel extends PureComponent {
             header,
         };
 
-        this.rightButton.title = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
+        this.rightButton.text = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
 
         const buttons = {
             rightButtons: [this.rightButton],
         };
 
-        props.actions.setButtons(buttons);
+        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
@@ -166,19 +166,21 @@ export default class EditChannel extends PureComponent {
     };
 
     emitCanUpdateChannel = (enabled) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         };
 
-        this.props.actions.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     emitUpdating = (loading) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: loading}],
+            rightButtons: [{...this.rightButton, enabled: !loading}],
         };
 
-        this.props.actions.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     validateDisplayName = (displayName) => {
