@@ -19,8 +19,6 @@ describe('InteractiveDialog', () => {
         theme: Preferences.THEMES.default,
         actions: {
             submitInteractiveDialog: jest.fn(),
-        },
-        navigator: {
             dismissModal: jest.fn(),
         },
         componentId: 'component-id',
@@ -37,11 +35,9 @@ describe('InteractiveDialog', () => {
     });
 
     test('should submit dialog', async () => {
-        const submitInteractiveDialog = jest.fn();
         const wrapper = shallow(
             <InteractiveDialog
                 {...baseProps}
-                actions={{submitInteractiveDialog}}
             />,
         );
 
@@ -53,16 +49,14 @@ describe('InteractiveDialog', () => {
         };
 
         wrapper.instance().handleSubmit();
-        expect(submitInteractiveDialog).toHaveBeenCalledTimes(1);
-        expect(submitInteractiveDialog).toHaveBeenCalledWith(dialog);
+        expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledWith(dialog);
     });
 
     test('should submit dialog on cancel', async () => {
-        const submitInteractiveDialog = jest.fn();
         const wrapper = shallow(
             <InteractiveDialog
                 {...baseProps}
-                actions={{submitInteractiveDialog}}
                 notifyOnCancel={true}
             />,
         );
@@ -75,21 +69,19 @@ describe('InteractiveDialog', () => {
         };
 
         wrapper.instance().navigationButtonPressed({buttonId: 'close-dialog'});
-        expect(submitInteractiveDialog).toHaveBeenCalledTimes(1);
-        expect(submitInteractiveDialog).toHaveBeenCalledWith(dialog);
+        expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledWith(dialog);
     });
 
     test('should not submit dialog on cancel', async () => {
-        const submitInteractiveDialog = jest.fn();
         const wrapper = shallow(
             <InteractiveDialog
                 {...baseProps}
-                actions={{submitInteractiveDialog}}
                 notifyOnCancel={false}
             />,
         );
 
         wrapper.instance().navigationButtonPressed({buttonId: 'close-dialog'});
-        expect(submitInteractiveDialog).not.toHaveBeenCalled();
+        expect(baseProps.actions.submitInteractiveDialog).not.toHaveBeenCalled();
     });
 });
