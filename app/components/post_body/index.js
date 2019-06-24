@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {General, Posts} from 'mattermost-redux/constants';
@@ -19,6 +20,8 @@ import {
     canDeletePost,
 } from 'mattermost-redux/utils/post_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
+
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 import {getDimensions} from 'app/selectors/device';
 
@@ -99,4 +102,12 @@ function makeMapStateToProps() {
     };
 }
 
-export default connect(makeMapStateToProps, null, null, {forwardRef: true})(PostBody);
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            showModalOverCurrentContext,
+        }, dispatch),
+    };
+}
+
+export default connect(makeMapStateToProps, mapDispatchToProps, null, {forwardRef: true})(PostBody);

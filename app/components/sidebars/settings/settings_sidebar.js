@@ -37,13 +37,15 @@ export default class SettingsDrawer extends PureComponent {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
+            showModal: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
         currentUser: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-        navigator: PropTypes.object,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
@@ -107,6 +109,7 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     handleSetStatus = preventDoubleTap(() => {
+        const {actions} = this.props;
         const items = [{
             action: () => this.setStatus(General.ONLINE),
             text: {
@@ -133,21 +136,7 @@ export default class SettingsDrawer extends PureComponent {
             },
         }];
 
-        this.props.navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                items,
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
+        actions.showModalOverCurrentContext('OptionsModal', {items});
     });
 
     goToEditProfile = preventDoubleTap(() => {
@@ -194,9 +183,6 @@ export default class SettingsDrawer extends PureComponent {
     goToSettings = preventDoubleTap(() => {
         const {intl} = this.context;
 
-        // TODO: Ensure all styles used in app/utils/theme's setNavigatorStyles
-        // are passed to Settings when this showModal call is updated to RNN v2,
-        // then remove setNavigatorStyles call in app/screens/settings/general/settings.js
         this.openModal(
             'Settings',
             intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
@@ -210,31 +196,20 @@ export default class SettingsDrawer extends PureComponent {
     });
 
     openModal = (screen, title, passProps) => {
-        const {navigator, theme} = this.props;
-
         this.closeSettingsSidebar();
 
+        const {actions} = this.props;
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton,
+                }],
+            },
+        };
+
         InteractionManager.runAfterInteractions(() => {
-            navigator.showModal({
-                screen,
-                title,
-                animationType: 'slide-up',
-                animated: true,
-                backButtonTitle: '',
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg,
-                },
-                navigatorButtons: {
-                    leftButtons: [{
-                        id: 'close-settings',
-                        icon: this.closeButton,
-                    }],
-                },
-                passProps,
-            });
+            actions.showModal(screen, title, passProps, options);
         });
     };
 
@@ -254,7 +229,7 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     renderNavigationView = () => {
-        const {currentUser, navigator, theme} = this.props;
+        const {currentUser, theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -264,7 +239,6 @@ export default class SettingsDrawer extends PureComponent {
                 footerColor={theme.centerChannelBg}
                 footerComponent={<View style={style.container}/>}
                 headerComponent={<View style={style.container}/>}
-                navigator={navigator}
                 theme={theme}
             >
                 <View style={style.container}>
@@ -359,12 +333,10 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     setStatus = (status) => {
-        const {status: currentUserStatus, navigator} = this.props;
+        const {status: currentUserStatus, actions} = this.props;
 
         if (currentUserStatus === General.OUT_OF_OFFICE) {
-            navigator.dismissModal({
-                animationType: 'none',
-            });
+            actions.dismissModal();
             this.closeSettingsSidebar();
             this.confirmReset(status);
             return;

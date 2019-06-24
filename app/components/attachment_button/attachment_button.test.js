@@ -17,7 +17,6 @@ describe('AttachmentButton', () => {
             showModalOverCurrentContext: jest.fn(),
         },
         theme: Preferences.THEMES.default,
-        navigator: {},
         blurTextBox: jest.fn(),
         maxFileSize: 10,
         uploadFiles: jest.fn(),

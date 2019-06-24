@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {goToScreen} from 'app/actions/navigation';
 import {setAutocompleteSelector} from 'app/actions/views/post';
 
 import AutocompleteSelector from './autocomplete_selector';
@@ -21,6 +22,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             setAutocompleteSelector,
+            goToScreen,
         }, dispatch),
     };
 }

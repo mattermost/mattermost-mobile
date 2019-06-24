@@ -8,6 +8,8 @@ import merge from 'deepmerge';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import EphemeralStore from 'app/store/ephemeral_store';
+
 export function resetToChannel(passProps = {}) {
     return (dispatch, getState) => {
         const theme = getTheme(getState());
@@ -128,9 +130,11 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
     };
 }
 
-export function goToScreen(componentId, name, title, passProps = {}, options = {}) {
+export function goToScreen(name, title, passProps = {}, options = {}) {
     return (dispatch, getState) => {
-        const theme = getTheme(getState());
+        const state = getState();
+        const componentId = EphemeralStore.getTopComponentId();
+        const theme = getTheme(state);
         const defaultOptions = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
@@ -162,6 +166,22 @@ export function goToScreen(componentId, name, title, passProps = {}, options = {
     };
 }
 
+export function popTopScreen() {
+    return () => {
+        const componentId = EphemeralStore.getTopComponentId();
+
+        Navigation.pop(componentId);
+    };
+}
+
+export function popToRoot() {
+    return () => {
+        const componentId = EphemeralStore.getTopComponentId();
+
+        Navigation.popToRoot(componentId);
+    };
+}
+
 export function showModal(name, title, passProps = {}, options = {}) {
     return (dispatch, getState) => {
         const theme = getTheme(getState());
@@ -186,6 +206,8 @@ export function showModal(name, title, passProps = {}, options = {}) {
                     color: theme.sidebarHeaderTextColor,
                     text: title,
                 },
+                leftButtonColor: theme.sidebarHeaderTextColor,
+                rightButtonColor: theme.sidebarHeaderTextColor,
             },
         };
 
@@ -257,8 +279,23 @@ export function showSearchModal(initialValue = '') {
     };
 }
 
-export function peek(componentId, name, passProps = {}, options = {}) {
+export function dismissModal(options = {}) {
     return () => {
+        const componentId = EphemeralStore.getTopComponentId();
+
+        Navigation.dismissModal(componentId, options);
+    };
+}
+
+export function dismissAllModals(options = {}) {
+    return () => {
+        Navigation.dismissAllModals(options);
+    };
+}
+
+export function peek(name, passProps = {}, options = {}) {
+    return () => {
+        const componentId = EphemeralStore.getTopComponentId();
         const defaultOptions = {
             preview: {
                 commit: false,
@@ -270,6 +307,18 @@ export function peek(componentId, name, passProps = {}, options = {}) {
                 name,
                 passProps,
                 options: merge(defaultOptions, options),
+            },
+        });
+    };
+}
+
+export function setButtons(buttons = {leftButtons: [], rightButtons: []}) {
+    return () => {
+        const componentId = EphemeralStore.getTopComponentId();
+
+        Navigation.mergeOptions(componentId, {
+            topBar: {
+                ...buttons,
             },
         });
     };

@@ -17,7 +17,6 @@ import DialogElement from './dialog_element.js';
 
 export default class InteractiveDialog extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string,
         url: PropTypes.string.isRequired,
         callbackId: PropTypes.string,
         elements: PropTypes.arrayOf(PropTypes.object).isRequired,

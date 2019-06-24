@@ -8,12 +8,11 @@ import {
     Platform,
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ClockDisplay from 'app/screens/clock_display';
 
@@ -33,16 +32,6 @@ export default class DisplaySettings extends PureComponent {
     state = {
         showClockDisplaySettings: false,
     };
-
-    componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
-
-    // TODO: Remove this once styles are passed in push call in
-    // app/screens/settings/general/settings.js
-    componentDidAppear() {
-        setNavigatorStyles(this.props.componentId, this.props.theme);
-    }
 
     closeClockDisplaySettings = () => {
         this.setState({showClockDisplaySettings: false});

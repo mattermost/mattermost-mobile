@@ -4,17 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
 import {goToScreen} from 'app/actions/navigation';
 
-import MarkdownTable from './markdown_table';
-
-function mapStateToProps(state) {
-    return {
-        theme: getTheme(state),
-    };
-}
+import FileAttachmentDocument from './file_attachment_document';
 
 function mapDispatchToProps(dispatch) {
     return {
@@ -24,4 +16,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MarkdownTable);
+export default connect(null, mapDispatchToProps)(FileAttachmentDocument);

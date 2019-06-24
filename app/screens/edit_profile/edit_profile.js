@@ -88,11 +88,13 @@ export default class EditProfile extends PureComponent {
             setProfileImageUri: PropTypes.func.isRequired,
             removeProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
         }).isRequired,
         currentUser: PropTypes.object.isRequired,
         firstNameDisabled: PropTypes.bool.isRequired,
         lastNameDisabled: PropTypes.bool.isRequired,
-        navigator: PropTypes.object.isRequired,
         nicknameDisabled: PropTypes.bool.isRequired,
         positionDisabled: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
@@ -118,7 +120,7 @@ export default class EditProfile extends PureComponent {
         };
         this.rightButton.title = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
-        props.navigator.setButtons(buttons);
+        props.actions.setButtons(buttons);
 
         this.state = {
             email,
@@ -176,12 +178,11 @@ export default class EditProfile extends PureComponent {
     };
 
     close = () => {
-        if (this.props.commandType === 'Push') {
-            this.props.navigator.pop();
+        const {commandType, actions} = this.props;
+        if (commandType === 'Push') {
+            actions.popTopScreen();
         } else {
-            this.props.navigator.dismissModal({
-                animationType: 'slide-down',
-            });
+            actions.dismissModal();
         }
     };
 
@@ -190,7 +191,7 @@ export default class EditProfile extends PureComponent {
             rightButtons: [{...this.rightButton, disabled: !enabled}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        this.props.actions.setButtons(buttons);
     };
 
     handleRequestError = (error) => {
@@ -254,9 +255,7 @@ export default class EditProfile extends PureComponent {
     handleRemoveProfileImage = () => {
         this.setState({profileImageRemove: true});
         this.emitCanUpdateAccount(true);
-        this.props.navigator.dismissModal({
-            animationType: 'none',
-        });
+        this.props.actions.dismissModal();
     }
 
     uploadProfileImage = async () => {
@@ -500,7 +499,6 @@ export default class EditProfile extends PureComponent {
         const {
             currentUser,
             theme,
-            navigator,
         } = this.props;
 
         const {
@@ -521,7 +519,6 @@ export default class EditProfile extends PureComponent {
                     canTakeVideo={false}
                     canBrowseVideoLibrary={false}
                     maxFileSize={MAX_SIZE}
-                    navigator={navigator}
                     wrapper={true}
                     uploadFiles={this.handleUploadProfileImage}
                     removeProfileImage={this.handleRemoveProfileImage}

@@ -48,6 +48,7 @@ import LocalConfig from 'assets/config';
 import telemetry from 'app/telemetry';
 
 import App from './app';
+import EphemeralStore from 'app/store/ephemeral_store';
 import './fetch_preconfig';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 60 * 1000;
@@ -447,6 +448,14 @@ const launchEntry = () => {
             'start:select_server_screen',
             'start:channel_screen',
         ]);
+
+        // Keep track of the latest componentId to appear and disappear
+        Navigation.events().registerComponentDidAppearListener(({componentId}) => {
+            EphemeralStore.addComponentIdToStack(componentId);
+        });
+        Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
+            EphemeralStore.removeComponentIdFromStack(componentId);
+        });
 
         Navigation.setRoot({
             root: {

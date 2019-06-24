@@ -26,6 +26,8 @@ export default class ClientUpgrade extends PureComponent {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         currentVersion: PropTypes.string,
@@ -66,7 +68,7 @@ export default class ClientUpgrade extends PureComponent {
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-upgrade') {
-            Navigation.dismissModal(this.props.componentId);
+            this.props.actions.dismissModal();
         }
     }
 
@@ -95,15 +97,15 @@ export default class ClientUpgrade extends PureComponent {
         const {
             closeAction,
             userCheckedForUpgrade,
-            componentId,
+            actions,
         } = this.props;
 
         if (closeAction) {
             closeAction();
         } else if (userCheckedForUpgrade) {
-            Navigation.pop(componentId);
+            actions.popTopScreen();
         } else {
-            Navigation.dismissModal(componentId);
+            actions.dismissModal();
         }
     };
 

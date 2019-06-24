@@ -24,7 +24,6 @@ describe('Login', () => {
         loginId: '',
         password: '',
         loginRequest: {},
-        componentId: 'component-id',
         actions: {
             handleLoginIdChanged: jest.fn(),
             handlePasswordChanged: jest.fn(),
@@ -129,7 +128,6 @@ describe('Login', () => {
 
         expect(baseProps.actions.goToScreen).
             toHaveBeenCalledWith(
-                baseProps.componentId,
                 'MFA',
                 'Multi-factor Authentication',
             );
@@ -141,7 +139,6 @@ describe('Login', () => {
 
         expect(baseProps.actions.goToScreen).
             toHaveBeenCalledWith(
-                baseProps.componentId,
                 'ForgotPassword',
                 'Password Reset',
             );

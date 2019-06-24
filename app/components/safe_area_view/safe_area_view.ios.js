@@ -21,7 +21,6 @@ export default class SafeAreaIos extends PureComponent {
         forceTop: PropTypes.number,
         keyboardOffset: PropTypes.number.isRequired,
         navBarBackgroundColor: PropTypes.string,
-        navigator: PropTypes.object,
         headerComponent: PropTypes.node,
         theme: PropTypes.object.isRequired,
     };
