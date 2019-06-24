@@ -32,13 +32,14 @@ export default class ChannelMembers extends PureComponent {
             getProfilesInChannel: PropTypes.func.isRequired,
             handleRemoveChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         canManageUsers: PropTypes.bool.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         currentChannelMembers: PropTypes.array,
         currentUserId: PropTypes.string.isRequired,
-        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
 
@@ -70,7 +71,7 @@ export default class ChannelMembers extends PureComponent {
         };
 
         if (props.canManageUsers) {
-            props.navigator.setButtons({
+            props.actions.setButtons({
                 rightButtons: [this.removeButton],
             });
         }
@@ -105,12 +106,13 @@ export default class ChannelMembers extends PureComponent {
     };
 
     close = () => {
-        this.props.navigator.pop({animated: true});
+        this.props.actions.popTopScreen();
     };
 
     enableRemoveOption = (enabled) => {
-        if (this.props.canManageUsers) {
-            this.props.navigator.setButtons({
+        const {actions, canManageUsers} = this.props;
+        if (canManageUsers) {
+            actions.setButtons({
                 rightButtons: [{...this.removeButton, disabled: !enabled}],
             });
         }
