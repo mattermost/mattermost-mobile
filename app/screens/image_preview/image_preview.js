@@ -21,6 +21,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
+import {Navigation} from 'react-native-navigation';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -43,13 +44,17 @@ const ANIM_CONFIG = {duration: 300};
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            dismissModal: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
+        }).isRequired,
+        componentId: PropTypes.string.isRequired,
         canDownloadFiles: PropTypes.bool.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         files: PropTypes.array,
         getItemMeasures: PropTypes.func.isRequired,
         index: PropTypes.number.isRequired,
-        navigator: PropTypes.object,
         origin: PropTypes.object,
         target: PropTypes.object,
         theme: PropTypes.object.isRequired,
@@ -66,8 +71,10 @@ export default class ImagePreview extends PureComponent {
     constructor(props) {
         super(props);
 
-        props.navigator.setStyle({
-            screenBackgroundColor: '#000',
+        Navigation.mergeOptions(props.componentId, {
+            layout: {
+                backgroundColor: '#000',
+            },
         });
 
         this.openAnim = new Animated.Value(0);
@@ -103,12 +110,14 @@ export default class ImagePreview extends PureComponent {
     };
 
     close = () => {
-        const {getItemMeasures, navigator} = this.props;
+        const {actions, getItemMeasures, componentId} = this.props;
         const {index} = this.state;
 
         this.setState({animating: true});
-        navigator.setStyle({
-            screenBackgroundColor: 'transparent',
+        Navigation.mergeOptions(componentId, {
+            layout: {
+                backgroundColor: 'transparent',
+            },
         });
 
         getItemMeasures(index, (origin) => {
@@ -117,7 +126,7 @@ export default class ImagePreview extends PureComponent {
             }
 
             this.animateOpenAnimToValue(0, () => {
-                navigator.dismissModal({animationType: 'none'});
+                actions.dismissModal();
             });
         });
     };
@@ -177,7 +186,7 @@ export default class ImagePreview extends PureComponent {
     };
 
     renderAttachmentDocument = (file) => {
-        const {canDownloadFiles, theme, navigator} = this.props;
+        const {canDownloadFiles, theme} = this.props;
 
         return (
             <View style={[style.flex, style.center]}>
@@ -190,7 +199,6 @@ export default class ImagePreview extends PureComponent {
                     file={file}
                     iconHeight={100}
                     iconWidth={100}
-                    navigator={navigator}
                     theme={theme}
                     wrapperHeight={200}
                     wrapperWidth={200}
@@ -441,6 +449,7 @@ export default class ImagePreview extends PureComponent {
     };
 
     showDownloadOptionsIOS = async () => {
+        const {actions} = this.props;
         const {formatMessage} = this.context.intl;
         const file = this.getCurrentFile();
         const items = [];
@@ -504,30 +513,17 @@ export default class ImagePreview extends PureComponent {
             });
         }
 
-        const options = {
-            title: file.caption,
-            items,
-            onCancelPress: () => this.setHeaderAndFooterVisible(true),
-        };
-
         if (items.length) {
             this.setHeaderAndFooterVisible(false);
 
-            this.props.navigator.showModal({
-                screen: 'OptionsModal',
-                title: '',
-                animationType: 'none',
-                passProps: {
-                    ...options,
-                },
-                navigatorStyle: {
-                    navBarHidden: true,
-                    statusBarHidden: false,
-                    statusBarHideWithNavBar: false,
-                    screenBackgroundColor: 'transparent',
-                    modalPresentationStyle: 'overCurrentContext',
-                },
-            });
+            const screen = 'OptionsModal';
+            const passProps = {
+                title: file.caption,
+                items,
+                onCancelPress: () => this.setHeaderAndFooterVisible(true),
+            };
+
+            actions.showModalOverCurrentContext(screen, passProps);
         }
     };
 
