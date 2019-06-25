@@ -43,7 +43,9 @@ export default {
             // do nothing...
         }
 
-        return cachedConfig;
+        return {
+            inAppPinCode: 'false',
+        };
     },
     goToSecuritySettings: () => {
         // Do nothing since iOS doesn't allow apps to do this
@@ -51,6 +53,7 @@ export default {
     getCachedConfig: () => {
         return cachedConfig;
     },
+    appGroupIdentifier: MattermostManaged.appGroupIdentifier,
     hasSafeAreaInsets: MattermostManaged.hasSafeAreaInsets,
     isRunningInSplitView: MattermostManaged.isRunningInSplitView,
     isDeviceSecure: async () => {
