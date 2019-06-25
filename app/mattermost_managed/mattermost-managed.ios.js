@@ -43,9 +43,7 @@ export default {
             // do nothing...
         }
 
-        return {
-            inAppPinCode: 'false',
-        };
+        return cachedConfig;
     },
     goToSecuritySettings: () => {
         // Do nothing since iOS doesn't allow apps to do this
