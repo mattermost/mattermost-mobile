@@ -4,15 +4,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    Text,
-    View,
+    Clipboard,
     Platform,
+    Text,
+    TouchableHighlight,
+    View,
 } from 'react-native';
+import {intlShape} from 'react-intl';
 
 import ChannelIcon from 'app/components/channel_icon';
 import FormattedDate from 'app/components/formatted_date';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
+import mattermostManaged from 'app/mattermost_managed';
+import BottomSheet from 'app/utils/bottom_sheet';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -34,7 +39,35 @@ export default class ChannelInfoHeader extends React.PureComponent {
         isGroupConstrained: PropTypes.bool,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
+    handleLongPress = (text, actionText) => {
+        const {formatMessage} = this.context.intl;
+
+        const config = mattermostManaged.getCachedConfig();
+
+        if (config?.copyAndPasteProtection !== 'true') {
+            const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+
+            BottomSheet.showBottomSheetWithOptions({
+                options: [actionText, cancelText],
+                cancelButtonIndex: 1,
+            }, (value) => {
+                if (value !== 1) {
+                    this.handleCopy(text);
+                }
+            });
+        }
+    };
+
+    handleCopy = (text) => {
+        Clipboard.setString(text);
+    }
+
     render() {
+        const {formatMessage} = this.context.intl;
         const {
             createAt,
             creator,
@@ -82,36 +115,50 @@ export default class ChannelInfoHeader extends React.PureComponent {
                 </View>
                 {purpose.length > 0 &&
                     <View style={style.section}>
-                        <FormattedText
-                            style={style.header}
-                            id='channel_info.purpose'
-                            defaultMessage='Purpose'
-                        />
-                        <Markdown
-                            navigator={navigator}
-                            onPermalinkPress={onPermalinkPress}
-                            baseTextStyle={baseTextStyle}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
-                            value={purpose}
-                        />
+                        <TouchableHighlight
+                            underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                            onLongPress={() => this.handleLongPress(purpose, formatMessage({id: 'mobile.channel_info.copy_purpose', defaultMessage: 'Copy Purpose'}))}
+                        >
+                            <View style={style.sectionRow}>
+                                <FormattedText
+                                    style={style.header}
+                                    id='channel_info.purpose'
+                                    defaultMessage='Purpose'
+                                />
+                                <Markdown
+                                    navigator={navigator}
+                                    onPermalinkPress={onPermalinkPress}
+                                    baseTextStyle={baseTextStyle}
+                                    textStyles={textStyles}
+                                    blockStyles={blockStyles}
+                                    value={purpose}
+                                />
+                            </View>
+                        </TouchableHighlight>
                     </View>
                 }
-                {header.length > 0 &&
+                {header.length < 0 &&
                     <View style={style.section}>
-                        <FormattedText
-                            style={style.header}
-                            id='channel_info.header'
-                            defaultMessage='Header'
-                        />
-                        <Markdown
-                            navigator={navigator}
-                            onPermalinkPress={onPermalinkPress}
-                            baseTextStyle={baseTextStyle}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
-                            value={header}
-                        />
+                        <TouchableHighlight
+                            underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                            onLongPress={() => this.handleLongPress(header, formatMessage({id: 'mobile.channel_info.copy_header', defaultMessage: 'Copy Header'}))}
+                        >
+                            <View style={style.sectionRow}>
+                                <FormattedText
+                                    style={style.header}
+                                    id='channel_info.header'
+                                    defaultMessage='Header'
+                                />
+                                <Markdown
+                                    navigator={navigator}
+                                    onPermalinkPress={onPermalinkPress}
+                                    baseTextStyle={baseTextStyle}
+                                    textStyles={textStyles}
+                                    blockStyles={blockStyles}
+                                    value={header}
+                                />
+                            </View>
+                        </TouchableHighlight>
                     </View>
                 }
                 {isGroupConstrained &&
@@ -149,7 +196,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
             marginBottom: 40,
-            padding: 15,
+            paddingVertical: 15,
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
@@ -163,6 +210,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingVertical: 10,
+            paddingHorizontal: 15,
         },
         createdBy: {
             flexDirection: 'row',
@@ -170,6 +218,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 5,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             backgroundColor: 'transparent',
+            paddingHorizontal: 15,
         },
         detail: {
             fontSize: 13,
@@ -183,6 +232,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         section: {
             marginTop: 15,
+        },
+        sectionRow: {
+            paddingHorizontal: 15,
         },
     };
 });
