@@ -31,7 +31,6 @@ export default class App {
         this.shouldRelaunchWhenActive = false;
         this.inBackgroundSince = null;
         this.previousAppState = null;
-        this.navigationComponentId = null;
 
         // Usage: screen/entry.js
         this.startAppFromPushNotification = false;
