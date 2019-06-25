@@ -281,7 +281,7 @@ export default class PostList extends PureComponent {
 
     scrollToBottom = () => {
         setTimeout(() => {
-            this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
+            this.flatListRef.current?.scrollToOffset({offset: 0, animated: true});
         }, 250);
     };
 
