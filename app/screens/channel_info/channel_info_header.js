@@ -111,7 +111,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
 
         return (
             <View style={style.container}>
-                <View style={style.channelNameContainer}>
+                <View style={[style.channelNameContainer, style.row]}>
                     <ChannelIcon
                         isInfo={true}
                         membersCount={memberCount - 1}
@@ -136,7 +136,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                             onLongPress={this.handlePurposeLongPress}
                         >
-                            <View style={style.sectionRow}>
+                            <View style={style.row}>
                                 <FormattedText
                                     style={style.header}
                                     id='channel_info.purpose'
@@ -160,7 +160,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                             onLongPress={this.handleHeaderLongPress}
                         >
-                            <View style={style.sectionRow}>
+                            <View style={style.row}>
                                 <FormattedText
                                     style={style.header}
                                     id='channel_info.header'
@@ -179,7 +179,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </View>
                 }
                 {isGroupConstrained &&
-                    <Text style={style.createdBy}>
+                    <Text style={[style.createdBy, style.row]}>
                         <FormattedText
                             id='mobile.routes.channelInfo.groupManaged'
                             defaultMessage='Members are managed by linked groups'
@@ -187,7 +187,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </Text>
                 }
                 {creator &&
-                    <Text style={style.createdBy}>
+                    <Text style={[style.createdBy, style.row]}>
                         <FormattedText
                             id='mobile.routes.channelInfo.createdBy'
                             defaultMessage='Created by {creator} on '
@@ -235,7 +235,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 5,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             backgroundColor: 'transparent',
-            paddingHorizontal: 15,
         },
         detail: {
             fontSize: 13,
@@ -250,7 +249,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         section: {
             marginTop: 15,
         },
-        sectionRow: {
+        row: {
             paddingHorizontal: 15,
         },
     };
