@@ -137,7 +137,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         </TouchableHighlight>
                     </View>
                 }
-                {header.length < 0 &&
+                {header.length > 0 &&
                     <View style={style.section}>
                         <TouchableHighlight
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
