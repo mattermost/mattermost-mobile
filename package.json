@@ -116,8 +116,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "updatesnapshot": "jest --updateSnapshot",
-    "mmjstool": "mmjstool",
-    "android": "cd ./android && ./gradlew app:assembleDebug && ./gradlew installDebug"
+    "mmjstool": "mmjstool"
   },
   "rnpm": {
     "assets": [
