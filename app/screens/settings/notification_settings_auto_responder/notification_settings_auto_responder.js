@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import {
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {intlShape} from 'react-intl';
 
 import {General} from 'mattermost-redux/constants';
@@ -25,7 +24,6 @@ import SectionItem from 'app/screens/settings/section_item';
 export default class NotificationSettingsAutoResponder extends PureComponent {
     static propTypes = {
         currentUser: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
@@ -56,10 +54,6 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
             auto_responder_active: autoResponderActive,
             auto_responder_message: notifyProps.auto_responder_message || autoResponderDefault,
         };
-    }
-
-    componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
     componentWillUnmount() {

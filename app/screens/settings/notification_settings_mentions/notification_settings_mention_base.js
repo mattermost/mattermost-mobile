@@ -11,10 +11,12 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMentionsBase extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
         componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
-        navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -29,7 +31,7 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         const {currentUser} = props;
         const notifyProps = getNotificationProps(currentUser);
 
-        this.goingBack = true; //use to identify if the navigator is popping this screen
+        this.goingBack = true; // use to identify if the navigator is popping this screen
         this.state = this.setStateFromNotifyProps(notifyProps);
     }
 

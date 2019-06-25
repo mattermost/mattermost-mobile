@@ -19,7 +19,6 @@ export default class NotificationSettingsMobileBase extends PureComponent {
         config: PropTypes.object.isRequired,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
-        navigator: PropTypes.object,
         notificationPreferences: PropTypes.object,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,

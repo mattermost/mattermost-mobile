@@ -12,9 +12,11 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 
 export default class NotificationSettingsMentionsKeywords extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            popTopScreen: PropTypes.func.isRequired,
+        }).isRequired,
         componentId: PropTypes.string,
         keywords: PropTypes.string,
-        navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -38,7 +40,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
     }
 
     handleSubmit = () => {
-        this.props.navigator.pop();
+        this.props.actions.popTopScreen();
     };
 
     keywordsRef = (ref) => {
