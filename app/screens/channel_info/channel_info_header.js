@@ -227,7 +227,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingVertical: 10,
-            paddingHorizontal: 15,
         },
         createdBy: {
             flexDirection: 'row',
