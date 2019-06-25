@@ -120,13 +120,9 @@ export default class ChannelPostList extends PureComponent {
             rootId,
         };
 
-        if (Platform.OS === 'android') {
-            actions.showModal(screen, title, passProps);
-        } else {
-            requestAnimationFrame(() => {
-                actions.goToScreen(screen, title, passProps);
-            });
-        }
+        requestAnimationFrame(() => {
+            actions.goToScreen(screen, title, passProps);
+        });
     };
 
     loadMorePostsTop = () => {
