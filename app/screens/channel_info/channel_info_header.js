@@ -66,8 +66,23 @@ export default class ChannelInfoHeader extends React.PureComponent {
         Clipboard.setString(text);
     }
 
+    handleHeaderLongPress = () => {
+        const {header, formatMessage} = this.context.intl;
+        this.handleLongPress(
+            header,
+            formatMessage({id: 'mobile.channel_info.copy_header', defaultMessage: 'Copy Header'})
+        );
+    }
+
+    handlePurposeLongPress = () => {
+        const {purpose, formatMessage} = this.context.intl;
+        this.handleLongPress(
+            purpose,
+            formatMessage({id: 'mobile.channel_info.copy_purpose', defaultMessage: 'Copy Purpose'})
+        );
+    }
+
     render() {
-        const {formatMessage} = this.context.intl;
         const {
             createAt,
             creator,
@@ -117,7 +132,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     <View style={style.section}>
                         <TouchableHighlight
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                            onLongPress={() => this.handleLongPress(purpose, formatMessage({id: 'mobile.channel_info.copy_purpose', defaultMessage: 'Copy Purpose'}))}
+                            onLongPress={this.handlePurposeLongPress}
                         >
                             <View style={style.sectionRow}>
                                 <FormattedText
@@ -141,7 +156,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     <View style={style.section}>
                         <TouchableHighlight
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                            onLongPress={() => this.handleLongPress(header, formatMessage({id: 'mobile.channel_info.copy_header', defaultMessage: 'Copy Header'}))}
+                            onLongPress={this.handleHeaderLongPress}
                         >
                             <View style={style.sectionRow}>
                                 <FormattedText
