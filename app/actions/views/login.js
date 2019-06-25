@@ -56,7 +56,6 @@ export function handleSuccessfulLogin() {
             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
             data: {
                 url,
-                token,
             },
         });
 
