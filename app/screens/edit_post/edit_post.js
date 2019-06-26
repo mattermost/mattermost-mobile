@@ -22,13 +22,14 @@ export default class EditPost extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             editPost: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         closeButton: PropTypes.object,
         deviceHeight: PropTypes.number,
         deviceWidth: PropTypes.number,
         editPostRequest: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -50,9 +51,9 @@ export default class EditPost extends PureComponent {
         super(props);
 
         this.state = {message: props.post.message};
-        this.rightButton.title = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
+        this.rightButton.text = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
 
-        props.navigator.setButtons({
+        props.actions.setButtons(props.componentId, {
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
             rightButtons: [this.rightButton],
         });
@@ -102,22 +103,22 @@ export default class EditPost extends PureComponent {
     }
 
     close = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'slide-down',
-        });
+        this.props.actions.dismissModal();
     };
 
     emitCanEditPost = (enabled) => {
-        this.props.navigator.setButtons({
+        const {actions, componentId} = this.props;
+        actions.setButtons(componentId, {
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         });
     };
 
     emitEditing = (loading) => {
-        this.props.navigator.setButtons({
+        const {actions, componentId} = this.props;
+        actions.setButtons(componentId, {
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
-            rightButtons: [{...this.rightButton, disabled: loading}],
+            rightButtons: [{...this.rightButton, enabled: !loading}],
         });
     };
 
