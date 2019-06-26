@@ -126,5 +126,3 @@ export class Embed {
         },
     }
 }
-
-{embeds: [{type, url}]}
