@@ -211,7 +211,7 @@ configurations.all {
 
 dependencies {
     // Make sure to put android-jsc at the top
-    implementation "org.webkit:android-jsc:r241213"
+    implementation "org.webkit:android-jsc-intl:r241213"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
