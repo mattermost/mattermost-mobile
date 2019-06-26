@@ -511,9 +511,8 @@ const launchEntry = () => {
 
 configurePushNotifications();
 const startedSharedExtension = Platform.OS === 'android' && MattermostShare.isOpened;
-const fromPushNotification = Platform.OS === 'android' && Initialization.replyFromPushNotification;
 
-if (startedSharedExtension || fromPushNotification) {
+if (startedSharedExtension) {
     // Hold on launching Entry screen
     app.setAppStarted(true);
 }
@@ -523,7 +522,7 @@ if (!app.appStarted) {
 }
 
 new NativeEventsReceiver().appLaunched(() => {
-    if (startedSharedExtension || fromPushNotification) {
+    if (startedSharedExtension) {
         app.setAppStarted(false);
         launchEntry();
     } else if (app.token && app.url) {
