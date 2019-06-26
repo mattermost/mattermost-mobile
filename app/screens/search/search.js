@@ -58,6 +58,7 @@ export default class Search extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             dismissModal: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         initialValue: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,

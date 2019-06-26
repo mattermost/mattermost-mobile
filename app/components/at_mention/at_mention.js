@@ -3,7 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Clipboard, Platform, Text} from 'react-native';
+import {Clipboard, Text} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
@@ -16,7 +16,6 @@ export default class AtMention extends React.PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             goToScreen: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
         }).isRequired,
         isSearchResult: PropTypes.bool,
         mentionName: PropTypes.string.isRequired,
@@ -59,11 +58,7 @@ export default class AtMention extends React.PureComponent {
             userId: this.state.user.id,
         };
 
-        if (Platform.OS === 'ios') {
-            actions.goToScreen(screen, title, passProps);
-        } else {
-            actions.showModal(screen, title, passProps);
-        }
+        actions.goToScreen(screen, title, passProps);
     };
 
     getUserDetailsFromMentionName(props) {

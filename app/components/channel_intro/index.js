@@ -11,7 +11,7 @@ import {getCurrentUserId, getUser, makeGetProfilesInChannel} from 'mattermost-re
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {goToScreen, showModal} from 'app/actions/navigation';
+import {goToScreen} from 'app/actions/navigation';
 import {getChannelMembersForDm} from 'app/selectors/channel';
 
 import ChannelIntro from './channel_intro';
@@ -58,7 +58,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             goToScreen,
-            showModal,
         }, dispatch),
     };
 }

@@ -8,7 +8,7 @@ import {getUsersByUsername} from 'mattermost-redux/selectors/entities/users';
 
 import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {goToScreen, showModal} from 'app/actions/navigation';
+import {goToScreen} from 'app/actions/navigation';
 
 import AtMention from './at_mention';
 
@@ -24,7 +24,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             goToScreen,
-            showModal,
         }, dispatch),
     };
 }
