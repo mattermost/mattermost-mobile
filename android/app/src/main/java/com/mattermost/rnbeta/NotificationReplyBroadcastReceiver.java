@@ -79,7 +79,11 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
     protected void replyToMessage(final String serverUrl, final String token, final int notificationId, final CharSequence message) {
         final String channelId = bundle.getString("channel_id");
-        final String rootId = bundle.getString("post_id");
+        final String postId = bundle.getString("post_id");
+        String rootId = bundle.getString("root_id");
+        if (android.text.TextUtils.isEmpty(rootId)) {
+            rootId = postId;
+        }
 
         if (token == null || serverUrl == null) {
             onReplyFailed(notificationManager, notificationId, channelId);
