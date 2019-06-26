@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Keyboard,
-    Platform,
     StyleSheet,
     View,
 } from 'react-native';
@@ -42,7 +41,6 @@ export default class ChannelBase extends PureComponent {
             recordLoadTime: PropTypes.func.isRequired,
             peek: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
             showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
@@ -192,13 +190,9 @@ export default class ChannelBase extends PureComponent {
 
         Keyboard.dismiss();
 
-        if (Platform.OS === 'android') {
-            actions.showModal(screen, title);
-        } else {
-            requestAnimationFrame(() => {
-                actions.goToScreen(screen, title);
-            });
-        }
+        requestAnimationFrame(() => {
+            actions.goToScreen(screen, title);
+        });
     });
 
     handleAutoComplete = (value) => {
