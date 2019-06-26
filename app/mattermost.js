@@ -19,9 +19,8 @@ import ephemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import pushNotificationsUtils from 'app/utils/push_notifications';
 
-const {Initialization, MattermostShare} = NativeModules;
+const {MattermostShare} = NativeModules;
 const startedSharedExtension = Platform.OS === 'android' && MattermostShare.isOpened;
-const fromPushNotification = Platform.OS === 'android' && Initialization.replyFromPushNotification;
 export const store = configureStore(initialState);
 
 const init = async () => {
@@ -34,7 +33,7 @@ const init = async () => {
 
     registerScreens(store, Provider);
 
-    if (startedSharedExtension || fromPushNotification) {
+    if (startedSharedExtension) {
         ephemeralStore.appStarted = true;
     }
 
@@ -123,7 +122,7 @@ const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
 
 new NativeEventsReceiver().appLaunched(async () => {
     const credentials = await getAppCredentials();
-    if (startedSharedExtension || fromPushNotification) {
+    if (startedSharedExtension) {
         ephemeralStore.appStarted = true;
         await launchEntryAndAuthenticateIfNeeded(credentials);
     } else if (credentials) {

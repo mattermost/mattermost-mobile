@@ -42,26 +42,25 @@
                             (__bridge NSString *)kSecReturnData: (__bridge id)kCFBooleanTrue,
                             (__bridge NSString *)kSecMatchLimit: (__bridge NSString *)kSecMatchLimitOne
                             };
-    
+
     // Look up server in the keychain
     NSDictionary *found = nil;
     CFTypeRef foundTypeRef = NULL;
     OSStatus osStatus = SecItemCopyMatching((__bridge CFDictionaryRef) query, (CFTypeRef*)&foundTypeRef);
-    
+
     if (osStatus != noErr && osStatus != errSecItemNotFound) {
-        //    NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:osStatus userInfo:nil];
         return nil;
     }
-    
+
     found = (__bridge NSDictionary*)(foundTypeRef);
     if (!found) {
         return nil;
     }
-    
+
     // Found
     NSString *username = (NSString *) [found objectForKey:(__bridge id)(kSecAttrAccount)];
     NSString *password = [[NSString alloc] initWithData:[found objectForKey:(__bridge id)(kSecValueData)] encoding:NSUTF8StringEncoding];
-    
+
     CFRelease(foundTypeRef);
     NSDictionary *result = @{
                              @"server": server,

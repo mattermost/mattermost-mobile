@@ -60,7 +60,6 @@ import android.util.Log;
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
   public Boolean sharedExtensionIsOpened = false;
-  public Boolean replyFromPushNotification = false;
 
   public long APP_START_TIME;
 
