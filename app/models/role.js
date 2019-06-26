@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export class Roles {
+export class Role {
     static schema = {
-        name: 'Roles',
+        name: 'Role',
         primaryKey: 'id',
         properties: {
             id: 'string',

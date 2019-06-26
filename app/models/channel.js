@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export class Channels {
+export class Channel {
     static schema = {
-        name: 'Channels',
+        name: 'Channel',
         primaryKey: 'id',
         properties: {
             id: 'string',
             createAt: 'int',
             updateAt: 'int',
             deleteAt: {type: 'int', default: 0},
-            team: 'Teams',
+            team: 'Team',
             type: {type: 'string', indexed: true},
             displayName: 'string?',
             name: 'string',
@@ -19,15 +19,15 @@ export class Channels {
             totalMsgCount: {type: 'int', default: 0},
             purpose: 'string?',
             groupConstrained: {type: 'bool', default: false},
-            members: 'ChannelMembers[]',
+            members: 'ChannelMember[]',
             memberCount: {type: 'int', default: 0},
         },
     }
 }
 
-export class ChannelMembers {
+export class ChannelMember {
     get channel() {
-        if (this.channel?.length) {
+        if (this.channels?.length) {
             return this.channel[0];
         }
 
@@ -47,11 +47,11 @@ export class ChannelMembers {
     }
 
     static schema = {
-        name: 'ChannelMembers',
+        name: 'ChannelMember',
         primaryKey: 'id',
         properties: {
             id: 'string', // ${channelId}-{$userId},
-            channels: {type: 'linkingObjects', objectType: 'Channels', property: 'members'},
+            channels: {type: 'linkingObjects', objectType: 'Channel', property: 'members'},
             user: 'Users',
             roles: 'string?',
             lastViewAt: {type: 'int', default: 0},

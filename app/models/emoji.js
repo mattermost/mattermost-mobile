@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export default class Emojis {
+export default class Emoji {
     static schema = {
-        name: 'Emojis',
+        name: 'Emoji',
         primaryKey: 'id',
         properties: {
             id: 'string',

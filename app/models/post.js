@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export class Posts {
+export class Post {
     get propsAsJson() {
         try {
             return JSON.parse(this.props);
@@ -15,7 +15,7 @@ export class Posts {
     }
 
     static schema = {
-        name: 'Posts',
+        name: 'Post',
         primaryKey: 'id',
         properties: {
             id: 'string',
@@ -23,47 +23,26 @@ export class Posts {
             updateAt: {type: 'int', indexed: true},
             deleteAt: {type: 'int', default: 0},
             editAt: {type: 'int', default: 0},
-            user: 'Users',
+            user: 'User',
             rootId: 'string?',
             originalId: 'string',
             pendingPostId: 'string?',
             message: {type: 'string', default: ''},
             type: 'string?',
             props: 'string',
-            files: 'Files[]',
+            embeds: 'Embed[]',
+            files: 'File[]',
             hasReactions: {type: 'bool', default: false},
             isPinned: {type: 'bool', default: false},
-            metadata: 'Metadata[]',
-            reactions: 'Reactions[]',
+            images: 'ImageMetadata[]',
+            reactions: 'Reaction[]',
         },
     }
 }
 
-export class Metadata {
-    get dataAsJson() {
-        try {
-            return JSON.parse(this.data);
-        } catch {
-            return null;
-        }
-    }
-
+export class Reaction {
     static schema = {
-        name: 'Metadata',
-        primaryKey: 'hash',
-        properties: {
-            hash: 'string',
-            url: {type: 'string', indexed: true},
-            timestamp: 'int',
-            type: {type: 'string', indexed: true},
-            data: 'string',
-        },
-    }
-}
-
-export class Reactions {
-    static schema = {
-        name: 'Reactions',
+        name: 'Reaction',
         primaryKey: 'id',
         properties: {
             id: 'string', // {postId}-{userId}-{emojiName}
@@ -79,7 +58,7 @@ export class PostsInChannel {
         name: 'PostsInChannel',
         properties: {
             channelId: 'string',
-            posts: 'Posts[]',
+            posts: 'Post[]',
             firstPostId: 'string', // first post id in this block
             lastPostId: 'string', // last post id in this block
             startTime: 'int', // the first post in the block (createAt) >
@@ -90,20 +69,9 @@ export class PostsInChannel {
     }
 }
 
-export class PostsInThread {
+export class File {
     static schema = {
-        name: 'PostsInThread',
-        primaryKey: 'rootId',
-        properties: {
-            rootId: 'string',
-            posts: 'Posts[]',
-        },
-    }
-}
-
-export class Files {
-    static schema = {
-        name: 'Files',
+        name: 'File',
         primaryKey: 'id',
         properties: {
             id: 'string',
@@ -114,7 +82,49 @@ export class Files {
             createAt: 'int',
             updateAt: 'int',
             deleteAt: 'int',
-            posts: {type: 'linkingObjects', objectType: 'Posts', property: 'files'},
+            width: 'int',
+            height: 'int',
+            hasPreviewImage: 'bool',
+            posts: {type: 'linkingObjects', objectType: 'Post', property: 'files'},
         },
     }
 }
+
+export class ImageMetadata {
+    static schema = {
+        name: 'ImageMetadata',
+        primaryKey: 'url',
+        properties: {
+            url: 'string',
+            width: 'int',
+            height: 'int',
+            format: 'string',
+            frameCount: 'int',
+        },
+    }
+}
+
+export class Embed {
+    get dataAsJson() {
+        try {
+            return JSON.parse(this.data);
+        } catch {
+            return null;
+        }
+    }
+
+    set dataFromJson(data) {
+        this.props = JSON.stringify(data);
+    }
+
+    static schema = {
+        name: 'Embed',
+        properties: {
+            type: 'string',
+            url: 'string',
+            data: 'string?',
+        },
+    }
+}
+
+{embeds: [{type, url}]}

@@ -1,28 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Channels, ChannelMembers} from './channels';
-import Emojis from './emojis';
+import {Channel, ChannelMember} from './channel';
+import Emoji from './emoji';
 import General from './general';
-import {Files, Metadata, Reactions, Posts, PostsInChannel, PostsInThread} from './posts';
-import Preferences from './preferences';
-import Roles from './roles';
-import {Teams, TeamMembers} from './teams';
-import Users from './users';
+import {Embed, File, ImageMetadata, Reaction, Post, PostsInChannel} from './post';
+import Preference from './preference';
+import Role from './role';
+import {Team, TeamMember} from './team';
+import User from './user';
 
 export default [
-    Channels,
-    ChannelMembers,
-    Emojis,
-    Files,
+    Channel,
+    ChannelMember,
+    Embed,
+    Emoji,
+    File,
     General,
-    Metadata,
-    Posts,
+    ImageMetadata,
+    Post,
     PostsInChannel,
-    PostsInThread,
-    Preferences,
-    Reactions,
-    Roles,
-    Teams,
-    TeamMembers,
-    Users,
+    Preference,
+    Reaction,
+    Role,
+    Team,
+    TeamMember,
+    User,
 ];

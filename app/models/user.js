@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export default class Users {
+export default class User {
     get notifyPropsAsJSON() {
         try {
             return JSON.parse(this.notifyProps);
@@ -31,7 +31,7 @@ export default class Users {
     }
 
     static schema = {
-        name: 'Users',
+        name: 'User',
         primaryKey: 'id',
         properties: {
             id: 'string',

@@ -51,7 +51,6 @@ export default class General {
             serverConfig: 'string?',
             serverLicense: 'string?',
             serverVersion: 'string?',
-            timezones: 'string[]',
         },
     }
 }
