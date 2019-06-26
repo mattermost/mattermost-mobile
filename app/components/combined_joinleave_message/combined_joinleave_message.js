@@ -166,7 +166,7 @@ const postTypeMessage = {
     },
 };
 
-export default class CombinedSystemMessage extends React.PureComponent {
+export default class CombinedJoinLeaveMessage extends React.PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getMissingProfilesByIds: PropTypes.func.isRequired,

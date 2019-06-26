@@ -9,7 +9,7 @@ import {Preferences} from 'mattermost-redux/constants';
 import {getBool} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUser, makeGetProfilesByIdsAndUsernames} from 'mattermost-redux/selectors/entities/users';
 
-import CombinedSystemMessage from './combined_system_message';
+import CombinedJoinLeaveMessage from './combined_joinleave_message';
 
 function makeMapStateToProps() {
     const getProfilesByIdsAndUsernames = makeGetProfilesByIdsAndUsernames();
@@ -35,4 +35,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(CombinedSystemMessage);
+export default connect(makeMapStateToProps, mapDispatchToProps)(CombinedJoinLeaveMessage);

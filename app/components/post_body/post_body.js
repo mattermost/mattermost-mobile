@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import {Posts} from 'mattermost-redux/constants';
 
-import CombinedSystemMessage from 'app/components/combined_system_message';
+import SystemMessage from 'app/components/system_message';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import MarkdownEmoji from 'app/components/markdown/markdown_emoji';
@@ -390,7 +390,7 @@ export default class PostBody extends PureComponent {
         } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
             const {allUserIds, allUsernames, messageData} = postProps.user_activity;
             messageComponent = (
-                <CombinedSystemMessage
+                <SystemMessage
                     allUserIds={allUserIds}
                     allUsernames={allUsernames}
                     linkStyle={textStyles.link}
@@ -398,39 +398,19 @@ export default class PostBody extends PureComponent {
                     navigator={navigator}
                     textStyles={textStyles}
                     theme={theme}
+                    postType={postType}
                 />
             );
         } else if (postType === Posts.POST_TYPES.PURPOSE_CHANGE || postType === Posts.POST_TYPES.HEADER_CHANGE ||
             postType === Posts.POST_TYPES.DISPLAYNAME_CHANGE || postType === Posts.POST_TYPES.CHANNEL_DELETED) {
-            const username = this.props.post.props['username'];
-            const prefixUsername = (announcement, name) => {
-                const stripped = announcement.replace(new RegExp(`@${name}`, 'g'), name);
-                const decorated = stripped.replace(new RegExp(name, 'g'), `@${name}`);
-                return decorated;
-            };
-            const messageData = prefixUsername(message, username);
             messageComponent = (
-                <View
-                    style={[style.messageContainer, (isReplyPost && style.reply), (isPendingOrFailedPost && style.pendingPost)]}
-                    onLayout={this.measurePost}
-                    removeClippedSubviews={isLongPost}
-                >
-                    <Markdown
-                        baseTextStyle={messageStyle}
-                        blockStyles={blockStyles}
-                        channelMentions={postProps.channel_mentions}
-                        imagesMetadata={metadata?.images}
-                        isEdited={hasBeenEdited}
-                        isReplyPost={isReplyPost}
-                        isSearchResult={isSearchResult}
-                        navigator={navigator}
-                        onHashtagPress={onHashtagPress}
-                        onPermalinkPress={onPermalinkPress}
-                        onPostPress={onPress}
-                        textStyles={textStyles}
-                        value={messageData}
-                    />
-                </View>
+                <SystemMessage
+                    post={this.props.post}
+                    theme={theme}
+                    navigator={navigator}
+                    textStyles={textStyles}
+                    postType={postType}
+                />
             );
         } else if (isEmojiOnly) {
             messageComponent = (
