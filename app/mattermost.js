@@ -85,7 +85,7 @@ const launchChannel = (skipMetrics = false) => {
     });
 };
 
-const launchEntry = async (credentials) => {
+const launchEntry = (credentials) => {
     telemetry.start([
         'start:select_server_screen',
         'start:channel_screen',
@@ -104,7 +104,7 @@ const launchEntry = async (credentials) => {
 
 const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
     await emmProvider.handleManagedConfig(store);
-    await launchEntry(credentials);
+    launchEntry(credentials);
 
     if (emmProvider.enabled) {
         if (emmProvider.jailbreakProtection) {
