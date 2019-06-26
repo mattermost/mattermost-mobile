@@ -51,6 +51,7 @@ export default {
     getCachedConfig: () => {
         return cachedConfig;
     },
+    appGroupIdentifier: MattermostManaged.appGroupIdentifier,
     hasSafeAreaInsets: MattermostManaged.hasSafeAreaInsets,
     isRunningInSplitView: MattermostManaged.isRunningInSplitView,
     isDeviceSecure: async () => {

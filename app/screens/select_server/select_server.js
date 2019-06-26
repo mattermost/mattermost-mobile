@@ -25,7 +25,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import fetchConfig from 'app/fetch_preconfig';
+import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
@@ -67,6 +67,16 @@ export default class SelectServer extends PureComponent {
         intl: intlShape.isRequired,
     };
 
+    static getDerivedStateFromProps(props, state) {
+        if (props.serverUrl && !state.url) {
+            return {
+                url: props.serverUrl,
+            };
+        }
+
+        return null;
+    }
+
     constructor(props) {
         super(props);
 
@@ -99,19 +109,19 @@ export default class SelectServer extends PureComponent {
         telemetry.save();
     }
 
-    componentWillUpdate(nextProps, nextState) {
-        if (nextState.connected && nextProps.hasConfigAndLicense && !(this.state.connected && this.props.hasConfigAndLicense)) {
+    componentDidUpdate(prevProps, prevState) {
+        if (this.state.connected && this.props.hasConfigAndLicense && !(prevState.connected && prevProps.hasConfigAndLicense)) {
             if (LocalConfig.EnableMobileClientUpgrade) {
                 this.props.actions.setLastUpgradeCheck();
-                const {currentVersion, minVersion, latestVersion} = nextProps;
+                const {currentVersion, minVersion, latestVersion} = prevProps;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
                 if (isUpgradeAvailable(upgradeType)) {
                     this.handleShowClientUpgrade(upgradeType);
                 } else {
-                    this.handleLoginOptions(nextProps);
+                    this.handleLoginOptions(prevProps);
                 }
             } else {
-                this.handleLoginOptions(nextProps);
+                this.handleLoginOptions(prevProps);
             }
         }
     }
