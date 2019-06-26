@@ -31,6 +31,12 @@ import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystem
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import {
+    popTopScreen,
+    goToScreen,
+    dismissModal,
+    showModalOverCurrentContext,
+} from 'app/actions/navigation';
+import {
     closeDMChannel,
     closeGMChannel,
     handleSelectChannel,
@@ -119,6 +125,10 @@ function mapDispatchToProps(dispatch) {
             selectPenultimateChannel,
             setChannelDisplayName,
             handleSelectChannel,
+            popTopScreen,
+            goToScreen,
+            dismissModal,
+            showModalOverCurrentContext,
         }, dispatch),
     };
 }

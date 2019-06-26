@@ -33,6 +33,8 @@ export default class ChannelAddMembers extends PureComponent {
             getProfilesNotInChannel: PropTypes.func.isRequired,
             handleAddChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         currentChannelId: PropTypes.string.isRequired,
@@ -40,7 +42,6 @@ export default class ChannelAddMembers extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         profilesNotInChannel: PropTypes.array.isRequired,
-        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
 
@@ -68,13 +69,13 @@ export default class ChannelAddMembers extends PureComponent {
         };
 
         this.addButton = {
-            disabled: true,
+            enalbed: false,
             id: 'add-members',
-            title: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
+            text: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
             showAsAction: 'always',
         };
 
-        props.navigator.setButtons({
+        props.actions.setButtons(props.componentId, {
             rightButtons: [this.addButton],
         });
     }
@@ -113,12 +114,13 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     close = () => {
-        this.props.navigator.pop({animated: true});
+        this.props.actions.popTopScreen();
     };
 
     enableAddOption = (enabled) => {
-        this.props.navigator.setButtons({
-            rightButtons: [{...this.addButton, disabled: !enabled}],
+        const {actions, componentId} = this.props;
+        actions.setButtons(componentId, {
+            rightButtons: [{...this.addButton, enabled}],
         });
     };
 

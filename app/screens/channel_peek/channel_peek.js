@@ -20,7 +20,6 @@ export default class ChannelPeek extends PureComponent {
         channelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string,
         lastViewedAt: PropTypes.number,
-        navigator: PropTypes.object,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
     };
@@ -72,7 +71,6 @@ export default class ChannelPeek extends PureComponent {
             channelId,
             currentUserId,
             lastViewedAt,
-            navigator,
             theme,
         } = this.props;
 
@@ -89,7 +87,6 @@ export default class ChannelPeek extends PureComponent {
                     currentUserId={currentUserId}
                     lastViewedAt={lastViewedAt}
                     channelId={channelId}
-                    navigator={navigator}
                 />
             </View>
         );

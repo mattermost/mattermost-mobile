@@ -29,6 +29,9 @@ export default class MoreChannels extends PureComponent {
             getChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         canCreateChannels: PropTypes.bool.isRequired,
@@ -36,7 +39,6 @@ export default class MoreChannels extends PureComponent {
         closeButton: PropTypes.object,
         currentUserId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
-        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
 
@@ -65,7 +67,7 @@ export default class MoreChannels extends PureComponent {
 
         this.rightButton = {
             id: 'create-pub-channel',
-            title: context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+            text: context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
             showAsAction: 'always',
         };
 
@@ -82,7 +84,7 @@ export default class MoreChannels extends PureComponent {
             buttons.rightButtons = [this.rightButton];
         }
 
-        props.navigator.setButtons(buttons);
+        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
@@ -136,7 +138,7 @@ export default class MoreChannels extends PureComponent {
     };
 
     close = () => {
-        this.props.navigator.dismissModal({animationType: 'slide-down'});
+        this.props.actions.dismissModal();
     };
 
     doGetChannels = () => {
@@ -164,16 +166,16 @@ export default class MoreChannels extends PureComponent {
     getChannels = debounce(this.doGetChannels, 100);
 
     headerButtons = (createEnabled) => {
-        const {canCreateChannels} = this.props;
+        const {actions, canCreateChannels, componentId} = this.props;
         const buttons = {
             leftButtons: [this.leftButton],
         };
 
         if (canCreateChannels) {
-            buttons.rightButtons = [{...this.rightButton, disabled: !createEnabled}];
+            buttons.rightButtons = [{...this.rightButton, enabled: createEnabled}];
         }
 
-        this.props.navigator.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     loadedChannels = ({data}) => {
@@ -228,25 +230,16 @@ export default class MoreChannels extends PureComponent {
     };
 
     onCreateChannel = () => {
+        const {actions} = this.props;
         const {formatMessage} = this.context.intl;
-        const {navigator, theme} = this.props;
 
-        navigator.push({
-            screen: 'CreateChannel',
-            animationType: 'slide-up',
-            title: formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'}),
-            backButtonTitle: '',
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelType: General.OPEN_CHANNEL,
-            },
-        });
+        const screen = 'CreateChannel';
+        const title = formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
+        const passProps = {
+            channelType: General.OPEN_CHANNEL,
+        };
+
+        actions.goToScreen(screen, title, passProps);
     };
 
     renderLoading = () => {

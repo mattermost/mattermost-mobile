@@ -92,6 +92,7 @@ export default class EditProfile extends PureComponent {
             dismissModal: PropTypes.func.isRequired,
             setButtons: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         firstNameDisabled: PropTypes.bool.isRequired,
         lastNameDisabled: PropTypes.bool.isRequired,
@@ -107,7 +108,7 @@ export default class EditProfile extends PureComponent {
 
     rightButton = {
         id: 'update-profile',
-        disabled: true,
+        enabled: false,
         showAsAction: 'always',
     };
 
@@ -118,9 +119,9 @@ export default class EditProfile extends PureComponent {
         const buttons = {
             rightButtons: [this.rightButton],
         };
-        this.rightButton.title = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
+        this.rightButton.text = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
-        props.actions.setButtons(buttons);
+        props.actions.setButtons(props.componentId, buttons);
 
         this.state = {
             email,
@@ -187,11 +188,12 @@ export default class EditProfile extends PureComponent {
     };
 
     emitCanUpdateAccount = (enabled) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         };
 
-        this.props.actions.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     handleRequestError = (error) => {

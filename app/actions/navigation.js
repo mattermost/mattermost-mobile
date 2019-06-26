@@ -312,10 +312,8 @@ export function peek(name, passProps = {}, options = {}) {
     };
 }
 
-export function setButtons(buttons = {leftButtons: [], rightButtons: []}) {
+export function setButtons(componentId, buttons = {leftButtons: [], rightButtons: []}) {
     return () => {
-        const componentId = EphemeralStore.getTopComponentId();
-
         Navigation.mergeOptions(componentId, {
             topBar: {
                 ...buttons,

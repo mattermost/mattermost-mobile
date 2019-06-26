@@ -56,9 +56,10 @@ export default class EditChannel extends PureComponent {
             patchChannel: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
-        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -74,7 +75,7 @@ export default class EditChannel extends PureComponent {
 
     rightButton = {
         id: 'edit-channel',
-        disabled: true,
+        enabled: false,
         showAsAction: 'always',
     };
 
@@ -98,13 +99,13 @@ export default class EditChannel extends PureComponent {
             header,
         };
 
-        this.rightButton.title = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
+        this.rightButton.text = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
 
         const buttons = {
             rightButtons: [this.rightButton],
         };
 
-        props.navigator.setButtons(buttons);
+        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
@@ -161,23 +162,25 @@ export default class EditChannel extends PureComponent {
             this.props.actions.setChannelDisplayName(this.state.displayName);
         }
 
-        this.props.navigator.pop({animated: true});
+        this.props.actions.popTopScreen();
     };
 
     emitCanUpdateChannel = (enabled) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     emitUpdating = (loading) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: loading}],
+            rightButtons: [{...this.rightButton, enabled: !loading}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     validateDisplayName = (displayName) => {
@@ -277,7 +280,6 @@ export default class EditChannel extends PureComponent {
                 purpose: oldPurpose,
                 type,
             },
-            navigator,
             theme,
             currentTeamUrl,
             deviceWidth,
@@ -294,7 +296,6 @@ export default class EditChannel extends PureComponent {
 
         return (
             <EditChannelInfo
-                navigator={navigator}
                 theme={theme}
                 enableRightButton={this.emitCanUpdateChannel}
                 error={error}
