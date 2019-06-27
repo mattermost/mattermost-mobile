@@ -52,7 +52,7 @@ export class ChannelMember {
         properties: {
             id: 'string', // ${channelId}-{$userId},
             channels: {type: 'linkingObjects', objectType: 'Channel', property: 'members'},
-            user: 'Users',
+            user: 'User',
             roles: 'string?',
             lastViewAt: {type: 'int', default: 0},
             msgCount: {type: 'int', default: 0},

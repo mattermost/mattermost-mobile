@@ -43,9 +43,9 @@ export default class General {
         primaryKey: 'id',
         properties: {
             id: 'string', // make this id a constant in code
-            currentChannel: 'Channels?',
-            currentTeam: 'Teams?',
-            currentUser: 'Users?',
+            currentChannel: 'Channel?',
+            currentTeam: 'Team?',
+            currentUser: 'User?',
             dataRetentionPolicy: 'string?',
             deviceToken: 'string?',
             serverConfig: 'string?',
