@@ -51,7 +51,7 @@ function makeMapStateToProps() {
         // We are checking both here until we bump the server requirement for the mobile apps.
         const previewsEnabled = (getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, `${ViewTypes.FEATURE_TOGGLE_PREFIX}${ViewTypes.EMBED_PREVIEW}`) ||
             getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true));
-        
+
         const removeLinkPreview = ownProps.postProps.remove_link_preview === 'true';
 
         let openGraphData = getOpenGraphMetadataForUrl(state, link);
