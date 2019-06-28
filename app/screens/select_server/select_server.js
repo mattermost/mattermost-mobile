@@ -68,7 +68,7 @@ export default class SelectServer extends PureComponent {
     };
 
     static getDerivedStateFromProps(props, state) {
-        if (props.serverUrl && !state.url) {
+        if (props.serverUrl && state.url === null) {
             return {
                 url: props.serverUrl,
             };
