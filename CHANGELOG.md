@@ -19,14 +19,14 @@
  - Fixed an issue where users on View Members list had an icon that appeared to be selectable but was not.
  - Fixed an issue where "Jump To" showed archived channels the user did not belong to instead of the ones the user was a member of.
  - Fixed an issue where changing the timezone setting manually to "Set automatically" did not work on the mobile app.
- - Fixed an issue where setting a position field for AD/LDAP sync in the System Console did not block the user from changing it in account settings.
+ - Fixed an issue where setting a position field for AD/LDAP sync or SAML in the System Console did not block the user from changing it in account settings.
  - Fixed an issue where **Channel Info > Manage/View Members** screen didn't load channel users.
  - Fixed an issue where enabling large fonts on iOS caused the left-hand side text to be cut off.
  - Fixed an issue on Android where users could not reply to a push notification if the mention was in a thread message.
 
 ### Known Issues
   - Buttons inside ephemeral posts are not clickable / functional on the mobile app. [MM-15084](https://mattermost.atlassian.net/browse/MM-15084)
-  - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
+  - Android apps slow down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
 
 ## 1.20.0 Release
 - Release Date: June 16, 2019
