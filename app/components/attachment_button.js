@@ -71,46 +71,46 @@ export default class AttachmentButton extends PureComponent {
         case 'camera':
             return {
                 title: formatMessage({
-                    id: 'mobile.android.camera_permission_denied_title',
+                    id: 'mobile.camera_permission_denied_title',
                     defaultMessage: 'Camera access is required',
                 }),
                 text: formatMessage({
-                    id: 'mobile.android.camera_permission_denied_description',
-                    defaultMessage: 'To take photos and videos with your camera, please change your permission settings.',
+                    id: 'mobile.camera_permission_denied_description',
+                    defaultMessage: 'Please update your permission settings to take photos and videos with your camera.',
                 }),
             };
         case 'storage':
             return {
                 title: formatMessage({
-                    id: 'mobile.android.storage_permission_denied_title',
+                    id: 'mobile.storage_permission_denied_title',
                     defaultMessage: 'File Storage access is required',
                 }),
                 text: formatMessage({
-                    id: 'mobile.android.storage_permission_denied_description',
-                    defaultMessage: 'To upload images from your Android device, please change your permission settings.',
+                    id: 'mobile.storage_permission_denied_description',
+                    defaultMessage: 'Please update your permission settings to upload files from your device.',
                 }),
             };
         case 'video':
             return {
                 title: formatMessage({
-                    id: 'mobile.android.videos_permission_denied_title',
+                    id: 'mobile.videos_permission_denied_title',
                     defaultMessage: 'Video library access is required',
                 }),
                 text: formatMessage({
-                    id: 'mobile.android.videos_permission_denied_description',
-                    defaultMessage: 'To upload videos from your library, please change your permission settings.',
+                    id: 'mobile.videos_permission_denied_description',
+                    defaultMessage: 'Please update your permission settings to upload videos from your library.',
                 }),
             };
         case 'photo':
         default:
             return {
                 title: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_title',
+                    id: 'mobile.photos_permission_denied_title',
                     defaultMessage: 'Photo library access is required',
                 }),
                 text: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_description',
-                    defaultMessage: 'To upload images from your library, please change your permission settings.',
+                    id: 'mobile.photos_permission_denied_description',
+                    defaultMessage: 'Please update your permission settings to upload images from your library.',
                 }),
             };
         }
@@ -136,10 +136,10 @@ export default class AttachmentButton extends PureComponent {
                 title,
                 text,
                 reTryTitle: formatMessage({
-                    id: 'mobile.android.permission_denied_retry',
+                    id: 'mobil.permission_denied_retry',
                     defaultMessage: 'Set Permission',
                 }),
-                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
             },
         };
 
@@ -166,10 +166,10 @@ export default class AttachmentButton extends PureComponent {
                 title,
                 text,
                 reTryTitle: formatMessage({
-                    id: 'mobile.android.permission_denied_retry',
+                    id: 'mobile.permission_denied_retry',
                     defaultMessage: 'Set Permission',
                 }),
-                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
             },
         };
 
@@ -205,10 +205,10 @@ export default class AttachmentButton extends PureComponent {
                 title,
                 text,
                 reTryTitle: formatMessage({
-                    id: 'mobile.android.permission_denied_retry',
+                    id: 'mobile.permission_denied_retry',
                     defaultMessage: 'Set Permission',
                 }),
-                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
             },
         };
 
@@ -271,7 +271,7 @@ export default class AttachmentButton extends PureComponent {
                 if (canOpenSettings) {
                     grantOption = {
                         text: formatMessage({
-                            id: 'mobile.android.permission_denied_retry',
+                            id: 'mobile.permission_denied_retry',
                             defaultMessage: 'Set permission',
                         }),
                         onPress: () => Permissions.openSettings(),
@@ -287,7 +287,7 @@ export default class AttachmentButton extends PureComponent {
                         grantOption,
                         {
                             text: formatMessage({
-                                id: 'mobile.android.permission_denied_dismiss',
+                                id: 'mobile.permission_denied_dismiss',
                                 defaultMessage: 'Dismiss',
                             }),
                         },
@@ -320,7 +320,7 @@ export default class AttachmentButton extends PureComponent {
                 if (canOpenSettings) {
                     grantOption = {
                         text: formatMessage({
-                            id: 'mobile.android.permission_denied_retry',
+                            id: 'mobile.permission_denied_retry',
                             defaultMessage: 'Set permission',
                         }),
                         onPress: () => Permissions.openSettings(),
@@ -335,7 +335,7 @@ export default class AttachmentButton extends PureComponent {
                     [
                         {
                             text: formatMessage({
-                                id: 'mobile.android.permission_denied_dismiss',
+                                id: 'mobile.permission_denied_dismiss',
                                 defaultMessage: 'Dismiss',
                             }),
                         },

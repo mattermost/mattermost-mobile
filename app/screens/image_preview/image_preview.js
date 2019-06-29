@@ -460,20 +460,20 @@ export default class ImagePreview extends PureComponent {
             let grantOption = null;
             if (canOpenSettings) {
                 grantOption = {
-                    text: formatMessage({id: 'mobile.android.permission_denied_retry', defaultMessage: 'Set permission'}),
+                    text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Set permission'}),
                     onPress: () => Permissions.openSettings(),
                 };
             }
 
             Alert.alert(
-                formatMessage({id: 'mobile.android.photos_permission_denied_title', defaultMessage: 'Photo library access is required'}),
+                formatMessage({id: 'mobile.photos_permission_denied_title', defaultMessage: 'Photo library access is required'}),
                 formatMessage({
                     id: 'mobile.ios.photos_permission_denied_description',
                     defaultMessage: 'To save images and videos to your library, please change your permission settings.',
                 }),
                 [
                     grantOption,
-                    {text: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})},
+                    {text: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Dismiss'})},
                 ]
             );
             return;
