@@ -11,26 +11,26 @@ export default class SystemMessage extends React.PureComponent {
 
     render() {
         const {postType, navigator, theme, textStyles} = this.props;
-        return (postType === Posts.POST_TYPES.PURPOSE_CHANGE || postType === Posts.POST_TYPES.HEADER_CHANGE ||
-                    postType === Posts.POST_TYPES.DISPLAYNAME_CHANGE || postType === Posts.POST_TYPES.CHANNEL_DELETED) ?
-                        <ChannelSystemMessage
-                            post={this.props.post}
-                            theme={theme}
-                            navigator={navigator}
-                            textStyles={textStyles}
-                        />
-                    :
-                    (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) ?
-                        <CombinedJoinLeaveMessage
-                            allUserIds={this.props.allUserIds}
-                            allUsernames={this.props.allUsernames}
-                            linkStyle={textStyles.link}
-                            messageData={this.props.messageData}
-                            navigator={navigator}
-                            textStyles={textStyles}
-                            theme={theme}
-                        /> 
-                    :
-                        null;    
+        if (postType === Posts.POST_TYPES.PURPOSE_CHANGE || postType === Posts.POST_TYPES.HEADER_CHANGE ||
+            postType === Posts.POST_TYPES.DISPLAYNAME_CHANGE || postType === Posts.POST_TYPES.CHANNEL_DELETED) {
+            return <ChannelSystemMessage
+                    post={this.props.post}
+                    theme={theme}
+                    navigator={navigator}
+                    textStyles={textStyles}
+                />
+        } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
+            return <CombinedJoinLeaveMessage
+                allUserIds={this.props.allUserIds}
+                allUsernames={this.props.allUsernames}
+                linkStyle={textStyles.link}
+                messageData={this.props.messageData}
+                navigator={navigator}
+                textStyles={textStyles}
+                theme={theme}
+            />
+        } else {
+            return null;
+        }
     }
 }

@@ -14,43 +14,8 @@ export default class MiscSystemMessage extends React.PureComponent {
 
     render() {
         const { post, theme, navigator, textStyles } = this.props;
-        console.log('theme:', theme);
-
-        const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-            const stdPadding = 12;
-            return {
-                main: {
-                    flexDirection: 'row',
-                    paddingTop: stdPadding,
-                },
-                iconContainer: {
-                    paddingRight: stdPadding,
-                    paddingLeft: stdPadding,
-                    width: (stdPadding * 2) + ViewTypes.PROFILE_PICTURE_SIZE,
-                },
-                textContainer: {
-                    paddingBottom: 10,
-                    flex: 1,
-                    marginRight: stdPadding,
-                },
-                messageContainer: {
-                    marginTop: 3,
-                },
-                displayName: {
-                    color: theme.centerChannelColor,
-                    fontSize: 15,
-                    fontWeight: '600',
-                },
-                message: {
-                    color: changeOpacity(theme.centerChannelColor, 0.8),
-                    fontSize: 15,
-                    lineHeight: 22,
-                },
-            };
-        });        
 
         const style = getStyleSheet(theme);
-        console.log('style:', style);
 
         const renderUsername = (name) => {
             return (name[0] === '@') ? name : `@${name}`;
@@ -237,3 +202,36 @@ export default class MiscSystemMessage extends React.PureComponent {
         return post.type ? systemMessageRenderers[post.type](post) : null;
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme(theme => {
+    const stdPadding = 12;
+    return {
+        main: {
+            flexDirection: 'row',
+            paddingTop: stdPadding,
+        },
+        iconContainer: {
+            paddingRight: stdPadding,
+            paddingLeft: stdPadding,
+            width: (stdPadding * 2) + ViewTypes.PROFILE_PICTURE_SIZE,
+        },
+        textContainer: {
+            paddingBottom: 10,
+            flex: 1,
+            marginRight: stdPadding,
+        },
+        messageContainer: {
+            marginTop: 3,
+        },
+        displayName: {
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            fontWeight: '600',
+        },
+        message: {
+            color: changeOpacity(theme.centerChannelColor, 0.8),
+            fontSize: 15,
+            lineHeight: 22,
+        },
+    };
+});
