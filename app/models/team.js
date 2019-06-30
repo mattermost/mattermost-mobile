@@ -41,8 +41,8 @@ export class TeamMember {
             schemeUser: {type: 'bool', default: false},
             schemeAdmin: {type: 'bool', default: false},
             schemeGuest: {type: 'bool', default: false},
-            msgCount: 'int',
-            mentionCount: 'int',
+            msgCount: {type: 'int', default: 0},
+            mentionCount: {type: 'int', default: 0},
         },
     }
 }

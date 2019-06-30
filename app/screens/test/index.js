@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {realmConnect} from 'realm-react-redux';
 
-import {getMe} from 'app/actions/realm/user';
+import {loadMe} from 'app/actions/realm/user';
 
 import Test from './test';
 
@@ -32,7 +32,7 @@ function mapQueriesToProps([users = []]) {
 function mapRealmDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getMe,
+            loadMe,
         }, dispatch),
     };
 }

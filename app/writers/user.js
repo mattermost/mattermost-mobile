@@ -3,30 +3,60 @@
 
 import {combineWriters} from 'realm-react-redux';
 
-import {UserTypes} from 'mattermost-redux/action_types';
+import {UserTypes} from 'app/action_types';
+import {GENERAL_SCHEMA_ID} from 'app/models/general';
+import ephemeralStore from 'app/store/ephemeral_store';
+import {userDataToRealm} from 'app/utils/realm/user';
+import {teamDataToRealm, teamMemberDataToRealm} from 'app/utils/realm/team';
 
 function currentUser(realm, action) {
     switch (action.type) {
     case UserTypes.RECEIVED_ME: {
         const data = action.data || action.payload;
-        const user = {
-            id: data.id,
-            createAt: data.create_at,
-            updateAt: data.update_at,
-            deleteAt: data.delete_at,
-            username: data.username,
-            email: data.email,
-            nickname: data.nickname,
-            firstName: data.first_name,
-            lastName: data.last_name,
-            roles: data.roles,
-            notifyProps: JSON.stringify(data.notify_props),
-            locale: data.locale,
-            position: data.position,
-            timezone: JSON.stringify(data.timezone),
-            status: data.status,
-        };
-        realm.create('User', user, true);
+        const user = userDataToRealm(data.user);
+        const realmUser = realm.create('User', user, true);
+
+        realm.create('General', {
+            id: GENERAL_SCHEMA_ID,
+            currentUser: realmUser,
+            deviceToken: ephemeralStore.deviceToken,
+        }, true);
+
+        if (data.preferences?.length) {
+            realm.delete(realm.objects('Preference'));
+            data.preferences.forEach((pref) => {
+                realm.create('Preference', pref);
+            });
+        }
+
+        const teamMembersMap = new Map();
+        if (data.teams?.length && data.teamMembers?.length) {
+            data.teamMembers.forEach((member) => {
+                const members = teamMembersMap.get(member.team_id) || [];
+
+                let unreads;
+                if (data.teamUnreads?.length) {
+                    unreads = data.teamUnreads.find((u) => u.team_id === member.team_id);
+                }
+
+                if (unreads) {
+                    member.mention_count = unreads.mention_count;
+                    member.msg_count = unreads.msg_count;
+                }
+
+                members.push(teamMemberDataToRealm(realmUser, member));
+                teamMembersMap.set(member.team_id, members);
+            });
+        }
+
+        if (data.teams?.length) {
+            data.teams.forEach((teamData) => {
+                teamData.members = teamMembersMap.get(teamData.id) || [];
+
+                const team = teamDataToRealm(teamData);
+                realm.create('Team', team, true);
+            });
+        }
         break;
     }
     default:

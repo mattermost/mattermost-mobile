@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+export const GENERAL_SCHEMA_ID = 'general';
+
 export default class General {
     get configAsJson() {
         try {
@@ -8,10 +10,6 @@ export default class General {
         } catch {
             return null;
         }
-    }
-
-    set configFromJson(config) {
-        this.config = JSON.stringify(config);
     }
 
     get licenseAsJson() {
@@ -22,10 +20,6 @@ export default class General {
         }
     }
 
-    set licenseFromJson(license) {
-        this.license = JSON.stringify(license);
-    }
-
     get dataRetentionPolicyAsJson() {
         try {
             return JSON.parse(this.policy);
@@ -34,15 +28,11 @@ export default class General {
         }
     }
 
-    set dataRetentionPolicyFromJson(policy) {
-        this.policy = JSON.stringify(policy);
-    }
-
     static schema = {
         name: 'General',
         primaryKey: 'id',
         properties: {
-            id: 'string', // make this id a constant in code
+            id: 'string',
             currentChannel: 'Channel?',
             currentTeam: 'Team?',
             currentUser: 'User?',

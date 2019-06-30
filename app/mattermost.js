@@ -4,16 +4,17 @@
 import {Linking, NativeModules, Platform} from 'react-native';
 import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
 
-import {loadMe} from 'mattermost-redux/actions/users';
+import {loadMe as loadMeRedux} from 'mattermost-redux/actions/users';
 
 import {setDeepLinkURL} from 'app/actions/views/root';
+import {loadMe} from 'app/actions/realm/user';
 import initialState from 'app/initial_state';
 import {getAppCredentials, getCurrentServerUrl} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
-import configureStore from 'app/store';
+import configureStore, {configureRealmStore} from 'app/store';
 import ephemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import pushNotificationsUtils from 'app/utils/push_notifications';
@@ -22,10 +23,16 @@ const {MattermostShare} = NativeModules;
 const startedSharedExtension = Platform.OS === 'android' && MattermostShare.isOpened;
 export const store = configureStore(initialState);
 
+let realmStore;
+
 const init = async () => {
     const credentials = await getAppCredentials();
 
     ephemeralStore.currentServerUrl = await getCurrentServerUrl();
+    if (ephemeralStore.currentServerUrl) {
+        realmStore = configureRealmStore(ephemeralStore.currentServerUrl);
+        ephemeralStore.setRealmStoreByServer(ephemeralStore.currentServerUrl, realmStore);
+    }
 
     pushNotificationsUtils.configure(store); // TODO: figure out what to do with this once everything is on realm
     globalEventHandler.configure({
@@ -91,7 +98,12 @@ const launchEntry = (credentials) => {
     ]);
 
     if (credentials) {
-        store.dispatch(loadMe());
+        store.dispatch(loadMeRedux());
+
+        if (realmStore) {
+            realmStore.dispatch(loadMe());
+        }
+
         launchChannel();
     } else {
         launchSelectServer();

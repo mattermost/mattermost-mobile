@@ -13,7 +13,7 @@ import ephemeralStore from 'app/store/ephemeral_store';
 export default class Test extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            getMe: PropTypes.func.isRequired,
+            loadMe: PropTypes.func.isRequired,
         }).isRequired,
         user: PropTypes.object,
     };
@@ -40,7 +40,7 @@ export default class Test extends PureComponent {
                 <View style={{flex: 1, backgroundColor: 'yellow', alignItems: 'center', justifyContent: 'space-between'}}>
                     <Button
                         title={'Fetch My User'}
-                        onPress={this.props.actions.getMe}
+                        onPress={this.props.actions.loadMe}
                     />
                     <Text>{user ? user.fullName : 'No user present'}</Text>
                     <Button
