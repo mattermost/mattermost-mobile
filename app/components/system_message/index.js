@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import CombinedJoinLeaveMessage from '../combined_joinleave_message/';
-import ChannelSystemMessage from '../channel_system_message/channel_system_message';
+import CombinedJoinLeaveMessage from 'app/components/combined_joinleave_message/';
+import ChannelSystemMessage from 'app/components/channel_system_message/channel_system_message';
 import {Posts} from 'mattermost-redux/constants';
 
 
