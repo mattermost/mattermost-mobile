@@ -12,20 +12,12 @@ export default class User {
         }
     }
 
-    set notifyPropsFromJSON(props) {
-        this.notifyProps = JSON.stringify(props);
-    }
-
     get timezoneAsJson() {
         try {
             return JSON.parse(this.timezone);
         } catch {
             return null;
         }
-    }
-
-    set timezoneFromJson(zone) {
-        this.timezone = JSON.stringify(zone);
     }
 
     get fullName() {
@@ -50,6 +42,7 @@ export default class User {
             locale: {type: 'string', default: DEFAULT_LOCALE},
             position: {type: 'string', optional: true},
             timezone: 'string?',
+            lastPictureUpdate: 'int',
             status: {type: 'string', default: 'offline', indexed: true},
         },
     };
