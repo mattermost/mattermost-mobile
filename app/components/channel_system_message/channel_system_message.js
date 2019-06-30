@@ -234,6 +234,6 @@ export default class MiscSystemMessage extends React.PureComponent {
             return null;
         }
 
-        return systemMessageRenderers[post.type](post);
+        return post.type ? systemMessageRenderers[post.type](post) : null;
     }
 }
