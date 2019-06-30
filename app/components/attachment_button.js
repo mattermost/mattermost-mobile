@@ -136,7 +136,7 @@ export default class AttachmentButton extends PureComponent {
                 title,
                 text,
                 reTryTitle: formatMessage({
-                    id: 'mobil.permission_denied_retry',
+                    id: 'mobile.permission_denied_retry',
                     defaultMessage: 'Set Permission',
                 }),
                 okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
