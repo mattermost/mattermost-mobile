@@ -3,10 +3,5 @@
 
 import React from 'react';
 
-import Loading from 'app/components/loading';
-
-function Root() {
-    return <Loading/>;
-}
-
-export default Root;
+// Used to access the Realm Provider
+export default React.createContext('realm');

@@ -3,12 +3,12 @@
 
 import {Alert, AppState, Dimensions, Linking, NativeModules, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import RNFetchBlob from 'rn-fetch-blob';
 import semver from 'semver';
 
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
 import {loadMe, logout} from 'mattermost-redux/actions/users';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
-import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -17,15 +17,17 @@ import {selectDefaultChannel} from 'app/actions/views/channel';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
 import {NavigationTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
+import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {t} from 'app/utils/i18n';
 import {deleteFileCache} from 'app/utils/file';
+import {removeProtocol} from 'app/utils/url';
 
 import LocalConfig from 'assets/config';
 
-import {getAppCredentials, removeAppCredentials} from './credentials';
+import {getAppCredentials, getCurrentServerUrl, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
 
 const {StatusBarManager} = NativeModules;
@@ -131,15 +133,25 @@ class GlobalEventHandler {
     };
 
     onLogout = async () => {
+        const serverUrl = await getCurrentServerUrl();
+        const path = removeProtocol(serverUrl).replace(':', '-');
+        const diskPath = Platform.OS === 'ios' ? mattermostBucket.appGroupFileStoragePath : RNFetchBlob.fs.dirs.DocumentDir;
+
+        RNFetchBlob.fs.unlink(`${diskPath}/${path}.realm`);
+        RNFetchBlob.fs.unlink(`${diskPath}/${path}.realm.lock`);
+        RNFetchBlob.fs.unlink(`${diskPath}/${path}.realm.management`);
+        RNFetchBlob.fs.unlink(`${diskPath}/${path}.realm.note`);
+
         this.store.dispatch(closeWebSocket(false));
         this.store.dispatch(setServerVersion(''));
         deleteFileCache();
-        removeAppCredentials();
+        removeAppCredentials(serverUrl);
 
         PushNotifications.setApplicationIconBadgeNumber(0);
         PushNotifications.cancelAllLocalNotifications(); // TODO: Only cancel the notification that belongs to this server
 
         if (this.launchEntry) {
+            //TODO: Select the next available server if there is one
             this.launchEntry();
         }
     };
@@ -216,11 +228,6 @@ class GlobalEventHandler {
 
     serverUpgradeNeeded = async () => {
         const {dispatch} = this.store;
-
-        dispatch(setServerVersion(''));
-        Client4.serverVersion = '';
-        PushNotifications.setApplicationIconBadgeNumber(0);
-        PushNotifications.cancelAllLocalNotifications(); // TODO: Only cancel the notification that belongs to this server
 
         const credentials = await getAppCredentials();
 

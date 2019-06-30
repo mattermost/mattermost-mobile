@@ -2,6 +2,7 @@
 
 @interface MattermostBucket :  NSObject
 - (NSUserDefaults *)bucketByName:(NSString*)name;
+- (NSString *)getAppGroupFileStoragePath;
 -(id) getPreference:(NSString *)key;
 -(NSString *)readFromFile:(NSString *)fileName;
 -(NSDictionary *)readFromFileAsJSON:(NSString *)fileName;

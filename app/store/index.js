@@ -25,6 +25,13 @@ import {messageRetention} from './middleware';
 import {createThunkMiddleware} from './thunk';
 import {transformSet} from './utils';
 
+import {createRealmStore, applyMiddleware} from 'realm-react-redux';
+import Realm from 'realm';
+import thunk from 'redux-thunk';
+import models from 'app/models';
+import writers from 'app/writers';
+import {removeProtocol} from 'app/utils/url';
+
 function getAppReducer() {
     return require('../../app/reducers'); // eslint-disable-line global-require
 }
@@ -298,4 +305,33 @@ export default function configureAppStore(initialState) {
     };
 
     return configureStore(initialState, appReducer, offlineOptions, getAppReducer, clientOptions);
+}
+
+const schemas = [
+    {schema: models, schemaVersion: 1},
+];
+
+export function configureRealmStore(path) {
+    // Here we handle migrations if there are any
+    const diskPath = Platform.OS === 'ios' ? `${mattermostBucket.appGroupFileStoragePath}/` : '';
+    const dbPath = `${diskPath}${path ? removeProtocol(path).replace(':', '-') : 'default'}.realm`;
+
+    let nextSchemaIndex = Realm.schemaVersion(dbPath);
+    while (nextSchemaIndex > 0 && nextSchemaIndex < schemas.length) {
+        const migratedRealm = new Realm(schemas[nextSchemaIndex++]);
+        migratedRealm.close();
+    }
+
+    // This will create a Realm instance to use in the store, using the options
+    // passed in the second argument. To pass an existing Realm instance instead
+    // you can use createRealmStore(writer, { realm: yourRealmInstance })
+
+    const current = nextSchemaIndex > 0 ? schemas[nextSchemaIndex - 1] : schemas[schemas.length - 1];
+
+    // We set allowUnsafeWrites as true cause there seems to be a race condition and this avoids the warning
+    return createRealmStore(
+        writers,
+        {path: dbPath, schema: current.schema, schemaVersion: current.schemaVersion, allowUnsafeWrites: true},
+        applyMiddleware(thunk)
+    );
 }

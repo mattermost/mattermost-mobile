@@ -55,6 +55,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import android.support.annotation.Nullable;
 
+import io.realm.react.RealmReactPackage;
+
 import android.util.Log;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
@@ -80,6 +82,7 @@ public class MainApplication extends NavigationApplication implements INotificat
     // Add the packages you require here.
     // No need to add RnnPackage and MainReactPackage
     return Arrays.<ReactPackage>asList(
+            new RealmReactPackage(),
             new ImagePickerPackage(),
             new RNBottomSheetPackage(),
             new RNDeviceInfo(),

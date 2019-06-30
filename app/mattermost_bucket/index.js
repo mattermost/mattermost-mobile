@@ -3,10 +3,10 @@
 
 import {NativeModules, Platform} from 'react-native';
 
-// TODO: Remove platform specific once android is implemented
 const MattermostBucket = Platform.OS === 'ios' ? NativeModules.MattermostBucketModule : null;
 
 export default {
+    appGroupFileStoragePath: MattermostBucket?.appGroupFileStoragePath,
     setPreference: (key, value) => {
         if (MattermostBucket) {
             MattermostBucket.setPreference(key, value);

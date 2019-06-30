@@ -60,6 +60,8 @@
     "react-native-youtube": "github:mattermost/react-native-youtube#3f395b620ae4e05a3f1c6bdeef3a1158e78daadc",
     "react-navigation": "3.9.1",
     "react-redux": "7.0.3",
+    "realm": "2.28.1",
+    "realm-react-redux": "github:enahum/realm-react-redux#fe77ae42a9f24a044cb68787880c8c5f64e71b47",
     "redux": "4.0.1",
     "redux-batched-actions": "0.4.1",
     "redux-persist": "4.10.2",

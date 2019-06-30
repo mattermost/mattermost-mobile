@@ -45,9 +45,7 @@ export const getAppCredentials = async () => {
     return getCredentialsFromGenericKeyChain();
 };
 
-export const removeAppCredentials = async () => {
-    const url = await getCurrentServerUrl();
-
+export const removeAppCredentials = (url) => {
     Client4.setCSRF(null);
     Client4.serverVersion = '';
     Client4.setUserId('');
@@ -56,10 +54,14 @@ export const removeAppCredentials = async () => {
 
     if (url) {
         KeyChain.resetInternetCredentials(url);
+        ephemeralStore.removeRealmStoreForServer(url);
+
+        if (ephemeralStore.currentServerUrl === url) {
+            AsyncStorage.removeItem(CURRENT_SERVER);
+        }
     }
 
     KeyChain.resetGenericPassword();
-    AsyncStorage.removeItem(CURRENT_SERVER);
 };
 
 async function getCredentialsFromGenericKeyChain() {
