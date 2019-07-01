@@ -25,7 +25,7 @@ export function registerScreens(store, exludeEvents = true) {
     };
 
     // TODO: Bring back the About screen and delete the test screen
-    Navigation.registerComponent('About', () => wrapWithContextProvider(require('app/screens/test').default, store));
+    Navigation.registerComponent('About', () => wrapWithContextProvider(require('app/screens/test_screen').default, store));
     Navigation.registerComponent('AddReaction', () => wrapWithContextProvider(require('app/screens/add_reaction').default, store));
     Navigation.registerComponent('AdvancedSettings', () => wrapWithContextProvider(require('app/screens/settings/advanced_settings').default, store));
     Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel, store, false));

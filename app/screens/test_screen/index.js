@@ -8,7 +8,7 @@ import {loadMe} from 'app/actions/realm/user';
 import {loadConfigAndLicense} from 'app/actions/realm/general';
 import {GENERAL_SCHEMA_ID} from 'app/models/general';
 
-import Test from './test';
+import TestScreen from './test_screen';
 
 import ReactRealmContext from 'app/store/realm_context';
 import {reduxStore} from 'app/store';
@@ -57,4 +57,4 @@ function mapRealmDispatchToProps(dispatch) {
     };
 }
 
-export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(Test);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(TestScreen);

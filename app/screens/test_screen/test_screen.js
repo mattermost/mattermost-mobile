@@ -10,7 +10,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {NavigationTypes} from 'app/constants';
 import ephemeralStore from 'app/store/ephemeral_store';
 
-export default class Test extends PureComponent {
+export default class TestScreen extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadMe: PropTypes.func.isRequired,
