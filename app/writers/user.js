@@ -18,7 +18,7 @@ function currentUser(realm, action) {
 
         realm.create('General', {
             id: GENERAL_SCHEMA_ID,
-            currentUser: realmUser,
+            currentUserId: user.id,
             deviceToken: ephemeralStore.deviceToken,
         }, true);
 
@@ -29,6 +29,7 @@ function currentUser(realm, action) {
             });
         }
 
+        // TODO: Remove members and teams that were deleted on the server
         const teamMembersMap = new Map();
         if (data.teams?.length && data.teamMembers?.length) {
             data.teamMembers.forEach((member) => {
@@ -57,6 +58,12 @@ function currentUser(realm, action) {
                 realm.create('Team', team, true);
             });
         }
+        break;
+    }
+    case UserTypes.UPDATE_ME: {
+        const data = action.data || action.payload;
+        const user = userDataToRealm(data);
+        realm.create('User', user, true);
         break;
     }
     default:

@@ -12,3 +12,20 @@ export function forceLogoutIfNecessary(clientError) {
         EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
     }
 }
+
+export class FormattedError extends Error {
+    intl: {
+        id: string,
+        defaultMessage: string,
+        values: Object
+    };
+
+    constructor(id: string, defaultMessage: string, values: Object = {}) {
+        super(defaultMessage);
+        this.intl = {
+            id,
+            defaultMessage,
+            values,
+        };
+    }
+}

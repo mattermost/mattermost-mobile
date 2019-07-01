@@ -4,6 +4,5 @@
 import keyMirror from 'app/utils/key_mirror';
 
 export default keyMirror({
-    RECEIVED_ME: null,
-    UPDATE_ME: null,
+    RECEIVED_GENERAL_UPDATE: null,
 });
