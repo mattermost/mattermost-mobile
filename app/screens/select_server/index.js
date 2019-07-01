@@ -2,52 +2,64 @@
 // See LICENSE.txt for license information.
 
 import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-
-import {getPing, resetPing, setServerVersion} from 'mattermost-redux/actions/general';
-import {login} from 'mattermost-redux/actions/users';
+import {realmConnect} from 'realm-react-redux';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
-import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
-import {loadConfigAndLicense} from 'app/actions/views/root';
+import {loadConfigAndLicense, pingServer, scheduleExpiredNotification} from 'app/actions/realm/general';
+import {handleSuccessfulLogin, login} from 'app/actions/realm/user';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import getClientUpgrade from 'app/selectors/client_upgrade';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {getDefaultTheme} from 'app/selectors/theme';
+import ReactRealmContext from 'app/store/realm_context';
+import {reduxStore} from 'app/store';
+import {getConfig, getLicense} from 'app/utils/realm/general';
+
+const options = {
+    context: ReactRealmContext,
+};
 
 import SelectServer from './select_server';
 
-function mapStateToProps(state) {
-    const config = getConfig(state);
-    const license = getLicense(state);
+function mapPropsToQueries(realm) {
+    const general = realm.objects('General');
+    return [general];
+}
+
+function mapQueriesToProps([general]) {
+    const config = getConfig(general);
+    const license = getLicense(general);
+    const state = reduxStore.getState();
     const {currentVersion, latestVersion, minVersion} = getClientUpgrade(state);
 
     return {
         ...state.views.selectServer,
         config,
         currentVersion,
-        hasConfigAndLicense: Object.keys(config).length > 0 && Object.keys(license).length > 0,
+        hasConfigAndLicense: Boolean(config && license),
         latestVersion,
         license,
         minVersion,
-        theme: getTheme(state),
+        theme: getDefaultTheme(config),
     };
 }
 
-function mapDispatchToProps(dispatch) {
+function mapRealmDispatchToProps(dispatch) {
+    const actions = bindActionCreators({
+        handleSuccessfulLogin,
+        loadConfigAndLicense,
+        login,
+        pingServer,
+        scheduleExpiredNotification,
+    }, dispatch);
+
+    const reduxActions = bindActionCreators({
+        handleServerUrlChanged,
+        setLastUpgradeCheck,
+    }, reduxStore.dispatch);
     return {
-        actions: bindActionCreators({
-            handleSuccessfulLogin,
-            getPing,
-            scheduleExpiredNotification,
-            handleServerUrlChanged,
-            loadConfigAndLicense,
-            login,
-            resetPing,
-            setLastUpgradeCheck,
-            setServerVersion,
-        }, dispatch),
+        actions,
+        reduxActions,
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SelectServer);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(SelectServer);

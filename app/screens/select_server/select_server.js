@@ -21,8 +21,6 @@ import {
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
 
-import {Client4} from 'mattermost-redux/client';
-
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import fetchConfig from 'app/init/fetch';
@@ -41,15 +39,11 @@ import LocalConfig from 'assets/config';
 export default class SelectServer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            getPing: PropTypes.func.isRequired,
-            handleServerUrlChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
-            scheduleExpiredNotification: PropTypes.func.isRequired,
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
-            resetPing: PropTypes.func.isRequired,
-            setLastUpgradeCheck: PropTypes.func.isRequired,
-            setServerVersion: PropTypes.func.isRequired,
+            pingServer: PropTypes.func.isRequired,
+            scheduleExpiredNotification: PropTypes.func.isRequired,
         }).isRequired,
         allowOtherServers: PropTypes.bool,
         config: PropTypes.object,
@@ -59,6 +53,10 @@ export default class SelectServer extends PureComponent {
         license: PropTypes.object,
         minVersion: PropTypes.string,
         navigator: PropTypes.object,
+        reduxActions: PropTypes.shape({
+            handleServerUrlChanged: PropTypes.func.isRequired,
+            setLastUpgradeCheck: PropTypes.func.isRequired,
+        }).isRequired,
         serverUrl: PropTypes.string.isRequired,
         theme: PropTypes.object,
     };
@@ -102,7 +100,7 @@ export default class SelectServer extends PureComponent {
     componentDidUpdate(prevProps, prevState) {
         if (this.state.connected && this.props.hasConfigAndLicense && !(prevState.connected && prevProps.hasConfigAndLicense)) {
             if (LocalConfig.EnableMobileClientUpgrade) {
-                this.props.actions.setLastUpgradeCheck();
+                this.props.reduxActions.setLastUpgradeCheck();
                 const {currentVersion, minVersion, latestVersion} = prevProps;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
                 if (isUpgradeAvailable(upgradeType)) {
@@ -208,9 +206,9 @@ export default class SelectServer extends PureComponent {
     handleLoginOptions = (props = this.props) => {
         const {formatMessage} = this.context.intl;
         const {config, license} = props;
-        const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
-        const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
+        const samlEnabled = config?.EnableSaml === 'true' && license?.IsLicensed === 'true' && license?.SAML === 'true';
+        const gitlabEnabled = config?.EnableSignUpWithGitLab === 'true';
+        const o365Enabled = config?.EnableSignUpWithOffice365 === 'true' && license?.IsLicensed === 'true' && license?.Office365OAuth === 'true';
 
         let options = 0;
         if (samlEnabled || gitlabEnabled || o365Enabled) {
@@ -227,10 +225,8 @@ export default class SelectServer extends PureComponent {
             title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
         }
 
-        this.props.actions.resetPing();
-
         if (Platform.OS === 'ios') {
-            if (config.ExperimentalClientSideCertEnable === 'true' && config.ExperimentalClientSideCertCheck === 'primary') {
+            if (config?.ExperimentalClientSideCertEnable === 'true' && config?.ExperimentalClientSideCertCheck === 'primary') {
                 // log in automatically and send directly to the channel screen
                 this.loginWithCertificate();
                 return;
@@ -312,12 +308,9 @@ export default class SelectServer extends PureComponent {
     };
 
     pingServer = (url, retryWithHttp = true) => {
-        const {
-            getPing,
-            handleServerUrlChanged,
-            loadConfigAndLicense,
-            setServerVersion,
-        } = this.props.actions;
+        const {pingServer, loadConfigAndLicense} = this.props.actions;
+
+        const {handleServerUrlChanged} = this.props.reduxActions;
 
         this.setState({
             connected: false,
@@ -325,7 +318,6 @@ export default class SelectServer extends PureComponent {
             error: null,
         });
 
-        Client4.setUrl(url);
         handleServerUrlChanged(url);
 
         let cancel = false;
@@ -340,19 +332,18 @@ export default class SelectServer extends PureComponent {
             this.cancelPing = null;
         };
 
-        getPing().then((result) => {
+        pingServer(url).then((result) => {
             if (cancel) {
                 return;
             }
 
-            if (result.error && retryWithHttp) {
+            if (result.error && result.error.status_code !== 401 && retryWithHttp) {
                 this.pingServer(url.replace('https:', 'http:'), false);
                 return;
             }
 
             if (!result.error) {
                 loadConfigAndLicense();
-                setServerVersion(Client4.getServerVersion());
             }
 
             this.setState({
