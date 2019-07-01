@@ -19,6 +19,8 @@ import {t} from 'app/utils/i18n';
 
 const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
 const HEADER_TOKEN = 'Token';
+const HEADER_X_VERSION_ID = 'X-Version-Id';
+const HEADER_CACHE_CONTROL = 'Cache-Control';
 
 let managedConfig;
 
@@ -114,6 +116,13 @@ Client4.doFetchWithResponse = async (url, options) => {
         const clusterId = headers[HEADER_X_CLUSTER_ID] || headers[HEADER_X_CLUSTER_ID.toLowerCase()];
         if (clusterId && Client4.clusterId !== clusterId) {
             Client4.clusterId = clusterId;
+        }
+    }
+
+    if (headers[HEADER_X_VERSION_ID] && !headers[HEADER_CACHE_CONTROL]) {
+        const serverVersion = headers[HEADER_X_VERSION_ID];
+        if (serverVersion && Client4.serverVersion !== serverVersion) {
+            Client4.serverVersion = serverVersion;
         }
     }
 
