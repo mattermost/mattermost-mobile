@@ -14,12 +14,12 @@ import configureStore from 'mattermost-redux/store';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes, ViewTypes} from 'app/constants';
+import mattermostBucket from 'app/mattermost_bucket';
+import initialState from 'app/initial_state';
 import appReducer from 'app/reducers';
 import {throttle} from 'app/utils/general';
 import {getSiteUrl, setSiteUrl} from 'app/utils/image_cache_manager';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
-
-import mattermostBucket from 'app/mattermost_bucket';
 
 import {messageRetention} from './middleware';
 import {createThunkMiddleware} from './thunk';
@@ -31,6 +31,8 @@ import thunk from 'redux-thunk';
 import models from 'app/models';
 import writers from 'app/writers';
 import {removeProtocol} from 'app/utils/url';
+
+export let reduxStore = null;
 
 function getAppReducer() {
     return require('../../app/reducers'); // eslint-disable-line global-require
@@ -57,7 +59,7 @@ const setTransforms = [
     ...rolesSetTransform,
 ];
 
-export default function configureAppStore(initialState) {
+export function configureAppStore() {
     const viewsBlackListFilter = createBlacklistFilter(
         'views',
         ['extension', 'login', 'root']
@@ -304,7 +306,8 @@ export default function configureAppStore(initialState) {
         enableThunk: false, // We override the default thunk middleware
     };
 
-    return configureStore(initialState, appReducer, offlineOptions, getAppReducer, clientOptions);
+    reduxStore = configureStore(initialState, appReducer, offlineOptions, getAppReducer, clientOptions);
+    return reduxStore;
 }
 
 const schemas = [
@@ -334,4 +337,11 @@ export function configureRealmStore(path) {
         {path: dbPath, schema: current.schema, schemaVersion: current.schemaVersion, allowUnsafeWrites: true},
         applyMiddleware(thunk)
     );
+}
+
+export function deleteRealmStore(path) {
+    const diskPath = Platform.OS === 'ios' ? `${mattermostBucket.appGroupFileStoragePath}/` : '';
+    const dbPath = `${diskPath}${path ? removeProtocol(path).replace(':', '-') : 'default'}.realm`;
+
+    Realm.deleteFile({path: dbPath});
 }
