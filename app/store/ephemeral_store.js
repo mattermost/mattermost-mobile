@@ -10,6 +10,10 @@ class EphemeralStore {
         this.realmStores = {};
     }
 
+    getRealmStoreForCurrentServer = () => {
+        return this.realmStores[this.currentServerUrl];
+    };
+
     getRealmStoreByServer = (url) => {
         return this.realmStores[url];
     };
