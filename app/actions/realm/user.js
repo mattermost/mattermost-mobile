@@ -7,46 +7,85 @@ import {GeneralTypes, UserTypes} from 'app/action_types';
 import {setAppCredentials} from 'app/init/credentials';
 import {GENERAL_SCHEMA_ID} from 'app/models/general';
 import ephemeralStore from 'app/store/ephemeral_store';
+import {configureRealmStore} from 'app/store/';
 import {setCSRFFromCookie} from 'app/utils/security';
 import {getDeviceTimezone} from 'app/utils/timezone';
 
+import {saveConfigAndLicense} from './general';
 import {forceLogoutIfNecessary} from './helpers';
 
-export function login(loginId, password, mfaToken, ldapOnly) {
-    return async (dispatch, getState) => {
-        const general = getState().objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
+// TODO: Remove redux compatibility
+import {completeLogin} from 'mattermost-redux/actions/users';
+import {reduxStore} from 'app/store';
+import {handleSuccessfulLogin as handleSuccessfulLoginRedux} from 'app/actions/views/login';
 
+export function login(options) {
+    return async () => {
+        const {config, ldapOnly, license, loginId, mfaToken, password} = options;
         let data = null;
         try {
-            data = await Client4.login(loginId, password, mfaToken, general?.deviceToken, ldapOnly);
+            data = await Client4.login(loginId, password, mfaToken, ephemeralStore.deviceToken, ldapOnly);
         } catch (error) {
             return {error};
         }
 
-        return dispatch(loadMe(data));
+        const token = Client4.getToken();
+        const url = Client4.getUrl();
+        const realm = configureRealmStore(url);
+
+        ephemeralStore.currentServerUrl = url;
+        setAppCredentials(ephemeralStore.deviceToken, data.id, token, url);
+        await setCSRFFromCookie(url);
+        await realm.dispatch(saveConfigAndLicense(config, license));
+        await realm.dispatch(loadMe(data));
+        realm.dispatch(handleSuccessfulLogin(config, license));
+
+        // TODO: Remove redux compatibility
+        reduxStore.dispatch(completeLogin(data));
+
+        return data;
     };
 }
 
-export function handleSuccessfulLogin() {
-    return async (dispatch, getState) => {
-        const general = getState().objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
-
-        const config = general?.configAsJson;
-        const license = general?.licenseAsJson;
-        const token = Client4.getToken();
+export function ssoLogin(options) {
+    return async () => {
+        const {config, license, token} = options;
         const url = Client4.getUrl();
-        const deviceToken = general?.deviceToken;
-        const currentUserId = general?.currentUser?.id;
+        const realm = configureRealmStore(url);
 
+        Client4.setToken(token);
         await setCSRFFromCookie(url);
-        setAppCredentials(deviceToken, currentUserId, token, url);
+        await realm.dispatch(saveConfigAndLicense(config, license));
+
+        const data = await realm.dispatch(loadMe());
+        if (data.error) {
+            return data;
+        }
+
+        ephemeralStore.currentServerUrl = url;
+        setAppCredentials(ephemeralStore.deviceToken, data.user.id, token, url);
+        realm.dispatch(handleSuccessfulLogin(config, license));
+
+        // TODO: Remove redux compatibility
+        reduxStore.dispatch(completeLogin(data.user));
+
+        return data;
+    };
+}
+
+export function handleSuccessfulLogin(config, license) {
+    return async (dispatch) => {
+        // TODO: Remove redux compatibility
+        reduxStore.dispatch(handleSuccessfulLoginRedux());
 
         const enableTimezone = config?.ExperimentalTimezone === 'true';
         if (enableTimezone) {
             dispatch(autoUpdateTimezone(getDeviceTimezone()));
         }
 
-        ephemeralStore.currentServerUrl = url;
+        if (config?.EnableCustomEmoji === 'true') {
+            // TODO: Fetch all custom emojis
+        }
 
         let dataRetentionPolicy;
         if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
@@ -61,18 +100,17 @@ export function handleSuccessfulLogin() {
             },
         });
 
-        return true;
+        return {data: true};
     };
 }
 
 export function loadMe(loginUser) {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         try {
             let user = loginUser;
             if (!user) {
                 try {
                     user = await Client4.getMe();
-
                     if (ephemeralStore.deviceToken) {
                         Client4.attachDevice(ephemeralStore.deviceToken);
                     }
@@ -85,7 +123,6 @@ export function loadMe(loginUser) {
             Client4.setUserId(user.id);
             Client4.setUserRoles(user.roles);
 
-            const general = getState().objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
             const [preferences, teams, teamMembers, teamUnreads] = await Promise.all([
                 Client4.getMyPreferences(),
                 Client4.getMyTeams(),
@@ -106,18 +143,12 @@ export function loadMe(loginUser) {
                 data,
             });
 
-            if (general?.configAsJson?.EnableCustomEmoji === 'true') {
-                // TODO: Fetch all custom emojis
-            }
-
             const roles = new Set();
-            roles.add(user.roles);
-
             for (const teamMember of teamMembers) {
-                for (const role of teamMember.roles.split(' ')) {
+                for (const role of teamMember.roles?.split(' ')) {
                     roles.add(role);
                 }
-                for (const role of data.roles.split(' ')) {
+                for (const role of user.roles?.split(' ')) {
                     roles.add(role);
                 }
             }
