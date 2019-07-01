@@ -89,6 +89,17 @@ Client4.doFetchWithResponse = async (url, options) => {
             });
         }
 
+        if (!response && url.includes('ping')) {
+            throw new ClientError(Client4.getUrl(), {
+                message: 'Failed to ping server',
+                intl: {
+                    id: t('mobile.server_ping_failed'),
+                    defaultMessage: 'Cannot connect to the server. Please check your server URL and internet connection.',
+                },
+                url,
+            });
+        }
+
         throw new ClientError(Client4.getUrl(), {
             message: 'Received invalid response from the server.',
             intl: {
