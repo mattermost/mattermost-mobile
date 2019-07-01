@@ -6,7 +6,7 @@ export const GENERAL_SCHEMA_ID = 'general';
 export default class General {
     get configAsJson() {
         try {
-            return JSON.parse(this.config);
+            return JSON.parse(this.serverConfig);
         } catch {
             return null;
         }
@@ -14,7 +14,7 @@ export default class General {
 
     get licenseAsJson() {
         try {
-            return JSON.parse(this.license);
+            return JSON.parse(this.serverLicense);
         } catch {
             return null;
         }
@@ -22,7 +22,7 @@ export default class General {
 
     get dataRetentionPolicyAsJson() {
         try {
-            return JSON.parse(this.policy);
+            return JSON.parse(this.dataRetentionPolicy);
         } catch {
             return null;
         }
@@ -33,9 +33,9 @@ export default class General {
         primaryKey: 'id',
         properties: {
             id: 'string',
-            currentChannel: 'Channel?',
-            currentTeam: 'Team?',
-            currentUser: 'User?',
+            currentChannelId: 'string?',
+            currentTeamId: 'string?',
+            currentUserId: 'string?',
             dataRetentionPolicy: 'string?',
             deviceToken: 'string?',
             serverConfig: 'string?',
