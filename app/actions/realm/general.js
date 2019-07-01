@@ -38,9 +38,9 @@ export function pingServer(url) {
     };
 }
 
-export function loadConfigAndLicense() {
+export function loadConfigAndLicense(save = true) {
     return async (dispatch, getState) => {
-        reduxStore.dispatch(loadConfigAndLicenseRedux());
+        reduxStore.dispatch(loadConfigAndLicenseRedux()); // TODO: Remove redux compatibility
         try {
             const general = getState().objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
             const [config, license] = await Promise.all([
@@ -65,10 +65,12 @@ export function loadConfigAndLicense() {
                 deviceToken: ephemeralStore.deviceToken,
             };
 
-            dispatch({
-                type: GeneralTypes.RECEIVED_GENERAL_UPDATE,
-                data,
-            });
+            if (save) {
+                dispatch({
+                    type: GeneralTypes.RECEIVED_GENERAL_UPDATE,
+                    data,
+                });
+            }
 
             return data;
         } catch (e) {
@@ -78,11 +80,23 @@ export function loadConfigAndLicense() {
     };
 }
 
-export function scheduleExpiredNotification(intl) {
-    return (dispatch, getState) => {
-        const general = getState().objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
+export function saveConfigAndLicense(config, license) {
+    return async (dispatch) => {
+        dispatch({
+            type: GeneralTypes.RECEIVED_GENERAL_UPDATE,
+            data: {
+                config,
+                license,
+                serverVersion: Client4.getServerVersion(),
+                deviceToken: ephemeralStore.deviceToken,
+            },
+        });
+    };
+}
 
-        if (general?.currentUser && general?.deviceToken) {
+export function scheduleExpiredNotification(intl) {
+    return () => {
+        if (ephemeralStore.deviceToken) {
             // Once the user logs in we are going to wait for 10 seconds
             // before retrieving the session that belongs to this device
             // to ensure that we get the actual session without issues
@@ -100,7 +114,7 @@ export function scheduleExpiredNotification(intl) {
                     return;
                 }
 
-                const session = sessions.data.find((s) => s.device_id === general.deviceToken);
+                const session = sessions.data.find((s) => s.device_id === ephemeralStore.deviceToken);
                 const expiresAt = session?.expires_at || 0; //eslint-disable-line camelcase
 
                 if (expiresAt) {
@@ -119,5 +133,18 @@ export function scheduleExpiredNotification(intl) {
                 }
             }, 10000);
         }
+    };
+}
+
+export function sendPasswordResetEmail(email) {
+    return async () => {
+        let data = null;
+        try {
+            data = await Client4.sendPasswordResetEmail(email);
+        } catch (error) {
+            return {error};
+        }
+
+        return {data};
     };
 }
