@@ -4,17 +4,13 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import ForgotPassword from './forgot_password.js';
+import ForgotPassword from './index';
 
 jest.mock('react-intl');
 
 describe('ForgotPassword', () => {
-    const actions = {
-        sendPasswordResetEmail: jest.fn(),
-    };
-
     const baseProps = {
-        actions,
+        sendPasswordResetEmail: jest.fn(),
     };
 
     const formatMessage = jest.fn();
@@ -48,7 +44,7 @@ describe('ForgotPassword', () => {
 
         wrapper.setState({email: 'test@test.com'});
         wrapper.instance().submitResetPassword();
-        expect(actions.sendPasswordResetEmail).toBeCalledWith('test@test.com');
+        expect(baseProps.sendPasswordResetEmail).toBeCalledWith('test@test.com');
     });
 
     test('match snapshot after success of sendPasswordResetEmail', async () => {
@@ -60,10 +56,7 @@ describe('ForgotPassword', () => {
         const wrapper = shallow(
             <ForgotPassword
                 {...baseProps}
-                actions={{
-                    ...actions,
-                    sendPasswordResetEmail,
-                }}
+                sendPasswordResetEmail={sendPasswordResetEmail}
             />,
             {context: {intl: {formatMessage}}},
         );
