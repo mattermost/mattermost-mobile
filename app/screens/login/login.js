@@ -30,26 +30,20 @@ import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
 
 import telemetry from 'app/telemetry';
 
-import {RequestStatus} from 'mattermost-redux/constants';
-
 const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
 export default class Login extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object,
-        theme: PropTypes.object,
         actions: PropTypes.shape({
-            handleLoginIdChanged: PropTypes.func.isRequired,
-            handlePasswordChanged: PropTypes.func.isRequired,
-            handleSuccessfulLogin: PropTypes.func.isRequired,
-            scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
+            scheduleExpiredNotification: PropTypes.func.isRequired,
+            sendPasswordResetEmail: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
-        password: PropTypes.string.isRequired,
-        loginRequest: PropTypes.object.isRequired,
+        navigator: PropTypes.object,
+        theme: PropTypes.object,
     };
 
     static contextTypes = {
@@ -59,8 +53,14 @@ export default class Login extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.loginRef = React.createRef();
+        this.passwordRef = React.createRef();
+        this.scrollRef = React.createRef();
+
         this.state = {
             error: null,
+            loginId: props.loginId,
+            password: null,
         };
     }
 
@@ -69,164 +69,51 @@ export default class Login extends PureComponent {
         setMfaPreflightDone(false);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-            this.props.actions.handleSuccessfulLogin().then(this.goToChannel);
-        } else if (this.props.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
-            this.setState({isLoading: false});
-        }
-    }
-
     componentWillUnmount() {
         Dimensions.removeEventListener('change', this.orientationDidChange);
     }
 
-    goToChannel = () => {
-        telemetry.remove(['start:overall']);
-
-        const {navigator} = this.props;
-        tracker.initialLoad = Date.now();
-
-        this.scheduleSessionExpiredNotification();
-
-        navigator.resetTo({
-            screen: 'Channel',
-            title: '',
-            animated: false,
-            backButtonTitle: '',
-            navigatorStyle: {
-                animated: true,
-                animationType: 'fade',
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        });
-    };
-
-    goToMfa = () => {
-        const {intl} = this.context;
-        const {navigator, theme} = this.props;
-
-        this.setState({isLoading: false});
-
-        navigator.push({
-            screen: 'MFA',
-            title: intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
-    };
-
     blur = () => {
-        this.loginId.blur();
-        this.passwd.blur();
+        if (this.loginRef?.current) {
+            this.loginRef.current.blur();
+        }
+
+        if (this.passwordRef?.current) {
+            this.passwordRef.current.blur();
+        }
         Keyboard.dismiss();
     };
 
-    preSignIn = preventDoubleTap(() => {
-        this.setState({error: null, isLoading: true});
-        Keyboard.dismiss();
-        InteractionManager.runAfterInteractions(async () => {
-            if (!this.props.loginId) {
-                t('login.noEmail');
-                t('login.noEmailLdapUsername');
-                t('login.noEmailUsername');
-                t('login.noEmailUsernameLdapUsername');
-                t('login.noLdapUsername');
-                t('login.noUsername');
-                t('login.noUsernameLdapUsername');
-
-                // it's slightly weird to be constructing the message ID, but it's a bit nicer than triply nested if statements
-                let msgId = 'login.no';
-                if (this.props.config.EnableSignInWithEmail === 'true') {
-                    msgId += 'Email';
-                }
-                if (this.props.config.EnableSignInWithUsername === 'true') {
-                    msgId += 'Username';
-                }
-                if (this.props.license.IsLicensed === 'true' && this.props.config.EnableLdap === 'true') {
-                    msgId += 'LdapUsername';
-                }
-
-                this.setState({
-                    isLoading: false,
-                    error: {
-                        intl: {
-                            id: msgId,
-                            defaultMessage: '',
-                            values: {
-                                ldapUsername: this.props.config.LdapLoginFieldName ||
-                                this.context.intl.formatMessage({
-                                    id: 'login.ldapUsernameLower',
-                                    defaultMessage: 'AD/LDAP username',
-                                }),
-                            },
-                        },
-                    },
-                });
-                return;
+    checkLoginResponse = async (data) => {
+        if (data.error) {
+            const nextState = {isLoading: false};
+            if (mfaExpectedErrors.includes(data?.error?.server_error_id)) { // eslint-disable-line camelcase
+                this.goToMfa();
+            } else {
+                nextState.error = data.error;
             }
 
-            if (!this.props.password) {
-                this.setState({
-                    isLoading: false,
-                    error: {
-                        intl: {
-                            id: t('login.noPassword'),
-                            defaultMessage: 'Please enter your password',
-                        },
-                    },
-                });
-                return;
-            }
-
-            this.signIn();
-        });
-    });
-
-    scheduleSessionExpiredNotification = () => {
-        const {intl} = this.context;
-        const {actions} = this.props;
-
-        actions.scheduleExpiredNotification(intl);
-    };
-
-    signIn = () => {
-        const {actions, loginId, loginRequest, password} = this.props;
-        if (loginRequest.status !== RequestStatus.STARTED) {
-            actions.login(loginId.toLowerCase(), password).then(this.checkLoginResponse);
+            this.setState(nextState);
+            return;
         }
-    };
 
-    checkLoginResponse = (data) => {
-        if (mfaExpectedErrors.includes(data?.error?.server_error_id)) { // eslint-disable-line camelcase
-            this.goToMfa();
-        }
+        this.goToChannel();
     };
 
     createLoginPlaceholder() {
         const {formatMessage} = this.context.intl;
-        const license = this.props.license;
-        const config = this.props.config;
+        const {config, license} = this.props;
 
         const loginPlaceholders = [];
-        if (config.EnableSignInWithEmail === 'true') {
+        if (config?.EnableSignInWithEmail === 'true') {
             loginPlaceholders.push(formatMessage({id: 'login.email', defaultMessage: 'Email'}));
         }
 
-        if (config.EnableSignInWithUsername === 'true') {
+        if (config?.EnableSignInWithUsername === 'true') {
             loginPlaceholders.push(formatMessage({id: 'login.username', defaultMessage: 'Username'}));
         }
 
-        if (license.IsLicensed === 'true' && license.LDAP === 'true' && config.EnableLdap === 'true') {
+        if (license?.IsLicensed === 'true' && license?.LDAP === 'true' && config?.EnableLdap === 'true') {
             if (config.LdapLoginFieldName) {
                 loginPlaceholders.push(config.LdapLoginFieldName);
             } else {
@@ -245,6 +132,28 @@ export default class Login extends PureComponent {
         return '';
     }
 
+    forgotPassword = () => {
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
+        const {sendPasswordResetEmail} = this.props.actions;
+
+        navigator.push({
+            screen: 'ForgotPassword',
+            title: intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'}),
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                sendPasswordResetEmail,
+            },
+        });
+    };
+
     getLoginErrorMessage = () => {
         return (
             this.getServerErrorForLogin() ||
@@ -253,7 +162,7 @@ export default class Login extends PureComponent {
     };
 
     getServerErrorForLogin = () => {
-        const {error} = this.props.loginRequest;
+        const {error} = this.state; //check this
         if (!error) {
             return null;
         }
@@ -288,32 +197,40 @@ export default class Login extends PureComponent {
         return error.message;
     };
 
-    loginRef = (ref) => {
-        this.loginId = ref;
+    goToChannel = () => {
+        telemetry.remove(['start:overall']);
+
+        const {navigator} = this.props;
+        tracker.initialLoad = Date.now();
+
+        this.scheduleSessionExpiredNotification();
+
+        navigator.resetTo({
+            screen: 'Channel',
+            title: '',
+            animated: false,
+            backButtonTitle: '',
+            navigatorStyle: {
+                animated: true,
+                animationType: 'fade',
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+            },
+        });
     };
 
-    passwordRef = (ref) => {
-        this.passwd = ref;
-    };
-
-    passwordFocus = () => {
-        this.passwd.focus();
-    };
-
-    orientationDidChange = () => {
-        this.scroll.scrollToPosition(0, 0, true);
-    };
-
-    scrollRef = (ref) => {
-        this.scroll = ref;
-    };
-
-    forgotPassword = () => {
+    goToMfa = () => {
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
+        const {actions, config, license, navigator, theme} = this.props;
+        const {loginId, password} = this.state;
+
+        this.setState({isLoading: false});
+
         navigator.push({
-            screen: 'ForgotPassword',
-            title: intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'}),
+            screen: 'MFA',
+            title: intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}),
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
@@ -322,11 +239,126 @@ export default class Login extends PureComponent {
                 navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg,
             },
+            passProps: {
+                actions,
+                config,
+                license,
+                loginId,
+                password,
+                goToChannel: this.goToChannel,
+            },
         });
+    };
+
+    handleLoginIdChange = (loginId) => {
+        this.setState({loginId});
     }
 
+    handlePasswordChange = (password) => {
+        this.setState({password});
+    };
+
+    orientationDidChange = () => {
+        if (this.scrollRef?.current) {
+            this.scrollRef.current.scrollToPosition(0, 0, true);
+        }
+    };
+
+    passwordFocus = () => {
+        if (this.passwordRef?.current) {
+            this.passwordRef.current.focus();
+        }
+    };
+
+    preSignIn = preventDoubleTap(() => {
+        this.setState({error: null, isLoading: true});
+        Keyboard.dismiss();
+        InteractionManager.runAfterInteractions(async () => {
+            const {config, license} = this.props;
+            const {loginId, password} = this.state;
+
+            if (!loginId) {
+                t('login.noEmail');
+                t('login.noEmailLdapUsername');
+                t('login.noEmailUsername');
+                t('login.noEmailUsernameLdapUsername');
+                t('login.noLdapUsername');
+                t('login.noUsername');
+                t('login.noUsernameLdapUsername');
+
+                // it's slightly weird to be constructing the message ID, but it's a bit nicer than triply nested if statements
+                let msgId = 'login.no';
+                if (config?.EnableSignInWithEmail === 'true') {
+                    msgId += 'Email';
+                }
+
+                if (config?.EnableSignInWithUsername === 'true') {
+                    msgId += 'Username';
+                }
+
+                if (license?.IsLicensed === 'true' && config?.EnableLdap === 'true') {
+                    msgId += 'LdapUsername';
+                }
+
+                this.setState({
+                    isLoading: false,
+                    error: {
+                        intl: {
+                            id: msgId,
+                            defaultMessage: '',
+                            values: {
+                                ldapUsername: config?.LdapLoginFieldName ||
+                                this.context.intl.formatMessage({
+                                    id: 'login.ldapUsernameLower',
+                                    defaultMessage: 'AD/LDAP username',
+                                }),
+                            },
+                        },
+                    },
+                });
+
+                return;
+            }
+
+            if (!password) {
+                this.setState({
+                    isLoading: false,
+                    error: {
+                        intl: {
+                            id: t('login.noPassword'),
+                            defaultMessage: 'Please enter your password',
+                        },
+                    },
+                });
+                return;
+            }
+
+            this.signIn();
+        });
+    });
+
+    scheduleSessionExpiredNotification = () => {
+        const {intl} = this.context;
+        const {actions} = this.props;
+
+        actions.scheduleExpiredNotification(intl);
+    };
+
+    signIn = () => {
+        const {actions, config, license} = this.props;
+        const {loginId, password} = this.state;
+
+        actions.login({
+            loginId: loginId.toLowerCase(),
+            password,
+            config,
+            license,
+        }).then(this.checkLoginResponse);
+    };
+
     render() {
-        const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
+        const {config} = this.props;
+        const {isLoading} = this.state;
 
         let proceed;
         if (isLoading) {
@@ -338,16 +370,16 @@ export default class Login extends PureComponent {
             );
         } else {
             const additionalStyle = {};
-            if (this.props.config.EmailLoginButtonColor) {
-                additionalStyle.backgroundColor = this.props.config.EmailLoginButtonColor;
+            if (config?.EmailLoginButtonColor) {
+                additionalStyle.backgroundColor = config.EmailLoginButtonColor;
             }
-            if (this.props.config.EmailLoginButtonBorderColor) {
-                additionalStyle.borderColor = this.props.config.EmailLoginButtonBorderColor;
+            if (config?.EmailLoginButtonBorderColor) {
+                additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
             }
 
             const additionalTextStyle = {};
-            if (this.props.config.EmailLoginButtonTextColor) {
-                additionalTextStyle.color = this.props.config.EmailLoginButtonTextColor;
+            if (config?.EmailLoginButtonTextColor) {
+                additionalTextStyle.color = config.EmailLoginButtonTextColor;
             }
 
             proceed = (
@@ -365,7 +397,7 @@ export default class Login extends PureComponent {
         }
 
         let forgotPassword;
-        if (this.props.config.EnableSignInWithEmail === 'true' || this.props.config.EnableSignInWithUsername === 'true') {
+        if (config?.EnableSignInWithEmail === 'true' || config?.EnableSignInWithUsername === 'true') {
             forgotPassword = (
                 <Button
                     onPress={this.forgotPassword}
@@ -396,7 +428,7 @@ export default class Login extends PureComponent {
                         />
                         <View>
                             <Text style={GlobalStyles.header}>
-                                {this.props.config.SiteName}
+                                {config?.SiteName}
                             </Text>
                             <FormattedText
                                 style={GlobalStyles.subheader}
@@ -407,8 +439,8 @@ export default class Login extends PureComponent {
                         <ErrorText error={this.getLoginErrorMessage()}/>
                         <TextInput
                             ref={this.loginRef}
-                            value={this.props.loginId}
-                            onChangeText={this.props.actions.handleLoginIdChanged}
+                            value={this.state.loginId}
+                            onChangeText={this.handleLoginIdChange}
                             style={GlobalStyles.inputBox}
                             placeholder={this.createLoginPlaceholder()}
                             autoCorrect={false}
@@ -422,8 +454,8 @@ export default class Login extends PureComponent {
                         />
                         <TextInput
                             ref={this.passwordRef}
-                            value={this.props.password}
-                            onChangeText={this.props.actions.handlePasswordChanged}
+                            value={this.state.password}
+                            onChangeText={this.handlePasswordChange}
                             style={GlobalStyles.inputBox}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                             secureTextEntry={true}
