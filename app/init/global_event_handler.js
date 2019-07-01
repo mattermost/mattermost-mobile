@@ -3,7 +3,6 @@
 
 import {Alert, AppState, Dimensions, Linking, NativeModules, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import RNFetchBlob from 'rn-fetch-blob';
 import semver from 'semver';
 
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
@@ -17,13 +16,13 @@ import {selectDefaultChannel} from 'app/actions/views/channel';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
 import {NavigationTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
-import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from 'app/selectors/i18n';
+import {deleteRealmStore} from 'app/store';
+import ephemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {deleteFileCache} from 'app/utils/file';
-import {removeProtocol} from 'app/utils/url';
 
 import LocalConfig from 'assets/config';
 
@@ -134,17 +133,13 @@ class GlobalEventHandler {
 
     onLogout = async () => {
         const serverUrl = await getCurrentServerUrl();
-        const path = removeProtocol(serverUrl).replace(':', '-');
-        const diskPath = Platform.OS === 'ios' ? mattermostBucket.appGroupFileStoragePath : RNFetchBlob.fs.dirs.DocumentDir;
+        const realm = ephemeralStore.getRealmStoreByServer(serverUrl);
 
-        RNFetchBlob.fs.unlink(`${diskPath}/${path}.realm`);
-        RNFetchBlob.fs.unlink(`${diskPath}/${path}.realm.lock`);
-        RNFetchBlob.fs.unlink(`${diskPath}/${path}.realm.management`);
-        RNFetchBlob.fs.unlink(`${diskPath}/${path}.realm.note`);
-
-        this.store.dispatch(closeWebSocket(false));
-        this.store.dispatch(setServerVersion(''));
-        deleteFileCache();
+        realm.db.close();
+        deleteRealmStore(serverUrl);
+        this.reduxStore.dispatch(closeWebSocket(false));
+        this.reduxStore.dispatch(setServerVersion(''));
+        deleteFileCache(); //TODO: The cache of files should be for each individual server
         removeAppCredentials(serverUrl);
 
         PushNotifications.setApplicationIconBadgeNumber(0);
