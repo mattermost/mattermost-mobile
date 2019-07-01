@@ -17,7 +17,7 @@ export function userDataToRealm(user) {
         locale: user.locale,
         position: user.position,
         timezone: JSON.stringify(user.timezone),
-        lastPictureUpdate: user.last_picture_update,
+        lastPictureUpdate: user.last_picture_update || user.update_at || user.create_at,
         status: user.status,
     };
 }
