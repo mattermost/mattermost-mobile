@@ -8,21 +8,19 @@ import {loadMe as loadMeRedux} from 'mattermost-redux/actions/users';
 
 import {setDeepLinkURL} from 'app/actions/views/root';
 import {loadMe} from 'app/actions/realm/user';
-import initialState from 'app/initial_state';
 import {getAppCredentials, getCurrentServerUrl} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
-import configureStore, {configureRealmStore} from 'app/store';
+import {configureRealmStore, configureAppStore} from 'app/store';
 import ephemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import pushNotificationsUtils from 'app/utils/push_notifications';
 
 const {MattermostShare} = NativeModules;
 const startedSharedExtension = Platform.OS === 'android' && MattermostShare.isOpened;
-export const store = configureStore(initialState);
-
+const reduxStore = configureAppStore();
 let realmStore;
 
 const init = async () => {
@@ -34,13 +32,13 @@ const init = async () => {
         ephemeralStore.setRealmStoreByServer(ephemeralStore.currentServerUrl, realmStore);
     }
 
-    pushNotificationsUtils.configure(store); // TODO: figure out what to do with this once everything is on realm
+    pushNotificationsUtils.configure(reduxStore); // TODO: figure out what to do with this once everything is on realm
     globalEventHandler.configure({
-        store, // TODO same as above todo
+        reduxStore, // TODO same as above todo
         launchEntry,
     });
 
-    registerScreens(store);
+    registerScreens(reduxStore);
 
     if (startedSharedExtension) {
         ephemeralStore.appStarted = true;
@@ -98,7 +96,7 @@ const launchEntry = (credentials) => {
     ]);
 
     if (credentials) {
-        store.dispatch(loadMeRedux());
+        reduxStore.dispatch(loadMeRedux());
 
         if (realmStore) {
             realmStore.dispatch(loadMe());
@@ -114,7 +112,7 @@ const launchEntry = (credentials) => {
 };
 
 const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
-    await emmProvider.handleManagedConfig(store);
+    await emmProvider.handleManagedConfig(reduxStore);
     launchEntry(credentials);
 
     if (emmProvider.enabled) {
@@ -123,12 +121,12 @@ const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
         }
 
         if (emmProvider.inAppPinCode) {
-            await emmProvider.handleAuthentication(store);
+            await emmProvider.handleAuthentication(reduxStore);
         }
     }
 
     Linking.getInitialURL().then((url) => {
-        store.dispatch(setDeepLinkURL(url));
+        reduxStore.dispatch(setDeepLinkURL(url));
     });
 };
 

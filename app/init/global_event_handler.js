@@ -51,14 +51,14 @@ class GlobalEventHandler {
 
             // Once the app becomes active we check if the device needs to have a passcode set
             const prompt = emmProvider.inBackgroundSince && authExpired; // if more than 5 minutes have passed prompt for passcode
-            await emmProvider.handleAuthentication(this.store, prompt);
+            await emmProvider.handleAuthentication(this.reduxStore, prompt);
         }
 
         emmProvider.inBackgroundSince = null;
     };
 
     appInactive = () => {
-        const {dispatch} = this.store;
+        const {dispatch} = this.reduxStore;
 
         // When the app is sent to the background we set the time when that happens
         // and perform a data clean up to improve on performance
@@ -68,7 +68,7 @@ class GlobalEventHandler {
     };
 
     configure = (opts) => {
-        this.store = opts.store;
+        this.reduxStore = opts.reduxStore;
         this.launchEntry = opts.launchEntry;
 
         const window = Dimensions.get('window');
@@ -86,7 +86,7 @@ class GlobalEventHandler {
         }
 
         this.JavascriptAndNativeErrorHandler = require('app/utils/error_handling').default;
-        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(this.store);
+        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(this.reduxStore);
 
         mattermostManaged.addEventListener('managedConfigDidChange', this.onManagedConfigurationChange);
     };
@@ -105,8 +105,8 @@ class GlobalEventHandler {
         const isActive = appState === 'active';
         const isBackground = appState === 'background';
 
-        if (this.store) {
-            this.store.dispatch(setAppState(isActive));
+        if (this.reduxStore) {
+            this.reduxStore.dispatch(setAppState(isActive));
         }
 
         if (isActive && emmProvider.previousAppState === 'background') {
@@ -120,11 +120,11 @@ class GlobalEventHandler {
 
     onDeepLink = (event) => {
         const {url} = event;
-        this.store.dispatch(setDeepLinkURL(url));
+        this.reduxStore.dispatch(setDeepLinkURL(url));
     };
 
     onManagedConfigurationChange = () => {
-        emmProvider.handleManagedConfig(this.store, true);
+        emmProvider.handleManagedConfig(this.reduxStore, true);
     };
 
     onServerConfigChanged = (config) => {
@@ -152,8 +152,8 @@ class GlobalEventHandler {
     };
 
     onOrientationChange = (dimensions) => {
-        if (this.store) {
-            const {dispatch} = this.store;
+        if (this.reduxStore) {
+            const {dispatch} = this.reduxStore;
             if (DeviceInfo.isTablet()) {
                 dispatch(setDeviceAsTablet());
             }
@@ -167,8 +167,8 @@ class GlobalEventHandler {
     };
 
     onRestartApp = async () => {
-        await this.store.dispatch(loadConfigAndLicense());
-        await this.store.dispatch(loadMe());
+        await this.reduxStore.dispatch(loadConfigAndLicense());
+        await this.reduxStore.dispatch(loadMe());
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
@@ -188,7 +188,7 @@ class GlobalEventHandler {
     };
 
     onServerVersionChanged = async (serverVersion) => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = this.reduxStore;
         const state = getState();
         const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
         const locale = getCurrentLocale(state);
@@ -214,15 +214,15 @@ class GlobalEventHandler {
     };
 
     onStatusBarHeightChange = (nextStatusBarHeight) => {
-        this.store.dispatch(setStatusBarHeight(nextStatusBarHeight));
+        this.reduxStore.dispatch(setStatusBarHeight(nextStatusBarHeight));
     };
 
     onSwitchToDefaultChannel = (teamId) => {
-        this.store.dispatch(selectDefaultChannel(teamId));
+        this.reduxStore.dispatch(selectDefaultChannel(teamId));
     };
 
     serverUpgradeNeeded = async () => {
-        const {dispatch} = this.store;
+        const {dispatch} = this.reduxStore;
 
         const credentials = await getAppCredentials();
 
