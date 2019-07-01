@@ -60,6 +60,7 @@ export default class Search extends PureComponent {
             goToScreen: PropTypes.func.isRequired,
             showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         initialValue: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,

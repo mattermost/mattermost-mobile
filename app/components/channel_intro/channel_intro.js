@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Platform,
     Text,
     TouchableOpacity,
     View,
@@ -23,7 +22,6 @@ class ChannelIntro extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             goToScreen: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
         }).isRequired,
         creator: PropTypes.object,
         currentChannel: PropTypes.object.isRequired,
@@ -44,11 +42,7 @@ class ChannelIntro extends PureComponent {
             userId,
         };
 
-        if (Platform.OS === 'ios') {
-            actions.goToScreen(screen, title, passProps);
-        } else {
-            actions.showModal(screen, title, passProps);
-        }
+        actions.goToScreen(screen, title, passProps);
     };
 
     getDisplayName = (member) => {

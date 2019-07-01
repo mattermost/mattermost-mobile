@@ -92,7 +92,7 @@ export default class EditChannelInfo extends PureComponent {
     close = (goBack = false) => {
         const {actions} = this.props;
         if (goBack) {
-            actions.popToScreen();
+            actions.popTopScreen();
         } else {
             actions.dismissModal();
         }
