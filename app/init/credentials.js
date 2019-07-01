@@ -58,6 +58,7 @@ export const removeAppCredentials = (url) => {
 
         if (ephemeralStore.currentServerUrl === url) {
             AsyncStorage.removeItem(CURRENT_SERVER);
+            ephemeralStore.currentServerUrl = null;
         }
     }
 
