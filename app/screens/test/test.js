@@ -14,8 +14,13 @@ export default class Test extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadMe: PropTypes.func.isRequired,
+            loadConfigAndLicense: PropTypes.func.isRequired,
         }).isRequired,
+        reduxActions: PropTypes.shape({
+            handleServerUrlChanged: PropTypes.func.isRequired,
+        }),
         user: PropTypes.object,
+        reduxServerUrl: PropTypes.string,
     };
 
     constructor(props) {
@@ -31,8 +36,14 @@ export default class Test extends PureComponent {
         }
     };
 
+    load = async () => {
+        this.props.reduxActions.handleServerUrlChanged('http://testing-redux-action');
+        await this.props.actions.loadMe();
+        await this.props.actions.loadConfigAndLicense();
+    };
+
     render() {
-        const {user} = this.props;
+        const {user, reduxServerUrl} = this.props;
 
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: 'yellow'}}>
@@ -40,9 +51,12 @@ export default class Test extends PureComponent {
                 <View style={{flex: 1, backgroundColor: 'yellow', alignItems: 'center', justifyContent: 'space-between'}}>
                     <Button
                         title={'Fetch My User'}
-                        onPress={this.props.actions.loadMe}
+                        onPress={this.load}
                     />
-                    <Text>{user ? user.fullName : 'No user present'}</Text>
+                    <View style={{flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+                        <Text>{`Redux stored server url ${reduxServerUrl}`}</Text>
+                        <Text>{user ? user.fullName : 'No user present'}</Text>
+                    </View>
                     <Button
                         title={'Toggle server'}
                         onPress={this.toggle}

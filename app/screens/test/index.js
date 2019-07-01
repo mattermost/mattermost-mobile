@@ -5,35 +5,55 @@ import {bindActionCreators} from 'redux';
 import {realmConnect} from 'realm-react-redux';
 
 import {loadMe} from 'app/actions/realm/user';
+import {loadConfigAndLicense} from 'app/actions/realm/general';
+import {GENERAL_SCHEMA_ID} from 'app/models/general';
 
 import Test from './test';
 
 import ReactRealmContext from 'app/store/realm_context';
+import {reduxStore} from 'app/store';
+import {handleServerUrlChanged} from 'app/actions/views/select_server';
 
 const options = {
     context: ReactRealmContext,
 };
 
-function mapPropsToQueries(realm) {
-    const objs = realm.objects('User');
-    return [objs];
+function getCurrentUser(users) {
+    return users?.length && users[0];
 }
 
-function mapQueriesToProps([users = []]) {
-    const user = users[0];
-    return {
+function mapPropsToQueries(realm) {
+    const general = realm.objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
+    let users = null;
+    if (general?.currentUserId) {
+        users = realm.objects('User').filtered(`id="${general.currentUserId}"`);
+    }
+    return [users];
+}
 
-        // Normally you would use a selector here to create simplified versions
-        // of the model containing only what's needed by the UI for rendering.
+function mapQueriesToProps([general]) {
+    const user = getCurrentUser(general);
+    const reduxState = reduxStore.getState();
+
+    return {
         user,
+        reduxServerUrl: reduxState.entities.general.credentials.url,
     };
 }
 
 function mapRealmDispatchToProps(dispatch) {
+    const actions = bindActionCreators({
+        loadMe,
+        loadConfigAndLicense,
+    }, dispatch);
+
+    const reduxActions = bindActionCreators({
+        handleServerUrlChanged,
+    }, reduxStore.dispatch);
+
     return {
-        actions: bindActionCreators({
-            loadMe,
-        }, dispatch),
+        actions,
+        reduxActions,
     };
 }
 
