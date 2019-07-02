@@ -15,7 +15,7 @@ import EditProfile from './edit_profile';
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
     const {serverVersion} = state.entities.general;
-    const {service} = ownProps.currentUser;
+    const {auth_service: service} = ownProps.currentUser;
 
     const firstNameDisabled = (service === 'ldap' && config.LdapFirstNameAttributeSet === 'true') ||
         (service === 'saml' && config.SamlFirstNameAttributeSet === 'true');
