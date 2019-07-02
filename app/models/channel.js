@@ -12,7 +12,7 @@ export class Channel {
             deleteAt: {type: 'int', default: 0},
             team: 'Team',
             type: {type: 'string', indexed: true},
-            displayName: 'string?',
+            displayName: {type: 'string', default: ''},
             name: 'string',
             header: 'string?',
             lastPostAt: {type: 'int', default: 0},
