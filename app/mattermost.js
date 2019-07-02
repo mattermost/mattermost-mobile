@@ -12,11 +12,11 @@ import {getAppCredentials, getCurrentServerUrl} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
+import pushNotificationsHandler from 'app/init/push_notifications_handler';
 import {registerScreens} from 'app/screens';
 import {configureRealmStore, configureAppStore} from 'app/store';
 import ephemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
-import pushNotificationsUtils from 'app/utils/push_notifications';
 
 const {MattermostShare} = NativeModules;
 const startedSharedExtension = Platform.OS === 'android' && MattermostShare.isOpened;
@@ -32,7 +32,7 @@ const init = async () => {
         ephemeralStore.setRealmStoreByServer(ephemeralStore.currentServerUrl, realmStore);
     }
 
-    pushNotificationsUtils.configure(reduxStore); // TODO: figure out what to do with this once everything is on realm
+    pushNotificationsHandler.configure(reduxStore); // TODO: figure out what to do with this once everything is on realm
     globalEventHandler.configure({
         reduxStore, // TODO same as above todo
         launchEntry,
