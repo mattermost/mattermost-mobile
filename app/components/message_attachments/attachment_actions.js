@@ -53,6 +53,7 @@ export default class AttachmentActions extends PureComponent {
                     <ActionButton
                         key={action.id}
                         id={action.id}
+                        cookie={action.cookie}
                         name={action.name}
                         postId={postId}
                     />
