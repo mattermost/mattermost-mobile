@@ -198,7 +198,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
                 });
             }
         } else {
-            const {lastConnectAt} = state.device.websocket;
+            const {lastConnectAt} = state.websocket;
             const lastGetPosts = state.views.channel.lastGetPosts[channelId];
 
             let since;
