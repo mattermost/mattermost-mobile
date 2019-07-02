@@ -8,11 +8,14 @@ import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {Client4} from 'mattermost-redux/client';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {ViewTypes} from 'app/constants';
+import {setAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {getDeviceTimezone} from 'app/utils/timezone';
+import {setCSRFFromCookie} from 'app/utils/security';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -37,7 +40,13 @@ export function handleSuccessfulLogin() {
         const state = getState();
         const config = getConfig(state);
         const license = getLicense(state);
+        const token = Client4.getToken();
         const url = Client4.getUrl();
+        const deviceToken = state.entities.general.deviceToken;
+        const currentUserId = getCurrentUserId(state);
+
+        await setCSRFFromCookie(url);
+        setAppCredentials(deviceToken, currentUserId, token, url);
 
         const enableTimezone = isTimezoneEnabled(state);
         if (enableTimezone) {
