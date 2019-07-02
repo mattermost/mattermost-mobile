@@ -67,16 +67,6 @@ export default class SelectServer extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    static getDerivedStateFromProps(props, state) {
-        if (props.serverUrl && state.url === null) {
-            return {
-                url: props.serverUrl,
-            };
-        }
-
-        return null;
-    }
-
     constructor(props) {
         super(props);
 
