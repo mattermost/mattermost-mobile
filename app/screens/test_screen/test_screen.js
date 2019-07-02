@@ -14,7 +14,6 @@ export default class TestScreen extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadMe: PropTypes.func.isRequired,
-            loadConfigAndLicense: PropTypes.func.isRequired,
         }).isRequired,
         reduxActions: PropTypes.shape({
             handleServerUrlChanged: PropTypes.func.isRequired,
@@ -39,7 +38,6 @@ export default class TestScreen extends PureComponent {
     load = async () => {
         this.props.reduxActions.handleServerUrlChanged('http://testing-redux-action');
         await this.props.actions.loadMe();
-        await this.props.actions.loadConfigAndLicense();
     };
 
     render() {

@@ -5,7 +5,6 @@ import {bindActionCreators} from 'redux';
 import {realmConnect} from 'realm-react-redux';
 
 import {loadMe} from 'app/actions/realm/user';
-import {loadConfigAndLicense} from 'app/actions/realm/general';
 import {GENERAL_SCHEMA_ID} from 'app/models/general';
 
 import TestScreen from './test_screen';
@@ -18,21 +17,24 @@ const options = {
     context: ReactRealmContext,
 };
 
-function getCurrentUser(users) {
-    return users?.length && users[0];
+function getCurrentUser(generalResults, usersResults) {
+    const general = generalResults.filtered(`id="${GENERAL_SCHEMA_ID}"`)[0];
+    let user = null;
+    if (general?.currentUserId) {
+        user = usersResults.filtered(`id="${general.currentUserId}"`)[0];
+    }
+
+    return user;
 }
 
 function mapPropsToQueries(realm) {
-    const general = realm.objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
-    let users = null;
-    if (general?.currentUserId) {
-        users = realm.objects('User').filtered(`id="${general.currentUserId}"`);
-    }
-    return [users];
+    const general = realm.objects('General');
+    const users = realm.objects('User');
+    return [general, users];
 }
 
-function mapQueriesToProps([general]) {
-    const user = getCurrentUser(general);
+function mapQueriesToProps([general, users]) {
+    const user = getCurrentUser(general, users);
     const reduxState = reduxStore.getState();
 
     return {
@@ -44,7 +46,6 @@ function mapQueriesToProps([general]) {
 function mapRealmDispatchToProps(dispatch) {
     const actions = bindActionCreators({
         loadMe,
-        loadConfigAndLicense,
     }, dispatch);
 
     const reduxActions = bindActionCreators({
