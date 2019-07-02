@@ -179,11 +179,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     generateStaticEmbed = (isYouTube, isImage) => {
-        if (isYouTube || isImage) {
+        const {isReplyPost, link, metadata, navigator, openGraphData, showLinkPreviews, theme} = this.props;
+
+        if (isYouTube || (isImage && !openGraphData)) {
             return null;
         }
 
-        const {isReplyPost, link, metadata, navigator, openGraphData, showLinkPreviews, theme} = this.props;
         const attachments = this.getMessageAttachment();
         if (attachments) {
             return attachments;
