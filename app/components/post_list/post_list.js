@@ -294,11 +294,13 @@ export default class PostList extends PureComponent {
             this.props.initialIndex > 0 &&
             !this.hasDoneInitialScroll
         ) {
-            this.flatListRef.current.scrollToIndex({
-                animated: false,
-                index: this.props.initialIndex,
-                viewOffset: 50,
-                viewPosition: 0.5,
+            requestAnimationFrame(() => {
+                this.flatListRef.current.scrollToIndex({
+                    animated: false,
+                    index: this.props.initialIndex,
+                    viewOffset: 0,
+                    viewPosition: 1, // 0 is at bottom
+                });
             });
             this.hasDoneInitialScroll = true;
         }
