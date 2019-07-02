@@ -135,7 +135,7 @@ class GlobalEventHandler {
         const serverUrl = await getCurrentServerUrl();
         const realm = ephemeralStore.getRealmStoreByServer(serverUrl);
 
-        realm.db.close();
+        realm.getState().close();
         deleteRealmStore(serverUrl);
         this.reduxStore.dispatch(closeWebSocket(false));
         this.reduxStore.dispatch(setServerVersion(''));
