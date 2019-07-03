@@ -33,7 +33,7 @@ export default class ChannelSystemMessage extends React.PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme(theme => {
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     const stdPadding = 12;
     return {
         main: {
@@ -150,7 +150,7 @@ const renderPurposeChangeMessage = (post, navigator, style, textStyles, theme) =
         );
     }
     return null;
-}
+};
 
 const renderChannelDeletedMessage = (post, navigator, style, textStyles, theme) => {
     if (!post.props.username) {

@@ -422,7 +422,6 @@ export default class PostBody extends PureComponent {
                 />
             );
         } else if (message.length) {
-            console.log('message:', JSON.stringify(message))
             messageComponent = (
                 <View
                     style={[style.messageContainer, (isReplyPost && style.reply), (isPendingOrFailedPost && style.pendingPost)]}
