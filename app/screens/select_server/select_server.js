@@ -26,11 +26,13 @@ import FormattedText from 'app/components/formatted_text';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
+import {getDefaultTheme} from 'app/selectors/theme';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
+import {getClientUpgrade} from 'app/utils/realm/general';
 
 import telemetry from 'app/telemetry';
 
@@ -39,26 +41,18 @@ import LocalConfig from 'assets/config';
 export default class SelectServer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleSuccessfulLogin: PropTypes.func.isRequired,
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
             pingServer: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
         }).isRequired,
         allowOtherServers: PropTypes.bool,
-        config: PropTypes.object,
-        currentVersion: PropTypes.string,
-        hasConfigAndLicense: PropTypes.bool.isRequired,
-        latestVersion: PropTypes.string,
-        license: PropTypes.object,
-        minVersion: PropTypes.string,
         navigator: PropTypes.object,
         reduxActions: PropTypes.shape({
             handleServerUrlChanged: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
         }).isRequired,
         serverUrl: PropTypes.string.isRequired,
-        theme: PropTypes.object,
     };
 
     static contextTypes = {
@@ -68,12 +62,18 @@ export default class SelectServer extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.textInputRef = React.createRef();
+
         this.state = {
             connected: false,
             connecting: false,
             error: null,
             url: props.serverUrl,
+            config: null,
+            license: null,
         };
+
+        this.theme = getDefaultTheme();
 
         this.cancelPing = null;
     }
@@ -98,18 +98,20 @@ export default class SelectServer extends PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.connected && this.props.hasConfigAndLicense && !(prevState.connected && prevProps.hasConfigAndLicense)) {
+        const hasConfigAndLicense = Boolean(this.state.config && this.state.license);
+        const hadConfigAndLicense = Boolean(prevState.config && prevState.license);
+        if (this.state.connected && hasConfigAndLicense && !(prevState.connected && hadConfigAndLicense)) {
             if (LocalConfig.EnableMobileClientUpgrade) {
                 this.props.reduxActions.setLastUpgradeCheck();
-                const {currentVersion, minVersion, latestVersion} = prevProps;
+                const {currentVersion, minVersion, latestVersion} = getClientUpgrade(this.state.config);
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
                 if (isUpgradeAvailable(upgradeType)) {
                     this.handleShowClientUpgrade(upgradeType);
                 } else {
-                    this.handleLoginOptions(prevProps);
+                    this.handleLoginOptions();
                 }
             } else {
-                this.handleLoginOptions(prevProps);
+                this.handleLoginOptions();
             }
         }
     }
@@ -122,8 +124,8 @@ export default class SelectServer extends PureComponent {
     }
 
     blur = () => {
-        if (this.textInput) {
-            this.textInput.blur();
+        if (this.textInputRef?.current) {
+            this.textInputRef.current.blur();
         }
     };
 
@@ -143,7 +145,9 @@ export default class SelectServer extends PureComponent {
     };
 
     goToNextScreen = (screen, title) => {
-        const {navigator, theme} = this.props;
+        const {navigator} = this.props;
+        const {config, license, url} = this.state;
+
         navigator.push({
             screen,
             title,
@@ -152,9 +156,15 @@ export default class SelectServer extends PureComponent {
             navigatorStyle: {
                 navBarHidden: LocalConfig.AutoSelectServerUrl,
                 disabledBackGesture: LocalConfig.AutoSelectServerUrl,
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
+                navBarTextColor: this.theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: this.theme.sidebarHeaderBg,
+                navBarButtonColor: this.theme.sidebarHeaderTextColor,
+            },
+            passProps: {
+                config,
+                license,
+                serverUrl: url,
+                theme: this.theme,
             },
         });
     };
@@ -203,9 +213,9 @@ export default class SelectServer extends PureComponent {
         }
     });
 
-    handleLoginOptions = (props = this.props) => {
+    handleLoginOptions = () => {
         const {formatMessage} = this.context.intl;
-        const {config, license} = props;
+        const {config, license} = this.state;
         const samlEnabled = config?.EnableSaml === 'true' && license?.IsLicensed === 'true' && license?.SAML === 'true';
         const gitlabEnabled = config?.EnableSignUpWithGitLab === 'true';
         const o365Enabled = config?.EnableSignUpWithOffice365 === 'true' && license?.IsLicensed === 'true' && license?.Office365OAuth === 'true';
@@ -252,7 +262,6 @@ export default class SelectServer extends PureComponent {
 
     handleShowClientUpgrade = (upgradeType) => {
         const {formatMessage} = this.context.intl;
-        const {theme} = this.props;
 
         this.props.navigator.push({
             screen: 'ClientUpgrade',
@@ -263,9 +272,9 @@ export default class SelectServer extends PureComponent {
                 disabledBackGesture: LocalConfig.AutoSelectServerUrl,
                 statusBarHidden: true,
                 statusBarHideWithNavBar: true,
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
+                navBarTextColor: this.theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: this.theme.sidebarHeaderBg,
+                navBarButtonColor: this.theme.sidebarHeaderTextColor,
             },
             passProps: {
                 closeAction: this.handleLoginOptions,
@@ -278,17 +287,13 @@ export default class SelectServer extends PureComponent {
         this.setState({url});
     };
 
-    inputRef = (ref) => {
-        this.textInput = ref;
-    };
-
     loginWithCertificate = async () => {
-        const {navigator} = this.props;
+        const {actions, navigator} = this.props;
+        const {config, license} = this.state;
 
         tracker.initialLoad = Date.now();
 
-        await this.props.actions.login('credential', 'password');
-        await this.props.actions.handleSuccessfulLogin();
+        await actions.login({loginId: 'credential', password: 'password', config, license});
         this.scheduleSessionExpiredNotification();
 
         navigator.resetTo({
@@ -332,7 +337,7 @@ export default class SelectServer extends PureComponent {
             this.cancelPing = null;
         };
 
-        pingServer(url).then((result) => {
+        pingServer(url).then(async (result) => {
             if (cancel) {
                 return;
             }
@@ -342,14 +347,32 @@ export default class SelectServer extends PureComponent {
                 return;
             }
 
+            let config;
+            let license;
             if (!result.error) {
-                loadConfigAndLicense();
+                try {
+                    const data = await loadConfigAndLicense(false);
+                    config = data.config;
+                    license = data.license;
+                    this.theme = getDefaultTheme(config);
+                } catch (error) {
+                    this.setState({
+                        connected: false,
+                        connecting: false,
+                        error,
+                        url,
+                    });
+                    return;
+                }
             }
 
             this.setState({
                 connected: !result.error,
                 connecting: false,
                 error: result.error,
+                config,
+                license,
+                url,
             });
         }).catch(() => {
             if (cancel) {
@@ -449,7 +472,7 @@ export default class SelectServer extends PureComponent {
                             />
                         </View>
                         <TextInput
-                            ref={this.inputRef}
+                            ref={this.textInputRef}
                             value={url}
                             editable={!inputDisabled}
                             onChangeText={this.handleTextChanged}
