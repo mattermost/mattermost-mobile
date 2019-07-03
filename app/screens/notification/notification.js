@@ -31,6 +31,8 @@ export default class Notification extends PureComponent {
         actions: PropTypes.shape({
             loadFromPushNotification: PropTypes.func.isRequired,
             dismissOverlay: PropTypes.func.isRequired,
+            dismissAllModals: PropTypes.func.isRequired,
+            popToRoot: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         channel: PropTypes.object,
@@ -46,11 +48,15 @@ export default class Notification extends PureComponent {
         const {actions, notification, componentId} = this.props;
 
         EventEmitter.emit('close_channel_drawer');
+        EventEmitter.emit('close_settings_sidebar');
         InteractionManager.runAfterInteractions(() => {
-            actions.dismissOverlay(componentId);
-            if (!notification.localNotification) {
-                actions.loadFromPushNotification(notification);
-            }
+            actions.dismissOverlay(componentId).then(() => {
+                if (!notification.localNotification) {
+                    actions.dismissAllModals();
+                    actions.popToRoot();
+                    actions.loadFromPushNotification(notification);
+                }
+            });
         });
     };
 

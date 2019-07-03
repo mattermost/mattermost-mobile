@@ -15,7 +15,7 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {selectDefaultChannel} from 'app/actions/views/channel';
-import {showOverlay, dismissOverlay, popToRoot} from 'app/actions/navigation';
+import {showOverlay, dismissAllModals, popToRoot} from 'app/actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
@@ -262,8 +262,11 @@ class GlobalEventHandler {
     };
 
     handleNotificationTapped = async () => {
+        EventEmitter.emit('close_channel_drawer');
+        EventEmitter.emit('close_settings_sidebar');
+
         const {dispatch} = this.store;
-        dispatch(dismissOverlay());
+        dispatch(dismissAllModals());
         dispatch(popToRoot());
     };
 }

@@ -178,7 +178,12 @@ export function popToRoot() {
     return () => {
         const componentId = EphemeralStore.getTopComponentId();
 
-        Navigation.popToRoot(componentId);
+        Navigation.popToRoot(componentId).catch(() => {
+            // RNN returns a promise rejection if there are no screens
+            // atop the root screen to pop. We'll do nothing in this
+            // case but we will catch the rejection here so that the
+            // caller doesn't have to.
+        });;
     };
 }
 
@@ -289,7 +294,11 @@ export function dismissModal(options = {}) {
 
 export function dismissAllModals(options = {}) {
     return () => {
-        Navigation.dismissAllModals(options);
+        Navigation.dismissAllModals(options).catch(() => {
+            // RNN returns a promise rejection if there are no modals to
+            // dismiss. We'll do nothing in this case but we will catch
+            // the rejection here so that the caller doesn't have to.
+        });
     };
 }
 
@@ -326,9 +335,7 @@ export function showOverlay(name, passProps, options = {}) {
     return () => {
         const defaultOptions = {
             overlay: {
-                position: 'top',
-                autoDismissTimerSec: 5,
-                dismissWithSwipe: true,
+                interceptTouchOutside: false,
             },
         };
 
@@ -344,6 +351,6 @@ export function showOverlay(name, passProps, options = {}) {
 
 export function dismissOverlay(componentId) {
     return () => {
-        Navigation.dismissOverlay(componentId);
+        return Navigation.dismissOverlay(componentId);
     };
 }
