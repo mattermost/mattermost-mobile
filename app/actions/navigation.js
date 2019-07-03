@@ -356,6 +356,6 @@ export function dismissOverlay(componentId) {
             // this componentId to dismiss. We'll do nothing in this case
             // but we will catch the rejection here so that the caller
             // doesn't have to.
-        });;
+        });
     };
 }
