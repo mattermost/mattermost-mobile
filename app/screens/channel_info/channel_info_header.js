@@ -7,6 +7,7 @@ import {
     Text,
     View,
     Platform,
+    SafeAreaView
 } from 'react-native';
 
 import ChannelIcon from 'app/components/channel_icon';
@@ -60,86 +61,88 @@ export default class ChannelInfoHeader extends React.PureComponent {
             style.detail;
 
         return (
-            <View style={style.container}>
-                <View style={style.channelNameContainer}>
-                    <ChannelIcon
-                        isInfo={true}
-                        membersCount={memberCount - 1}
-                        size={16}
-                        status={status}
-                        theme={theme}
-                        type={type}
-                        isArchived={isArchived}
-                        isBot={isBot}
-                    />
-                    <Text
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                        style={style.channelName}
-                    >
-                        {displayName}
-                    </Text>
+            <SafeAreaView>
+                <View style={style.container}>
+                    <View style={style.channelNameContainer}>
+                        <ChannelIcon
+                            isInfo={true}
+                            membersCount={memberCount - 1}
+                            size={16}
+                            status={status}
+                            theme={theme}
+                            type={type}
+                            isArchived={isArchived}
+                            isBot={isBot}
+                        />
+                        <Text
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            style={style.channelName}
+                        >
+                            {displayName}
+                        </Text>
+                    </View>
+                    {purpose.length > 0 &&
+                        <View style={style.section}>
+                            <FormattedText
+                                style={style.header}
+                                id='channel_info.purpose'
+                                defaultMessage='Purpose'
+                            />
+                            <Markdown
+                                navigator={navigator}
+                                onPermalinkPress={onPermalinkPress}
+                                baseTextStyle={baseTextStyle}
+                                textStyles={textStyles}
+                                blockStyles={blockStyles}
+                                value={purpose}
+                            />
+                        </View>
+                    }
+                    {header.length > 0 &&
+                        <View style={style.section}>
+                            <FormattedText
+                                style={style.header}
+                                id='channel_info.header'
+                                defaultMessage='Header'
+                            />
+                            <Markdown
+                                navigator={navigator}
+                                onPermalinkPress={onPermalinkPress}
+                                baseTextStyle={baseTextStyle}
+                                textStyles={textStyles}
+                                blockStyles={blockStyles}
+                                value={header}
+                            />
+                        </View>
+                    }
+                    {isGroupConstrained &&
+                        <Text style={style.createdBy}>
+                            <FormattedText
+                                id='mobile.routes.channelInfo.groupManaged'
+                                defaultMessage='Members are managed by linked groups'
+                            />
+                        </Text>
+                    }
+                    {creator &&
+                        <Text style={style.createdBy}>
+                            <FormattedText
+                                id='mobile.routes.channelInfo.createdBy'
+                                defaultMessage='Created by {creator} on '
+                                values={{
+                                    creator,
+                                }}
+                            />
+                            <FormattedDate
+                                value={new Date(createAt)}
+                                year='numeric'
+                                month='long'
+                                day='2-digit'
+                            />
+                        </Text>
+                    }
                 </View>
-                {purpose.length > 0 &&
-                    <View style={style.section}>
-                        <FormattedText
-                            style={style.header}
-                            id='channel_info.purpose'
-                            defaultMessage='Purpose'
-                        />
-                        <Markdown
-                            navigator={navigator}
-                            onPermalinkPress={onPermalinkPress}
-                            baseTextStyle={baseTextStyle}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
-                            value={purpose}
-                        />
-                    </View>
-                }
-                {header.length > 0 &&
-                    <View style={style.section}>
-                        <FormattedText
-                            style={style.header}
-                            id='channel_info.header'
-                            defaultMessage='Header'
-                        />
-                        <Markdown
-                            navigator={navigator}
-                            onPermalinkPress={onPermalinkPress}
-                            baseTextStyle={baseTextStyle}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
-                            value={header}
-                        />
-                    </View>
-                }
-                {isGroupConstrained &&
-                    <Text style={style.createdBy}>
-                        <FormattedText
-                            id='mobile.routes.channelInfo.groupManaged'
-                            defaultMessage='Members are managed by linked groups'
-                        />
-                    </Text>
-                }
-                {creator &&
-                    <Text style={style.createdBy}>
-                        <FormattedText
-                            id='mobile.routes.channelInfo.createdBy'
-                            defaultMessage='Created by {creator} on '
-                            values={{
-                                creator,
-                            }}
-                        />
-                        <FormattedDate
-                            value={new Date(createAt)}
-                            year='numeric'
-                            month='long'
-                            day='2-digit'
-                        />
-                    </Text>
-                }
-            </View>
+            </SafeAreaView>
         );
     }
 }

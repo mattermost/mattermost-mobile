@@ -66,19 +66,20 @@ export default class ChannelIOS extends ChannelBase {
                         style={channelLoaderStyle}
                     />
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
+                
+                    <KeyboardTrackingView
+                        ref={this.keyboardTracker}
+                        scrollViewNativeID={currentChannelId}
+                        accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
+                    >
+                        <PostTextbox
+                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                            ref={this.postTextbox}
+                            navigator={navigator}
+                        />
+                    </KeyboardTrackingView>
                 </SafeAreaView>
-                <KeyboardTrackingView
-                    ref={this.keyboardTracker}
-                    scrollViewNativeID={currentChannelId}
-                    accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
-                >
-                    <PostTextbox
-                        cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        ref={this.postTextbox}
-                        navigator={navigator}
-                    />
-                </KeyboardTrackingView>
             </React.Fragment>
         );
 

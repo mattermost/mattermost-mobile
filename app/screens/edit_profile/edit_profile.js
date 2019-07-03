@@ -8,7 +8,7 @@ import {Alert, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {DocumentPickerUtil} from 'react-native-document-picker';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import {Client4} from 'mattermost-redux/client';
 
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
@@ -575,31 +575,33 @@ export default class EditProfile extends PureComponent {
         }
 
         return (
-            <View style={style.flex}>
-                <StatusBar/>
-                <KeyboardAwareScrollView
-                    bounces={false}
-                    innerRef={this.scrollViewRef}
-                    style={style.container}
-                >
-                    {displayError}
-                    <View style={[style.scrollView]}>
-                        {this.renderProfilePicture()}
-                        {this.renderFirstNameSettings()}
-                        <View style={style.separator}/>
-                        {this.renderLastNameSettings()}
-                        <View style={style.separator}/>
-                        {this.renderUsernameSettings()}
-                        <View style={style.separator}/>
-                        {this.renderEmailSettings()}
-                        <View style={style.separator}/>
-                        {this.renderNicknameSettings()}
-                        <View style={style.separator}/>
-                        {this.renderPositionSettings()}
-                        <View style={style.footer}/>
-                    </View>
-                </KeyboardAwareScrollView>
-            </View>
+            <SafeAreaView>
+                <View style={style.flex}>
+                    <StatusBar/>
+                    <KeyboardAwareScrollView
+                        bounces={false}
+                        innerRef={this.scrollViewRef}
+                        style={style.container}
+                    >
+                        {displayError}
+                        <View style={[style.scrollView]}>
+                            {this.renderProfilePicture()}
+                            {this.renderFirstNameSettings()}
+                            <View style={style.separator}/>
+                            {this.renderLastNameSettings()}
+                            <View style={style.separator}/>
+                            {this.renderUsernameSettings()}
+                            <View style={style.separator}/>
+                            {this.renderEmailSettings()}
+                            <View style={style.separator}/>
+                            {this.renderNicknameSettings()}
+                            <View style={style.separator}/>
+                            {this.renderPositionSettings()}
+                            <View style={style.footer}/>
+                        </View>
+                    </KeyboardAwareScrollView>
+                </View>
+            </SafeAreaView>
         );
     }
 }

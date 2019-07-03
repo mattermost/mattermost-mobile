@@ -8,7 +8,7 @@ import {
     View,
 } from 'react-native';
 import {injectIntl} from 'react-intl';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
@@ -195,17 +195,19 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
-                <StatusBar/>
-                <ScrollView
-                    style={style.scrollView}
-                    contentContainerStyle={style.scrollViewContent}
-                    alwaysBounceVertical={false}
-                >
-                    {this.renderMentionSection(style)}
-                    {this.renderReplySection(style)}
-                </ScrollView>
-            </View>
+            <SafeAreaView>
+                <View style={style.container}>
+                    <StatusBar/>
+                    <ScrollView
+                        style={style.scrollView}
+                        contentContainerStyle={style.scrollViewContent}
+                        alwaysBounceVertical={false}
+                    >
+                        {this.renderMentionSection(style)}
+                        {this.renderReplySection(style)}
+                    </ScrollView>
+                </View>
+            </SafeAreaView>
         );
     }
 }

@@ -11,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import SafeAreaView from 'app/components/safe_area_view';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -215,132 +216,134 @@ export default class About extends PureComponent {
         }
 
         return (
-            <View style={style.wrapper}>
-                <StatusBar/>
-                <ScrollView
-                    style={style.scrollView}
-                    contentContainerStyle={style.scrollViewContent}
-                >
-                    <View style={style.logoContainer}>
-                        <AppIcon
-                            color={theme.centerChannelColor}
-                            height={120}
-                            width={120}
-                        />
-                    </View>
-                    <View style={style.infoContainer}>
-                        <View style={style.titleContainer}>
-                            <Text style={style.title}>
-                                {`${config.SiteName} `}
-                            </Text>
-                            {title}
+            <SafeAreaView>
+                <View style={style.wrapper}>
+                    <StatusBar/>
+                    <ScrollView
+                        style={style.scrollView}
+                        contentContainerStyle={style.scrollViewContent}
+                    >
+                        <View style={style.logoContainer}>
+                            <AppIcon
+                                color={theme.centerChannelColor}
+                                height={120}
+                                width={120}
+                            />
                         </View>
-                        {subTitle}
-                        <FormattedText
-                            id='mobile.about.appVersion'
-                            defaultMessage='App Version: {version} (Build {number})'
-                            style={style.info}
-                            values={{
-                                version: DeviceInfo.getVersion(),
-                                number: DeviceInfo.getBuildNumber(),
-                            }}
-                        />
-                        {serverVersion}
-                        <FormattedText
-                            id='mobile.about.database'
-                            defaultMessage='Database: {type}'
-                            style={style.info}
-                            values={{
-                                type: config.SQLDriverName,
-                            }}
-                        />
-                        {licensee}
-                        {learnMore}
-                        {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
+                        <View style={style.infoContainer}>
+                            <View style={style.titleContainer}>
+                                <Text style={style.title}>
+                                    {`${config.SiteName} `}
+                                </Text>
+                                {title}
+                            </View>
+                            {subTitle}
                             <FormattedText
-                                id='mobile.about.powered_by'
-                                defaultMessage='{site} is powered by Mattermost'
-                                style={style.footerText}
+                                id='mobile.about.appVersion'
+                                defaultMessage='App Version: {version} (Build {number})'
+                                style={style.info}
                                 values={{
-                                    site: this.props.config.SiteName,
+                                    version: DeviceInfo.getVersion(),
+                                    number: DeviceInfo.getBuildNumber(),
                                 }}
                             />
-                        }
-                        <FormattedText
-                            id='mobile.about.copyright'
-                            defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
-                            style={[style.footerText, style.copyrightText]}
-                            values={{
-                                currentYear: new Date().getFullYear(),
-                            }}
-                        />
-                        <View style={style.tosPrivacyContainer}>
-                            {termsOfService}
-                            {tosPrivacyHyphen}
-                            {privacyPolicy}
-                        </View>
-                        <View style={style.noticeContainer}>
-                            <View style={style.footerGroup}>
+                            {serverVersion}
+                            <FormattedText
+                                id='mobile.about.database'
+                                defaultMessage='Database: {type}'
+                                style={style.info}
+                                values={{
+                                    type: config.SQLDriverName,
+                                }}
+                            />
+                            {licensee}
+                            {learnMore}
+                            {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
                                 <FormattedText
-                                    id='mobile.notice_text'
-                                    defaultMessage='Mattermost is made possible by the open source software used in our {platform} and {mobile}.'
+                                    id='mobile.about.powered_by'
+                                    defaultMessage='{site} is powered by Mattermost'
                                     style={style.footerText}
                                     values={{
-                                        platform: (
-                                            <FormattedText
-                                                id='mobile.notice_platform_link'
-                                                defaultMessage='server'
-                                                style={style.noticeLink}
-                                                onPress={this.handlePlatformNotice}
-                                            />
-                                        ),
-                                        mobile: (
-                                            <FormattedText
-                                                id='mobile.notice_mobile_link'
-                                                defaultMessage='mobile apps'
-                                                style={[style.noticeLink, {marginLeft: 5}]}
-                                                onPress={this.handleMobileNotice}
-                                            />
-                                        ),
+                                        site: this.props.config.SiteName,
                                     }}
                                 />
-                            </View>
-                        </View>
-                        <View style={style.hashContainer}>
-                            <View style={style.footerGroup}>
-                                <FormattedText
-                                    id='about.hash'
-                                    defaultMessage='Build Hash:'
-                                    style={style.footerTitleText}
-                                />
-                                <Text style={style.footerText}>
-                                    {config.BuildHash}
-                                </Text>
-                            </View>
-                            <View style={style.footerGroup}>
-                                <FormattedText
-                                    id='about.hashee'
-                                    defaultMessage='EE Build Hash:'
-                                    style={style.footerTitleText}
-                                />
-                                <Text style={style.footerText}>
-                                    {config.BuildHashEnterprise}
-                                </Text>
-                            </View>
-                        </View>
-                        <View style={style.footerGroup}>
+                            }
                             <FormattedText
-                                id='about.date'
-                                defaultMessage='Build Date:'
-                                style={style.footerTitleText}
+                                id='mobile.about.copyright'
+                                defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
+                                style={[style.footerText, style.copyrightText]}
+                                values={{
+                                    currentYear: new Date().getFullYear(),
+                                }}
                             />
-                            <Text style={style.footerText}>
-                                {config.BuildDate}
-                            </Text>
+                            <View style={style.tosPrivacyContainer}>
+                                {termsOfService}
+                                {tosPrivacyHyphen}
+                                {privacyPolicy}
+                            </View>
+                            <View style={style.noticeContainer}>
+                                <View style={style.footerGroup}>
+                                    <FormattedText
+                                        id='mobile.notice_text'
+                                        defaultMessage='Mattermost is made possible by the open source software used in our {platform} and {mobile}.'
+                                        style={style.footerText}
+                                        values={{
+                                            platform: (
+                                                <FormattedText
+                                                    id='mobile.notice_platform_link'
+                                                    defaultMessage='server'
+                                                    style={style.noticeLink}
+                                                    onPress={this.handlePlatformNotice}
+                                                />
+                                            ),
+                                            mobile: (
+                                                <FormattedText
+                                                    id='mobile.notice_mobile_link'
+                                                    defaultMessage='mobile apps'
+                                                    style={[style.noticeLink, {marginLeft: 5}]}
+                                                    onPress={this.handleMobileNotice}
+                                                />
+                                            ),
+                                        }}
+                                    />
+                                </View>
+                            </View>
+                            <View style={style.hashContainer}>
+                                <View style={style.footerGroup}>
+                                    <FormattedText
+                                        id='about.hash'
+                                        defaultMessage='Build Hash:'
+                                        style={style.footerTitleText}
+                                    />
+                                    <Text style={style.footerText}>
+                                        {config.BuildHash}
+                                    </Text>
+                                </View>
+                                <View style={style.footerGroup}>
+                                    <FormattedText
+                                        id='about.hashee'
+                                        defaultMessage='EE Build Hash:'
+                                        style={style.footerTitleText}
+                                    />
+                                    <Text style={style.footerText}>
+                                        {config.BuildHashEnterprise}
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={style.footerGroup}>
+                                <FormattedText
+                                    id='about.date'
+                                    defaultMessage='Build Date:'
+                                    style={style.footerTitleText}
+                                />
+                                <Text style={style.footerText}>
+                                    {config.BuildDate}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
-                </ScrollView>
-            </View>
+                    </ScrollView>
+                </View>
+            </SafeAreaView>
         );
     }
 }

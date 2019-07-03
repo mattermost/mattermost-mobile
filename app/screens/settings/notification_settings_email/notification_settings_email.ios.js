@@ -7,7 +7,7 @@ import {
     ScrollView,
     View,
 } from 'react-native';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import {Preferences} from 'mattermost-redux/constants';
 
 import FormattedText from 'app/components/formatted_text';
@@ -120,16 +120,18 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
-                <StatusBar/>
-                <ScrollView
-                    style={style.scrollView}
-                    contentContainerStyle={style.scrollViewContent}
-                    alwaysBounceVertical={false}
-                >
-                    {this.renderEmailSection()}
-                </ScrollView>
-            </View>
+            <SafeAreaView>
+                <View style={style.container}>
+                    <StatusBar/>
+                    <ScrollView
+                        style={style.scrollView}
+                        contentContainerStyle={style.scrollViewContent}
+                        alwaysBounceVertical={false}
+                    >
+                        {this.renderEmailSection()}
+                    </ScrollView>
+                </View>
+            </SafeAreaView>
         );
     }
 }

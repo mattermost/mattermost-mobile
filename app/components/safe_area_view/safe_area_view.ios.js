@@ -187,6 +187,8 @@ export default class SafeAreaIos extends PureComponent {
                 style={{
                     flex: 1,
                     backgroundColor: bgColor,
+                    marginLeft: safeAreaInsets.left, 
+                    marginRight: safeAreaInsets.right
                 }}
             >
                 {this.renderTopBar()}
