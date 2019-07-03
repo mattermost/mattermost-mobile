@@ -24,7 +24,7 @@ describe('Permalink', () => {
         setChannelLoading: jest.fn(),
         goToScreen: jest.fn(),
         dismissModal: jest.fn(),
-        dismissAllModal: jest.fn(),
+        dismissAllModals: jest.fn(),
         resetToChannel: jest.fn(),
     };
 

@@ -183,7 +183,7 @@ export function popToRoot() {
             // atop the root screen to pop. We'll do nothing in this
             // case but we will catch the rejection here so that the
             // caller doesn't have to.
-        });;
+        });
     };
 }
 
