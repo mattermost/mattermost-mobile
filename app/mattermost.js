@@ -145,8 +145,8 @@ new NativeEventsReceiver().appLaunched(async () => {
     }
 });
 
-init().then(async (credentials) => {
+init().then((credentials) => {
     if (!ephemeralStore.appStarted) {
-        await launchEntryAndAuthenticateIfNeeded(credentials);
+        launchEntryAndAuthenticateIfNeeded(credentials);
     }
 });
