@@ -62,7 +62,6 @@ public class MainApplication extends NavigationApplication implements INotificat
   public static MainApplication instance;
 
   public Boolean sharedExtensionIsOpened = false;
-  public Boolean replyFromPushNotification = false;
 
   public long APP_START_TIME;
 
@@ -116,7 +115,6 @@ public class MainApplication extends NavigationApplication implements INotificat
             new ReactNativeDocumentPicker(),
             new SharePackage(this),
             new KeychainPackage(),
-            new InitializationPackage(this),
             new AsyncStoragePackage(),
             new NetInfoPackage(),
             new RNCWebViewPackage(),

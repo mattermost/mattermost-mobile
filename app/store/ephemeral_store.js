@@ -3,6 +3,9 @@
 
 class EphemeralStore {
     constructor() {
+        this.appStarted = false;
+        this.appStartedFromPushNotification = false;
+        this.deviceToken = null;
         this.componentIdStack = [];
     }
 
