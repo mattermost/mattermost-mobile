@@ -26,7 +26,7 @@ export const store = configureStore(initialState);
 
 const init = async () => {
     if (EphemeralStore.appStarted) {
-        launchAppAndAuthenticateIfNeeded();
+        launchApp();
         return;
     }
 
