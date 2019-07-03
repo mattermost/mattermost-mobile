@@ -57,7 +57,7 @@ function mapRealmDispatchToProps(dispatch) {
         setLastUpgradeCheck,
     }, reduxStore.dispatch);
     return {
-        actions,
+        ...actions,
         reduxActions,
     };
 }

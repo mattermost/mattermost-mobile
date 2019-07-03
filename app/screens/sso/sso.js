@@ -58,15 +58,13 @@ const oneLoginFormScalingJS = `
 
 class SSO extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            scheduleExpiredNotification: PropTypes.func.isRequired,
-            ssoLogin: PropTypes.func.isRequired,
-        }).isRequired,
         config: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         license: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
+        scheduleExpiredNotification: PropTypes.func.isRequired,
         serverUrl: PropTypes.string.isRequired,
+        ssoLogin: PropTypes.func.isRequired,
         ssoType: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -179,9 +177,9 @@ class SSO extends PureComponent {
 
                 if (token) {
                     this.setState({renderWebView: false});
-                    const {actions, config, license} = this.props;
+                    const {config, license, ssoLogin} = this.props;
 
-                    actions.ssoLogin({config, license, token}).then((result) => {
+                    ssoLogin({config, license, token}).then((result) => {
                         if (result.error) {
                             this.setState({error: result.error.message});
                             return;
@@ -197,9 +195,9 @@ class SSO extends PureComponent {
     };
 
     scheduleSessionExpiredNotification = () => {
-        const {actions, intl} = this.props;
+        const {intl, scheduleExpiredNotification} = this.props;
 
-        actions.scheduleExpiredNotification(intl);
+        scheduleExpiredNotification(intl);
     };
 
     renderLoading = () => {

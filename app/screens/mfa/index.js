@@ -26,11 +26,9 @@ import {setMfaPreflightDone} from 'app/utils/security';
 
 export default class Mfa extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            login: PropTypes.func.isRequired,
-        }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
+        login: PropTypes.func.isRequired,
         loginId: PropTypes.string.isRequired,
         goToChannel: PropTypes.func.isRequired,
         navigator: PropTypes.object,
@@ -78,7 +76,7 @@ export default class Mfa extends PureComponent {
     };
 
     submit = preventDoubleTap(() => {
-        const {actions, config, license, goToChannel, loginId, password} = this.props;
+        const {config, license, goToChannel, login, loginId, password} = this.props;
         const {token} = this.state;
 
         Keyboard.dismiss();
@@ -96,7 +94,7 @@ export default class Mfa extends PureComponent {
 
         this.setState({isLoading: true});
         setMfaPreflightDone(true);
-        actions.login({loginId, password, mfaToken: token, config, license}).then((data) => {
+        login({loginId, password, mfaToken: token, config, license}).then((data) => {
             const {error} = data;
             const nextState = {isLoading: false};
             if (error) {

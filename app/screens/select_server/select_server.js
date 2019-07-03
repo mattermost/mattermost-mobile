@@ -40,18 +40,16 @@ import LocalConfig from 'assets/config';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            loadConfigAndLicense: PropTypes.func.isRequired,
-            login: PropTypes.func.isRequired,
-            pingServer: PropTypes.func.isRequired,
-            scheduleExpiredNotification: PropTypes.func.isRequired,
-        }).isRequired,
         allowOtherServers: PropTypes.bool,
+        loadConfigAndLicense: PropTypes.func.isRequired,
+        login: PropTypes.func.isRequired,
+        pingServer: PropTypes.func.isRequired,
         navigator: PropTypes.object,
         reduxActions: PropTypes.shape({
             handleServerUrlChanged: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
         }).isRequired,
+        scheduleExpiredNotification: PropTypes.func.isRequired,
         serverUrl: PropTypes.string.isRequired,
     };
 
@@ -288,12 +286,12 @@ export default class SelectServer extends PureComponent {
     };
 
     loginWithCertificate = async () => {
-        const {actions, navigator} = this.props;
+        const {login, navigator} = this.props;
         const {config, license} = this.state;
 
         tracker.initialLoad = Date.now();
 
-        await actions.login({loginId: 'credential', password: 'password', config, license});
+        await login({loginId: 'credential', password: 'password', config, license});
         this.scheduleSessionExpiredNotification();
 
         navigator.resetTo({
@@ -313,7 +311,7 @@ export default class SelectServer extends PureComponent {
     };
 
     pingServer = (url, retryWithHttp = true) => {
-        const {pingServer, loadConfigAndLicense} = this.props.actions;
+        const {pingServer, loadConfigAndLicense} = this.props;
 
         const {handleServerUrlChanged} = this.props.reduxActions;
 
@@ -387,9 +385,9 @@ export default class SelectServer extends PureComponent {
 
     scheduleSessionExpiredNotification = () => {
         const {intl} = this.context;
-        const {actions} = this.props;
+        const {scheduleExpiredNotification} = this.props;
 
-        actions.scheduleExpiredNotification(intl);
+        scheduleExpiredNotification(intl);
     };
 
     selectCertificate = () => {

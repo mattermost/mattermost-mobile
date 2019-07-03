@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {realmConnect} from 'realm-react-redux';
 
 import {scheduleExpiredNotification, sendPasswordResetEmail} from 'app/actions/realm/general';
@@ -24,14 +23,10 @@ function mapQueriesToProps() {
     };
 }
 
-function mapRealmDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            login,
-            scheduleExpiredNotification,
-            sendPasswordResetEmail,
-        }, dispatch),
-    };
-}
+const mapRealmDispatchToProps = {
+    login,
+    scheduleExpiredNotification,
+    sendPasswordResetEmail,
+};
 
 export default realmConnect(null, mapQueriesToProps, mapRealmDispatchToProps, null, options)(Login);

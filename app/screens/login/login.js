@@ -34,15 +34,13 @@ const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa
 
 export default class Login extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            login: PropTypes.func.isRequired,
-            scheduleExpiredNotification: PropTypes.func.isRequired,
-            sendPasswordResetEmail: PropTypes.func.isRequired,
-        }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
+        login: PropTypes.func.isRequired,
         loginId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
+        scheduleExpiredNotification: PropTypes.func.isRequired,
+        sendPasswordResetEmail: PropTypes.func.isRequired,
         theme: PropTypes.object,
     };
 
@@ -134,8 +132,7 @@ export default class Login extends PureComponent {
 
     forgotPassword = () => {
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
-        const {sendPasswordResetEmail} = this.props.actions;
+        const {navigator, sendPasswordResetEmail, theme} = this.props;
 
         navigator.push({
             screen: 'ForgotPassword',
@@ -223,7 +220,7 @@ export default class Login extends PureComponent {
 
     goToMfa = () => {
         const {intl} = this.context;
-        const {actions, config, license, navigator, theme} = this.props;
+        const {config, license, login, navigator, theme} = this.props;
         const {loginId, password} = this.state;
 
         this.setState({isLoading: false});
@@ -240,7 +237,7 @@ export default class Login extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
-                actions,
+                login,
                 config,
                 license,
                 loginId,
@@ -339,16 +336,16 @@ export default class Login extends PureComponent {
 
     scheduleSessionExpiredNotification = () => {
         const {intl} = this.context;
-        const {actions} = this.props;
+        const {scheduleExpiredNotification} = this.props;
 
-        actions.scheduleExpiredNotification(intl);
+        scheduleExpiredNotification(intl);
     };
 
     signIn = () => {
-        const {actions, config, license} = this.props;
+        const {login, config, license} = this.props;
         const {loginId, password} = this.state;
 
-        actions.login({
+        login({
             loginId: loginId.toLowerCase(),
             password,
             config,
