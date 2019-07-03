@@ -59,7 +59,7 @@ export default class Permalink extends PureComponent {
             setChannelLoading: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
             dismissModal: PropTypes.func.isRequired,
-            dismissAllModal: PropTypes.func.isRequired,
+            dismissAllModals: PropTypes.func.isRequired,
             resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,

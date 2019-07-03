@@ -19,7 +19,7 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {
     goToScreen,
     dismissModal,
-    dismissAllModal,
+    dismissAllModals,
     resetToChannel,
 } from 'app/actions/navigation';
 import {
@@ -81,7 +81,7 @@ function mapDispatchToProps(dispatch) {
             setChannelLoading,
             goToScreen,
             dismissModal,
-            dismissAllModal,
+            dismissAllModals,
             resetToChannel,
         }, dispatch),
     };
