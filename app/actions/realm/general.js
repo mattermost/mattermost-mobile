@@ -53,7 +53,11 @@ export function loadConfigAndLicense(save = true) {
             if (general?.currentUser) {
                 if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
                     license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-                    dataRetentionPolicy = await Client4.getDataRetentionPolicy();
+                    try {
+                        dataRetentionPolicy = await Client4.getDataRetentionPolicy();
+                    } catch (e) {
+                        forceLogoutIfNecessary(e);
+                    }
                 }
             }
 
@@ -74,7 +78,6 @@ export function loadConfigAndLicense(save = true) {
 
             return data;
         } catch (e) {
-            forceLogoutIfNecessary(e);
             return {error: e};
         }
     };

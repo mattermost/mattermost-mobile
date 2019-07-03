@@ -88,7 +88,11 @@ export function handleSuccessfulLogin(config, license) {
         let dataRetentionPolicy;
         if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
             license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-            dataRetentionPolicy = await Client4.getDataRetentionPolicy();
+            try {
+                dataRetentionPolicy = await Client4.getDataRetentionPolicy();
+            } catch (e) {
+                // do nothing
+            }
         }
 
         dispatch({
@@ -161,7 +165,6 @@ export function loadMe(loginUser) {
 
             return data;
         } catch (error) {
-            // console.error('error', error.message)
             return {error};
         }
     };
