@@ -10,9 +10,12 @@ import {
     Platform,
     StyleSheet,
     TouchableOpacity,
+    StatusBar,
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import {intlShape} from 'react-intl';
+
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import PostAttachmentImage from 'app/components/post_attachment_image';
@@ -179,11 +182,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     generateStaticEmbed = (isYouTube, isImage) => {
-        if (isYouTube || isImage) {
+        const {isReplyPost, link, metadata, openGraphData, showLinkPreviews, theme} = this.props;
+
+        if (isYouTube || (isImage && !openGraphData)) {
             return null;
         }
 
-        const {isReplyPost, link, metadata, openGraphData, showLinkPreviews, theme} = this.props;
         const attachments = this.getMessageAttachment();
         if (attachments) {
             return attachments;
@@ -439,6 +443,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         if (Platform.OS === 'ios') {
             YouTubeStandaloneIOS.
                 playVideo(videoId, startTime).
+                then(this.playYouTubeVideoEnded).
                 catch(this.playYouTubeVideoError);
         } else {
             const {googleDeveloperKey} = this.props;
@@ -453,6 +458,13 @@ export default class PostBodyAdditionalContent extends PureComponent {
             } else {
                 Linking.openURL(link);
             }
+        }
+    };
+
+    playYouTubeVideoEnded = () => {
+        if (Platform.OS === 'ios') {
+            StatusBar.setHidden(false);
+            EventEmitter.emit('update_safe_area_view');
         }
     };
 

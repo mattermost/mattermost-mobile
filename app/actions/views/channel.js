@@ -21,7 +21,7 @@ import {
 } from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
-import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
+import {getTeamMembersByIds, selectTeam} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
 import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
@@ -54,8 +54,8 @@ import {isDirectChannelVisible, isGroupChannelVisible} from 'app/utils/channels'
 const MAX_POST_TRIES = 3;
 
 export function loadChannelsIfNecessary(teamId) {
-    return async (dispatch, getState) => {
-        await fetchMyChannelsAndMembers(teamId)(dispatch, getState);
+    return async (dispatch) => {
+        await dispatch(fetchMyChannelsAndMembers(teamId));
     };
 }
 
@@ -198,7 +198,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
                 });
             }
         } else {
-            const {lastConnectAt} = state.device.websocket;
+            const {lastConnectAt} = state.websocket;
             const lastGetPosts = state.views.channel.lastGetPosts[channelId];
 
             let since;
@@ -416,6 +416,12 @@ export function handleSelectChannelByName(channelName, teamName) {
         const currentTeamName = currentTeam?.name;
         const {data: channel} = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const currentChannelId = getCurrentChannelId(state);
+
+        if (teamName && teamName !== currentTeamName) {
+            const team = getTeamByName(state, teamName);
+            dispatch(selectTeam(team));
+        }
+
         if (channel && currentChannelId !== channel.id) {
             dispatch(handleSelectChannel(channel.id));
         }

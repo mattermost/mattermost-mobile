@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
+    AppState,
     BackHandler,
     findNodeHandle,
     Keyboard,
@@ -98,7 +99,10 @@ export default class PostTextBoxBase extends PureComponent {
 
     componentDidMount() {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
+
         EventEmitter.on(event, this.handleInsertTextToDraft);
+        AppState.addEventListener('change', this.handleAppStateChange);
+
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -113,7 +117,10 @@ export default class PostTextBoxBase extends PureComponent {
 
     componentWillUnmount() {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
+
         EventEmitter.off(event, this.handleInsertTextToDraft);
+        AppState.removeEventListener('change', this.handleAppStateChange);
+
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -244,6 +251,12 @@ export default class PostTextBoxBase extends PureComponent {
             return true;
         }
         return false;
+    };
+
+    handleAppStateChange = (nextAppState) => {
+        if (nextAppState !== 'active') {
+            this.changeDraft(this.state.value);
+        }
     };
 
     handleEndEditing = (e) => {
