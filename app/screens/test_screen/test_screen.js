@@ -18,7 +18,7 @@ export default class TestScreen extends PureComponent {
         reduxActions: PropTypes.shape({
             handleServerUrlChanged: PropTypes.func.isRequired,
         }),
-        user: PropTypes.object,
+        fullName: PropTypes.string,
         reduxServerUrl: PropTypes.string,
     };
 
@@ -41,7 +41,7 @@ export default class TestScreen extends PureComponent {
     };
 
     render() {
-        const {user, reduxServerUrl} = this.props;
+        const {fullName, reduxServerUrl} = this.props;
 
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: 'yellow'}}>
@@ -53,7 +53,7 @@ export default class TestScreen extends PureComponent {
                     />
                     <View style={{flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
                         <Text>{`Redux stored server url ${reduxServerUrl}`}</Text>
-                        <Text>{user ? user.fullName : 'No user present'}</Text>
+                        <Text>{fullName || 'No user present'}</Text>
                     </View>
                     <Button
                         title={'Toggle server'}

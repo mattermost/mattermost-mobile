@@ -17,28 +17,24 @@ const options = {
     context: ReactRealmContext,
 };
 
-function getCurrentUser(generalResults, usersResults) {
-    const general = generalResults.filtered(`id="${GENERAL_SCHEMA_ID}"`)[0];
-    let user = null;
-    if (general?.currentUserId) {
-        user = usersResults.filtered(`id="${general.currentUserId}"`)[0];
-    }
-
-    return user;
+function getCurrentUser(usersResults) {
+    return usersResults ? usersResults[0] : null;
 }
 
 function mapPropsToQueries(realm) {
-    const general = realm.objects('General');
-    const users = realm.objects('User');
-    return [general, users];
+    //Extend Realm.Object and implement a snapshot() function if returning a objectForPrimaryKey in mapPropsToQueries
+    const general = realm.objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
+    const users = realm.objects('User').filtered(`id="${general.currentUserId}"`);
+    return [users];
 }
 
-function mapQueriesToProps([general, users]) {
-    const user = getCurrentUser(general, users);
+function mapQueriesToProps([users]) {
+    // the returned user is always a different object, avoid passing the full object as props to prevent re-renders
+    const user = getCurrentUser(users);
     const reduxState = reduxStore.getState();
 
     return {
-        user,
+        fullName: user.fullName,
         reduxServerUrl: reduxState.entities.general.credentials.url,
     };
 }
