@@ -14,7 +14,7 @@ export default class SystemMessage extends React.PureComponent {
         allUsernames: PropTypes.array,
         linkStyle: PropTypes.object,
         messageData: PropTypes.array,
-        postType: PropTypes.object.isRequired,
+        postType: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
         textStyles: PropTypes.object.isRequired,
