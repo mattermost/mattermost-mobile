@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import PropTypes from 'prop-types';
 import React from 'react';
 import CombinedJoinLeaveMessage from 'app/components/combined_joinleave_message/';
 import ChannelSystemMessage from 'app/components/channel_system_message/channel_system_message';
@@ -8,6 +9,16 @@ import {Posts} from 'mattermost-redux/constants';
 
 
 export default class SystemMessage extends React.PureComponent {
+    static propTypes = {
+        post: PropTypes.object,
+        allUserIds: PropTypes.array,
+        allUsernames: PropTypes.array,
+        linkStyle: PropTypes.object,
+        messageData: PropTypes.array,
+        theme: PropTypes.object.isRequired,
+        navigator: PropTypes.object.isRequired,
+        textStyles: PropTypes.object.isRequired,
+    };
 
     render() {
         const {postType, navigator, theme, textStyles} = this.props;

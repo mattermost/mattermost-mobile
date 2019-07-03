@@ -9,29 +9,24 @@ import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {ViewTypes} from 'app/constants';
 
-
-export default class MiscSystemMessage extends React.PureComponent {
+export default class ChannelSystemMessage extends React.PureComponent {
+    static propTypes = {
+        post: PropTypes.object.isRequired,
+        theme: PropTypes.object.isRequired,
+        navigator: PropTypes.object.isRequired,
+        textStyles: PropTypes.object.isRequired,
+    };
 
     render() {
-        const { post, theme, navigator, textStyles } = this.props;
+        const {post, theme, navigator, textStyles} = this.props;
 
         const style = getStyleSheet(theme);
 
         const systemMessageRenderers = {
-//            [Posts.POST_TYPES.JOIN_CHANNEL]: renderJoinChannelMessage,
-//            [Posts.POST_TYPES.LEAVE_CHANNEL]: renderLeaveChannelMessage,
-//            [Posts.POST_TYPES.ADD_TO_CHANNEL]: renderAddToChannelMessage,
-//            [Posts.POST_TYPES.REMOVE_FROM_CHANNEL]: renderRemoveFromChannelMessage,
-//            [Posts.POST_TYPES.JOIN_TEAM]: renderJoinTeamMessage,
-//            [Posts.POST_TYPES.LEAVE_TEAM]: renderLeaveTeamMessage,
-//            [Posts.POST_TYPES.ADD_TO_TEAM]: renderAddToTeamMessage,
-//            [Posts.POST_TYPES.REMOVE_FROM_TEAM]: renderRemoveFromTeamMessage,
             [Posts.POST_TYPES.HEADER_CHANGE]: renderHeaderChangeMessage,
             [Posts.POST_TYPES.DISPLAYNAME_CHANGE]: renderDisplayNameChangeMessage,
-//            [Posts.POST_TYPES.CONVERT_CHANNEL]: renderConvertChannelToPrivateMessage,
             [Posts.POST_TYPES.PURPOSE_CHANGE]: renderPurposeChangeMessage,
             [Posts.POST_TYPES.CHANNEL_DELETED]: renderChannelDeletedMessage,
-//            [Posts.POST_TYPES.ME]: renderMeMessage,
         };
 
         return post.type ? systemMessageRenderers[post.type](post, navigator, style, textStyles, theme) : null;
@@ -179,13 +174,9 @@ const renderHeaderChangeMessage = (post, navigator, style, textStyles, theme) =>
     if (!post.props.username) {
         return null;
     }
-    const headerOptions = {
-        singleline: true,
-        channelNamesMap: post.props && post.props.channel_mentions,
-    };
     const username = renderUsername(post.props.username);
-    const oldHeader = post.props.old_header ? renderFormattedText(post.props.old_header, headerOptions) : null;
-    const newHeader = post.props.new_header ? renderFormattedText(post.props.new_header, headerOptions) : null;
+    const oldHeader = post.props.old_header ? post.props.old_header : null;
+    const newHeader = post.props.new_header ? post.props.new_header : null;
     if (post.props.new_header) {
         if (post.props.old_header) {
             return (
