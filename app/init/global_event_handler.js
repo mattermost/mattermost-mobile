@@ -11,11 +11,13 @@ import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {selectDefaultChannel} from 'app/actions/views/channel';
+import {showOverlay, dismissOverlay, popToRoot} from 'app/actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
-import {NavigationTypes} from 'app/constants';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
@@ -38,12 +40,15 @@ class GlobalEventHandler {
         EventEmitter.on(General.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         EventEmitter.on(General.CONFIG_CHANGED, this.onServerConfigChanged);
         EventEmitter.on(General.SWITCH_TO_DEFAULT_CHANNEL, this.onSwitchToDefaultChannel);
+        this.turnOnInAppNotificationHandling();
         Dimensions.addEventListener('change', this.onOrientationChange);
         AppState.addEventListener('change', this.onAppStateChange);
         Linking.addEventListener('url', this.onDeepLink);
     }
 
     appActive = async () => {
+        this.turnOnInAppNotificationHandling();
+
         // if the app is being controlled by an EMM provider
         if (emmProvider.enabled && emmProvider.inAppPinCode) {
             const authExpired = (Date.now() - emmProvider.inBackgroundSince) >= PROMPT_IN_APP_PIN_CODE_AFTER;
@@ -57,6 +62,8 @@ class GlobalEventHandler {
     };
 
     appInactive = () => {
+        this.turnOffInAppNotificationHandling();
+
         const {dispatch} = this.store;
 
         // When the app is sent to the background we set the time when that happens
@@ -226,6 +233,38 @@ class GlobalEventHandler {
         if (credentials) {
             dispatch(logout());
         }
+    };
+
+    turnOnInAppNotificationHandling = () => {
+        EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
+    }
+
+    turnOffInAppNotificationHandling = () => {
+        EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        EventEmitter.off(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
+    }
+
+    handleInAppNotification = (notification) => {
+        const {data} = notification;
+        const {dispatch, getState} = this.store;
+        const state = getState();
+        const currentChannelId = getCurrentChannelId(state);
+
+        if (data && data.channel_id !== currentChannelId) {
+            const screen = 'Notification';
+            const passProps = {
+                notification,
+            };
+
+            dispatch(showOverlay(screen, passProps));
+        }
+    };
+
+    handleNotificationTapped = async () => {
+        const {dispatch} = this.store;
+        dispatch(dismissOverlay());
+        dispatch(popToRoot());
     };
 }
 

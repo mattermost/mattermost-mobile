@@ -4,11 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {resetToTeams, dismissModal, popToRoot, showOverlay} from 'app/actions/navigation';
+import {resetToTeams} from 'app/actions/navigation';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {removeProtocol} from 'app/utils/url';
 
@@ -19,7 +18,6 @@ function mapStateToProps(state) {
 
     return {
         theme: getTheme(state),
-        currentChannelId: getCurrentChannelId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),
         locale,
     };
@@ -29,9 +27,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             resetToTeams,
-            dismissModal,
-            popToRoot,
-            showOverlay,
         }, dispatch),
     };
 }

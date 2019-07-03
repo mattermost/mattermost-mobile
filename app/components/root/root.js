@@ -9,20 +9,16 @@ import {Platform} from 'react-native';
 import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {NavigationTypes, ViewTypes} from 'app/constants';
+import {NavigationTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
 
 export default class Root extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             resetToTeams: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            popToRoot: PropTypes.func.isRequired,
-            showOverlay: PropTypes.func.isRequired,
         }).isRequired,
         children: PropTypes.node,
         excludeEvents: PropTypes.bool,
-        currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string,
         locale: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -32,8 +28,6 @@ export default class Root extends PureComponent {
         Client4.setAcceptLanguage(this.props.locale);
 
         if (!this.props.excludeEvents) {
-            EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
-            EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
             EventEmitter.on(NavigationTypes.NAVIGATION_NO_TEAMS, this.handleNoTeams);
             EventEmitter.on(NavigationTypes.NAVIGATION_ERROR_TEAMS, this.errorTeamsList);
         }
@@ -47,26 +41,10 @@ export default class Root extends PureComponent {
 
     componentWillUnmount() {
         if (!this.props.excludeEvents) {
-            EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
-            EventEmitter.off(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
             EventEmitter.off(NavigationTypes.NAVIGATION_NO_TEAMS, this.handleNoTeams);
             EventEmitter.off(NavigationTypes.NAVIGATION_ERROR_TEAMS, this.errorTeamsList);
         }
     }
-
-    handleInAppNotification = (notification) => {
-        const {data} = notification;
-        const {actions, currentChannelId} = this.props;
-
-        if (data && data.channel_id !== currentChannelId) {
-            const screen = 'Notification';
-            const passProps = {
-                notification,
-            };
-
-            actions.showOverlay(screen, passProps);
-        }
-    };
 
     handleNoTeams = () => {
         if (!this.refs.provider) {
@@ -117,16 +95,6 @@ export default class Root extends PureComponent {
 
         actions.resetToTeams(screen, title, passProps, options);
     }
-
-    handleNotificationTapped = async () => {
-        const {actions} = this.props;
-
-        if (Platform.OS === 'android') {
-            actions.dismissModal();
-        }
-
-        actions.popToRoot();
-    };
 
     render() {
         const locale = this.props.locale;
