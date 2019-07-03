@@ -25,6 +25,7 @@ import logo from 'assets/images/icon.png';
 import webhookIcon from 'assets/images/icons/webhook.jpg';
 
 const IMAGE_SIZE = 33;
+const AUTO_DISMISS_TIME_MILLIS = 5000;
 
 export default class Notification extends PureComponent {
     static propTypes = {
@@ -43,6 +44,28 @@ export default class Notification extends PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object,
     };
+
+    componentDidMount() {
+        this.setDismissTimer();
+    }
+
+    componentWillUnmount() {
+        this.clearDismissTimer();
+    }
+
+    setDismissTimer = () => {
+        this.dismissTimer = setTimeout(() => {
+            const {actions, componentId} = this.props;
+            actions.dismissOverlay(componentId);
+        }, AUTO_DISMISS_TIME_MILLIS);
+    }
+
+    clearDismissTimer = () => {
+        if (this.dismissTimer) {
+            clearTimeout(this.dismissTimer);
+            this.dismissTimer = null;
+        }
+    }
 
     notificationTapped = () => {
         const {actions, notification, componentId} = this.props;

@@ -351,6 +351,11 @@ export function showOverlay(name, passProps, options = {}) {
 
 export function dismissOverlay(componentId) {
     return () => {
-        return Navigation.dismissOverlay(componentId);
+        return Navigation.dismissOverlay(componentId).catch(() => {
+            // RNN returns a promise rejection if there is no modal with
+            // this componentId to dismiss. We'll do nothing in this case
+            // but we will catch the rejection here so that the caller
+            // doesn't have to.
+        });;
     };
 }
