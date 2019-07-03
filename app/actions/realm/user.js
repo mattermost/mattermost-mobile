@@ -19,6 +19,8 @@ import {completeLogin} from 'mattermost-redux/actions/users';
 import {reduxStore} from 'app/store';
 import {handleSuccessfulLogin as handleSuccessfulLoginRedux} from 'app/actions/views/login';
 
+import allSettled from 'promise.allsettled';
+
 export function login(options) {
     return async () => {
         const {config, ldapOnly, license, loginId, mfaToken, password} = options;
@@ -119,13 +121,14 @@ export function loadMe(loginUser) {
             Client4.setUserId(user.id);
             Client4.setUserRoles(user.roles);
 
-            const [preferences, teams, teamMembers, teamUnreads] = await Promise.all([
+            const promises = await allSettled([
                 Client4.getMyPreferences(),
                 Client4.getMyTeams(),
                 Client4.getMyTeamMembers(),
                 Client4.getMyTeamUnreads(),
             ]);
 
+            const [preferences, teams, teamMembers, teamUnreads] = promises.map((p) => p.value);
             const data = {
                 user,
                 preferences,
@@ -140,20 +143,25 @@ export function loadMe(loginUser) {
             });
 
             const roles = new Set();
-            for (const teamMember of teamMembers) {
-                for (const role of teamMember.roles?.split(' ')) {
-                    roles.add(role);
-                }
-                for (const role of user.roles?.split(' ')) {
-                    roles.add(role);
+            if (teamMembers) {
+                for (const teamMember of teamMembers) {
+                    for (const role of teamMember.roles?.split(' ')) {
+                        roles.add(role);
+                    }
                 }
             }
+
+            for (const role of user.roles?.split(' ')) {
+                roles.add(role);
+            }
+
             if (roles.size > 0) {
                 // TODO: dispatch(loadRolesIfNeeded(roles));
             }
 
             return data;
         } catch (error) {
+            // console.error('error', error.message)
             return {error};
         }
     };
