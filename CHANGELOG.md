@@ -12,6 +12,7 @@
 ### Bug Fixes
  - Fixed a few mobile app crash / fatal error issues.
  - Fixed an issue where having the sidebar open at all times on tablets did not work for split view.
+ - Fixed an issue where new messages were often hidden behind a keyboard or text field.
  - Fixed an issue on Android where channel sorting didn't match the web app.
  - Fixed an issue where sharing a GIF via keyboard resulted in an error screen.
  - Fixed an issue where long-press menu could not be dragged up when rotating the device to landscape view while the menu was open.
