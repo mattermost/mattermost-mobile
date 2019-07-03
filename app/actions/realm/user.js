@@ -83,10 +83,6 @@ export function handleSuccessfulLogin(config, license) {
             dispatch(autoUpdateTimezone(getDeviceTimezone()));
         }
 
-        if (config?.EnableCustomEmoji === 'true') {
-            // TODO: Fetch all custom emojis
-        }
-
         let dataRetentionPolicy;
         if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
             license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
