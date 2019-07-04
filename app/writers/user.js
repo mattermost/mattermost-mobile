@@ -14,7 +14,11 @@ function currentUser(realm, action) {
     case UserTypes.RECEIVED_ME: {
         const data = action.data || action.payload;
         const user = userDataToRealm(data.user);
-        const realmUser = realm.create('User', user, true);
+
+        let realmUser = realm.objectForPrimaryKey('User', user.id);
+        if (!realmUser || user.updateAt !== realmUser.updateAt) {
+            realmUser = realm.create('User', user, true);
+        }
 
         realm.create('General', {
             id: GENERAL_SCHEMA_ID,
@@ -25,7 +29,8 @@ function currentUser(realm, action) {
         if (data.preferences?.length) {
             realm.delete(realm.objects('Preference'));
             data.preferences.forEach((pref) => {
-                realm.create('Preference', pref);
+                const id = `${pref.category}-${pref.name}`;
+                realm.create('Preference', {...pref, id});
             });
         }
 
