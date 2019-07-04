@@ -9,19 +9,13 @@ import {GENERAL_SCHEMA_ID} from 'app/models/general';
 
 import TestScreen from './test_screen';
 
-import ReactRealmContext from 'app/store/realm_context';
+import options from 'app/store/realm_context_options';
 import {reduxStore} from 'app/store';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 
 import Preferences from 'app/constants/preferences';
 import {getCurrentUser} from 'app/selectors/realm/general';
 import {getTheme} from 'app/selectors/realm/theme';
-
-const options = {
-    context: ReactRealmContext,
-    allowUnsafeWrites: true,
-    watchUnsafeWrites: true,
-};
 
 function mapPropsToQueries(realm) {
     //Extend Realm.Object function if returning a objectForPrimaryKey in mapPropsToQueries

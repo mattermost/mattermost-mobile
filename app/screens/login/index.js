@@ -5,14 +5,10 @@ import {realmConnect} from 'realm-react-redux';
 
 import {scheduleExpiredNotification, sendPasswordResetEmail} from 'app/actions/realm/general';
 import {login} from 'app/actions/realm/user';
-import ReactRealmContext from 'app/store/realm_context';
+import options from 'app/store/realm_context_options';
 import {reduxStore} from 'app/store';
 
 import Login from './login.js';
-
-const options = {
-    context: ReactRealmContext,
-};
 
 function mapQueriesToProps() {
     const state = reduxStore.getState();

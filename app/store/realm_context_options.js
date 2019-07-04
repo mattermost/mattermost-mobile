@@ -4,4 +4,10 @@
 import React from 'react';
 
 // Used to access the Realm Provider
-export default React.createContext('realm');
+const context = React.createContext('realm');
+
+export default {
+    context,
+    allowUnsafeWrites: true,
+    watchUnsafeWrites: true,
+};

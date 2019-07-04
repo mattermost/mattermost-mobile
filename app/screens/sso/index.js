@@ -5,13 +5,9 @@ import {realmConnect} from 'realm-react-redux';
 
 import {scheduleExpiredNotification} from 'app/actions/realm/general';
 import {ssoLogin} from 'app/actions/realm/user';
-import ReactRealmContext from 'app/store/realm_context';
+import options from 'app/store/realm_context_options';
 
 import SSO from './sso';
-
-const options = {
-    context: ReactRealmContext,
-};
 
 const mapRealmDispatchToProps = {
     scheduleExpiredNotification,
