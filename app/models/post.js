@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export class Post {
+import Realm from 'realm';
+
+export class Post extends Realm.Object {
     get propsAsJson() {
         try {
             return JSON.parse(this.props);
@@ -40,7 +42,7 @@ export class Post {
     }
 }
 
-export class Reaction {
+export class Reaction extends Realm.Object {
     static schema = {
         name: 'Reaction',
         primaryKey: 'id',
@@ -53,7 +55,7 @@ export class Reaction {
     }
 }
 
-export class PostsInChannel {
+export class PostsInChannel extends Realm.Object {
     static schema = {
         name: 'PostsInChannel',
         properties: {
@@ -69,7 +71,7 @@ export class PostsInChannel {
     }
 }
 
-export class File {
+export class File extends Realm.Object {
     static schema = {
         name: 'File',
         primaryKey: 'id',
@@ -90,7 +92,7 @@ export class File {
     }
 }
 
-export class ImageMetadata {
+export class ImageMetadata extends Realm.Object {
     static schema = {
         name: 'ImageMetadata',
         primaryKey: 'url',
@@ -104,7 +106,7 @@ export class ImageMetadata {
     }
 }
 
-export class Embed {
+export class Embed extends Realm.Object {
     get dataAsJson() {
         try {
             return JSON.parse(this.data);

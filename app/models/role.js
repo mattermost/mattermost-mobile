@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export default class Role {
+import Realm from 'realm';
+
+export default class Role extends Realm.Object {
     static schema = {
         name: 'Role',
         primaryKey: 'id',
