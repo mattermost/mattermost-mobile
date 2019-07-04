@@ -18,8 +18,9 @@ export default class TestScreen extends PureComponent {
         reduxActions: PropTypes.shape({
             handleServerUrlChanged: PropTypes.func.isRequired,
         }),
-        fullName: PropTypes.string,
+        user: PropTypes.object,
         reduxServerUrl: PropTypes.string,
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -41,23 +42,25 @@ export default class TestScreen extends PureComponent {
     };
 
     render() {
-        const {fullName, reduxServerUrl} = this.props;
+        const {user, reduxServerUrl, theme} = this.props;
 
         return (
-            <SafeAreaView style={{flex: 1, backgroundColor: 'yellow'}}>
+            <SafeAreaView style={{flex: 1, backgroundColor: theme.centerChannelBg}}>
                 <StatusBar barStyle={'dark-content'}/>
-                <View style={{flex: 1, backgroundColor: 'yellow', alignItems: 'center', justifyContent: 'space-between'}}>
+                <View style={{flex: 1, backgroundColor: theme.centerChannelBg, alignItems: 'center', justifyContent: 'space-between'}}>
                     <Button
                         title={'Fetch My User'}
                         onPress={this.load}
+                        color={theme.buttonColor}
                     />
                     <View style={{flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-                        <Text>{`Redux stored server url ${reduxServerUrl}`}</Text>
-                        <Text>{fullName || 'No user present'}</Text>
+                        <Text style={{color: theme.centerChannelColor}}>{`Redux stored server url ${reduxServerUrl}`}</Text>
+                        <Text style={{color: theme.centerChannelColor}}>{user ? user.fullName : 'No user present'}</Text>
                     </View>
                     <Button
                         title={'Toggle server'}
                         onPress={this.toggle}
+                        color={theme.buttonColor}
                     />
                 </View>
             </SafeAreaView>
