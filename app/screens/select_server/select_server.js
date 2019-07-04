@@ -26,7 +26,7 @@ import FormattedText from 'app/components/formatted_text';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
-import {getDefaultTheme} from 'app/selectors/theme';
+import {getDefaultThemeFromConfig} from 'app/selectors/theme';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -71,7 +71,7 @@ export default class SelectServer extends PureComponent {
             license: null,
         };
 
-        this.theme = getDefaultTheme();
+        this.theme = getDefaultThemeFromConfig();
 
         this.cancelPing = null;
     }
@@ -352,7 +352,7 @@ export default class SelectServer extends PureComponent {
                     const data = await loadConfigAndLicense(false);
                     config = data.config;
                     license = data.license;
-                    this.theme = getDefaultTheme(config);
+                    this.theme = getDefaultThemeFromConfig(config);
                 } catch (error) {
                     this.setState({
                         connected: false,

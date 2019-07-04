@@ -39,7 +39,7 @@ export const getCustomTheme = createSelector(
     }
 );
 
-export const getDefaultTheme = createSelector(
+export const getDefaultThemeFromConfig = createSelector(
     (config) => {
         if (config?.DefaultTheme) {
             const theme = Preferences.THEMES[config.DefaultTheme];
