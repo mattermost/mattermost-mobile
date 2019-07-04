@@ -7,7 +7,7 @@ import {
     Text,
     View,
     Platform,
-    SafeAreaView
+    SafeAreaView,
 } from 'react-native';
 
 import ChannelIcon from 'app/components/channel_icon';

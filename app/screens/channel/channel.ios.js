@@ -66,7 +66,6 @@ export default class ChannelIOS extends ChannelBase {
                         style={channelLoaderStyle}
                     />
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
-                
                     <KeyboardTrackingView
                         ref={this.keyboardTracker}
                         scrollViewNativeID={currentChannelId}
