@@ -210,6 +210,7 @@ configurations.all {
 }
 
 dependencies {
+    implementation project(':react-native-android-open-settings')
     // Make sure to put android-jsc at the top
     implementation "org.webkit:android-jsc-intl:r241213"
 

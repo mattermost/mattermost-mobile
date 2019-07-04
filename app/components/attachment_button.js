@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import DeviceInfo from 'react-native-device-info';
+import AndroidOpenSettings from 'react-native-android-open-settings';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import {DocumentPicker} from 'react-native-document-picker';
@@ -345,18 +346,6 @@ export default class AttachmentButton extends PureComponent {
                 }
                 break;
             case PermissionTypes.DENIED: {
-                const canOpenSettings = await Permissions.canOpenSettings();
-                let grantOption = null;
-                if (canOpenSettings) {
-                    grantOption = {
-                        text: formatMessage({
-                            id: 'mobile.permission_denied_retry',
-                            defaultMessage: 'Set permission',
-                        }),
-                        onPress: () => Permissions.openSettings(),
-                    };
-                }
-
                 const {title, text} = this.getPermissionDeniedMessage('storage');
 
                 Alert.alert(
@@ -369,7 +358,13 @@ export default class AttachmentButton extends PureComponent {
                                 defaultMessage: 'Dismiss',
                             }),
                         },
-                        grantOption,
+                        {
+                            text: formatMessage({
+                                id: 'mobile.permission_denied_retry',
+                                defaultMessage: 'Set permission',
+                            }),
+                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                        },
                     ]
                 );
                 return false;

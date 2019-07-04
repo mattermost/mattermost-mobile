@@ -1,5 +1,6 @@
 package com.mattermost.rnbeta;
 
+import com.levelasquez.androidopensettings.AndroidOpenSettingsPackage;
 import com.mattermost.share.SharePackage;
 import com.mattermost.share.RealPathUtil;
 
@@ -103,7 +104,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new AsyncStoragePackage(),
             new NetInfoPackage(),
             new RNCWebViewPackage(),
-            new RNGestureHandlerPackage()
+            new RNGestureHandlerPackage(),
+            new AndroidOpenSettingsPackage()
     );
   }
 
