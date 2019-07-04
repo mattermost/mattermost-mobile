@@ -5,7 +5,6 @@ import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
 import Channel from 'app/screens/channel';
-import Entry from 'app/screens/entry';
 import SelectServer from 'app/screens/select_server';
 import {wrapWithContextProvider} from 'app/utils/wrap_context_provider';
 
@@ -26,7 +25,6 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('EditChannel', () => wrapWithContextProvider(require('app/screens/edit_channel').default), store, Provider);
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(require('app/screens/edit_post').default), store, Provider);
     Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(require('app/screens/edit_profile').default), store, Provider);
-    Navigation.registerComponent('Entry', () => Entry, store, Provider);
     Navigation.registerComponent('ExpandedAnnouncementBanner', () => wrapWithContextProvider(require('app/screens/expanded_announcement_banner').default), store, Provider);
     Navigation.registerComponent('FlaggedPosts', () => wrapWithContextProvider(require('app/screens/flagged_posts').default), store, Provider);
     Navigation.registerComponent('ForgotPassword', () => wrapWithContextProvider(require('app/screens/forgot_password').default), store, Provider);
