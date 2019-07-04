@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import allSettled from 'promise.allsettled';
+
 import {Client4} from 'mattermost-redux/client';
 
 import {GeneralTypes, UserTypes} from 'app/action_types';
@@ -19,8 +21,6 @@ import {loadRolesIfNeeded} from './role';
 import {completeLogin} from 'mattermost-redux/actions/users';
 import {reduxStore} from 'app/store';
 import {handleSuccessfulLogin as handleSuccessfulLoginRedux} from 'app/actions/views/login';
-
-import allSettled from 'promise.allsettled';
 
 export function login(options) {
     return async () => {
@@ -125,6 +125,15 @@ export function loadMe(loginUser) {
 
             Client4.setUserId(user.id);
             Client4.setUserRoles(user.roles);
+
+            if (!user.status) {
+                try {
+                    const status = await Client4.getStatus(user.id);
+                    user.status = status.status;
+                } catch (e) {
+                    // if we cannot get the status at this point just continue
+                }
+            }
 
             const promises = await allSettled([
                 Client4.getMyPreferences(),
