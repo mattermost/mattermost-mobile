@@ -21,6 +21,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
+import DeviceInfo from 'react-native-device-info';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -465,10 +466,14 @@ export default class ImagePreview extends PureComponent {
                 };
             }
 
+            const applicationName = DeviceInfo.getApplicationName();
             Alert.alert(
-                formatMessage({id: 'mobile.photos_permission_denied_title', defaultMessage: 'Photo library access is required'}),
                 formatMessage({
-                    id: 'mobile.ios.photos_permission_denied_description',
+                    id: 'mobile.photo_library_permission_denied_title',
+                    defaultMessage: 'Photo library access is required',
+                }, {applicationName}),
+                formatMessage({
+                    id: 'mobile.photo_library_permission_denied_description',
                     defaultMessage: 'To save images and videos to your library, please change your permission settings.',
                 }),
                 [
