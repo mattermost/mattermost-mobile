@@ -55,7 +55,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                 options: [actionText, cancelText],
                 cancelButtonIndex: 1,
             }, (value) => {
-                if (value !== 1) {
+                if (value === 0) {
                     this.handleCopy(text);
                 }
             });
