@@ -32,7 +32,6 @@ module.exports = [
     'app/reducers/device/is_tablet.js',
     'app/reducers/device/orientation.js',
     'app/reducers/device/status_bar.js',
-    'app/reducers/device/websocket.js',
     'app/reducers/index.js',
     'app/reducers/navigation/index.js',
     'app/reducers/views/announcement.js',
