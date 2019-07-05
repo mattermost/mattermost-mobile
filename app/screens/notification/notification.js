@@ -8,18 +8,20 @@ import {
     InteractionManager,
     Platform,
     StyleSheet,
-    Text,
     TouchableOpacity,
+    Text,
     View,
 } from 'react-native';
-
-import FormattedText from 'app/components/formatted_text';
-import ProfilePicture from 'app/components/profile_picture';
-import {changeOpacity} from 'app/utils/theme';
+import {Navigation} from 'react-native-navigation';
 
 import {isDirectChannel} from 'mattermost-redux/utils/channel_utils';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
+
+import FormattedText from 'app/components/formatted_text';
+import ProfilePicture from 'app/components/profile_picture';
+import {changeOpacity} from 'app/utils/theme';
+import {NavigationTypes} from 'app/constants';
 
 import logo from 'assets/images/icon.png';
 import webhookIcon from 'assets/images/icons/webhook.jpg';
@@ -45,18 +47,26 @@ export default class Notification extends PureComponent {
         user: PropTypes.object,
     };
 
+    tapped = false;
+
     componentDidMount() {
         this.setDismissTimer();
+        this.setDidDisappearListener();
+        this.setShowOverlayListener();
     }
 
     componentWillUnmount() {
         this.clearDismissTimer();
+        this.clearDidDisappearListener();
+        this.clearShowOverlayListener();
     }
 
     setDismissTimer = () => {
         this.dismissTimer = setTimeout(() => {
-            const {actions, componentId} = this.props;
-            actions.dismissOverlay(componentId);
+            if (!this.tapped) {
+                const {actions, componentId} = this.props;
+                actions.dismissOverlay(componentId);
+            }
         }, AUTO_DISMISS_TIME_MILLIS);
     }
 
@@ -67,19 +77,46 @@ export default class Notification extends PureComponent {
         }
     }
 
+    setDidDisappearListener = () => {
+        this.didDismissedListener = Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
+            if (componentId === this.props.componentId && this.tapped) {
+                const {actions} = this.props;
+                actions.dismissAllModals();
+                actions.popToRoot();
+            }
+        });
+    }
+
+    clearDidDisappearListener = () => {
+        this.didDismissedListener.remove();
+    }
+
+    setShowOverlayListener = () => {
+        EventEmitter.on(NavigationTypes.NAVIGATION_SHOW_OVERLAY, this.onNewOverlay);
+    }
+
+    clearShowOverlayListener = () => {
+        EventEmitter.off(NavigationTypes.NAVIGATION_SHOW_OVERLAY, this.onNewOverlay);
+    }
+
+    onNewOverlay = () => {
+        // Dismiss this overlay so that there is only ever one.
+        const {actions, componentId} = this.props;
+        actions.dismissOverlay(componentId);
+    }
+
     notificationTapped = () => {
+        this.tapped = true;
+
         const {actions, notification, componentId} = this.props;
 
         EventEmitter.emit('close_channel_drawer');
         EventEmitter.emit('close_settings_sidebar');
         InteractionManager.runAfterInteractions(() => {
-            actions.dismissOverlay(componentId).then(() => {
-                if (!notification.localNotification) {
-                    actions.dismissAllModals();
-                    actions.popToRoot();
-                    actions.loadFromPushNotification(notification);
-                }
-            });
+            actions.dismissOverlay(componentId);
+            if (!notification.localNotification) {
+                actions.loadFromPushNotification(notification);
+            }
         });
     };
 

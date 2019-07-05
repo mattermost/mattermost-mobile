@@ -15,7 +15,7 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {selectDefaultChannel} from 'app/actions/views/channel';
-import {showOverlay, dismissAllModals, popToRoot} from 'app/actions/navigation';
+import {showOverlay} from 'app/actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
@@ -237,12 +237,10 @@ class GlobalEventHandler {
 
     turnOnInAppNotificationHandling = () => {
         EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
-        EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
     }
 
     turnOffInAppNotificationHandling = () => {
         EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
-        EventEmitter.off(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
     }
 
     handleInAppNotification = (notification) => {
@@ -257,17 +255,9 @@ class GlobalEventHandler {
                 notification,
             };
 
+            EventEmitter.emit(NavigationTypes.NAVIGATION_SHOW_OVERLAY);
             dispatch(showOverlay(screen, passProps));
         }
-    };
-
-    handleNotificationTapped = async () => {
-        EventEmitter.emit('close_channel_drawer');
-        EventEmitter.emit('close_settings_sidebar');
-
-        const {dispatch} = this.store;
-        dispatch(dismissAllModals());
-        dispatch(popToRoot());
     };
 }
 

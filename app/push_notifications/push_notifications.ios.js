@@ -30,7 +30,8 @@ class PushNotification {
                 ...notification.getData(),
                 message: notification.getMessage(),
             };
-            this.handleNotification(info, false, false);
+            const userInteraction = AppState.currentState === 'active';
+            this.handleNotification(info, false, userInteraction);
         });
 
         NotificationsIOS.addEventListener('notificationOpened', (notification) => {
@@ -59,7 +60,7 @@ class PushNotification {
     handleNotification = (data, foreground, userInteraction) => {
         this.deviceNotification = {
             data,
-            foreground: foreground || (!userInteraction && AppState.currentState === 'active'),
+            foreground,
             message: data.message,
             userInfo: data.userInfo,
             userInteraction,

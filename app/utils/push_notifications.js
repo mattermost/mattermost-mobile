@@ -15,6 +15,7 @@ import {
     createPostForNotificationReply,
     loadFromPushNotification,
 } from 'app/actions/views/root';
+import {dismissAllModals, popToRoot} from 'app/actions/navigation';
 import {ViewTypes} from 'app/constants';
 import {getLocalizedMessage} from 'app/i18n';
 import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
@@ -45,7 +46,13 @@ class PushNotificationUtils {
         await this.store.dispatch(loadFromPushNotification(notification, true));
 
         if (!EphemeralStore.appStartedFromPushNotification) {
-            EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
+            EventEmitter.emit('close_channel_drawer');
+            EventEmitter.emit('close_settings_sidebar');
+
+            const {dispatch} = this.store;
+            dispatch(dismissAllModals());
+            dispatch(popToRoot());
+
             PushNotifications.resetNotification();
         }
     };
