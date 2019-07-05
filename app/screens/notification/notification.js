@@ -13,6 +13,8 @@ import {
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import * as Animatable from 'react-native-animatable';
+import {PanGestureHandler} from 'react-native-gesture-handler';
 
 import {isDirectChannel} from 'mattermost-redux/utils/channel_utils';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -47,6 +49,17 @@ export default class Notification extends PureComponent {
         user: PropTypes.object,
     };
 
+    state = {
+        keyFrames: {
+            from: {
+                translateY: -100,
+            },
+            to: {
+                translateY: 0,
+            },
+        },
+    }
+
     tapped = false;
 
     componentDidMount() {
@@ -64,8 +77,7 @@ export default class Notification extends PureComponent {
     setDismissTimer = () => {
         this.dismissTimer = setTimeout(() => {
             if (!this.tapped) {
-                const {actions, componentId} = this.props;
-                actions.dismissOverlay(componentId);
+                this.animateDismissOverlay();
             }
         }, AUTO_DISMISS_TIME_MILLIS);
     }
@@ -78,7 +90,7 @@ export default class Notification extends PureComponent {
     }
 
     setDidDisappearListener = () => {
-        this.didDismissedListener = Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
+        this.didDismissListener = Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
             if (componentId === this.props.componentId && this.tapped) {
                 const {actions} = this.props;
                 actions.dismissAllModals();
@@ -88,7 +100,7 @@ export default class Notification extends PureComponent {
     }
 
     clearDidDisappearListener = () => {
-        this.didDismissedListener.remove();
+        this.didDismissListener.remove();
     }
 
     setShowOverlayListener = () => {
@@ -101,19 +113,42 @@ export default class Notification extends PureComponent {
 
     onNewOverlay = () => {
         // Dismiss this overlay so that there is only ever one.
+        this.dismissOverlay();
+    }
+
+    dismissOverlay = () => {
+        this.clearDismissTimer();
+
         const {actions, componentId} = this.props;
         actions.dismissOverlay(componentId);
     }
 
+    animateDismissOverlay = () => {
+        this.clearDismissTimer();
+
+        this.setState({
+            keyFrames: {
+                from: {
+                    translateY: 0,
+                },
+                to: {
+                    translateY: -100,
+                },
+            },
+        });
+        setTimeout(() => this.dismissOverlay(), 1000);
+    }
+
     notificationTapped = () => {
         this.tapped = true;
+        this.clearDismissTimer();
 
-        const {actions, notification, componentId} = this.props;
+        const {actions, notification} = this.props;
 
         EventEmitter.emit('close_channel_drawer');
         EventEmitter.emit('close_settings_sidebar');
         InteractionManager.runAfterInteractions(() => {
-            actions.dismissOverlay(componentId);
+            this.dismissOverlay();
             if (!notification.localNotification) {
                 actions.loadFromPushNotification(notification);
             }
@@ -261,28 +296,39 @@ export default class Notification extends PureComponent {
             const icon = this.getNotificationIcon();
 
             return (
-                <View style={[style.container, {width: deviceWidth}]}>
-                    <TouchableOpacity
-                        style={{flex: 1, flexDirection: 'row'}}
-                        onPress={this.notificationTapped}
+                <PanGestureHandler
+                    onGestureEvent={this.animateDismissOverlay}
+                    minOffsetY={-20}
+                >
+                    <Animatable.View
+                        duration={250}
+                        useNativeDriver={true}
+                        animation={this.state.keyFrames}
                     >
-                        <View style={style.iconContainer}>
-                            {icon}
+                        <View style={[style.container, {width: deviceWidth}]}>
+                            <TouchableOpacity
+                                style={{flex: 1, flexDirection: 'row'}}
+                                onPress={this.notificationTapped}
+                            >
+                                <View style={style.iconContainer}>
+                                    {icon}
+                                </View>
+                                <View style={style.textContainer}>
+                                    {title}
+                                    <View style={{flex: 1}}>
+                                        <Text
+                                            numberOfLines={1}
+                                            ellipsizeMode='tail'
+                                            style={style.message}
+                                        >
+                                            {messageText}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
                         </View>
-                        <View style={style.textContainer}>
-                            {title}
-                            <View style={{flex: 1}}>
-                                <Text
-                                    numberOfLines={1}
-                                    ellipsizeMode='tail'
-                                    style={style.message}
-                                >
-                                    {messageText}
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                </View>
+                    </Animatable.View>
+                </PanGestureHandler>
             );
         }
 
