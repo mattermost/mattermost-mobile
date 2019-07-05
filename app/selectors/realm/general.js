@@ -6,28 +6,50 @@ import {createSelector} from 'reselect';
 export const getConfig = createSelector(
     (general) => general,
     (general) => {
-        return general[0].config;
+        let config = general[0]?.config;
+
+        // fallback
+        if (!config) {
+            try {
+                config = JSON.parse(general[0]?.serverConfig);
+            } catch (e) {
+                config = {};
+            }
+        }
+
+        return config;
     },
 );
 
 export const getLicense = createSelector(
     (general) => general,
     (general) => {
-        return general[0].license;
+        let license = general[0]?.license;
+
+        // fallback
+        if (!license) {
+            try {
+                license = JSON.parse(general[0]?.serverLicense);
+            } catch (e) {
+                license = {};
+            }
+        }
+
+        return license;
     },
 );
 
 export const getCurrentTeamId = createSelector(
     (general) => general,
     (general) => {
-        return general[0].currentTeamId;
+        return general[0]?.currentTeamId;
     },
 );
 
 export const getCurrentChannelId = createSelector(
     (general) => general,
     (general) => {
-        return general[0].currentChannelId;
+        return general[0]?.currentChannelId;
     },
 );
 
