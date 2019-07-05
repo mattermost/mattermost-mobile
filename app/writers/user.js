@@ -34,7 +34,6 @@ function currentUser(realm, action) {
             });
         }
 
-        // TODO: Remove members and teams that were deleted on the server
         const teamMembersMap = new Map();
         if (data.teams?.length && data.teamMembers?.length) {
             data.teamMembers.forEach((member) => {
@@ -55,12 +54,19 @@ function currentUser(realm, action) {
             });
         }
 
+        // Remove membership from teams
+        const realmTeams = realm.objects('Team');
+        realmTeams.forEach((t) => {
+            const teamMembers = teamMembersMap.get(t.id);
+            if (!teamMembers || teamMembers[0]?.deleteAt) {
+                realm.delete(realm.objectForPrimaryKey('TeamMember', `${t.id}-${user.id}`));
+            }
+        });
+
         if (data.teams?.length) {
             data.teams.forEach((teamData) => {
                 teamData.members = teamMembersMap.get(teamData.id) || [];
-
-                const team = teamDataToRealm(teamData);
-                realm.create('Team', team, true);
+                realm.create('Team', teamDataToRealm(teamData), true);
             });
         }
         break;
