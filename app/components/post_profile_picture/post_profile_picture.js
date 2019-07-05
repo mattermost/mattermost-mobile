@@ -55,6 +55,7 @@ export default class PostProfilePicture extends PureComponent {
 
         if (fromWebHook && enablePostIconOverride) {
             const icon = overrideIconUrl ? {uri: overrideIconUrl} : webhookIcon;
+            const borderRadius = icon === webhookIcon ? ViewTypes.PROFILE_PICTURE_SIZE / 2 : 0;
 
             return (
                 <View>
@@ -63,7 +64,7 @@ export default class PostProfilePicture extends PureComponent {
                         style={{
                             height: ViewTypes.PROFILE_PICTURE_SIZE,
                             width: ViewTypes.PROFILE_PICTURE_SIZE,
-                            borderRadius: ViewTypes.PROFILE_PICTURE_SIZE / 2,
+                            borderRadius,
                         }}
                     />
                 </View>

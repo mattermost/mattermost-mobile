@@ -4,6 +4,7 @@
 import {connect} from 'react-redux';
 
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {Client4} from 'mattermost-redux/client';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
@@ -19,12 +20,14 @@ function mapStateToProps(state, ownProps) {
     const post = ownProps.post;
     const user = getUser(state, post.user_id);
 
+    const overrideIconURL = Client4.getAbsoluteUrl(post?.props?.override_icon_url); // eslint-disable-line camelcase
+
     return {
         enablePostIconOverride: config.EnablePostIconOverride === 'true' && post?.props?.use_user_icon !== 'true', // eslint-disable-line camelcase
         fromWebHook: post?.props?.from_webhook === 'true', // eslint-disable-line camelcase
         isSystemMessage: isSystemMessage(post),
         fromAutoResponder: fromAutoResponder(post),
-        overrideIconUrl: post?.props?.override_icon_url, // eslint-disable-line camelcase
+        overrideIconUrl: overrideIconURL,
         userId: post.user_id,
         isBot: (user ? user.is_bot : false),
         theme: getTheme(state),
