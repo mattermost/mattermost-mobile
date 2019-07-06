@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {batchActions} from 'redux-batched-actions';
+import {batchActions, enableBatching} from 'redux-batched-actions';
 import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
@@ -333,7 +333,7 @@ export function configureRealmStore(path) {
 
     // We set allowUnsafeWrites as true cause there seems to be a race condition and this avoids the warning
     return createRealmStore(
-        writers,
+        enableBatching(writers),
         {path: dbPath, schema: current.schema, schemaVersion: current.schemaVersion, allowUnsafeWrites: true},
         applyMiddleware(thunk)
     );
