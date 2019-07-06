@@ -4,6 +4,8 @@
 import {AppState} from 'react-native';
 import NotificationsIOS, {NotificationAction, NotificationCategory} from 'react-native-notifications';
 
+import ephemeralStore from 'app/store/ephemeral_store';
+
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
 
@@ -17,29 +19,10 @@ class PushNotification {
         this.onNotification = null;
         this.onReply = null;
 
-        NotificationsIOS.addEventListener('notificationReceivedForeground', (notification) => {
-            const info = {
-                ...notification.getData(),
-                message: notification.getMessage(),
-            };
-            this.handleNotification(info, true, false);
-        });
-
-        NotificationsIOS.addEventListener('notificationReceivedBackground', (notification) => {
-            const info = {
-                ...notification.getData(),
-                message: notification.getMessage(),
-            };
-            this.handleNotification(info, false, false);
-        });
-
-        NotificationsIOS.addEventListener('notificationOpened', (notification) => {
-            const info = {
-                ...notification.getData(),
-                message: notification.getMessage(),
-            };
-            this.handleNotification(info, false, true);
-        });
+        NotificationsIOS.addEventListener('remoteNotificationsRegistered', this.onRemoteNotificationsRegistered);
+        NotificationsIOS.addEventListener('notificationReceivedForeground', this.onNotificationReceivedForeground);
+        NotificationsIOS.addEventListener('notificationReceivedBackground', this.onNotificationReceivedBackground);
+        NotificationsIOS.addEventListener('notificationOpened', this.onNotificationOpened);
 
         const replyAction = new NotificationAction({
             activationMode: 'background',
@@ -59,7 +42,7 @@ class PushNotification {
     handleNotification = (data, foreground, userInteraction) => {
         this.deviceNotification = {
             data,
-            foreground: foreground || (!userInteraction && AppState.currentState === 'active'),
+            foreground,
             message: data.message,
             userInfo: data.userInfo,
             userInteraction,
@@ -90,19 +73,9 @@ class PushNotification {
         this.onNotification = options.onNotification;
         this.onReply = options.onReply;
 
-        NotificationsIOS.addEventListener('remoteNotificationsRegistered', (deviceToken) => {
-            if (this.onRegister) {
-                this.onRegister({token: deviceToken});
-            }
-        });
+        this.requestPermissions([replyCategory]);
 
-        if (options.requestPermissions) {
-            this.requestPermissions([replyCategory]);
-        }
-
-        if (options.popInitialNotification) {
-            NotificationsIOS.consumeBackgroundQueue();
-        }
+        NotificationsIOS.consumeBackgroundQueue();
     }
 
     requestPermissions = (permissions) => {
@@ -135,6 +108,43 @@ class PushNotification {
     cancelAllLocalNotifications() {
         NotificationsIOS.cancelAllLocalNotifications();
     }
+
+    onNotificationReceivedBackground = (notification) => {
+        const userInteraction = AppState.currentState === 'active';
+
+        // mark the app as started as soon as possible
+        if (userInteraction) {
+            ephemeralStore.appStartedFromPushNotification = true;
+        }
+
+        const info = {
+            ...notification.getData(),
+            message: notification.getMessage(),
+        };
+        this.handleNotification(info, false, userInteraction);
+    };
+
+    onNotificationReceivedForeground = (notification) => {
+        const info = {
+            ...notification.getData(),
+            message: notification.getMessage(),
+        };
+        this.handleNotification(info, true, false);
+    };
+
+    onNotificationOpened = (notification) => {
+        const info = {
+            ...notification.getData(),
+            message: notification.getMessage(),
+        };
+        this.handleNotification(info, false, true);
+    };
+
+    onRemoteNotificationsRegistered = (deviceToken) => {
+        if (this.onRegister) {
+            this.onRegister({token: deviceToken});
+        }
+    };
 
     setApplicationIconBadgeNumber(number) {
         const count = number < 0 ? 0 : number;

@@ -378,7 +378,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
         }
 
-        dispatch(batchActions([
+        const actions = [
             selectChannel(channelId),
             setChannelDisplayName(channel.display_name),
             {
@@ -391,18 +391,29 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
                 teamId: currentTeamId,
                 channelId,
             },
-            {
-                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-                data: channelId,
-                channel,
-                member,
-            },
-        ]));
+        ];
 
         let markPreviousChannelId;
         if (!fromPushNotification && !sameChannel) {
             markPreviousChannelId = currentChannelId;
+            actions.push({
+                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+                data: currentChannelId,
+                channel: getChannel(state, currentChannelId),
+                member: getMyChannelMember(state, currentChannelId),
+            });
         }
+
+        if (!fromPushNotification) {
+            actions.push({
+                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+                data: channelId,
+                channel,
+                member,
+            });
+        }
+
+        dispatch(batchActions(actions));
 
         dispatch(markChannelViewedAndRead(channelId, markPreviousChannelId));
     };
