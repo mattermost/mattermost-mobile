@@ -13,6 +13,7 @@ import {getDeviceTimezone} from 'app/utils/timezone';
 
 import {saveConfigAndLicense} from './general';
 import {forceLogoutIfNecessary} from './helpers';
+import {loadRolesIfNeeded} from './role';
 
 // TODO: Remove redux compatibility
 import {completeLogin} from 'mattermost-redux/actions/users';
@@ -160,7 +161,7 @@ export function loadMe(loginUser) {
             }
 
             if (roles.size > 0) {
-                // TODO: dispatch(loadRolesIfNeeded(roles));
+                dispatch(loadRolesIfNeeded(roles));
             }
 
             return data;
@@ -184,7 +185,7 @@ export function updateMe(user) {
             data,
         });
 
-        // TODO: dispatch(loadRolesIfNeeded(data.roles.split(' ')));
+        dispatch(loadRolesIfNeeded(data.roles.split(' ')));
 
         return {data};
     };

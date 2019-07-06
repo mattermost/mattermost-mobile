@@ -15,6 +15,7 @@ export default class Role {
             deleteAt: {type: 'int', default: 0},
             schemeManaged: 'bool',
             builtIn: 'bool',
+            permissions: 'string[]',
         },
     }
 }

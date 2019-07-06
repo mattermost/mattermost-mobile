@@ -2,9 +2,11 @@
 // See LICENSE.txt for license information.
 
 import GeneralTypes from './general';
+import RoleTypes from './role';
 import UserTypes from './user';
 
 export {
     GeneralTypes,
+    RoleTypes,
     UserTypes,
 };
