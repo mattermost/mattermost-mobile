@@ -3,7 +3,7 @@
 
 import {combineWriters} from 'realm-react-redux';
 
-import {RoleTypes} from 'app/action_types';
+import {RoleTypes} from 'app/realm/action_types';
 
 function role(realm, action) {
     switch (action.type) {

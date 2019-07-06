@@ -3,9 +3,9 @@
 
 import {combineWriters} from 'realm-react-redux';
 
-import {TeamTypes} from 'app/action_types';
-import {GENERAL_SCHEMA_ID} from 'app/models/general';
-import {teamDataToRealm, teamMemberDataToRealm} from 'app/utils/realm/team';
+import {TeamTypes} from 'app/realm/action_types';
+import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
+import {teamDataToRealm, teamMemberDataToRealm} from 'app/realm/utils/team';
 
 function myTeams(realm, action) {
     switch (action.type) {

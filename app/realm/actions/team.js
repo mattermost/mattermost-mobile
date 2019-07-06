@@ -4,11 +4,11 @@
 import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {TeamTypes} from 'app/action_types';
+import {TeamTypes} from 'app/realm/action_types';
 import {NavigationTypes} from 'app/constants';
-import {getConfig, getCurrentTeamId} from 'app/selectors/realm/general';
+import {getConfig, getCurrentTeamId} from 'app/realm/selectors/general';
 import {selectFirstTeamAvailable} from 'app/utils/teams';
-import {teamDataToRealm} from 'app/utils/realm/team';
+import {teamDataToRealm} from 'app/realm/utils/team';
 import {forceLogoutIfNecessary} from './helpers';
 
 // TODO: Remove redux compatibility

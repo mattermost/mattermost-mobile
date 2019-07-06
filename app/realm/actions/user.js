@@ -5,9 +5,9 @@ import allSettled from 'promise.allsettled';
 
 import {Client4} from 'mattermost-redux/client';
 
-import {GeneralTypes, UserTypes} from 'app/action_types';
+import {GeneralTypes, UserTypes} from 'app/realm/action_types';
 import {setAppCredentials} from 'app/init/credentials';
-import {GENERAL_SCHEMA_ID} from 'app/models/general';
+import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {configureRealmStore} from 'app/store/';
 import {setCSRFFromCookie} from 'app/utils/security';

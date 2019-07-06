@@ -28,8 +28,8 @@ import {transformSet} from './utils';
 import {createRealmStore, applyMiddleware} from 'realm-react-redux';
 import Realm from 'realm';
 import thunk from 'redux-thunk';
-import models from 'app/models';
-import writers from 'app/writers';
+import models from 'app/realm/models';
+import writers from 'app/realm/writers';
 import {removeProtocol} from 'app/utils/url';
 
 export let reduxStore = null;

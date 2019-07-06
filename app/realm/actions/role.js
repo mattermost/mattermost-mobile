@@ -3,7 +3,7 @@
 
 import {Client4} from 'mattermost-redux/client';
 
-import {RoleTypes} from 'app/action_types';
+import {RoleTypes} from 'app/realm/action_types';
 
 import {forceLogoutIfNecessary} from './helpers';
 

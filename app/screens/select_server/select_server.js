@@ -32,7 +32,7 @@ import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
-import {getClientUpgrade} from 'app/utils/realm/general';
+import {getClientUpgrade} from 'app/realm/utils/general';
 
 import telemetry from 'app/telemetry';
 

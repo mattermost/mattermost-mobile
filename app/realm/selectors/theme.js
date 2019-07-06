@@ -4,7 +4,7 @@
 import {createSelector} from 'reselect';
 
 import Preferences from 'app/constants/preferences';
-import {getConfig, getCurrentTeamId} from 'app/selectors/realm/general';
+import {getConfig, getCurrentTeamId} from 'app/realm/selectors/general';
 
 export const getDefaultTheme = createSelector(
     getConfig,

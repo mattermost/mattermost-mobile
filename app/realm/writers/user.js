@@ -3,11 +3,11 @@
 
 import {combineWriters} from 'realm-react-redux';
 
-import {UserTypes} from 'app/action_types';
-import {GENERAL_SCHEMA_ID} from 'app/models/general';
+import {UserTypes} from 'app/realm/action_types';
+import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 import ephemeralStore from 'app/store/ephemeral_store';
-import {userDataToRealm} from 'app/utils/realm/user';
-import {teamDataToRealm, teamMemberDataToRealm} from 'app/utils/realm/team';
+import {userDataToRealm} from 'app/realm/utils/user';
+import {teamDataToRealm, teamMemberDataToRealm} from 'app/realm/utils/team';
 
 function currentUser(realm, action) {
     switch (action.type) {

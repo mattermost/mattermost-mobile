@@ -5,8 +5,8 @@ import {bindActionCreators} from 'redux';
 import {realmConnect} from 'realm-react-redux';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
-import {loadConfigAndLicense, pingServer, scheduleExpiredNotification} from 'app/actions/realm/general';
-import {login} from 'app/actions/realm/user';
+import {loadConfigAndLicense, pingServer, scheduleExpiredNotification} from 'app/realm/actions/general';
+import {login} from 'app/realm/actions/user';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import options from 'app/store/realm_context_options';
 import {reduxStore} from 'app/store';

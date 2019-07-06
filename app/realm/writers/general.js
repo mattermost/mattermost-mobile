@@ -3,8 +3,8 @@
 
 import {combineWriters} from 'realm-react-redux';
 
-import {GeneralTypes, TeamTypes} from 'app/action_types';
-import {GENERAL_SCHEMA_ID} from 'app/models/general';
+import {GeneralTypes, TeamTypes} from 'app/realm/action_types';
+import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 
 function general(realm, action) {
     switch (action.type) {

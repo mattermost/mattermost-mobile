@@ -4,8 +4,8 @@
 import {bindActionCreators} from 'redux';
 import {realmConnect} from 'realm-react-redux';
 
-import {loadMe} from 'app/actions/realm/user';
-import {GENERAL_SCHEMA_ID} from 'app/models/general';
+import {loadMe} from 'app/realm/actions/user';
+import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 
 import TestScreen from './test_screen';
 
@@ -14,8 +14,8 @@ import {reduxStore} from 'app/store';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 
 import Preferences from 'app/constants/preferences';
-import {getCurrentUser} from 'app/selectors/realm/general';
-import {getTheme} from 'app/selectors/realm/theme';
+import {getCurrentUser} from 'app/realm/selectors/general';
+import {getTheme} from 'app/realm/selectors/theme';
 
 function mapPropsToQueries(realm) {
     //Extend Realm.Object function if returning a objectForPrimaryKey in mapPropsToQueries

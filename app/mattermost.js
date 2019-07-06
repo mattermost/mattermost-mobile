@@ -7,7 +7,7 @@ import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
 import {loadMe as loadMeRedux} from 'mattermost-redux/actions/users';
 
 import {setDeepLinkURL} from 'app/actions/views/root';
-import {loadMe} from 'app/actions/realm/user';
+import {loadMe} from 'app/realm/actions/user';
 import {getAppCredentials, getCurrentServerUrl} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/fetch';

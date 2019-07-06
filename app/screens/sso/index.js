@@ -3,8 +3,8 @@
 
 import {realmConnect} from 'realm-react-redux';
 
-import {scheduleExpiredNotification} from 'app/actions/realm/general';
-import {ssoLogin} from 'app/actions/realm/user';
+import {scheduleExpiredNotification} from 'app/realm/actions/general';
+import {ssoLogin} from 'app/realm/actions/user';
 import options from 'app/store/realm_context_options';
 
 import SSO from './sso';
