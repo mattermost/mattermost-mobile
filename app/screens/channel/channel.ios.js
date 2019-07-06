@@ -37,17 +37,48 @@ export default class ChannelIOS extends ChannelBase {
             channelLoaderStyle.push(style.iOSHomeIndicator);
         }
 
-        const drawerContent = (
-            <React.Fragment>
-                <SafeAreaView navigator={navigator}>
-                    <StatusBar/>
-                    <NetworkIndicator/>
-                    <ChannelNavBar
-                        navigator={navigator}
-                        openChannelDrawer={this.openChannelSidebar}
-                        openSettingsDrawer={this.openSettingsSidebar}
-                        onPress={this.goToChannelInfo}
+        const renderPortraitSafeView = (
+            <SafeAreaView navigator={navigator}>
+                <StatusBar/>
+                <NetworkIndicator/>
+                <ChannelNavBar
+                    navigator={navigator}
+                    openChannelDrawer={this.openChannelSidebar}
+                    openSettingsDrawer={this.openSettingsSidebar}
+                    onPress={this.goToChannelInfo}
+                />
+                <ChannelPostList
+                    navigator={navigator}
+                    updateNativeScrollView={this.updateNativeScrollView}
+                />
+                <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                    <FileUploadPreview/>
+                    <Autocomplete
+                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        onChangeText={this.handleAutoComplete}
+                        cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                     />
+                </View>
+                <ChannelLoader
+                    height={height}
+                    style={channelLoaderStyle}
+                />
+                {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
+            </SafeAreaView>
+        );
+
+        const renderLandscapeSafeView = (
+            <React.Fragment>
+                <StatusBar/>
+                <NetworkIndicator/>
+                <ChannelNavBar
+                    navigator={navigator}
+                    openChannelDrawer={this.openChannelSidebar}
+                    openSettingsDrawer={this.openSettingsSidebar}
+                    onPress={this.goToChannelInfo}
+                />
+                <SafeAreaView navigator={navigator}>
                     <ChannelPostList
                         navigator={navigator}
                         updateNativeScrollView={this.updateNativeScrollView}
@@ -66,19 +97,25 @@ export default class ChannelIOS extends ChannelBase {
                         style={channelLoaderStyle}
                     />
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
-                    <KeyboardTrackingView
-                        ref={this.keyboardTracker}
-                        scrollViewNativeID={currentChannelId}
-                        accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
-                    >
-                        <PostTextbox
-                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                            ref={this.postTextbox}
-                            navigator={navigator}
-                        />
-                    </KeyboardTrackingView>
                 </SafeAreaView>
+            </React.Fragment>
+        );
+
+        const drawerContent = (
+            <React.Fragment>
+                { DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? renderLandscapeSafeView : renderPortraitSafeView }
+                <KeyboardTrackingView
+                    ref={this.keyboardTracker}
+                    scrollViewNativeID={currentChannelId}
+                    accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
+                >
+                    <PostTextbox
+                        cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                        ref={this.postTextbox}
+                        navigator={navigator}
+                    />
+                </KeyboardTrackingView>
             </React.Fragment>
         );
 
