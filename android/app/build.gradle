@@ -210,7 +210,6 @@ configurations.all {
 }
 
 dependencies {
-    implementation project(':react-native-android-open-settings')
     // Make sure to put android-jsc at the top
     implementation "org.webkit:android-jsc-intl:r241213"
 
@@ -243,6 +242,7 @@ dependencies {
     implementation project(':react-native-gesture-handler')
     implementation project(':@react-native-community_async-storage')
     implementation project(':@react-native-community_netinfo')
+    implementation project(':react-native-android-open-settings')
 
     // For animated GIF support
     implementation 'com.facebook.fresco:fresco:1.10.0'
