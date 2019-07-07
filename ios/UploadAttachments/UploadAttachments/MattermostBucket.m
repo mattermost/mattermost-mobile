@@ -7,6 +7,11 @@
   return [[NSUserDefaults alloc] initWithSuiteName: name];
 }
 
+- (NSString *)getAppGroupFileStoragePath {
+    NSURL *fileManagerURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:APP_GROUP_ID];
+    return fileManagerURL.path;
+}
+
 -(NSString *)fileUrl:(NSString *)fileName {
   NSURL *fileManagerURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:APP_GROUP_ID];
   return [NSString stringWithFormat:@"%@/%@", fileManagerURL.path, fileName];

@@ -6,6 +6,24 @@ class EphemeralStore {
         this.appStarted = false;
         this.appStartedFromPushNotification = false;
         this.deviceToken = null;
+        this.currentServerUrl = null;
+        this.realmStores = {};
+    }
+
+    getRealmStoreForCurrentServer = () => {
+        return this.realmStores[this.currentServerUrl];
+    };
+
+    getRealmStoreByServer = (url) => {
+        return this.realmStores[url];
+    };
+
+    setRealmStoreByServer = (url, store) => {
+        this.realmStores[url] = store;
+    };
+
+    removeRealmStoreForServer = (url) => {
+        Reflect.deleteProperty(this.realmStores, url);
     }
 }
 

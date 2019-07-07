@@ -3,43 +3,48 @@
 
 import {Linking, NativeModules, Platform} from 'react-native';
 import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
-import {Provider} from 'react-redux';
 
-import {loadMe} from 'mattermost-redux/actions/users';
+import {loadMe as loadMeRedux} from 'mattermost-redux/actions/users';
 
 import {setDeepLinkURL} from 'app/actions/views/root';
-import initialState from 'app/initial_state';
-import {getAppCredentials} from 'app/init/credentials';
+import {loadMe} from 'app/actions/realm/user';
+import {getAppCredentials, getCurrentServerUrl} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
+import pushNotificationsHandler from 'app/init/push_notifications_handler';
 import {registerScreens} from 'app/screens';
-import configureStore from 'app/store';
+import {configureRealmStore, configureAppStore} from 'app/store';
 import ephemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
-import pushNotificationsUtils from 'app/utils/push_notifications';
 
 const {MattermostShare} = NativeModules;
 const startedSharedExtension = Platform.OS === 'android' && MattermostShare.isOpened;
-export const store = configureStore(initialState);
+const reduxStore = configureAppStore();
+let realmStore;
 
 const init = async () => {
     const credentials = await getAppCredentials();
-    pushNotificationsUtils.configure(store);
+
+    ephemeralStore.currentServerUrl = await getCurrentServerUrl();
+    if (ephemeralStore.currentServerUrl) {
+        realmStore = configureRealmStore(ephemeralStore.currentServerUrl);
+        ephemeralStore.setRealmStoreByServer(ephemeralStore.currentServerUrl, realmStore);
+    }
+
+    pushNotificationsHandler.configure(reduxStore); // TODO: figure out what to do with this once everything is on realm
     globalEventHandler.configure({
-        store,
+        reduxStore, // TODO same as above todo
         launchEntry,
     });
 
-    registerScreens(store, Provider);
+    registerScreens(reduxStore);
 
     if (startedSharedExtension) {
         ephemeralStore.appStarted = true;
     }
 
-    if (!ephemeralStore.appStarted) {
-        launchEntryAndAuthenticateIfNeeded(credentials);
-    }
+    return credentials;
 };
 
 const launchSelectServer = () => {
@@ -91,7 +96,12 @@ const launchEntry = (credentials) => {
     ]);
 
     if (credentials) {
-        store.dispatch(loadMe());
+        reduxStore.dispatch(loadMeRedux());
+
+        if (realmStore) {
+            realmStore.dispatch(loadMe());
+        }
+
         launchChannel();
     } else {
         launchSelectServer();
@@ -102,7 +112,7 @@ const launchEntry = (credentials) => {
 };
 
 const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
-    await emmProvider.handleManagedConfig(store);
+    await emmProvider.handleManagedConfig(reduxStore);
     launchEntry(credentials);
 
     if (emmProvider.enabled) {
@@ -111,17 +121,20 @@ const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
         }
 
         if (emmProvider.inAppPinCode) {
-            await emmProvider.handleAuthentication(store);
+            await emmProvider.handleAuthentication(reduxStore);
         }
     }
 
     Linking.getInitialURL().then((url) => {
-        store.dispatch(setDeepLinkURL(url));
+        reduxStore.dispatch(setDeepLinkURL(url));
     });
 };
 
 new NativeEventsReceiver().appLaunched(async () => {
     const credentials = await getAppCredentials();
+
+    ephemeralStore.currentServerUrl = await getCurrentServerUrl();
+
     if (startedSharedExtension) {
         ephemeralStore.appStarted = true;
         await launchEntryAndAuthenticateIfNeeded(credentials);
@@ -132,4 +145,8 @@ new NativeEventsReceiver().appLaunched(async () => {
     }
 });
 
-init();
+init().then((credentials) => {
+    if (!ephemeralStore.appStarted) {
+        launchEntryAndAuthenticateIfNeeded(credentials);
+    }
+});

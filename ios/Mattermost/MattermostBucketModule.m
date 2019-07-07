@@ -18,6 +18,13 @@ RCT_EXPORT_MODULE();
   return self;
 }
 
+- (NSDictionary *)constantsToExport {
+  
+  return @{
+           @"appGroupFileStoragePath": [self.bucket getAppGroupFileStoragePath],
+           };
+}
+
 RCT_EXPORT_METHOD(writeToFile:(NSString *)fileName
                   content:(NSString *)content) {
   [self.bucket writeToFile:fileName content:content];

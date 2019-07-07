@@ -8,7 +8,6 @@ import semver from 'semver';
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
 import {loadMe, logout} from 'mattermost-redux/actions/users';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
-import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -20,12 +19,14 @@ import {getTranslations} from 'app/i18n';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from 'app/selectors/i18n';
+import {deleteRealmStore} from 'app/store';
+import ephemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {deleteFileCache} from 'app/utils/file';
 
 import LocalConfig from 'assets/config';
 
-import {getAppCredentials, removeAppCredentials} from './credentials';
+import {getAppCredentials, getCurrentServerUrl, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
 
 const {StatusBarManager} = NativeModules;
@@ -50,14 +51,14 @@ class GlobalEventHandler {
 
             // Once the app becomes active we check if the device needs to have a passcode set
             const prompt = emmProvider.inBackgroundSince && authExpired; // if more than 5 minutes have passed prompt for passcode
-            await emmProvider.handleAuthentication(this.store, prompt);
+            await emmProvider.handleAuthentication(this.reduxStore, prompt);
         }
 
         emmProvider.inBackgroundSince = null;
     };
 
     appInactive = () => {
-        const {dispatch} = this.store;
+        const {dispatch} = this.reduxStore;
 
         // When the app is sent to the background we set the time when that happens
         // and perform a data clean up to improve on performance
@@ -67,7 +68,7 @@ class GlobalEventHandler {
     };
 
     configure = (opts) => {
-        this.store = opts.store;
+        this.reduxStore = opts.reduxStore;
         this.launchEntry = opts.launchEntry;
 
         const window = Dimensions.get('window');
@@ -85,7 +86,7 @@ class GlobalEventHandler {
         }
 
         this.JavascriptAndNativeErrorHandler = require('app/utils/error_handling').default;
-        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(this.store);
+        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(this.reduxStore);
 
         mattermostManaged.addEventListener('managedConfigDidChange', this.onManagedConfigurationChange);
     };
@@ -104,8 +105,8 @@ class GlobalEventHandler {
         const isActive = appState === 'active';
         const isBackground = appState === 'background';
 
-        if (this.store) {
-            this.store.dispatch(setAppState(isActive));
+        if (this.reduxStore) {
+            this.reduxStore.dispatch(setAppState(isActive));
         }
 
         if (isActive && emmProvider.previousAppState === 'background') {
@@ -119,11 +120,11 @@ class GlobalEventHandler {
 
     onDeepLink = (event) => {
         const {url} = event;
-        this.store.dispatch(setDeepLinkURL(url));
+        this.reduxStore.dispatch(setDeepLinkURL(url));
     };
 
     onManagedConfigurationChange = () => {
-        emmProvider.handleManagedConfig(this.store, true);
+        emmProvider.handleManagedConfig(this.reduxStore, true);
     };
 
     onServerConfigChanged = (config) => {
@@ -131,22 +132,28 @@ class GlobalEventHandler {
     };
 
     onLogout = async () => {
-        this.store.dispatch(closeWebSocket(false));
-        this.store.dispatch(setServerVersion(''));
-        deleteFileCache();
-        removeAppCredentials();
+        const serverUrl = await getCurrentServerUrl();
+        const realm = ephemeralStore.getRealmStoreByServer(serverUrl);
+
+        realm.db.close();
+        deleteRealmStore(serverUrl);
+        this.reduxStore.dispatch(closeWebSocket(false));
+        this.reduxStore.dispatch(setServerVersion(''));
+        deleteFileCache(); //TODO: The cache of files should be for each individual server
+        removeAppCredentials(serverUrl);
 
         PushNotifications.setApplicationIconBadgeNumber(0);
         PushNotifications.cancelAllLocalNotifications(); // TODO: Only cancel the notification that belongs to this server
 
         if (this.launchEntry) {
+            //TODO: Select the next available server if there is one
             this.launchEntry();
         }
     };
 
     onOrientationChange = (dimensions) => {
-        if (this.store) {
-            const {dispatch} = this.store;
+        if (this.reduxStore) {
+            const {dispatch} = this.reduxStore;
             if (DeviceInfo.isTablet()) {
                 dispatch(setDeviceAsTablet());
             }
@@ -160,8 +167,8 @@ class GlobalEventHandler {
     };
 
     onRestartApp = async () => {
-        await this.store.dispatch(loadConfigAndLicense());
-        await this.store.dispatch(loadMe());
+        await this.reduxStore.dispatch(loadConfigAndLicense());
+        await this.reduxStore.dispatch(loadMe());
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
@@ -181,7 +188,7 @@ class GlobalEventHandler {
     };
 
     onServerVersionChanged = async (serverVersion) => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = this.reduxStore;
         const state = getState();
         const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
         const locale = getCurrentLocale(state);
@@ -207,20 +214,15 @@ class GlobalEventHandler {
     };
 
     onStatusBarHeightChange = (nextStatusBarHeight) => {
-        this.store.dispatch(setStatusBarHeight(nextStatusBarHeight));
+        this.reduxStore.dispatch(setStatusBarHeight(nextStatusBarHeight));
     };
 
     onSwitchToDefaultChannel = (teamId) => {
-        this.store.dispatch(selectDefaultChannel(teamId));
+        this.reduxStore.dispatch(selectDefaultChannel(teamId));
     };
 
     serverUpgradeNeeded = async () => {
-        const {dispatch} = this.store;
-
-        dispatch(setServerVersion(''));
-        Client4.serverVersion = '';
-        PushNotifications.setApplicationIconBadgeNumber(0);
-        PushNotifications.cancelAllLocalNotifications(); // TODO: Only cancel the notification that belongs to this server
+        const {dispatch} = this.reduxStore;
 
         const credentials = await getAppCredentials();
 

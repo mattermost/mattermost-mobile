@@ -13,6 +13,7 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {ViewTypes} from 'app/constants';
 import {setAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
+import ephemeralStore from 'app/store/ephemeral_store';
 import {getDeviceTimezone} from 'app/utils/timezone';
 import {setCSRFFromCookie} from 'app/utils/security';
 
@@ -52,6 +53,7 @@ export function handleSuccessfulLogin() {
             dispatch(autoUpdateTimezone(getDeviceTimezone()));
         }
 
+        ephemeralStore.currentServerUrl = url;
         dispatch({
             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
             data: {

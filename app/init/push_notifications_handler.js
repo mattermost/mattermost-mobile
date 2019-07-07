@@ -23,7 +23,7 @@ import {getCurrentLocale} from 'app/selectors/i18n';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 
-class PushNotificationUtils {
+class PushNotificationsHandler {
     constructor() {
         this.configured = false;
         this.replyNotificationData = null;
@@ -186,4 +186,4 @@ class PushNotificationUtils {
     }
 }
 
-export default new PushNotificationUtils();
+export default new PushNotificationsHandler();

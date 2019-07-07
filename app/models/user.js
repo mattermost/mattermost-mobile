@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DEFAULT_LOCALE} from 'app/i18n';
+
 export default class User {
     get notifyPropsAsJSON() {
         try {
@@ -10,20 +12,12 @@ export default class User {
         }
     }
 
-    set notifyPropsFromJSON(props) {
-        this.notifyProps = JSON.stringify(props);
-    }
-
     get timezoneAsJson() {
         try {
             return JSON.parse(this.timezone);
         } catch {
             return null;
         }
-    }
-
-    set timezoneFromJson(zone) {
-        this.timezone = JSON.stringify(zone);
     }
 
     get fullName() {
@@ -45,9 +39,10 @@ export default class User {
             lastName: {type: 'string', optional: true},
             roles: {type: 'string', optional: true},
             notifyProps: 'string?',
-            locale: {type: 'string', default: 'en'},
+            locale: {type: 'string', default: DEFAULT_LOCALE},
             position: {type: 'string', optional: true},
             timezone: 'string?',
+            lastPictureUpdate: 'int',
             status: {type: 'string', default: 'offline', indexed: true},
         },
     };

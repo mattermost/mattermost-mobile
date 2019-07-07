@@ -7,7 +7,7 @@ import {IntlProvider} from 'react-intl';
 
 import {getTranslations} from 'app/i18n';
 import {getCurrentLocale} from 'app/selectors/i18n';
-import {store} from 'app/mattermost';
+import {reduxStore} from 'app/store';
 
 import {extensionSelectTeamId} from './actions';
 import Extension from './extension';
@@ -16,12 +16,12 @@ export default class ShareApp extends PureComponent {
     constructor() {
         super();
 
-        const st = store.getState();
+        const st = reduxStore.getState();
         if (st?.views?.root?.hydrationComplete) {
             this.state = {init: true};
             this.listenForHydration();
         } else {
-            this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
+            this.unsubscribeFromStore = reduxStore.subscribe(this.listenForHydration);
             this.state = {init: false};
         }
     }
@@ -31,7 +31,7 @@ export default class ShareApp extends PureComponent {
     }
 
     listenForHydration = () => {
-        const {dispatch, getState} = store;
+        const {dispatch, getState} = reduxStore;
         const state = getState();
         if (state.views.root.hydrationComplete) {
             const {currentTeamId} = state.entities.teams;
@@ -53,10 +53,10 @@ export default class ShareApp extends PureComponent {
             return null;
         }
 
-        const locale = getCurrentLocale(store.getState());
+        const locale = getCurrentLocale(reduxStore.getState());
 
         return (
-            <Provider store={store}>
+            <Provider store={reduxStore}>
                 <IntlProvider
                     locale={locale}
                     messages={getTranslations(locale)}
