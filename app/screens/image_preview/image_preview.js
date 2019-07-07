@@ -461,7 +461,7 @@ export default class ImagePreview extends PureComponent {
             let grantOption = null;
             if (canOpenSettings) {
                 grantOption = {
-                    text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Set permission'}),
+                    text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Settings'}),
                     onPress: () => Permissions.openSettings(),
                 };
             }
@@ -470,7 +470,7 @@ export default class ImagePreview extends PureComponent {
             Alert.alert(
                 formatMessage({
                     id: 'mobile.photo_library_permission_denied_title',
-                    defaultMessage: 'Photo library access is required',
+                    defaultMessage: '{applicationName} would like to access your photo library',
                 }, {applicationName}),
                 formatMessage({
                     id: 'mobile.photo_library_permission_denied_description',
@@ -478,7 +478,7 @@ export default class ImagePreview extends PureComponent {
                 }),
                 [
                     grantOption,
-                    {text: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Dismiss'})},
+                    {text: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'})},
                 ]
             );
             return;

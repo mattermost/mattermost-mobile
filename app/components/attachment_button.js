@@ -76,11 +76,11 @@ export default class AttachmentButton extends PureComponent {
                 return {
                     title: formatMessage({
                         id: 'mobile.camera_video_permission_denied_title',
-                        defaultMessage: 'Camera access is required',
+                        defaultMessage: '{applicationName} would like to access your camera',
                     }, {applicationName}),
                     text: formatMessage({
                         id: 'mobile.camera_video_permission_denied_description',
-                        defaultMessage: 'Please update your permission settings to take photos and videos with your camera.',
+                        defaultMessage: 'Take videos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
                     }),
                 };
             }
@@ -88,11 +88,11 @@ export default class AttachmentButton extends PureComponent {
             return {
                 title: formatMessage({
                     id: 'mobile.camera_photo_permission_denied_title',
-                    defaultMessage: 'Camera access is required',
+                    defaultMessage: '{applicationName} would like to access your camera',
                 }, {applicationName}),
                 text: formatMessage({
                     id: 'mobile.camera_photo_permission_denied_description',
-                    defaultMessage: 'Please update your permission settings to take photos and videos with your camera.',
+                    defaultMessage: 'Take photos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
                 }),
             };
         }
@@ -100,22 +100,22 @@ export default class AttachmentButton extends PureComponent {
             return {
                 title: formatMessage({
                     id: 'mobile.storage_permission_denied_title',
-                    defaultMessage: 'File Storage access is required',
+                    defaultMessage: '{applicationName} would like to access your files',
                 }, {applicationName}),
                 text: formatMessage({
                     id: 'mobile.storage_permission_denied_description',
-                    defaultMessage: 'Please update your permission settings to upload files from your device.',
+                    defaultMessage: 'Upload files to your Mattermost instance. Open Settings to grant Mattermost Read and Write access to files on this device.',
                 }),
             };
         case 'video':
             return {
                 title: formatMessage({
                     id: 'mobile.android.videos_permission_denied_title',
-                    defaultMessage: 'Video library access is required',
+                    defaultMessage: '{applicationName} would like to access your videos',
                 }, {applicationName}),
                 text: formatMessage({
                     id: 'mobile.android.videos_permission_denied_description',
-                    defaultMessage: 'Please update your permission settings to upload videos from your library.',
+                    defaultMessage: 'Upload videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your video library.',
                 }),
             };
         case 'photo':
@@ -124,11 +124,11 @@ export default class AttachmentButton extends PureComponent {
                 return {
                     title: formatMessage({
                         id: 'mobile.android.photos_permission_denied_title',
-                        defaultMessage: 'Photo library access is required',
+                        defaultMessage: '{applicationName} would like to access your photos',
                     }, {applicationName}),
                     text: formatMessage({
                         id: 'mobile.android.photos_permission_denied_description',
-                        defaultMessage: 'Please update your permission settings to upload images from your library.',
+                        defaultMessage: 'Upload photos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo library.',
                     }),
                 };
             }
@@ -136,11 +136,11 @@ export default class AttachmentButton extends PureComponent {
             return {
                 title: formatMessage({
                     id: 'mobile.ios.photos_permission_denied_title',
-                    defaultMessage: 'Photo library access is required',
+                    defaultMessage: '{applicationName} would like to access your photos',
                 }, {applicationName}),
                 text: formatMessage({
                     id: 'mobile.ios.photos_permission_denied_description',
-                    defaultMessage: 'Please update your permission settings to upload images from your library.',
+                    defaultMessage: 'Upload photos and videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo and video library.',
                 }),
             };
         }
@@ -168,9 +168,9 @@ export default class AttachmentButton extends PureComponent {
                 text,
                 reTryTitle: formatMessage({
                     id: 'mobile.permission_denied_retry',
-                    defaultMessage: 'Set Permission',
+                    defaultMessage: 'Settings',
                 }),
-                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
             },
         };
 
@@ -198,9 +198,9 @@ export default class AttachmentButton extends PureComponent {
                 text,
                 reTryTitle: formatMessage({
                     id: 'mobile.permission_denied_retry',
-                    defaultMessage: 'Set Permission',
+                    defaultMessage: 'Settings',
                 }),
-                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
             },
         };
 
@@ -237,9 +237,9 @@ export default class AttachmentButton extends PureComponent {
                 text,
                 reTryTitle: formatMessage({
                     id: 'mobile.permission_denied_retry',
-                    defaultMessage: 'Set Permission',
+                    defaultMessage: 'Settings',
                 }),
-                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
             },
         };
 
@@ -303,7 +303,7 @@ export default class AttachmentButton extends PureComponent {
                     grantOption = {
                         text: formatMessage({
                             id: 'mobile.permission_denied_retry',
-                            defaultMessage: 'Set permission',
+                            defaultMessage: 'Settings',
                         }),
                         onPress: () => Permissions.openSettings(),
                     };
@@ -319,7 +319,7 @@ export default class AttachmentButton extends PureComponent {
                         {
                             text: formatMessage({
                                 id: 'mobile.permission_denied_dismiss',
-                                defaultMessage: 'Dismiss',
+                                defaultMessage: 'Don\'t Allow',
                             }),
                         },
                     ]
@@ -355,13 +355,13 @@ export default class AttachmentButton extends PureComponent {
                         {
                             text: formatMessage({
                                 id: 'mobile.permission_denied_dismiss',
-                                defaultMessage: 'Dismiss',
+                                defaultMessage: 'Don\'t Allow',
                             }),
                         },
                         {
                             text: formatMessage({
                                 id: 'mobile.permission_denied_retry',
-                                defaultMessage: 'Set permission',
+                                defaultMessage: 'Settings',
                             }),
                             onPress: () => AndroidOpenSettings.appDetailsSettings(),
                         },
