@@ -415,9 +415,9 @@ const launchChannel = (skipMetrics = false) => {
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'transparent',
             },
-            passProps: {
-                skipMetrics,
-            },
+        },
+        passProps: {
+            skipMetrics,
         },
         appStyle: {
             orientation: 'auto',
