@@ -82,10 +82,10 @@ export default class List extends PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (prevState.sections !== this.state.sections && this.refs.list._wrapperListRef.getListRef()._viewabilityHelper) { //eslint-disable-line
-            this.refs.list.recordInteraction();
+        if (prevState.sections !== this.state.sections && this._listRef._wrapperListRef.getListRef()._viewabilityHelper) { //eslint-disable-line
+            this._listRef.recordInteraction();
             this.updateUnreadIndicators({
-                viewableItems: Array.from(this.refs.list._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
+                viewableItems: Array.from(this._listRef._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
             });
         }
     }
@@ -388,8 +388,8 @@ export default class List extends PureComponent {
     };
 
     scrollToTop = () => {
-        if (this.refs.list) {
-            this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+        if (this._listRef && this._listRef._wrapperListRef) {
+            this._listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                 x: 0,
                 y: 0,
                 animated: true,
@@ -434,7 +434,7 @@ export default class List extends PureComponent {
                 onLayout={this.onLayout}
             >
                 <SectionList
-                    ref='list'
+                    ref={i => this._listRef = i}
                     sections={sections}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}

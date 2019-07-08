@@ -59,7 +59,7 @@ export default class SettingsDrawer extends PureComponent {
 
     constructor(props) {
         super(props);
-
+        
         MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
@@ -74,8 +74,8 @@ export default class SettingsDrawer extends PureComponent {
     }
 
     handleAndroidBack = () => {
-        if (this.refs.drawer && this.drawerOpened) {
-            this.refs.drawer.closeDrawer();
+        if (this._drawerRef && this.drawerOpened) {
+            this._drawerRef.closeDrawer();
             return true;
         }
 
@@ -84,15 +84,14 @@ export default class SettingsDrawer extends PureComponent {
 
     openSettingsSidebar = () => {
         this.props.blurPostTextBox();
-
-        if (this.refs.drawer && !this.drawerOpened) {
-            this.refs.drawer.openDrawer();
+        if (this._drawerRef && !this.drawerOpened) {
+            this._drawerRef.openDrawer();
         }
     };
 
     closeSettingsSidebar = () => {
-        if (this.refs.drawer && this.drawerOpened) {
-            this.refs.drawer.closeDrawer();
+        if (this._drawerRef && this.drawerOpened) {
+            this._drawerRef.closeDrawer();
         }
     };
 
@@ -373,10 +372,9 @@ export default class SettingsDrawer extends PureComponent {
     render() {
         const {children, deviceWidth} = this.props;
         const drawerWidth = DeviceTypes.IS_TABLET ? DRAWER_TABLET_WIDTH : (deviceWidth - DRAWER_INITIAL_OFFSET);
-
         return (
             <DrawerLayout
-                ref='drawer'
+                ref={i => {this._drawerRef = i;}}
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}

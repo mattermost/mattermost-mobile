@@ -67,7 +67,7 @@ export default class Root extends PureComponent {
     };
 
     handleNoTeams = () => {
-        if (!this.refs.provider) {
+        if (!this._providerRef) {
             setTimeout(this.handleNoTeams, 200);
             return;
         }
@@ -75,7 +75,7 @@ export default class Root extends PureComponent {
     };
 
     errorTeamsList = () => {
-        if (!this.refs.provider) {
+        if (!this._providerRef) {
             setTimeout(this.errorTeamsList, 200);
             return;
         }
@@ -84,7 +84,7 @@ export default class Root extends PureComponent {
 
     navigateToTeamsPage = (screen) => {
         const {currentUrl, navigator, theme} = this.props;
-        const {intl} = this.refs.provider.getChildContext();
+        const {intl} = this._providerRef.getChildContext();
 
         let navigatorButtons;
         let passProps = {theme};
@@ -148,7 +148,7 @@ export default class Root extends PureComponent {
 
         return (
             <IntlProvider
-                ref='provider'
+                ref={i => this._providerRef = i}
                 locale={locale}
                 messages={getTranslations(locale)}
             >

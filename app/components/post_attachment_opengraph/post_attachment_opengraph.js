@@ -41,7 +41,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     constructor(props) {
         super(props);
-
         this.state = this.getBestImageUrl(props.openGraphData);
     }
 
@@ -209,7 +208,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             },
         }];
 
-        previewImageAtIndex(this.props.navigator, [this.refs.item], 0, files);
+        previewImageAtIndex(this.props.navigator, [this._itemRef], 0, files);
     };
 
     renderDescription = () => {
@@ -251,7 +250,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         return (
             <View
-                ref='item'
+                ref={i => this._itemRef = i}
                 style={[style.imageContainer, {width, height}]}
             >
                 <TouchableWithoutFeedback

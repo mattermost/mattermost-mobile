@@ -122,11 +122,11 @@ export default class SearchBarAndroid extends PureComponent {
     };
 
     blur = () => {
-        this.refs.input.blur();
+        this._inputRef.blur();
     };
 
     focus = () => {
-        this.refs.input.focus();
+        this._inputRef.focus();
     };
 
     render() {
@@ -205,7 +205,7 @@ export default class SearchBarAndroid extends PureComponent {
                         />
                     }
                     <TextInput
-                        ref='input'
+                        ref={i => this._inputRef = i}
                         blurOnSubmit={blurOnSubmit}
                         refocusInput={this.state.refocusInput}
                         value={this.props.value}
