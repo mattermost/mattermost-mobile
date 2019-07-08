@@ -1,24 +1,21 @@
 package com.mattermost.rnbeta;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.util.Log;
-import java.lang.System;
 
-import okhttp3.Call;
+import androidx.annotation.Nullable;
+
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.WritableMap;
+import com.mattermost.react_native_interface.ResolvePromise;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
-
-import org.json.JSONObject;
-import org.json.JSONException;
-
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.WritableMap;
-
-import com.mattermost.react_native_interface.ResolvePromise;
 
 public class ReceiptDelivery {
     static final String CURRENT_SERVER_URL = "@currentServerUrl";

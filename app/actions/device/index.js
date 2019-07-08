@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {networkStatusChangedAction} from 'redux-offline';
+//import {networkStatusChangedAction} from 'redux-offline';
 
 import {DeviceTypes} from 'app/constants';
 
 export function connection(isOnline) {
     return async (dispatch) => {
-        dispatch(networkStatusChangedAction(isOnline));
+        // FIX ME - networkStatusChangedAction is no longer exported in Redux offline.
+        // So this needs to be replaced with a newer API
+        //dispatch(networkStatusChangedAction(isOnline));
         dispatch({
             type: DeviceTypes.CONNECTION_CHANGED,
             data: isOnline,

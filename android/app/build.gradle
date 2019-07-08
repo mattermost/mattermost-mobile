@@ -105,6 +105,15 @@ def enableSeparateBuildPerCPUArchitecture = false
  */
 def enableProguardInReleaseBuilds = false
 
+/**
+ * Use international variant JavaScriptCore
+ * International variant includes ICU i18n library and necessary data allowing to use
+ * e.g. Date.toLocaleString and String.localeCompare that give correct results
+ * when using with locales other than en-US.
+ * Note that this variant is about 6MiB larger per architecture than default.
+ */
+def useIntlJsc = false
+
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
@@ -214,7 +223,7 @@ dependencies {
     implementation "org.webkit:android-jsc-intl:r241213"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
+    implementation 'androidx.appcompat:appcompat:1.0.0'
     implementation 'com.android.support:design:28.0.0'
     implementation 'com.android.support:percent:28.0.0'
     implementation "com.google.firebase:firebase-messaging:17.3.0"
@@ -259,3 +268,4 @@ task copyDownloadableDepsToLibs(type: Copy) {
 }
 
 apply plugin: 'com.google.gms.google-services'
+// apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

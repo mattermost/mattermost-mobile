@@ -97,6 +97,12 @@ post-install:
 	fi
 	@sed -i'' -e 's|transform: \[{scaleY: -1}\],|...Platform.select({android: {transform: \[{perspective: 1}, {scaleY: -1}\]}, ios: {transform: \[{scaleY: -1}\]}}),|g' node_modules/react-native/Libraries/Lists/VirtualizedList.js
 
+	@# Need to fix bottom sheet since this is the version that can be jetified. Looks like something else is pulling in 1.3.1.
+	@find "node_modules/react-native-bottom-sheet/android" -name "build.gradle" -exec sed -i '' s/com\.cocosw:bottomsheet:1\.\+\@aar/com\.cocosw:bottomsheet:1\.\3\.0\@aar/g {} +
+
+	@# Run Jetifier, so that compat libraries in all dependencies are converted to AndroidX
+	node_modules/.bin/jetify
+
 start: | pre-run ## Starts the React Native packager server
 	$(call start_packager)
 

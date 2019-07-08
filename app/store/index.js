@@ -20,7 +20,7 @@ import {getSiteUrl, setSiteUrl} from 'app/utils/image_cache_manager';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
 import mattermostBucket from 'app/mattermost_bucket';
-
+import detectNetwork from 'app/utils/detectNetwork.js';
 import {messageRetention} from './middleware';
 import {createThunkMiddleware} from './thunk';
 import {transformSet} from './utils';
@@ -133,6 +133,7 @@ export default function configureAppStore(initialState) {
     );
 
     const offlineOptions = {
+        detectNetwork, // Need to add this, since starting RN 0.60, NetInfo is not a part of RN core
         effect: (effect, action) => {
             if (typeof effect !== 'function') {
                 throw new Error('Offline Action: effect must be a function.');

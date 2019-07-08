@@ -8,10 +8,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.WritableMap;
+import com.mattermost.react_native_interface.ResolvePromise;
+import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -20,12 +26,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-import com.mattermost.react_native_interface.ResolvePromise;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.WritableMap;
-
-import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 
 public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     private Context mContext;
