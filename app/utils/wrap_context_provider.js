@@ -6,10 +6,8 @@ import IntlWrapper from 'app/components/root';
 
 export function wrapWithContextProvider(Comp, excludeEvents = true) {
     return (props) => { //eslint-disable-line react/display-name
-        const {navigator} = props; //eslint-disable-line react/prop-types
         return (
             <IntlWrapper
-                navigator={navigator}
                 excludeEvents={excludeEvents}
             >
                 <Comp {...props}/>

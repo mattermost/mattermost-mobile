@@ -18,8 +18,10 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 
 export default class Code extends React.PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            popTopScreen: PropTypes.func.isRequired,
+        }).isRequired,
         componentId: PropTypes.string,
-        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,
     };
@@ -39,7 +41,7 @@ export default class Code extends React.PureComponent {
     }
 
     handleAndroidBack = () => {
-        this.props.navigator.pop();
+        this.props.actions.popTopScreen();
         return true;
     };
 

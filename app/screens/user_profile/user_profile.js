@@ -33,11 +33,14 @@ export default class UserProfile extends PureComponent {
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             loadBot: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
-        navigator: PropTypes.object,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
@@ -61,13 +64,13 @@ export default class UserProfile extends PureComponent {
         super(props);
 
         if (props.isMyUser) {
-            this.rightButton.title = context.intl.formatMessage({id: 'mobile.routes.user_profile.edit', defaultMessage: 'Edit'});
+            this.rightButton.text = context.intl.formatMessage({id: 'mobile.routes.user_profile.edit', defaultMessage: 'Edit'});
 
             const buttons = {
                 rightButtons: [this.rightButton],
             };
 
-            props.navigator.setButtons(buttons);
+            props.actions.setButtons(props.componentId, buttons);
         }
     }
 
@@ -97,30 +100,17 @@ export default class UserProfile extends PureComponent {
     }
 
     close = () => {
-        const {navigator, theme} = this.props;
+        const {actions, fromSettings} = this.props;
 
-        if (this.props.fromSettings) {
-            navigator.dismissModal({
-                animationType: 'slide-down',
-            });
+        if (fromSettings) {
+            actions.dismissModal();
             return;
         }
 
-        navigator.resetTo({
-            screen: 'Channel',
-            animated: true,
-            navigatorStyle: {
-                animated: true,
-                animationType: 'fade',
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                disableTermsModal: true,
-            },
-        });
+        const passProps = {
+            disableTermsModal: true,
+        };
+        actions.resetToChannel(passProps);
     };
 
     getDisplayName = () => {
@@ -231,27 +221,15 @@ export default class UserProfile extends PureComponent {
     };
 
     goToEditProfile = () => {
-        const {user: currentUser} = this.props;
+        const {actions, user: currentUser} = this.props;
         const {formatMessage} = this.context.intl;
         const commandType = 'Push';
-
-        const {navigator, theme} = this.props;
-        const options = {
-            screen: 'EditProfile',
-            title: formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
-            animated: true,
-            backButtonTitle: '',
-            passProps: {currentUser, commandType},
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        };
+        const screen = 'EditProfile';
+        const title = formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'});
+        const passProps = {currentUser, commandType};
 
         requestAnimationFrame(() => {
-            navigator.push(options);
+            actions.goToScreen(screen, title, passProps);
         });
     };
 

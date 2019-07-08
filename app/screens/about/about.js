@@ -26,7 +26,6 @@ export default class About extends PureComponent {
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
-        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
 

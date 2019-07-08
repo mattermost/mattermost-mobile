@@ -9,13 +9,6 @@ exports[`profile_picture_button should match snapshot 1`] = `
     ]
   }
   maxFileSize={20971520}
-  navigator={
-    Object {
-      "dismissModal": [MockFunction],
-      "push": [MockFunction],
-      "setButtons": [MockFunction],
-    }
-  }
   theme={
     Object {
       "awayIndicator": "#ffbc42",

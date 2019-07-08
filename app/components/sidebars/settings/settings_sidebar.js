@@ -68,10 +68,12 @@ export default class SettingsDrawer extends PureComponent {
     }
 
     componentDidMount() {
+        EventEmitter.on('close_settings_sidebar', this.closeSettingsSidebar);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
     componentWillUnmount() {
+        EventEmitter.off('close_settings_sidebar', this.closeSettingsSidebar);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 

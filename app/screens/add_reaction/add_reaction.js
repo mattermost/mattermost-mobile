@@ -15,9 +15,12 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class AddReaction extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            dismissModal: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+        }).isRequired,
         componentId: PropTypes.string,
         closeButton: PropTypes.object,
-        navigator: PropTypes.object.isRequired,
         onEmojiPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
     };
@@ -33,7 +36,7 @@ export default class AddReaction extends PureComponent {
     constructor(props) {
         super(props);
 
-        props.navigator.setButtons({
+        props.actions.setButtons(props.componentId, {
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
         });
     }
@@ -55,9 +58,7 @@ export default class AddReaction extends PureComponent {
     }
 
     close = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'slide-down',
-        });
+        this.props.actions.dismissModal();
     };
 
     handleEmojiPress = (emoji) => {

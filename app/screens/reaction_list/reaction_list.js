@@ -28,8 +28,8 @@ export default class ReactionList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getMissingProfilesByIds: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
-        navigator: PropTypes.object,
         reactions: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string,
@@ -107,9 +107,7 @@ export default class ReactionList extends PureComponent {
     }
 
     close = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'none',
-        });
+        this.props.actions.dismissModal();
     };
 
     getMissingProfiles = () => {
@@ -137,7 +135,6 @@ export default class ReactionList extends PureComponent {
 
     renderReactionRows = () => {
         const {
-            navigator,
             teammateNameDisplay,
             theme,
         } = this.props;
@@ -157,7 +154,6 @@ export default class ReactionList extends PureComponent {
             >
                 <ReactionRow
                     emojiName={emojiName}
-                    navigator={navigator}
                     teammateNameDisplay={teammateNameDisplay}
                     theme={theme}
                     user={userProfilesById[userId]}

@@ -178,7 +178,12 @@ export function popToRoot() {
     return () => {
         const componentId = EphemeralStore.getTopComponentId();
 
-        Navigation.popToRoot(componentId);
+        Navigation.popToRoot(componentId).catch(() => {
+            // RNN returns a promise rejection if there are no screens
+            // atop the root screen to pop. We'll do nothing in this
+            // case but we will catch the rejection here so that the
+            // caller doesn't have to.
+        });
     };
 }
 
@@ -289,7 +294,11 @@ export function dismissModal(options = {}) {
 
 export function dismissAllModals(options = {}) {
     return () => {
-        Navigation.dismissAllModals(options);
+        Navigation.dismissAllModals(options).catch(() => {
+            // RNN returns a promise rejection if there are no modals to
+            // dismiss. We'll do nothing in this case but we will catch
+            // the rejection here so that the caller doesn't have to.
+        });
     };
 }
 
@@ -318,6 +327,35 @@ export function setButtons(componentId, buttons = {leftButtons: [], rightButtons
             topBar: {
                 ...buttons,
             },
+        });
+    };
+}
+
+export function showOverlay(name, passProps, options = {}) {
+    return () => {
+        const defaultOptions = {
+            overlay: {
+                interceptTouchOutside: false,
+            },
+        };
+
+        Navigation.showOverlay({
+            component: {
+                name,
+                passProps,
+                options: merge(defaultOptions, options),
+            },
+        });
+    };
+}
+
+export function dismissOverlay(componentId) {
+    return () => {
+        return Navigation.dismissOverlay(componentId).catch(() => {
+            // RNN returns a promise rejection if there is no modal with
+            // this componentId to dismiss. We'll do nothing in this case
+            // but we will catch the rejection here so that the caller
+            // doesn't have to.
         });
     };
 }

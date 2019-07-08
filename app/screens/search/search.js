@@ -57,12 +57,13 @@ export default class Search extends PureComponent {
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
             dismissModal: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         initialValue: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
-        navigator: PropTypes.object,
         postIds: PropTypes.array,
         archivedPostIds: PropTypes.arrayOf(PropTypes.string),
         recent: PropTypes.array.isRequired,
@@ -183,7 +184,7 @@ export default class Search extends PureComponent {
     });
 
     goToThread = (post) => {
-        const {actions, navigator, theme} = this.props;
+        const {actions} = this.props;
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
 
@@ -191,23 +192,14 @@ export default class Search extends PureComponent {
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        const options = {
-            screen: 'Thread',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelId,
-                rootId,
-            },
+        const screen = 'Thread';
+        const title = '';
+        const passProps = {
+            channelId,
+            rootId,
         };
 
-        navigator.push(options);
+        actions.goToScreen(screen, title, passProps);
     };
 
     handleHashtagPress = (hashtag) => {
@@ -389,7 +381,6 @@ export default class Search extends PureComponent {
                     postId={item}
                     previewPost={this.previewPost}
                     goToThread={this.goToThread}
-                    navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={mattermostManaged.getCachedConfig()}
@@ -449,29 +440,24 @@ export default class Search extends PureComponent {
     };
 
     showPermalinkView = (postId, isPermalink) => {
-        const {actions, navigator} = this.props;
+        const {actions} = this.props;
 
         actions.selectFocusedPostId(postId);
 
         if (!this.showingPermalink) {
+            const screen = 'Permalink';
+            const passProps = {
+                isPermalink,
+                onClose: this.handleClosePermalink,
+            };
             const options = {
-                screen: 'Permalink',
-                animationType: 'none',
-                backButtonTitle: '',
-                overrideBackPress: true,
-                navigatorStyle: {
-                    navBarHidden: true,
-                    screenBackgroundColor: changeOpacity('#000', 0.2),
-                    modalPresentationStyle: 'overCurrentContext',
-                },
-                passProps: {
-                    isPermalink,
-                    onClose: this.handleClosePermalink,
+                layout: {
+                    backgroundColor: changeOpacity('#000', 0.2),
                 },
             };
 
             this.showingPermalink = true;
-            navigator.showModal(options);
+            actions.showModalOverCurrentContext(screen, passProps, options);
         }
     };
 

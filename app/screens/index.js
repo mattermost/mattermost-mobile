@@ -9,23 +9,12 @@ import Channel from 'app/screens/channel';
 import Root from 'app/components/root';
 import SelectServer from 'app/screens/select_server';
 
-// TODO remove dummy navigator object
-const navigator = {
-    push: () => {}, // eslint-disable-line no-empty-function
-    setOnNavigatorEvent: () => {}, // eslint-disable-line no-empty-function
-    setStyle: () => {}, // eslint-disable-line no-empty-function
-    setButtons: () => {}, // eslint-disable-line no-empty-function
-};
-
 export function registerScreens(store, Provider) {
     // TODO consolidate this with app/utils/wrap_context_provider
     const wrapper = (Comp) => (props) => ( // eslint-disable-line react/display-name
         <Provider store={store}>
-            <Root navigator={navigator}>
-                <Comp
-                    {...props}
-                    navigator={navigator}
-                />
+            <Root>
+                <Comp {...props}/>
             </Root>
         </Provider>
     );
