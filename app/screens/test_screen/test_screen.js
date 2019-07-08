@@ -3,12 +3,14 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {SafeAreaView, StatusBar, View, Text, Button} from 'react-native';
+import {FlatList, SafeAreaView, StatusBar, View, Text, Button} from 'react-native';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes} from 'app/constants';
 import ephemeralStore from 'app/store/ephemeral_store';
+
+import TestItem from './test_item';
 
 export default class TestScreen extends PureComponent {
     static propTypes = {
@@ -19,6 +21,7 @@ export default class TestScreen extends PureComponent {
             handleServerUrlChanged: PropTypes.func.isRequired,
         }),
         user: PropTypes.object,
+        items: PropTypes.array,
         reduxServerUrl: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
@@ -41,6 +44,15 @@ export default class TestScreen extends PureComponent {
         await this.props.actions.loadMe();
     };
 
+    renderItem = ({item}) => {
+        return (
+            <TestItem
+                itemId={item}
+                theme={this.props.theme}
+            />
+        );
+    }
+
     render() {
         const {user, reduxServerUrl, theme} = this.props;
 
@@ -57,6 +69,11 @@ export default class TestScreen extends PureComponent {
                         <Text style={{color: theme.centerChannelColor}}>{`Redux stored server url ${reduxServerUrl}`}</Text>
                         <Text style={{color: theme.centerChannelColor}}>{user ? user.fullName : 'No user present'}</Text>
                     </View>
+                    <FlatList
+                        keyExtractor={(item) => item}
+                        data={this.props.items}
+                        renderItem={this.renderItem}
+                    />
                     <Button
                         title={'Toggle server'}
                         onPress={this.toggle}
