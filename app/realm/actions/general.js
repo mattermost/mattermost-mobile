@@ -4,7 +4,7 @@
 import {Client4} from 'mattermost-redux/client';
 
 import {GeneralTypes} from 'app/realm/action_types';
-import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
+import {General} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
@@ -42,7 +42,7 @@ export function loadConfigAndLicense(save = true) {
     return async (dispatch, getState) => {
         reduxStore.dispatch(loadConfigAndLicenseRedux()); // TODO: Remove redux compatibility
         try {
-            const general = getState().objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
+            const general = getState().objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
             const [config, license] = await Promise.all([
                 Client4.getClientConfigOld(),
                 Client4.getClientLicenseOld(),

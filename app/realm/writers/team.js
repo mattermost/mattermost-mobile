@@ -3,8 +3,8 @@
 
 import {combineWriters} from 'realm-react-redux';
 
+import {General} from 'app/constants';
 import {TeamTypes} from 'app/realm/action_types';
-import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 import {teamDataToRealm, teamMemberDataToRealm} from 'app/realm/utils/team';
 
 export function mapTeamMembers(data, user) {
@@ -55,7 +55,7 @@ function myTeamsWriter(realm, action) {
     switch (action.type) {
     case TeamTypes.RECEIVED_MY_TEAMS: {
         const data = action.data || action.payload;
-        const general = realm.objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         const user = realm.objectForPrimaryKey('User', general?.currentUserId);
 
         if (user) {
@@ -69,6 +69,14 @@ function myTeamsWriter(realm, action) {
 
         break;
     }
+
+    case TeamTypes.SELECT_TEAM: {
+        const {data} = action;
+        const generalRealm = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        generalRealm.currentTeamId = data;
+        break;
+    }
+
     default:
         break;
     }

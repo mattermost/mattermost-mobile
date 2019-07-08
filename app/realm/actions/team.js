@@ -13,7 +13,7 @@ import {forceLogoutIfNecessary} from './helpers';
 
 // TODO: Remove redux compatibility
 import {reduxStore} from 'app/store';
-import {selectDefaultTeam as selectDefaultTeamRedux} from '../views/select_team';
+import {selectDefaultTeam as selectDefaultTeamRedux} from 'app/actions/views/select_team';
 
 export function getMyTeams() {
     return async (dispatch) => {
@@ -58,7 +58,7 @@ export function selectDefaultTeam() {
         const general = state.objects('General');
         const config = getConfig(general);
         const members = state.objects('TeamMember');
-        const {ExperimentalPrimaryTeam} = config;
+        const ExperimentalPrimaryTeam = config?.ExperimentalPrimaryTeam;
         const teams = members.map((member) => member.teams[0]);
 
         let defaultTeam = selectFirstTeamAvailable(teams, ExperimentalPrimaryTeam);

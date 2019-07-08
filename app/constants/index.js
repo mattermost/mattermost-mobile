@@ -8,7 +8,13 @@ import NavigationTypes from './navigation';
 import PermissionTypes from './permissions';
 import ViewTypes, {UpgradeTypes} from './view';
 
+import General from './general';
+import Preferences from './preferences';
+
 export {
+    General,
+    Preferences,
+
     DeepLinkTypes,
     DeviceTypes,
     ListTypes,

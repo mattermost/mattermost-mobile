@@ -3,8 +3,8 @@
 
 import {combineWriters} from 'realm-react-redux';
 
-import {UserTypes} from 'app/realm/action_types';
-import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
+import {General} from 'app/constants';
+import {PreferenceTypes, UserTypes} from 'app/realm/action_types';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {userDataToRealm} from 'app/realm/utils/user';
 
@@ -32,7 +32,7 @@ function currentUserWriter(realm, action) {
         }
 
         realm.create('General', {
-            id: GENERAL_SCHEMA_ID,
+            id: General.REALM_SCHEMA_ID,
             currentUserId: user.id,
             deviceToken: ephemeralStore.deviceToken,
         }, true);
@@ -47,12 +47,28 @@ function currentUserWriter(realm, action) {
         createOrUpdateTeams(realm, data, teamMembersMap);
         break;
     }
+
     case UserTypes.UPDATE_ME: {
         const data = action.data || action.payload;
         const user = userDataToRealm(data);
         realm.create('User', user, true);
         break;
     }
+
+    case PreferenceTypes.RECEIVED_PREFERENCES: {
+        const data = action.data || action.payload;
+        data.forEach((p) => {
+            const preference = {
+                id: `${p.category}-${p.name}`,
+                ...p,
+            };
+
+            realm.create('Preference', preference, true);
+        });
+
+        break;
+    }
+
     default:
         break;
     }
