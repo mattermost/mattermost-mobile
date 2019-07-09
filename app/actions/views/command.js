@@ -30,7 +30,7 @@ export function executeCommand(message, channelId, rootId) {
 
         const {data, error} = await dispatch(executeCommandService(msg, args));
 
-        if (data.trigger_id) {
+        if (data?.trigger_id) { //eslint-disable-line camelcase
             dispatch({type: IntegrationTypes.RECEIVED_DIALOG_TRIGGER_ID, data: data.trigger_id});
         }
 
