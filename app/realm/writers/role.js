@@ -5,7 +5,7 @@ import {combineWriters} from 'realm-react-redux';
 
 import {RoleTypes} from 'app/realm/action_types';
 
-function role(realm, action) {
+function roleWriter(realm, action) {
     switch (action.type) {
     case RoleTypes.RECEIVED_ROLES: {
         const data = action.data || action.payload;
@@ -32,5 +32,5 @@ function role(realm, action) {
 }
 
 export default combineWriters([
-    role,
+    roleWriter,
 ]);
