@@ -143,7 +143,7 @@ export default class ChannelSidebar extends Component {
     };
 
     handleShowDrawerContent = () => {
-        this.setState({show: true});
+        requestAnimationFrame(() => this.setState({show: true}));
     };
 
     closeChannelDrawer = () => {
