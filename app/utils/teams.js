@@ -15,10 +15,10 @@ export function selectFirstAvailableTeam(teams, primaryTeam) {
     return defaultTeam;
 }
 
-export function selectFirstTeamAvailable(teams, primaryTeam) {
+export function selectFirstTeamAvailable(teams, primaryTeamName) {
     let defaultTeam;
     if (primaryTeam) {
-        defaultTeam = teams.find((t) => t.name === primaryTeam.toLowerCase());
+        defaultTeam = teams.find((t) => t.name === primaryTeamName.toLowerCase());
     }
 
     if (!defaultTeam) {
