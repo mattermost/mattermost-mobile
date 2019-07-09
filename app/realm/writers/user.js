@@ -7,9 +7,20 @@ import {UserTypes} from 'app/realm/action_types';
 import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {userDataToRealm} from 'app/realm/utils/user';
-import {teamDataToRealm, teamMemberDataToRealm} from 'app/realm/utils/team';
 
-function currentUser(realm, action) {
+import {mapTeamMembers, removeTeamMemberships, createOrUpdateTeams} from './team';
+
+function resetPreferences(realm, data) {
+    if (data.preferences?.length) {
+        realm.delete(realm.objects('Preference'));
+        data.preferences.forEach((pref) => {
+            const id = `${pref.category}-${pref.name}`;
+            realm.create('Preference', {...pref, id});
+        });
+    }
+}
+
+function currentUserWriter(realm, action) {
     switch (action.type) {
     case UserTypes.RECEIVED_ME: {
         const data = action.data || action.payload;
@@ -26,49 +37,14 @@ function currentUser(realm, action) {
             deviceToken: ephemeralStore.deviceToken,
         }, true);
 
-        if (data.preferences?.length) {
-            realm.delete(realm.objects('Preference'));
-            data.preferences.forEach((pref) => {
-                const id = `${pref.category}-${pref.name}`;
-                realm.create('Preference', {...pref, id});
-            });
-        }
+        resetPreferences(realm, data);
 
-        const teamMembersMap = new Map();
-        if (data.teams?.length && data.teamMembers?.length) {
-            data.teamMembers.forEach((member) => {
-                const members = teamMembersMap.get(member.team_id) || [];
-
-                let unreads;
-                if (data.teamUnreads?.length) {
-                    unreads = data.teamUnreads.find((u) => u.team_id === member.team_id);
-                }
-
-                if (unreads) {
-                    member.mention_count = unreads.mention_count;
-                    member.msg_count = unreads.msg_count;
-                }
-
-                members.push(teamMemberDataToRealm(realmUser, member));
-                teamMembersMap.set(member.team_id, members);
-            });
-        }
+        const teamMembersMap = mapTeamMembers(data, user);
 
         // Remove membership from teams
-        const realmTeams = realm.objects('Team');
-        realmTeams.forEach((t) => {
-            const teamMembers = teamMembersMap.get(t.id);
-            if (!teamMembers || teamMembers[0]?.deleteAt) {
-                realm.delete(realm.objectForPrimaryKey('TeamMember', `${t.id}-${user.id}`));
-            }
-        });
+        removeTeamMemberships(realm, user, teamMembersMap);
 
-        if (data.teams?.length) {
-            data.teams.forEach((teamData) => {
-                teamData.members = teamMembersMap.get(teamData.id) || [];
-                realm.create('Team', teamDataToRealm(teamData), true);
-            });
-        }
+        createOrUpdateTeams(realm, data, teamMembersMap);
         break;
     }
     case UserTypes.UPDATE_ME: {
@@ -83,5 +59,5 @@ function currentUser(realm, action) {
 }
 
 export default combineWriters([
-    currentUser,
+    currentUserWriter,
 ]);

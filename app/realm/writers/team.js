@@ -7,7 +7,7 @@ import {TeamTypes} from 'app/realm/action_types';
 import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 import {teamDataToRealm, teamMemberDataToRealm} from 'app/realm/utils/team';
 
-function mapTeamMembers(data, user) {
+export function mapTeamMembers(data, user) {
     const teamMembersMap = new Map();
 
     if (data.teams?.length && data.teamMembers?.length) {
@@ -32,7 +32,7 @@ function mapTeamMembers(data, user) {
     return teamMembersMap;
 }
 
-function removeTeamMemberships(realm, user, teamMembersMap) {
+export function removeTeamMemberships(realm, user, teamMembersMap) {
     const realmTeams = realm.objects('Team');
     realmTeams.forEach((t) => {
         const teamMembers = teamMembersMap.get(t.id);
@@ -42,7 +42,7 @@ function removeTeamMemberships(realm, user, teamMembersMap) {
     });
 }
 
-function createOrUpdateTeams(realm, data, teamMembersMap) {
+export function createOrUpdateTeams(realm, data, teamMembersMap) {
     if (data.teams?.length) {
         data.teams.forEach((teamData) => {
             teamData.members = teamMembersMap.get(teamData.id) || [];
