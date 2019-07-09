@@ -19,6 +19,7 @@ import telemetry from 'app/telemetry';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
+import loggerComponent from 'perf';
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_UP_MULTIPLIER = 3.5;
@@ -350,7 +351,7 @@ export default class PostList extends PureComponent {
 
         const hasPostsKey = postIds.length ? 'true' : 'false';
 
-        return (
+        return loggerComponent("post_list",
             <FlatList
                 key={`recyclerFor-${channelId}-${hasPostsKey}`}
                 ref={this.flatListRef}

@@ -4,7 +4,7 @@
 import 'react-native/Libraries/Core/InitializeCore';
 import {AppRegistry, DeviceEventEmitter, Platform, Text, YellowBox} from 'react-native';
 import 'react-native-gesture-handler';
-
+import './perf';
 import LocalConfig from 'assets/config';
 
 import telemetry from 'app/telemetry';

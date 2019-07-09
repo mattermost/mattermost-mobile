@@ -11,6 +11,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
+import loggerComponent from 'perf';
 
 export default class Root extends PureComponent {
     static propTypes = {
@@ -146,7 +147,7 @@ export default class Root extends PureComponent {
     render() {
         const locale = this.props.locale;
 
-        return (
+        return loggerComponent("root",
             <IntlProvider
                 ref={i => this._providerRef = i}
                 locale={locale}

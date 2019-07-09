@@ -14,6 +14,7 @@ import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
+import loggerComponent from 'perf';
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,
@@ -169,7 +170,7 @@ export default class ProfilePicture extends PureComponent {
             );
         }
 
-        return (
+        return loggerComponent("profile_pic",
             <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
                 {image}
                 {(showStatus || edit) && (user && !user.is_bot) &&

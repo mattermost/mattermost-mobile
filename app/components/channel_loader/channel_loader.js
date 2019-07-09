@@ -13,6 +13,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import loggerComponent from 'perf';
 
 function calculateMaxRows(height) {
     return Math.round(height / 100);
@@ -129,7 +130,7 @@ export default class ChannelLoader extends PureComponent {
         const style = getStyleSheet(theme);
         const bg = this.props.backgroundColor || theme.centerChannelBg;
 
-        return (
+        return loggerComponent("channel_loader",
             <View
                 style={[style.container, styleProp, {backgroundColor: bg}]}
                 onLayout={this.handleLayout}

@@ -8,6 +8,7 @@ import FileUploadPreview from 'app/components/file_upload_preview';
 
 import Typing from './components/typing';
 import PostTextBoxBase from './post_textbox_base';
+import loggerComponent from 'perf';
 
 const AUTOCOMPLETE_MARGIN = 20;
 const AUTOCOMPLETE_MAX_HEIGHT = 200;
@@ -26,7 +27,7 @@ export default class PostTextBoxAndroid extends PostTextBoxBase {
 
         const {cursorPosition, top} = this.state;
 
-        return (
+        return loggerComponent("post_textbox",
             <React.Fragment>
                 <Typing/>
                 <FileUploadPreview

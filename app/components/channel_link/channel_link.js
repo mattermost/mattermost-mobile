@@ -11,6 +11,7 @@ import {t} from 'app/utils/i18n';
 import {alertErrorWithFallback} from 'app/utils/general';
 
 import {getChannelFromChannelName} from './channel_link_utils';
+import loggerComponent from 'perf';
 
 export default class ChannelLink extends React.PureComponent {
     static propTypes = {
@@ -93,7 +94,7 @@ export default class ChannelLink extends React.PureComponent {
             suffix = this.props.channelName.substring(channel.name.length);
         }
 
-        return (
+        return loggerComponent("channel_link",
             <Text style={this.props.textStyle}>
                 <Text
                     style={this.props.linkStyle}

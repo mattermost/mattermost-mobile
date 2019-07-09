@@ -28,6 +28,7 @@ import {emptyFunction} from 'app/utils/general';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 import EmojiPickerRow from './emoji_picker_row';
+import loggerComponent from 'perf';
 
 const EMOJI_SIZE = 30;
 const EMOJI_GUTTER = 7.5;
@@ -452,7 +453,7 @@ export default class EmojiPicker extends PureComponent {
             }),
         };
 
-        return (
+        return loggerComponent("emoji_picker",
             <SafeAreaView excludeHeader={true}>
                 <KeyboardAvoidingView
                     behavior='padding'

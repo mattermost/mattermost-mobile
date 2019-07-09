@@ -16,6 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import List from './list';
 import SwitchTeamsButton from './switch_teams_button';
+import logComponentPerf from 'perf';
 
 const {ANDROID_TOP_PORTRAIT} = ViewTypes;
 let FilteredList = null;
@@ -160,9 +161,9 @@ export default class ChannelsList extends PureComponent {
                 style={styles.container}
             >
                 <View style={styles.headerContainer}>
-                    {title}
+                    {logComponentPerf("Title", title)}
                 </View>
-                {list}
+                {logComponentPerf("list", list)}
             </View>
         );
     }

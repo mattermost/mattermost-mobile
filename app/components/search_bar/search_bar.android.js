@@ -11,6 +11,8 @@ import {
     View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import logComponentPerf from 'perf';
+
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity} from 'app/utils/theme';
@@ -167,7 +169,7 @@ export default class SearchBarAndroid extends PureComponent {
             inputNoBackground.backgroundColor = '#fff';
         }
 
-        return (
+        return logComponentPerf("SearchBar",
             <View
                 style={[
                     styles.container,

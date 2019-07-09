@@ -3,6 +3,9 @@ package com.mattermost.rnbeta;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -16,6 +19,7 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactMarker;
 import com.facebook.react.bridge.ReactMarkerConstants;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.soloader.SoLoader;
@@ -48,6 +52,7 @@ import com.wix.reactnativenotifications.core.notificationdrawer.INotificationsDr
 import com.wix.reactnativenotifications.core.notificationdrawer.IPushNotificationsDrawer;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -112,6 +117,7 @@ public class MainApplication extends NavigationApplication implements INotificat
   @Override
   public void onCreate() {
     super.onCreate();
+    APP_START_TIME = System.currentTimeMillis();
     instance = this;
 
     // Delete any previous temp files created by the app
@@ -126,8 +132,9 @@ public class MainApplication extends NavigationApplication implements INotificat
 
     SoLoader.init(this, /* native exopackage */ false);
 
+    addTraceMarkers();
     // Uncomment to listen to react markers for build that has telemetry enabled
-    // addReactMarkerListener();
+    //addReactMarkerListener();
   }
 
   @Override
@@ -151,6 +158,52 @@ public class MainApplication extends NavigationApplication implements INotificat
   @Override
   public IPushNotificationsDrawer getPushNotificationsDrawer(Context context, AppLaunchHelper defaultAppLaunchHelper) {
     return new CustomPushNotificationDrawer(context, defaultAppLaunchHelper);
+  }
+
+  private List<Bundle> mPerfMarkers = new ArrayList<>();
+
+  private void addTraceMarkers() {
+    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        WritableMap result = Arguments.createMap();
+        result.putDouble("startTime", APP_START_TIME);
+        WritableArray data = Arguments.createArray();
+        for (Bundle r : mPerfMarkers) {
+          WritableMap m = Arguments.createMap();
+          m.putDouble("time", r.getDouble("time"));
+          m.putString("name", r.getString("name"));
+          m.putString("tab", r.getString("tag"));
+          m.putInt("instanceKey", r.getInt("instanceKey"));
+          m.putInt("pid", r.getInt("pid"));
+          m.putInt("tid", r.getInt("tid"));
+          data.pushMap(m);
+        }
+
+        result.putArray("data", data);
+
+        ReactContext ctx = getReactGateway().getReactContext();
+        if (ctx != null) {
+          ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
+                  emit("perfMetrics", result);
+        }
+      }
+    }, 1000 * 15);
+
+    ReactMarker.addListener(new ReactMarker.MarkerListener() {
+      @Override
+      public void logMarker(ReactMarkerConstants name, @javax.annotation.Nullable String tag, int instanceKey) {
+        Bundle record = new Bundle();
+        record.putDouble("time", System.currentTimeMillis());
+        record.putString("name", name.toString());
+        record.putString("tag", tag);
+        record.putInt("instanceKey", instanceKey);
+        record.putInt("pid", Process.myPid());
+        record.putInt("tid", Process.myTid());
+
+        mPerfMarkers.add(record);
+      }
+    });
   }
 
   private void addReactMarkerListener() {

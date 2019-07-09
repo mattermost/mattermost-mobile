@@ -19,7 +19,7 @@ import ChannelMention from './channel_mention';
 import EmojiSuggestion from './emoji_suggestion';
 import SlashSuggestion from './slash_suggestion';
 import DateSuggestion from './date_suggestion';
-
+import loggerComponent from 'perf';
 export default class Autocomplete extends PureComponent {
     static propTypes = {
         cursorPosition: PropTypes.number,
@@ -181,7 +181,7 @@ export default class Autocomplete extends PureComponent {
 
         const maxListHeight = this.maxListHeight();
 
-        return (
+        return loggerComponent("autocomplete",
             <View style={wrapperStyle}>
                 <View style={containerStyle}>
                     <AtMention

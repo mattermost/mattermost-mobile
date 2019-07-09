@@ -10,6 +10,7 @@ import {
     Keyboard,
     ScrollView,
     View,
+    Text
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
@@ -24,6 +25,7 @@ import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import loggerComponent from 'perf';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
@@ -272,6 +274,7 @@ export default class SettingsDrawer extends PureComponent {
                             onPress={this.goToUserProfile}
                             user={currentUser}
                         />
+                        <Text>typeof HermesInternal = {typeof HermesInternal}</Text>
                         <View style={style.block}>
                             <DrawerItem
                                 labelComponent={this.renderUserStatusLabel(currentUser.id)}

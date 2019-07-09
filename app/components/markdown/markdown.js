@@ -36,6 +36,7 @@ import {
     highlightMentions,
     pullOutImages,
 } from './transform';
+import loggerComponent from 'perf';
 
 export default class Markdown extends PureComponent {
     static propTypes = {
@@ -443,7 +444,7 @@ export default class Markdown extends PureComponent {
             }
         }
 
-        return this.renderer.render(ast);
+        return loggerComponent("markdown", this.renderer.render(ast));
     }
 }
 

@@ -17,6 +17,7 @@ import ReplyIcon from 'app/components/reply_icon';
 import BotTag from 'app/components/bot_tag';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import loggerComponent from 'perf.js'
 
 export default class PostHeader extends PureComponent {
     static propTypes = {
@@ -225,7 +226,7 @@ export default class PostHeader extends PureComponent {
             );
         }
 
-        return (
+        return loggerComponent("post_header",
             <React.Fragment>
                 <View style={[style.postInfoContainer, (isPendingOrFailedPost && style.pendingPost)]}>
                     <View style={{flexDirection: 'row', flex: 1}}>

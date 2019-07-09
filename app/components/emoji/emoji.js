@@ -12,6 +12,7 @@ import {
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import ImageCacheManager from 'app/utils/image_cache_manager';
+import loggerComponent from 'perf';
 
 export default class Emoji extends React.PureComponent {
     static propTypes = {
@@ -125,7 +126,7 @@ export default class Emoji extends React.PureComponent {
             );
         }
 
-        return (
+        return loggerComponent("emoji",
             <Image
                 key={key}
                 style={{width, height}}

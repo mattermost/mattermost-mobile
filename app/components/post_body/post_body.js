@@ -24,6 +24,7 @@ import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import loggerComponent from 'perf';
 
 import telemetry from 'app/telemetry';
 
@@ -460,7 +461,7 @@ export default class PostBody extends PureComponent {
             );
         }
 
-        return (
+        return loggerComponent("post_body", 
             <View style={style.messageContainerWithReplyBar}>
                 <View style={replyBarStyle}/>
                 {body}
