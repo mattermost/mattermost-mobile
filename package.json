@@ -45,7 +45,7 @@
     "react-native-linear-gradient": "2.5.4",
     "react-native-local-auth": "github:mattermost/react-native-local-auth#cc9ce2f468fbf7b431dfad3191a31aaa9227a6ab",
     "react-native-navigation": "github:migbot/react-native-navigation#03c623c373f818827a463ca0fe90f86f56e71b2f",
-    "react-native-notifications": "github:mattermost/react-native-notifications#f6d32b55ecda9f6a6765437c21b075e13ac64141",
+    "react-native-notifications": "github:mattermost/react-native-notifications#1b7ec8513606b42237ab4674de9dacb4d1935e38",
     "react-native-passcode-status": "1.1.1",
     "react-native-permissions": "1.1.1",
     "react-native-safe-area": "0.5.1",
