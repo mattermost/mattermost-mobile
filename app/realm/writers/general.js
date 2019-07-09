@@ -6,7 +6,7 @@ import {combineWriters} from 'realm-react-redux';
 import {GeneralTypes, TeamTypes} from 'app/realm/action_types';
 import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 
-function general(realm, action) {
+function generalWriter(realm, action) {
     switch (action.type) {
     case GeneralTypes.RECEIVED_GENERAL_UPDATE: {
         const {data} = action;
@@ -43,5 +43,5 @@ function general(realm, action) {
 }
 
 export default combineWriters([
-    general,
+    generalWriter,
 ]);
