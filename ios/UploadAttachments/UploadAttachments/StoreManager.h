@@ -1,8 +1,10 @@
 #import <Foundation/Foundation.h>
 #import "MattermostBucket.h"
+#import "MMKeychainManager.h"
 
 @interface StoreManager : NSObject
 @property MattermostBucket *bucket;
+@property MMKeychainManager *keychain;
 @property (nonatomic, strong) NSDictionary *entities;
 
 +(instancetype)shared;

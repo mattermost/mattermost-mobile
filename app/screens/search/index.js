@@ -9,6 +9,7 @@ import {clearSearch, removeSearchTerms, searchPostsWithParams, getMorePostsForSe
 import {getCurrentChannelId, filterPostIds} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
@@ -17,7 +18,7 @@ import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/c
 import {isLandscape} from 'app/selectors/device';
 import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
 import {handleSearchDraftChanged} from 'app/actions/views/search';
-import {getDeviceUtcOffset, getUtcOffsetForTimeZone, isTimezoneEnabled} from 'app/utils/timezone';
+import {getDeviceUtcOffset, getUtcOffsetForTimeZone} from 'app/utils/timezone';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 import Search from './search';

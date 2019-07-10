@@ -14,8 +14,6 @@ import {
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {app} from 'app/mattermost';
-
 import EmptyToolbar from 'app/components/start/empty_toolbar';
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import MainSidebar from 'app/components/sidebars/main';
@@ -24,6 +22,7 @@ import SettingsSidebar from 'app/components/sidebars/settings';
 
 import {preventDoubleTap} from 'app/utils/tap';
 import PushNotifications from 'app/push_notifications';
+import ephemeralStore from 'app/store/ephemeral_store';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
 
@@ -48,6 +47,7 @@ export default class ChannelBase extends PureComponent {
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
         disableTermsModal: PropTypes.bool,
+        skipMetrics: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -88,7 +88,7 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentDidMount() {
-        if (tracker.initialLoad) {
+        if (tracker.initialLoad && !this.props.skipMetrics) {
             this.props.actions.recordLoadTime('Start time', 'initialLoad');
         }
 
@@ -98,7 +98,9 @@ export default class ChannelBase extends PureComponent {
 
         EventEmitter.emit('renderDrawer');
 
-        telemetry.end(['start:channel_screen']);
+        if (!this.props.skipMetrics) {
+            telemetry.end(['start:channel_screen']);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -229,8 +231,8 @@ export default class ChannelBase extends PureComponent {
         loadChannelsIfNecessary(teamId).then(() => {
             loadProfilesAndTeamMembersForDMSidebar(teamId);
 
-            if (app.startAppFromPushNotification) {
-                app.setStartAppFromPushNotification(false);
+            if (ephemeralStore.appStartedFromPushNotification) {
+                ephemeralStore.appStartedFromPushNotification = false;
             } else {
                 selectInitialChannel(teamId);
             }

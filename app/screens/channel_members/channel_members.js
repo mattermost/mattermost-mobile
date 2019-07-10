@@ -243,7 +243,7 @@ export default class ChannelMembers extends PureComponent {
             enabled: props.id !== this.props.currentUserId,
         };
 
-        this.renderItem(props, selectProps);
+        return this.renderItem(props, selectProps);
     }
 
     renderUnselectableItem = (props) => {
@@ -252,7 +252,7 @@ export default class ChannelMembers extends PureComponent {
             enabled: false,
         };
 
-        this.renderItem(props, selectProps);
+        return this.renderItem(props, selectProps);
     };
 
     renderLoading = () => {

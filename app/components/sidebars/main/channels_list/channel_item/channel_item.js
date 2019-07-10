@@ -242,10 +242,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             fontWeight: '600',
             paddingRight: 10,
-            height: '100%',
             flex: 1,
-            textAlignVertical: 'center',
-            lineHeight: 44,
+            alignSelf: 'center',
         },
         textActive: {
             color: theme.sidebarTextActiveColor,

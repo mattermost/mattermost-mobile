@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import 'react-native/Libraries/Core/InitializeCore';
-import {AppRegistry, DeviceEventEmitter, Platform, YellowBox} from 'react-native';
+import {AppRegistry, DeviceEventEmitter, Platform, Text, YellowBox} from 'react-native';
 import 'react-native-gesture-handler';
 
 import LocalConfig from 'assets/config';
@@ -10,16 +10,46 @@ import LocalConfig from 'assets/config';
 import telemetry from 'app/telemetry';
 
 import 'app/mattermost';
-import ShareExtension from 'share_extension/android';
 
-YellowBox.ignoreWarnings([
-    'Warning: componentWillMount is deprecated',
-    'Warning: componentWillUpdate is deprecated',
-    'Warning: componentWillReceiveProps is deprecated',
-]);
+if (__DEV__) {
+    YellowBox.ignoreWarnings([
+        'Warning: componentWillMount is deprecated',
+        'Warning: componentWillUpdate is deprecated',
+        'Warning: componentWillReceiveProps is deprecated',
+
+        // Hide warnings caused by React Native (https://github.com/facebook/react-native/issues/20841)
+        'Require cycle: node_modules/react-native/Libraries/Network/fetch.js',
+    ]);
+}
+
+const setFontFamily = () => {
+    // Set a global font for Android
+    const defaultFontFamily = {
+        style: {
+            fontFamily: 'Roboto',
+        },
+    };
+    const TextRender = Text.render;
+    const initialDefaultProps = Text.defaultProps;
+    Text.defaultProps = {
+        ...initialDefaultProps,
+        ...defaultFontFamily,
+    };
+    Text.render = function render(props, ...args) {
+        const oldProps = props;
+        let newProps = {...props, style: [defaultFontFamily.style, props.style]};
+        try {
+            return Reflect.apply(TextRender, this, [newProps, ...args]);
+        } finally {
+            newProps = oldProps;
+        }
+    };
+};
 
 if (Platform.OS === 'android') {
+    const ShareExtension = require('share_extension/android').default;
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
+    setFontFamily();
 
     if (LocalConfig.TelemetryEnabled) {
         const metricsSubscription = DeviceEventEmitter.addListener('nativeMetrics', (metrics) => {
