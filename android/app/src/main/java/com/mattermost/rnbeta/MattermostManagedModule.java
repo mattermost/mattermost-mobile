@@ -13,6 +13,7 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.WritableMap;
 
 public class MattermostManagedModule extends ReactContextBaseJavaModule {
     private static MattermostManagedModule instance;
@@ -71,6 +72,19 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
         getReactApplicationContext().startActivity(new Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS));
         getCurrentActivity().finish();
         System.exit(0);
+    }
+
+    @ReactMethod
+    public void isRunningInSplitView(final Promise promise) {
+        WritableMap result = Arguments.createMap();
+        Activity current = getCurrentActivity();
+        if (current != null) {
+            result.putBoolean("isSplitView", current.isInMultiWindowMode());
+        } else {
+            result.putBoolean("isSplitView", false);
+        }
+
+        promise.resolve(result);
     }
 
     @ReactMethod

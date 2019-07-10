@@ -1,0 +1,149 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostTextBox should match, full snapshot 1`] = `
+<React.Fragment>
+  <Connect(Typing) />
+  <View
+    onLayout={[Function]}
+    style={
+      Object {
+        "alignItems": "flex-end",
+        "backgroundColor": "#ffffff",
+        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopWidth": 1,
+        "flexDirection": "row",
+        "paddingVertical": 4,
+      }
+    }
+  >
+    <AttachmentButton
+      blurTextBox={[Function]}
+      browseFileTypes="public.item"
+      canBrowseFiles={true}
+      canBrowsePhotoLibrary={true}
+      canBrowseVideoLibrary={true}
+      canTakePhoto={true}
+      canTakeVideo={true}
+      extraOptions={null}
+      fileCount={0}
+      maxFileCount={5}
+      maxFileSize={1024}
+      navigator={
+        Object {
+          "showModal": [MockFunction],
+        }
+      }
+      onShowFileMaxWarning={[Function]}
+      onShowFileSizeWarning={[Function]}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+      uploadFiles={[Function]}
+      validMimeTypes={Array []}
+    />
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "stretch",
+            "backgroundColor": "#fff",
+            "flex": 1,
+            "flexDirection": "row",
+            "marginRight": 10,
+          },
+        ]
+      }
+    >
+      <TextInput
+        allowFontScaling={true}
+        blurOnSubmit={false}
+        disableFullscreenUI={true}
+        editable={true}
+        keyboardType="default"
+        multiline={true}
+        onChangeText={[Function]}
+        onEndEditing={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Write to Test Channel"
+        placeholderTextColor="rgba(0,0,0,0.5)"
+        rejectResponderTermination={true}
+        style={
+          Object {
+            "color": "#000",
+            "flex": 1,
+            "fontSize": 14,
+            "maxHeight": 100,
+            "paddingBottom": 8,
+            "paddingLeft": 12,
+            "paddingRight": 12,
+            "paddingTop": 8,
+          }
+        }
+        underlineColorAndroid="transparent"
+        value=""
+      />
+      <Fade
+        visible={false}
+      >
+        <SendButton
+          disabled={false}
+          handleSendMessage={[Function]}
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+        />
+      </Fade>
+    </View>
+  </View>
+</React.Fragment>
+`;
