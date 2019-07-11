@@ -79,6 +79,7 @@ export default class DialogElement extends PureComponent {
         if (type === 'text' || type === 'textarea') {
             let keyboardType = 'default';
             let multiline = false;
+            let secureTextEntry = false;
             if (type === 'text') {
                 maxLength = maxLength || TEXT_DEFAULT_MAX_LENGTH;
 
@@ -90,6 +91,8 @@ export default class DialogElement extends PureComponent {
                     keyboardType = 'phone-pad';
                 } else if (subtype === 'url') {
                     keyboardType = 'url';
+                } else if (subtype === 'password') {
+                    secureTextEntry = true;
                 }
             } else {
                 multiline = true;
@@ -112,6 +115,7 @@ export default class DialogElement extends PureComponent {
                     theme={theme}
                     multiline={multiline}
                     keyboardType={keyboardType}
+                    secureTextEntry={secureTextEntry}
                 />
             );
         } else if (type === 'select') {
