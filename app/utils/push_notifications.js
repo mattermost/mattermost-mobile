@@ -55,6 +55,11 @@ class PushNotificationUtils {
         let unsubscribeFromStore = null;
         let stopLoadingNotification = false;
 
+        // mark the app as started as soon as possible
+        if (!ephemeralStore.appStarted) {
+            ephemeralStore.appStartedFromPushNotification = true;
+        }
+
         const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
         const notification = {
             data,
