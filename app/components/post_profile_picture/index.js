@@ -20,6 +20,9 @@ function mapStateToProps(state, ownProps) {
     const post = ownProps.post;
     const user = getUser(state, post.user_id);
 
+    // if it's relative we assume it's a link to an emoji
+    const isEmoji = post?.props?.override_icon_url?.startsWith('/') || false; // eslint-disable-line camelcase
+
     const overrideIconURL = Client4.getAbsoluteUrl(post?.props?.override_icon_url); // eslint-disable-line camelcase
 
     return {
@@ -30,6 +33,7 @@ function mapStateToProps(state, ownProps) {
         overrideIconUrl: overrideIconURL,
         userId: post.user_id,
         isBot: (user ? user.is_bot : false),
+        isEmoji,
         theme: getTheme(state),
     };
 }
