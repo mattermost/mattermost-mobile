@@ -58,8 +58,8 @@ export default class PostProfilePicture extends PureComponent {
         if (fromWebHook && enablePostIconOverride) {
             const icon = overrideIconUrl ? {uri: overrideIconUrl} : webhookIcon;
             const frameSize = ViewTypes.PROFILE_PICTURE_SIZE;
-            const pictureSize = (isEmoji ? ViewTypes.PROFILE_PICTURE_EMOJI_SIZE : ViewTypes.PROFILE_PICTURE_SIZE);
-            const borderRadius = ViewTypes.PROFILE_PICTURE_SIZE / 2;
+            const pictureSize = isEmoji ? ViewTypes.PROFILE_PICTURE_EMOJI_SIZE : ViewTypes.PROFILE_PICTURE_SIZE;
+            const borderRadius = isEmoji ? 0 : ViewTypes.PROFILE_PICTURE_SIZE / 2;
 
             return (
                 <View
