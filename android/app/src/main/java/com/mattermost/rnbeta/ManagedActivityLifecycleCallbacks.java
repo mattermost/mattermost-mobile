@@ -17,6 +17,7 @@ import java.util.Set;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 public class ManagedActivityLifecycleCallbacks implements ActivityLifecycleCallbacks {
@@ -96,7 +97,10 @@ public class ManagedActivityLifecycleCallbacks implements ActivityLifecycleCallb
     }
 
     private void sendConfigChanged(Bundle config) {
-        Object result = Arguments.fromBundle(config);
+        WritableMap result = Arguments.createMap();
+        if (config != null) {
+            result = Arguments.fromBundle(config);
+        }
         ReactContext ctx = MainApplication.instance.getRunningReactContext();
 
         if (ctx != null) {
