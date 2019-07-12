@@ -87,7 +87,7 @@ if (System.getenv("SENTRY_ENABLED") == "true") {
         flavorAware: false
     ]
 
-    apply from: "../../node_modules/react-native-sentry/sentry.gradle"
+    //apply from: "../../node_modules/react-native-sentry/sentry.gradle"
 }
 
 /**
