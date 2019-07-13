@@ -19,15 +19,9 @@ describe('Login', () => {
             IsLicensed: 'false',
         },
         loginId: '',
-        password: '',
-        loginRequest: {},
-        actions: {
-            handleLoginIdChanged: jest.fn(),
-            handlePasswordChanged: jest.fn(),
-            handleSuccessfulLogin: jest.fn(),
-            scheduleExpiredNotification: jest.fn(),
-            login: jest.fn(),
-        },
+        login: jest.fn(),
+        scheduleExpiredNotification: jest.fn(),
+        sendPasswordResetEmail: jest.fn(),
     };
 
     test('should show "I forgot my password" with only email login enabled', () => {

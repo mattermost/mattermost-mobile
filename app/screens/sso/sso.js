@@ -14,8 +14,6 @@ import {WebView} from 'react-native-webview';
 import CookieManager from 'react-native-cookies';
 import urlParse from 'url-parse';
 
-import {Client4} from 'mattermost-redux/client';
-
 import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
@@ -60,16 +58,15 @@ const oneLoginFormScalingJS = `
 
 class SSO extends PureComponent {
     static propTypes = {
+        config: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
-        navigator: PropTypes.object,
-        theme: PropTypes.object,
+        license: PropTypes.object.isRequired,
+        navigator: PropTypes.object.isRequired,
+        scheduleExpiredNotification: PropTypes.func.isRequired,
         serverUrl: PropTypes.string.isRequired,
+        ssoLogin: PropTypes.func.isRequired,
         ssoType: PropTypes.string.isRequired,
-        actions: PropTypes.shape({
-            scheduleExpiredNotification: PropTypes.func.isRequired,
-            handleSuccessfulLogin: PropTypes.func.isRequired,
-            setStoreFromLocalData: PropTypes.func.isRequired,
-        }).isRequired,
+        theme: PropTypes.object.isRequired,
     };
 
     useWebkit = true;
@@ -180,16 +177,16 @@ class SSO extends PureComponent {
 
                 if (token) {
                     this.setState({renderWebView: false});
-                    const {
-                        handleSuccessfulLogin,
-                        setStoreFromLocalData,
-                    } = this.props.actions;
+                    const {config, license, ssoLogin} = this.props;
 
-                    Client4.setToken(token);
-                    setStoreFromLocalData({url: Client4.getUrl(), token}).
-                        then(handleSuccessfulLogin).
-                        then(this.goToChannel).
-                        catch(this.onLoadEndError);
+                    ssoLogin({config, license, token}).then((result) => {
+                        if (result.error) {
+                            this.setState({error: result.error.message});
+                            return;
+                        }
+
+                        this.goToChannel();
+                    });
                 } else if (this.webView && !this.state.error) {
                     this.webView.injectJavaScript(postMessageJS);
                 }
@@ -197,15 +194,10 @@ class SSO extends PureComponent {
         }
     };
 
-    onLoadEndError = (e) => {
-        console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
-        this.setState({error: e.message});
-    };
-
     scheduleSessionExpiredNotification = () => {
-        const {actions, intl} = this.props;
+        const {intl, scheduleExpiredNotification} = this.props;
 
-        actions.scheduleExpiredNotification(intl);
+        scheduleExpiredNotification(intl);
     };
 
     renderLoading = () => {

@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import allSettled from 'promise.allsettled';
+
 import {Client4} from 'mattermost-redux/client';
 
-import {GeneralTypes, UserTypes} from 'app/action_types';
+import {GeneralTypes, UserTypes} from 'app/realm/action_types';
 import {setAppCredentials} from 'app/init/credentials';
-import {GENERAL_SCHEMA_ID} from 'app/models/general';
+import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {configureRealmStore} from 'app/store/';
 import {setCSRFFromCookie} from 'app/utils/security';
@@ -13,6 +15,7 @@ import {getDeviceTimezone} from 'app/utils/timezone';
 
 import {saveConfigAndLicense} from './general';
 import {forceLogoutIfNecessary} from './helpers';
+import {loadRolesIfNeeded} from './role';
 
 // TODO: Remove redux compatibility
 import {completeLogin} from 'mattermost-redux/actions/users';
@@ -86,7 +89,11 @@ export function handleSuccessfulLogin(config, license) {
         let dataRetentionPolicy;
         if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
             license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-            dataRetentionPolicy = await Client4.getDataRetentionPolicy();
+            try {
+                dataRetentionPolicy = await Client4.getDataRetentionPolicy();
+            } catch (e) {
+                // do nothing
+            }
         }
 
         dispatch({
@@ -119,13 +126,23 @@ export function loadMe(loginUser) {
             Client4.setUserId(user.id);
             Client4.setUserRoles(user.roles);
 
-            const [preferences, teams, teamMembers, teamUnreads] = await Promise.all([
+            if (!user.status) {
+                try {
+                    const status = await Client4.getStatus(user.id);
+                    user.status = status.status;
+                } catch (e) {
+                    // if we cannot get the status at this point just continue
+                }
+            }
+
+            const promises = await allSettled([
                 Client4.getMyPreferences(),
                 Client4.getMyTeams(),
                 Client4.getMyTeamMembers(),
                 Client4.getMyTeamUnreads(),
             ]);
 
+            const [preferences, teams, teamMembers, teamUnreads] = promises.map((p) => p.value);
             const data = {
                 user,
                 preferences,
@@ -140,16 +157,20 @@ export function loadMe(loginUser) {
             });
 
             const roles = new Set();
-            for (const teamMember of teamMembers) {
-                for (const role of teamMember.roles?.split(' ')) {
-                    roles.add(role);
-                }
-                for (const role of user.roles?.split(' ')) {
-                    roles.add(role);
+            if (teamMembers) {
+                for (const teamMember of teamMembers) {
+                    for (const role of teamMember.roles?.split(' ')) {
+                        roles.add(role);
+                    }
                 }
             }
+
+            for (const role of user.roles?.split(' ')) {
+                roles.add(role);
+            }
+
             if (roles.size > 0) {
-                // TODO: dispatch(loadRolesIfNeeded(roles));
+                dispatch(loadRolesIfNeeded(roles));
             }
 
             return data;
@@ -173,7 +194,7 @@ export function updateMe(user) {
             data,
         });
 
-        // TODO: dispatch(loadRolesIfNeeded(data.roles.split(' ')));
+        dispatch(loadRolesIfNeeded(data.roles.split(' ')));
 
         return {data};
     };

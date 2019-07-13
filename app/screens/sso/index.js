@@ -1,31 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+import {realmConnect} from 'realm-react-redux';
 
-import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
-import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
+import {scheduleExpiredNotification} from 'app/realm/actions/general';
+import {ssoLogin} from 'app/realm/actions/user';
+import options from 'app/store/realm_context_options';
 
 import SSO from './sso';
 
-function mapStateToProps(state) {
-    return {
-        ...state.views.selectServer,
-        theme: getTheme(state),
-    };
-}
+const mapRealmDispatchToProps = {
+    scheduleExpiredNotification,
+    ssoLogin,
+};
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            scheduleExpiredNotification,
-            handleSuccessfulLogin,
-            setStoreFromLocalData,
-        }, dispatch),
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(SSO);
+export default realmConnect(null, null, mapRealmDispatchToProps, null, options)(SSO);

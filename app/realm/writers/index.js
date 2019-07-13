@@ -4,9 +4,13 @@
 import {combineWriters} from 'realm-react-redux';
 
 import general from './general';
+import role from './role';
+import team from './team';
 import user from './user';
 
 export default combineWriters([
     general,
+    role,
+    team,
     user,
 ]);

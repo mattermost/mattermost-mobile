@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import Realm from 'realm';
 
 export const GENERAL_SCHEMA_ID = 'general';
 
-export default class General {
-    get configAsJson() {
+export default class General extends Realm.Object {
+    get config() {
         try {
             return JSON.parse(this.serverConfig);
         } catch {
@@ -12,7 +13,7 @@ export default class General {
         }
     }
 
-    get licenseAsJson() {
+    get license() {
         try {
             return JSON.parse(this.serverLicense);
         } catch {

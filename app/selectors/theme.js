@@ -3,9 +3,10 @@
 
 import {createSelector} from 'reselect';
 
-import Preferences from 'mattermost-redux/constants/preferences';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
+import Preferences from 'app/constants/preferences';
 
 export const getAllowedThemes = createSelector(
     getConfig,
@@ -35,5 +36,19 @@ export const getCustomTheme = createSelector(
             };
         }
         return null;
+    }
+);
+
+export const getDefaultThemeFromConfig = createSelector(
+    (config) => {
+        if (config?.DefaultTheme) {
+            const theme = Preferences.THEMES[config.DefaultTheme];
+            if (theme) {
+                return theme;
+            }
+        }
+
+        // If no config.DefaultTheme or value doesn't refer to a valid theme name...
+        return Preferences.THEMES.default;
     }
 );

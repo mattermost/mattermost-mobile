@@ -3,10 +3,10 @@
 
 import {combineWriters} from 'realm-react-redux';
 
-import {GeneralTypes} from 'app/action_types';
-import {GENERAL_SCHEMA_ID} from 'app/models/general';
+import {GeneralTypes, TeamTypes} from 'app/realm/action_types';
+import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 
-function general(realm, action) {
+function generalWriter(realm, action) {
     switch (action.type) {
     case GeneralTypes.RECEIVED_GENERAL_UPDATE: {
         const {data} = action;
@@ -31,11 +31,17 @@ function general(realm, action) {
         realm.create('General', generalData, true);
         break;
     }
+    case TeamTypes.SELECT_TEAM: {
+        const {data} = action;
+        const generalRealm = realm.objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
+        generalRealm.currentTeamId = data;
+        break;
+    }
     default:
         break;
     }
 }
 
 export default combineWriters([
-    general,
+    generalWriter,
 ]);

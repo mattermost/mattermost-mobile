@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Realm from 'realm';
+
 import {DEFAULT_LOCALE} from 'app/i18n';
 
-export default class User {
+export default class User extends Realm.Object {
     get notifyPropsAsJSON() {
         try {
             return JSON.parse(this.notifyProps);

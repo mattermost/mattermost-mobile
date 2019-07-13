@@ -14,3 +14,16 @@ export function selectFirstAvailableTeam(teams, primaryTeam) {
 
     return defaultTeam;
 }
+
+export function selectFirstTeamAvailable(teams, primaryTeamName) {
+    let defaultTeam;
+    if (primaryTeamName) {
+        defaultTeam = teams.find((t) => t.name === primaryTeamName.toLowerCase());
+    }
+
+    if (!defaultTeam) {
+        defaultTeam = Object.values(teams).sort((a, b) => a.displayName.localeCompare(b.displayName))[0];
+    }
+
+    return defaultTeam;
+}

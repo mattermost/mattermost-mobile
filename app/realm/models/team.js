@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import Realm from 'realm';
 
-export class Team {
+export class Team extends Realm.Object {
     static schema = {
         name: 'Team',
         primaryKey: 'id',
@@ -20,7 +21,7 @@ export class Team {
     }
 }
 
-export class TeamMember {
+export class TeamMember extends Realm.Object {
     get team() {
         if (this.teams?.length) {
             return this.teams[0];

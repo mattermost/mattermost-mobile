@@ -3,8 +3,8 @@
 
 import {Client4} from 'mattermost-redux/client';
 
-import {GeneralTypes} from 'app/action_types';
-import {GENERAL_SCHEMA_ID} from 'app/models/general';
+import {GeneralTypes} from 'app/realm/action_types';
+import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
 import PushNotifications from 'app/push_notifications';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
@@ -53,7 +53,11 @@ export function loadConfigAndLicense(save = true) {
             if (general?.currentUser) {
                 if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
                     license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-                    dataRetentionPolicy = await Client4.getDataRetentionPolicy();
+                    try {
+                        dataRetentionPolicy = await Client4.getDataRetentionPolicy();
+                    } catch (e) {
+                        forceLogoutIfNecessary(e);
+                    }
                 }
             }
 
@@ -74,7 +78,6 @@ export function loadConfigAndLicense(save = true) {
 
             return data;
         } catch (e) {
-            forceLogoutIfNecessary(e);
             return {error: e};
         }
     };

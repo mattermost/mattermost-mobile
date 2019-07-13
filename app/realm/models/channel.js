@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export class Channel {
+import Realm from 'realm';
+
+export class Channel extends Realm.Object {
     static schema = {
         name: 'Channel',
         primaryKey: 'id',
@@ -25,7 +27,7 @@ export class Channel {
     }
 }
 
-export class ChannelMember {
+export class ChannelMember extends Realm.Object {
     get channel() {
         if (this.channels?.length) {
             return this.channel[0];
