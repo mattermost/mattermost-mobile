@@ -35,6 +35,10 @@ const SECTION_MARGIN = 15;
 const SECTION_HEADER_HEIGHT = 28;
 const EMOJIS_PER_PAGE = 200;
 
+export function filterEmojiSearchInput(searchText) {
+    return searchText.toLowerCase().replace(/^:|:$/g, '');
+}
+
 export default class EmojiPicker extends PureComponent {
     static propTypes = {
         customEmojisEnabled: PropTypes.bool.isRequired,
@@ -161,23 +165,22 @@ export default class EmojiPicker extends PureComponent {
     };
 
     changeSearchTerm = (text) => {
-        const nextState = {
-            searchTerm: text,
-        };
+        const searchTerm = filterEmojiSearchInput(text);
+        const nextState = {searchTerm};
 
-        if (!text) {
+        if (!searchTerm) {
             nextState.currentSectionIndex = 0;
         }
 
         this.setState(nextState);
 
         clearTimeout(this.searchTermTimeout);
-        const timeout = text ? 100 : 0;
+        const timeout = searchTerm ? 100 : 0;
         this.searchTermTimeout = setTimeout(async () => {
             if (isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
-                await this.props.actions.searchCustomEmojis(text);
+                await this.props.actions.searchCustomEmojis(searchTerm);
             }
-            const filteredEmojis = this.searchEmojis(text);
+            const filteredEmojis = this.searchEmojis(searchTerm);
             this.setState({
                 filteredEmojis,
             });
