@@ -16,7 +16,6 @@ import java.util.Map;
 import com.mattermost.share.ShareModule;
 import com.learnium.RNDeviceInfo.RNDeviceModule;
 import com.imagepicker.ImagePickerModule;
-import com.gnet.bottomsheet.RNBottomSheet;
 import com.psykar.cookiemanager.CookieManagerModule;
 import com.oblador.vectoricons.VectorIconsModule;
 import com.wix.reactnativenotifications.RNNotificationsModule;
@@ -98,8 +97,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return new RNDeviceModule(reactContext, false);
                   case "ImagePickerManager":
                     return new ImagePickerModule(reactContext, R.style.DefaultExplainingPermissionsTheme);
-                  case "RNBottomSheet":
-                    return new RNBottomSheet(reactContext);
                   case "RNCookieManagerAndroid":
                     return new CookieManagerModule(reactContext);
                   case "RNVectorIconsModule":
@@ -156,7 +153,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
                     map.put("RNDeviceInfo", new ReactModuleInfo("RNDeviceInfo", "com.learnium.RNDeviceInfo.RNDeviceModule", false, false, true, false, false));
                     map.put("ImagePickerManager", new ReactModuleInfo("ImagePickerManager", "com.imagepicker.ImagePickerModule", false, false, false, false, false));
-                    map.put("RNBottomSheet", new ReactModuleInfo("RNBottomSheet", "com.gnet.bottomshee.RNBottomSheet", false, false, false, false, false));
                     map.put("RNCookieManagerAndroid", new ReactModuleInfo("RNCookieManagerAndroid", "com.psykar.cookiemanager.CookieManagerModule", false, false, false, false, false));
                     map.put("RNVectorIconsModule", new ReactModuleInfo("RNVectorIconsModule", "com.oblador.vectoricons.VectorIconsModule", false, false, false, false, false));
                     map.put("WixRNNotifications", new ReactModuleInfo("WixRNNotifications", "com.wix.reactnativenotifications.RNNotificationsModule", false, false, false, false, false));

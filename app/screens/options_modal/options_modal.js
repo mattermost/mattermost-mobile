@@ -64,6 +64,11 @@ export default class OptionsModal extends PureComponent {
         this.close();
     };
 
+    handleItemPress = () => {
+        this.props.onItemPress();
+        this.close();
+    };
+
     close = () => {
         Animated.timing(this.state.top, {
             toValue: this.props.deviceHeight,
@@ -78,7 +83,6 @@ export default class OptionsModal extends PureComponent {
     render() {
         const {
             items,
-            onItemPress,
             title,
         } = this.props;
 
@@ -89,7 +93,7 @@ export default class OptionsModal extends PureComponent {
                         <OptionsModalList
                             items={items}
                             onCancelPress={this.handleCancel}
-                            onItemPress={onItemPress}
+                            onItemPress={this.handleItemPress}
                             title={title}
                         />
                     </AnimatedView>
