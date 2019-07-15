@@ -12,13 +12,16 @@ import {
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ClockDisplay from 'app/screens/clock_display';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object.isRequired,
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
+        componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
@@ -32,32 +35,18 @@ export default class DisplaySettings extends PureComponent {
         showClockDisplaySettings: false,
     };
 
-    constructor(props) {
-        super(props);
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-    }
-
     closeClockDisplaySettings = () => {
         this.setState({showClockDisplaySettings: false});
     };
 
     goToClockDisplaySettings = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
 
         if (Platform.OS === 'ios') {
-            navigator.push({
-                screen: 'ClockDisplay',
-                title: intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'}),
-                animated: true,
-                backButtonTitle: '',
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg,
-                },
-            });
+            const screen = 'ClockDisplay';
+            const title = intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'});
+            actions.goToScreen(screen, title);
             return;
         }
 
@@ -65,46 +54,22 @@ export default class DisplaySettings extends PureComponent {
     });
 
     goToTimezoneSettings = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
+        const screen = 'TimezoneSettings';
+        const title = intl.formatMessage({id: 'mobile.advanced_settings.timezone', defaultMessage: 'Timezone'});
 
-        navigator.push({
-            screen: 'TimezoneSettings',
-            title: intl.formatMessage({id: 'mobile.advanced_settings.timezone', defaultMessage: 'Timezone'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(screen, title);
     });
 
     goToThemeSettings = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
+        const screen = 'ThemeSettings';
+        const title = intl.formatMessage({id: 'mobile.display_settings.theme', defaultMessage: 'Theme'});
 
-        navigator.push({
-            screen: 'ThemeSettings',
-            title: intl.formatMessage({id: 'mobile.display_settings.theme', defaultMessage: 'Theme'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(screen, title);
     });
-
-    onNavigatorEvent = (event) => {
-        if (event.id === 'willAppear') {
-            setNavigatorStyles(this.props.navigator, this.props.theme);
-        }
-    };
 
     render() {
         const {theme, enableTimezone, enableTheme} = this.props;

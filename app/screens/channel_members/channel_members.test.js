@@ -10,11 +10,6 @@ import CustomList from 'app/components/custom_list';
 import ChannelMembers from './channel_members';
 
 describe('ChannelMembers', () => {
-    const navigator = {
-        setOnNavigatorEvent: jest.fn(),
-        setButtons: jest.fn(),
-    };
-
     const baseProps = {
         theme: Preferences.THEMES.default,
         currentUserId: 'current-user-id',
@@ -24,8 +19,10 @@ describe('ChannelMembers', () => {
             getProfilesInChannel: jest.fn().mockImplementation(() => Promise.resolve()),
             handleRemoveChannelMembers: jest.fn(),
             searchProfiles: jest.fn(),
+            setButtons: jest.fn(),
+            popTopScreen: jest.fn(),
         },
-        navigator,
+        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {

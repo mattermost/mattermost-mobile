@@ -9,6 +9,7 @@ import {makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getPost, makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {dismissModal, goToScreen} from 'app/actions/navigation';
 import {loadThreadIfNecessary} from 'app/actions/views/channel';
 
 import LongPost from './long_post';
@@ -37,6 +38,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             loadThreadIfNecessary,
             selectPost,
+            dismissModal,
+            goToScreen,
         }, dispatch),
     };
 }

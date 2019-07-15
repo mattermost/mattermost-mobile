@@ -25,7 +25,6 @@ export default class DialogElement extends PureComponent {
         options: PropTypes.arrayOf(PropTypes.object),
         value: PropTypes.any,
         onChange: PropTypes.func,
-        navigator: PropTypes.object,
         theme: PropTypes.object,
     };
 
@@ -71,7 +70,6 @@ export default class DialogElement extends PureComponent {
             theme,
             dataSource,
             options,
-            navigator,
         } = this.props;
 
         let {maxLength} = this.props;
@@ -128,7 +126,6 @@ export default class DialogElement extends PureComponent {
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
                     selected={this.state.selected}
-                    navigator={navigator}
                     roundedBorders={false}
                 />
             );
