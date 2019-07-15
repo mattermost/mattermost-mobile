@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Navigation} from 'react-native-navigation';
+import {store} from 'app/mattermost';
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 export default {
     showBottomSheetWithOptions: (options, callback) => {
         function itemAction(index) {
-            Navigation.dismissModal({animationType: 'none'});
             callback(index);
         }
 
@@ -15,21 +15,6 @@ export default {
             text: o,
         }));
 
-        Navigation.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                title: '',
-                items,
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
+        store.dispatch(showModalOverCurrentContext('OptionsModal', {title: '', items}));
     },
 };
