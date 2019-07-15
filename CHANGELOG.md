@@ -25,6 +25,7 @@
  - Fixed an issue on Android where users could not reply to a push notification if the mention was in a thread message.
 
 ### Known Issues
+  - (Android) On subpath server, logging in using GitLab or OneLogin fails to display Mattermost. [MM-16829](https://mattermost.atlassian.net/browse/MM-16829)
   - Buttons inside ephemeral posts are not clickable / functional on the mobile app. [MM-15084](https://mattermost.atlassian.net/browse/MM-15084)
   - Android apps slow down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
 
