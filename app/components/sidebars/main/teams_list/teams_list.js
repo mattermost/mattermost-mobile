@@ -148,6 +148,7 @@ export default class TeamsList extends PureComponent {
                     {moreAction}
                 </View>
                 <FlatList
+                    contentContainerStyle={styles.listContent}
                     data={teamIds}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}
@@ -185,6 +186,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 17,
             textAlign: 'center',
             fontWeight: '600',
+        },
+        listContent: {
+            paddingBottom: 30,
         },
         moreActionContainer: {
             alignItems: 'center',

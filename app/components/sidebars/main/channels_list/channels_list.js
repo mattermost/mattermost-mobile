@@ -197,6 +197,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: 'normal',
             paddingLeft: 16,
         },
+        listContent: {
+            paddingBottom: 30,
+        },
         switchContainer: {
             position: 'relative',
             top: -1,

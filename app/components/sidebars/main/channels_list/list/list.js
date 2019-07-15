@@ -436,6 +436,7 @@ export default class List extends PureComponent {
                 <SectionList
                     ref='list'
                     sections={sections}
+                    contentContainerStyle={styles.listContent}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     keyExtractor={this.keyExtractor}

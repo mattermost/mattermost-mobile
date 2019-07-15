@@ -4,11 +4,13 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
     InteractionManager,
     ScrollView,
-    StyleSheet,
     View,
 } from 'react-native';
+
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class Swiper extends PureComponent {
     static propTypes = {
@@ -109,7 +111,7 @@ export default class Swiper extends PureComponent {
         this.scrollView = view;
     };
 
-    renderScrollView = (pages) => {
+    renderScrollView = (pages, styles) => {
         const {
             keyboardShouldPersistTaps,
             scrollEnabled,
@@ -136,7 +138,7 @@ export default class Swiper extends PureComponent {
         );
     };
 
-    renderPagination = () => {
+    renderPagination = (styles) => {
         if (this.state.total <= 1 || !this.props.showsPagination) {
             return null;
         }
@@ -203,6 +205,9 @@ export default class Swiper extends PureComponent {
             width,
         } = this.props;
 
+        const w = Dimensions.get('window').width;
+        const styles = getStyles(w);
+
         const pages = React.Children.map(children, (page, i) => {
             const pageStyle = page ? {width} : {width: 0};
             return (
@@ -220,45 +225,47 @@ export default class Swiper extends PureComponent {
                 style={[styles.container]}
                 onLayout={this.onLayout}
             >
-                {this.renderScrollView(pages)}
-                {this.renderPagination()}
+                {this.renderScrollView(pages, styles)}
+
+                {this.renderPagination(styles)}
             </View>
         );
     }
 }
 
-const styles = StyleSheet.create({
-    container: {
-        backgroundColor: 'transparent',
-        position: 'relative',
-        flex: 1,
-    },
-    wrapper: {
-        backgroundColor: 'transparent',
-    },
-    slide: {
-        flex: 1,
-        width: '100%',
-    },
-    pagination: {
-        position: 'absolute',
-        bottom: 25,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'transparent',
-        marginBottom: 13,
-    },
-    dotStyle: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginLeft: 4,
-        marginRight: 4,
-        marginTop: 3,
-        marginBottom: 3,
-    },
+const getStyles = makeStyleSheetFromTheme((width) => {
+    return {
+        container: {
+            backgroundColor: 'transparent',
+            position: 'relative',
+            flex: 1,
+        },
+        wrapper: {
+            backgroundColor: 'transparent',
+        },
+        slide: {
+            flex: 1,
+            width: '100%',
+        },
+        pagination: {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            flexDirection: 'row',
+            width,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 0,
+        },
+        dotStyle: {
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            marginLeft: 4,
+            marginRight: 4,
+            marginTop: 3,
+            marginBottom: 3,
+        },
+    };
 });
