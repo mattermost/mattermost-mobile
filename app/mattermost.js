@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {Linking, NativeModules, Platform} from 'react-native';
-import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
+import {Navigation} from 'react-native-navigation';
 import {Provider} from 'react-redux';
 
 import {loadMe} from 'mattermost-redux/actions/users';
 
+import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
 import initialState from 'app/initial_state';
 import {getAppCredentials} from 'app/init/credentials';
@@ -15,95 +16,58 @@ import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import pushNotificationsUtils from 'app/utils/push_notifications';
 
 const {MattermostShare} = NativeModules;
-const startedSharedExtension = Platform.OS === 'android' && MattermostShare.isOpened;
+const sharedExtensionStarted = Platform.OS === 'android' && MattermostShare.isOpened;
 export const store = configureStore(initialState);
 
 const init = async () => {
-    const credentials = await getAppCredentials();
+    if (EphemeralStore.appStarted) {
+        launchApp();
+        return;
+    }
+
     pushNotificationsUtils.configure(store);
     globalEventHandler.configure({
         store,
-        launchEntry,
+        launchApp,
     });
 
     registerScreens(store, Provider);
 
-    if (startedSharedExtension) {
-        ephemeralStore.appStarted = true;
+    if (sharedExtensionStarted) {
+        EphemeralStore.appStarted = true;
     }
 
-    if (!ephemeralStore.appStarted) {
-        launchEntryAndAuthenticateIfNeeded(credentials);
+    if (!EphemeralStore.appStarted) {
+        launchAppAndAuthenticateIfNeeded();
     }
 };
 
-const launchSelectServer = () => {
-    Navigation.startSingleScreenApp({
-        screen: {
-            screen: 'SelectServer',
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        },
-        passProps: {
-            allowOtherServers: emmProvider.allowOtherServers,
-        },
-        appStyle: {
-            orientation: 'auto',
-        },
-        animationType: 'fade',
-    });
-};
-
-const launchChannel = (skipMetrics = false) => {
-    Navigation.startSingleScreenApp({
-        screen: {
-            screen: 'Channel',
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        },
-        passProps: {
-            skipMetrics,
-        },
-        appStyle: {
-            orientation: 'auto',
-        },
-        animationType: 'fade',
-    });
-};
-
-const launchEntry = (credentials) => {
+const launchApp = async () => {
     telemetry.start([
         'start:select_server_screen',
         'start:channel_screen',
     ]);
 
+    const credentials = await getAppCredentials();
     if (credentials) {
         store.dispatch(loadMe());
-        launchChannel();
+        store.dispatch(resetToChannel({skipMetrics: true}));
     } else {
-        launchSelectServer();
+        store.dispatch(resetToSelectServer(emmProvider.allowOtherServers));
     }
 
     telemetry.startSinceLaunch(['start:splash_screen']);
-    ephemeralStore.appStarted = true;
+    EphemeralStore.appStarted = true;
 };
 
-const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
+const launchAppAndAuthenticateIfNeeded = async () => {
     await emmProvider.handleManagedConfig(store);
-    launchEntry(credentials);
+    await launchApp();
 
     if (emmProvider.enabled) {
         if (emmProvider.jailbreakProtection) {
@@ -120,16 +84,14 @@ const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
     });
 };
 
-new NativeEventsReceiver().appLaunched(async () => {
-    const credentials = await getAppCredentials();
-    if (startedSharedExtension) {
-        ephemeralStore.appStarted = true;
-        await launchEntryAndAuthenticateIfNeeded(credentials);
-    } else if (credentials) {
-        launchChannel(true);
-    } else {
-        launchSelectServer();
-    }
-});
+Navigation.events().registerAppLaunchedListener(() => {
+    init();
 
-init();
+    // Keep track of the latest componentId to appear and disappear
+    Navigation.events().registerComponentDidAppearListener(({componentId}) => {
+        EphemeralStore.addComponentIdToStack(componentId);
+    });
+    Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
+        EphemeralStore.removeComponentIdFromStack(componentId);
+    });
+});

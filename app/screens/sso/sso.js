@@ -61,7 +61,6 @@ const oneLoginFormScalingJS = `
 class SSO extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
-        navigator: PropTypes.object,
         theme: PropTypes.object,
         serverUrl: PropTypes.string.isRequired,
         ssoType: PropTypes.string.isRequired,
@@ -69,6 +68,7 @@ class SSO extends PureComponent {
             scheduleExpiredNotification: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             setStoreFromLocalData: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -115,25 +115,11 @@ class SSO extends PureComponent {
     };
 
     goToChannel = () => {
-        const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         this.scheduleSessionExpiredNotification();
 
-        navigator.resetTo({
-            screen: 'Channel',
-            title: '',
-            animated: false,
-            backButtonTitle: '',
-            navigatorStyle: {
-                animated: true,
-                animationType: 'fade',
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        });
+        this.props.actions.resetToChannel();
     };
 
     onMessage = (event) => {

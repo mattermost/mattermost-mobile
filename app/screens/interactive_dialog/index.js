@@ -7,6 +7,8 @@ import {connect} from 'react-redux';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {submitInteractiveDialog} from 'mattermost-redux/actions/integrations';
 
+import {dismissModal} from 'app/actions/navigation';
+
 import InteractiveDialog from './interactive_dialog';
 
 function mapStateToProps(state) {
@@ -29,6 +31,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             submitInteractiveDialog,
+            dismissModal,
         }, dispatch),
     };
 }

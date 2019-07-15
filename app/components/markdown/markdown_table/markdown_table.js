@@ -19,8 +19,10 @@ const MAX_HEIGHT = 300;
 
 export default class MarkdownTable extends React.PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
         children: PropTypes.node.isRequired,
-        navigator: PropTypes.object.isRequired,
         numColumns: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -44,27 +46,19 @@ export default class MarkdownTable extends React.PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
-
-        navigator.push({
-            screen: 'Table',
-            title: this.context.intl.formatMessage({
-                id: 'mobile.routes.table',
-                defaultMessage: 'Table',
-            }),
-            animated: true,
-            backButtonTitle: '',
-            passProps: {
-                renderRows: this.renderRows,
-                tableWidth: this.getTableWidth(),
-            },
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
+        const {actions} = this.props;
+        const {intl} = this.context;
+        const screen = 'Table';
+        const title = intl.formatMessage({
+            id: 'mobile.routes.table',
+            defaultMessage: 'Table',
         });
+        const passProps = {
+            renderRows: this.renderRows,
+            tableWidth: this.getTableWidth(),
+        };
+
+        actions.goToScreen(screen, title, passProps);
     });
 
     handleContainerLayout = (e) => {
