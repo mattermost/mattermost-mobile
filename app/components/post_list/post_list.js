@@ -292,8 +292,7 @@ export default class PostList extends PureComponent {
             height > 0 &&
             this.props.initialIndex > 0 &&
             !this.hasDoneInitialScroll &&
-            this.flatListRef &&
-            this.flatListRef.current
+            this.flatListRef?.current
         ) {
             requestAnimationFrame(() => {
                 this.flatListRef.current.scrollToIndex({
