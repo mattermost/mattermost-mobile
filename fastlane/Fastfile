@@ -183,7 +183,7 @@ lane :build do |options|
   build
 end
 
-desc 'Buid the app for Android and iOS unsigned'
+desc 'Build the app for Android and iOS unsigned'
 lane :unsigned do
   configure
 
@@ -507,7 +507,7 @@ platform :android do
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
 
     gradle(
-        task: 'assemble',
+        task: 'app:assemble',
         build_type: config_mode,
         project_dir: 'android/'
     )

@@ -13,28 +13,6 @@ exports[`thread should match snapshot, has root post 1`] = `
         lastPostIndex={2}
         lastViewedAt={0}
         location="thread"
-        navigator={
-          Object {
-            "dismissModal": [MockFunction],
-            "pop": [MockFunction],
-            "resetTo": [MockFunction],
-            "setTitle": [MockFunction] {
-              "calls": Array [
-                Array [
-                  Object {
-                    "title": undefined,
-                  },
-                ],
-              ],
-              "results": Array [
-                Object {
-                  "type": "return",
-                  "value": undefined,
-                },
-              ],
-            },
-          }
-        }
         onPostPress={[Function]}
         postIds={
           Array [
@@ -76,28 +54,6 @@ exports[`thread should match snapshot, has root post 1`] = `
       channelId="channel_id"
       channelIsArchived={false}
       cursorPositionEvent="onThreadTextBoxCursorChange"
-      navigator={
-        Object {
-          "dismissModal": [MockFunction],
-          "pop": [MockFunction],
-          "resetTo": [MockFunction],
-          "setTitle": [MockFunction] {
-            "calls": Array [
-              Array [
-                Object {
-                  "title": undefined,
-                },
-              ],
-            ],
-            "results": Array [
-              Object {
-                "type": "return",
-                "value": undefined,
-              },
-            ],
-          },
-        }
-      }
       onCloseChannel={[Function]}
       rootId="root_id"
       valueEvent="onThreadTextBoxValueChange"
@@ -128,28 +84,6 @@ exports[`thread should match snapshot, render footer 1`] = `
   lastPostIndex={2}
   lastViewedAt={0}
   location="thread"
-  navigator={
-    Object {
-      "dismissModal": [MockFunction],
-      "pop": [MockFunction],
-      "resetTo": [MockFunction],
-      "setTitle": [MockFunction] {
-        "calls": Array [
-          Array [
-            Object {
-              "title": undefined,
-            },
-          ],
-        ],
-        "results": Array [
-          Object {
-            "type": "return",
-            "value": undefined,
-          },
-        ],
-      },
-    }
-  }
   onPostPress={[Function]}
   postIds={
     Array [
@@ -176,28 +110,6 @@ exports[`thread should match snapshot, render footer 2`] = `
   lastPostIndex={2}
   lastViewedAt={0}
   location="thread"
-  navigator={
-    Object {
-      "dismissModal": [MockFunction],
-      "pop": [MockFunction],
-      "resetTo": [MockFunction],
-      "setTitle": [MockFunction] {
-        "calls": Array [
-          Array [
-            Object {
-              "title": undefined,
-            },
-          ],
-        ],
-        "results": Array [
-          Object {
-            "type": "return",
-            "value": undefined,
-          },
-        ],
-      },
-    }
-  }
   onPostPress={[Function]}
   postIds={
     Array [

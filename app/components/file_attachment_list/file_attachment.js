@@ -29,7 +29,6 @@ export default class FileAttachment extends PureComponent {
         onLongPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
     };
 
     static defaultProps = {
@@ -93,7 +92,6 @@ export default class FileAttachment extends PureComponent {
             deviceWidth,
             file,
             theme,
-            navigator,
             onLongPress,
         } = this.props;
         const {data} = file;
@@ -120,7 +118,6 @@ export default class FileAttachment extends PureComponent {
                     ref={this.setDocumentRef}
                     canDownloadFiles={canDownloadFiles}
                     file={file}
-                    navigator={navigator}
                     onLongPress={onLongPress}
                     theme={theme}
                 />

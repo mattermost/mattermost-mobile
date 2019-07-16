@@ -33,13 +33,13 @@ export default class ChannelPostList extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelRefreshingFailed: PropTypes.bool,
         currentUserId: PropTypes.string,
         lastViewedAt: PropTypes.number,
         loadMorePostsVisible: PropTypes.bool.isRequired,
-        navigator: PropTypes.object,
         postIds: PropTypes.array,
         postVisibility: PropTypes.number,
         refreshing: PropTypes.bool.isRequired,
@@ -105,36 +105,23 @@ export default class ChannelPostList extends PureComponent {
 
     goToThread = (post) => {
         telemetry.start(['post_list:thread']);
-        const {actions, channelId, navigator, theme} = this.props;
+        const {actions, channelId} = this.props;
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        const options = {
-            screen: 'Thread',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelId,
-                rootId,
-            },
+        const screen = 'Thread';
+        const title = '';
+        const passProps = {
+            channelId,
+            rootId,
         };
 
-        if (Platform.OS === 'android') {
-            navigator.showModal(options);
-        } else {
-            requestAnimationFrame(() => {
-                navigator.push(options);
-            });
-        }
+        requestAnimationFrame(() => {
+            actions.goToScreen(screen, title, passProps);
+        });
     };
 
     loadMorePostsTop = () => {
@@ -181,7 +168,6 @@ export default class ChannelPostList extends PureComponent {
         return (
             <ChannelIntro
                 channelId={this.props.channelId}
-                navigator={this.props.navigator}
             />
         );
     };
@@ -194,7 +180,6 @@ export default class ChannelPostList extends PureComponent {
             currentUserId,
             lastViewedAt,
             loadMorePostsVisible,
-            navigator,
             refreshing,
             theme,
         } = this.props;
@@ -223,7 +208,6 @@ export default class ChannelPostList extends PureComponent {
                     currentUserId={currentUserId}
                     lastViewedAt={lastViewedAt}
                     channelId={channelId}
-                    navigator={navigator}
                     renderFooter={this.renderFooter}
                     refreshing={refreshing}
                     scrollViewNativeID={channelId}
@@ -234,7 +218,7 @@ export default class ChannelPostList extends PureComponent {
         return (
             <View style={style.container}>
                 {component}
-                <AnnouncementBanner navigator={navigator}/>
+                <AnnouncementBanner/>
                 <RetryBarIndicator/>
             </View>
         );
