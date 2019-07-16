@@ -29,6 +29,8 @@ const init = async () => {
     if (ephemeralStore.currentServerUrl) {
         realmStore = configureRealmStore(ephemeralStore.currentServerUrl);
         ephemeralStore.setRealmStoreByServer(ephemeralStore.currentServerUrl, realmStore);
+    } else {
+        realmStore = configureRealmStore();
     }
 
     if (ephemeralStore.appStarted) {

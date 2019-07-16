@@ -18,7 +18,6 @@ export default class ScreenWrapper extends PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         excludeEvents: PropTypes.bool,
-        navigator: PropTypes.object.isRequired,
         store: PropTypes.object.isRequired,
     };
 
@@ -60,7 +59,7 @@ export default class ScreenWrapper extends PureComponent {
     };
 
     render() {
-        const {children, excludeEvents, navigator, store} = this.props;
+        const {children, excludeEvents, store} = this.props;
         const {realm} = this.state;
 
         return (
@@ -72,7 +71,6 @@ export default class ScreenWrapper extends PureComponent {
                     store={store}
                 >
                     <Root
-                        navigator={navigator}
                         excludeEvents={excludeEvents}
                     >
                         {children}

@@ -7,20 +7,17 @@ import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
 import Channel from './channel';
 import SelectServer from './select_server';
-import ScreenwrapWithContextProvider from './screen_wrapWithContextProvider';
+import ScreenWrapper from './screen_wrapper';
 
 export function registerScreens(store, exludeEvents = true) {
     const wrapWithContextProvider = (Component) => (props) => { //eslint-disable-line react/display-name
-        const {navigator} = props; //eslint-disable-line react/prop-types
-
         return (
-            <ScreenwrapWithContextProvider
+            <ScreenWrapper
                 exludeEvents={exludeEvents}
                 store={store}
-                navigator={navigator}
             >
                 <Component {...props}/>
-            </ScreenwrapWithContextProvider>
+            </ScreenWrapper>
         );
     };
 

@@ -6,13 +6,13 @@ import {Navigation} from 'react-native-navigation';
 
 import merge from 'deepmerge';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getDefaultThemeFromConfig} from 'app/selectors/theme';
 
 import EphemeralStore from 'app/store/ephemeral_store';
 
 export function resetToChannel(passProps = {}) {
-    return (dispatch, getState) => {
-        const theme = getTheme(getState());
+    return () => {
+        const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
 
         Navigation.setRoot({
             root: {
@@ -52,8 +52,8 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    return (dispatch, getState) => {
-        const theme = getTheme(getState());
+    return () => {
+        const theme = getDefaultThemeFromConfig();
 
         Navigation.setRoot({
             root: {
@@ -89,8 +89,8 @@ export function resetToSelectServer(allowOtherServers) {
 }
 
 export function resetToTeams(name, title, passProps = {}, options = {}) {
-    return (dispatch, getState) => {
-        const theme = getTheme(getState());
+    return () => {
+        const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
         const defaultOptions = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
@@ -131,10 +131,9 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
 }
 
 export function goToScreen(name, title, passProps = {}, options = {}) {
-    return (dispatch, getState) => {
-        const state = getState();
+    return () => {
         const componentId = EphemeralStore.getTopComponentId();
-        const theme = getTheme(state);
+        const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
         const defaultOptions = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
@@ -188,8 +187,8 @@ export function popToRoot() {
 }
 
 export function showModal(name, title, passProps = {}, options = {}) {
-    return (dispatch, getState) => {
-        const theme = getTheme(getState());
+    return () => {
+        const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
         const defaultOptions = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
