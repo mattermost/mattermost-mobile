@@ -23,7 +23,6 @@ export default class SafeAreaIos extends PureComponent {
         forceTop: PropTypes.number,
         keyboardOffset: PropTypes.number.isRequired,
         navBarBackgroundColor: PropTypes.string,
-        navigator: PropTypes.object,
         headerComponent: PropTypes.node,
         theme: PropTypes.object.isRequired,
     };
@@ -34,10 +33,6 @@ export default class SafeAreaIos extends PureComponent {
 
     constructor(props) {
         super(props);
-
-        if (props.navigator) {
-            props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        }
 
         this.state = {
             keyboard: false,
@@ -108,15 +103,6 @@ export default class SafeAreaIos extends PureComponent {
 
     keyboardWillShow = () => {
         this.setState({keyboard: true});
-    };
-
-    onNavigatorEvent = (event) => {
-        switch (event.id) {
-        case 'willAppear':
-        case 'didDisappear':
-            this.getSafeAreaInsets();
-            break;
-        }
     };
 
     renderTopBar = () => {

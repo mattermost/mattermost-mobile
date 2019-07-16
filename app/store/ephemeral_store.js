@@ -6,9 +6,22 @@ class EphemeralStore {
         this.appStarted = false;
         this.appStartedFromPushNotification = false;
         this.deviceToken = null;
+        this.componentIdStack = [];
         this.currentServerUrl = null;
         this.realmStores = {};
     }
+
+    getTopComponentId = () => this.componentIdStack[0];
+
+    addComponentIdToStack = (componentId) => {
+        this.componentIdStack.unshift(componentId);
+    };
+
+    removeComponentIdFromStack = (componentId) => {
+        this.componentIdStack = this.componentIdStack.filter((id) => {
+            return id !== componentId;
+        });
+    };
 
     getRealmStoreForCurrentServer = () => {
         return this.realmStores[this.currentServerUrl];
@@ -24,7 +37,7 @@ class EphemeralStore {
 
     removeRealmStoreForServer = (url) => {
         Reflect.deleteProperty(this.realmStores, url);
-    }
+    };
 }
 
 export default new EphemeralStore();

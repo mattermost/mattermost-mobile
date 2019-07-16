@@ -54,6 +54,7 @@ class FilteredList extends Component {
         styles: PropTypes.object.isRequired,
         term: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        previewChannel: PropTypes.func,
     };
 
     static defaultProps = {
@@ -126,6 +127,7 @@ class FilteredList extends Component {
                 isUnread={channel.isUnread}
                 mentions={0}
                 onSelectChannel={this.onSelectChannel}
+                previewChannel={this.props.previewChannel}
             />
         );
     };

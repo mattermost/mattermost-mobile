@@ -30,15 +30,16 @@ import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
 
 import telemetry from 'app/telemetry';
 
-const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
+export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
 export default class Login extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
+        goToScreen: PropTypes.func.isRequired,
         license: PropTypes.object.isRequired,
         login: PropTypes.func.isRequired,
         loginId: PropTypes.string.isRequired,
-        navigator: PropTypes.object,
+        resetToChannel: PropTypes.func.isRequired,
         scheduleExpiredNotification: PropTypes.func.isRequired,
         sendPasswordResetEmail: PropTypes.func.isRequired,
         theme: PropTypes.object,
@@ -132,23 +133,14 @@ export default class Login extends PureComponent {
 
     forgotPassword = () => {
         const {intl} = this.context;
-        const {navigator, sendPasswordResetEmail, theme} = this.props;
+        const {goToScreen, sendPasswordResetEmail} = this.props;
+        const screen = 'ForgotPassword';
+        const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
+        const passProps = {
+            sendPasswordResetEmail,
+        };
 
-        navigator.push({
-            screen: 'ForgotPassword',
-            title: intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                sendPasswordResetEmail,
-            },
-        });
+        goToScreen(screen, title, passProps);
     };
 
     getLoginErrorMessage = () => {
@@ -197,54 +189,30 @@ export default class Login extends PureComponent {
     goToChannel = () => {
         telemetry.remove(['start:overall']);
 
-        const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         this.scheduleSessionExpiredNotification();
 
-        navigator.resetTo({
-            screen: 'Channel',
-            title: '',
-            animated: false,
-            backButtonTitle: '',
-            navigatorStyle: {
-                animated: true,
-                animationType: 'fade',
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        });
+        this.props.resetToChannel();
     };
 
     goToMfa = () => {
         const {intl} = this.context;
-        const {config, license, login, navigator, theme} = this.props;
+        const {config, goToScreen, license, login} = this.props;
         const {loginId, password} = this.state;
+        const screen = 'MFA';
+        const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
+        const passProps = {
+            login,
+            config,
+            license,
+            loginId,
+            password,
+            goToChannel: this.goToChannel,
+        };
 
         this.setState({isLoading: false});
-
-        navigator.push({
-            screen: 'MFA',
-            title: intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                login,
-                config,
-                license,
-                loginId,
-                password,
-                goToChannel: this.goToChannel,
-            },
-        });
+        goToScreen(screen, title, passProps);
     };
 
     handleLoginIdChange = (loginId) => {

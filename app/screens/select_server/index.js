@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {realmConnect} from 'realm-react-redux';
 
+import {resetToChannel, goToScreen} from 'app/actions/navigation';
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import {loadConfigAndLicense, pingServer, scheduleExpiredNotification} from 'app/realm/actions/general';
 import {login} from 'app/realm/actions/user';
@@ -23,9 +24,11 @@ function mapQueriesToProps() {
 
 function mapRealmDispatchToProps(dispatch) {
     const actions = bindActionCreators({
+        goToScreen,
         loadConfigAndLicense,
         login,
         pingServer,
+        resetToChannel,
         scheduleExpiredNotification,
     }, dispatch);
 

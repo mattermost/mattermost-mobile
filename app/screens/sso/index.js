@@ -3,6 +3,7 @@
 
 import {realmConnect} from 'realm-react-redux';
 
+import {resetToChannel} from 'app/actions/navigation';
 import {scheduleExpiredNotification} from 'app/realm/actions/general';
 import {ssoLogin} from 'app/realm/actions/user';
 import options from 'app/store/realm_context_options';
@@ -10,6 +11,7 @@ import options from 'app/store/realm_context_options';
 import SSO from './sso';
 
 const mapRealmDispatchToProps = {
+    resetToChannel,
     scheduleExpiredNotification,
     ssoLogin,
 };

@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {Linking, NativeModules, Platform} from 'react-native';
-import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
+import {Navigation} from 'react-native-navigation';
 
 import {loadMe as loadMeRedux} from 'mattermost-redux/actions/users';
 
+import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
 import {loadMe} from 'app/realm/actions/user';
 import {getAppCredentials, getCurrentServerUrl} from 'app/init/credentials';
@@ -19,82 +20,46 @@ import ephemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 
 const {MattermostShare} = NativeModules;
-const startedSharedExtension = Platform.OS === 'android' && MattermostShare.isOpened;
+const sharedExtensionStarted = Platform.OS === 'android' && MattermostShare.isOpened;
 const reduxStore = configureAppStore();
 let realmStore;
 
 const init = async () => {
-    const credentials = await getAppCredentials();
-
     ephemeralStore.currentServerUrl = await getCurrentServerUrl();
     if (ephemeralStore.currentServerUrl) {
         realmStore = configureRealmStore(ephemeralStore.currentServerUrl);
         ephemeralStore.setRealmStoreByServer(ephemeralStore.currentServerUrl, realmStore);
     }
 
-    pushNotificationsHandler.configure(reduxStore); // TODO: figure out what to do with this once everything is on realm
+    if (ephemeralStore.appStarted) {
+        launchApp();
+        return;
+    }
+
+    pushNotificationsHandler.configure(reduxStore);
     globalEventHandler.configure({
-        reduxStore, // TODO same as above todo
-        launchEntry,
+        reduxStore,
+        launchApp,
     });
 
     registerScreens(reduxStore);
 
-    if (startedSharedExtension) {
+    if (sharedExtensionStarted) {
         ephemeralStore.appStarted = true;
     }
 
-    return credentials;
+    if (!ephemeralStore.appStarted) {
+        launchAppAndAuthenticateIfNeeded();
+    }
 };
 
-const launchSelectServer = () => {
-    Navigation.startSingleScreenApp({
-        screen: {
-            screen: 'SelectServer',
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        },
-        passProps: {
-            allowOtherServers: emmProvider.allowOtherServers,
-        },
-        appStyle: {
-            orientation: 'auto',
-        },
-        animationType: 'fade',
-    });
-};
-
-const launchChannel = (skipMetrics = false) => {
-    Navigation.startSingleScreenApp({
-        screen: {
-            screen: 'Channel',
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        },
-        passProps: {
-            skipMetrics,
-        },
-        appStyle: {
-            orientation: 'auto',
-        },
-        animationType: 'fade',
-    });
-};
-
-const launchEntry = (credentials) => {
+const launchApp = async () => {
     telemetry.start([
         'start:select_server_screen',
         'start:channel_screen',
     ]);
 
+    const credentials = await getAppCredentials();
     if (credentials) {
         reduxStore.dispatch(loadMeRedux());
 
@@ -102,18 +67,18 @@ const launchEntry = (credentials) => {
             realmStore.dispatch(loadMe());
         }
 
-        launchChannel();
+        realmStore.dispatch(resetToChannel({skipMetrics: true}));
     } else {
-        launchSelectServer();
+        realmStore.dispatch(resetToSelectServer(emmProvider.allowOtherServers));
     }
 
     telemetry.startSinceLaunch(['start:splash_screen']);
     ephemeralStore.appStarted = true;
 };
 
-const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
+const launchAppAndAuthenticateIfNeeded = async () => {
     await emmProvider.handleManagedConfig(reduxStore);
-    launchEntry(credentials);
+    await launchApp();
 
     if (emmProvider.enabled) {
         if (emmProvider.jailbreakProtection) {
@@ -130,23 +95,14 @@ const launchEntryAndAuthenticateIfNeeded = async (credentials) => {
     });
 };
 
-new NativeEventsReceiver().appLaunched(async () => {
-    const credentials = await getAppCredentials();
+Navigation.events().registerAppLaunchedListener(() => {
+    init();
 
-    ephemeralStore.currentServerUrl = await getCurrentServerUrl();
-
-    if (startedSharedExtension) {
-        ephemeralStore.appStarted = true;
-        await launchEntryAndAuthenticateIfNeeded(credentials);
-    } else if (credentials) {
-        launchChannel(true);
-    } else {
-        launchSelectServer();
-    }
-});
-
-init().then((credentials) => {
-    if (!ephemeralStore.appStarted) {
-        launchEntryAndAuthenticateIfNeeded(credentials);
-    }
+    // Keep track of the latest componentId to appear and disappear
+    Navigation.events().registerComponentDidAppearListener(({componentId}) => {
+        ephemeralStore.addComponentIdToStack(componentId);
+    });
+    Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
+        ephemeralStore.removeComponentIdFromStack(componentId);
+    });
 });

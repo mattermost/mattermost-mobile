@@ -26,8 +26,8 @@ import logo from 'assets/images/logo.png';
 class LoginOptions extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
-        navigator: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
+        goToScreen: PropTypes.func.isRequired,
         license: PropTypes.object.isRequired,
         serverUrl: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -42,47 +42,31 @@ class LoginOptions extends PureComponent {
     }
 
     goToLogin = preventDoubleTap(() => {
-        const {config, intl, license, navigator, theme} = this.props;
-        navigator.push({
-            screen: 'Login',
-            title: intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                config,
-                license,
-                theme,
-            },
-        });
+        const {config, goToScreen, intl, license, theme} = this.props;
+        const screen = 'Login';
+        const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
+        const passProps = {
+            config,
+            license,
+            theme,
+        };
+
+        goToScreen(screen, title, passProps);
     });
 
     goToSSO = (ssoType) => {
-        const {config, intl, license, navigator, serverUrl, theme} = this.props;
-        navigator.push({
-            screen: 'SSO',
-            title: intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                config,
-                license,
-                serverUrl,
-                ssoType,
-                theme,
-            },
-        });
+        const {config, intl, goToScreen, license, serverUrl, theme} = this.props;
+        const screen = 'SSO';
+        const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
+        const passProps = {
+            config,
+            license,
+            serverUrl,
+            ssoType,
+            theme,
+        };
+
+        goToScreen(screen, title, passProps);
     };
 
     orientationDidChange = () => {

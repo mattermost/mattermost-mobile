@@ -16,23 +16,11 @@ exports[`PostTextBox should match, full snapshot 1`] = `
       }
     }
   >
-    <AttachmentButton
+    <Connect(AttachmentButton)
       blurTextBox={[Function]}
-      browseFileTypes="public.item"
-      canBrowseFiles={true}
-      canBrowsePhotoLibrary={true}
-      canBrowseVideoLibrary={true}
-      canTakePhoto={true}
-      canTakeVideo={true}
-      extraOptions={null}
       fileCount={0}
       maxFileCount={5}
       maxFileSize={1024}
-      navigator={
-        Object {
-          "showModal": [MockFunction],
-        }
-      }
       onShowFileMaxWarning={[Function]}
       onShowFileSizeWarning={[Function]}
       theme={
@@ -64,7 +52,6 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         }
       }
       uploadFiles={[Function]}
-      validMimeTypes={Array []}
     />
     <View
       style={

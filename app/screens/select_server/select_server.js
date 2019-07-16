@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
+import {Navigation} from 'react-native-navigation';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
@@ -20,6 +21,8 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
+
+import merge from 'deepmerge';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -41,14 +44,15 @@ import LocalConfig from 'assets/config';
 export default class SelectServer extends PureComponent {
     static propTypes = {
         allowOtherServers: PropTypes.bool,
+        goToScreen: PropTypes.func.isRequired,
         loadConfigAndLicense: PropTypes.func.isRequired,
         login: PropTypes.func.isRequired,
         pingServer: PropTypes.func.isRequired,
-        navigator: PropTypes.object,
         reduxActions: PropTypes.shape({
             handleServerUrlChanged: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
         }).isRequired,
+        resetToChannel: PropTypes.func.isRequired,
         scheduleExpiredNotification: PropTypes.func.isRequired,
         serverUrl: PropTypes.string.isRequired,
     };
@@ -77,6 +81,8 @@ export default class SelectServer extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         const {allowOtherServers, serverUrl} = this.props;
         if (!allowOtherServers && serverUrl) {
             // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
@@ -89,7 +95,6 @@ export default class SelectServer extends PureComponent {
         }
 
         this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
-        this.props.navigator.setOnNavigatorEvent(this.handleNavigatorEvent);
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
@@ -115,10 +120,19 @@ export default class SelectServer extends PureComponent {
     }
 
     componentWillUnmount() {
-        this.certificateListener.remove();
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
+
+        this.certificateListener.remove();
+
+        this.navigationEventListener.remove();
+    }
+
+    componentDidDisappear() {
+        this.setState({
+            connected: false,
+        });
     }
 
     blur = () => {
@@ -142,29 +156,18 @@ export default class SelectServer extends PureComponent {
         return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
     };
 
-    goToNextScreen = (screen, title) => {
-        const {navigator} = this.props;
-        const {config, license, url} = this.state;
+    goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
+        const {goToScreen} = this.props;
+        const defaultOptions = {
+            popGesture: !LocalConfig.AutoSelectServerUrl,
+            topBar: {
+                visible: !LocalConfig.AutoSelectServerUrl,
+                height: LocalConfig.AutoSelectServerUrl ? 0 : null,
+            },
+        };
+        const options = merge(defaultOptions, navOptions);
 
-        navigator.push({
-            screen,
-            title,
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarHidden: LocalConfig.AutoSelectServerUrl,
-                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
-                navBarTextColor: this.theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: this.theme.sidebarHeaderBg,
-                navBarButtonColor: this.theme.sidebarHeaderTextColor,
-            },
-            passProps: {
-                config,
-                license,
-                serverUrl: url,
-                theme: this.theme,
-            },
-        });
+        goToScreen(screen, title, passProps, options);
     };
 
     handleAndroidKeyboard = () => {
@@ -213,7 +216,8 @@ export default class SelectServer extends PureComponent {
 
     handleLoginOptions = () => {
         const {formatMessage} = this.context.intl;
-        const {config, license} = this.state;
+        const {goToScreen} = this.props;
+        const {config, license, url} = this.state;
         const samlEnabled = config?.EnableSaml === 'true' && license?.IsLicensed === 'true' && license?.SAML === 'true';
         const gitlabEnabled = config?.EnableSignUpWithGitLab === 'true';
         const o365Enabled = config?.EnableSignUpWithOffice365 === 'true' && license?.IsLicensed === 'true' && license?.Office365OAuth === 'true';
@@ -233,6 +237,14 @@ export default class SelectServer extends PureComponent {
             title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
         }
 
+        const passProps = {
+            config,
+            license,
+            serverUrl: url,
+            goToScreen,
+            theme: this.theme,
+        };
+
         if (Platform.OS === 'ios') {
             if (config?.ExperimentalClientSideCertEnable === 'true' && config?.ExperimentalClientSideCertCheck === 'primary') {
                 // log in automatically and send directly to the channel screen
@@ -241,44 +253,28 @@ export default class SelectServer extends PureComponent {
             }
 
             setTimeout(() => {
-                this.goToNextScreen(screen, title);
+                this.goToNextScreen(screen, title, passProps);
             }, 350);
         } else {
-            this.goToNextScreen(screen, title);
-        }
-    };
-
-    handleNavigatorEvent = (event) => {
-        switch (event.id) {
-        case 'didDisappear':
-            this.setState({
-                connected: false,
-            });
-            break;
+            this.goToNextScreen(screen, title, passProps);
         }
     };
 
     handleShowClientUpgrade = (upgradeType) => {
         const {formatMessage} = this.context.intl;
+        const screen = 'ClientUpgrade';
+        const title = formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'});
+        const passProps = {
+            closeAction: this.handleLoginOptions,
+            upgradeType,
+        };
+        const options = {
+            statusBar: {
+                visible: false,
+            },
+        };
 
-        this.props.navigator.push({
-            screen: 'ClientUpgrade',
-            title: formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'}),
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarHidden: LocalConfig.AutoSelectServerUrl,
-                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
-                statusBarHidden: true,
-                statusBarHideWithNavBar: true,
-                navBarTextColor: this.theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: this.theme.sidebarHeaderBg,
-                navBarButtonColor: this.theme.sidebarHeaderTextColor,
-            },
-            passProps: {
-                closeAction: this.handleLoginOptions,
-                upgradeType,
-            },
-        });
+        this.goToNextScreen(screen, title, passProps, options);
     };
 
     handleTextChanged = (url) => {
@@ -286,7 +282,7 @@ export default class SelectServer extends PureComponent {
     };
 
     loginWithCertificate = async () => {
-        const {login, navigator} = this.props;
+        const {login, resetToChannel} = this.props;
         const {config, license} = this.state;
 
         tracker.initialLoad = Date.now();
@@ -294,20 +290,7 @@ export default class SelectServer extends PureComponent {
         await login({loginId: 'credential', password: 'password', config, license});
         this.scheduleSessionExpiredNotification();
 
-        navigator.resetTo({
-            screen: 'Channel',
-            title: '',
-            animated: false,
-            backButtonTitle: '',
-            navigatorStyle: {
-                animated: true,
-                animationType: 'fade',
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        });
+        resetToChannel();
     };
 
     pingServer = (url, retryWithHttp = true) => {

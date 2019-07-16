@@ -11,11 +11,12 @@ import {
     View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import {Navigation} from 'react-native-navigation';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {isValidUrl} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
 
@@ -26,7 +27,10 @@ class Settings extends PureComponent {
         actions: PropTypes.shape({
             clearErrors: PropTypes.func.isRequired,
             purgeOfflineStore: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
@@ -34,7 +38,6 @@ class Settings extends PureComponent {
         errors: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
         joinableTeams: PropTypes.array.isRequired,
-        navigator: PropTypes.object,
         theme: PropTypes.object,
     };
 
@@ -43,9 +46,14 @@ class Settings extends PureComponent {
         joinableTeams: [],
     };
 
-    constructor(props) {
-        super(props);
-        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'close-settings') {
+            this.props.actions.dismissModal();
+        }
     }
 
     errorEmailBody = () => {
@@ -75,122 +83,59 @@ class Settings extends PureComponent {
     };
 
     goToAbout = preventDoubleTap(() => {
-        const {intl, navigator, theme, config} = this.props;
-        navigator.push({
-            screen: 'About',
-            title: intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: config.SiteName || 'Mattermost'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-            },
-        });
+        const {actions, intl, config} = this.props;
+        const screen = 'About';
+        const title = intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: config.SiteName || 'Mattermost'});
+
+        actions.goToScreen(screen, title);
     });
 
     goToNotifications = preventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
-        navigator.push({
-            screen: 'NotificationSettings',
-            backButtonTitle: '',
-            title: intl.formatMessage({id: 'user.settings.modal.notifications', defaultMessage: 'Notifications'}),
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        const {actions, intl} = this.props;
+        const screen = 'NotificationSettings';
+        const title = intl.formatMessage({id: 'user.settings.modal.notifications', defaultMessage: 'Notifications'});
+
+        actions.goToScreen(screen, title);
     });
 
     goToDisplaySettings = preventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
-        navigator.push({
-            screen: 'DisplaySettings',
-            title: intl.formatMessage({id: 'user.settings.modal.display', defaultMessage: 'Display'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        const {actions, intl} = this.props;
+        const screen = 'DisplaySettings';
+        const title = intl.formatMessage({id: 'user.settings.modal.display', defaultMessage: 'Display'});
+
+        actions.goToScreen(screen, title);
     });
 
     goToAdvancedSettings = preventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
-        navigator.push({
-            screen: 'AdvancedSettings',
-            title: intl.formatMessage({id: 'mobile.advanced_settings.title', defaultMessage: 'Advanced Settings'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        const {actions, intl} = this.props;
+        const screen = 'AdvancedSettings';
+        const title = intl.formatMessage({id: 'mobile.advanced_settings.title', defaultMessage: 'Advanced Settings'});
+
+        actions.goToScreen(screen, title);
     });
 
     goToSelectTeam = preventDoubleTap(() => {
-        const {currentUrl, intl, navigator, theme} = this.props;
+        const {actions, currentUrl, intl, theme} = this.props;
+        const screen = 'SelectTeam';
+        const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
+        const passProps = {
+            currentUrl,
+            theme,
+        };
 
-        navigator.push({
-            screen: 'SelectTeam',
-            title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                currentUrl,
-                theme,
-            },
-        });
+        actions.goToScreen(screen, title, passProps);
     });
 
     goToClientUpgrade = preventDoubleTap(() => {
-        const {intl, theme} = this.props;
+        const {actions, intl} = this.props;
+        const screen = 'ClientUpgrade';
+        const title = intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'});
+        const passProps = {
+            userCheckedForUpgrade: true,
+        };
 
-        this.props.navigator.push({
-            screen: 'ClientUpgrade',
-            title: intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarHidden: false,
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-            },
-            passProps: {
-                userCheckedForUpgrade: true,
-            },
-        });
+        actions.goToScreen(screen, title, passProps);
     });
-
-    onNavigatorEvent = (event) => {
-        if (event.id === 'willAppear') {
-            setNavigatorStyles(this.props.navigator, this.props.theme);
-        }
-
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'close-settings') {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
-            }
-        }
-    };
 
     openErrorEmail = preventDoubleTap(() => {
         const {config} = this.props;
