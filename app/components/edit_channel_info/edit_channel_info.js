@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
+import {General} from 'mattermost-redux/constants';
+
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
@@ -19,7 +21,6 @@ import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {General} from 'mattermost-redux/constants';
 import {getShortenedURL} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
 

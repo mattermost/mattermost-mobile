@@ -151,6 +151,7 @@ export default class TextSetting extends PureComponent {
                         <TextInput
                             value={value}
                             placeholder={placeholder}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                             onChangeText={this.onChangeText}
                             style={inputStyle}
                             autoCapitalize='none'
