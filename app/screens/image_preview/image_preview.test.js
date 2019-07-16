@@ -6,6 +6,7 @@ import {shallow} from 'enzyme';
 import {
     TouchableOpacity,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -18,6 +19,13 @@ jest.mock('react-native-doc-viewer', () => {
         OpenFile: jest.fn(),
     };
 });
+jest.mock('react-native-navigation', () => ({
+    Navigation: {
+        mergeOptions: jest.fn(),
+    },
+}));
+
+Navigation.mergeOptions = jest.fn();
 
 describe('ImagePreview', () => {
     const baseProps = {
@@ -30,10 +38,14 @@ describe('ImagePreview', () => {
         ],
         getItemMeasures: jest.fn(),
         index: 0,
-        navigator: {setStyle: jest.fn()},
         origin: {},
         target: {},
         theme: Preferences.THEMES.default,
+        componentId: 'component-id',
+        actions: {
+            dismissModal: jest.fn(),
+            showModalOverCurrentContext: jest.fn(),
+        },
     };
 
     test('should match snapshot', () => {
@@ -67,21 +79,26 @@ describe('ImagePreview', () => {
         expect(wrapper.state('index')).toEqual(1);
     });
 
-    test('should match call getItemMeasures & navigator.setStyle on close', () => {
+    test('should match call getItemMeasures & Navigation.mergeOptions on close', () => {
         const getItemMeasures = jest.fn();
-        const navigator = {setStyle: jest.fn()};
         const wrapper = shallow(
             <ImagePreview
                 {...baseProps}
                 getItemMeasures={getItemMeasures}
-                navigator={navigator}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.instance().close();
 
-        expect(navigator.setStyle).toHaveBeenCalledTimes(2);
-        expect(navigator.setStyle).toBeCalledWith({screenBackgroundColor: 'transparent'});
+        expect(Navigation.mergeOptions).toHaveBeenCalledTimes(2);
+        expect(Navigation.mergeOptions).toHaveBeenCalledWith(
+            baseProps.componentId,
+            {
+                layout: {
+                    backgroundColor: 'transparent',
+                },
+            },
+        );
     });
 });

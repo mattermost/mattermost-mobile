@@ -12,7 +12,6 @@ export default class SearchResultPost extends PureComponent {
         goToThread: PropTypes.func.isRequired,
         highlightPinnedOrFlagged: PropTypes.bool,
         managedConfig: PropTypes.object.isRequired,
-        navigator: PropTypes.object.isRequired,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func.isRequired,
         postId: PropTypes.string.isRequired,
@@ -50,7 +49,6 @@ export default class SearchResultPost extends PureComponent {
                 isSearchResult={true}
                 showAddReaction={false}
                 showFullDate={this.props.showFullDate}
-                navigator={this.props.navigator}
             />
         );
     }
