@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {clearSearch} from 'mattermost-redux/actions/search';
 
-import {showSearchModal} from 'app/actions/views/search';
+import {showSearchModal} from 'app/actions/navigation';
 
 import ChannelSearchButton from './channel_search_button';
 

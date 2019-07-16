@@ -8,6 +8,7 @@ import {
     Keyboard,
     InteractionManager,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -55,8 +56,10 @@ export default class EditChannel extends PureComponent {
             patchChannel: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
         }),
-        navigator: PropTypes.object.isRequired,
+        componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -72,7 +75,7 @@ export default class EditChannel extends PureComponent {
 
     rightButton = {
         id: 'edit-channel',
-        disabled: true,
+        enabled: false,
         showAsAction: 'always',
     };
 
@@ -96,23 +99,24 @@ export default class EditChannel extends PureComponent {
             header,
         };
 
-        this.rightButton.title = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
+        this.rightButton.text = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
 
         const buttons = {
             rightButtons: [this.rightButton],
         };
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        props.navigator.setButtons(buttons);
+        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.emitCanUpdateChannel(false);
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         const {updateChannelRequest} = nextProps;
@@ -139,6 +143,17 @@ export default class EditChannel extends PureComponent {
         }
     }
 
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'close-edit-channel':
+            this.close();
+            break;
+        case 'edit-channel':
+            this.onUpdateChannel();
+            break;
+        }
+    }
+
     close = () => {
         const {channel: {type}} = this.props;
         const isDirect = type === General.DM_CHANNEL || type === General.GM_CHANNEL;
@@ -147,23 +162,25 @@ export default class EditChannel extends PureComponent {
             this.props.actions.setChannelDisplayName(this.state.displayName);
         }
 
-        this.props.navigator.pop({animated: true});
+        this.props.actions.popTopScreen();
     };
 
     emitCanUpdateChannel = (enabled) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     emitUpdating = (loading) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: loading}],
+            rightButtons: [{...this.rightButton, enabled: !loading}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     validateDisplayName = (displayName) => {
@@ -238,19 +255,6 @@ export default class EditChannel extends PureComponent {
         }
     };
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-edit-channel':
-                this.close();
-                break;
-            case 'edit-channel':
-                this.onUpdateChannel();
-                break;
-            }
-        }
-    };
-
     onDisplayNameChange = (displayName) => {
         this.setState({displayName});
     };
@@ -276,7 +280,6 @@ export default class EditChannel extends PureComponent {
                 purpose: oldPurpose,
                 type,
             },
-            navigator,
             theme,
             currentTeamUrl,
             deviceWidth,
@@ -293,7 +296,6 @@ export default class EditChannel extends PureComponent {
 
         return (
             <EditChannelInfo
-                navigator={navigator}
                 theme={theme}
                 enableRightButton={this.emitCanUpdateChannel}
                 error={error}

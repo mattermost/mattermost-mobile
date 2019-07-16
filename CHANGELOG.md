@@ -1,5 +1,18 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.20.2 Release
+- Release Date: July 10, 2019
+- Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Mobile App v1.13+ is required for Mattermost Server v5.4+.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed an issue where Moto G7 devices were detected as tablets and showed a fixed width sidebar.
+ - Fixed an issue where having the sidebar open at all times on tablets did not work on split view.
+
 ## 1.20.1 Release
 - Release Date: June 21, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device

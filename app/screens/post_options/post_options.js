@@ -25,6 +25,8 @@ export default class PostOptions extends PureComponent {
             removePost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired,
             unpinPost: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            showModal: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
         canReply: PropTypes.bool,
@@ -39,7 +41,6 @@ export default class PostOptions extends PureComponent {
         deviceHeight: PropTypes.number.isRequired,
         isFlagged: PropTypes.bool,
         isMyPost: PropTypes.bool,
-        navigator: PropTypes.object.isRequired,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -49,9 +50,7 @@ export default class PostOptions extends PureComponent {
     };
 
     close = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'none',
-        });
+        this.props.actions.dismissModal();
     };
 
     closeWithAnimation = () => {
@@ -266,27 +265,20 @@ export default class PostOptions extends PureComponent {
     };
 
     handleAddReaction = () => {
+        const {actions, theme} = this.props;
         const {formatMessage} = this.context.intl;
-        const {navigator, theme} = this.props;
 
         this.close();
         setTimeout(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
-                navigator.showModal({
-                    screen: 'AddReaction',
-                    title: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                    animated: true,
-                    navigatorStyle: {
-                        navBarTextColor: theme.sidebarHeaderTextColor,
-                        navBarBackgroundColor: theme.sidebarHeaderBg,
-                        navBarButtonColor: theme.sidebarHeaderTextColor,
-                        screenBackgroundColor: theme.centerChannelBg,
-                    },
-                    passProps: {
-                        closeButton: source,
-                        onEmojiPress: this.handleAddReactionToPost,
-                    },
-                });
+                const screen = 'AddReaction';
+                const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
+                const passProps = {
+                    closeButton: source,
+                    onEmojiPress: this.handleAddReactionToPost,
+                };
+
+                actions.showModal(screen, title, passProps);
             });
         }, 300);
     };
@@ -364,27 +356,20 @@ export default class PostOptions extends PureComponent {
     };
 
     handlePostEdit = () => {
+        const {actions, theme, post} = this.props;
         const {intl} = this.context;
-        const {navigator, post, theme} = this.props;
 
         this.close();
         setTimeout(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
-                navigator.showModal({
-                    screen: 'EditPost',
-                    title: intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'}),
-                    animated: true,
-                    navigatorStyle: {
-                        navBarTextColor: theme.sidebarHeaderTextColor,
-                        navBarBackgroundColor: theme.sidebarHeaderBg,
-                        navBarButtonColor: theme.sidebarHeaderTextColor,
-                        screenBackgroundColor: theme.centerChannelBg,
-                    },
-                    passProps: {
-                        post,
-                        closeButton: source,
-                    },
-                });
+                const screen = 'EditPost';
+                const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
+                const passProps = {
+                    post,
+                    closeButton: source,
+                };
+
+                actions.showModal(screen, title, passProps);
             });
         }, 300);
     };

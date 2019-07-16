@@ -16,15 +16,15 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             dismissBanner: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
         allowDismissal: PropTypes.bool.isRequired,
         bannerText: PropTypes.string.isRequired,
-        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     }
 
     close = () => {
-        this.props.navigator.pop();
+        this.props.actions.popTopScreen();
     };
 
     dismissBanner = () => {
@@ -67,7 +67,6 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
                     <Markdown
                         baseTextStyle={style.baseTextStyle}
                         blockStyles={getMarkdownBlockStyles(this.props.theme)}
-                        navigator={this.props.navigator}
                         onChannelLinkPress={this.handleChannelLinkPress}
                         textStyles={getMarkdownTextStyles(this.props.theme)}
                         value={this.props.bannerText}

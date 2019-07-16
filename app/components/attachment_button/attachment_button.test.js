@@ -23,8 +23,10 @@ jest.mock('Platform', () => {
 describe('AttachmentButton', () => {
     const formatMessage = jest.fn();
     const baseProps = {
+        actions: {
+            showModalOverCurrentContext: jest.fn(),
+        },
         theme: Preferences.THEMES.default,
-        navigator: {},
         blurTextBox: jest.fn(),
         maxFileSize: 10,
         uploadFiles: jest.fn(),
