@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
     FlatList,
     Platform,
     StatusBar,
@@ -15,7 +16,7 @@ import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
-import {ListTypes, ViewTypes} from 'app/constants';
+import {DeviceTypes, ListTypes, ViewTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
@@ -99,6 +100,20 @@ export default class TeamsList extends PureComponent {
         return item;
     };
 
+    listContentPadding = () => {
+        if (DeviceTypes.IS_TABLET) {
+            return 64;
+        }
+
+        const {width, height} = Dimensions.get('window');
+        const landscape = width > height;
+        if (DeviceTypes.IS_IPHONE_X) {
+            return landscape ? 54 : 44;
+        }
+
+        return 64;
+    };
+
     renderItem = ({item}) => {
         return (
             <TeamsListItem
@@ -140,7 +155,7 @@ export default class TeamsList extends PureComponent {
                     {moreAction}
                 </View>
                 <FlatList
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={this.listContentPadding()}
                     data={teamIds}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}
@@ -178,9 +193,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 17,
             textAlign: 'center',
             fontWeight: '600',
-        },
-        listContent: {
-            paddingBottom: 30,
         },
         moreActionContainer: {
             alignItems: 'center',

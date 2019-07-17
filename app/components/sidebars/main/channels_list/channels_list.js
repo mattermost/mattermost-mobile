@@ -12,6 +12,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
+
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import List from './list';
@@ -197,9 +198,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 17,
             fontWeight: 'normal',
             paddingLeft: 16,
-        },
-        listContent: {
-            paddingBottom: 30,
         },
         switchContainer: {
             position: 'relative',
