@@ -170,15 +170,15 @@ export default class Swiper extends PureComponent {
         const {width, height} = Dimensions.get('window');
         const bottom = this.paginationBottom(width, height);
         let style;
-        if (DeviceTypes.IS_TABLET) {
+        if (DeviceTypes.IS_IPHONE_X) {
             style = {
                 bottom,
-                flex: 1,
+                width,
             };
         } else {
             style = {
                 bottom,
-                width,
+                flex: 1,
             };
         }
 
