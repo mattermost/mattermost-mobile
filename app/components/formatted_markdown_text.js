@@ -35,7 +35,6 @@ class FormattedMarkdownText extends React.PureComponent {
         baseTextStyle: CustomPropTypes.Style,
         defaultMessage: PropTypes.string.isRequired,
         id: PropTypes.string.isRequired,
-        navigator: PropTypes.object.isRequired,
         onPostPress: PropTypes.func,
         style: CustomPropTypes.Style,
         textStyles: PropTypes.object,
@@ -115,7 +114,6 @@ class FormattedMarkdownText extends React.PureComponent {
             <AtMention
                 mentionStyle={this.props.textStyles.mention}
                 mentionName={mentionName}
-                navigator={this.props.navigator}
                 onPostPress={this.props.onPostPress}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />

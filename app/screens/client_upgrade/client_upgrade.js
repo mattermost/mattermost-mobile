@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
+import {Navigation} from 'react-native-navigation';
 import PropTypes from 'prop-types';
 import {
     Alert,
@@ -25,14 +26,16 @@ export default class ClientUpgrade extends PureComponent {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         currentVersion: PropTypes.string,
         closeAction: PropTypes.func,
         userCheckedForUpgrade: PropTypes.bool,
         downloadLink: PropTypes.string.isRequired,
         forceUpgrade: PropTypes.bool,
         latestVersion: PropTypes.string,
-        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         upgradeType: PropTypes.string,
     };
@@ -44,13 +47,14 @@ export default class ClientUpgrade extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         this.state = {
             upgradeType: UpgradeTypes.NO_UPGRADE,
         };
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         if (this.props.userCheckedForUpgrade) {
             this.checkUpgrade(this.props);
         }
@@ -58,7 +62,13 @@ export default class ClientUpgrade extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'close-upgrade') {
+            this.props.actions.dismissModal();
         }
     }
 
@@ -84,12 +94,18 @@ export default class ClientUpgrade extends PureComponent {
     }
 
     handleClose = () => {
-        if (this.props.closeAction) {
-            this.props.closeAction();
-        } else if (this.props.userCheckedForUpgrade) {
-            this.props.navigator.pop();
+        const {
+            closeAction,
+            userCheckedForUpgrade,
+            actions,
+        } = this.props;
+
+        if (closeAction) {
+            closeAction();
+        } else if (userCheckedForUpgrade) {
+            actions.popTopScreen();
         } else {
-            this.props.navigator.dismissModal();
+            actions.dismissModal();
         }
     };
 
@@ -115,16 +131,6 @@ export default class ClientUpgrade extends PureComponent {
 
             return false;
         });
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'close-upgrade') {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
-            }
-        }
     };
 
     renderMustUpgrade() {

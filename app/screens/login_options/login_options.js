@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Dimensions,
     Image,
@@ -23,16 +23,20 @@ import LocalConfig from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
 import logo from 'assets/images/logo.png';
 
-class LoginOptions extends PureComponent {
+export default class LoginOptions extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
-        navigator: PropTypes.object,
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
-        theme: PropTypes.object,
     };
 
-    componentWillMount() {
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
+    componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
     }
 
@@ -41,38 +45,21 @@ class LoginOptions extends PureComponent {
     }
 
     goToLogin = preventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
-        navigator.push({
-            screen: 'Login',
-            title: intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        const {actions} = this.props;
+        const {intl} = this.context;
+        const screen = 'Login';
+        const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
+
+        actions.goToScreen(screen, title);
     });
 
     goToSSO = (ssoType) => {
-        const {intl, navigator, theme} = this.props;
-        navigator.push({
-            screen: 'SSO',
-            title: intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                ssoType,
-            },
-        });
+        const {actions} = this.props;
+        const {intl} = this.context;
+        const screen = 'SSO';
+        const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
+
+        actions.goToScreen(screen, title, {ssoType});
     };
 
     orientationDidChange = () => {
@@ -306,8 +293,6 @@ const style = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         paddingHorizontal: 15,
-        paddingVertical: 50,
+        flex: 1,
     },
 });
-
-export default injectIntl(LoginOptions);

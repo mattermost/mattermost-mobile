@@ -34,14 +34,17 @@ let UnreadIndicator = null;
 
 export default class List extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            showModal: PropTypes.func.isRequired,
+        }).isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
-        navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         unreadChannelIds: PropTypes.array.isRequired,
         styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
+        previewChannel: PropTypes.func,
     };
 
     static contextTypes = {
@@ -159,7 +162,10 @@ export default class List extends PureComponent {
     };
 
     showCreateChannelOptions = () => {
-        const {canCreatePrivateChannels, navigator} = this.props;
+        const {
+            canCreatePrivateChannels,
+            actions,
+        } = this.props;
 
         const items = [];
         const moreChannels = {
@@ -197,117 +203,87 @@ export default class List extends PureComponent {
         }
         items.push(newConversation);
 
-        navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                items,
-                onItemPress: () => navigator.dismissModal({
-                    animationType: 'none',
-                }),
+        const screen = 'OptionsModal';
+        const title = '';
+        const passProps = {
+            items,
+        };
+        const options = {
+            modalPresentationStyle: 'overCurrentContext',
+            layout: {
+                backgroundColor: 'transparent',
             },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
+            topBar: {
+                visible: false,
+                height: 0,
             },
-        });
+            animations: {
+                showModal: {
+                    enable: false,
+                },
+                dismissModal: {
+                    enable: false,
+                },
+            },
+        };
+
+        actions.showModal(screen, title, passProps, options);
     };
 
     goToCreatePublicChannel = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
+        const screen = 'CreateChannel';
+        const title = intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
+        const passProps = {
+            channelType: General.OPEN_CHANNEL,
+            closeButton: this.closeButton,
+        };
 
-        navigator.showModal({
-            screen: 'CreateChannel',
-            animationType: 'slide-up',
-            title: intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'}),
-            backButtonTitle: '',
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelType: General.OPEN_CHANNEL,
-                closeButton: this.closeButton,
-            },
-        });
+        actions.showModal(screen, title, passProps);
     });
 
     goToCreatePrivateChannel = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
+        const screen = 'CreateChannel';
+        const title = intl.formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'});
+        const passProps = {
+            channelType: General.PRIVATE_CHANNEL,
+            closeButton: this.closeButton,
+        };
 
-        navigator.showModal({
-            screen: 'CreateChannel',
-            animationType: 'slide-up',
-            title: intl.formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'}),
-            backButtonTitle: '',
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelType: General.PRIVATE_CHANNEL,
-                closeButton: this.closeButton,
-            },
-        });
+        actions.showModal(screen, title, passProps);
     });
 
     goToDirectMessages = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
-
-        navigator.showModal({
-            screen: 'MoreDirectMessages',
-            title: intl.formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'}),
-            animationType: 'slide-up',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            navigatorButtons: {
+        const screen = 'MoreDirectMessages';
+        const title = intl.formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'});
+        const passProps = {};
+        const options = {
+            topBar: {
                 leftButtons: [{
                     id: 'close-dms',
                     icon: this.closeButton,
                 }],
             },
-        });
+        };
+
+        actions.showModal(screen, title, passProps, options);
     });
 
     goToMoreChannels = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
+        const screen = 'MoreChannels';
+        const title = intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
+        const passProps = {
+            closeButton: this.closeButton,
+        };
 
-        navigator.showModal({
-            screen: 'MoreChannels',
-            animationType: 'slide-up',
-            title: intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'}),
-            backButtonTitle: '',
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                closeButton: this.closeButton,
-            },
-        });
+        actions.showModal(screen, title, passProps);
     });
 
     keyExtractor = (item) => item.id || item;
@@ -349,15 +325,15 @@ export default class List extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {favoriteChannelIds, unreadChannelIds} = this.props;
+        const {favoriteChannelIds, unreadChannelIds, previewChannel} = this.props;
 
         return (
             <ChannelItem
                 channelId={item}
                 isUnread={unreadChannelIds.includes(item)}
                 isFavorite={favoriteChannelIds.includes(item)}
-                navigator={this.props.navigator}
                 onSelectChannel={this.onSelectChannel}
+                previewChannel={previewChannel}
             />
         );
     };
