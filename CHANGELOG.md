@@ -1,5 +1,34 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.21.0 Release
+- Release Date: July 16, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed a few mobile app crash / fatal error issues.
+ - Fixed an issue where having the sidebar open at all times on tablets did not work for split view.
+ - Fixed an issue where new messages were often hidden behind a keyboard or text field.
+ - Fixed an issue on Android where channel sorting didn't match the web app.
+ - Fixed an issue where sharing a GIF via keyboard resulted in an error screen.
+ - Fixed an issue where long-press menu could not be dragged up when rotating the device to landscape view while the menu was open.
+ - Fixed an issue on Android where push notification settings were only saved after closing the settings page.
+ - Fixed an issue where users on View Members list had an icon that appeared to be selectable but was not.
+ - Fixed an issue where "Jump To" showed archived channels the user did not belong to instead of the ones the user was a member of.
+ - Fixed an issue where changing the timezone setting manually to "Set automatically" did not work on the mobile app.
+ - Fixed an issue where setting a position field for AD/LDAP sync or SAML in the System Console did not block the user from changing it in account settings.
+ - Fixed an issue where **Channel Info > Manage/View Members** screen didn't load channel users.
+ - Fixed an issue where enabling large fonts on iOS caused the left-hand side text to be cut off.
+ - Fixed an issue on Android where users could not reply to a push notification if the mention was in a thread message.
+
+### Known Issues
+  - (Android) On subpath server, logging in using GitLab or OneLogin fails to display Mattermost. [MM-16829](https://mattermost.atlassian.net/browse/MM-16829)
+  - Buttons inside ephemeral posts are not clickable / functional on the mobile app. [MM-15084](https://mattermost.atlassian.net/browse/MM-15084)
+  - Android apps slow down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
+
 ## 1.20.2 Release
 - Release Date: July 10, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
@@ -8,7 +37,7 @@
  - Mobile App v1.13+ is required for Mattermost Server v5.4+.
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.
-
+ 
 ### Bug Fixes
  - Fixed an issue where Moto G7 devices were detected as tablets and showed a fixed width sidebar.
  - Fixed an issue where having the sidebar open at all times on tablets did not work on split view.
@@ -25,7 +54,7 @@
 ### Bug Fixes
  - Fixed an issue where some Android devices were crashing.
  - Fixed an issue where messages were missing after reconnecting the network.
- 
+
 ## 1.20.0 Release
 - Release Date: June 16, 2019
 - Server Versions Supported: Server v4.10+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
