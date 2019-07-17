@@ -7,9 +7,11 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 export default class InteractiveDialogController extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            showModal: PropTypes.func.isRequired,
+        }).isRequired,
         triggerId: PropTypes.string,
         dialog: PropTypes.object,
-        navigator: PropTypes.object,
         theme: PropTypes.object,
     };
 
@@ -22,7 +24,7 @@ export default class InteractiveDialogController extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const triggerId = this.props.triggerId;
+        const {actions, triggerId} = this.props;
         if (!triggerId) {
             return;
         }
@@ -41,33 +43,24 @@ export default class InteractiveDialogController extends PureComponent {
             return;
         }
 
-        const theme = this.props.theme;
-
-        this.props.navigator.showModal({
-            backButtonTitle: '',
-            screen: 'InteractiveDialog',
-            title: dialogData.dialog.title,
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            navigatorButtons: {
+        const screen = 'InteractiveDialog';
+        const title = dialogData.dialog.title;
+        const passProps = {};
+        const options = {
+            topBar: {
                 leftButtons: [{
                     id: 'close-dialog',
                     icon: this.closeButton,
                 }],
-                rightButtons: [
-                    {
-                        id: 'submit-dialog',
-                        showAsAction: 'always',
-                        title: dialogData.dialog.submit_label,
-                    },
-                ],
+                rightButtons: [{
+                    id: 'submit-dialog',
+                    showAsAction: 'always',
+                    text: dialogData.dialog.submit_label,
+                }],
             },
-        });
+        };
+
+        actions.showModal(screen, title, passProps, options);
     }
 
     render() {

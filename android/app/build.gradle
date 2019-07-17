@@ -122,7 +122,8 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 201
+        missingDimensionStrategy "RNN.reactNativeVersion", "reactNative57_5"
+        versionCode 208
         versionName "1.21.0"
         multiDexEnabled = true
         ndk {
@@ -211,7 +212,7 @@ configurations.all {
 
 dependencies {
     // Make sure to put android-jsc at the top
-    implementation "org.webkit:android-jsc:r241213"
+    implementation "org.webkit:android-jsc-intl:r241213"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
@@ -242,6 +243,7 @@ dependencies {
     implementation project(':react-native-gesture-handler')
     implementation project(':@react-native-community_async-storage')
     implementation project(':@react-native-community_netinfo')
+    implementation project(':react-native-android-open-settings')
 
     // For animated GIF support
     implementation 'com.facebook.fresco:fresco:1.10.0'

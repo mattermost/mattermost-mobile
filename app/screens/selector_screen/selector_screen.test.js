@@ -67,14 +67,12 @@ describe('SelectorScreen', () => {
         getChannels,
         searchProfiles,
         searchChannels,
+        popTopScreen: jest.fn(),
     };
 
     const baseProps = {
         actions,
         currentTeamId: 'someId',
-        navigator: {
-            setOnNavigatorEvent: jest.fn(),
-        },
         onSelect: jest.fn(),
         data: [{text: 'text', value: 'value'}],
         dataSource: null,

@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {doPostAction} from 'mattermost-redux/actions/posts';
+import {doPostActionWithCookie} from 'mattermost-redux/actions/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import ActionButton from './action_button';
@@ -18,7 +18,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            doPostAction,
+            doPostActionWithCookie,
         }, dispatch),
     };
 }

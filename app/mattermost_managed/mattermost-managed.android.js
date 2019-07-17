@@ -36,6 +36,8 @@ export default {
     },
     authenticate: LocalAuth.auth,
     blurAppScreen: MattermostManaged.blurAppScreen,
+    appGroupIdentifier: null,
+    hasSafeAreaInsets: null,
     isRunningInSplitView: MattermostManaged.isRunningInSplitView,
     getConfig: async () => {
         try {
