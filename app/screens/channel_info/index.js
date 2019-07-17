@@ -102,7 +102,7 @@ function mapStateToProps(state) {
         currentChannelGuestCount,
         currentUserId,
         isChannelMuted: isChannelMuted(currentChannelMember),
-        ignoreChannelMentions: currentChannelMember && areChannelMentionsIgnored(currentChannelMember.notify_props, currentUser.notify_props),
+        ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember && currentChannelMember.notify_props, currentUser.notify_props),
         isCurrent,
         isFavorite,
         status,
