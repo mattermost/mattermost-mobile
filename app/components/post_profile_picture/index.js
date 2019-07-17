@@ -20,20 +20,17 @@ function mapStateToProps(state, ownProps) {
     const post = ownProps.post;
     const user = getUser(state, post.user_id);
 
-    // if it's relative we assume it's a link to an emoji
-    const isEmoji = post?.props?.override_icon_url?.startsWith('/') || false; // eslint-disable-line camelcase
-
-    const overrideIconURL = Client4.getAbsoluteUrl(post?.props?.override_icon_url); // eslint-disable-line camelcase
+    const overrideIconUrl = Client4.getAbsoluteUrl(post?.props?.override_icon_url); // eslint-disable-line camelcase
 
     return {
         enablePostIconOverride: config.EnablePostIconOverride === 'true' && post?.props?.use_user_icon !== 'true', // eslint-disable-line camelcase
         fromWebHook: post?.props?.from_webhook === 'true', // eslint-disable-line camelcase
         isSystemMessage: isSystemMessage(post),
         fromAutoResponder: fromAutoResponder(post),
-        overrideIconUrl: overrideIconURL,
+        overrideIconUrl,
         userId: post.user_id,
         isBot: (user ? user.is_bot : false),
-        isEmoji,
+        isEmoji: post?.props?.override_icon_emoji?.length > 0, // eslint-disable-line camelcase
         theme: getTheme(state),
     };
 }
