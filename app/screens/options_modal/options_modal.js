@@ -75,6 +75,10 @@ export default class OptionsModal extends PureComponent {
         });
     };
 
+    onItemPress = () => {
+        this.close();
+    };
+
     render() {
         const {
             items,

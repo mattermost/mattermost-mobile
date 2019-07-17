@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
     InteractionManager,
     Keyboard,
     Platform,
@@ -21,6 +22,7 @@ import {debounce} from 'mattermost-redux/actions/helpers';
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {DeviceTypes, ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
+
 import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
@@ -424,9 +426,25 @@ export default class List extends PureComponent {
         }
     };
 
+    listContentPadding = () => {
+        if (DeviceTypes.IS_TABLET) {
+            return 64;
+        }
+
+        const {width, height} = Dimensions.get('window');
+        const landscape = width > height;
+        if (DeviceTypes.IS_IPHONE_X) {
+            return landscape ? 54 : 44;
+        }
+
+        return 64;
+    };
+
     render() {
         const {styles, theme} = this.props;
         const {sections, width, showIndicator} = this.state;
+
+        const paddingBottom = this.listContentPadding();
 
         return (
             <View
@@ -436,6 +454,7 @@ export default class List extends PureComponent {
                 <SectionList
                     ref='list'
                     sections={sections}
+                    contentContainerStyle={{paddingBottom}}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     keyExtractor={this.keyExtractor}

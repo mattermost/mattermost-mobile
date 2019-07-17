@@ -19,6 +19,8 @@ import {
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
+import {RequestStatus} from 'mattermost-redux/constants';
+
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -27,12 +29,11 @@ import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
+import {changeOpacity} from 'app/utils/theme';
 
 import telemetry from 'app/telemetry';
 
-import {RequestStatus} from 'mattermost-redux/constants';
-
-const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
+export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
 export default class Login extends PureComponent {
     static propTypes = {
@@ -411,6 +412,7 @@ export default class Login extends PureComponent {
                             onChangeText={this.props.actions.handleLoginIdChanged}
                             style={GlobalStyles.inputBox}
                             placeholder={this.createLoginPlaceholder()}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
                             autoCorrect={false}
                             autoCapitalize='none'
                             keyboardType='email-address'
@@ -426,6 +428,7 @@ export default class Login extends PureComponent {
                             onChangeText={this.props.actions.handlePasswordChanged}
                             style={GlobalStyles.inputBox}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
                             secureTextEntry={true}
                             autoCorrect={false}
                             autoCapitalize='none'
