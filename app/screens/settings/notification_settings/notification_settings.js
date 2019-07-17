@@ -26,11 +26,10 @@ class NotificationSettings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             updateMe: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }),
-        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
+        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         updateMeRequest: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
@@ -39,7 +38,7 @@ class NotificationSettings extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
         }
 
         const {updateMeRequest, intl} = nextProps;
@@ -62,65 +61,92 @@ class NotificationSettings extends PureComponent {
     });
 
     goToNotificationSettingsAutoResponder = () => {
-        const {actions, currentUser, intl} = this.props;
-        const screen = 'NotificationSettingsAutoResponder';
-        const title = intl.formatMessage({
-            id: 'mobile.notification_settings.auto_responder_short',
-            defaultMessage: 'Automatic Replies',
+        const {currentUser, intl, navigator, theme} = this.props;
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'NotificationSettingsAutoResponder',
+            title: intl.formatMessage({
+                id: 'mobile.notification_settings.auto_responder_short',
+                defaultMessage: 'Automatic Replies',
+            }),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                currentUser,
+                onBack: this.saveAutoResponder,
+            },
         });
-        const passProps = {
-            currentUser,
-            onBack: this.saveAutoResponder,
-        };
-
-        actions.goToScreen(screen, title, passProps);
     };
 
     goToNotificationSettingsEmail = () => {
-        const {actions, currentUser, intl} = this.props;
-        const screen = 'NotificationSettingsEmail';
-        const title = intl.formatMessage({
-            id: 'mobile.notification_settings.email_title',
-            defaultMessage: 'Email Notifications',
+        const {currentUser, intl, navigator, theme} = this.props;
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'NotificationSettingsEmail',
+            title: intl.formatMessage({
+                id: 'mobile.notification_settings.email_title',
+                defaultMessage: 'Email Notifications',
+            }),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                currentUser,
+            },
         });
-        const passProps = {
-            currentUser,
-        };
-
-        actions.goToScreen(screen, title, passProps);
     };
 
     goToNotificationSettingsMentions = () => {
-        const {actions, currentUser, intl} = this.props;
-        const screen = 'NotificationSettingsMentions';
-        const title = intl.formatMessage({
-            id: 'mobile.notification_settings.mentions_replies',
-            defaultMessage: 'Mentions and Replies',
+        const {currentUser, intl, navigator, theme} = this.props;
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'NotificationSettingsMentions',
+            title: intl.formatMessage({id: 'mobile.notification_settings.mentions_replies', defaultMessage: 'Mentions and Replies'}),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                currentUser,
+                onBack: this.saveNotificationProps,
+            },
         });
-        const passProps = {
-            currentUser,
-            onBack: this.saveNotificationProps,
-        };
-
-        actions.goToScreen(screen, title, passProps);
     };
 
     goToNotificationSettingsMobile = () => {
-        const {actions, currentUser, intl} = this.props;
-        const screen = 'NotificationSettingsMobile';
-        const title = intl.formatMessage({
-            id: 'mobile.notification_settings.mobile_title',
-            defaultMessage: 'Mobile Notifications',
-        });
+        const {currentUser, intl, navigator, theme} = this.props;
 
         NotificationPreferences.getPreferences().then((notificationPreferences) => {
-            const passProps = {
-                currentUser,
-                onBack: this.saveNotificationProps,
-                notificationPreferences,
-            };
             requestAnimationFrame(() => {
-                actions.goToScreen(screen, title, passProps);
+                navigator.push({
+                    backButtonTitle: '',
+                    screen: 'NotificationSettingsMobile',
+                    title: intl.formatMessage({id: 'mobile.notification_settings.mobile_title', defaultMessage: 'Mobile Notifications'}),
+                    animated: true,
+                    navigatorStyle: {
+                        navBarTextColor: theme.sidebarHeaderTextColor,
+                        navBarBackgroundColor: theme.sidebarHeaderBg,
+                        navBarButtonColor: theme.sidebarHeaderTextColor,
+                        screenBackgroundColor: theme.centerChannelBg,
+                    },
+                    passProps: {
+                        currentUser,
+                        onBack: this.saveNotificationProps,
+                        notificationPreferences,
+                    },
+                });
             });
         }).catch((e) => {
             Alert.alert('There was a problem getting the device preferences', e.message);

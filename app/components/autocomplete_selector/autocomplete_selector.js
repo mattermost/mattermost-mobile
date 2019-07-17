@@ -18,7 +18,6 @@ export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             setAutocompleteSelector: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         label: PropTypes.string,
         placeholder: PropTypes.string.isRequired,
@@ -29,6 +28,7 @@ export default class AutocompleteSelector extends PureComponent {
         showRequiredAsterisk: PropTypes.bool,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        navigator: PropTypes.object,
         onSelected: PropTypes.func,
         helpText: PropTypes.node,
         errorText: PropTypes.node,
@@ -96,12 +96,22 @@ export default class AutocompleteSelector extends PureComponent {
 
     goToSelectorScreen = preventDoubleTap(() => {
         const {formatMessage} = this.context.intl;
-        const {actions, dataSource, options, placeholder} = this.props;
-        const screen = 'SelectorScreen';
-        const title = placeholder || formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
+        const {navigator, theme, actions, dataSource, options, placeholder} = this.props;
 
         actions.setAutocompleteSelector(dataSource, this.handleSelect, options);
-        actions.goToScreen(screen, title);
+
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'SelectorScreen',
+            title: placeholder || formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'}),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        });
     });
 
     render() {

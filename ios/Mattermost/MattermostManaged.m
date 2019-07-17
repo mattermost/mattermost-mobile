@@ -68,7 +68,6 @@ RCT_EXPORT_MODULE();
 
   return @{
            @"hasSafeAreaInsets": @([self hasSafeAreaInsets]),
-           @"appGroupIdentifier": APP_GROUP_ID
            };
 }
 

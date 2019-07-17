@@ -266,11 +266,7 @@ function postVisibility(state = {}, action) {
     }
     case ViewTypes.INCREASE_POST_VISIBILITY: {
         const nextState = {...state};
-        if (nextState[action.data]) {
-            nextState[action.data] += action.amount;
-        } else {
-            nextState[action.data] = action.amount;
-        }
+        nextState[action.data] += action.amount;
         return nextState;
     }
     case ViewTypes.RECEIVED_FOCUSED_POST: {

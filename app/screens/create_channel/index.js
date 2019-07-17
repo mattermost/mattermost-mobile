@@ -4,14 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
-import {
-    setButtons,
-    dismissModal,
-    popTopScreen,
-} from 'app/actions/navigation';
 import {handleCreateChannel} from 'app/actions/views/create_channel';
+
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getDimensions} from 'app/selectors/device';
 
 import CreateChannel from './create_channel';
@@ -32,9 +27,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             handleCreateChannel,
-            setButtons,
-            dismissModal,
-            popTopScreen,
         }, dispatch),
     };
 }

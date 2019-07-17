@@ -22,7 +22,6 @@ import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/en
 import {canEditPost} from 'mattermost-redux/utils/post_utils';
 
 import {THREAD} from 'app/constants/screen';
-import {dismissModal, showModal} from 'app/actions/navigation';
 import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions} from 'app/selectors/device';
 
@@ -122,8 +121,6 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
-            dismissModal,
-            showModal,
         }, dispatch),
     };
 }

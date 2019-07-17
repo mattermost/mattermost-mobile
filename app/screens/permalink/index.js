@@ -17,17 +17,12 @@ import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {
-    goToScreen,
-    dismissModal,
-    dismissAllModals,
-    resetToChannel,
-} from 'app/actions/navigation';
-import {
     handleSelectChannel,
     loadThreadIfNecessary,
     setChannelDisplayName,
     setChannelLoading,
 } from 'app/actions/views/channel';
+import {showSearchModal} from 'app/actions/views/search';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
 import Permalink from './permalink';
@@ -79,10 +74,7 @@ function mapDispatchToProps(dispatch) {
             selectPost,
             setChannelDisplayName,
             setChannelLoading,
-            goToScreen,
-            dismissModal,
-            dismissAllModals,
-            resetToChannel,
+            showSearchModal,
         }, dispatch),
     };
 }

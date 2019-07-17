@@ -1,17 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 
-import {goToScreen} from 'app/actions/navigation';
-import {getAllowedThemes} from 'app/selectors/theme';
 import {isThemeSwitchingEnabled} from 'app/utils/theme';
 
 import DisplaySettings from './display_settings';
+import {getAllowedThemes} from 'app/selectors/theme';
 
 function mapStateToProps(state) {
     const enableTimezone = isTimezoneEnabled(state);
@@ -24,12 +22,4 @@ function mapStateToProps(state) {
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            goToScreen,
-        }, dispatch),
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(DisplaySettings);
+export default connect(mapStateToProps)(DisplaySettings);

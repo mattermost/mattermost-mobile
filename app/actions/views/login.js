@@ -11,7 +11,7 @@ import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {ViewTypes} from 'app/constants';
-import {setAppCredentials} from 'app/init/credentials';
+import {app} from 'app/mattermost';
 import PushNotifications from 'app/push_notifications';
 import {getDeviceTimezone} from 'app/utils/timezone';
 import {setCSRFFromCookie} from 'app/utils/security';
@@ -45,7 +45,7 @@ export function handleSuccessfulLogin() {
         const currentUserId = getCurrentUserId(state);
 
         await setCSRFFromCookie(url);
-        setAppCredentials(deviceToken, currentUserId, token, url);
+        app.setAppCredentials(deviceToken, currentUserId, token, url);
 
         const enableTimezone = isTimezoneEnabled(state);
         if (enableTimezone) {
@@ -56,6 +56,7 @@ export function handleSuccessfulLogin() {
             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
             data: {
                 url,
+                token,
             },
         });
 

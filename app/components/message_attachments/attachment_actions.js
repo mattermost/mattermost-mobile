@@ -10,12 +10,14 @@ import ActionButton from './action_button';
 export default class AttachmentActions extends PureComponent {
     static propTypes = {
         actions: PropTypes.array,
+        navigator: PropTypes.object.isRequired,
         postId: PropTypes.string.isRequired,
     };
 
     render() {
         const {
             actions,
+            navigator,
             postId,
         } = this.props;
 
@@ -41,6 +43,7 @@ export default class AttachmentActions extends PureComponent {
                         defaultOption={action.default_option}
                         options={action.options}
                         postId={postId}
+                        navigator={navigator}
                     />
                 );
                 break;
@@ -50,7 +53,6 @@ export default class AttachmentActions extends PureComponent {
                     <ActionButton
                         key={action.id}
                         id={action.id}
-                        cookie={action.cookie}
                         name={action.name}
                         postId={postId}
                     />

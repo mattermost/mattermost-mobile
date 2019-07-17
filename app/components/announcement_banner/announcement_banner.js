@@ -18,14 +18,12 @@ const {View: AnimatedView} = Animated;
 
 export default class AnnouncementBanner extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         bannerColor: PropTypes.string,
         bannerDismissed: PropTypes.bool,
         bannerEnabled: PropTypes.bool,
         bannerText: PropTypes.string,
         bannerTextColor: PropTypes.string,
+        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -54,16 +52,23 @@ export default class AnnouncementBanner extends PureComponent {
     }
 
     handlePress = () => {
-        const {actions} = this.props;
-        const {intl} = this.context;
+        const {navigator, theme} = this.props;
 
-        const screen = 'ExpandedAnnouncementBanner';
-        const title = intl.formatMessage({
-            id: 'mobile.announcement_banner.title',
-            defaultMessage: 'Announcement',
+        navigator.push({
+            screen: 'ExpandedAnnouncementBanner',
+            title: this.context.intl.formatMessage({
+                id: 'mobile.announcement_banner.title',
+                defaultMessage: 'Announcement',
+            }),
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
-
-        actions.goToScreen(screen, title);
     };
 
     toggleBanner = (show = true) => {

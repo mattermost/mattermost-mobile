@@ -11,22 +11,22 @@ import PostList from 'app/components/post_list';
 import ThreadIOS from './thread.ios';
 
 jest.mock('react-intl');
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        mergeOptions: jest.fn(),
-    },
-}));
 
 describe('thread', () => {
+    const navigator = {
+        dismissModal: jest.fn(),
+        pop: jest.fn(),
+        resetTo: jest.fn(),
+        setTitle: jest.fn(),
+    };
     const baseProps = {
         actions: {
             selectPost: jest.fn(),
-            popTopScreen: jest.fn(),
-            resetToChannel: jest.fn(),
         },
         channelId: 'channel_id',
         channelType: General.OPEN_CHANNEL,
         displayName: 'channel_display_name',
+        navigator,
         myMember: {last_viewed_at: 0, user_id: 'member_user_id'},
         rootId: 'root_id',
         theme: Preferences.THEMES.default,
@@ -55,19 +55,35 @@ describe('thread', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should call props.actions.resetToChannel on onCloseChannel', () => {
-        const passProps = {
-            disableTermsModal: true,
+    test('should call props.navigator on onCloseChannel', () => {
+        const channelScreen = {
+            screen: 'Channel',
+            title: '',
+            animated: false,
+            backButtonTitle: '',
+            navigatorStyle: {
+                animated: true,
+                animationType: 'fade',
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+            },
+            passProps: {
+                disableTermsModal: true,
+            },
         };
+        const newNavigator = {...navigator};
         const wrapper = shallow(
             <ThreadIOS
                 {...baseProps}
+                navigator={newNavigator}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
         wrapper.instance().onCloseChannel();
-        expect(baseProps.actions.resetToChannel).toHaveBeenCalledTimes(1);
-        expect(baseProps.actions.resetToChannel).toBeCalledWith(passProps);
+        expect(newNavigator.resetTo).toHaveBeenCalledTimes(1);
+        expect(newNavigator.resetTo).toBeCalledWith(channelScreen);
     });
 
     test('should match snapshot, render footer', () => {

@@ -24,6 +24,7 @@ import okhttp3.Response;
 import com.mattermost.react_native_interface.ResolvePromise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
+import com.oblador.keychain.KeychainModule;
 
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 
@@ -46,19 +47,27 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
             final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
             final int notificationId = intent.getIntExtra(CustomPushNotification.NOTIFICATION_ID, -1);
+            final KeychainModule keychainModule = new KeychainModule(reactApplicationContext);
 
-
-            MattermostCredentialsHelper.getCredentialsForCurrentServer(reactApplicationContext, new ResolvePromise() {
+            keychainModule.getGenericPasswordForOptions(null, new ResolvePromise() {
                 @Override
                 public void resolve(@Nullable Object value) {
                     if (value instanceof Boolean && !(Boolean)value) {
+                        String channelId = bundle.getString("channel_id");
+                        onReplyFailed(notificationManager, notificationId, channelId);
                         return;
                     }
 
                     WritableMap map = (WritableMap) value;
                     if (map != null) {
-                        String token = map.getString("password");
-                        String serverUrl = map.getString("service");
+                        String[] credentials = map.getString("password").split(",[ ]*");
+                        String token = null;
+                        String serverUrl = null;
+                        if (credentials.length == 2) {
+                            token = credentials[0];
+                            serverUrl = credentials[1];
+
+                        }
 
                         Log.i("ReactNative", String.format("URL=%s TOKEN=%s", serverUrl, token));
                         replyToMessage(serverUrl, token, notificationId, message);
@@ -70,11 +79,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
     protected void replyToMessage(final String serverUrl, final String token, final int notificationId, final CharSequence message) {
         final String channelId = bundle.getString("channel_id");
-        final String postId = bundle.getString("post_id");
-        String rootId = bundle.getString("root_id");
-        if (android.text.TextUtils.isEmpty(rootId)) {
-            rootId = postId;
-        }
+        final String rootId = bundle.getString("post_id");
 
         if (token == null || serverUrl == null) {
             onReplyFailed(notificationManager, notificationId, channelId);

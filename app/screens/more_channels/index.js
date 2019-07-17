@@ -12,11 +12,10 @@ import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
+
+import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-
-import {setButtons, dismissModal, goToScreen} from 'app/actions/navigation';
-import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
 
 import MoreChannels from './more_channels';
 
@@ -54,9 +53,6 @@ function mapDispatchToProps(dispatch) {
             getChannels,
             searchChannels,
             setChannelDisplayName,
-            setButtons,
-            dismissModal,
-            goToScreen,
         }, dispatch),
     };
 }

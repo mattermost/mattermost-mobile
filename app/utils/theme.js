@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {StyleSheet} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import * as ThemeUtils from 'mattermost-redux/utils/theme_utils';
 
@@ -20,21 +19,12 @@ export function concatStyles(...styles) {
     return [].concat(styles);
 }
 
-export function setNavigatorStyles(componentId, theme) {
-    Navigation.mergeOptions(componentId, {
-        topBar: {
-            title: {
-                color: theme.sidebarHeaderTextColor,
-            },
-            background: {
-                color: theme.sidebarHeaderBg,
-            },
-            leftButtonColor: theme.sidebarHeaderTextColor,
-            rightButtonColor: theme.sidebarHeaderTextColor,
-        },
-        layout: {
-            backgroundColor: theme.centerChannelBg,
-        },
+export function setNavigatorStyles(navigator, theme) {
+    navigator.setStyle({
+        navBarTextColor: theme.sidebarHeaderTextColor,
+        navBarBackgroundColor: theme.sidebarHeaderBg,
+        navBarButtonColor: theme.sidebarHeaderTextColor,
+        screenBackgroundColor: theme.centerChannelBg,
     });
 }
 

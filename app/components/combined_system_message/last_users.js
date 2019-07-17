@@ -53,6 +53,7 @@ export default class LastUsers extends React.PureComponent {
     static propTypes = {
         actor: PropTypes.string,
         expandedLocale: PropTypes.object.isRequired,
+        navigator: PropTypes.object.isRequired,
         postType: PropTypes.string.isRequired,
         style: PropTypes.object.isRequired,
         textStyles: PropTypes.object,
@@ -87,6 +88,7 @@ export default class LastUsers extends React.PureComponent {
         const {
             actor,
             expandedLocale,
+            navigator,
             style,
             textStyles,
             usernames,
@@ -104,6 +106,7 @@ export default class LastUsers extends React.PureComponent {
         return (
             <Markdown
                 baseTextStyle={style.baseText}
+                navigator={navigator}
                 textStyles={textStyles}
                 value={formattedMessage}
             />
@@ -113,6 +116,7 @@ export default class LastUsers extends React.PureComponent {
     renderCollapsedView = () => {
         const {
             actor,
+            navigator,
             postType,
             style,
             textStyles,
@@ -130,6 +134,7 @@ export default class LastUsers extends React.PureComponent {
                     defaultMessage={'{firstUser} and '}
                     values={{firstUser}}
                     baseTextStyle={style.baseText}
+                    navigator={navigator}
                     style={style.baseText}
                     textStyles={textStyles}
                     theme={theme}
@@ -150,6 +155,7 @@ export default class LastUsers extends React.PureComponent {
                     defaultMessage={typeMessage[postType].defaultMessage}
                     values={{actor}}
                     baseTextStyle={style.baseText}
+                    navigator={navigator}
                     style={style.baseText}
                     textStyles={textStyles}
                     theme={theme}

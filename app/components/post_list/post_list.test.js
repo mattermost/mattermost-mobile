@@ -18,9 +18,11 @@ describe('PostList', () => {
             refreshChannelWithRetry: jest.fn(),
             selectFocusedPostId: jest.fn(),
             setDeepLinkURL: jest.fn(),
-            showModalOverCurrentContext: jest.fn(),
         },
         deepLinkURL: '',
+        navigator: {
+            showModal: jest.fn(),
+        },
         lastPostIndex: -1,
         postIds: ['post-id-1', 'post-id-2'],
         serverURL,
@@ -45,7 +47,7 @@ describe('PostList', () => {
         wrapper.setProps({deepLinkURL: deepLinks.permalink});
         expect(baseProps.actions.setDeepLinkURL).toHaveBeenCalled();
         expect(baseProps.actions.selectFocusedPostId).toHaveBeenCalled();
-        expect(baseProps.actions.showModalOverCurrentContext).toHaveBeenCalled();
+        expect(baseProps.navigator.showModal).toHaveBeenCalled();
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 

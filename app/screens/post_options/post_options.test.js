@@ -18,6 +18,12 @@ jest.mock('Alert', () => {
 });
 
 describe('PostOptions', () => {
+    const navigator = {
+        showModal: jest.fn(),
+        dismissModal: jest.fn(),
+        push: jest.fn(),
+    };
+
     const actions = {
         addReaction: jest.fn(),
         deletePost: jest.fn(),
@@ -26,8 +32,6 @@ describe('PostOptions', () => {
         removePost: jest.fn(),
         unflagPost: jest.fn(),
         unpinPost: jest.fn(),
-        dismissModal: jest.fn(),
-        showModal: jest.fn(),
     };
 
     const post = {
@@ -54,6 +58,7 @@ describe('PostOptions', () => {
         isMyPost: true,
         isSystemMessage: false,
         managedConfig: {},
+        navigator,
         post,
         showAddReaction: true,
         theme: Preferences.THEMES.default,

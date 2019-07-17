@@ -11,10 +11,12 @@ describe('Hashtag', () => {
     const baseProps = {
         hashtag: 'test',
         linkStyle: {color: 'red'},
-        actions: {
-            showSearchModal: jest.fn(),
+        navigator: {
             dismissAllModals: jest.fn(),
             popToRoot: jest.fn(),
+        },
+        actions: {
+            showSearchModal: jest.fn(),
         },
     };
 
@@ -33,9 +35,9 @@ describe('Hashtag', () => {
 
         wrapper.find(Text).simulate('press');
 
-        expect(props.actions.dismissAllModals).toHaveBeenCalled();
-        expect(props.actions.popToRoot).toHaveBeenCalled();
-        expect(props.actions.showSearchModal).toHaveBeenCalledWith('#test');
+        expect(props.navigator.dismissAllModals).toHaveBeenCalled();
+        expect(props.navigator.popToRoot).toHaveBeenCalled();
+        expect(props.actions.showSearchModal).toHaveBeenCalledWith(props.navigator, '#test');
     });
 
     test('should call onHashtagPress if provided', () => {
@@ -48,8 +50,8 @@ describe('Hashtag', () => {
 
         wrapper.find(Text).simulate('press');
 
-        expect(props.actions.dismissAllModals).not.toBeCalled();
-        expect(props.actions.popToRoot).not.toBeCalled();
+        expect(props.navigator.dismissAllModals).not.toBeCalled();
+        expect(props.navigator.popToRoot).not.toBeCalled();
         expect(props.actions.showSearchModal).not.toBeCalled();
 
         expect(props.onHashtagPress).toBeCalled();

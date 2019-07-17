@@ -13,6 +13,7 @@ export default class AttachmentPreText extends PureComponent {
         baseTextStyle: CustomPropTypes.Style.isRequired,
         blockStyles: PropTypes.object.isRequired,
         metadata: PropTypes.object,
+        navigator: PropTypes.object.isRequired,
         onPermalinkPress: PropTypes.func,
         textStyles: PropTypes.object.isRequired,
         value: PropTypes.string,
@@ -23,6 +24,7 @@ export default class AttachmentPreText extends PureComponent {
             baseTextStyle,
             blockStyles,
             metadata,
+            navigator,
             onPermalinkPress,
             value,
             textStyles,
@@ -40,6 +42,7 @@ export default class AttachmentPreText extends PureComponent {
                     blockStyles={blockStyles}
                     imagesMetadata={metadata?.images}
                     value={value}
+                    navigator={navigator}
                     onPermalinkPress={onPermalinkPress}
                 />
             </View>

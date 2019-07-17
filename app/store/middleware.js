@@ -172,10 +172,6 @@ function resetStateForNewVersion(action) {
             selectServer,
             recentEmojis,
         },
-        websocket: {
-            lastConnectAt: payload.websocket?.lastConnectAt,
-            lastDisconnectAt: payload.websocket?.lastDisconnectAt,
-        },
     };
 
     return {
@@ -331,10 +327,6 @@ export function cleanUpState(action, keepCurrent = false) {
                 ...resetPayload.views.channel,
                 ...payload.views.channel,
             },
-        },
-        websocket: {
-            lastConnectAt: payload.websocket?.lastConnectAt,
-            lastDisconnectAt: payload.websocket?.lastDisconnectAt,
         },
     };
 

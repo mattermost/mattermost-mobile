@@ -33,15 +33,13 @@ const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
 export default class MarkdownImage extends React.Component {
     static propTypes = {
-        actions: PropTypes.shape({
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-        }).isRequired,
         children: PropTypes.node,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         imagesMetadata: PropTypes.object,
         linkDestination: PropTypes.string,
         isReplyPost: PropTypes.bool,
+        navigator: PropTypes.object.isRequired,
         serverURL: PropTypes.string.isRequired,
         source: PropTypes.string.isRequired,
         errorTextStyle: CustomPropTypes.Style,
@@ -177,7 +175,6 @@ export default class MarkdownImage extends React.Component {
             originalWidth,
             uri,
         } = this.state;
-        const {actions} = this.props;
         const link = this.getSource();
         let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
         const extension = filename.split('.').pop();
@@ -198,8 +195,7 @@ export default class MarkdownImage extends React.Component {
                 localPath: uri,
             },
         }];
-
-        previewImageAtIndex([this.refs.item], 0, files, actions.showModalOverCurrentContext);
+        previewImageAtIndex(this.props.navigator, [this.refs.item], 0, files);
     };
 
     loadImageSize = (source) => {

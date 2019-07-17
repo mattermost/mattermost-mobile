@@ -177,6 +177,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
         currentUserId: PropTypes.string.isRequired,
         currentUsername: PropTypes.string.isRequired,
         messageData: PropTypes.array.isRequired,
+        navigator: PropTypes.object.isRequired,
         showJoinLeave: PropTypes.bool.isRequired,
         textStyles: PropTypes.object,
         theme: PropTypes.object.isRequired,
@@ -265,6 +266,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
         const {
             currentUserId,
             currentUsername,
+            navigator,
             textStyles,
             theme,
         } = this.props;
@@ -283,6 +285,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
                 <LastUsers
                     actor={actor}
                     expandedLocale={postTypeMessage[postType].many_expanded}
+                    navigator={navigator}
                     postType={postType}
                     style={style}
                     textStyles={textStyles}
@@ -311,6 +314,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
         return (
             <Markdown
                 baseTextStyle={style.baseText}
+                navigator={navigator}
                 textStyles={textStyles}
                 value={formattedMessage}
             />

@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 
@@ -20,25 +19,24 @@ export default class ChannelPeek extends PureComponent {
         channelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string,
         lastViewedAt: PropTypes.number,
-        postIds: PropTypes.array,
+        navigator: PropTypes.object,
+        postIds: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
+        postIds: [],
         postVisibility: 15,
     };
 
     constructor(props) {
         super(props);
 
+        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.actions.loadPostsIfNecessaryWithRetry(props.channelId);
         this.state = {
             visiblePostIds: this.getVisiblePostIds(props),
         };
-    }
-
-    componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -55,15 +53,17 @@ export default class ChannelPeek extends PureComponent {
         });
     }
 
-    navigationButtonPressed({buttonId}) {
-        if (buttonId === 'action-mark-as-read') {
-            const {actions, channelId} = this.props;
-            actions.markChannelViewedAndRead(channelId);
-        }
-    }
-
     getVisiblePostIds = (props) => {
-        return props.postIds?.slice(0, 15) || [];
+        return props.postIds.slice(0, 15);
+    };
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'PreviewActionPress') {
+            if (event.id === 'action-mark-as-read') {
+                const {actions, channelId} = this.props;
+                actions.markChannelViewedAndRead(channelId);
+            }
+        }
     };
 
     render() {
@@ -71,6 +71,7 @@ export default class ChannelPeek extends PureComponent {
             channelId,
             currentUserId,
             lastViewedAt,
+            navigator,
             theme,
         } = this.props;
 
@@ -87,6 +88,7 @@ export default class ChannelPeek extends PureComponent {
                     currentUserId={currentUserId}
                     lastViewedAt={lastViewedAt}
                     channelId={channelId}
+                    navigator={navigator}
                 />
             </View>
         );

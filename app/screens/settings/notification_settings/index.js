@@ -11,8 +11,6 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {updateMe} from 'mattermost-redux/actions/users';
 
-import {goToScreen} from 'app/actions/navigation';
-
 import NotificationSettings from './notification_settings';
 
 function mapStateToProps(state) {
@@ -37,7 +35,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             updateMe,
-            goToScreen,
         }, dispatch),
     };
 }

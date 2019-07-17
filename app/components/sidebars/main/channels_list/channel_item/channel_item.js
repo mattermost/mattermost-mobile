@@ -2,17 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
+import {General} from 'mattermost-redux/constants';
+
 import PropTypes from 'prop-types';
 import {
     Animated,
+    Platform,
     TouchableHighlight,
     Text,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import {Navigation} from 'react-native-navigation';
-
-import {General} from 'mattermost-redux/constants';
 
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
@@ -32,6 +32,7 @@ export default class ChannelItem extends PureComponent {
         isUnread: PropTypes.bool,
         hasDraft: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
+        navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         shouldHideChannel: PropTypes.bool,
         showUnreadForMsgs: PropTypes.bool.isRequired,
@@ -39,7 +40,6 @@ export default class ChannelItem extends PureComponent {
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
         isBot: PropTypes.bool.isRequired,
-        previewChannel: PropTypes.func,
     };
 
     static defaultProps = {
@@ -58,25 +58,28 @@ export default class ChannelItem extends PureComponent {
         });
     });
 
-    onPreview = ({reactTag}) => {
-        const {channelId, previewChannel} = this.props;
-        if (previewChannel) {
+    onPreview = () => {
+        const {channelId, navigator} = this.props;
+        if (Platform.OS === 'ios' && navigator && this.previewRef) {
             const {intl} = this.context;
-            const passProps = {
-                channelId,
-            };
-            const options = {
-                preview: {
-                    reactTag,
-                    actions: [{
-                        id: 'action-mark-as-read',
-                        title: intl.formatMessage({id: 'mobile.channel.markAsRead', defaultMessage: 'Mark As Read'}),
-                    }],
-                },
-            };
 
-            previewChannel(passProps, options);
+            navigator.push({
+                screen: 'ChannelPeek',
+                previewCommit: false,
+                previewView: this.previewRef,
+                previewActions: [{
+                    id: 'action-mark-as-read',
+                    title: intl.formatMessage({id: 'mobile.channel.markAsRead', defaultMessage: 'Mark As Read'}),
+                }],
+                passProps: {
+                    channelId,
+                },
+            });
         }
+    };
+
+    setPreviewRef = (ref) => {
+        this.previewRef = ref;
     };
 
     showChannelAsUnread = () => {
@@ -187,12 +190,11 @@ export default class ChannelItem extends PureComponent {
         );
 
         return (
-            <AnimatedView>
-                <Navigation.TouchablePreview
-                    touchableComponent={TouchableHighlight}
+            <AnimatedView ref={this.setPreviewRef}>
+                <TouchableHighlight
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                     onPress={this.onPress}
-                    onPressIn={this.onPreview}
+                    onLongPress={this.onPreview}
                 >
                     <View style={[style.container, mutedStyle]}>
                         {extraBorder}
@@ -208,7 +210,7 @@ export default class ChannelItem extends PureComponent {
                             {badge}
                         </View>
                     </View>
-                </Navigation.TouchablePreview>
+                </TouchableHighlight>
             </AnimatedView>
         );
     }

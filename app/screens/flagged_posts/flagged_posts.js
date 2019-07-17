@@ -11,7 +11,6 @@ import {
     SafeAreaView,
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
 
@@ -36,11 +35,10 @@ export default class FlaggedPosts extends PureComponent {
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
             showSearchModal: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         didFail: PropTypes.bool,
         isLoading: PropTypes.bool,
+        navigator: PropTypes.object,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
     };
@@ -56,35 +54,37 @@ export default class FlaggedPosts extends PureComponent {
     constructor(props) {
         super(props);
 
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.actions.clearSearch();
         props.actions.getFlaggedPosts();
     }
 
-    componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
-
-    navigationButtonPressed({buttonId}) {
-        if (buttonId === 'close-settings') {
-            this.props.actions.dismissModal();
-        }
-    }
-
     goToThread = (post) => {
-        const {actions} = this.props;
+        const {actions, navigator, theme} = this.props;
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
-        const screen = 'Thread';
-        const title = '';
-        const passProps = {
-            channelId,
-            rootId,
-        };
 
         Keyboard.dismiss();
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
-        actions.goToScreen(screen, title, passProps);
+
+        const options = {
+            screen: 'Thread',
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                channelId,
+                rootId,
+            },
+        };
+
+        navigator.push(options);
     };
 
     handleClosePermalink = () => {
@@ -99,14 +99,24 @@ export default class FlaggedPosts extends PureComponent {
     };
 
     handleHashtagPress = async (hashtag) => {
-        const {actions} = this.props;
+        const {actions, navigator} = this.props;
 
-        await actions.dismissModal();
+        await navigator.dismissModal();
 
-        actions.showSearchModal('#' + hashtag);
+        actions.showSearchModal(navigator, '#' + hashtag);
     };
 
     keyExtractor = (item) => item;
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            if (event.id === 'close-settings') {
+                this.props.navigator.dismissModal({
+                    animationType: 'slide-down',
+                });
+            }
+        }
+    };
 
     previewPost = (post) => {
         Keyboard.dismiss();
@@ -157,6 +167,7 @@ export default class FlaggedPosts extends PureComponent {
                     previewPost={this.previewPost}
                     highlightPinnedOrFlagged={false}
                     goToThread={this.goToThread}
+                    navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={mattermostManaged.getCachedConfig()}
@@ -170,24 +181,29 @@ export default class FlaggedPosts extends PureComponent {
     };
 
     showPermalinkView = (postId, isPermalink) => {
-        const {actions} = this.props;
+        const {actions, navigator} = this.props;
 
         actions.selectFocusedPostId(postId);
 
         if (!this.showingPermalink) {
-            const screen = 'Permalink';
-            const passProps = {
-                isPermalink,
-                onClose: this.handleClosePermalink,
-            };
             const options = {
-                layout: {
-                    backgroundColor: changeOpacity('#000', 0.2),
+                screen: 'Permalink',
+                animationType: 'none',
+                backButtonTitle: '',
+                overrideBackPress: true,
+                navigatorStyle: {
+                    navBarHidden: true,
+                    screenBackgroundColor: changeOpacity('#000', 0.2),
+                    modalPresentationStyle: 'overCurrentContext',
+                },
+                passProps: {
+                    isPermalink,
+                    onClose: this.handleClosePermalink,
                 },
             };
 
             this.showingPermalink = true;
-            actions.showModalOverCurrentContext(screen, passProps, options);
+            navigator.showModal(options);
         }
     };
 

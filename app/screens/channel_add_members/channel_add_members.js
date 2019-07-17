@@ -9,7 +9,6 @@ import {
     Platform,
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
@@ -33,15 +32,13 @@ export default class ChannelAddMembers extends PureComponent {
             getProfilesNotInChannel: PropTypes.func.isRequired,
             handleAddChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         currentChannelId: PropTypes.string.isRequired,
         currentChannelGroupConstrained: PropTypes.bool,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         profilesNotInChannel: PropTypes.array.isRequired,
+        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
 
@@ -69,20 +66,19 @@ export default class ChannelAddMembers extends PureComponent {
         };
 
         this.addButton = {
-            enalbed: false,
+            disabled: true,
             id: 'add-members',
-            text: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
+            title: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
             showAsAction: 'always',
         };
 
-        props.actions.setButtons(props.componentId, {
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        props.navigator.setButtons({
             rightButtons: [this.addButton],
         });
     }
 
     componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-
         const {actions, currentTeamId} = this.props;
 
         actions.getTeamStats(currentTeamId);
@@ -92,20 +88,14 @@ export default class ChannelAddMembers extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {componentId, theme} = this.props;
+        const {navigator, theme} = this.props;
         const {adding, selectedIds} = this.state;
         const enabled = Object.keys(selectedIds).length > 0 && !adding;
 
         this.enableAddOption(enabled);
 
         if (theme !== prevProps.theme) {
-            setNavigatorStyles(componentId, theme);
-        }
-    }
-
-    navigationButtonPressed({buttonId}) {
-        if (buttonId === this.addButton.id) {
-            this.handleAddMembersPress();
+            setNavigatorStyles(navigator, theme);
         }
     }
 
@@ -114,13 +104,12 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     close = () => {
-        this.props.actions.popTopScreen();
+        this.props.navigator.pop({animated: true});
     };
 
     enableAddOption = (enabled) => {
-        const {actions, componentId} = this.props;
-        actions.setButtons(componentId, {
-            rightButtons: [{...this.addButton, enabled}],
+        this.props.navigator.setButtons({
+            rightButtons: [{...this.addButton, disabled: !enabled}],
         });
     };
 
@@ -197,6 +186,14 @@ export default class ChannelAddMembers extends PureComponent {
         this.setState({
             loading: false,
         });
+    };
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            if (event.id === this.addButton.id) {
+                this.handleAddMembersPress();
+            }
+        }
     };
 
     onSearch = (text) => {

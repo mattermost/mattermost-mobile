@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
 
@@ -22,10 +21,10 @@ export default class InteractiveDialog extends PureComponent {
         elements: PropTypes.arrayOf(PropTypes.object).isRequired,
         notifyOnCancel: PropTypes.bool,
         state: PropTypes.string,
+        navigator: PropTypes.object,
         theme: PropTypes.object,
         actions: PropTypes.shape({
             submitInteractiveDialog: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -36,6 +35,8 @@ export default class InteractiveDialog extends PureComponent {
 
     constructor(props) {
         super(props);
+
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         const values = {};
         props.elements.forEach((e) => {
@@ -49,21 +50,19 @@ export default class InteractiveDialog extends PureComponent {
         };
     }
 
-    componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
-
-    navigationButtonPressed({buttonId}) {
-        switch (buttonId) {
-        case 'submit-dialog':
-            this.handleSubmit();
-            break;
-        case 'close-dialog':
-            this.notifyOnCancelIfNeeded();
-            this.handleHide();
-            break;
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            switch (event.id) {
+            case 'submit-dialog':
+                this.handleSubmit();
+                break;
+            case 'close-dialog':
+                this.notifyOnCancelIfNeeded();
+                this.handleHide();
+                break;
+            }
         }
-    }
+    };
 
     handleSubmit = async () => {
         const {elements} = this.props;
@@ -136,7 +135,9 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     handleHide = () => {
-        this.props.actions.dismissModal();
+        this.props.navigator.dismissModal({
+            animationType: 'slide-down',
+        });
     }
 
     onChange = (name, value) => {
@@ -145,7 +146,7 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     render() {
-        const {elements, theme} = this.props;
+        const {elements, theme, navigator} = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -170,6 +171,7 @@ export default class InteractiveDialog extends PureComponent {
                                 options={e.options}
                                 value={this.state.values[e.name]}
                                 onChange={this.onChange}
+                                navigator={navigator}
                                 theme={theme}
                             />
                         );

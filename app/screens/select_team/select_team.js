@@ -10,7 +10,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -45,11 +44,9 @@ export default class SelectTeam extends PureComponent {
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
+        navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object,
@@ -62,6 +59,7 @@ export default class SelectTeam extends PureComponent {
 
     constructor(props) {
         super(props);
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         this.state = {
             loading: false,
@@ -73,31 +71,16 @@ export default class SelectTeam extends PureComponent {
     }
 
     componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-
         this.getTeams();
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
         }
 
         if (this.props.teams !== nextProps.teams) {
             this.buildData(nextProps);
-        }
-    }
-
-    navigationButtonPressed({buttonId}) {
-        const {logout} = this.props.actions;
-
-        switch (buttonId) {
-        case 'close-teams':
-            this.close();
-            break;
-        case 'logout':
-            InteractionManager.runAfterInteractions(logout);
-            break;
         }
     }
 
@@ -125,15 +108,42 @@ export default class SelectTeam extends PureComponent {
     };
 
     close = () => {
-        this.props.actions.dismissModal();
+        this.props.navigator.dismissModal({
+            animationType: 'slide-down',
+        });
     };
 
     goToChannelView = () => {
-        const passProps = {
-            disableTermsModal: true,
-        };
+        const {navigator, theme} = this.props;
 
-        this.props.actions.resetToChannel(passProps);
+        navigator.resetTo({
+            screen: 'Channel',
+            animated: false,
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                disableTermsModal: true,
+            },
+        });
+    };
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            const {logout} = this.props.actions;
+
+            switch (event.id) {
+            case 'close-teams':
+                this.close();
+                break;
+            case 'logout':
+                InteractionManager.runAfterInteractions(logout);
+                break;
+            }
+        }
     };
 
     onSelectTeam = async (team) => {

@@ -9,10 +9,8 @@ import ReactionRow from './reaction_row';
 
 describe('ReactionRow', () => {
     const baseProps = {
-        actions: {
-            goToScreen: jest.fn(),
-        },
         emojiName: 'smile',
+        navigator: {},
         teammateNameDisplay: 'username',
         theme: Preferences.THEMES.default,
         user: {id: 'user_id', username: 'username'},

@@ -46,9 +46,9 @@ export default class ChannelSidebar extends Component {
         currentUserId: PropTypes.string.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        navigator: PropTypes.object,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
-        previewChannel: PropTypes.func,
     };
 
     static contextTypes = {
@@ -143,7 +143,7 @@ export default class ChannelSidebar extends Component {
     };
 
     handleShowDrawerContent = () => {
-        requestAnimationFrame(() => this.setState({show: true}));
+        this.setState({show: true});
     };
 
     closeChannelDrawer = () => {
@@ -315,9 +315,9 @@ export default class ChannelSidebar extends Component {
 
     renderNavigationView = (drawerWidth) => {
         const {
+            navigator,
             teamsCount,
             theme,
-            previewChannel,
         } = this.props;
 
         const {
@@ -349,6 +349,7 @@ export default class ChannelSidebar extends Component {
                 >
                     <TeamsList
                         closeChannelDrawer={this.closeChannelDrawer}
+                        navigator={navigator}
                     />
                 </View>
             );
@@ -362,6 +363,7 @@ export default class ChannelSidebar extends Component {
             >
                 <ChannelsList
                     ref={this.channelListRef}
+                    navigator={navigator}
                     onSelectChannel={this.selectChannel}
                     onJoinChannel={this.joinChannel}
                     onShowTeams={this.showTeams}
@@ -369,7 +371,6 @@ export default class ChannelSidebar extends Component {
                     onSearchEnds={this.onSearchEnds}
                     theme={theme}
                     drawerOpened={this.state.drawerOpened}
-                    previewChannel={previewChannel}
                 />
             </View>
         );
@@ -379,6 +380,7 @@ export default class ChannelSidebar extends Component {
                 navBarBackgroundColor={theme.sidebarBg}
                 backgroundColor={theme.sidebarHeaderBg}
                 footerColor={theme.sidebarHeaderBg}
+                navigator={navigator}
             >
                 <DrawerSwiper
                     ref={this.drawerSwiperRef}

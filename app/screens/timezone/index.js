@@ -10,7 +10,6 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getUserTimezone} from 'mattermost-redux/selectors/entities/timezone';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
-import {goToScreen} from 'app/actions/navigation';
 import {updateUser} from 'app/actions/views/edit_profile';
 
 import Timezone from './timezone';
@@ -33,7 +32,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getSupportedTimezones,
             updateUser,
-            goToScreen,
         }, dispatch),
     };
 }

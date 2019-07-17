@@ -21,7 +21,7 @@ import {
 } from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
-import {getTeamMembersByIds, selectTeam} from 'mattermost-redux/actions/teams';
+import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
 import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
@@ -54,8 +54,8 @@ import {isDirectChannelVisible, isGroupChannelVisible} from 'app/utils/channels'
 const MAX_POST_TRIES = 3;
 
 export function loadChannelsIfNecessary(teamId) {
-    return async (dispatch) => {
-        await dispatch(fetchMyChannelsAndMembers(teamId));
+    return async (dispatch, getState) => {
+        await fetchMyChannelsAndMembers(teamId)(dispatch, getState);
     };
 }
 
@@ -198,7 +198,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
                 });
             }
         } else {
-            const {lastConnectAt} = state.websocket;
+            const {lastConnectAt} = state.device.websocket;
             const lastGetPosts = state.views.channel.lastGetPosts[channelId];
 
             let since;
@@ -378,7 +378,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
         }
 
-        const actions = [
+        dispatch(batchActions([
             selectChannel(channelId),
             setChannelDisplayName(channel.display_name),
             {
@@ -391,29 +391,18 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
                 teamId: currentTeamId,
                 channelId,
             },
-        ];
-
-        let markPreviousChannelId;
-        if (!fromPushNotification && !sameChannel) {
-            markPreviousChannelId = currentChannelId;
-            actions.push({
-                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-                data: currentChannelId,
-                channel: getChannel(state, currentChannelId),
-                member: getMyChannelMember(state, currentChannelId),
-            });
-        }
-
-        if (!fromPushNotification) {
-            actions.push({
+            {
                 type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
                 data: channelId,
                 channel,
                 member,
-            });
-        }
+            },
+        ]));
 
-        dispatch(batchActions(actions));
+        let markPreviousChannelId;
+        if (!fromPushNotification && !sameChannel) {
+            markPreviousChannelId = currentChannelId;
+        }
 
         dispatch(markChannelViewedAndRead(channelId, markPreviousChannelId));
     };
@@ -427,12 +416,6 @@ export function handleSelectChannelByName(channelName, teamName) {
         const currentTeamName = currentTeam?.name;
         const {data: channel} = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const currentChannelId = getCurrentChannelId(state);
-
-        if (teamName && teamName !== currentTeamName) {
-            const team = getTeamByName(state, teamName);
-            dispatch(selectTeam(team));
-        }
-
         if (channel && currentChannelId !== channel.id) {
             dispatch(handleSelectChannel(channel.id));
         }

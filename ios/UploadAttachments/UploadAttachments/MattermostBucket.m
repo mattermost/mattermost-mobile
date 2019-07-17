@@ -32,13 +32,8 @@
   if(![fileManager fileExistsAtPath:filePath]) {
     return nil;
   }
-
   NSData *data = [NSData dataWithContentsOfFile:filePath];
-  if (data != nil) {
-    return [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-  }
-
-  return nil;
+  return [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
 }
 
 -(void)removeFile:(NSString *)fileName {

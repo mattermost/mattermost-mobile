@@ -7,10 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7F80232C229C91AD0034D6D4 /* MMMConstants.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7FABE054221387B500D0F595 /* MMMConstants.h */; };
-		7F82907122C295AC0035544F /* MMKeychainManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F82907022C295AC0035544F /* MMKeychainManager.m */; };
-		7F82907322C296970035544F /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F82907222C296970035544F /* Security.framework */; };
-		7F82907522C296A10035544F /* LocalAuthentication.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F82907422C296A10035544F /* LocalAuthentication.framework */; };
+		7F80232C229C91AD0034D6D4 /* Constants.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7FABE054221387B500D0F595 /* Constants.h */; };
 		7FABE04E2213818A00D0F595 /* MattermostBucket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE04C2213818900D0F595 /* MattermostBucket.m */; };
 		7FABE055221387B500D0F595 /* MMMConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE053221387B400D0F595 /* MMMConstants.m */; };
 		7FABE058221388D700D0F595 /* UploadSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE057221388D600D0F595 /* UploadSessionManager.swift */; };
@@ -28,17 +25,13 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				7F80232C229C91AD0034D6D4 /* MMMConstants.h in CopyFiles */,
+				7F80232C229C91AD0034D6D4 /* Constants.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		7F82906F22C295AB0035544F /* MMKeychainManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMKeychainManager.h; sourceTree = "<group>"; };
-		7F82907022C295AC0035544F /* MMKeychainManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMKeychainManager.m; sourceTree = "<group>"; };
-		7F82907222C296970035544F /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		7F82907422C296A10035544F /* LocalAuthentication.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LocalAuthentication.framework; path = System/Library/Frameworks/LocalAuthentication.framework; sourceTree = SDKROOT; };
 		7FABE03622137F2900D0F595 /* libUploadAttachments.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libUploadAttachments.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FABE04B2213818900D0F595 /* UploadAttachments-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UploadAttachments-Bridging-Header.h"; sourceTree = "<group>"; };
 		7FABE04C2213818900D0F595 /* MattermostBucket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MattermostBucket.m; sourceTree = "<group>"; };
@@ -59,29 +52,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7F82907522C296A10035544F /* LocalAuthentication.framework in Frameworks */,
-				7F82907322C296970035544F /* Security.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		7F82901A22C28F770035544F /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				7F82907422C296A10035544F /* LocalAuthentication.framework */,
-				7F82907222C296970035544F /* Security.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		7FABE02D22137F2900D0F595 = {
 			isa = PBXGroup;
 			children = (
 				7FABE03822137F2900D0F595 /* UploadAttachments */,
 				7FABE03722137F2900D0F595 /* Products */,
-				7F82901A22C28F770035544F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -96,8 +77,6 @@
 		7FABE03822137F2900D0F595 /* UploadAttachments */ = {
 			isa = PBXGroup;
 			children = (
-				7F82906F22C295AB0035544F /* MMKeychainManager.h */,
-				7F82907022C295AC0035544F /* MMKeychainManager.m */,
 				7FABE05A2213892100D0F595 /* AttachmentArray.swift */,
 				7FABE0592213892100D0F595 /* AttachmentItem.swift */,
 				7FABE054221387B500D0F595 /* MMMConstants.h */,
@@ -196,7 +175,6 @@
 			files = (
 				7FABE05C2213892200D0F595 /* AttachmentArray.swift in Sources */,
 				7FABE0FA2214674200D0F595 /* StoreManager.m in Sources */,
-				7F82907122C295AC0035544F /* MMKeychainManager.m in Sources */,
 				7FABE058221388D700D0F595 /* UploadSessionManager.swift in Sources */,
 				7FABE0F7221466F900D0F595 /* UploadManager.swift in Sources */,
 				7FABE04E2213818A00D0F595 /* MattermostBucket.m in Sources */,
@@ -331,7 +309,6 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
-				HEADER_SEARCH_PATHS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -354,7 +331,6 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
-				HEADER_SEARCH_PATHS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

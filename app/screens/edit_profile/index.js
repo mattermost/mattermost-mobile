@@ -8,7 +8,6 @@ import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
-import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import {setProfileImageUri, removeProfileImage, updateUser} from 'app/actions/views/edit_profile';
 
 import EditProfile from './edit_profile';
@@ -16,7 +15,7 @@ import EditProfile from './edit_profile';
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
     const {serverVersion} = state.entities.general;
-    const {auth_service: service} = ownProps.currentUser;
+    const {service} = ownProps.currentUser;
 
     const firstNameDisabled = (service === 'ldap' && config.LdapFirstNameAttributeSet === 'true') ||
         (service === 'saml' && config.SamlFirstNameAttributeSet === 'true');
@@ -50,9 +49,6 @@ function mapDispatchToProps(dispatch) {
             setProfileImageUri,
             removeProfileImage,
             updateUser,
-            popTopScreen,
-            dismissModal,
-            setButtons,
         }, dispatch),
     };
 }

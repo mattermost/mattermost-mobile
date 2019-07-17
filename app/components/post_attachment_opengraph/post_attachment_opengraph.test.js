@@ -25,7 +25,6 @@ describe('PostAttachmentOpenGraph', () => {
     const baseProps = {
         actions: {
             getOpenGraphMetadata: jest.fn(),
-            showModalOverCurrentContext: jest.fn(),
         },
         deviceHeight: 600,
         deviceWidth: 400,
@@ -37,6 +36,7 @@ describe('PostAttachmentOpenGraph', () => {
         },
         isReplyPost: false,
         link: 'https://mattermost.com/',
+        navigator: {},
         theme: Preferences.THEMES.default,
     };
 

@@ -18,6 +18,7 @@ export default class ActionMenu extends PureComponent {
         options: PropTypes.arrayOf(PropTypes.object),
         postId: PropTypes.string.isRequired,
         selected: PropTypes.object,
+        navigator: PropTypes.object,
     };
 
     constructor(props) {
@@ -62,6 +63,7 @@ export default class ActionMenu extends PureComponent {
             name,
             dataSource,
             options,
+            navigator,
         } = this.props;
         const {selected} = this.state;
 
@@ -71,6 +73,7 @@ export default class ActionMenu extends PureComponent {
                 dataSource={dataSource}
                 options={options}
                 selected={selected}
+                navigator={navigator}
                 onSelected={this.handleSelect}
             />
         );

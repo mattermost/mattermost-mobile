@@ -12,31 +12,24 @@ export default class Hashtag extends React.PureComponent {
         hashtag: PropTypes.string.isRequired,
         linkStyle: CustomPropTypes.Style.isRequired,
         onHashtagPress: PropTypes.func,
+        navigator: PropTypes.object.isRequired,
         actions: PropTypes.shape({
-            popToRoot: PropTypes.func.isRequired,
             showSearchModal: PropTypes.func.isRequired,
-            dismissAllModals: PropTypes.func.isRequired,
         }).isRequired,
     };
 
     handlePress = () => {
-        const {
-            onHashtagPress,
-            hashtag,
-            actions,
-        } = this.props;
-
-        if (onHashtagPress) {
-            onHashtagPress(hashtag);
+        if (this.props.onHashtagPress) {
+            this.props.onHashtagPress(this.props.hashtag);
 
             return;
         }
 
         // Close thread view, permalink view, etc
-        actions.dismissAllModals();
-        actions.popToRoot();
+        this.props.navigator.dismissAllModals();
+        this.props.navigator.popToRoot();
 
-        actions.showSearchModal('#' + this.props.hashtag);
+        this.props.actions.showSearchModal(this.props.navigator, '#' + this.props.hashtag);
     };
 
     render() {

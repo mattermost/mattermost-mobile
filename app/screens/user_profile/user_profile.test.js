@@ -22,10 +22,6 @@ describe('user_profile', () => {
         setChannelDisplayName: jest.fn(),
         makeDirectChannel: jest.fn(),
         loadBot: jest.fn(),
-        setButtons: jest.fn(),
-        dismissModal: jest.fn(),
-        resetToChannel: jest.fn(),
-        goToScreen: jest.fn(),
     };
     const baseProps = {
         actions,
@@ -33,12 +29,16 @@ describe('user_profile', () => {
             ShowEmailAddress: true,
         },
         teammateNameDisplay: 'username',
+        navigator: {
+            resetTo: jest.fn(),
+            push: jest.fn(),
+            dismissModal: jest.fn(),
+        },
         teams: [],
         theme: Preferences.THEMES.default,
         enableTimezone: false,
         militaryTime: false,
         isMyUser: false,
-        componentId: 'component-id',
     };
 
     const user = {
@@ -89,28 +89,13 @@ describe('user_profile', () => {
     });
 
     test('should push EditProfile', async () => {
-        const wrapper = shallow(
-            <UserProfile
-                {...baseProps}
-                user={user}
-            />,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-
-        wrapper.instance().goToEditProfile();
-        setTimeout(() => {
-            expect(baseProps.actions.goToScreen).toHaveBeenCalledTimes(1);
-        }, 16);
-    });
-
-    test('should call goToEditProfile', () => {
         const props = {
             ...baseProps,
-            actions: {
-                ...baseProps.actions,
-                goToScreen: jest.fn(),
+            navigator: {
+                push: jest.fn(),
             },
         };
+
         const wrapper = shallow(
             <UserProfile
                 {...props}
@@ -119,10 +104,32 @@ describe('user_profile', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        const event = {buttonId: wrapper.instance().rightButton.id};
-        wrapper.instance().navigationButtonPressed(event);
+        wrapper.instance().goToEditProfile();
         setTimeout(() => {
-            expect(baseProps.actions.goToScreen).toHaveBeenCalledTimes(1);
+            expect(props.navigator.push).toHaveBeenCalledTimes(1);
+        }, 16);
+    });
+
+    test('should call goToEditProfile', () => {
+        const props = {
+            ...baseProps,
+            navigator: {
+                push: jest.fn(),
+            },
+        };
+
+        const wrapper = shallow(
+            <UserProfile
+                {...props}
+                user={user}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        const event = {type: 'NavBarButtonPress', id: wrapper.instance().rightButton.id};
+        wrapper.instance().onNavigatorEvent(event);
+        setTimeout(() => {
+            expect(props.navigator.push).toHaveBeenCalledTimes(1);
         }, 0);
     });
 
@@ -137,13 +144,13 @@ describe('user_profile', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        const event = {buttonId: 'close-settings'};
-        wrapper.instance().navigationButtonPressed(event);
-        expect(props.actions.dismissModal).toHaveBeenCalledTimes(1);
+        const event = {type: 'NavBarButtonPress', id: 'close-settings'};
+        wrapper.instance().onNavigatorEvent(event);
+        expect(props.navigator.dismissModal).toHaveBeenCalledTimes(1);
 
         props.fromSettings = false;
         wrapper.setProps({...props});
-        wrapper.instance().navigationButtonPressed(event);
-        expect(props.actions.resetToChannel).toHaveBeenCalledTimes(1);
+        wrapper.instance().onNavigatorEvent(event);
+        expect(props.navigator.resetTo).toHaveBeenCalledTimes(1);
     });
 });

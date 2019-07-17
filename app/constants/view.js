@@ -42,6 +42,7 @@ const ViewTypes = keyMirror({
     COMMENT_DRAFT_SELECTION_CHANGED: null,
 
     NOTIFICATION_IN_APP: null,
+    NOTIFICATION_TAPPED: null,
 
     SET_POST_DRAFT: null,
     SET_COMMENT_DRAFT: null,
@@ -85,6 +86,9 @@ const ViewTypes = keyMirror({
     ANNOUNCEMENT_BANNER: null,
 
     INCREMENT_EMOJI_PICKER_PAGE: null,
+
+    LAUNCH_LOGIN: null,
+    LAUNCH_CHANNEL: null,
 
     SET_DEEP_LINK_URL: null,
 

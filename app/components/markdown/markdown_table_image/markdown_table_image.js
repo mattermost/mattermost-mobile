@@ -11,12 +11,10 @@ import {preventDoubleTap} from 'app/utils/tap';
 
 export default class MarkdownTableImage extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         children: PropTypes.node.isRequired,
         source: PropTypes.string.isRequired,
         textStyle: CustomPropTypes.Style.isRequired,
+        navigator: PropTypes.object.isRequired,
         serverURL: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -26,18 +24,26 @@ export default class MarkdownTableImage extends React.PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {actions} = this.props;
-        const {intl} = this.context;
-        const screen = 'TableImage';
-        const title = intl.formatMessage({
-            id: 'mobile.routes.tableImage',
-            defaultMessage: 'Image',
-        });
-        const passProps = {
-            imageSource: this.getImageSource(),
-        };
+        const {navigator, theme} = this.props;
 
-        actions.goToScreen(screen, title, passProps);
+        navigator.push({
+            screen: 'TableImage',
+            title: this.context.intl.formatMessage({
+                id: 'mobile.routes.tableImage',
+                defaultMessage: 'Image',
+            }),
+            animated: true,
+            backButtonTitle: '',
+            passProps: {
+                imageSource: this.getImageSource(),
+            },
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        });
     });
 
     getImageSource = () => {

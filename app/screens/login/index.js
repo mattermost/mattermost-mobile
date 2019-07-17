@@ -4,12 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {login} from 'mattermost-redux/actions/users';
+import LoginActions from 'app/actions/views/login';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
-import {resetToChannel, goToScreen} from 'app/actions/navigation';
-import LoginActions from 'app/actions/views/login';
+import {login} from 'mattermost-redux/actions/users';
 
 import Login from './login.js';
 
@@ -31,8 +30,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             ...LoginActions,
             login,
-            resetToChannel,
-            goToScreen,
         }, dispatch),
     };
 }

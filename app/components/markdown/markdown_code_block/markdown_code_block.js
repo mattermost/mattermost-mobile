@@ -24,9 +24,7 @@ const MAX_LINES = 4;
 
 export default class MarkdownCodeBlock extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
+        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         language: PropTypes.string,
         content: PropTypes.string.isRequired,
@@ -42,14 +40,10 @@ export default class MarkdownCodeBlock extends React.PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {actions, language, content} = this.props;
+        const {navigator, theme} = this.props;
         const {intl} = this.context;
-        const screen = 'Code';
-        const passProps = {
-            content,
-        };
 
-        const languageDisplayName = getDisplayNameForLanguage(language);
+        const languageDisplayName = getDisplayNameForLanguage(this.props.language);
         let title;
         if (languageDisplayName) {
             title = intl.formatMessage(
@@ -68,7 +62,21 @@ export default class MarkdownCodeBlock extends React.PureComponent {
             });
         }
 
-        actions.goToScreen(screen, title, passProps);
+        navigator.push({
+            screen: 'Code',
+            title,
+            animated: true,
+            backButtonTitle: '',
+            passProps: {
+                content: this.props.content,
+            },
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        });
     });
 
     handleLongPress = async () => {

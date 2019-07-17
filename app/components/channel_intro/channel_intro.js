@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     Text,
     TouchableOpacity,
     View,
@@ -20,13 +21,11 @@ import {t} from 'app/utils/i18n';
 
 class ChannelIntro extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         creator: PropTypes.object,
         currentChannel: PropTypes.object.isRequired,
         currentChannelMembers: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
+        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -35,14 +34,28 @@ class ChannelIntro extends PureComponent {
     };
 
     goToUserProfile = (userId) => {
-        const {actions, intl} = this.props;
-        const screen = 'UserProfile';
-        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const passProps = {
-            userId,
+        const {intl, navigator, theme} = this.props;
+        const options = {
+            screen: 'UserProfile',
+            title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
+            animated: true,
+            backButtonTitle: '',
+            passProps: {
+                userId,
+            },
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         };
 
-        actions.goToScreen(screen, title, passProps);
+        if (Platform.OS === 'ios') {
+            navigator.push(options);
+        } else {
+            navigator.showModal(options);
+        }
     };
 
     getDisplayName = (member) => {

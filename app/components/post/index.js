@@ -12,7 +12,6 @@ import {getUser, getCurrentUserId} from 'mattermost-redux/selectors/entities/use
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
-import {goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 
 import Post from './post';
@@ -94,8 +93,6 @@ function mapDispatchToProps(dispatch) {
             removePost,
             setPostTooltipVisible,
             insertToDraft,
-            goToScreen,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

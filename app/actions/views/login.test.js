@@ -11,8 +11,10 @@ import {
     handlePasswordChanged,
 } from 'app/actions/views/login';
 
-jest.mock('app/init/credentials', () => ({
-    setAppCredentials: () => jest.fn(),
+jest.mock('app/mattermost', () => ({
+    app: {
+        setAppCredentials: () => jest.fn(),
+    },
 }));
 
 jest.mock('react-native-cookies', () => ({

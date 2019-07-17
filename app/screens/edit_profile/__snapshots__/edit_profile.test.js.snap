@@ -26,6 +26,47 @@ exports[`edit_profile should match snapshot 1`] = `
       }
     }
     maxFileSize={20971520}
+    navigator={
+      Object {
+        "dismissModal": [MockFunction],
+        "push": [MockFunction],
+        "setButtons": [MockFunction] {
+          "calls": Array [
+            Array [
+              Object {
+                "rightButtons": Array [
+                  Object {
+                    "disabled": true,
+                    "id": "update-profile",
+                    "showAsAction": "always",
+                    "title": undefined,
+                  },
+                ],
+              },
+            ],
+          ],
+          "results": Array [
+            Object {
+              "type": "return",
+              "value": undefined,
+            },
+          ],
+        },
+        "setOnNavigatorEvent": [MockFunction] {
+          "calls": Array [
+            Array [
+              [Function],
+            ],
+          ],
+          "results": Array [
+            Object {
+              "type": "return",
+              "value": undefined,
+            },
+          ],
+        },
+      }
+    }
     onShowFileSizeWarning={[Function]}
     onShowUnsupportedMimeTypeWarning={[Function]}
     removeProfileImage={[Function]}

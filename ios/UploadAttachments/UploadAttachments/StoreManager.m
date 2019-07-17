@@ -15,9 +15,8 @@
 -(instancetype)init {
   self = [super init];
   if (self) {
-      self.bucket = [[MattermostBucket alloc] init];
-      self.keychain = [[MMKeychainManager alloc] init];
-      [self getEntities:true];
+    self.bucket = [[MattermostBucket alloc] init];
+    [self getEntities:true];
   }
   return self;
 }
@@ -151,12 +150,10 @@
 }
 
 -(NSString *)getToken {
-    NSDictionary *options = @{
-        @"accessGroup": APP_GROUP_ID
-    };
-    NSDictionary *credentials = [self.keychain getInternetCredentialsForServer:[self getServerUrl] withOptions:options];
+  NSDictionary *general = [self.entities objectForKey:@"general"];
+  NSDictionary *credentials = [general objectForKey:@"credentials"];
   
-  return [credentials objectForKey:@"password"];
+  return [credentials objectForKey:@"token"];
 }
 
 -(UInt64)scanValueFromConfig:(NSDictionary *)config key:(NSString *)key {

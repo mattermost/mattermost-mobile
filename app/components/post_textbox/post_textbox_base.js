@@ -63,6 +63,7 @@ export default class PostTextBoxBase extends PureComponent {
         files: PropTypes.array,
         maxFileSize: PropTypes.number.isRequired,
         maxMessageLength: PropTypes.number.isRequired,
+        navigator: PropTypes.object,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         uploadFileRequestStatus: PropTypes.string.isRequired,
@@ -188,7 +189,7 @@ export default class PostTextBoxBase extends PureComponent {
     };
 
     getAttachmentButton = () => {
-        const {canUploadFiles, channelIsReadOnly, files, maxFileSize, theme} = this.props;
+        const {canUploadFiles, channelIsReadOnly, files, maxFileSize, navigator, theme} = this.props;
         let attachmentButton = null;
 
         if (canUploadFiles && !channelIsReadOnly) {
@@ -196,6 +197,7 @@ export default class PostTextBoxBase extends PureComponent {
                 <AttachmentButton
                     blurTextBox={this.blur}
                     theme={theme}
+                    navigator={navigator}
                     fileCount={files.length}
                     maxFileSize={maxFileSize}
                     maxFileCount={MAX_FILE_COUNT}

@@ -3,9 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Keyboard} from 'react-native';
+import {Keyboard, Platform} from 'react-native';
 import {intlShape} from 'react-intl';
-import {Navigation} from 'react-native-navigation';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 
@@ -17,13 +16,11 @@ export default class ThreadBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         channelType: PropTypes.string,
         displayName: PropTypes.string,
+        navigator: PropTypes.object,
         myMember: PropTypes.object.isRequired,
         rootId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -55,12 +52,8 @@ export default class ThreadBase extends PureComponent {
 
         this.postTextbox = React.createRef();
 
-        Navigation.mergeOptions(props.componentId, {
-            topBar: {
-                title: {
-                    text: title,
-                },
-            },
+        this.props.navigator.setTitle({
+            title,
         });
 
         this.state = {
@@ -70,7 +63,7 @@ export default class ThreadBase extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
         }
 
         if (this.props.postIds !== nextProps.postIds && !nextProps.postIds.length) {
@@ -88,7 +81,17 @@ export default class ThreadBase extends PureComponent {
     }
 
     close = () => {
-        this.props.actions.popTopScreen();
+        const {navigator} = this.props;
+
+        if (Platform.OS === 'ios') {
+            navigator.pop({
+                animated: true,
+            });
+        } else {
+            navigator.dismissModal({
+                animationType: 'slide-down',
+            });
+        }
     };
 
     handleAutoComplete = (value) => {
@@ -120,9 +123,22 @@ export default class ThreadBase extends PureComponent {
     };
 
     onCloseChannel = () => {
-        const passProps = {
-            disableTermsModal: true,
-        };
-        this.props.actions.resetToChannel(passProps);
+        this.props.navigator.resetTo({
+            screen: 'Channel',
+            title: '',
+            animated: false,
+            backButtonTitle: '',
+            navigatorStyle: {
+                animated: true,
+                animationType: 'fade',
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+            },
+            passProps: {
+                disableTermsModal: true,
+            },
+        });
     };
 }

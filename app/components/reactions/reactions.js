@@ -23,10 +23,9 @@ export default class Reactions extends PureComponent {
             addReaction: PropTypes.func.isRequired,
             getReactionsForPost: PropTypes.func.isRequired,
             removeReaction: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         currentUserId: PropTypes.string.isRequired,
+        navigator: PropTypes.object.isRequired,
         position: PropTypes.oneOf(['right', 'left']),
         postId: PropTypes.string.isRequired,
         reactions: PropTypes.object,
@@ -51,18 +50,25 @@ export default class Reactions extends PureComponent {
     }
 
     handleAddReaction = preventDoubleTap(() => {
-        const {actions, theme} = this.props;
         const {formatMessage} = this.context.intl;
-        const screen = 'AddReaction';
-        const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
+        const {navigator, theme} = this.props;
 
         MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
-            const passProps = {
-                closeButton: source,
-                onEmojiPress: this.handleAddReactionToPost,
-            };
-
-            actions.showModal(screen, title, passProps);
+            navigator.showModal({
+                screen: 'AddReaction',
+                title: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+                animated: true,
+                navigatorStyle: {
+                    navBarTextColor: theme.sidebarHeaderTextColor,
+                    navBarBackgroundColor: theme.sidebarHeaderBg,
+                    navBarButtonColor: theme.sidebarHeaderTextColor,
+                    screenBackgroundColor: theme.centerChannelBg,
+                },
+                passProps: {
+                    closeButton: source,
+                    onEmojiPress: this.handleAddReactionToPost,
+                },
+            });
         });
     });
 
@@ -81,18 +87,28 @@ export default class Reactions extends PureComponent {
     };
 
     showReactionList = () => {
-        const {actions, postId} = this.props;
+        const {navigator, postId} = this.props;
 
-        const screen = 'ReactionList';
-        const passProps = {
-            postId,
+        const options = {
+            screen: 'ReactionList',
+            animationType: 'none',
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarHidden: true,
+                navBarTransparent: true,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext',
+            },
+            passProps: {
+                postId,
+            },
         };
 
-        actions.showModalOverCurrentContext(screen, passProps);
+        navigator.showModal(options);
     }
 
     renderReactions = () => {
-        const {currentUserId, reactions, theme, postId} = this.props;
+        const {currentUserId, navigator, reactions, theme, postId} = this.props;
         const highlightedReactions = [];
         const reactionsByName = Object.values(reactions).reduce((acc, reaction) => {
             if (acc.has(reaction.emoji_name)) {
@@ -115,6 +131,7 @@ export default class Reactions extends PureComponent {
                     count={reactionsByName.get(r).length}
                     emojiName={r}
                     highlight={highlightedReactions.includes(r)}
+                    navigator={navigator}
                     onPress={this.handleReactionPress}
                     onLongPress={this.showReactionList}
                     postId={postId}

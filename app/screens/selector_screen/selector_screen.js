@@ -34,12 +34,11 @@ export default class SelectorScreen extends PureComponent {
             getChannels: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }),
-        componentId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         data: PropTypes.arrayOf(PropTypes.object),
         dataSource: PropTypes.string,
+        navigator: PropTypes.object,
         onSelect: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -66,6 +65,8 @@ export default class SelectorScreen extends PureComponent {
             searchResults: [],
             term: '',
         };
+
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     }
 
     componentDidMount() {
@@ -84,7 +85,7 @@ export default class SelectorScreen extends PureComponent {
 
     componentDidUpdate(prevProps) {
         if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
+            setNavigatorStyles(this.props.navigator, this.props.theme);
         }
     }
 
@@ -93,7 +94,7 @@ export default class SelectorScreen extends PureComponent {
     };
 
     close = () => {
-        this.props.actions.popTopScreen();
+        this.props.navigator.pop({animated: true});
     };
 
     handleSelectItem = (id, item) => {

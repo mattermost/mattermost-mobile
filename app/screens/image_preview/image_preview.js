@@ -21,8 +21,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
-import DeviceInfo from 'react-native-device-info';
-import {Navigation} from 'react-native-navigation';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -45,17 +43,13 @@ const ANIM_CONFIG = {duration: 300};
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            dismissModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-        }).isRequired,
-        componentId: PropTypes.string.isRequired,
         canDownloadFiles: PropTypes.bool.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         files: PropTypes.array,
         getItemMeasures: PropTypes.func.isRequired,
         index: PropTypes.number.isRequired,
+        navigator: PropTypes.object,
         origin: PropTypes.object,
         target: PropTypes.object,
         theme: PropTypes.object.isRequired,
@@ -72,10 +66,8 @@ export default class ImagePreview extends PureComponent {
     constructor(props) {
         super(props);
 
-        Navigation.mergeOptions(props.componentId, {
-            layout: {
-                backgroundColor: '#000',
-            },
+        props.navigator.setStyle({
+            screenBackgroundColor: '#000',
         });
 
         this.openAnim = new Animated.Value(0);
@@ -111,14 +103,12 @@ export default class ImagePreview extends PureComponent {
     };
 
     close = () => {
-        const {actions, getItemMeasures, componentId} = this.props;
+        const {getItemMeasures, navigator} = this.props;
         const {index} = this.state;
 
         this.setState({animating: true});
-        Navigation.mergeOptions(componentId, {
-            layout: {
-                backgroundColor: 'transparent',
-            },
+        navigator.setStyle({
+            screenBackgroundColor: 'transparent',
         });
 
         getItemMeasures(index, (origin) => {
@@ -127,7 +117,7 @@ export default class ImagePreview extends PureComponent {
             }
 
             this.animateOpenAnimToValue(0, () => {
-                actions.dismissModal();
+                navigator.dismissModal({animationType: 'none'});
             });
         });
     };
@@ -187,7 +177,7 @@ export default class ImagePreview extends PureComponent {
     };
 
     renderAttachmentDocument = (file) => {
-        const {canDownloadFiles, theme} = this.props;
+        const {canDownloadFiles, theme, navigator} = this.props;
 
         return (
             <View style={[style.flex, style.center]}>
@@ -200,6 +190,7 @@ export default class ImagePreview extends PureComponent {
                     file={file}
                     iconHeight={100}
                     iconWidth={100}
+                    navigator={navigator}
                     theme={theme}
                     wrapperHeight={200}
                     wrapperWidth={200}
@@ -450,7 +441,6 @@ export default class ImagePreview extends PureComponent {
     };
 
     showDownloadOptionsIOS = async () => {
-        const {actions} = this.props;
         const {formatMessage} = this.context.intl;
         const file = this.getCurrentFile();
         const items = [];
@@ -470,24 +460,20 @@ export default class ImagePreview extends PureComponent {
             let grantOption = null;
             if (canOpenSettings) {
                 grantOption = {
-                    text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Settings'}),
+                    text: formatMessage({id: 'mobile.android.permission_denied_retry', defaultMessage: 'Set permission'}),
                     onPress: () => Permissions.openSettings(),
                 };
             }
 
-            const applicationName = DeviceInfo.getApplicationName();
             Alert.alert(
+                formatMessage({id: 'mobile.android.photos_permission_denied_title', defaultMessage: 'Photo library access is required'}),
                 formatMessage({
-                    id: 'mobile.photo_library_permission_denied_title',
-                    defaultMessage: '{applicationName} would like to access your photo library',
-                }, {applicationName}),
-                formatMessage({
-                    id: 'mobile.photo_library_permission_denied_description',
+                    id: 'mobile.ios.photos_permission_denied_description',
                     defaultMessage: 'To save images and videos to your library, please change your permission settings.',
                 }),
                 [
                     grantOption,
-                    {text: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'})},
+                    {text: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})},
                 ]
             );
             return;
@@ -518,17 +504,30 @@ export default class ImagePreview extends PureComponent {
             });
         }
 
+        const options = {
+            title: file.caption,
+            items,
+            onCancelPress: () => this.setHeaderAndFooterVisible(true),
+        };
+
         if (items.length) {
             this.setHeaderAndFooterVisible(false);
 
-            const screen = 'OptionsModal';
-            const passProps = {
-                title: file.caption,
-                items,
-                onCancelPress: () => this.setHeaderAndFooterVisible(true),
-            };
-
-            actions.showModalOverCurrentContext(screen, passProps);
+            this.props.navigator.showModal({
+                screen: 'OptionsModal',
+                title: '',
+                animationType: 'none',
+                passProps: {
+                    ...options,
+                },
+                navigatorStyle: {
+                    navBarHidden: true,
+                    statusBarHidden: false,
+                    statusBarHideWithNavBar: false,
+                    screenBackgroundColor: 'transparent',
+                    modalPresentationStyle: 'overCurrentContext',
+                },
+            });
         }
     };
 

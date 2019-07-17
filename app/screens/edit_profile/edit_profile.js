@@ -8,7 +8,6 @@ import {Alert, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {DocumentPickerUtil} from 'react-native-document-picker';
-import {Navigation} from 'react-native-navigation';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -88,14 +87,11 @@ export default class EditProfile extends PureComponent {
             setProfileImageUri: PropTypes.func.isRequired,
             removeProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         firstNameDisabled: PropTypes.bool.isRequired,
         lastNameDisabled: PropTypes.bool.isRequired,
+        navigator: PropTypes.object.isRequired,
         nicknameDisabled: PropTypes.bool.isRequired,
         positionDisabled: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
@@ -108,7 +104,7 @@ export default class EditProfile extends PureComponent {
 
     rightButton = {
         id: 'update-profile',
-        enabled: false,
+        disabled: true,
         showAsAction: 'always',
     };
 
@@ -119,9 +115,10 @@ export default class EditProfile extends PureComponent {
         const buttons = {
             rightButtons: [this.rightButton],
         };
-        this.rightButton.text = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
+        this.rightButton.title = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
-        props.actions.setButtons(props.componentId, buttons);
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        props.navigator.setButtons(buttons);
 
         this.state = {
             email,
@@ -131,21 +128,6 @@ export default class EditProfile extends PureComponent {
             position,
             username,
         };
-    }
-
-    componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
-
-    navigationButtonPressed({buttonId}) {
-        switch (buttonId) {
-        case 'update-profile':
-            this.submitUser();
-            break;
-        case 'close-settings':
-            this.close();
-            break;
-        }
     }
 
     canUpdate = (updatedField) => {
@@ -179,21 +161,21 @@ export default class EditProfile extends PureComponent {
     };
 
     close = () => {
-        const {commandType, actions} = this.props;
-        if (commandType === 'Push') {
-            actions.popTopScreen();
+        if (this.props.commandType === 'Push') {
+            this.props.navigator.pop();
         } else {
-            actions.dismissModal();
+            this.props.navigator.dismissModal({
+                animationType: 'slide-down',
+            });
         }
     };
 
     emitCanUpdateAccount = (enabled) => {
-        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, enabled}],
+            rightButtons: [{...this.rightButton, disabled: !enabled}],
         };
 
-        actions.setButtons(componentId, buttons);
+        this.props.navigator.setButtons(buttons);
     };
 
     handleRequestError = (error) => {
@@ -257,8 +239,10 @@ export default class EditProfile extends PureComponent {
     handleRemoveProfileImage = () => {
         this.setState({profileImageRemove: true});
         this.emitCanUpdateAccount(true);
-        this.props.actions.dismissModal();
-    };
+        this.props.navigator.dismissModal({
+            animationType: 'none',
+        });
+    }
 
     uploadProfileImage = async () => {
         const {profileImage} = this.state;
@@ -293,6 +277,19 @@ export default class EditProfile extends PureComponent {
         this.setState(field, () => {
             this.emitCanUpdateAccount(this.canUpdate(field));
         });
+    };
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            switch (event.id) {
+            case 'update-profile':
+                this.submitUser();
+                break;
+            case 'close-settings':
+                this.close();
+                break;
+            }
+        }
     };
 
     onShowFileSizeWarning = (filename) => {
@@ -501,6 +498,7 @@ export default class EditProfile extends PureComponent {
         const {
             currentUser,
             theme,
+            navigator,
         } = this.props;
 
         const {
@@ -521,6 +519,7 @@ export default class EditProfile extends PureComponent {
                     canTakeVideo={false}
                     canBrowseVideoLibrary={false}
                     maxFileSize={MAX_SIZE}
+                    navigator={navigator}
                     wrapper={true}
                     uploadFiles={this.handleUploadProfileImage}
                     removeProfileImage={this.handleRemoveProfileImage}
@@ -540,7 +539,7 @@ export default class EditProfile extends PureComponent {
                 </ProfilePictureButton>
             </View>
         );
-    };
+    }
 
     render() {
         const {theme} = this.props;

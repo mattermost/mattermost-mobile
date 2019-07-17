@@ -12,9 +12,6 @@ import PostBody from './post_body.js';
 
 describe('PostBody', () => {
     const baseProps = {
-        actions: {
-            showModalOverCurrentContext: jest.fn(),
-        },
         canDelete: true,
         channelIsReadOnly: false,
         deviceHeight: 1920,
@@ -33,6 +30,7 @@ describe('PostBody', () => {
         isSystemMessage: false,
         managedConfig: {},
         message: 'Hello, World!',
+        navigator: {},
         onFailedPostPress: jest.fn(),
         onHashtagPress: jest.fn(),
         onPermalinkPress: jest.fn(),

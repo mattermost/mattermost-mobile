@@ -27,11 +27,11 @@ export default class Theme extends React.PureComponent {
         actions: PropTypes.shape({
             savePreferences: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         allowedThemes: PropTypes.arrayOf(PropTypes.object),
         customTheme: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
         isTablet: PropTypes.bool.isRequired,
+        navigator: PropTypes.object.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         userId: PropTypes.string.isRequired,
@@ -56,7 +56,7 @@ export default class Theme extends React.PureComponent {
 
     componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
+            setNavigatorStyles(this.props.navigator, this.props.theme);
         }
     }
 

@@ -7,9 +7,8 @@ import PropTypes from 'prop-types';
 import {
     View,
 } from 'react-native';
-import {intlShape} from 'react-intl';
-
 import {General} from 'mattermost-redux/constants';
+import {intlShape} from 'react-intl';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -24,6 +23,7 @@ import SectionItem from 'app/screens/settings/section_item';
 export default class NotificationSettingsAutoResponder extends PureComponent {
     static propTypes = {
         currentUser: PropTypes.object.isRequired,
+        navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
@@ -44,6 +44,8 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
             defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
         });
 
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+
         let autoResponderActive = 'false';
         if (props.currentUserStatus === General.OUT_OF_OFFICE && notifyProps.auto_responder_active) {
             autoResponderActive = 'true';
@@ -56,9 +58,15 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
         };
     }
 
-    componentWillUnmount() {
-        this.saveUserNotifyProps();
-    }
+    onNavigatorEvent = (event) => {
+        if (event.type === 'ScreenChangedEvent') {
+            switch (event.id) {
+            case 'willDisappear':
+                this.saveUserNotifyProps();
+                break;
+            }
+        }
+    };
 
     saveUserNotifyProps = () => {
         this.props.onBack({

@@ -14,8 +14,6 @@ import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selector
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId, getUsers} from 'mattermost-redux/selectors/entities/users';
 
-import {dismissModal, setButtons} from 'app/actions/navigation';
-
 import MoreDirectMessages from './more_dms';
 
 function mapStateToProps(state) {
@@ -42,8 +40,6 @@ function mapDispatchToProps(dispatch) {
             getProfilesInTeam,
             searchProfiles,
             setChannelDisplayName,
-            dismissModal,
-            setButtons,
         }, dispatch),
     };
 }

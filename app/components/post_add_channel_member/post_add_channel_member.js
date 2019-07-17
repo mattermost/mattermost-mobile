@@ -31,6 +31,7 @@ export default class PostAddChannelMember extends React.PureComponent {
         userIds: PropTypes.array.isRequired,
         usernames: PropTypes.array.isRequired,
         noGroupsUsernames: PropTypes.array,
+        navigator: PropTypes.object.isRequired,
         onPostPress: PropTypes.func,
         textStyles: PropTypes.object,
     };
@@ -89,6 +90,7 @@ export default class PostAddChannelMember extends React.PureComponent {
                     mentionStyle={this.props.textStyles.mention}
                     mentionName={usernames[0]}
                     onPostPress={this.props.onPostPress}
+                    navigator={this.props.navigator}
                 />
             );
         } else if (usernames.length > 1) {
@@ -117,6 +119,7 @@ export default class PostAddChannelMember extends React.PureComponent {
                                     mentionStyle={this.props.textStyles.mention}
                                     mentionName={username}
                                     onPostPress={this.props.onPostPress}
+                                    navigator={this.props.navigator}
                                 />
                             );
                         }).reduce((acc, el, idx, arr) => {

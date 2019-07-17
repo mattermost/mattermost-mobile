@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, NativeModules} from 'react-native';
+import {AppRegistry, AppState, NativeModules} from 'react-native';
 import {NotificationsAndroid, PendingNotifications} from 'react-native-notifications';
+import Notification from 'react-native-notifications/notification.android';
 
-import ephemeralStore from 'app/store/ephemeral_store';
+import {emptyFunction} from 'app/utils/general';
 
 const {NotificationPreferences} = NativeModules;
 
@@ -34,6 +35,23 @@ class PushNotification {
             if (notification) {
                 const data = notification.getData();
                 this.handleNotification(data, true);
+            }
+        });
+
+        AppRegistry.registerHeadlessTask('notificationReplied', () => async (deviceNotification) => {
+            const notification = new Notification(deviceNotification);
+            const data = notification.getData();
+            const completed = emptyFunction;
+
+            if (this.onReply) {
+                this.onReply(data, data.text, parseInt(data.badge, 10) - parseInt(data.msg_count, 10), completed);
+            } else {
+                this.deviceNotification = {
+                    data,
+                    text: data.text,
+                    badge: parseInt(data.badge, 10) - parseInt(data.msg_count, 10),
+                    completed, // used to identify that the notification belongs to a reply
+                };
             }
         });
     }
@@ -67,7 +85,6 @@ class PushNotification {
                     if (notification) {
                         const data = notification.getData();
                         if (data) {
-                            ephemeralStore.appStartedFromPushNotification = true;
                             this.handleNotification(data, true);
                         }
                     }

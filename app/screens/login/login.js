@@ -32,20 +32,19 @@ import telemetry from 'app/telemetry';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
+const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
 export default class Login extends PureComponent {
     static propTypes = {
+        navigator: PropTypes.object,
+        theme: PropTypes.object,
         actions: PropTypes.shape({
             handleLoginIdChanged: PropTypes.func.isRequired,
             handlePasswordChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
-        theme: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
@@ -67,7 +66,6 @@ export default class Login extends PureComponent {
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
-
         setMfaPreflightDone(false);
     }
 
@@ -86,20 +84,45 @@ export default class Login extends PureComponent {
     goToChannel = () => {
         telemetry.remove(['start:overall']);
 
+        const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         this.scheduleSessionExpiredNotification();
 
-        this.props.actions.resetToChannel();
+        navigator.resetTo({
+            screen: 'Channel',
+            title: '',
+            animated: false,
+            backButtonTitle: '',
+            navigatorStyle: {
+                animated: true,
+                animationType: 'fade',
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+            },
+        });
     };
 
     goToMfa = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
-        const screen = 'MFA';
-        const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
+        const {navigator, theme} = this.props;
 
-        actions.goToScreen(screen, title);
+        this.setState({isLoading: false});
+
+        navigator.push({
+            screen: 'MFA',
+            title: intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}),
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        });
     };
 
     blur = () => {
@@ -286,12 +309,20 @@ export default class Login extends PureComponent {
     };
 
     forgotPassword = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
-        const screen = 'ForgotPassword';
-        const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
-
-        actions.goToScreen(screen, title);
+        const {navigator, theme} = this.props;
+        navigator.push({
+            screen: 'ForgotPassword',
+            title: intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'}),
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        });
     }
 
     render() {

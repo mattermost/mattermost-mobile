@@ -38,6 +38,9 @@ describe('PostTextBox', () => {
         files: [],
         maxFileSize: 1024,
         maxMessageLength: 4000,
+        navigator: {
+            showModal: jest.fn(),
+        },
         rootId: '',
         theme: Preferences.THEMES.default,
         uploadFileRequestStatus: 'NOT_STARTED',

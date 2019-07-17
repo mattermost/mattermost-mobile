@@ -4,19 +4,15 @@
 import {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Navigation} from 'react-native-navigation';
 
 import {getNotificationProps} from 'app/utils/notify_props';
 import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMentionsBase extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
-        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
+        navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -31,25 +27,27 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         const {currentUser} = props;
         const notifyProps = getNotificationProps(currentUser);
 
-        this.goingBack = true; // use to identify if the navigator is popping this screen
-        this.state = this.setStateFromNotifyProps(notifyProps);
-    }
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
-    componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
+        this.goingBack = true; //use to identify if the navigator is popping this screen
+        this.state = this.setStateFromNotifyProps(notifyProps);
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
         }
     }
 
-    componentDidDisappear() {
-        if (this.goingBack) {
-            this.saveUserNotifyProps();
+    onNavigatorEvent = (event) => {
+        if (event.type === 'ScreenChangedEvent' && this.goingBack) {
+            switch (event.id) {
+            case 'willDisappear':
+                this.saveUserNotifyProps();
+                break;
+            }
         }
-    }
+    };
 
     setStateFromNotifyProps = (notifyProps) => {
         const mentionKeys = (notifyProps.mention_keys || '').split(',');

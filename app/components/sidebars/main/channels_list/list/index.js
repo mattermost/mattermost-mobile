@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
@@ -17,8 +16,6 @@ import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {memoizeResult} from 'mattermost-redux/utils/helpers';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-
-import {showModal} from 'app/actions/navigation';
 
 import {DeviceTypes, ViewTypes} from 'app/constants';
 
@@ -70,14 +67,6 @@ function mapStateToProps(state) {
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            showModal,
-        }, dispatch),
-    };
-}
-
 function areStatesEqual(next, prev) {
     const equalRoles = getCurrentUserRoles(prev) === getCurrentUserRoles(next);
     const equalChannels = next.entities.channels === prev.entities.channels;
@@ -88,4 +77,4 @@ function areStatesEqual(next, prev) {
     return equalChannels && equalConfig && equalRoles && equalUsers && equalFav;
 }
 
-export default connect(mapStateToProps, mapDispatchToProps, null, {pure: true, areStatesEqual})(List);
+export default connect(mapStateToProps, null, null, {pure: true, areStatesEqual})(List);

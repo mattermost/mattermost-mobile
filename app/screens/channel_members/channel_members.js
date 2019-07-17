@@ -9,7 +9,6 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
@@ -32,14 +31,12 @@ export default class ChannelMembers extends PureComponent {
             getProfilesInChannel: PropTypes.func.isRequired,
             handleRemoveChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         canManageUsers: PropTypes.bool.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         currentChannelMembers: PropTypes.array,
         currentUserId: PropTypes.string.isRequired,
+        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
 
@@ -64,40 +61,33 @@ export default class ChannelMembers extends PureComponent {
         };
 
         this.removeButton = {
-            enabled: false,
+            disabled: true,
             id: 'remove-members',
             showAsAction: 'always',
-            text: context.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'}),
+            title: context.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'}),
         };
 
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         if (props.canManageUsers) {
-            props.actions.setButtons(props.componentId, {
+            props.navigator.setButtons({
                 rightButtons: [this.removeButton],
             });
         }
     }
 
     componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-
         this.getProfiles();
     }
 
     componentDidUpdate(prevProps) {
-        const {componentId, theme} = this.props;
+        const {navigator, theme} = this.props;
         const {removing, selectedIds} = this.state;
         const enabled = Object.keys(selectedIds).length > 0 && !removing;
 
         this.enableRemoveOption(enabled);
 
         if (theme !== prevProps.theme) {
-            setNavigatorStyles(componentId, theme);
-        }
-    }
-
-    navigationButtonPressed({buttonId}) {
-        if (buttonId === this.removeButton.id) {
-            this.handleRemoveMembersPress();
+            setNavigatorStyles(navigator, theme);
         }
     }
 
@@ -106,14 +96,13 @@ export default class ChannelMembers extends PureComponent {
     };
 
     close = () => {
-        this.props.actions.popTopScreen();
+        this.props.navigator.pop({animated: true});
     };
 
     enableRemoveOption = (enabled) => {
-        const {actions, canManageUsers, componentId} = this.props;
-        if (canManageUsers) {
-            actions.setButtons(componentId, {
-                rightButtons: [{...this.removeButton, enabled}],
+        if (this.props.canManageUsers) {
+            this.props.navigator.setButtons({
+                rightButtons: [{...this.removeButton, disabled: !enabled}],
             });
         }
     };
@@ -197,6 +186,14 @@ export default class ChannelMembers extends PureComponent {
 
         this.page += 1;
         this.setState({loading: false, profiles: [...profiles, ...data]});
+    };
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            if (event.id === this.removeButton.id) {
+                this.handleRemoveMembersPress();
+            }
+        }
     };
 
     onSearch = (text) => {

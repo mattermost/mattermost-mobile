@@ -21,10 +21,8 @@ import Emoji from 'app/components/emoji';
 
 export default class ReactionRow extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         emojiName: PropTypes.string.isRequired,
+        navigator: PropTypes.object,
         teammateNameDisplay: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
@@ -39,15 +37,26 @@ export default class ReactionRow extends React.PureComponent {
     };
 
     goToUserProfile = () => {
-        const {actions, user} = this.props;
+        const {navigator, theme, user} = this.props;
         const {formatMessage} = this.context.intl;
-        const screen = 'UserProfile';
-        const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const passProps = {
-            userId: user.id,
+
+        const options = {
+            screen: 'UserProfile',
+            title: formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
+            animated: true,
+            backButtonTitle: '',
+            passProps: {
+                userId: user.id,
+            },
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         };
 
-        actions.goToScreen(screen, title, passProps);
+        navigator.push(options);
     };
 
     render() {

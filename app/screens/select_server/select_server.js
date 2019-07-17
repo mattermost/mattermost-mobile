@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Navigation} from 'react-native-navigation';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
@@ -22,13 +21,11 @@ import {
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
 
-import merge from 'deepmerge';
-
 import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import fetchConfig from 'app/init/fetch';
+import fetchConfig from 'app/fetch_preconfig';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
@@ -51,7 +48,6 @@ export default class SelectServer extends PureComponent {
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
             setServerVersion: PropTypes.func.isRequired,
         }).isRequired,
@@ -62,7 +58,9 @@ export default class SelectServer extends PureComponent {
         latestVersion: PropTypes.string,
         license: PropTypes.object,
         minVersion: PropTypes.string,
+        navigator: PropTypes.object,
         serverUrl: PropTypes.string.isRequired,
+        theme: PropTypes.object,
     };
 
     static contextTypes = {
@@ -83,8 +81,6 @@ export default class SelectServer extends PureComponent {
     }
 
     componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-
         const {allowOtherServers, serverUrl} = this.props;
         if (!allowOtherServers && serverUrl) {
             // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
@@ -97,42 +93,34 @@ export default class SelectServer extends PureComponent {
         }
 
         this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
+        this.props.navigator.setOnNavigatorEvent(this.handleNavigatorEvent);
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        if (this.state.connected && this.props.hasConfigAndLicense && !(prevState.connected && prevProps.hasConfigAndLicense)) {
+    componentWillUpdate(nextProps, nextState) {
+        if (nextState.connected && nextProps.hasConfigAndLicense && !(this.state.connected && this.props.hasConfigAndLicense)) {
             if (LocalConfig.EnableMobileClientUpgrade) {
                 this.props.actions.setLastUpgradeCheck();
-                const {currentVersion, minVersion, latestVersion} = prevProps;
+                const {currentVersion, minVersion, latestVersion} = nextProps;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
                 if (isUpgradeAvailable(upgradeType)) {
                     this.handleShowClientUpgrade(upgradeType);
                 } else {
-                    this.handleLoginOptions(prevProps);
+                    this.handleLoginOptions(nextProps);
                 }
             } else {
-                this.handleLoginOptions(prevProps);
+                this.handleLoginOptions(nextProps);
             }
         }
     }
 
     componentWillUnmount() {
+        this.certificateListener.remove();
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
-
-        this.certificateListener.remove();
-
-        this.navigationEventListener.remove();
-    }
-
-    componentDidDisappear() {
-        this.setState({
-            connected: false,
-        });
     }
 
     blur = () => {
@@ -156,18 +144,21 @@ export default class SelectServer extends PureComponent {
         return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
     };
 
-    goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
-        const {actions} = this.props;
-        const defaultOptions = {
-            popGesture: !LocalConfig.AutoSelectServerUrl,
-            topBar: {
-                visible: !LocalConfig.AutoSelectServerUrl,
-                height: LocalConfig.AutoSelectServerUrl ? 0 : null,
+    goToNextScreen = (screen, title) => {
+        const {navigator, theme} = this.props;
+        navigator.push({
+            screen,
+            title,
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarHidden: LocalConfig.AutoSelectServerUrl,
+                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
             },
-        };
-        const options = merge(defaultOptions, navOptions);
-
-        actions.goToScreen(screen, title, passProps, options);
+        });
     };
 
     handleAndroidKeyboard = () => {
@@ -253,21 +244,38 @@ export default class SelectServer extends PureComponent {
         }
     };
 
+    handleNavigatorEvent = (event) => {
+        switch (event.id) {
+        case 'didDisappear':
+            this.setState({
+                connected: false,
+            });
+            break;
+        }
+    };
+
     handleShowClientUpgrade = (upgradeType) => {
         const {formatMessage} = this.context.intl;
-        const screen = 'ClientUpgrade';
-        const title = formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'});
-        const passProps = {
-            closeAction: this.handleLoginOptions,
-            upgradeType,
-        };
-        const options = {
-            statusBar: {
-                visible: false,
-            },
-        };
+        const {theme} = this.props;
 
-        this.goToNextScreen(screen, title, passProps, options);
+        this.props.navigator.push({
+            screen: 'ClientUpgrade',
+            title: formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'}),
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarHidden: LocalConfig.AutoSelectServerUrl,
+                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
+                statusBarHidden: true,
+                statusBarHideWithNavBar: true,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+            },
+            passProps: {
+                closeAction: this.handleLoginOptions,
+                upgradeType,
+            },
+        });
     };
 
     handleTextChanged = (url) => {
@@ -279,13 +287,28 @@ export default class SelectServer extends PureComponent {
     };
 
     loginWithCertificate = async () => {
+        const {navigator} = this.props;
+
         tracker.initialLoad = Date.now();
 
         await this.props.actions.login('credential', 'password');
         await this.props.actions.handleSuccessfulLogin();
         this.scheduleSessionExpiredNotification();
 
-        this.props.actions.resetToChannel();
+        navigator.resetTo({
+            screen: 'Channel',
+            title: '',
+            animated: false,
+            backButtonTitle: '',
+            navigatorStyle: {
+                animated: true,
+                animationType: 'fade',
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+            },
+        });
     };
 
     pingServer = (url, retryWithHttp = true) => {

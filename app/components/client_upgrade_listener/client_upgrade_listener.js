@@ -27,8 +27,6 @@ export default class ClientUpgradeListener extends PureComponent {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         currentVersion: PropTypes.string,
         downloadLink: PropTypes.string,
@@ -37,6 +35,7 @@ export default class ClientUpgradeListener extends PureComponent {
         lastUpgradeCheck: PropTypes.number,
         latestVersion: PropTypes.string,
         minVersion: PropTypes.string,
+        navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
 
@@ -141,26 +140,27 @@ export default class ClientUpgradeListener extends PureComponent {
     };
 
     handleLearnMore = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
+        this.props.navigator.dismissModal({animationType: 'none'});
 
-        actions.dismissModal();
-
-        const screen = 'ClientUpgrade';
-        const title = intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'});
-        const passProps = {
-            upgradeType: this.state.upgradeType,
-        };
-        const options = {
-            topBar: {
+        this.props.navigator.showModal({
+            screen: 'ClientUpgrade',
+            title: intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'}),
+            navigatorStyle: {
+                navBarHidden: false,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+            },
+            navigatorButtons: {
                 leftButtons: [{
                     id: 'close-upgrade',
                     icon: this.closeButton,
                 }],
             },
-        };
-
-        actions.showModal(screen, title, passProps, options);
+            passProps: {
+                upgradeType: this.state.upgradeType,
+            },
+        });
 
         this.toggleUpgradeMessage(false);
     };

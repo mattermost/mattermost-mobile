@@ -20,30 +20,35 @@ import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
 export default class ChannelAndroid extends ChannelBase {
     render() {
         const {height} = Dimensions.get('window');
+        const {
+            navigator,
+        } = this.props;
 
         const channelLoaderStyle = [style.channelLoader, {height}];
         const drawerContent = (
-            <SafeAreaView>
+            <SafeAreaView navigator={navigator}>
                 <StatusBar/>
                 <NetworkIndicator/>
                 <ChannelNavBar
+                    navigator={navigator}
                     openChannelDrawer={this.openChannelSidebar}
                     openSettingsDrawer={this.openSettingsSidebar}
                     onPress={this.goToChannelInfo}
                 />
                 <KeyboardLayout>
                     <View style={style.flex}>
-                        <ChannelPostList/>
+                        <ChannelPostList navigator={navigator}/>
                     </View>
                     <PostTextbox
                         ref={this.postTextbox}
+                        navigator={navigator}
                     />
                 </KeyboardLayout>
                 <ChannelLoader
                     height={height}
                     style={channelLoaderStyle}
                 />
-                {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
+                {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
             </SafeAreaView>
         );
 

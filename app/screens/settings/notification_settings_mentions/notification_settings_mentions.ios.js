@@ -20,17 +20,25 @@ import NotificationSettingsMentionsBase from './notification_settings_mention_ba
 
 class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
     goToNotificationSettingsMentionKeywords = () => {
-        const {actions, intl} = this.props;
+        const {intl, navigator, theme} = this.props;
         this.goingBack = false;
 
-        const screen = 'NotificationSettingsMentionsKeywords';
-        const title = intl.formatMessage({id: 'mobile.notification_settings_mentions.keywords', defaultMessage: 'Keywords'});
-        const passProps = {
-            keywords: this.state.mention_keys,
-            onBack: this.updateMentionKeys,
-        };
-
-        actions.goToScreen(screen, title, passProps);
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'NotificationSettingsMentionsKeywords',
+            title: intl.formatMessage({id: 'mobile.notification_settings_mentions.keywords', defaultMessage: 'Keywords'}),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                keywords: this.state.mention_keys,
+                onBack: this.updateMentionKeys,
+            },
+        });
     };
 
     renderMentionSection(style) {

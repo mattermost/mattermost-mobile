@@ -14,8 +14,6 @@ import {logError} from 'mattermost-redux/actions/errors';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 
 import {purgeOfflineStore} from 'app/actions/views/root';
-import {DEFAULT_LOCALE, getTranslations} from 'app/i18n';
-import {t} from 'app/utils/i18n';
 import {
     captureException,
     captureJSException,
@@ -23,55 +21,54 @@ import {
     LOGGER_NATIVE,
 } from 'app/utils/sentry';
 
-class JavascriptAndNativeErrorHandler {
-    initializeErrorHandling = (store) => {
-        this.store = store;
-        initializeSentry();
-        setJSExceptionHandler(this.errorHandler, false);
-        setNativeExceptionHandler(this.nativeErrorHandler, false);
+import {app, store} from 'app/mattermost';
+
+import {t} from 'app/utils/i18n';
+
+const errorHandler = (e, isFatal) => {
+    if (__DEV__ && !e && !isFatal) {
+        // react-native-exception-handler redirects console.error to call this, and React calls
+        // console.error without an exception when prop type validation fails, so this ends up
+        // being called with no arguments when the error handler is enabled in dev mode.
+        return;
     }
 
-    nativeErrorHandler = (e) => {
-        console.warn('Handling native error ' + JSON.stringify(e)); // eslint-disable-line no-console
-        captureException(e, LOGGER_NATIVE, this.store);
-    };
+    console.warn('Handling Javascript error', e, isFatal); // eslint-disable-line no-console
+    captureJSException(e, isFatal, store);
 
-    errorHandler = (e, isFatal) => {
-        if (__DEV__ && !e && !isFatal) {
-            // react-native-exception-handler redirects console.error to call this, and React calls
-            // console.error without an exception when prop type validation fails, so this ends up
-            // being called with no arguments when the error handler is enabled in dev mode.
-            return;
-        }
+    const {dispatch} = store;
 
-        console.warn('Handling Javascript error', e, isFatal); // eslint-disable-line no-console
-        captureJSException(e, isFatal, this.store);
+    dispatch(closeWebSocket());
 
-        const {dispatch} = this.store;
+    if (Client4.getUrl()) {
+        dispatch(logError(e));
+    }
 
-        dispatch(closeWebSocket());
+    if (isFatal && e instanceof Error) {
+        const translations = app.getTranslations();
 
-        if (Client4.getUrl()) {
-            dispatch(logError(e));
-        }
+        Alert.alert(
+            translations[t('mobile.error_handler.title')],
+            translations[t('mobile.error_handler.description')],
+            [{
+                text: translations[t('mobile.error_handler.button')],
+                onPress: () => {
+                    // purge the store
+                    dispatch(purgeOfflineStore());
+                },
+            }],
+            {cancelable: false}
+        );
+    }
+};
 
-        if (isFatal && e instanceof Error) {
-            const translations = getTranslations(DEFAULT_LOCALE);
+const nativeErrorHandler = (e) => {
+    console.warn('Handling native error ' + JSON.stringify(e)); // eslint-disable-line no-console
+    captureException(e, LOGGER_NATIVE, store);
+};
 
-            Alert.alert(
-                translations[t('mobile.error_handler.title')],
-                translations[t('mobile.error_handler.description')],
-                [{
-                    text: translations[t('mobile.error_handler.button')],
-                    onPress: () => {
-                        // purge the store
-                        dispatch(purgeOfflineStore());
-                    },
-                }],
-                {cancelable: false}
-            );
-        }
-    };
+export function initializeErrorHandling() {
+    initializeSentry();
+    setJSExceptionHandler(errorHandler, false);
+    setNativeExceptionHandler(nativeErrorHandler, false);
 }
-
-export default new JavascriptAndNativeErrorHandler();

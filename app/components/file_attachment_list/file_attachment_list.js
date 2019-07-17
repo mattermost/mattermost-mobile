@@ -20,16 +20,14 @@ import FileAttachment from './file_attachment';
 
 export default class FileAttachmentList extends Component {
     static propTypes = {
-        actions: PropTypes.shape({
-            loadFilesForPostIfNecessary: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-        }).isRequired,
+        actions: PropTypes.object.isRequired,
         canDownloadFiles: PropTypes.bool.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         fileIds: PropTypes.array.isRequired,
         files: PropTypes.array,
         isFailed: PropTypes.bool,
+        navigator: PropTypes.object,
         onLongPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -124,12 +122,11 @@ export default class FileAttachmentList extends Component {
     };
 
     handlePreviewPress = preventDoubleTap((idx) => {
-        const {actions} = this.props;
-        previewImageAtIndex(this.items, idx, this.galleryFiles, actions.showModalOverCurrentContext);
+        previewImageAtIndex(this.props.navigator, this.items, idx, this.galleryFiles);
     });
 
     renderItems = () => {
-        const {canDownloadFiles, deviceWidth, fileIds, files} = this.props;
+        const {canDownloadFiles, deviceWidth, fileIds, files, navigator} = this.props;
 
         if (!files.length && fileIds.length > 0) {
             return fileIds.map((id, idx) => (
@@ -159,6 +156,7 @@ export default class FileAttachmentList extends Component {
                     file={f}
                     id={file.id}
                     index={idx}
+                    navigator={navigator}
                     onCaptureRef={this.handleCaptureRef}
                     onPreviewPress={this.handlePreviewPress}
                     onLongPress={this.props.onLongPress}

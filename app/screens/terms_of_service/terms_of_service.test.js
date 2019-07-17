@@ -23,17 +23,19 @@ describe('TermsOfService', () => {
         getTermsOfService: jest.fn(),
         updateMyTermsOfServiceStatus: jest.fn(),
         logout: jest.fn(),
-        setButtons: jest.fn(),
-        dismissModal: jest.fn(),
-        dismissAllModals: jest.fn(),
     };
 
     const baseProps = {
         actions,
+        navigator: {
+            dismissAllModals: jest.fn(),
+            dismissModal: jest.fn(),
+            setButtons: jest.fn(),
+            setOnNavigatorEvent: jest.fn(),
+        },
         theme: Preferences.THEMES.default,
         closeButton: {},
         siteName: 'Mattermost',
-        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {
@@ -81,18 +83,18 @@ describe('TermsOfService', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should call props.actions.setButtons on setNavigatorButtons', async () => {
+    test('should call props.navigator.setButtons on setNavigatorButtons', async () => {
         const wrapper = shallow(
             <TermsOfService {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
 
-        expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(2);
+        expect(baseProps.navigator.setButtons).toHaveBeenCalledTimes(2);
         wrapper.instance().setNavigatorButtons(true);
-        expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(3);
+        expect(baseProps.navigator.setButtons).toHaveBeenCalledTimes(3);
         wrapper.instance().setNavigatorButtons(false);
-        expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(4);
+        expect(baseProps.navigator.setButtons).toHaveBeenCalledTimes(4);
     });
 
     test('should enable/disable navigator buttons on setNavigatorButtons true/false', () => {
@@ -127,6 +129,6 @@ describe('TermsOfService', () => {
 
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
         wrapper.instance().closeTermsAndLogout();
-        expect(baseProps.actions.dismissAllModals).toHaveBeenCalledTimes(1);
+        expect(baseProps.navigator.dismissAllModals).toHaveBeenCalledTimes(1);
     });
 });

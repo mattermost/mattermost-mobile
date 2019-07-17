@@ -8,7 +8,6 @@ import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentTeamId, getMySortedTeamIds, getJoinableTeamIds} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {showModal} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {removeProtocol} from 'app/utils/url';
@@ -31,7 +30,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             handleTeamChange,
-            showModal,
         }, dispatch),
     };
 }

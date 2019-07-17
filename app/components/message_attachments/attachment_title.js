@@ -13,6 +13,7 @@ export default class AttachmentTitle extends PureComponent {
         link: PropTypes.string,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
+        navigator: PropTypes.object.isRequired,
     };
 
     openLink = () => {
@@ -27,6 +28,7 @@ export default class AttachmentTitle extends PureComponent {
             link,
             value,
             theme,
+            navigator,
         } = this.props;
 
         if (!value) {
@@ -55,6 +57,7 @@ export default class AttachmentTitle extends PureComponent {
                     disableChannelLink={true}
                     autolinkedUrlSchemes={[]}
                     mentionKeys={[]}
+                    navigator={navigator}
                     theme={theme}
                     value={value}
                     baseTextStyle={style.title}

@@ -53,7 +53,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getConfig(final Promise promise) {
         try {
-            Bundle config = MainApplication.instance.getManagedConfig();
+            Bundle config = NotificationsLifecycleFacade.getInstance().getManagedConfig();
 
             if (config != null) {
                 Object result = Arguments.fromBundle(config);

@@ -248,6 +248,7 @@ export default function configureAppStore(initialState) {
                             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
                             data: {
                                 url: state.entities.general.credentials.url,
+                                token: state.entities.general.credentials.token,
                             },
                         },
                         {

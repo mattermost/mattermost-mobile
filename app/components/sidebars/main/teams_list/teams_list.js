@@ -33,12 +33,12 @@ export default class TeamsList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
         }).isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         hasOtherJoinableTeams: PropTypes.bool,
+        navigator: PropTypes.object.isRequired,
         teamIds: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -76,23 +76,31 @@ export default class TeamsList extends PureComponent {
 
     goToSelectTeam = preventDoubleTap(() => {
         const {intl} = this.context;
-        const {currentUrl, theme, actions} = this.props;
-        const screen = 'SelectTeam';
-        const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
-        const passProps = {
-            currentUrl,
-            theme,
-        };
-        const options = {
-            topBar: {
+        const {currentUrl, navigator, theme} = this.props;
+
+        navigator.showModal({
+            screen: 'SelectTeam',
+            title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
+            animationType: 'slide-up',
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            navigatorButtons: {
                 leftButtons: [{
                     id: 'close-teams',
                     icon: this.closeButton,
                 }],
             },
-        };
-
-        actions.showModal(screen, title, passProps, options);
+            passProps: {
+                currentUrl,
+                theme,
+            },
+        });
     });
 
     keyExtractor = (item) => {

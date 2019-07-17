@@ -16,15 +16,17 @@ describe('ChannelAddMembers', () => {
             getProfilesNotInChannel: jest.fn().mockResolvedValue({}),
             handleAddChannelMembers: jest.fn().mockResolvedValue({}),
             searchProfiles: jest.fn().mockResolvedValue({data: []}),
-            setButtons: jest.fn(),
-            popTopScreen: jest.fn(),
         },
         currentChannelId: 'current_channel_id',
         currentTeamId: 'current_team_id',
         currentUserId: 'current_user_id',
         profilesNotInChannel: [],
+        navigator: {
+            pop: jest.fn(),
+            setButtons: jest.fn(),
+            setOnNavigatorEvent: jest.fn(),
+        },
         theme: Preferences.THEMES.default,
-        componentId: 'component-id',
     };
 
     test('should render without error and call functions on mount', () => {
@@ -33,10 +35,12 @@ describe('ChannelAddMembers', () => {
         expect(baseProps.actions.getTeamStats).toBeCalledTimes(1);
         expect(baseProps.actions.getTeamStats).toBeCalledWith(baseProps.currentTeamId);
 
-        const button = {enabled: false, id: 'add-members', text: 'Add', showAsAction: 'always'};
-        expect(baseProps.actions.setButtons).toBeCalledTimes(2);
-        expect(baseProps.actions.setButtons.mock.calls[0][0]).toEqual(baseProps.componentId, {rightButtons: [button]});
-        expect(baseProps.actions.setButtons.mock.calls[1][0]).toEqual(baseProps.componentId, {rightButtons: [button]});
+        const button = {disabled: true, id: 'add-members', title: 'Add', showAsAction: 'always'};
+        expect(baseProps.navigator.setButtons).toBeCalledTimes(2);
+        expect(baseProps.navigator.setButtons.mock.calls[0][0]).toEqual({rightButtons: [button]});
+        expect(baseProps.navigator.setButtons.mock.calls[1][0]).toEqual({rightButtons: [button]});
+
+        expect(baseProps.navigator.setOnNavigatorEvent).toBeCalledTimes(1);
     });
 
     test('should match state on clearSearch', () => {
@@ -48,11 +52,12 @@ describe('ChannelAddMembers', () => {
         wrapper.setState({term: '', searchResults: []});
     });
 
-    test('should call props.popTopScreen on close', () => {
+    test('should call props.navigator on close', () => {
         const wrapper = shallowWithIntl(<ChannelAddMembers {...baseProps}/>);
 
         wrapper.instance().close();
-        expect(baseProps.actions.popTopScreen).toBeCalledTimes(1);
+        expect(baseProps.navigator.pop).toBeCalledTimes(1);
+        expect(baseProps.navigator.pop).toBeCalledWith({animated: true});
     });
 
     test('should match state on onProfilesLoaded', () => {
