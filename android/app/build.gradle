@@ -226,7 +226,6 @@ dependencies {
     implementation project(':react-native-video')
     implementation project(':react-native-navigation')
     implementation project(':react-native-image-picker')
-    implementation project(':react-native-bottom-sheet')
     implementation project(':react-native-device-info')
     implementation project(':reactnativenotifications')
     implementation project(':react-native-cookies')
