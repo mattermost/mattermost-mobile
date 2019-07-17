@@ -17,6 +17,7 @@ import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
@@ -35,6 +36,35 @@ export default class ChannelInfoHeader extends React.PureComponent {
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
     };
+
+    renderHasGuestText = (style, hasGuests, type) => {
+        if (!hasGuests) {
+            return null;
+        }
+
+        let messageId;
+        let defaultMessage;
+
+        if (type === General.GM_CHANNEL) {
+            messageId = t('channel.hasGuests');
+            defaultMessage = 'This group message has guests';
+        } else if (type === General.DM_CHANNEL) {
+            messageId = t('channel.isGuest');
+            defaultMessage = 'This person is a guest';
+        } else {
+            messageId = t('channel.channelHasGuests');
+            defaultMessage = 'This channel has guests';
+        }
+        return (
+            <View style={style.section}>
+                <FormattedText
+                    style={style.header}
+                    id={messageId}
+                    defaultMessage={defaultMessage}
+                />
+            </View>
+        );
+    }
 
     render() {
         const {
@@ -82,30 +112,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
-                {hasGuests && type === General.GM_CHANNEL &&
-                    <View style={style.section}>
-                        <FormattedText
-                            style={style.header}
-                            id='channel_info.hasGuests'
-                            defaultMessage='This group message has guests'
-                        />
-                    </View>}
-                {hasGuests && type === General.DM_CHANNEL &&
-                    <View style={style.section}>
-                        <FormattedText
-                            style={style.header}
-                            id='channel_info.isGuest'
-                            defaultMessage='This person is a guest'
-                        />
-                    </View>}
-                {hasGuests && (type === General.OPEN_CHANNEL || type === General.PRIVATE_CHANNEL) &&
-                    <View style={style.section}>
-                        <FormattedText
-                            style={style.header}
-                            id='channel_info.channelHasGuests'
-                            defaultMessage='This channel has guests'
-                        />
-                    </View>}
+                {this.renderHasGuestText(style, hasGuests, type)}
                 {purpose.length > 0 &&
                     <View style={style.section}>
                         <FormattedText

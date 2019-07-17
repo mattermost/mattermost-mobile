@@ -66,6 +66,10 @@ export default class ChannelInfo extends PureComponent {
         isBot: PropTypes.bool.isRequired,
     };
 
+    static defaultProps = {
+        currentChannelGuestCount: 0,
+    }
+
     static contextTypes = {
         intl: intlShape.isRequired,
     };

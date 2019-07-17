@@ -59,7 +59,7 @@ export default class ChannelTitle extends PureComponent {
             hasGuestsText = (
                 <View style={style.guestsWrapper}>
                     <FormattedText
-                        id='channel_title.isGuest'
+                        id='channel.isGuest'
                         numberOfLines={1}
                         ellipsizeMode='tail'
                         defaultMessage='This person is a guest'
@@ -74,7 +74,7 @@ export default class ChannelTitle extends PureComponent {
                 hasGuestsText = (
                     <View style={style.guestsWrapper}>
                         <FormattedText
-                            id='channel_title.hasGuests'
+                            id='channel.hasGuests'
                             numberOfLines={1}
                             ellipsizeMode='tail'
                             defaultMessage='This group message has guests'
@@ -86,7 +86,7 @@ export default class ChannelTitle extends PureComponent {
                 hasGuestsText = (
                     <View style={style.guestsWrapper}>
                         <FormattedText
-                            id='channel_title.channelHasGuests'
+                            id='channel.channelHasGuests'
                             numberOfLines={1}
                             ellipsizeMode='tail'
                             defaultMessage='This channel has guests'

@@ -23,9 +23,7 @@ function mapStateToProps(state) {
     if (currentChannel && currentChannel.type === General.DM_CHANNEL) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
-        if (isGuest(teammate)) {
-            isTeammateGuest = true;
-        }
+        isTeammateGuest = isGuest(teammate);
     }
 
     return {

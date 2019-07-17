@@ -66,7 +66,7 @@ export default class ChannelNavBar extends PureComponent {
         switch (Platform.OS) {
         case 'android':
             height = ANDROID_TOP_PORTRAIT;
-            if (!DeviceTypes.IS_TABLET && isLandscape) {
+            if (DeviceTypes.IS_TABLET) {
                 height = ANDROID_TOP_LANDSCAPE;
                 canHaveSubtitle = false;
             }

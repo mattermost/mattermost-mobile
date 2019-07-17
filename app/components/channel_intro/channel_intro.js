@@ -103,7 +103,7 @@ class ChannelIntro extends PureComponent {
                             show={isGuest(member)}
                             theme={theme}
                         />
-                        <Text>
+                        <Text style={style.displayName}>
                             {index === currentChannelMembers.length - 1 ? '' : ', '}
                         </Text>
                     </View>

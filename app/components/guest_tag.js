@@ -27,7 +27,7 @@ export default class GuestTag extends PureComponent {
             <FormattedText
                 id='post_info.guest'
                 defaultMessage='GUEST'
-                style={this.props.inTitle ? style.guestTitle : style.guest}
+                style={[style.guest, this.props.inTitle ? style.guestTitle : null]}
             />
         );
     }
@@ -48,16 +48,8 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 4,
         },
         guestTitle: {
-            alignSelf: 'center',
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.15),
-            borderRadius: 2,
             color: changeOpacity(theme.sidebarHeaderTextColor, 0.6),
-            fontSize: 10,
-            fontWeight: '600',
-            marginRight: 5,
-            marginLeft: 5,
-            paddingVertical: 2,
-            paddingHorizontal: 4,
         },
     };
 });
