@@ -26,7 +26,7 @@
     "prop-types": "15.7.2",
     "react": "16.8.6",
     "react-intl": "2.8.0",
-    "react-native": "0.59.8",
+    "react-native": "0.60.3",
     "react-native-animatable": "1.3.2",
     "react-native-button": "2.4.0",
     "react-native-calendars": "github:mattermost/react-native-calendars#4937ec5a3bf7e86f9f35fcd85eb4aa6133f45b58",
