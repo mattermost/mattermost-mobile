@@ -30,7 +30,7 @@ function mapStateToProps(state) {
         currentChannelName: currentChannel ? currentChannel.display_name : '',
         isArchived: currentChannel ? currentChannel.delete_at !== 0 : false,
         displayName: state.views.channel.displayName,
-        channelType: currentChannel.type,
+        channelType: currentChannel && currentChannel.type,
         isChannelMuted: isChannelMuted(myChannelMember),
         theme: getTheme(state),
         isGuest: isTeammateGuest,

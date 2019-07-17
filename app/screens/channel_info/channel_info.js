@@ -55,6 +55,7 @@ export default class ChannelInfo extends PureComponent {
         currentChannelMemberCount: PropTypes.number,
         currentChannelGuestCount: PropTypes.number,
         currentUserId: PropTypes.string,
+        currentUserIsGuest: PropTypes.bool,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
         isChannelMuted: PropTypes.bool.isRequired,
@@ -338,11 +339,12 @@ export default class ChannelInfo extends PureComponent {
 
     renderLeaveOrDeleteChannelRow = () => {
         const channel = this.props.currentChannel;
+        const isGuest = this.props.currentUserIsGuest;
         const isDefaultChannel = channel.name === General.DEFAULT_CHANNEL;
         const isDirectMessage = channel.type === General.DM_CHANNEL;
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
-        return !isDefaultChannel && !isDirectMessage && !isGroupMessage;
+        return (!isDefaultChannel && !isDirectMessage && !isGroupMessage) || (isDefaultChannel && isGuest);
     };
 
     renderCloseDirect = () => {
