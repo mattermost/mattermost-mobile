@@ -12,13 +12,14 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import GuestTag from 'app/components/guest_tag';
+import {General} from 'mattermost-redux/constants';
 import FormattedText from 'app/components/formatted_text';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
         currentChannelName: PropTypes.string,
         displayName: PropTypes.string,
+        channelType: PropTypes.string,
         isChannelMuted: PropTypes.bool,
         onPress: PropTypes.func,
         theme: PropTypes.object,
@@ -48,33 +49,52 @@ export default class ChannelTitle extends PureComponent {
     }
 
     render() {
-        const {currentChannelName, displayName, isChannelMuted, onPress, theme, isGuest, hasGuests, canHaveSubtitle} = this.props;
+        const {currentChannelName, displayName, channelType, isChannelMuted, onPress, theme, isGuest, hasGuests, canHaveSubtitle} = this.props;
 
         const style = getStyle(theme);
 
         const channelName = displayName || currentChannelName;
-        let guestBadge = null;
-        if (isGuest) {
-            guestBadge = (
-                <GuestTag
-                    theme={this.props.theme}
-                    inTitle={true}
-                />
-            );
-        }
         let hasGuestsText = null;
-        if (hasGuests && canHaveSubtitle) {
+        if (isGuest && canHaveSubtitle) {
             hasGuestsText = (
                 <View style={style.guestsWrapper}>
                     <FormattedText
-                        id='channel_title.hasGuests'
+                        id='channel_title.isGuest'
                         numberOfLines={1}
                         ellipsizeMode='tail'
-                        defaultMessage='This group message has guests'
+                        defaultMessage='This person is a guest'
                         style={style.guestsText}
                     />
                 </View>
             );
+        }
+
+        if (hasGuests && canHaveSubtitle) {
+            if (channelType === General.GM_CHANNEL) {
+                hasGuestsText = (
+                    <View style={style.guestsWrapper}>
+                        <FormattedText
+                            id='channel_title.hasGuests'
+                            numberOfLines={1}
+                            ellipsizeMode='tail'
+                            defaultMessage='This group message has guests'
+                            style={style.guestsText}
+                        />
+                    </View>
+                );
+            } else if (channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL) {
+                hasGuestsText = (
+                    <View style={style.guestsWrapper}>
+                        <FormattedText
+                            id='channel_title.channelHasGuests'
+                            numberOfLines={1}
+                            ellipsizeMode='tail'
+                            defaultMessage='This channel has guests'
+                            style={style.guestsText}
+                        />
+                    </View>
+                );
+            }
         }
 
         let icon;
@@ -113,7 +133,6 @@ export default class ChannelTitle extends PureComponent {
                     >
                         {channelName}
                     </Text>
-                    {guestBadge}
                     {icon}
                     {mutedIcon}
                 </View>

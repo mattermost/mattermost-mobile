@@ -9,6 +9,8 @@ import {
     Platform,
 } from 'react-native';
 
+import {General} from 'mattermost-redux/constants';
+
 import ChannelIcon from 'app/components/channel_icon';
 import FormattedDate from 'app/components/formatted_date';
 import FormattedText from 'app/components/formatted_text';
@@ -30,6 +32,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
+        hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
     };
 
@@ -48,6 +51,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isArchived,
             isBot,
             isGroupConstrained,
+            hasGuests,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -78,6 +82,30 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
+                {hasGuests && type === General.GM_CHANNEL &&
+                    <View style={style.section}>
+                        <FormattedText
+                            style={style.header}
+                            id='channel_info.hasGuests'
+                            defaultMessage='This group message has guests'
+                        />
+                    </View>}
+                {hasGuests && type === General.DM_CHANNEL &&
+                    <View style={style.section}>
+                        <FormattedText
+                            style={style.header}
+                            id='channel_info.isGuest'
+                            defaultMessage='This person is a guest'
+                        />
+                    </View>}
+                {hasGuests && (type === General.OPEN_CHANNEL || type === General.PRIVATE_CHANNEL) &&
+                    <View style={style.section}>
+                        <FormattedText
+                            style={style.header}
+                            id='channel_info.channelHasGuests'
+                            defaultMessage='This channel has guests'
+                        />
+                    </View>}
                 {purpose.length > 0 &&
                     <View style={style.section}>
                         <FormattedText

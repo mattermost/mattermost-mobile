@@ -53,6 +53,7 @@ export default class ChannelInfo extends PureComponent {
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
+        currentChannelGuestCount: PropTypes.number,
         currentUserId: PropTypes.string,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -471,6 +472,7 @@ export default class ChannelInfo extends PureComponent {
             currentChannel,
             currentChannelCreatorName,
             currentChannelMemberCount,
+            currentChannelGuestCount,
             status,
             theme,
             isBot,
@@ -512,6 +514,7 @@ export default class ChannelInfo extends PureComponent {
                         type={currentChannel.type}
                         isArchived={currentChannel.delete_at !== 0}
                         isBot={isBot}
+                        hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
                     />
                     }
