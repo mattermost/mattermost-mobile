@@ -18,7 +18,6 @@ export default class AttachmentText extends PureComponent {
         deviceHeight: PropTypes.number.isRequired,
         hasThumbnail: PropTypes.bool,
         metadata: PropTypes.object,
-        navigator: PropTypes.object.isRequired,
         onPermalinkPress: PropTypes.func,
         textStyles: PropTypes.object.isRequired,
         value: PropTypes.string,
@@ -68,7 +67,6 @@ export default class AttachmentText extends PureComponent {
             blockStyles,
             hasThumbnail,
             metadata,
-            navigator,
             onPermalinkPress,
             value,
             textStyles,
@@ -97,7 +95,6 @@ export default class AttachmentText extends PureComponent {
                             blockStyles={blockStyles}
                             imagesMetadata={metadata?.images}
                             value={value}
-                            navigator={navigator}
                             onPermalinkPress={onPermalinkPress}
                         />
                     </View>

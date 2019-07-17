@@ -8,6 +8,7 @@ import {Alert, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {DocumentPickerUtil} from 'react-native-document-picker';
+import {Navigation} from 'react-native-navigation';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -87,10 +88,16 @@ export default class EditProfile extends PureComponent {
             setProfileImageUri: PropTypes.func.isRequired,
             removeProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
         }).isRequired,
-        config: PropTypes.object.isRequired,
+        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
-        navigator: PropTypes.object.isRequired,
+        firstNameDisabled: PropTypes.bool.isRequired,
+        lastNameDisabled: PropTypes.bool.isRequired,
+        nicknameDisabled: PropTypes.bool.isRequired,
+        positionDisabled: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         commandType: PropTypes.string.isRequired,
     };
@@ -101,7 +108,7 @@ export default class EditProfile extends PureComponent {
 
     rightButton = {
         id: 'update-profile',
-        disabled: true,
+        enabled: false,
         showAsAction: 'always',
     };
 
@@ -112,10 +119,9 @@ export default class EditProfile extends PureComponent {
         const buttons = {
             rightButtons: [this.rightButton],
         };
-        this.rightButton.title = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
+        this.rightButton.text = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        props.navigator.setButtons(buttons);
+        props.actions.setButtons(props.componentId, buttons);
 
         this.state = {
             email,
@@ -125,6 +131,21 @@ export default class EditProfile extends PureComponent {
             position,
             username,
         };
+    }
+
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'update-profile':
+            this.submitUser();
+            break;
+        case 'close-settings':
+            this.close();
+            break;
+        }
     }
 
     canUpdate = (updatedField) => {
@@ -158,21 +179,21 @@ export default class EditProfile extends PureComponent {
     };
 
     close = () => {
-        if (this.props.commandType === 'Push') {
-            this.props.navigator.pop();
+        const {commandType, actions} = this.props;
+        if (commandType === 'Push') {
+            actions.popTopScreen();
         } else {
-            this.props.navigator.dismissModal({
-                animationType: 'slide-down',
-            });
+            actions.dismissModal();
         }
     };
 
     emitCanUpdateAccount = (enabled) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     handleRequestError = (error) => {
@@ -236,9 +257,7 @@ export default class EditProfile extends PureComponent {
     handleRemoveProfileImage = () => {
         this.setState({profileImageRemove: true});
         this.emitCanUpdateAccount(true);
-        this.props.navigator.dismissModal({
-            animationType: 'none',
-        });
+        this.props.actions.dismissModal();
     }
 
     uploadProfileImage = async () => {
@@ -276,19 +295,6 @@ export default class EditProfile extends PureComponent {
         });
     };
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'update-profile':
-                this.submitUser();
-                break;
-            case 'close-settings':
-                this.close();
-                break;
-            }
-        }
-    };
-
     onShowFileSizeWarning = (filename) => {
         const {formatMessage} = this.context.intl;
         const fileSizeWarning = formatMessage({
@@ -316,16 +322,12 @@ export default class EditProfile extends PureComponent {
 
     renderFirstNameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {firstNameDisabled, theme} = this.props;
         const {firstName} = this.state;
-
-        const {auth_service: service} = currentUser;
-        const disabled = (service === 'ldap' && config.LdapFristNameAttributeSet === 'true') ||
-            (service === 'saml' && config.SamlFirstNameAttributeSet === 'true');
 
         return (
             <TextSetting
-                disabled={disabled}
+                disabled={firstNameDisabled}
                 id='firstName'
                 label={holders.firstName}
                 disabledText={formatMessage({
@@ -341,17 +343,13 @@ export default class EditProfile extends PureComponent {
 
     renderLastNameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {lastNameDisabled, theme} = this.props;
         const {lastName} = this.state;
-
-        const {auth_service: service} = currentUser;
-        const disabled = (service === 'ldap' && config.LdapLastNameAttributeSet === 'true') ||
-            (service === 'saml' && config.SamlLastNameAttributeSet === 'true');
 
         return (
             <View>
                 <TextSetting
-                    disabled={disabled}
+                    disabled={lastNameDisabled}
                     id='lastName'
                     label={holders.lastName}
                     disabledText={formatMessage({
@@ -453,16 +451,12 @@ export default class EditProfile extends PureComponent {
 
     renderNicknameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {nicknameDisabled, theme} = this.props;
         const {nickname} = this.state;
-
-        const {auth_service: service} = currentUser;
-        const disabled = (service === 'ldap' && config.LdapNicknameAttributeSet === 'true') ||
-            (service === 'saml' && config.SamlNicknameAttributeSet === 'true');
 
         return (
             <TextSetting
-                disabled={disabled}
+                disabled={nicknameDisabled}
                 id='nickname'
                 label={holders.nickname}
                 disabledText={formatMessage({
@@ -479,15 +473,12 @@ export default class EditProfile extends PureComponent {
 
     renderPositionSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {config, currentUser, theme} = this.props;
+        const {positionDisabled, theme} = this.props;
         const {position} = this.state;
-
-        const {auth_service: service} = currentUser;
-        const disabled = (service === 'ldap' || service === 'saml') && config.PositionAttribute === 'true';
 
         return (
             <TextSetting
-                disabled={disabled}
+                disabled={positionDisabled}
                 id='position'
                 label={holders.position}
                 disabledText={formatMessage({
@@ -510,7 +501,6 @@ export default class EditProfile extends PureComponent {
         const {
             currentUser,
             theme,
-            navigator,
         } = this.props;
 
         const {
@@ -531,7 +521,6 @@ export default class EditProfile extends PureComponent {
                     canTakeVideo={false}
                     canBrowseVideoLibrary={false}
                     maxFileSize={MAX_SIZE}
-                    navigator={navigator}
                     wrapper={true}
                     uploadFiles={this.handleUploadProfileImage}
                     removeProfileImage={this.handleRemoveProfileImage}

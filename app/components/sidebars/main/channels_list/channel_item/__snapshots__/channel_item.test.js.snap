@@ -2,11 +2,10 @@
 
 exports[`ChannelItem should match snapshot 1`] = `
 <AnimatedComponent>
-  <TouchableHighlight
-    activeOpacity={0.85}
-    delayPressOut={100}
-    onLongPress={[Function]}
+  <TouchablePreview
     onPress={[Function]}
+    onPressIn={[Function]}
+    touchableComponent={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
     <View
@@ -81,14 +80,12 @@ exports[`ChannelItem should match snapshot 1`] = `
           style={
             Array [
               Object {
+                "alignSelf": "center",
                 "color": "rgba(255,255,255,0.4)",
                 "flex": 1,
                 "fontSize": 14,
                 "fontWeight": "600",
-                "height": "100%",
-                "lineHeight": 44,
                 "paddingRight": 10,
-                "textAlignVertical": "center",
               },
               Object {
                 "color": "#ffffff",
@@ -100,17 +97,16 @@ exports[`ChannelItem should match snapshot 1`] = `
         </Text>
       </View>
     </View>
-  </TouchableHighlight>
+  </TouchablePreview>
 </AnimatedComponent>
 `;
 
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) 1`] = `
 <AnimatedComponent>
-  <TouchableHighlight
-    activeOpacity={0.85}
-    delayPressOut={100}
-    onLongPress={[Function]}
+  <TouchablePreview
     onPress={[Function]}
+    onPressIn={[Function]}
+    touchableComponent={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
     <View
@@ -196,14 +192,12 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           style={
             Array [
               Object {
+                "alignSelf": "center",
                 "color": "rgba(255,255,255,0.4)",
                 "flex": 1,
                 "fontSize": 14,
                 "fontWeight": "600",
-                "height": "100%",
-                "lineHeight": 44,
                 "paddingRight": 10,
-                "textAlignVertical": "center",
               },
               Object {
                 "color": "#ffffff",
@@ -215,17 +209,16 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         </Text>
       </View>
     </View>
-  </TouchableHighlight>
+  </TouchablePreview>
 </AnimatedComponent>
 `;
 
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) when isSearchResult 1`] = `
 <AnimatedComponent>
-  <TouchableHighlight
-    activeOpacity={0.85}
-    delayPressOut={100}
-    onLongPress={[Function]}
+  <TouchablePreview
     onPress={[Function]}
+    onPressIn={[Function]}
+    touchableComponent={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
     <View
@@ -311,14 +304,12 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           style={
             Array [
               Object {
+                "alignSelf": "center",
                 "color": "rgba(255,255,255,0.4)",
                 "flex": 1,
                 "fontSize": 14,
                 "fontWeight": "600",
-                "height": "100%",
-                "lineHeight": 44,
                 "paddingRight": 10,
-                "textAlignVertical": "center",
               },
               Object {
                 "color": "#ffffff",
@@ -330,17 +321,16 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         </Text>
       </View>
     </View>
-  </TouchableHighlight>
+  </TouchablePreview>
 </AnimatedComponent>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and is currentChannel 1`] = `
 <AnimatedComponent>
-  <TouchableHighlight
-    activeOpacity={0.85}
-    delayPressOut={100}
-    onLongPress={[Function]}
+  <TouchablePreview
     onPress={[Function]}
+    onPressIn={[Function]}
+    touchableComponent={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
     <View
@@ -426,14 +416,12 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           style={
             Array [
               Object {
+                "alignSelf": "center",
                 "color": "rgba(255,255,255,0.4)",
                 "flex": 1,
                 "fontSize": 14,
                 "fontWeight": "600",
-                "height": "100%",
-                "lineHeight": 44,
                 "paddingRight": 10,
-                "textAlignVertical": "center",
               },
               Object {
                 "color": "#ffffff",
@@ -445,17 +433,16 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         </Text>
       </View>
     </View>
-  </TouchableHighlight>
+  </TouchablePreview>
 </AnimatedComponent>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and is searchResult 1`] = `
 <AnimatedComponent>
-  <TouchableHighlight
-    activeOpacity={0.85}
-    delayPressOut={100}
-    onLongPress={[Function]}
+  <TouchablePreview
     onPress={[Function]}
+    onPressIn={[Function]}
+    touchableComponent={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
     <View
@@ -530,14 +517,12 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           style={
             Array [
               Object {
+                "alignSelf": "center",
                 "color": "rgba(255,255,255,0.4)",
                 "flex": 1,
                 "fontSize": 14,
                 "fontWeight": "600",
-                "height": "100%",
-                "lineHeight": 44,
                 "paddingRight": 10,
-                "textAlignVertical": "center",
               },
               Object {
                 "color": "#ffffff",
@@ -549,7 +534,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         </Text>
       </View>
     </View>
-  </TouchableHighlight>
+  </TouchablePreview>
 </AnimatedComponent>
 `;
 
@@ -561,11 +546,10 @@ exports[`ChannelItem should match snapshot for showUnreadForMsgs 1`] = `null`;
 
 exports[`ChannelItem should match snapshot with draft 1`] = `
 <AnimatedComponent>
-  <TouchableHighlight
-    activeOpacity={0.85}
-    delayPressOut={100}
-    onLongPress={[Function]}
+  <TouchablePreview
     onPress={[Function]}
+    onPressIn={[Function]}
+    touchableComponent={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
     <View
@@ -640,14 +624,12 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           style={
             Array [
               Object {
+                "alignSelf": "center",
                 "color": "rgba(255,255,255,0.4)",
                 "flex": 1,
                 "fontSize": 14,
                 "fontWeight": "600",
-                "height": "100%",
-                "lineHeight": 44,
                 "paddingRight": 10,
-                "textAlignVertical": "center",
               },
               Object {
                 "color": "#ffffff",
@@ -659,17 +641,16 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         </Text>
       </View>
     </View>
-  </TouchableHighlight>
+  </TouchablePreview>
 </AnimatedComponent>
 `;
 
 exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
 <AnimatedComponent>
-  <TouchableHighlight
-    activeOpacity={0.85}
-    delayPressOut={100}
-    onLongPress={[Function]}
+  <TouchablePreview
     onPress={[Function]}
+    onPressIn={[Function]}
+    touchableComponent={[Function]}
     underlayColor="rgba(69,120,191,0.5)"
   >
     <View
@@ -746,14 +727,12 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           style={
             Array [
               Object {
+                "alignSelf": "center",
                 "color": "rgba(255,255,255,0.4)",
                 "flex": 1,
                 "fontSize": 14,
                 "fontWeight": "600",
-                "height": "100%",
-                "lineHeight": 44,
                 "paddingRight": 10,
-                "textAlignVertical": "center",
               },
               Object {
                 "color": "#ffffff",
@@ -789,6 +768,6 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         />
       </View>
     </View>
-  </TouchableHighlight>
+  </TouchablePreview>
 </AnimatedComponent>
 `;

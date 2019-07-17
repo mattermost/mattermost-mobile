@@ -126,28 +126,30 @@ import os.log
     
     public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?) {
         let store = StoreManager.shared() as StoreManager
-        let _ = store.getEntities(true)
-        let serverURL = store.getServerUrl()
-        let sessionToken = store.getToken()
-        let urlString = "\(serverURL!)/api/v4/notifications/ack"
-        
-        if (notificationId != nil) {
-            let jsonObject: [String: Any] = [
-                "id": notificationId as Any,
-                "received_at": receivedAt,
-                "platform": "ios",
-                "type": type as Any
-            ]
+        let entities = store.getEntities(true)
+        if (entities != nil) {
+            let serverURL = store.getServerUrl()
+            let sessionToken = store.getToken()
+            let urlString = "\(serverURL!)/api/v4/notifications/ack"
             
-            if !JSONSerialization.isValidJSONObject(jsonObject) {return}
-            
-            guard let url = URL(string: urlString) else {return}
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("Bearer \(sessionToken!)", forHTTPHeaderField: "Authorization")
-            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted)
-            URLSession(configuration: .ephemeral).dataTask(with: request).resume()
+            if (notificationId != nil) {
+                let jsonObject: [String: Any] = [
+                    "id": notificationId as Any,
+                    "received_at": receivedAt,
+                    "platform": "ios",
+                    "type": type as Any
+                ]
+
+                if !JSONSerialization.isValidJSONObject(jsonObject) {return}
+
+                guard let url = URL(string: urlString) else {return}
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                request.setValue("Bearer \(sessionToken!)", forHTTPHeaderField: "Authorization")
+                request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+                request.httpBody = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted)
+                URLSession(configuration: .ephemeral).dataTask(with: request).resume()
+            }
         }
     }
 }

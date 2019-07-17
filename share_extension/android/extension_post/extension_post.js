@@ -21,7 +21,6 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
 import RNFetchBlob from 'rn-fetch-blob';
-import {getGenericPassword} from 'react-native-keychain';
 
 import {Client4} from 'mattermost-redux/client';
 import {Preferences} from 'mattermost-redux/constants';
@@ -30,8 +29,8 @@ import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_
 import Loading from 'app/components/loading';
 import PaperPlane from 'app/components/paper_plane';
 import {MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
 import mattermostManaged from 'app/mattermost_managed';
-import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 import {getExtensionFromMime} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {setCSRFFromCookie} from 'app/utils/security';
@@ -49,7 +48,6 @@ import {
 import ChannelButton from './channel_button';
 import TeamButton from './team_button';
 
-const {Initialization} = NativeModules;
 const defaultTheme = Preferences.THEMES.default;
 const extensionSvg = {
     csv: ExcelSvg,
@@ -232,32 +230,18 @@ export default class ExtensionPost extends PureComponent {
 
     getAppCredentials = async () => {
         try {
-            const credentials = await avoidNativeBridge(
-                () => {
-                    return Initialization.credentialsExist;
-                },
-                () => {
-                    return Initialization.credentials;
-                },
-                () => {
-                    return getGenericPassword();
-                }
-            );
+            const url = await getCurrentServerUrl();
+            const credentials = await getAppCredentials();
 
             if (credentials) {
-                const passwordParsed = credentials.password.split(',');
+                const token = credentials.password;
 
-                // password == token, url
-                if (passwordParsed.length === 2) {
-                    const [token, url] = passwordParsed;
-
-                    if (url && url !== 'undefined' && token && token !== 'undefined') {
-                        this.token = token;
-                        this.url = url;
-                        Client4.setUrl(url);
-                        Client4.setToken(token);
-                        await setCSRFFromCookie(url);
-                    }
+                if (url && url !== 'undefined' && token && token !== 'undefined') {
+                    this.token = token;
+                    this.url = url;
+                    Client4.setUrl(url);
+                    Client4.setToken(token);
+                    await setCSRFFromCookie(url);
                 }
             }
         } catch (error) {

@@ -27,6 +27,7 @@
 	- remotedev-utils
 	- socketcluster-client
 	- stacktrace-parser
+	- react-navigation
 8. Change development versions of certain files to production ones:
 	- configureStore.dev.js -> configureStore.prod.js
 	- react/cjs/react.development.js -> react/cjs/react.production.min.js

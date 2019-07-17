@@ -6,8 +6,6 @@ import {shallow} from 'enzyme';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
-import {emptyFunction} from 'app/utils/general';
-
 import SectionItem from 'app/screens/settings/section_item';
 
 import NotificationSettingsEmailIos from './notification_settings_email.ios.js';
@@ -31,7 +29,6 @@ describe('NotificationSettingsEmailIos', () => {
         currentUser: {id: 'current_user_id'},
         emailInterval: '30',
         enableEmailBatching: false,
-        navigator: {setOnNavigatorEvent: emptyFunction},
         actions: {
             updateMe: jest.fn(),
             savePreferences: jest.fn(),
@@ -39,6 +36,7 @@ describe('NotificationSettingsEmailIos', () => {
         sendEmailNotifications: true,
         siteName: 'Mattermost',
         theme: Preferences.THEMES.default,
+        componentId: 'component-id',
     };
 
     test('should match snapshot, renderEmailSection', () => {
@@ -57,13 +55,13 @@ describe('NotificationSettingsEmailIos', () => {
         const instance = wrapper.instance();
 
         // should not save preference if email interval has not changed.
-        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        instance.componentDidDisappear();
         expect(baseProps.actions.updateMe).toHaveBeenCalledTimes(0);
         expect(baseProps.actions.savePreferences).toHaveBeenCalledTimes(0);
 
         // should save preference if email interval has changed.
         wrapper.setState({newInterval: '0'});
-        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        instance.componentDidDisappear();
         expect(baseProps.actions.updateMe).toHaveBeenCalledTimes(1);
         expect(baseProps.actions.savePreferences).toHaveBeenCalledTimes(1);
     });

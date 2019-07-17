@@ -29,11 +29,8 @@ export default class FormattedTime extends React.PureComponent {
         } = this.props;
 
         if (timeZone) {
-            return intl.formatDate(moment.tz(value, timeZone).toDate(), {
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12,
-            });
+            const format = hour12 ? 'hh:mm A' : 'HH:mm';
+            return moment.tz(value, timeZone).format(format);
         }
 
         // If no timezone is defined fallback to the previous implementation

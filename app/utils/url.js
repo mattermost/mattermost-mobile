@@ -103,9 +103,10 @@ export function matchDeepLink(url, serverURL, siteURL) {
         return null;
     }
 
-    const linkRoot = `(?:${escapeRegex(serverURL)}|${escapeRegex(siteURL)})?`;
+    const linkRoot = `(?:${escapeRegex('mattermost:/')}|${escapeRegex(serverURL)}|${escapeRegex(siteURL)})?`;
 
     let match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
+
     if (match) {
         return {type: DeepLinkTypes.CHANNEL, teamName: match[1], channelName: match[2]};
     }
