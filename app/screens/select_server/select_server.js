@@ -36,6 +36,7 @@ import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
+import {changeOpacity} from 'app/utils/theme';
 
 import telemetry from 'app/telemetry';
 
@@ -448,6 +449,7 @@ export default class SelectServer extends PureComponent {
                                 id: 'mobile.components.select_server_view.siteUrlPlaceholder',
                                 defaultMessage: 'https://mattermost.example.com',
                             })}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
