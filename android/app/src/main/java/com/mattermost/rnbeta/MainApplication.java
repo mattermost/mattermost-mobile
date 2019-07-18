@@ -1,7 +1,5 @@
 package com.mattermost.rnbeta;
 
-import com.levelasquez.androidopensettings.AndroidOpenSettingsPackage;
-import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.content.Context;
@@ -34,6 +32,7 @@ import com.oblador.keychain.KeychainModule;
 import com.reactnativecommunity.asyncstorage.AsyncStorageModule;
 import com.reactnativecommunity.netinfo.NetInfoModule;
 import com.reactnativecommunity.webview.RNCWebViewModule;
+import com.levelasquez.androidopensettings.AndroidOpenSettings;
 
 import com.brentvatne.react.ReactVideoPackage;
 import com.BV.LinearGradient.LinearGradientPackage;
@@ -43,7 +42,6 @@ import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.react.NavigationReactNativeHost;
 import com.reactnativenavigation.react.ReactGateway;
-import com.wix.reactnativenotifications.RNNotificationsPackage;
 import com.wix.reactnativenotifications.core.notification.INotificationsApplication;
 import com.wix.reactnativenotifications.core.notification.IPushNotification;
 import com.wix.reactnativenotifications.core.notificationdrawer.IPushNotificationsDrawer;
@@ -154,6 +152,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return new NetInfoModule(reactContext);
                   case RNCWebViewModule.MODULE_NAME:
                     return new RNCWebViewModule(reactContext);
+                  case "RNAndroidOpenSettings":
+                    return new AndroidOpenSettings(reactContext);
                   default:
                     throw new IllegalArgumentException("Could not find module " + name);
                 }
@@ -188,6 +188,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put(AsyncStorageModule.NAME, new ReactModuleInfo(AsyncStorageModule.NAME, "com.reactnativecommunity.asyncstorage.AsyncStorageModule", false, false, false, false, false));
                     map.put(NetInfoModule.NAME, new ReactModuleInfo(NetInfoModule.NAME, "com.reactnativecommunity.netinfo.NetInfoModule", false, false, false, false, false));
                     map.put(RNCWebViewModule.MODULE_NAME, new ReactModuleInfo(RNCWebViewModule.MODULE_NAME, "com.reactnativecommunity.webview.RNCWebViewModule", false, false, false, false, false));
+                    map.put("RNAndroidOpenSettings", new ReactModuleInfo("RNAndroidOpenSettings", "com.levelasquez.androidopensettings.AndroidOpenSettings", false, false, false, false, false));
                     return map;
                   }
                 };
@@ -196,8 +197,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SvgPackage(),
             new LinearGradientPackage(),
             new ReactVideoPackage(),
-            new RNGestureHandlerPackage(),
-            new AndroidOpenSettingsPackage()
+            new RNGestureHandlerPackage()
     );
   }
 
