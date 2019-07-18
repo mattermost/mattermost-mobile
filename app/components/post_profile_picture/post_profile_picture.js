@@ -22,6 +22,7 @@ export default class PostProfilePicture extends PureComponent {
         theme: PropTypes.object,
         userId: PropTypes.string,
         isBot: PropTypes.bool,
+        isEmoji: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -39,6 +40,7 @@ export default class PostProfilePicture extends PureComponent {
             theme,
             userId,
             isBot,
+            isEmoji,
         } = this.props;
 
         if (isSystemMessage && !fromAutoResponder && !isBot) {
@@ -55,15 +57,26 @@ export default class PostProfilePicture extends PureComponent {
 
         if (fromWebHook && enablePostIconOverride) {
             const icon = overrideIconUrl ? {uri: overrideIconUrl} : webhookIcon;
+            const frameSize = ViewTypes.PROFILE_PICTURE_SIZE;
+            const pictureSize = isEmoji ? ViewTypes.PROFILE_PICTURE_EMOJI_SIZE : ViewTypes.PROFILE_PICTURE_SIZE;
+            const borderRadius = isEmoji ? 0 : ViewTypes.PROFILE_PICTURE_SIZE / 2;
 
             return (
-                <View>
+                <View
+                    style={{
+                        borderRadius,
+                        overflow: 'hidden',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: frameSize,
+                        width: frameSize,
+                    }}
+                >
                     <Image
                         source={icon}
                         style={{
-                            height: ViewTypes.PROFILE_PICTURE_SIZE,
-                            width: ViewTypes.PROFILE_PICTURE_SIZE,
-                            borderRadius: ViewTypes.PROFILE_PICTURE_SIZE / 2,
+                            height: pictureSize,
+                            width: pictureSize,
                         }}
                     />
                 </View>
