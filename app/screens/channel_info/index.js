@@ -29,6 +29,7 @@ import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from
 import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {isGuest} from 'app/utils/users';
 
 import {
     popTopScreen,
@@ -56,6 +57,7 @@ function mapStateToProps(state) {
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
+    let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
     const currentChannelMember = getMyCurrentChannelMembership(state);
     const currentUserId = getCurrentUserId(state);
     const favoriteChannels = getSortedFavoriteChannelIds(state);
@@ -77,6 +79,9 @@ function mapStateToProps(state) {
         if (teammate && teammate.is_bot) {
             isBot = true;
         }
+        if (isGuest(teammate)) {
+            currentChannelGuestCount = 1;
+        }
     }
 
     const isAdmin = checkIsAdmin(roles);
@@ -94,6 +99,7 @@ function mapStateToProps(state) {
         currentChannel,
         currentChannelCreatorName,
         currentChannelMemberCount,
+        currentChannelGuestCount,
         currentUserId,
         isChannelMuted: isChannelMuted(currentChannelMember),
         ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember && currentChannelMember.notify_props, currentUser.notify_props),

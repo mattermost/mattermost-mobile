@@ -9,12 +9,15 @@ import {
     Platform,
 } from 'react-native';
 
+import {General} from 'mattermost-redux/constants';
+
 import ChannelIcon from 'app/components/channel_icon';
 import FormattedDate from 'app/components/formatted_date';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
@@ -30,8 +33,39 @@ export default class ChannelInfoHeader extends React.PureComponent {
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
+        hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
     };
+
+    renderHasGuestText = (style) => {
+        const {type, hasGuests} = this.props;
+        if (!hasGuests) {
+            return null;
+        }
+
+        let messageId;
+        let defaultMessage;
+
+        if (type === General.GM_CHANNEL) {
+            messageId = t('channel.hasGuests');
+            defaultMessage = 'This group message has guests';
+        } else if (type === General.DM_CHANNEL) {
+            messageId = t('channel.isGuest');
+            defaultMessage = 'This person is a guest';
+        } else {
+            messageId = t('channel.channelHasGuests');
+            defaultMessage = 'This channel has guests';
+        }
+        return (
+            <View style={style.section}>
+                <FormattedText
+                    style={style.header}
+                    id={messageId}
+                    defaultMessage={defaultMessage}
+                />
+            </View>
+        );
+    }
 
     render() {
         const {
@@ -78,6 +112,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
+                {this.renderHasGuestText(style)}
                 {purpose.length > 0 &&
                     <View style={style.section}>
                         <FormattedText

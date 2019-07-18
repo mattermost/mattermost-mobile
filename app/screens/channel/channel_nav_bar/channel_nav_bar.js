@@ -62,6 +62,7 @@ export default class ChannelNavBar extends PureComponent {
         const padding = {paddingHorizontal: 0};
 
         let height;
+        let canHaveSubtitle = true;
         switch (Platform.OS) {
         case 'android':
             height = ANDROID_TOP_PORTRAIT;
@@ -75,10 +76,12 @@ export default class ChannelNavBar extends PureComponent {
                 height -= 1;
             } else if (isLandscape) {
                 height = IOS_TOP_LANDSCAPE;
+                canHaveSubtitle = false;
             }
 
             if (DeviceTypes.IS_IPHONE_X && isLandscape) {
                 padding.paddingHorizontal = 10;
+                canHaveSubtitle = false;
             }
             break;
         }
@@ -94,7 +97,10 @@ export default class ChannelNavBar extends PureComponent {
                     openDrawer={openChannelDrawer}
                     visible={drawerButtonVisible}
                 />
-                <ChannelTitle onPress={onPress}/>
+                <ChannelTitle
+                    onPress={onPress}
+                    canHaveSubtitle={canHaveSubtitle}
+                />
                 <ChannelSearchButton
                     theme={theme}
                 />
