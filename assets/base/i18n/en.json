@@ -159,6 +159,8 @@
   "mobile.channel_info.alertTitleDeleteChannel": "Archive {term}",
   "mobile.channel_info.alertTitleLeaveChannel": "Leave {term}",
   "mobile.channel_info.alertYes": "Yes",
+  "mobile.channel_info.copy_header": "Copy Header",
+  "mobile.channel_info.copy_purpose": "Copy Purpose",
   "mobile.channel_info.delete_failed": "We couldn't archive the channel {displayName}. Please check your connection and try again.",
   "mobile.channel_info.edit": "Edit Channel",
   "mobile.channel_info.privateChannel": "Private Channel",
