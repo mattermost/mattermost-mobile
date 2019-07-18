@@ -249,7 +249,7 @@ export default class SelectTeam extends PureComponent {
                     <View style={styles.headingContainer}>
                         <FormattedText
                             id='mobile.select_team.guest_cant_join_team'
-                            defaultMessage={'You don\'t belongs to any team and as a guest you can\'t join any team by yourself, you need to be invited or added by som  eone else.'}
+                            defaultMessage={'You don\'t belong to any team and as a guest you can\'t join any team by yourself, you need to be invited or added by som  eone else.'}
                             style={styles.heading}
                         />
                     </View>

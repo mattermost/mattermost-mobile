@@ -165,7 +165,7 @@ exports[`SelectTeam should match snapshot when user is a guest 1`] = `
     }
   >
     <FormattedText
-      defaultMessage="You don't belongs to any team and as a guest you can't join any team by yourself, you need to be invited or added by som  eone else."
+      defaultMessage="You don't belong to any team and as a guest you can't join any team by yourself, you need to be invited or added by som  eone else."
       id="mobile.select_team.guest_cant_join_team"
       style={
         Object {
