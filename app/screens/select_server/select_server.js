@@ -107,15 +107,15 @@ export default class SelectServer extends PureComponent {
         if (this.state.connected && this.props.hasConfigAndLicense && !(prevState.connected && prevProps.hasConfigAndLicense)) {
             if (LocalConfig.EnableMobileClientUpgrade) {
                 this.props.actions.setLastUpgradeCheck();
-                const {currentVersion, minVersion, latestVersion} = prevProps;
+                const {currentVersion, minVersion, latestVersion} = this.props;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
                 if (isUpgradeAvailable(upgradeType)) {
                     this.handleShowClientUpgrade(upgradeType);
                 } else {
-                    this.handleLoginOptions(prevProps);
+                    this.handleLoginOptions(this.props);
                 }
             } else {
-                this.handleLoginOptions(prevProps);
+                this.handleLoginOptions(this.props);
             }
         }
     }
