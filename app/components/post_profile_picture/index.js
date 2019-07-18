@@ -30,7 +30,7 @@ function mapStateToProps(state, ownProps) {
         overrideIconUrl,
         userId: post.user_id,
         isBot: (user ? user.is_bot : false),
-        isEmoji: post?.props?.override_icon_emoji?.length > 0, // eslint-disable-line camelcase
+        isEmoji: Boolean(post?.props?.override_icon_emoji), // eslint-disable-line camelcase
         theme: getTheme(state),
     };
 }
