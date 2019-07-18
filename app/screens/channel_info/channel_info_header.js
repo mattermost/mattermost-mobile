@@ -37,7 +37,8 @@ export default class ChannelInfoHeader extends React.PureComponent {
         isGroupConstrained: PropTypes.bool,
     };
 
-    renderHasGuestText = (style, hasGuests, type) => {
+    renderHasGuestText = (style) => {
+        const {type, hasGuests} = this.props;
         if (!hasGuests) {
             return null;
         }
@@ -81,7 +82,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isArchived,
             isBot,
             isGroupConstrained,
-            hasGuests,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -112,7 +112,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
-                {this.renderHasGuestText(style, hasGuests, type)}
+                {this.renderHasGuestText(style)}
                 {purpose.length > 0 &&
                     <View style={style.section}>
                         <FormattedText

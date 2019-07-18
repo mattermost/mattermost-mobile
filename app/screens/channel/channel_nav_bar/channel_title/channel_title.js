@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 import {General} from 'mattermost-redux/constants';
 import FormattedText from 'app/components/formatted_text';
 
@@ -48,55 +49,47 @@ export default class ChannelTitle extends PureComponent {
         return content;
     }
 
+    renderHasGuestsText = (style) => {
+        const {channelType, isGuest, hasGuests, canHaveSubtitle} = this.props;
+        if (!canHaveSubtitle) {
+            return null;
+        }
+        if (!isGuest && !hasGuests) {
+            return null;
+        }
+
+        let messageId;
+        let defaultMessage;
+        if (channelType === General.DM_CHANNEL) {
+            messageId = t('channel.isGuest');
+            defaultMessage = 'This person is a guest';
+        } else if (channelType === General.GM_CHANNEL) {
+            messageId = t('channel.hasGuests');
+            defaultMessage = 'This group message has guests';
+        } else {
+            messageId = t('channel.channelHasGuests');
+            defaultMessage = 'This channel has guests';
+        }
+        return (
+            <View style={style.guestsWrapper}>
+                <FormattedText
+                    numberOfLines={1}
+                    ellipsizeMode='tail'
+                    id={messageId}
+                    defaultMessage={defaultMessage}
+                    style={style.guestsText}
+                />
+            </View>
+        );
+    }
+
     render() {
-        const {currentChannelName, displayName, channelType, isChannelMuted, onPress, theme, isGuest, hasGuests, canHaveSubtitle} = this.props;
+        const {currentChannelName, displayName, isChannelMuted, onPress, theme} = this.props;
 
         const style = getStyle(theme);
 
         const channelName = displayName || currentChannelName;
-        let hasGuestsText = null;
-        if (isGuest && canHaveSubtitle) {
-            hasGuestsText = (
-                <View style={style.guestsWrapper}>
-                    <FormattedText
-                        id='channel.isGuest'
-                        numberOfLines={1}
-                        ellipsizeMode='tail'
-                        defaultMessage='This person is a guest'
-                        style={style.guestsText}
-                    />
-                </View>
-            );
-        }
-
-        if (hasGuests && canHaveSubtitle) {
-            if (channelType === General.GM_CHANNEL) {
-                hasGuestsText = (
-                    <View style={style.guestsWrapper}>
-                        <FormattedText
-                            id='channel.hasGuests'
-                            numberOfLines={1}
-                            ellipsizeMode='tail'
-                            defaultMessage='This group message has guests'
-                            style={style.guestsText}
-                        />
-                    </View>
-                );
-            } else if (channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL) {
-                hasGuestsText = (
-                    <View style={style.guestsWrapper}>
-                        <FormattedText
-                            id='channel.channelHasGuests'
-                            numberOfLines={1}
-                            ellipsizeMode='tail'
-                            defaultMessage='This channel has guests'
-                            style={style.guestsText}
-                        />
-                    </View>
-                );
-            }
-        }
-
+        const hasGuestsText = this.renderHasGuestsText(style);
         let icon;
         if (channelName) {
             icon = (
