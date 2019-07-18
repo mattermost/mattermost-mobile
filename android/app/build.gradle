@@ -87,7 +87,7 @@ if (System.getenv("SENTRY_ENABLED") == "true") {
         flavorAware: false
     ]
 
-    //apply from: "../../node_modules/react-native-sentry/sentry.gradle"
+    apply from: "../../node_modules/react-native-sentry/sentry.gradle"
 }
 
 /**
@@ -122,8 +122,9 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 208
-        versionName "1.21.0"
+        missingDimensionStrategy "RNN.reactNativeVersion", "reactNative57_5"
+        versionCode 209
+        versionName "1.21.1"
         multiDexEnabled = true
         ndk {
             abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
