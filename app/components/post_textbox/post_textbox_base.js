@@ -32,7 +32,6 @@ import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const PLACEHOLDER_COLOR = changeOpacity('#000', 0.5);
 const {RNTextInputReset} = NativeModules;
 
 export default class PostTextBoxBase extends PureComponent {
@@ -617,7 +616,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onChangeText={this.handleTextChange}
                         onSelectionChange={this.handlePostDraftSelectionChanged}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
-                        placeholderTextColor={PLACEHOLDER_COLOR}
+                        placeholderTextColor={changeOpacity('#000', 0.5)}
                         multiline={true}
                         blurOnSubmit={false}
                         underlineColorAndroid='transparent'
