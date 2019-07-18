@@ -11,6 +11,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId, getProfilesNotInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
 
+import {setButtons, popTopScreen} from 'app/actions/navigation';
 import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
 
 import ChannelAddMembers from './channel_add_members';
@@ -35,6 +36,8 @@ function mapDispatchToProps(dispatch) {
             getProfilesNotInChannel,
             handleAddChannelMembers,
             searchProfiles,
+            setButtons,
+            popTopScreen,
         }, dispatch),
     };
 }

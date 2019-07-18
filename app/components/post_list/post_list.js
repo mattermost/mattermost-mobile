@@ -41,6 +41,7 @@ export default class PostList extends PureComponent {
             refreshChannelWithRetry: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             setDeepLinkURL: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         deepLinkURL: PropTypes.string,
@@ -51,7 +52,6 @@ export default class PostList extends PureComponent {
         isSearchResult: PropTypes.bool,
         lastPostIndex: PropTypes.number.isRequired,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
-        navigator: PropTypes.object,
         onLoadMoreUp: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
@@ -250,7 +250,6 @@ export default class PostList extends PureComponent {
             isSearchResult: this.props.isSearchResult,
             location: this.props.location,
             managedConfig: mattermostManaged.getCachedConfig(),
-            navigator: this.props.navigator,
             onHashtagPress: this.props.onHashtagPress,
             onPermalinkPress: this.handlePermalinkPress,
             onPress: this.props.onPostPress,
@@ -281,7 +280,9 @@ export default class PostList extends PureComponent {
 
     scrollToBottom = () => {
         setTimeout(() => {
-            this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
+            if (this.flatListRef && this.flatListRef.current) {
+                this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
+            }
         }, 250);
     };
 
@@ -290,42 +291,40 @@ export default class PostList extends PureComponent {
             width > 0 &&
             height > 0 &&
             this.props.initialIndex > 0 &&
-            !this.hasDoneInitialScroll
+            !this.hasDoneInitialScroll &&
+            this.flatListRef?.current
         ) {
-            this.flatListRef.current.scrollToIndex({
-                animated: false,
-                index: this.props.initialIndex,
-                viewOffset: 50,
-                viewPosition: 0.5,
+            requestAnimationFrame(() => {
+                this.flatListRef.current.scrollToIndex({
+                    animated: false,
+                    index: this.props.initialIndex,
+                    viewOffset: 0,
+                    viewPosition: 1, // 0 is at bottom
+                });
             });
             this.hasDoneInitialScroll = true;
         }
     };
 
     showPermalinkView = (postId) => {
-        const {actions, navigator} = this.props;
+        const {actions} = this.props;
 
         actions.selectFocusedPostId(postId);
 
         if (!this.showingPermalink) {
+            const screen = 'Permalink';
+            const passProps = {
+                isPermalink: true,
+                onClose: this.handleClosePermalink,
+            };
             const options = {
-                screen: 'Permalink',
-                animationType: 'none',
-                backButtonTitle: '',
-                overrideBackPress: true,
-                navigatorStyle: {
-                    navBarHidden: true,
-                    screenBackgroundColor: changeOpacity('#000', 0.2),
-                    modalPresentationStyle: 'overCurrentContext',
-                },
-                passProps: {
-                    isPermalink: true,
-                    onClose: this.handleClosePermalink,
+                layout: {
+                    backgroundColor: changeOpacity('#000', 0.2),
                 },
             };
 
             this.showingPermalink = true;
-            navigator.showModal(options);
+            actions.showModalOverCurrentContext(screen, passProps, options);
         }
     };
 

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Clipboard, Platform, Text} from 'react-native';
+import {Clipboard, Text} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
@@ -14,10 +14,12 @@ import BottomSheet from 'app/utils/bottom_sheet';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
         isSearchResult: PropTypes.bool,
         mentionName: PropTypes.string.isRequired,
         mentionStyle: CustomPropTypes.Style,
-        navigator: PropTypes.object.isRequired,
         onPostPress: PropTypes.func,
         textStyle: CustomPropTypes.Style,
         teammateNameDisplay: PropTypes.string,
@@ -48,29 +50,15 @@ export default class AtMention extends React.PureComponent {
     }
 
     goToUserProfile = () => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
-        const options = {
-            screen: 'UserProfile',
-            title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
-            animated: true,
-            backButtonTitle: '',
-            passProps: {
-                userId: this.state.user.id,
-            },
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
+        const screen = 'UserProfile';
+        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+        const passProps = {
+            userId: this.state.user.id,
         };
 
-        if (Platform.OS === 'ios') {
-            navigator.push(options);
-        } else {
-            navigator.showModal(options);
-        }
+        actions.goToScreen(screen, title, passProps);
     };
 
     getUserDetailsFromMentionName(props) {

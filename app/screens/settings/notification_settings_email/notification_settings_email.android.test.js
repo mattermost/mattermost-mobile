@@ -6,7 +6,6 @@ import React from 'react';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
-import {emptyFunction} from 'app/utils/general';
 
 import RadioButtonGroup from 'app/components/radio_button';
 
@@ -23,7 +22,6 @@ describe('NotificationSettingsEmailAndroid', () => {
         currentUser: {id: 'current_user_id'},
         emailInterval: '30',
         enableEmailBatching: false,
-        navigator: {setOnNavigatorEvent: emptyFunction},
         actions: {
             updateMe: jest.fn(),
             savePreferences: jest.fn(),
@@ -31,6 +29,7 @@ describe('NotificationSettingsEmailAndroid', () => {
         sendEmailNotifications: true,
         siteName: 'Mattermost',
         theme: Preferences.THEMES.default,
+        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {
@@ -154,13 +153,15 @@ describe('NotificationSettingsEmailAndroid', () => {
         const instance = wrapper.instance();
         instance.saveEmailNotifyProps = jest.fn();
 
-        // should not save preference on back button on Android
+        // Back button on Android should close the modal and trigger
+        // componentDidDisappear.
+        // Should not save preference on back button on Android as
         // saving email preference on Android is done via Save button
-        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        instance.componentDidDisappear();
         expect(instance.saveEmailNotifyProps).toHaveBeenCalledTimes(0);
 
         wrapper.setState({newInterval: '0'});
-        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
+        instance.componentDidDisappear();
         expect(instance.saveEmailNotifyProps).toHaveBeenCalledTimes(0);
     });
 });

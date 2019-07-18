@@ -6,6 +6,8 @@ import {connect} from 'react-redux';
 
 import {login} from 'mattermost-redux/actions/users';
 
+import {popTopScreen} from 'app/actions/navigation';
+
 import Mfa from './mfa';
 
 function mapStateToProps(state) {
@@ -22,6 +24,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             login,
+            popTopScreen,
         }, dispatch),
     };
 }

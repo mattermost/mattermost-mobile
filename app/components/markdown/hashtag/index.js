@@ -4,14 +4,20 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {showSearchModal} from 'app/actions/views/search';
+import {
+    popToRoot,
+    showSearchModal,
+    dismissAllModals,
+} from 'app/actions/navigation';
 
 import Hashtag from './hashtag';
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            popToRoot,
             showSearchModal,
+            dismissAllModals,
         }, dispatch),
     };
 }

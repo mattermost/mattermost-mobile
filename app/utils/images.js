@@ -57,42 +57,25 @@ export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHe
     };
 };
 
-export function previewImageAtIndex(navigator, components, index, files) {
+export function previewImageAtIndex(components, index, files, showModalOverCurrentContext) {
     previewComponents = components;
     const component = components[index];
     if (component) {
         component.measure((rx, ry, width, height, x, y) => {
-            goToImagePreview(
-                navigator,
-                {
+            Keyboard.dismiss();
+            requestAnimationFrame(() => {
+                const screen = 'ImagePreview';
+                const passProps = {
                     index,
                     origin: {x, y, width, height},
                     target: {x: 0, y: 0, opacity: 1},
                     files,
                     getItemMeasures,
-                }
-            );
+                };
+                showModalOverCurrentContext(screen, passProps);
+            });
         });
     }
-}
-
-function goToImagePreview(navigator, passProps) {
-    Keyboard.dismiss();
-    requestAnimationFrame(() => {
-        navigator.showModal({
-            screen: 'ImagePreview',
-            title: '',
-            animationType: 'none',
-            passProps,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
-    });
 }
 
 function getItemMeasures(index, cb) {

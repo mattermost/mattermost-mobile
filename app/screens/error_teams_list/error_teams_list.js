@@ -7,6 +7,7 @@ import {
     InteractionManager,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
@@ -31,42 +32,42 @@ export default class ErrorTeamsList extends PureComponent {
             connection: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
-        navigator: PropTypes.object,
+        componentId: PropTypes.string,
         theme: PropTypes.object,
     };
 
     constructor(props) {
         super(props);
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         this.state = {
             loading: false,
         };
     }
 
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        const {logout} = this.props.actions;
+        if (buttonId === 'logout') {
+            InteractionManager.runAfterInteractions(logout);
         }
     }
 
     goToChannelView = () => {
-        const {navigator, theme} = this.props;
-
-        navigator.resetTo({
-            screen: 'Channel',
-            animated: false,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                disableTermsModal: true,
-            },
-        });
+        const passProps = {
+            disableTermsModal: true,
+        };
+        this.props.actions.resetToChannel(passProps);
     };
 
     getUserInfo = async () => {
@@ -82,15 +83,6 @@ export default class ErrorTeamsList extends PureComponent {
             this.setState({loading: false});
         }
     }
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            const {logout} = this.props.actions;
-            if (event.id === 'logout') {
-                InteractionManager.runAfterInteractions(logout);
-            }
-        }
-    };
 
     render() {
         const {theme} = this.props;

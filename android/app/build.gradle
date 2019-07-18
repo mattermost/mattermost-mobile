@@ -122,7 +122,8 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 201
+        missingDimensionStrategy "RNN.reactNativeVersion", "reactNative57_5"
+        versionCode 208
         versionName "1.21.0"
         multiDexEnabled = true
         ndk {
@@ -211,7 +212,7 @@ configurations.all {
 
 dependencies {
     // Make sure to put android-jsc at the top
-    implementation "org.webkit:android-jsc:r241213"
+    implementation "org.webkit:android-jsc-intl:r241213"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
@@ -225,7 +226,6 @@ dependencies {
     implementation project(':react-native-video')
     implementation project(':react-native-navigation')
     implementation project(':react-native-image-picker')
-    implementation project(':react-native-bottom-sheet')
     implementation project(':react-native-device-info')
     implementation project(':reactnativenotifications')
     implementation project(':react-native-cookies')

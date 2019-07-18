@@ -5,12 +5,14 @@ buildscript {
         buildToolsVersion = "28.0.3"
         minSdkVersion = 24
         compileSdkVersion = 28
-        targetSdkVersion = 26
+        targetSdkVersion = 28
         supportLibVersion = "28.0.0"
     }
     repositories {
         jcenter()
         google()
+        mavenLocal()
+        mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.3.1'
@@ -37,6 +39,7 @@ subprojects {
 allprojects {
     repositories {
         google()
+        mavenCentral()
         mavenLocal()
         jcenter()
         maven {
@@ -46,6 +49,9 @@ allprojects {
         maven {
             // Local Maven repo containing AARs with JSC library built for Android
             url "$rootDir/../node_modules/jsc-android/dist"
+        }
+        maven {
+            url "https://jitpack.io"
         }
     }
 }
