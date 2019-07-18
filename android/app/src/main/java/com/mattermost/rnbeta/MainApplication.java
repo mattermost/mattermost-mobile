@@ -1,12 +1,6 @@
 package com.mattermost.rnbeta;
 
-<<<<<<< HEAD
 import com.levelasquez.androidopensettings.AndroidOpenSettingsPackage;
-import com.mattermost.share.SharePackage;
-import com.mattermost.share.RealPathUtil;
-
-=======
->>>>>>> 55964d2fda5c688937ab5c2755f2b2e6cef8dcb2
 import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
