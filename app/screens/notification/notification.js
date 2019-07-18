@@ -16,6 +16,7 @@ import {Navigation} from 'react-native-navigation';
 import * as Animatable from 'react-native-animatable';
 import {PanGestureHandler} from 'react-native-gesture-handler';
 
+import {Client4} from 'mattermost-redux/client';
 import {isDirectChannel} from 'mattermost-redux/utils/channel_utils';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
@@ -167,7 +168,8 @@ export default class Notification extends PureComponent {
         );
 
         if (data.from_webhook && config.EnablePostIconOverride === 'true' && data.use_user_icon !== 'true') {
-            const wsIcon = data.override_icon_url ? {uri: data.override_icon_url} : webhookIcon;
+            const overrideIconURL = Client4.getAbsoluteUrl(data.override_icon_url); // eslint-disable-line camelcase
+            const wsIcon = data.override_icon_url ? {uri: overrideIconURL} : webhookIcon;
             icon = (
                 <Image
                     source={wsIcon}

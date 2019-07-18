@@ -22,6 +22,7 @@ import {GlobalStyles} from 'app/styles';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
+import {changeOpacity} from 'app/utils/theme';
 
 export default class ForgotPassword extends PureComponent {
     static propTypes = {
@@ -122,6 +123,7 @@ export default class ForgotPassword extends PureComponent {
                         style={GlobalStyles.inputBox}
                         onChangeText={this.changeEmail}
                         placeholder={formatMessage({id: 'login.email', defaultMessage: 'Email'})}
+                        placeholderTextColor={changeOpacity('#000', 0.5)}
                         autoCorrect={false}
                         autoCapitalize='none'
                         keyboardType='email-address'

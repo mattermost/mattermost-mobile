@@ -27,6 +27,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
+import {changeOpacity} from 'app/utils/theme';
 
 import telemetry from 'app/telemetry';
 
@@ -408,6 +409,7 @@ export default class Login extends PureComponent {
                             onChangeText={this.handleLoginIdChange}
                             style={GlobalStyles.inputBox}
                             placeholder={this.createLoginPlaceholder()}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
                             autoCorrect={false}
                             autoCapitalize='none'
                             keyboardType='email-address'
@@ -423,6 +425,7 @@ export default class Login extends PureComponent {
                             onChangeText={this.handlePasswordChange}
                             style={GlobalStyles.inputBox}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
                             secureTextEntry={true}
                             autoCorrect={false}
                             autoCapitalize='none'
