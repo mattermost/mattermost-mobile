@@ -31,6 +31,12 @@ import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystem
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import {
+    popTopScreen,
+    goToScreen,
+    dismissModal,
+    showModalOverCurrentContext,
+} from 'app/actions/navigation';
+import {
     closeDMChannel,
     closeGMChannel,
     handleSelectChannel,
@@ -90,7 +96,7 @@ function mapStateToProps(state) {
         currentChannelMemberCount,
         currentUserId,
         isChannelMuted: isChannelMuted(currentChannelMember),
-        ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember.notify_props, currentUser.notify_props),
+        ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember && currentChannelMember.notify_props, currentUser.notify_props),
         isCurrent,
         isFavorite,
         status,
@@ -119,6 +125,10 @@ function mapDispatchToProps(dispatch) {
             selectPenultimateChannel,
             setChannelDisplayName,
             handleSelectChannel,
+            popTopScreen,
+            goToScreen,
+            dismissModal,
+            showModalOverCurrentContext,
         }, dispatch),
     };
 }

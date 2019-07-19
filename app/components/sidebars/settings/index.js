@@ -8,6 +8,12 @@ import {logout, setStatus} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
+import {
+    showModal,
+    showModalOverCurrentContext,
+    dismissModal,
+} from 'app/actions/navigation';
+
 import {isLandscape, getDimensions} from 'app/selectors/device';
 
 import SettingsSidebar from './settings_sidebar';
@@ -30,6 +36,9 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             logout,
             setStatus,
+            showModal,
+            showModalOverCurrentContext,
+            dismissModal,
         }, dispatch),
     };
 }

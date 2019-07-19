@@ -122,8 +122,9 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 206
-        versionName "1.21.0"
+        missingDimensionStrategy "RNN.reactNativeVersion", "reactNative57_5"
+        versionCode 209
+        versionName "1.21.1"
         multiDexEnabled = true
         ndk {
             abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
@@ -225,7 +226,6 @@ dependencies {
     implementation project(':react-native-video')
     implementation project(':react-native-navigation')
     implementation project(':react-native-image-picker')
-    implementation project(':react-native-bottom-sheet')
     implementation project(':react-native-device-info')
     implementation project(':reactnativenotifications')
     implementation project(':react-native-cookies')

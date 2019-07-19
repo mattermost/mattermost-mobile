@@ -15,11 +15,13 @@ const VIEWPORT_IMAGE_CONTAINER_OFFSET = 10;
 
 export default class AttachmentImage extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            showModalOverCurrentContext: PropTypes.func.isRequired,
+        }).isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         imageMetadata: PropTypes.object,
         imageUrl: PropTypes.string,
-        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -47,7 +49,7 @@ export default class AttachmentImage extends PureComponent {
     }
 
     handlePreviewImage = () => {
-        const {imageUrl, navigator} = this.props;
+        const {actions, imageUrl} = this.props;
         const {
             imageUri: uri,
             originalHeight,
@@ -73,7 +75,7 @@ export default class AttachmentImage extends PureComponent {
                 localPath: uri,
             },
         }];
-        previewImageAtIndex(navigator, [this.refs.item], 0, files);
+        previewImageAtIndex([this.refs.item], 0, files, actions.showModalOverCurrentContext);
     };
 
     setImageDimensions = (imageUri, dimensions, originalWidth, originalHeight) => {

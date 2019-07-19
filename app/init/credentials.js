@@ -7,7 +7,7 @@ import * as KeyChain from 'react-native-keychain';
 import {Client4} from 'mattermost-redux/client';
 
 import mattermostManaged from 'app/mattermost_managed';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {setCSRFFromCookie} from 'app/utils/security';
 
 const CURRENT_SERVER = '@currentServerUrl';
@@ -26,7 +26,7 @@ export const setAppCredentials = (deviceToken, currentUserId, token, url) => {
         try {
             const username = `${deviceToken}, ${currentUserId}`;
 
-            ephemeralStore.deviceToken = deviceToken;
+            EphemeralStore.deviceToken = deviceToken;
             AsyncStorage.setItem(CURRENT_SERVER, url);
             KeyChain.setInternetCredentials(url, username, token, {accessGroup: mattermostManaged.appGroupIdentifier});
         } catch (e) {
@@ -111,7 +111,7 @@ async function getInternetCredentials(url) {
             const [deviceToken, currentUserId] = usernameParsed;
 
             if (token && token !== 'undefined') {
-                ephemeralStore.deviceToken = deviceToken;
+                EphemeralStore.deviceToken = deviceToken;
                 Client4.setUserId(currentUserId);
                 Client4.setUrl(url);
                 Client4.setToken(token);

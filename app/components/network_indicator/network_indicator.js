@@ -45,6 +45,7 @@ export default class NetworkIndicator extends PureComponent {
             initWebSocket: PropTypes.func.isRequired,
             markChannelViewedAndRead: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
+            setChannelRetryFailed: PropTypes.func.isRequired,
             setCurrentUserStatusOffline: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
             stopPeriodicStatusUpdates: PropTypes.func.isRequired,
@@ -165,6 +166,7 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     connected = () => {
+        this.props.actions.setChannelRetryFailed(false);
         Animated.sequence([
             Animated.timing(
                 this.backgroundColor, {

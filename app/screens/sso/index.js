@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {resetToChannel} from 'app/actions/navigation';
 import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -24,6 +25,7 @@ function mapDispatchToProps(dispatch) {
             scheduleExpiredNotification,
             handleSuccessfulLogin,
             setStoreFromLocalData,
+            resetToChannel,
         }, dispatch),
     };
 }

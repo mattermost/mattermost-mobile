@@ -15,12 +15,13 @@ import {
     createPostForNotificationReply,
     loadFromPushNotification,
 } from 'app/actions/views/root';
+import {dismissAllModals, popToRoot} from 'app/actions/navigation';
 import {ViewTypes} from 'app/constants';
 import {getLocalizedMessage} from 'app/i18n';
 import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from 'app/selectors/i18n';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 
 class PushNotificationUtils {
@@ -44,8 +45,14 @@ class PushNotificationUtils {
     loadFromNotification = async (notification) => {
         await this.store.dispatch(loadFromPushNotification(notification, true));
 
-        if (!ephemeralStore.appStartedFromPushNotification) {
-            EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
+        if (!EphemeralStore.appStartedFromPushNotification) {
+            EventEmitter.emit('close_channel_drawer');
+            EventEmitter.emit('close_settings_sidebar');
+
+            const {dispatch} = this.store;
+            dispatch(dismissAllModals());
+            dispatch(popToRoot());
+
             PushNotifications.resetNotification();
         }
     };
@@ -171,13 +178,13 @@ class PushNotificationUtils {
             prefix = General.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
         }
 
-        ephemeralStore.deviceToken = `${prefix}:${data.token}`;
+        EphemeralStore.deviceToken = `${prefix}:${data.token}`;
 
         // TODO: Remove when realm is ready
         const waitForHydration = () => {
             if (getState().views.root.hydrationComplete && !this.configured) {
                 this.configured = true;
-                dispatch(setDeviceToken(ephemeralStore.deviceToken));
+                dispatch(setDeviceToken(EphemeralStore.deviceToken));
                 unsubscribeFromStore();
             }
         };

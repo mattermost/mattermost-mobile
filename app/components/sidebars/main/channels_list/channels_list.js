@@ -12,6 +12,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
+
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import List from './list';
@@ -22,7 +23,6 @@ let FilteredList = null;
 
 export default class ChannelsList extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object,
         onJoinChannel: PropTypes.func.isRequired,
         onSearchEnds: PropTypes.func.isRequired,
         onSearchStart: PropTypes.func.isRequired,
@@ -30,6 +30,7 @@ export default class ChannelsList extends PureComponent {
         onShowTeams: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         drawerOpened: PropTypes.bool,
+        previewChannel: PropTypes.func,
     };
 
     static contextTypes = {
@@ -86,9 +87,9 @@ export default class ChannelsList extends PureComponent {
     render() {
         const {intl} = this.context;
         const {
-            navigator,
             onShowTeams,
             theme,
+            previewChannel,
         } = this.props;
 
         const {searching, term} = this.state;
@@ -101,14 +102,15 @@ export default class ChannelsList extends PureComponent {
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                     term={term}
+                    previewChannel={previewChannel}
                 />
             );
         } else {
             list = (
                 <List
-                    navigator={navigator}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
+                    previewChannel={previewChannel}
                 />
             );
         }

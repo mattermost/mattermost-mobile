@@ -12,13 +12,13 @@ jest.mock('react-intl');
 
 describe('DisplaySettings', () => {
     const baseProps = {
+        actions: {
+            goToScreen: jest.fn(),
+        },
         theme: Preferences.THEMES.default,
         enableTheme: false,
         enableTimezone: false,
-        navigator: {
-            push: jest.fn(),
-            setOnNavigatorEvent: jest.fn(),
-        },
+        componentId: 'component-id',
     };
 
     test('should match snapshot', () => {
