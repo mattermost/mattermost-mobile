@@ -4,10 +4,9 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import TextSetting from 'app/components/widgets/settings/text_setting';
 import Preferences from 'mattermost-redux/constants/preferences';
 
-import DialogElement from './dialog_element';
+import DialogElement from './dialog_element.js';
 
 describe('DialogElement', () => {
     const baseDialogProps = {
@@ -24,8 +23,8 @@ describe('DialogElement', () => {
                 subtype='password'
             />
         );
-        expect(wrapper.find({'secureTextEntry': true}).exists()).toBe(true);
-        expect(wrapper.find({'multiline': false}).exists()).toBe(true);
+        expect(wrapper.find({secureTextEntry: true}).exists()).toBe(true);
+        expect(wrapper.find({multiline: false}).exists()).toBe(true);
     });
     test('secureTextEntry is false when subtype is not password', () => {
         const wrapper = shallow(
@@ -35,6 +34,6 @@ describe('DialogElement', () => {
                 subtype='email'
             />
         );
-        expect(wrapper.find({'secureTextEntry': false}).exists()).toBe(true);
+        expect(wrapper.find({secureTextEntry: false}).exists()).toBe(true);
     });
 });
