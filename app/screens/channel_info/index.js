@@ -69,6 +69,7 @@ function mapStateToProps(state) {
         canManageUsers = false;
     }
     const currentUser = getUser(state, currentUserId);
+    const currentUserIsGuest = isGuest(currentUser);
 
     let status;
     let isBot = false;
@@ -101,6 +102,7 @@ function mapStateToProps(state) {
         currentChannelMemberCount,
         currentChannelGuestCount,
         currentUserId,
+        currentUserIsGuest,
         isChannelMuted: isChannelMuted(currentChannelMember),
         ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember && currentChannelMember.notify_props, currentUser.notify_props),
         isCurrent,

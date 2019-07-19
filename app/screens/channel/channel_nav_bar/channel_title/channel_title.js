@@ -66,9 +66,11 @@ export default class ChannelTitle extends PureComponent {
         } else if (channelType === General.GM_CHANNEL) {
             messageId = t('channel.hasGuests');
             defaultMessage = 'This group message has guests';
-        } else {
+        } else if (channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL) {
             messageId = t('channel.channelHasGuests');
             defaultMessage = 'This channel has guests';
+        } else {
+            return null;
         }
         return (
             <View style={style.guestsWrapper}>
