@@ -7,7 +7,7 @@ import {
     ScrollView,
     View,
 } from 'react-native';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -149,17 +149,19 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
-                <StatusBar/>
-                <ScrollView
-                    style={style.scrollView}
-                    contentContainerStyle={style.scrollViewContent}
-                    alwaysBounceVertical={false}
-                >
-                    {this.renderMobilePushSection(style)}
-                    {this.renderMobilePushStatusSection(style)}
-                </ScrollView>
-            </View>
+            <SafeAreaView>
+                <View style={style.container}>
+                    <StatusBar/>
+                    <ScrollView
+                        style={style.scrollView}
+                        contentContainerStyle={style.scrollViewContent}
+                        alwaysBounceVertical={false}
+                    >
+                        {this.renderMobilePushSection(style)}
+                        {this.renderMobilePushStatusSection(style)}
+                    </ScrollView>
+                </View>
+            </SafeAreaView>
         );
     }
 }

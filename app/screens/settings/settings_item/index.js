@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View, SafeAreaView} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
@@ -109,28 +109,30 @@ export default class SettingsItem extends PureComponent {
         }
 
         return (
-            <TouchableOpacity
-                onPress={onPress}
-            >
-                <View style={style.container}>
-                    {icon &&
-                    <View style={style.iconContainer}>
-                        {icon}
-                    </View>
-                    }
-                    <View style={style.wrapper}>
-                        <View style={style.labelContainer}>
-                            {this.renderText()}
-                            {Boolean(additionalComponent) &&
-                            <View style={style.arrowContainer}>
-                                {additionalComponent}
-                            </View>
-                            }
+            <SafeAreaView style={style.safeAreaView}>
+                <TouchableOpacity
+                    onPress={onPress}
+                >
+                    <View style={style.container}>
+                        {icon &&
+                        <View style={style.iconContainer}>
+                            {icon}
                         </View>
-                        {divider}
+                        }
+                        <View style={style.wrapper}>
+                            <View style={style.labelContainer}>
+                                {this.renderText()}
+                                {Boolean(additionalComponent) &&
+                                <View style={style.arrowContainer}>
+                                    {additionalComponent}
+                                </View>
+                                }
+                            </View>
+                            {divider}
+                        </View>
                     </View>
-                </View>
-            </TouchableOpacity>
+                </TouchableOpacity>
+            </SafeAreaView>
         );
     }
 }

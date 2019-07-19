@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 
@@ -298,33 +298,35 @@ export default class UserProfile extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
-                <StatusBar/>
-                <ScrollView
-                    style={style.scrollView}
-                >
-                    <View style={style.top}>
-                        <ProfilePicture
-                            userId={user.id}
-                            size={150}
-                            statusBorderWidth={6}
-                            statusSize={40}
+            <SafeAreaView>
+                <View style={style.container}>
+                    <StatusBar/>
+                    <ScrollView
+                        style={style.scrollView}
+                    >
+                        <View style={style.top}>
+                            <ProfilePicture
+                                userId={user.id}
+                                size={150}
+                                statusBorderWidth={6}
+                                statusSize={40}
+                            />
+                            {this.getDisplayName()}
+                            <Text style={style.username}>{`@${user.username}`}</Text>
+                        </View>
+                        {this.renderDetailsBlock(style)}
+                        <UserProfileRow
+                            action={this.sendMessage}
+                            defaultMessage='Send Message'
+                            icon='paper-plane-o'
+                            iconType='fontawesome'
+                            textId={t('mobile.routes.user_profile.send_message')}
+                            theme={theme}
                         />
-                        {this.getDisplayName()}
-                        <Text style={style.username}>{`@${user.username}`}</Text>
-                    </View>
-                    {this.renderDetailsBlock(style)}
-                    <UserProfileRow
-                        action={this.sendMessage}
-                        defaultMessage='Send Message'
-                        icon='paper-plane-o'
-                        iconType='fontawesome'
-                        textId={t('mobile.routes.user_profile.send_message')}
-                        theme={theme}
-                    />
-                    {this.renderAdditionalOptions()}
-                </ScrollView>
-            </View>
+                        {this.renderAdditionalOptions()}
+                    </ScrollView>
+                </View>
+            </SafeAreaView>
         );
     }
 }

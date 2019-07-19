@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
+import SafeAreaView from 'app/components/safe_area_view';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
@@ -360,41 +361,43 @@ export default class ChannelMembers extends PureComponent {
         }
 
         return (
-            <KeyboardLayout>
-                <StatusBar/>
-                <View style={style.searchBar}>
-                    <SearchBar
-                        ref='search_bar'
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={33}
-                        inputStyle={searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                        titleCancelColor={theme.centerChannelColor}
-                        onChangeText={this.onSearch}
-                        onSearchButtonPress={this.onSearch}
-                        onCancelButtonPress={this.clearSearch}
-                        autoCapitalize='none'
-                        value={term}
+            <SafeAreaView>
+                <KeyboardLayout>
+                    <StatusBar/>
+                    <View style={style.searchBar}>
+                        <SearchBar
+                            ref='search_bar'
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={33}
+                            inputStyle={searchBarInput}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                            titleCancelColor={theme.centerChannelColor}
+                            onChangeText={this.onSearch}
+                            onSearchButtonPress={this.onSearch}
+                            onCancelButtonPress={this.clearSearch}
+                            autoCapitalize='none'
+                            value={term}
+                        />
+                    </View>
+                    <CustomList
+                        data={data}
+                        extraData={selectedIds}
+                        key='custom_list'
+                        listType={listType}
+                        loading={loading}
+                        loadingComponent={this.renderLoading()}
+                        noResults={this.renderNoResults()}
+                        onLoadMore={this.getProfiles}
+                        onRowPress={this.handleSelectProfile}
+                        renderItem={canManageUsers ? this.renderSelectableItem : this.renderUnselectableItem}
+                        theme={theme}
                     />
-                </View>
-                <CustomList
-                    data={data}
-                    extraData={selectedIds}
-                    key='custom_list'
-                    listType={listType}
-                    loading={loading}
-                    loadingComponent={this.renderLoading()}
-                    noResults={this.renderNoResults()}
-                    onLoadMore={this.getProfiles}
-                    onRowPress={this.handleSelectProfile}
-                    renderItem={canManageUsers ? this.renderSelectableItem : this.renderUnselectableItem}
-                    theme={theme}
-                />
-            </KeyboardLayout>
+                </KeyboardLayout>
+            </SafeAreaView>
         );
     }
 }
