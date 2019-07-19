@@ -28,9 +28,9 @@ import {setMfaPreflightDone} from 'app/utils/security';
 
 export default class Mfa extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object,
         actions: PropTypes.shape({
             login: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
@@ -56,7 +56,7 @@ export default class Mfa extends PureComponent {
         // In case the login is successful the previous scene (login) will take care of the transition
         if (this.props.loginRequest.status === RequestStatus.STARTED &&
             nextProps.loginRequest.status === RequestStatus.FAILURE) {
-            this.props.navigator.pop({animated: true});
+            this.props.actions.popTopScreen();
         }
     }
 

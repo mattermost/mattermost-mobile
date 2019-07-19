@@ -25,7 +25,7 @@ import {DeviceTypes} from 'app/constants/';
 import mattermostBucket from 'app/mattermost_bucket';
 import {changeOpacity} from 'app/utils/theme';
 
-import FileAttachmentIcon from './file_attachment_icon';
+import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 
 const {DOCUMENTS_PATH} = DeviceTypes;
 const DOWNLOADING_OFFSET = 28;
@@ -38,13 +38,15 @@ const circularProgressWidth = 4;
 
 export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
         backgroundColor: PropTypes.string,
         canDownloadFiles: PropTypes.bool.isRequired,
         iconHeight: PropTypes.number,
         iconWidth: PropTypes.number,
         file: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
         onLongPress: PropTypes.func,
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
@@ -192,7 +194,7 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     previewTextFile = (file, delay = 2000) => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {data} = file;
         const prefix = Platform.OS === 'android' ? 'file:/' : '';
         const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
@@ -200,21 +202,13 @@ export default class FileAttachmentDocument extends PureComponent {
         setTimeout(async () => {
             try {
                 const content = await readFile;
-                navigator.push({
-                    screen: 'TextPreview',
-                    title: file.caption,
-                    animated: true,
-                    backButtonTitle: '',
-                    passProps: {
-                        content,
-                    },
-                    navigatorStyle: {
-                        navBarTextColor: theme.sidebarHeaderTextColor,
-                        navBarBackgroundColor: theme.sidebarHeaderBg,
-                        navBarButtonColor: theme.sidebarHeaderTextColor,
-                        screenBackgroundColor: theme.centerChannelBg,
-                    },
-                });
+                const screen = 'TextPreview';
+                const title = file.caption;
+                const passProps = {
+                    content,
+                };
+
+                actions.goToScreen(screen, title, passProps);
                 this.setState({downloading: false, progress: 0});
             } catch (error) {
                 RNFetchBlob.fs.unlink(path);

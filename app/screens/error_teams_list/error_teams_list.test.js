@@ -10,10 +10,6 @@ import FailedNetworkAction from 'app/components/failed_network_action';
 import ErrorTeamsList from './error_teams_list';
 
 describe('ErrorTeamsList', () => {
-    const navigator = {
-        setOnNavigatorEvent: () => {}, // eslint-disable-line no-empty-function
-    };
-
     const loadMe = async () => {
         return {
             data: {},
@@ -26,9 +22,10 @@ describe('ErrorTeamsList', () => {
             connection: () => {}, // eslint-disable-line no-empty-function
             logout: () => {}, // eslint-disable-line no-empty-function
             selectDefaultTeam: () => {}, // eslint-disable-line no-empty-function
+            resetToChannel: jest.fn(),
         },
+        componentId: 'component-id',
         theme: Preferences.THEMES.default,
-        navigator,
     };
 
     test('should match snapshot', () => {
@@ -43,6 +40,7 @@ describe('ErrorTeamsList', () => {
         const selectDefaultTeam = jest.fn();
         const logout = jest.fn();
         const actions = {
+            ...baseProps.actions,
             loadMe,
             logout,
             selectDefaultTeam,

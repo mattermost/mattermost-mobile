@@ -27,6 +27,9 @@ const ShareExtension = NativeModules.MattermostShare;
 
 export default class AttachmentButton extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            showModalOverCurrentContext: PropTypes.func.isRequired,
+        }).isRequired,
         blurTextBox: PropTypes.func.isRequired,
         browseFileTypes: PropTypes.string,
         validMimeTypes: PropTypes.array,
@@ -39,7 +42,6 @@ export default class AttachmentButton extends PureComponent {
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
         maxFileSize: PropTypes.number.isRequired,
-        navigator: PropTypes.object.isRequired,
         onShowFileMaxWarning: PropTypes.func,
         onShowFileSizeWarning: PropTypes.func,
         onShowUnsupportedMimeTypeWarning: PropTypes.func,
@@ -340,21 +342,6 @@ export default class AttachmentButton extends PureComponent {
         }
     };
 
-    handleFileAttachmentOption = (action) => {
-        this.props.navigator.dismissModal({
-            animationType: 'none',
-        });
-
-        // Have to wait to launch the library attachment action.
-        // If we call the action after dismissModal with no delay then the
-        // Wix navigator will dismiss the library attachment modal as well.
-        setTimeout(() => {
-            if (typeof action === 'function') {
-                action();
-            }
-        }, 100);
-    };
-
     showFileAttachmentOptions = () => {
         const {
             canBrowseFiles,
@@ -366,6 +353,7 @@ export default class AttachmentButton extends PureComponent {
             maxFileCount,
             onShowFileMaxWarning,
             extraOptions,
+            actions,
         } = this.props;
 
         if (fileCount === maxFileCount) {
@@ -378,7 +366,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (canTakePhoto) {
             items.push({
-                action: () => this.handleFileAttachmentOption(this.attachPhotoFromCamera),
+                action: this.attachPhotoFromCamera,
                 text: {
                     id: t('mobile.file_upload.camera_photo'),
                     defaultMessage: 'Take Photo',
@@ -389,7 +377,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (canTakeVideo) {
             items.push({
-                action: () => this.handleFileAttachmentOption(this.attachVideoFromCamera),
+                action: this.attachVideoFromCamera,
                 text: {
                     id: t('mobile.file_upload.camera_video'),
                     defaultMessage: 'Take Video',
@@ -400,7 +388,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (canBrowsePhotoLibrary) {
             items.push({
-                action: () => this.handleFileAttachmentOption(this.attachFileFromLibrary),
+                action: this.attachFileFromLibrary,
                 text: {
                     id: t('mobile.file_upload.library'),
                     defaultMessage: 'Photo Library',
@@ -411,7 +399,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (canBrowseVideoLibrary && Platform.OS === 'android') {
             items.push({
-                action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
+                action: this.attachVideoFromLibraryAndroid,
                 text: {
                     id: t('mobile.file_upload.video'),
                     defaultMessage: 'Video Library',
@@ -422,7 +410,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (canBrowseFiles) {
             items.push({
-                action: () => this.handleFileAttachmentOption(this.attachFileFromFiles),
+                action: this.attachFileFromFiles,
                 text: {
                     id: t('mobile.file_upload.browse'),
                     defaultMessage: 'Browse Files',
@@ -439,21 +427,7 @@ export default class AttachmentButton extends PureComponent {
             });
         }
 
-        this.props.navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                items,
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
+        actions.showModalOverCurrentContext('OptionsModal', {items});
     };
 
     render() {

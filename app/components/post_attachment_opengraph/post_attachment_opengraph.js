@@ -28,13 +28,13 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getOpenGraphMetadata: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         imagesMetadata: PropTypes.object,
         isReplyPost: PropTypes.bool,
         link: PropTypes.string.isRequired,
-        navigator: PropTypes.object.isRequired,
         openGraphData: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
@@ -195,6 +195,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             originalWidth,
             originalHeight,
         } = this.state;
+        const {actions} = this.props;
         const filename = this.getFilename(link);
 
         const files = [{
@@ -209,7 +210,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             },
         }];
 
-        previewImageAtIndex(this.props.navigator, [this.refs.item], 0, files);
+        previewImageAtIndex([this.refs.item], 0, files, actions.showModalOverCurrentContext);
     };
 
     renderDescription = () => {

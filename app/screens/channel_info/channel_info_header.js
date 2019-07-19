@@ -4,15 +4,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    Text,
-    View,
+    Clipboard,
     Platform,
+    Text,
+    TouchableHighlight,
+    View,
 } from 'react-native';
+import {intlShape} from 'react-intl';
 
 import ChannelIcon from 'app/components/channel_icon';
 import FormattedDate from 'app/components/formatted_date';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
+import mattermostManaged from 'app/mattermost_managed';
+import BottomSheet from 'app/utils/bottom_sheet';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -23,7 +28,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
         memberCount: PropTypes.number,
         displayName: PropTypes.string.isRequired,
         header: PropTypes.string,
-        navigator: PropTypes.object.isRequired,
         onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
         status: PropTypes.string,
@@ -34,6 +38,51 @@ export default class ChannelInfoHeader extends React.PureComponent {
         isGroupConstrained: PropTypes.bool,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
+    handleLongPress = (text, actionText) => {
+        const {formatMessage} = this.context.intl;
+
+        const config = mattermostManaged.getCachedConfig();
+
+        if (config?.copyAndPasteProtection !== 'true') {
+            const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+
+            BottomSheet.showBottomSheetWithOptions({
+                options: [actionText, cancelText],
+                cancelButtonIndex: 1,
+            }, (value) => {
+                if (value === 0) {
+                    this.handleCopy(text);
+                }
+            });
+        }
+    };
+
+    handleCopy = (text) => {
+        Clipboard.setString(text);
+    }
+
+    handleHeaderLongPress = () => {
+        const {formatMessage} = this.context.intl;
+        const {header} = this.props;
+        this.handleLongPress(
+            header,
+            formatMessage({id: 'mobile.channel_info.copy_header', defaultMessage: 'Copy Header'})
+        );
+    }
+
+    handlePurposeLongPress = () => {
+        const {formatMessage} = this.context.intl;
+        const {purpose} = this.props;
+        this.handleLongPress(
+            purpose,
+            formatMessage({id: 'mobile.channel_info.copy_purpose', defaultMessage: 'Copy Purpose'})
+        );
+    }
+
     render() {
         const {
             createAt,
@@ -41,7 +90,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
             displayName,
             header,
             memberCount,
-            navigator,
             onPermalinkPress,
             purpose,
             status,
@@ -61,7 +109,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
 
         return (
             <View style={style.container}>
-                <View style={style.channelNameContainer}>
+                <View style={[style.channelNameContainer, style.row]}>
                     <ChannelIcon
                         isInfo={true}
                         membersCount={memberCount - 1}
@@ -82,40 +130,52 @@ export default class ChannelInfoHeader extends React.PureComponent {
                 </View>
                 {purpose.length > 0 &&
                     <View style={style.section}>
-                        <FormattedText
-                            style={style.header}
-                            id='channel_info.purpose'
-                            defaultMessage='Purpose'
-                        />
-                        <Markdown
-                            navigator={navigator}
-                            onPermalinkPress={onPermalinkPress}
-                            baseTextStyle={baseTextStyle}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
-                            value={purpose}
-                        />
+                        <TouchableHighlight
+                            underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                            onLongPress={this.handlePurposeLongPress}
+                        >
+                            <View style={style.row}>
+                                <FormattedText
+                                    style={style.header}
+                                    id='channel_info.purpose'
+                                    defaultMessage='Purpose'
+                                />
+                                <Markdown
+                                    onPermalinkPress={onPermalinkPress}
+                                    baseTextStyle={baseTextStyle}
+                                    textStyles={textStyles}
+                                    blockStyles={blockStyles}
+                                    value={purpose}
+                                />
+                            </View>
+                        </TouchableHighlight>
                     </View>
                 }
                 {header.length > 0 &&
                     <View style={style.section}>
-                        <FormattedText
-                            style={style.header}
-                            id='channel_info.header'
-                            defaultMessage='Header'
-                        />
-                        <Markdown
-                            navigator={navigator}
-                            onPermalinkPress={onPermalinkPress}
-                            baseTextStyle={baseTextStyle}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
-                            value={header}
-                        />
+                        <TouchableHighlight
+                            underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                            onLongPress={this.handleHeaderLongPress}
+                        >
+                            <View style={style.row}>
+                                <FormattedText
+                                    style={style.header}
+                                    id='channel_info.header'
+                                    defaultMessage='Header'
+                                />
+                                <Markdown
+                                    onPermalinkPress={onPermalinkPress}
+                                    baseTextStyle={baseTextStyle}
+                                    textStyles={textStyles}
+                                    blockStyles={blockStyles}
+                                    value={header}
+                                />
+                            </View>
+                        </TouchableHighlight>
                     </View>
                 }
                 {isGroupConstrained &&
-                    <Text style={style.createdBy}>
+                    <Text style={[style.createdBy, style.row]}>
                         <FormattedText
                             id='mobile.routes.channelInfo.groupManaged'
                             defaultMessage='Members are managed by linked groups'
@@ -123,7 +183,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </Text>
                 }
                 {creator &&
-                    <Text style={style.createdBy}>
+                    <Text style={[style.createdBy, style.row]}>
                         <FormattedText
                             id='mobile.routes.channelInfo.createdBy'
                             defaultMessage='Created by {creator} on '
@@ -149,7 +209,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
             marginBottom: 40,
-            padding: 15,
+            paddingVertical: 15,
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
@@ -183,6 +243,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         section: {
             marginTop: 15,
+        },
+        row: {
+            paddingHorizontal: 15,
         },
     };
 });

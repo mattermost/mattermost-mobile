@@ -23,10 +23,12 @@ const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
 export default class Timezone extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            popTopScreen: PropTypes.func.isRequired,
+        }).isRequired,
         selectedTimezone: PropTypes.string.isRequired,
         initialScrollIndex: PropTypes.number.isRequired,
         timezones: PropTypes.array.isRequired,
-        navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -59,7 +61,7 @@ export default class Timezone extends PureComponent {
 
     timezoneSelected = (timezone) => {
         this.props.onBack(timezone);
-        this.props.navigator.pop();
+        this.props.actions.popTopScreen();
     };
 
     handleTextChanged = (value) => {

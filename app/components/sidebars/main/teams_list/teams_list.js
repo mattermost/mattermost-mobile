@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
     FlatList,
     Platform,
     StatusBar,
@@ -15,7 +16,7 @@ import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
-import {ListTypes, ViewTypes} from 'app/constants';
+import {DeviceTypes, ListTypes, ViewTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
@@ -33,12 +34,12 @@ export default class TeamsList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
+            showModal: PropTypes.func.isRequired,
         }).isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         hasOtherJoinableTeams: PropTypes.bool,
-        navigator: PropTypes.object.isRequired,
         teamIds: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -76,35 +77,41 @@ export default class TeamsList extends PureComponent {
 
     goToSelectTeam = preventDoubleTap(() => {
         const {intl} = this.context;
-        const {currentUrl, navigator, theme} = this.props;
-
-        navigator.showModal({
-            screen: 'SelectTeam',
-            title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
-            animationType: 'slide-up',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            navigatorButtons: {
+        const {currentUrl, theme, actions} = this.props;
+        const screen = 'SelectTeam';
+        const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
+        const passProps = {
+            currentUrl,
+            theme,
+        };
+        const options = {
+            topBar: {
                 leftButtons: [{
                     id: 'close-teams',
                     icon: this.closeButton,
                 }],
             },
-            passProps: {
-                currentUrl,
-                theme,
-            },
-        });
+        };
+
+        actions.showModal(screen, title, passProps, options);
     });
 
     keyExtractor = (item) => {
         return item;
+    };
+
+    listContentPadding = () => {
+        if (DeviceTypes.IS_TABLET) {
+            return 64;
+        }
+
+        const {width, height} = Dimensions.get('window');
+        const landscape = width > height;
+        if (DeviceTypes.IS_IPHONE_X) {
+            return landscape ? 54 : 44;
+        }
+
+        return 64;
     };
 
     renderItem = ({item}) => {
@@ -148,6 +155,7 @@ export default class TeamsList extends PureComponent {
                     {moreAction}
                 </View>
                 <FlatList
+                    contentContainerStyle={this.listContentPadding()}
                     data={teamIds}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}

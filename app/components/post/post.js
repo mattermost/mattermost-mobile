@@ -34,6 +34,8 @@ export default class Post extends PureComponent {
             createPost: PropTypes.func.isRequired,
             insertToDraft: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         channelIsReadOnly: PropTypes.bool,
         currentUserId: PropTypes.string.isRequired,
@@ -49,7 +51,6 @@ export default class Post extends PureComponent {
         isSearchResult: PropTypes.bool,
         commentedOnPost: PropTypes.object,
         managedConfig: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         shouldRenderReplyButton: PropTypes.bool,
@@ -88,30 +89,16 @@ export default class Post extends PureComponent {
 
     goToUserProfile = () => {
         const {intl} = this.context;
-        const {navigator, post, theme} = this.props;
-        const options = {
-            screen: 'UserProfile',
-            title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
-            animated: true,
-            backButtonTitle: '',
-            passProps: {
-                userId: post.user_id,
-            },
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
+        const {actions, post} = this.props;
+        const screen = 'UserProfile';
+        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+        const passProps = {
+            userId: post.user_id,
         };
 
         Keyboard.dismiss();
         requestAnimationFrame(() => {
-            if (Platform.OS === 'ios') {
-                navigator.push(options);
-            } else {
-                navigator.showModal(options);
-            }
+            actions.goToScreen(screen, title, passProps);
         });
     };
 
@@ -120,7 +107,8 @@ export default class Post extends PureComponent {
     };
 
     handleFailedPostPress = () => {
-        const options = {
+        const screen = 'OptionsModal';
+        const passProps = {
             title: {
                 id: t('mobile.post.failed_title'),
                 defaultMessage: 'Unable to send your message:',
@@ -151,22 +139,7 @@ export default class Post extends PureComponent {
             }],
         };
 
-        this.props.navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                items: options.items,
-                title: options.title,
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
+        this.props.actions.showModalOverCurrentContext(screen, passProps);
     };
 
     handlePress = preventDoubleTap(() => {
@@ -352,7 +325,6 @@ export default class Post extends PureComponent {
                                 channelIsReadOnly={channelIsReadOnly}
                                 isLastPost={isLastPost}
                                 isSearchResult={isSearchResult}
-                                navigator={this.props.navigator}
                                 onFailedPostPress={this.handleFailedPostPress}
                                 onHashtagPress={onHashtagPress}
                                 onPermalinkPress={onPermalinkPress}

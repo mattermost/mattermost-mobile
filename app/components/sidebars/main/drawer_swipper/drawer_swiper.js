@@ -3,7 +3,6 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet} from 'react-native';
 
 import {changeOpacity} from 'app/utils/theme';
 
@@ -77,7 +76,6 @@ export default class DrawerSwiper extends Component {
                 ref={this.swiperRef}
                 initialPage={initialPage}
                 onIndexChanged={this.swiperPageSelected}
-                paginationStyle={style.pagination}
                 width={drawerWidth}
                 style={{backgroundColor: theme.sidebarBg}}
                 activeDotColor={theme.sidebarText}
@@ -91,10 +89,3 @@ export default class DrawerSwiper extends Component {
         );
     }
 }
-
-const style = StyleSheet.create({
-    pagination: {
-        bottom: 0,
-        position: 'absolute',
-    },
-});
