@@ -19,7 +19,7 @@
     "intl": "1.2.5",
     "jail-monkey": "2.2.0",
     "jsc-android": "241213.2.0",
-    "mattermost-redux": "github:mattermost/mattermost-redux#7f38003e06057d8099949f757d6fbbb6170925e7",
+    "mattermost-redux": "github:mattermost/mattermost-redux#da357eba978b5d27f8cb4c3034e01dff959c0660",
     "mime-db": "1.40.0",
     "moment-timezone": "0.5.25",
     "prop-types": "15.7.2",
