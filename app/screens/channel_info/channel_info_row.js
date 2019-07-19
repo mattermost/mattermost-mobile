@@ -9,6 +9,7 @@ import {
     Text,
     TouchableHighlight,
     View,
+    SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -52,26 +53,28 @@ function channelInfoRow(props) {
     }
 
     const RowComponent = (
-        <View style={style.container}>
-            {iconElement}
-            <FormattedText
-                style={[style.label, {color: textColor || theme.centerChannelColor}]}
-                id={textId}
-                defaultMessage={defaultMessage}
-            />
-            <Text style={style.detail}>{detail}</Text>
-            {togglable ?
-                <Switch
-                    onValueChange={action}
-                    value={detail}
-                /> :
-                <Icon
-                    name='angle-right'
-                    size={20}
-                    style={style.rightIcon}
+        <SafeAreaView>
+            <View style={style.container}>
+                {iconElement}
+                <FormattedText
+                    style={[style.label, {color: textColor || theme.centerChannelColor}]}
+                    id={textId}
+                    defaultMessage={defaultMessage}
                 />
-            }
-        </View>
+                <Text style={style.detail}>{detail}</Text>
+                {togglable ?
+                    <Switch
+                        onValueChange={action}
+                        value={detail}
+                    /> :
+                    <Icon
+                        name='angle-right'
+                        size={20}
+                        style={style.rightIcon}
+                    />
+                }
+            </View>
+        </SafeAreaView>
     );
 
     if (togglable) {

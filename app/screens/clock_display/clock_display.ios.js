@@ -4,7 +4,7 @@ import React from 'react';
 import {
     View,
 } from 'react-native';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
@@ -22,45 +22,47 @@ export default class ClockDisplay extends ClockDisplayBase {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
-                <StatusBar/>
-                <View style={style.wrapper}>
-                    <Section
-                        disableHeader={true}
-                        footerId={t('user.settings.display.preferTime')}
-                        footerDefaultMessage='Select how you prefer time displayed.'
-                        theme={theme}
-                    >
-                        <SectionItem
-                            label={(
-                                <FormattedText
-                                    id='user.settings.display.normalClock'
-                                    defaultMessage='12-hour clock (example: 4:00 PM)'
-                                />
-                            )}
-                            action={this.setMilitaryTime}
-                            actionType='select'
-                            actionValue='false'
-                            selected={newMilitaryTime === 'false'}
+            <SafeAreaView>
+                <View style={style.container}>
+                    <StatusBar/>
+                    <View style={style.wrapper}>
+                        <Section
+                            disableHeader={true}
+                            footerId={t('user.settings.display.preferTime')}
+                            footerDefaultMessage='Select how you prefer time displayed.'
                             theme={theme}
-                        />
-                        <View style={style.separator}/>
-                        <SectionItem
-                            label={(
-                                <FormattedText
-                                    id='user.settings.display.militaryClock'
-                                    defaultMessage='24-hour clock (example: 16:00)'
-                                />
-                            )}
-                            action={this.setMilitaryTime}
-                            actionType='select'
-                            actionValue='true'
-                            selected={newMilitaryTime === 'true'}
-                            theme={theme}
-                        />
-                    </Section>
+                        >
+                            <SectionItem
+                                label={(
+                                    <FormattedText
+                                        id='user.settings.display.normalClock'
+                                        defaultMessage='12-hour clock (example: 4:00 PM)'
+                                    />
+                                )}
+                                action={this.setMilitaryTime}
+                                actionType='select'
+                                actionValue='false'
+                                selected={newMilitaryTime === 'false'}
+                                theme={theme}
+                            />
+                            <View style={style.separator}/>
+                            <SectionItem
+                                label={(
+                                    <FormattedText
+                                        id='user.settings.display.militaryClock'
+                                        defaultMessage='24-hour clock (example: 16:00)'
+                                    />
+                                )}
+                                action={this.setMilitaryTime}
+                                actionType='select'
+                                actionValue='true'
+                                selected={newMilitaryTime === 'true'}
+                                theme={theme}
+                            />
+                        </Section>
+                    </View>
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 }
