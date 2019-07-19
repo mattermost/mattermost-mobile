@@ -74,8 +74,8 @@ export default class OptionsModal extends PureComponent {
     };
 
     onItemPress = () => {
-        this.props.actions.dismissModal();
-    }
+        this.close();
+    };
 
     render() {
         const {
