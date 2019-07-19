@@ -1,5 +1,38 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.22.0 Release
+- Release Date: August 16, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Highlights
+
+#### React Native Navigation
+
+#### Android Q Improvements
+
+### Improvements
+ - Changed "about" section references to use the site name when it is configured in **System Console > Custom Branding > Site Name**.
+ - Added support for plus-sign and period/dot in custom URL schemes.
+ - Added "Edit profile" button to right-hand sie menu and user's own profile pop-over.
+ - Message draft is now saved when closing the app.
+ - Removing a link preview on webapp now also removes it on mobile app.
+ - Added ability to select and copy channel header text.
+
+### Bug Fixes
+ - Fixed an issue on iOS where returning from landscape video playback on moved status bar under notch.
+ - Fixed an issue where contents of ephemeral posts from /giphy were not being displayed on mobile.
+ - Fixed an issue where team/channel page dots at the bottom of left-hand side overlapped with the last Direct Message channel.
+ - Fixed an issue where network reconnection incorrectly showed refreshing messages failed.
+ 
+### Known Issues
+  - Buttons inside ephemeral posts are not clickable / functional on the mobile app. [MM-15084](https://mattermost.atlassian.net/browse/MM-15084)
+  - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
+  
+
 ## 1.21.0 Release
 - Release Date: July 16, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
