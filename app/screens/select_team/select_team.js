@@ -249,7 +249,7 @@ export default class SelectTeam extends PureComponent {
                     <View style={styles.headingContainer}>
                         <FormattedText
                             id='mobile.select_team.guest_cant_join_team'
-                            defaultMessage={'You don\'t belong to any team and as a guest you can\'t join any team by yourself, you need to be invited or added by som  eone else.'}
+                            defaultMessage='Your guest account has no teams or channels assigned. Please contact an administrator.'
                             style={styles.heading}
                         />
                     </View>
