@@ -181,18 +181,15 @@ export default class ChannelPostList extends PureComponent {
             lastViewedAt,
             loadMorePostsVisible,
             refreshing,
-            theme,
         } = this.props;
 
         const {visiblePostIds} = this.state;
         let component;
 
         if (visiblePostIds.length === 0 && channelRefreshingFailed) {
+            const Loading = require('app/components/channel_loader').default;
             component = (
-                <PostListRetry
-                    retry={this.loadPostsRetry}
-                    theme={theme}
-                />
+                <Loading channelIsLoading={true}/>
             );
         } else {
             component = (

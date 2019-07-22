@@ -15,6 +15,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EmptyToolbar from 'app/components/start/empty_toolbar';
+import FailedNetworkAction from 'app/components/failed_network_action';
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import MainSidebar from 'app/components/sidebars/main';
 import SafeAreaView from 'app/components/safe_area_view';
@@ -27,6 +28,7 @@ import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
 
 import LocalConfig from 'assets/config';
+import {t} from 'app/utils/i18n';
 
 export let ClientUpgradeListener;
 
@@ -255,13 +257,24 @@ export default class ChannelBase extends PureComponent {
             theme,
         } = this.props;
 
+        const errorTitle = {
+            id: t('error.team_not_found.title'),
+            defaultMessage: 'Team Not Found',
+        };
+
+        const errorDescription = {
+            id: t('mobile.failed_network_action.shortDescription'),
+            defaultMessage: 'Make sure you have an active connection and try again.',
+        };
+
         if (!currentChannelId) {
             if (channelsRequestFailed) {
-                const PostListRetry = require('app/components/post_list_retry').default;
                 return (
-                    <PostListRetry
-                        retry={this.retryLoadChannels}
+                    <FailedNetworkAction
+                        onRetry={this.retryLoadChannels}
                         theme={theme}
+                        errorTitle={errorTitle}
+                        errorDescription={errorDescription}
                     />
                 );
             }
