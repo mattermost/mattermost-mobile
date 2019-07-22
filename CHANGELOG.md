@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
 ## 1.21.1 Release
-- Release Date: TBD
+- Release Date: July 22, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Combatibility
@@ -9,7 +9,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixing an issue on Android where logging in using SSO fails when the Mattermost server is running on a subpath.
+ - Fixed an issue on Android where logging in using SSO failed when the Mattermost server was running on a subpath.
 
 ## 1.21.0 Release
 - Release Date: July 16, 2019
