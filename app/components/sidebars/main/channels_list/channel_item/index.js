@@ -16,6 +16,7 @@ import {getUserIdFromChannelName, isChannelMuted} from 'mattermost-redux/utils/c
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import {getDraftForChannel} from 'app/selectors/views';
+import {isGuest as isGuestUser} from 'app/utils/users';
 
 import ChannelItem from './channel_item';
 
@@ -30,6 +31,7 @@ function makeMapStateToProps() {
 
         let displayName = channel.display_name;
         let isBot = false;
+        let isGuest = false;
 
         if (channel.type === General.DM_CHANNEL) {
             if (ownProps.isSearchResult) {
@@ -42,6 +44,7 @@ function makeMapStateToProps() {
                 if (teammate && teammate.is_bot) {
                     isBot = true;
                 }
+                isGuest = isGuestUser(teammate);
             }
         }
 
@@ -81,6 +84,7 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             unreadMsgs,
             isBot,
+            isGuest,
         };
     };
 }
