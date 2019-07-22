@@ -35,8 +35,9 @@ export default class UserProfile extends PureComponent {
             loadBot: PropTypes.func.isRequired,
             setButtons: PropTypes.func.isRequired,
             dismissModal: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
+            dismissAllModals: PropTypes.func.isRequired,
+            popToRoot: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
@@ -100,17 +101,15 @@ export default class UserProfile extends PureComponent {
     }
 
     close = () => {
-        const {actions, fromSettings} = this.props;
+        const {actions, fromSettings, componentId} = this.props;
 
         if (fromSettings) {
             actions.dismissModal();
             return;
         }
 
-        const passProps = {
-            disableTermsModal: true,
-        };
-        actions.resetToChannel(passProps);
+        actions.dismissAllModals();
+        actions.popToRoot(componentId);
     };
 
     getDisplayName = () => {
