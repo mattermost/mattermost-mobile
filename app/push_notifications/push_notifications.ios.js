@@ -96,13 +96,13 @@ class PushNotification {
     }
 
     localNotification(notification) {
-        const deviceNotification = {
+        this.deviceNotification = {
             alertBody: notification.message,
             alertAction: '',
             userInfo: notification.userInfo,
         };
 
-        NotificationsIOS.localNotification(deviceNotification);
+        NotificationsIOS.localNotification(this.deviceNotification);
     }
 
     cancelAllLocalNotifications() {
