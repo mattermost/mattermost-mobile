@@ -9,7 +9,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixing an issue on Android where logging in using GitLab or OneLogin fails to display Mattermost on a subpath server.
+ - Fixing an issue on Android where logging in using SSO fails when the Mattermost server is running on a subpath.
 
 ## 1.21.0 Release
 - Release Date: July 16, 2019
