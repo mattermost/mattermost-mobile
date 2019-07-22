@@ -26,10 +26,6 @@ jest.mock('app/selectors/i18n', () => ({
     getCurrentLocale: jest.fn().mockReturnValue('en'),
 }));
 
-const mockStore = configureMockStore([thunk]);
-const store = mockStore({});
-PushNotificationUtils.configure(store);
-
 jest.mock('react-native-notifications', () => {
     return {
         requestPermissions: jest.fn(),
@@ -40,6 +36,10 @@ jest.mock('react-native-notifications', () => {
         localNotification: jest.fn(),
     };
 });
+
+const mockStore = configureMockStore([thunk]);
+const store = mockStore({});
+PushNotificationUtils.configure(store);
 
 describe('PushNotifications', () => {
     it('should add channel_id to failed push notification reply', async () => {
@@ -54,8 +54,8 @@ describe('PushNotifications', () => {
         await PushNotificationUtils.onPushNotificationReply(data, text, badge, completed);
 
         const storeActions = store.getActions();
-        const receivedChannel = storeActions.some((action) => action.type === PostTypes.RECEIVED_POST);
-        expect(receivedChannel).toBe(false);
+        const receivedPost = storeActions.some((action) => action.type === PostTypes.RECEIVED_POST);
+        expect(receivedPost).toBe(false);
 
         notification = PushNotificationUtils.getNotification();
         expect(notification.userInfo.channel_id).toBe(channelID);
