@@ -9,6 +9,7 @@ import ephemeralStore from 'app/store/ephemeral_store';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
+export const FOREGROUND_NOTIFICATIONS_KEY = '@FOREGROUND_NOTIFICATIONS';
 
 let replyCategory;
 const replies = new Set();
@@ -19,7 +20,6 @@ class PushNotification {
         this.onRegister = null;
         this.onNotification = null;
         this.onReply = null;
-        this.foregroundNotificationsKey = '@FOREGROUND_NOTIFICATIONS';
 
         NotificationsIOS.addEventListener('remoteNotificationsRegistered', this.onRemoteNotificationsRegistered);
         NotificationsIOS.addEventListener('notificationReceivedForeground', this.onNotificationReceivedForeground);
@@ -171,14 +171,14 @@ class PushNotification {
         NotificationsIOS.getDeliveredNotifications(async (notifications) => {
             let foregroundNotifications;
             try {
-                const value = await AsyncStorage.getItem(this.foregroundNotificationsKey);
+                const value = await AsyncStorage.getItem(FOREGROUND_NOTIFICATIONS_KEY);
                 foregroundNotifications = JSON.parse(value) || {};
             } catch (e) {
                 foregroundNotifications = {};
             }
 
             Reflect.deleteProperty(foregroundNotifications, channelId);
-            AsyncStorage.setItem(this.foregroundNotificationsKey, JSON.stringify(foregroundNotifications));
+            AsyncStorage.setItem(FOREGROUND_NOTIFICATIONS_KEY, JSON.stringify(foregroundNotifications));
 
             const foregroundCount = Object.values(foregroundNotifications).reduce((a, b) => a + b, 0);
             let badgeCount = notifications.length + foregroundCount;
@@ -202,13 +202,13 @@ class PushNotification {
     }
 
     trackForegroundNotification = async (channelId) => {
-        const value = await AsyncStorage.getItem(this.foregroundNotificationsKey);
+        const value = await AsyncStorage.getItem(FOREGROUND_NOTIFICATIONS_KEY);
         const foregroundNotifications = value ? JSON.parse(value) : {};
         if (!foregroundNotifications.hasOwnProperty(channelId)) {
             foregroundNotifications[channelId] = 0;
         }
         foregroundNotifications[channelId] += 1;
-        await AsyncStorage.setItem(this.foregroundNotificationsKey, JSON.stringify(foregroundNotifications));
+        await AsyncStorage.setItem(FOREGROUND_NOTIFICATIONS_KEY, JSON.stringify(foregroundNotifications));
     }
 }
 
