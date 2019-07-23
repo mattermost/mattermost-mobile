@@ -12,6 +12,7 @@ export function teamDataToRealm(team) {
         type: team.type,
         description: team.description,
         groupConstrained: team.group_constrained || false,
+        allowOpenInvites: team.allow_open_invite || false,
         members: team.members,
     };
 }
@@ -25,7 +26,7 @@ export function teamMemberDataToRealm(realmUser, member) {
         schemeUser: member.scheme_user,
         schemeAdmin: member.scheme_admin,
         schemeGuest: member.scheme_guest,
-        msgCount: member.msgCount,
-        mentionCount: member.mentionCount,
+        msgCount: member.msg_count,
+        mentionCount: member.mention_count,
     };
 }

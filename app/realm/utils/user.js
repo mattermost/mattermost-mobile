@@ -19,5 +19,7 @@ export function userDataToRealm(user) {
         timezone: user.timezone ? JSON.stringify(user.timezone) : '',
         lastPictureUpdate: user.last_picture_update || user.update_at || user.create_at,
         status: user.status,
+        termsOfServiceId: user.terms_of_service_id,
+        termsOfServiceCreateAt: user.terms_of_service_create_at,
     };
 }
