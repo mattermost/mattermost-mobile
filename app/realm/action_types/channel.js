@@ -9,5 +9,4 @@ import keyMirror from 'app/utils/key_mirror';
 export default keyMirror({
     RECEIVED_MY_CHANNELS: null,
     SELECT_CHANNEL: null,
-    RECEIVED_PROFILES_IN_CHANNEL: null,
 });

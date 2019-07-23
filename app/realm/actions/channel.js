@@ -4,12 +4,13 @@
 import {Client4} from 'mattermost-redux/client';
 
 import {General, PermissionTypes, Preferences, ViewTypes} from 'app/constants';
-import {ChannelTypes} from 'app/realm/action_types';
+import {ChannelTypes, UserTypes} from 'app/realm/action_types';
 import {isDirectMessageVisible, isGroupMessageVisible} from 'app/realm/utils/channel';
 import {reducePermissionsToSet} from 'app/realm/utils/role';
 import {getUserIdFromChannelName, sortChannelsByDisplayName} from 'app/utils/channels';
 
 import {forceLogoutIfNecessary} from './helpers';
+import {loadPostsWithRetry} from './post';
 import {savePreferences} from './preference';
 import {loadRolesIfNeeded} from './role';
 
@@ -24,7 +25,7 @@ import {
 export function loadChannelsForTeam(teamId) {
     return async (dispatch) => {
         try {
-            reduxStore.dispatch(loadChannelsIfNecessary(teamId));
+            await reduxStore.dispatch(loadChannelsIfNecessary(teamId));
             const [channels, channelMembers] = await Promise.all([
                 Client4.getMyChannels(teamId),
                 Client4.getMyChannelMembers(teamId),
@@ -78,7 +79,7 @@ export function loadSidebarDirectMessagesProfiles() {
 
         directChannels.forEach((c) => {
             // we only have the current user, so we need to load the other channel members
-            if (c.members.length === 1 && c.members[0].user.id !== currentUserId) {
+            if (!c.members.length || (c.members.length === 1 && c.members[0].user.id === currentUserId)) {
                 dispatch(getProfilesInChannel(c.id));
             }
 
@@ -176,8 +177,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
 
         // If the app is open from push notification, we already fetched the posts.
         if (!fromPushNotification) {
-            // TODO: Fetch posts
-            // dispatch(loadPostsForChannel(channelId));
+            dispatch(loadPostsWithRetry(channelId));
         }
 
         reduxStore.dispatch({
@@ -220,7 +220,7 @@ export function getProfilesInChannel(channelId) {
             };
 
             dispatch({
-                type: ChannelTypes.RECEIVED_PROFILES_IN_CHANNEL,
+                type: UserTypes.RECEIVED_PROFILES_IN_CHANNEL,
                 data,
             });
 

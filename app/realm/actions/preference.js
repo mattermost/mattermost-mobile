@@ -3,7 +3,7 @@
 
 import {Client4} from 'mattermost-redux/client';
 
-import {PreferenceTypes} from 'app/action_types';
+import {PreferenceTypes} from 'app/realm/action_types';
 
 export function savePreferences(userId, preferences) {
     return async (dispatch) => {

@@ -13,7 +13,10 @@ import {forceLogoutIfNecessary} from './helpers';
 
 // TODO: Remove redux compatibility
 import {reduxStore} from 'app/store';
-import {selectDefaultTeam as selectDefaultTeamRedux} from 'app/actions/views/select_team';
+import {
+    selectDefaultTeam as selectDefaultTeamRedux,
+    handleTeamChange as handleTeamChangeRedux,
+} from 'app/actions/views/select_team';
 
 export function getMyTeams() {
     return async (dispatch) => {
@@ -47,6 +50,7 @@ export function handleTeamChange(nextTeamId, currentTeamId) {
     return (dispatch) => {
         if (nextTeamId !== currentTeamId) {
             dispatch({type: TeamTypes.SELECT_TEAM, data: nextTeamId});
+            reduxStore.dispatch(handleTeamChangeRedux(nextTeamId));
         }
     };
 }

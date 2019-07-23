@@ -3,6 +3,7 @@
 
 import ChannelTypes from './channel';
 import GeneralTypes from './general';
+import PostTypes from './post';
 import PreferenceTypes from './preference';
 import RoleTypes from './role';
 import TeamTypes from './team';
@@ -11,6 +12,7 @@ import UserTypes from './user';
 export {
     ChannelTypes,
     GeneralTypes,
+    PostTypes,
     PreferenceTypes,
     RoleTypes,
     TeamTypes,

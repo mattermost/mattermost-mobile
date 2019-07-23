@@ -6,7 +6,6 @@ import {combineWriters} from 'realm-react-redux';
 import {General} from 'app/constants';
 import {ChannelTypes} from 'app/realm/action_types';
 import {channelDataToRealm, channelMemberDataToRealm} from 'app/realm/utils/channel';
-import {userDataToRealm} from 'app/realm/utils/user';
 
 function channels(realm, action) {
     switch (action.type) {
@@ -91,51 +90,24 @@ function channels(realm, action) {
             nextChannelMember.lastViewAt = Date.now();
         }
 
-        if (previousChannel?.id !== nextChannel.id) {
+        if (previousChannel.id && previousChannel.id !== nextChannel.id) {
             const prevRealmChannel = realm.objectForPrimaryKey('Channel', previousChannel.id);
             const prevChannelMember = realm.objectForPrimaryKey('ChannelMember', `${previousChannel.id}-${general.currentUserId}`);
             const prevTeamMember = realm.objectForPrimaryKey('TeamMember', `${prevRealmChannel.team.id}-${general.currentUserId}`);
 
-            const prevMsgAmount = Math.abs(prevRealmChannel.totalMsgCount - prevChannelMember.msgCount);
-            const prevChannelMemberMsgCount = prevChannelMember.msgCount;
-            const prevTeamMemberMsgCount = prevTeamMember.msgCount;
-            const prevChannelMemberMentionCount = prevChannelMember.mentionCount;
-            const prevTeamMemberMentionCount = prevTeamMember.mentionCount;
+            if (prevTeamMember && prevChannelMember) {
+                const prevMsgAmount = Math.abs(prevRealmChannel.totalMsgCount - prevChannelMember.msgCount);
+                const prevChannelMemberMsgCount = prevChannelMember.msgCount;
+                const prevTeamMemberMsgCount = prevTeamMember.msgCount;
+                const prevChannelMemberMentionCount = prevChannelMember.mentionCount;
+                const prevTeamMemberMentionCount = prevTeamMember.mentionCount;
 
-            prevChannelMember.msgCount = Math.max(prevMsgAmount, 0);
-            prevChannelMember.mentionCount = 0;
-            nextTeamMember.msgCount = Math.max(prevTeamMemberMsgCount - prevChannelMemberMsgCount, 0);
-            nextTeamMember.mentionCount = Math.max(prevTeamMemberMentionCount - prevChannelMemberMentionCount, 0);
-            prevChannelMember.lastViewAt = Date.now();
-        }
-        break;
-    }
-
-    case ChannelTypes.RECEIVED_PROFILES_IN_CHANNEL: {
-        const data = action.data || action.payload;
-        const {channelId, profiles, statuses} = data;
-        const channel = realm.objectForPrimaryKey('Channel', channelId);
-
-        if (channel) {
-            profiles.forEach((profile) => {
-                let user = realm.objectForPrimaryKey('User', profile.id);
-                const status = statuses.find((s) => s.user_id === profile.id);
-                profile.status = status.status;
-
-                if (!user || user.updateAt !== profile.update_at || user.status !== profile.status) {
-                    user = realm.create('User', userDataToRealm(profile), true);
-                }
-
-                const channelMember = realm.objectForPrimaryKey('ChannelMember', `${channelId}-${profile.id}`);
-                if (!channelMember) {
-                    const member = {
-                        id: `${channelId}-${profile.id}`,
-                        user,
-                    };
-
-                    channel.members.push(member);
-                }
-            });
+                prevChannelMember.msgCount = Math.max(prevMsgAmount, 0);
+                prevChannelMember.mentionCount = 0;
+                nextTeamMember.msgCount = Math.max(prevTeamMemberMsgCount - prevChannelMemberMsgCount, 0);
+                nextTeamMember.mentionCount = Math.max(prevTeamMemberMentionCount - prevChannelMemberMentionCount, 0);
+                prevChannelMember.lastViewAt = Date.now();
+            }
         }
         break;
     }

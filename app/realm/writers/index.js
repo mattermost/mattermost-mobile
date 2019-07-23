@@ -5,6 +5,7 @@ import {combineWriters} from 'realm-react-redux';
 
 import channel from './channel';
 import general from './general';
+import post from './post';
 import role from './role';
 import team from './team';
 import user from './user';
@@ -12,6 +13,7 @@ import user from './user';
 export default combineWriters([
     channel,
     general,
+    post,
     role,
     team,
     user,

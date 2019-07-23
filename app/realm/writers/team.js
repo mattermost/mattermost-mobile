@@ -32,12 +32,18 @@ export function mapTeamMembers(data, user) {
     return teamMembersMap;
 }
 
-export function removeTeamMemberships(realm, user, teamMembersMap) {
+export function removeTeamMemberships(realm, general, user, teamMembersMap) {
     const realmTeams = realm.objects('Team');
     realmTeams.forEach((t) => {
         const teamMembers = teamMembersMap.get(t.id);
         if (!teamMembers || teamMembers[0]?.deleteAt) {
             realm.delete(realm.objectForPrimaryKey('TeamMember', `${t.id}-${user.id}`));
+
+            // If we are no longer in the team but is currently selected, we have to clear the selection
+            // to let the application select the next default team
+            if (t.id === general.currentTeamId) {
+                general.currentTeamId = null;
+            }
         }
     });
 }
@@ -62,7 +68,7 @@ function myTeamsWriter(realm, action) {
             const teamMembersMap = mapTeamMembers(data, user);
 
             // Remove membership from teams
-            removeTeamMemberships(realm, user, teamMembersMap);
+            removeTeamMemberships(realm, general, user, teamMembersMap);
 
             createOrUpdateTeams(realm, data, teamMembersMap);
         }

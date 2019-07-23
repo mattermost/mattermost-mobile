@@ -8,6 +8,7 @@ import {General} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
+import {recordTime} from 'app/utils/segment';
 
 import {forceLogoutIfNecessary, FormattedError} from './helpers';
 
@@ -149,5 +150,13 @@ export function sendPasswordResetEmail(email) {
         }
 
         return {data};
+    };
+}
+
+export function recordLoadTime(screenName, category) {
+    return async (dispatch, getState) => {
+        const general = getState().objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+
+        recordTime(screenName, category, general.currentUserId);
     };
 }
