@@ -4,6 +4,7 @@
 import {combineWriters} from 'realm-react-redux';
 
 import channel from './channel';
+import emoji from './emoji';
 import general from './general';
 import post from './post';
 import role from './role';
@@ -12,6 +13,7 @@ import user from './user';
 
 export default combineWriters([
     channel,
+    emoji,
     general,
     post,
     role,

@@ -1,18 +1,50 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import allSettled from 'promise.allsettled';
+
+import {Client4} from 'mattermost-redux/client';
+
 import {General} from 'app/constants';
+import {EmojiTypes} from 'app/realm/action_types';
 import {EmojiIndicesByAlias} from 'app/utils/emojis';
 import {parseNeededCustomEmojisFromText} from 'app/utils/emoji_utils';
 import {buildPostAttachmentText} from 'app/utils/post';
+
+import {forceLogoutIfNecessary} from './helpers';
+
+export function getCustomEmojiByName(name: string) {
+    return async (dispatch, getState) => {
+        let data;
+        try {
+            data = await Client4.getCustomEmojiByName(name);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+
+            if (error.status_code === 404) {
+                dispatch({type: EmojiTypes.CUSTOM_EMOJI_DOES_NOT_EXIST, data: name});
+            }
+
+            return {error};
+        }
+
+        dispatch({
+            type: EmojiTypes.RECEIVED_CUSTOM_EMOJI,
+            data,
+        });
+
+        return {data};
+    };
+}
 
 export function getCustomEmojisForPosts(posts) {
     return async (dispatch, getState) => {
         const realm = getState();
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         const config = general.config;
+
         if (config?.EnableCustomEmoji !== 'true') {
-            return {data: new Set()};
+            return {data: []};
         }
 
         if (!posts?.length) {
@@ -21,13 +53,10 @@ export function getCustomEmojisForPosts(posts) {
 
         // If post metadata is supported, custom emojis will have been provided as part of that
         if (posts[0].metadata) {
-            return {data: new Set()};
+            return {data: []};
         }
 
-        // TODO: Add compatibility with older servers that do not have metadata enable
-        // Maybe by the time we have the realm store we don't want backwards compatibility??
-
-        const nonExistentEmoji = realm.objects('NonExistentEmoji');
+        const nonExistentEmoji = realm.objects('NonExistentEmoji').map((n) => n);
         const customEmojisByName = realm.objects('Emoji').map((emoji) => emoji.name);
         const systemEmojis = Array.from(EmojiIndicesByAlias.keys());
 
@@ -57,8 +86,29 @@ export function getCustomEmojisForPosts(posts) {
 
         const data = Array.from(customEmojisToLoad);
 
-        // allSettle and manage the error??
+        const promises = [];
+        data.forEach((name) => {
+            promises.push(Client4.getCustomEmojiByName(name));
+        });
 
-        return {data};
+        const st = await allSettled(promises);
+        const result = st.reduce((r, item) => {
+            if (item.status === 'fulfilled') {
+                r.emoji.push(item.value);
+            } else {
+                const seguments = item.reason.url.split('/');
+                const name = seguments[seguments.length - 1];
+                r.nonExistent.push(name);
+            }
+
+            return r;
+        }, {emoji: [], nonExistent: []});
+
+        dispatch({
+            type: EmojiTypes.RECEIVED_CUSTOM_AND_NON_EXISTENT_EMOJIS,
+            data: result,
+        });
+
+        return {data: result.emoji};
     };
 }

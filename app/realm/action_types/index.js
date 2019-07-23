@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import ChannelTypes from './channel';
+import EmojiTypes from './emoji';
 import GeneralTypes from './general';
 import PostTypes from './post';
 import PreferenceTypes from './preference';
@@ -11,6 +12,7 @@ import UserTypes from './user';
 
 export {
     ChannelTypes,
+    EmojiTypes,
     GeneralTypes,
     PostTypes,
     PreferenceTypes,
