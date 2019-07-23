@@ -23,10 +23,13 @@
  - Added ability to select and copy channel header text.
 
 ### Bug Fixes
+ - Fixed a few mobile app crash / fatal error issues.
+ - Fixed an issue where old theme's colors were applied to navigation bar during screen transitions.
  - Fixed an issue on iOS where returning from landscape video playback on moved status bar under notch.
  - Fixed an issue where contents of ephemeral posts from /giphy were not being displayed on mobile.
  - Fixed an issue where team/channel page dots at the bottom of left-hand side overlapped with the last Direct Message channel.
  - Fixed an issue where network reconnection incorrectly showed refreshing messages failed.
+ - Fixed an issue with a dark blue section at the bottom of channel list on iPhone X.
  
 ### Known Issues
   - Buttons inside ephemeral posts are not clickable / functional on the mobile app. [MM-15084](https://mattermost.atlassian.net/browse/MM-15084)
