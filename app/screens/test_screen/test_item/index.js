@@ -5,19 +5,17 @@ import {realmConnect} from 'realm-react-redux';
 
 import TestItem from './test_item';
 
-import options from 'app/store/realm_context_options';
-
 function mapPropsToQueries(realm, ownProps) {
-    // const channels = realm.objects('Channel').filtered('type=$0', General.OPEN_CHANNEL);
-    const item = realm.objectForPrimaryKey('Channel', ownProps.itemId);
+    const item = realm.objects('Channel').filtered('id=$0', ownProps.itemId);
     return [item];
 }
 
-function mapQueriesToProps([item]) {
+function mapQueriesToProps([items]) {
     // the returned user is always a different object, avoid passing the full object as props to prevent re-renders
+    const item = items[0];
     return {
         item,
     };
 }
 
-export default realmConnect(mapPropsToQueries, mapQueriesToProps, null, null, options)(TestItem);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, null, null, {allowUnsafeWrites: true, watchUnsafeWrites: true})(TestItem);

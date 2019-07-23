@@ -8,7 +8,6 @@ import {loadMe} from 'app/realm/actions/user';
 
 import TestScreen from './test_screen';
 
-import options from 'app/store/realm_context_options';
 import {reduxStore} from 'app/store';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 
@@ -24,7 +23,7 @@ function mapPropsToQueries(realm) {
     const general = realm.objects('General').filtered(`id="${General.REALM_SCHEMA_ID}"`);
     const users = realm.objects('User').filtered(`id="${general[0]?.currentUserId}"`);
     const themePreference = realm.objects('Preference').filtered(`category="${Preferences.CATEGORY_THEME}"`);
-    const channels = realm.objects('Channel').filtered('type=$0', General.OPEN_CHANNEL);
+    const channels = realm.objects('Channel');
     return [users, themePreference, general, channels];
 }
 
@@ -56,4 +55,4 @@ function mapRealmDispatchToProps(dispatch) {
     };
 }
 
-export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(TestScreen);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps)(TestScreen);

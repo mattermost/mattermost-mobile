@@ -49,6 +49,7 @@ export default class TestScreen extends PureComponent {
             <TestItem
                 itemId={item}
                 theme={this.props.theme}
+                currentUserId={this.props.user.id}
             />
         );
     }
