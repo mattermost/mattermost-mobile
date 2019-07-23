@@ -50,7 +50,6 @@ export default class SelectTeam extends PureComponent {
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
-        currentUserIsGuest: PropTypes.bool.isRequired,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object,
@@ -239,21 +238,6 @@ export default class SelectTeam extends PureComponent {
                     errorTitle={errorTitle}
                     errorDescription={errorDescription}
                 />
-            );
-        }
-
-        if (this.props.currentUserIsGuest) {
-            return (
-                <View style={styles.container}>
-                    <StatusBar/>
-                    <View style={styles.headingContainer}>
-                        <FormattedText
-                            id='mobile.select_team.guest_cant_join_team'
-                            defaultMessage='Your guest account has no teams or channels assigned. Please contact an administrator.'
-                            style={styles.heading}
-                        />
-                    </View>
-                </View>
             );
         }
 

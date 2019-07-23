@@ -15,7 +15,6 @@ import FormattedTime from 'app/components/formatted_time';
 import FormattedDate from 'app/components/formatted_date';
 import ReplyIcon from 'app/components/reply_icon';
 import BotTag from 'app/components/bot_tag';
-import GuestTag from 'app/components/guest_tag';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -41,7 +40,6 @@ export default class PostHeader extends PureComponent {
         theme: PropTypes.object.isRequired,
         username: PropTypes.string,
         isBot: PropTypes.bool,
-        isGuest: PropTypes.bool,
         userTimezone: PropTypes.string,
         enableTimezone: PropTypes.bool,
     };
@@ -66,7 +64,6 @@ export default class PostHeader extends PureComponent {
             fromAutoResponder,
             overrideUsername,
             isBot,
-            isGuest,
         } = this.props;
 
         if (fromWebHook) {
@@ -93,19 +90,6 @@ export default class PostHeader extends PureComponent {
                             {this.props.displayName}
                         </Text>
                         <BotTag
-                            theme={this.props.theme}
-                        />
-                    </View>
-                </TouchableOpacity>
-            );
-        } else if (isGuest) {
-            return (
-                <TouchableOpacity onPress={this.handleUsernamePress}>
-                    <View style={style.indicatorContainer}>
-                        <Text style={style.displayName}>
-                            {this.props.displayName}
-                        </Text>
-                        <GuestTag
                             theme={this.props.theme}
                         />
                     </View>

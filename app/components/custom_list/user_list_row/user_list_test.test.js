@@ -58,22 +58,6 @@ describe('UserListRow', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot for guest user', () => {
-        const newProps = {
-            ...baseProps,
-            user: {
-                ...baseProps.user,
-                roles: 'system_guest',
-            },
-        };
-
-        const wrapper = shallow(
-            <UserListRow {...newProps}/>,
-            {context: {intl: {formatMessage}}},
-        );
-        expect(wrapper.getElement()).toMatchSnapshot();
-    });
-
     test('should match snapshot for  currentUser with (you) populated in list', () => {
         const newProps = {
             ...baseProps,

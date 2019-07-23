@@ -12,22 +12,15 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {General} from 'mattermost-redux/constants';
-import FormattedText from 'app/components/formatted_text';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
         currentChannelName: PropTypes.string,
         displayName: PropTypes.string,
-        channelType: PropTypes.string,
         isChannelMuted: PropTypes.bool,
         onPress: PropTypes.func,
         theme: PropTypes.object,
         isArchived: PropTypes.bool,
-        isGuest: PropTypes.bool.isRequired,
-        hasGuests: PropTypes.bool.isRequired,
-        canHaveSubtitle: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -49,49 +42,10 @@ export default class ChannelTitle extends PureComponent {
         return content;
     }
 
-    renderHasGuestsText = (style) => {
-        const {channelType, isGuest, hasGuests, canHaveSubtitle} = this.props;
-        if (!canHaveSubtitle) {
-            return null;
-        }
-        if (!isGuest && !hasGuests) {
-            return null;
-        }
-
-        let messageId;
-        let defaultMessage;
-        if (channelType === General.DM_CHANNEL) {
-            messageId = t('channel.isGuest');
-            defaultMessage = 'This person is a guest';
-        } else if (channelType === General.GM_CHANNEL) {
-            messageId = t('channel.hasGuests');
-            defaultMessage = 'This group message has guests';
-        } else if (channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL) {
-            messageId = t('channel.channelHasGuests');
-            defaultMessage = 'This channel has guests';
-        } else {
-            return null;
-        }
-        return (
-            <View style={style.guestsWrapper}>
-                <FormattedText
-                    numberOfLines={1}
-                    ellipsizeMode='tail'
-                    id={messageId}
-                    defaultMessage={defaultMessage}
-                    style={style.guestsText}
-                />
-            </View>
-        );
-    }
-
     render() {
         const {currentChannelName, displayName, isChannelMuted, onPress, theme} = this.props;
-
-        const style = getStyle(theme);
-
         const channelName = displayName || currentChannelName;
-        const hasGuestsText = this.renderHasGuestsText(style);
+        const style = getStyle(theme);
         let icon;
         if (channelName) {
             icon = (
@@ -131,7 +85,6 @@ export default class ChannelTitle extends PureComponent {
                     {icon}
                     {mutedIcon}
                 </View>
-                {hasGuestsText}
             </TouchableOpacity>
         );
     }
@@ -170,18 +123,6 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             fontSize: 17,
             color: theme.sidebarHeaderTextColor,
             paddingRight: 7,
-        },
-        guestsWrapper: {
-            alignItems: 'flex-start',
-            flex: 1,
-            position: 'relative',
-            top: -1,
-            width: '90%',
-        },
-        guestsText: {
-            color: theme.sidebarHeaderTextColor,
-            fontSize: 14,
-            opacity: 0.6,
         },
     };
 });

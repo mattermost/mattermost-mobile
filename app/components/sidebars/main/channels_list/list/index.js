@@ -16,9 +16,7 @@ import {getTheme, getFavoritesPreferences, getSidebarPreferences} from 'mattermo
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {memoizeResult} from 'mattermost-redux/utils/helpers';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
-import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
-import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
-import Permissions from 'mattermost-redux/constants/permissions';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import {showModal} from 'app/actions/navigation';
 
@@ -55,16 +53,7 @@ function mapStateToProps(state) {
         sidebarPrefs.favorite_at_top === 'true' && favoriteChannelIds.length,
     ));
 
-    let canJoinPublicChannels = true;
-    if (hasNewPermissions(state)) {
-        canJoinPublicChannels = haveITeamPermission(state, {
-            team: currentTeamId,
-            permission: Permissions.JOIN_PUBLIC_CHANNELS,
-        });
-    }
-
     return {
-        canJoinPublicChannels,
         canCreatePrivateChannels: showCreateOption(
             state,
             config,
