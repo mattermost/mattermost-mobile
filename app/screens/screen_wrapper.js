@@ -12,7 +12,6 @@ import Root from 'app/components/root';
 import {NavigationTypes} from 'app/constants';
 import {configureRealmStore} from 'app/store';
 import ephemeralStore from 'app/store/ephemeral_store';
-import options from 'app/store/realm_context_options';
 
 export default class ScreenWrapper extends PureComponent {
     static propTypes = {
@@ -22,7 +21,7 @@ export default class ScreenWrapper extends PureComponent {
     };
 
     static defaultProps = {
-        excludeEvents: false,
+        excludeEvents: true,
     };
 
     constructor(props) {
@@ -65,7 +64,6 @@ export default class ScreenWrapper extends PureComponent {
         return (
             <RealmProvider
                 store={realm}
-                context={options.context}
             >
                 <Provider
                     store={store}

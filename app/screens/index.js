@@ -9,11 +9,11 @@ import Channel from './channel';
 import SelectServer from './select_server';
 import ScreenWrapper from './screen_wrapper';
 
-export function registerScreens(store, exludeEvents = true) {
-    const wrapWithContextProvider = (Component) => (props) => { //eslint-disable-line react/display-name
+export function registerScreens(store) {
+    const wrapWithContextProvider = (Component, excludeEvents = true) => (props) => { //eslint-disable-line react/display-name
         return (
             <ScreenWrapper
-                exludeEvents={exludeEvents}
+                excludeEvents={excludeEvents}
                 store={store}
             >
                 <Component {...props}/>
@@ -25,7 +25,7 @@ export function registerScreens(store, exludeEvents = true) {
     Navigation.registerComponent('About', () => wrapWithContextProvider(require('app/screens/about').default), () => require('app/screens/about').default);
     Navigation.registerComponent('AddReaction', () => wrapWithContextProvider(require('app/screens/add_reaction').default), () => require('app/screens/add_reaction').default);
     Navigation.registerComponent('AdvancedSettings', () => wrapWithContextProvider(require('app/screens/settings/advanced_settings').default), () => require('app/screens/settings/advanced_settings').default);
-    Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel), () => Channel);
+    Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel, false), () => Channel);
     Navigation.registerComponent('ChannelAddMembers', () => wrapWithContextProvider(require('app/screens/channel_add_members').default), () => require('app/screens/channel_add_members').default);
     Navigation.registerComponent('ChannelInfo', () => wrapWithContextProvider(require('app/screens/channel_info').default), () => require('app/screens/channel_info').default);
     Navigation.registerComponent('ChannelMembers', () => wrapWithContextProvider(require('app/screens/channel_members').default), () => require('app/screens/channel_members').default);
