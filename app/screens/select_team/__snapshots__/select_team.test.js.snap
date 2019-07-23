@@ -143,37 +143,3 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   />
 </View>
 `;
-
-exports[`SelectTeam should match snapshot when user is a guest 1`] = `
-<View
-  style={
-    Object {
-      "backgroundColor": "#ffffff",
-      "flex": 1,
-    }
-  }
->
-  <Connect(StatusBar) />
-  <View
-    style={
-      Object {
-        "alignItems": "center",
-        "flexDirection": "row",
-        "marginHorizontal": 16,
-        "marginTop": 20,
-      }
-    }
-  >
-    <FormattedText
-      defaultMessage="Your guest account has no teams or channels assigned. Please contact an administrator."
-      id="mobile.select_team.guest_cant_join_team"
-      style={
-        Object {
-          "color": undefined,
-          "fontSize": 13,
-        }
-      }
-    />
-  </View>
-</View>
-`;

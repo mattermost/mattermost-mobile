@@ -12,7 +12,6 @@ import {
     markChannelAsRead,
     leaveChannel as serviceLeaveChannel, markChannelAsViewed,
     selectChannel,
-    getChannelStats,
 } from 'mattermost-redux/actions/channels';
 import {
     getPosts,
@@ -381,7 +380,6 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
 
         const actions = [
             selectChannel(channelId),
-            getChannelStats(channelId),
             setChannelDisplayName(channel.display_name),
             {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
