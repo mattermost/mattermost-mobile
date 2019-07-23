@@ -6,13 +6,55 @@ import {Navigation} from 'react-native-navigation';
 
 import merge from 'deepmerge';
 
-import {getDefaultThemeFromConfig} from 'app/selectors/theme';
+import {getTheme as getThemeRedux} from 'mattermost-redux/selectors/entities/preferences';
 
+import {General, Preferences} from 'app/constants';
+import {getDefaultThemeFromConfig} from 'app/selectors/theme';
+import {getTheme} from 'app/realm/selectors/theme';
 import EphemeralStore from 'app/store/ephemeral_store';
 
+function getThemePrefsFromRealm(realm) {
+    try {
+        const general = realm.objects('General').filtered(`id="${General.REALM_SCHEMA_ID}"`);
+        const themePreference = realm.objects('Preference').filtered(`category="${Preferences.CATEGORY_THEME}"`);
+        return [general, themePreference];
+    } catch (e) {
+        return [];
+    }
+}
+
+// TODO: Remove when redux is no longer in use
+function getReduxOrRealmTheme(state) {
+    const [general, themePreference] = getThemePrefsFromRealm(state);
+
+    if (general && themePreference) {
+        return getTheme(general, themePreference);
+    }
+
+    if (state.entities) {
+        return getThemeRedux(state);
+    }
+
+    return getDefaultThemeFromConfig();
+}
+
 export function resetToChannel(passProps = {}) {
-    return () => {
-        const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
+    return (dispatch, getState) => {
+        const theme = getReduxOrRealmTheme(getState());
+
+        Navigation.setDefaultOptions({
+            topBar: {
+                backButton: {
+                    color: theme.sidebarHeaderTextColor,
+                },
+                background: {
+                    color: theme.sidebarHeaderBg,
+                },
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                },
+            },
+        });
 
         Navigation.setRoot({
             root: {
@@ -52,8 +94,8 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    return () => {
-        const theme = getDefaultThemeFromConfig();
+    return (dispatch, getState) => {
+        const theme = getReduxOrRealmTheme(getState());
 
         Navigation.setRoot({
             root: {
@@ -89,8 +131,9 @@ export function resetToSelectServer(allowOtherServers) {
 }
 
 export function resetToTeams(name, title, passProps = {}, options = {}) {
-    return () => {
-        const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
+    return (dispatch, getState) => {
+        const theme = getReduxOrRealmTheme(getState());
+
         const defaultOptions = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
@@ -131,9 +174,9 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
 }
 
 export function goToScreen(name, title, passProps = {}, options = {}) {
-    return () => {
+    return (dispatch, getState) => {
         const componentId = EphemeralStore.getNavigationTopComponentId();
-        const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
+        const theme = getReduxOrRealmTheme(getState());
         const defaultOptions = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
@@ -187,8 +230,8 @@ export function popToRoot() {
 }
 
 export function showModal(name, title, passProps = {}, options = {}) {
-    return () => {
-        const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
+    return (dispatch, getState) => {
+        const theme = getReduxOrRealmTheme(getState());
         const defaultOptions = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
@@ -360,8 +403,8 @@ export function dismissOverlay(componentId) {
 }
 
 export function applyTheme() {
-    return () => {
-        const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
+    return (dispatch, getState) => {
+        const theme = getReduxOrRealmTheme(getState());
 
         EphemeralStore.getNavigationComponentIds().forEach((componentId) => {
             Navigation.mergeOptions(componentId, {
