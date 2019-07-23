@@ -133,7 +133,7 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
 export function goToScreen(name, title, passProps = {}, options = {}) {
     return (dispatch, getState) => {
         const state = getState();
-        const componentId = EphemeralStore.getTopComponentId();
+        const componentId = EphemeralStore.getNavigationTopComponentId();
         const theme = getTheme(state);
         const defaultOptions = {
             layout: {
@@ -168,7 +168,7 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
 
 export function popTopScreen() {
     return () => {
-        const componentId = EphemeralStore.getTopComponentId();
+        const componentId = EphemeralStore.getNavigationTopComponentId();
 
         Navigation.pop(componentId);
     };
@@ -176,7 +176,7 @@ export function popTopScreen() {
 
 export function popToRoot() {
     return () => {
-        const componentId = EphemeralStore.getTopComponentId();
+        const componentId = EphemeralStore.getNavigationTopComponentId();
 
         Navigation.popToRoot(componentId).catch(() => {
             // RNN returns a promise rejection if there are no screens
@@ -286,7 +286,7 @@ export function showSearchModal(initialValue = '') {
 
 export function dismissModal(options = {}) {
     return () => {
-        const componentId = EphemeralStore.getTopComponentId();
+        const componentId = EphemeralStore.getNavigationTopComponentId();
 
         Navigation.dismissModal(componentId, options);
     };
@@ -304,7 +304,7 @@ export function dismissAllModals(options = {}) {
 
 export function peek(name, passProps = {}, options = {}) {
     return () => {
-        const componentId = EphemeralStore.getTopComponentId();
+        const componentId = EphemeralStore.getNavigationTopComponentId();
         const defaultOptions = {
             preview: {
                 commit: false,
@@ -356,6 +356,28 @@ export function dismissOverlay(componentId) {
             // this componentId to dismiss. We'll do nothing in this case
             // but we will catch the rejection here so that the caller
             // doesn't have to.
+        });
+    };
+}
+
+export function applyTheme() {
+    return (dispatch, getState) => {
+        const theme = getTheme(getState());
+
+        EphemeralStore.getNavigationComponentIds().forEach((componentId) => {
+            Navigation.mergeOptions(componentId, {
+                topBar: {
+                    backButton: {
+                        color: theme.sidebarHeaderTextColor,
+                    },
+                    background: {
+                        color: theme.sidebarHeaderBg,
+                    },
+                    title: {
+                        color: theme.sidebarHeaderTextColor,
+                    },
+                },
+            });
         });
     };
 }
