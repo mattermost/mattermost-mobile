@@ -9,7 +9,7 @@ import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import {loadConfigAndLicense, pingServer, scheduleExpiredNotification} from 'app/realm/actions/general';
 import {login} from 'app/realm/actions/user';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
-import options from 'app/store/realm_context_options';
+import options from 'app/store/realm_options';
 import {reduxStore} from 'app/store';
 
 import SelectServer from './select_server';
