@@ -12,10 +12,6 @@ export class Post extends Realm.Object {
         }
     }
 
-    set propsFromJson(props) {
-        this.props = JSON.stringify(props);
-    }
-
     static schema = {
         name: 'Post',
         primaryKey: 'id',
@@ -48,25 +44,9 @@ export class Reaction extends Realm.Object {
         primaryKey: 'id',
         properties: {
             id: 'string', // {postId}-{userId}-{emojiName}
-            user: 'User',
+            user: 'string',
             name: 'string',
             createAt: 'int',
-        },
-    }
-}
-
-export class PostsInChannel extends Realm.Object {
-    static schema = {
-        name: 'PostsInChannel',
-        properties: {
-            channelId: 'string',
-            posts: 'Post[]',
-            firstPostId: 'string', // first post id in this block
-            lastPostId: 'string', // last post id in this block
-            startTime: 'int', // the first post in the block (createAt) >
-            endTime: 'int', // the last post in the block (createAt) if next block startTime matches or is < endTime it would go to this block
-            nextPostId: 'string?',
-            previousPostId: 'string?',
         },
     }
 }
@@ -115,16 +95,23 @@ export class Embed extends Realm.Object {
         }
     }
 
-    set dataFromJson(data) {
-        this.props = JSON.stringify(data);
-    }
-
     static schema = {
         name: 'Embed',
         properties: {
             type: 'string',
             url: 'string',
             data: 'string?',
+        },
+    }
+}
+
+export class PostsTimesInChannel extends Realm.Object {
+    static schema = {
+        name: 'PostsTimesInChannel',
+        properties: {
+            channelId: 'string',
+            start: 'int',
+            end: 'int',
         },
     }
 }

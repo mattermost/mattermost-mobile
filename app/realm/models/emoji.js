@@ -3,7 +3,7 @@
 
 import Realm from 'realm';
 
-export default class Emoji extends Realm.Object {
+export class Emoji extends Realm.Object {
     static schema = {
         name: 'Emoji',
         primaryKey: 'id',
@@ -11,5 +11,15 @@ export default class Emoji extends Realm.Object {
             id: 'string',
             name: {type: 'string', indexed: true},
         },
-    }
+    };
+}
+
+export class NonExistentEmoji extends Realm.Object {
+    static schema = {
+        name: 'NonExistentEmoji',
+        primary: 'name',
+        properties: {
+            name: 'string',
+        },
+    };
 }

@@ -8,7 +8,7 @@ export class Channel extends Realm.Object {
         return {
             ...this,
         };
-    }
+    };
 
     static schema = {
         name: 'Channel',
@@ -53,6 +53,12 @@ export class ChannelMember extends Realm.Object {
     set notifyPropsFromJSON(props) {
         this.notifyProps = JSON.stringify(props);
     }
+
+    snapshot = () => {
+        return {
+            ...this,
+        };
+    };
 
     static schema = {
         name: 'ChannelMember',
