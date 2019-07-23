@@ -5,6 +5,8 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Animated, Image, ImageBackground, Platform, View, StyleSheet} from 'react-native';
 
+import Url from 'url-parse';
+
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {changeOpacity} from 'app/utils/theme';
@@ -29,6 +31,7 @@ export default class ProgressiveImage extends PureComponent {
 
     static defaultProps = {
         style: {},
+        defaultSource: {},
     };
 
     constructor(props) {
@@ -99,9 +102,19 @@ export default class ProgressiveImage extends PureComponent {
         }
     };
 
+    parseDefaultSource = (defaultSource) => {
+        if (defaultSource.hasOwnProperty('uri') && defaultSource.uri) {
+            const url = new Url(defaultSource.uri);
+            defaultSource.uri = url.href;
+        }
+
+        return defaultSource;
+    }
+
     render() {
-        const {style, defaultSource, isBackgroundImage, theme, tintDefaultSource, onError, resizeMode, resizeMethod} = this.props;
+        const {style, isBackgroundImage, theme, tintDefaultSource, onError, resizeMode, resizeMethod} = this.props;
         const {uri, intensity, thumb} = this.state;
+        const defaultSource = this.parseDefaultSource(this.props.defaultSource);
         const hasDefaultSource = Boolean(defaultSource);
         const hasPreview = Boolean(thumb);
         const hasURI = Boolean(uri);
