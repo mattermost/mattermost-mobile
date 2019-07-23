@@ -32,25 +32,22 @@ export let ClientUpgradeListener;
 
 export default class ChannelBase extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            loadChannelsIfNecessary: PropTypes.func.isRequired,
-            loadProfilesAndTeamMembersForDMSidebar: PropTypes.func.isRequired,
-            selectDefaultTeam: PropTypes.func.isRequired,
-            selectInitialChannel: PropTypes.func.isRequired,
-            recordLoadTime: PropTypes.func.isRequired,
-            peek: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-        }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
-        channelsRequestFailed: PropTypes.bool,
         currentTeamId: PropTypes.string,
-        isLandscape: PropTypes.bool,
-        theme: PropTypes.object.isRequired,
-        showTermsOfService: PropTypes.bool,
+        currentUserId: PropTypes.string,
         disableTermsModal: PropTypes.bool,
+        goToScreen: PropTypes.func.isRequired,
+        loadChannelsForTeam: PropTypes.func.isRequired,
+        loadSidebarDirectMessagesProfiles: PropTypes.func.isRequired,
+        peek: PropTypes.func.isRequired,
+        recordLoadTime: PropTypes.func.isRequired,
+        selectDefaultTeam: PropTypes.func.isRequired,
+        selectInitialChannel: PropTypes.func.isRequired,
+        showModalOverCurrentContext: PropTypes.func.isRequired,
+        showTermsOfService: PropTypes.bool,
         skipMetrics: PropTypes.bool,
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
@@ -66,6 +63,10 @@ export default class ChannelBase extends PureComponent {
 
         this.postTextbox = React.createRef();
         this.keyboardTracker = React.createRef();
+
+        this.state = {
+            channelsRequestFailed: false,
+        };
 
         Navigation.mergeOptions(props.componentId, {
             layout: {
@@ -84,7 +85,7 @@ export default class ChannelBase extends PureComponent {
         if (this.props.currentTeamId) {
             this.loadChannels(this.props.currentTeamId);
         } else {
-            this.props.actions.selectDefaultTeam();
+            this.props.selectDefaultTeam();
         }
 
         if (this.props.currentChannelId) {
@@ -94,7 +95,7 @@ export default class ChannelBase extends PureComponent {
 
     componentDidMount() {
         if (tracker.initialLoad && !this.props.skipMetrics) {
-            this.props.actions.recordLoadTime('Start time', 'initialLoad');
+            this.props.recordLoadTime('Start time', 'initialLoad');
         }
 
         if (this.props.showTermsOfService && !this.props.disableTermsModal) {
@@ -117,7 +118,9 @@ export default class ChannelBase extends PureComponent {
             });
         }
 
-        if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
+        if (!nextProps.currentTeamId) {
+            this.props.selectDefaultTeam();
+        } else if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
             this.loadChannels(nextProps.currentTeamId);
         }
 
@@ -133,7 +136,7 @@ export default class ChannelBase extends PureComponent {
 
     componentDidUpdate(prevProps) {
         if (tracker.teamSwitch) {
-            this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
+            this.props.recordLoadTime('Switch Team', 'teamSwitch');
         }
 
         // When the team changes emit the event to render the drawer content
@@ -169,7 +172,7 @@ export default class ChannelBase extends PureComponent {
     };
 
     showTermsOfServiceModal = async () => {
-        const {actions, theme} = this.props;
+        const {showModalOverCurrentContext, theme} = this.props;
         const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
         const screen = 'TermsOfService';
         const passProps = {
@@ -181,11 +184,11 @@ export default class ChannelBase extends PureComponent {
             },
         };
 
-        actions.showModalOverCurrentContext(screen, passProps, options);
+        showModalOverCurrentContext(screen, passProps, options);
     };
 
     goToChannelInfo = preventDoubleTap(() => {
-        const {actions} = this.props;
+        const {goToScreen} = this.props;
         const {intl} = this.context;
         const screen = 'ChannelInfo';
         const title = intl.formatMessage({id: 'mobile.routes.channelInfo', defaultMessage: 'Info'});
@@ -193,7 +196,7 @@ export default class ChannelBase extends PureComponent {
         Keyboard.dismiss();
 
         requestAnimationFrame(() => {
-            actions.goToScreen(screen, title);
+            goToScreen(screen, title);
         });
     });
 
@@ -204,18 +207,22 @@ export default class ChannelBase extends PureComponent {
     };
 
     handleLeaveTeam = () => {
-        this.props.actions.selectDefaultTeam();
+        this.props.selectDefaultTeam();
     };
 
     loadChannels = (teamId) => {
         const {
-            loadChannelsIfNecessary,
-            loadProfilesAndTeamMembersForDMSidebar,
+            loadChannelsForTeam,
+            loadSidebarDirectMessagesProfiles,
             selectInitialChannel,
-        } = this.props.actions;
+        } = this.props;
 
-        loadChannelsIfNecessary(teamId).then(() => {
-            loadProfilesAndTeamMembersForDMSidebar(teamId);
+        loadChannelsForTeam(teamId).then(({error}) => {
+            if (error) {
+                this.setState({channelsRequestFailed: true});
+            }
+
+            loadSidebarDirectMessagesProfiles();
 
             if (EphemeralStore.appStartedFromPushNotification) {
                 EphemeralStore.appStartedFromPushNotification = false;
@@ -238,6 +245,7 @@ export default class ChannelBase extends PureComponent {
     };
 
     retryLoadChannels = () => {
+        this.setState({channelsRequestFailed: false});
         this.loadChannels(this.props.currentTeamId);
     };
 
@@ -249,11 +257,10 @@ export default class ChannelBase extends PureComponent {
 
     renderChannel(drawerContent, optionalProps = {}) {
         const {
-            channelsRequestFailed,
             currentChannelId,
-            isLandscape,
             theme,
         } = this.props;
+        const {channelsRequestFailed} = this.state;
 
         if (!currentChannelId) {
             if (channelsRequestFailed) {
@@ -275,15 +282,15 @@ export default class ChannelBase extends PureComponent {
                 );
             }
 
-            const Loading = require('app/components/channel_loader').default;
+            const ChannelLoader = require('app/components/channel_loader').default;
             return (
                 <SafeAreaView>
                     <View style={style.flex}>
-                        <EmptyToolbar
+                        <EmptyToolbar theme={theme}/>
+                        <ChannelLoader
+                            channelIsLoading={true}
                             theme={theme}
-                            isLandscape={isLandscape}
                         />
-                        <Loading channelIsLoading={true}/>
                     </View>
                 </SafeAreaView>
             );

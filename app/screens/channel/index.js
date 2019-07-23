@@ -1,59 +1,45 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+import {realmConnect} from 'realm-react-redux';
 
-import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates, logout} from 'mattermost-redux/actions/users';
-import {RequestStatus} from 'mattermost-redux/constants';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/users';
-
-import {
-    loadChannelsIfNecessary,
-    loadProfilesAndTeamMembersForDMSidebar,
-    selectInitialChannel,
-} from 'app/actions/views/channel';
-import {connection} from 'app/actions/device';
-import {recordLoadTime} from 'app/actions/views/root';
-import {selectDefaultTeam} from 'app/actions/views/select_team';
 import {peek, goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
-import {isLandscape} from 'app/selectors/device';
+import {General, Preferences} from 'app/constants';
+import {loadChannelsForTeam, loadSidebarDirectMessagesProfiles, selectInitialChannel} from 'app/realm/actions/channel';
+import {recordLoadTime} from 'app/realm/actions/general';
+import {selectDefaultTeam} from 'app/realm/actions/team';
+import {getTheme} from 'app/realm/selectors/theme';
+import {shouldShowTermsOfService} from 'app/realm/selectors/user';
+import options from 'app/store/realm_options';
 
 import Channel from './channel';
 
-function mapStateToProps(state) {
-    const {myChannels: channelsRequest} = state.requests.channels;
+function mapPropsToQueries(realm) {
+    const general = realm.objects('General').filtered(`id="${General.REALM_SCHEMA_ID}"`);
+    const themePreference = realm.objects('Preference').filtered(`category="${Preferences.CATEGORY_THEME}"`);
+    const currentUser = realm.objectForPrimaryKey('User', general[0].currentUserId);
+    return [currentUser, general, themePreference];
+}
 
+function mapQueriesToProps([currentUser, general, themePreference]) {
     return {
-        channelsRequestFailed: channelsRequest.status === RequestStatus.FAILURE,
-        currentTeamId: getCurrentTeamId(state),
-        currentChannelId: getCurrentChannelId(state),
-        isLandscape: isLandscape(state),
-        theme: getTheme(state),
-        showTermsOfService: shouldShowTermsOfService(state),
+        currentChannelId: general[0]?.currentChannelId,
+        currentTeamId: general[0]?.currentTeamId,
+        currentUserId: currentUser?.id,
+        theme: getTheme(general, themePreference),
+        showTermsOfService: shouldShowTermsOfService(currentUser, general[0]),
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            connection,
-            loadChannelsIfNecessary,
-            loadProfilesAndTeamMembersForDMSidebar,
-            logout,
-            selectDefaultTeam,
-            selectInitialChannel,
-            recordLoadTime,
-            startPeriodicStatusUpdates,
-            stopPeriodicStatusUpdates,
-            peek,
-            goToScreen,
-            showModalOverCurrentContext,
-        }, dispatch),
-    };
-}
+const mapRealmDispatchToProps = {
+    goToScreen,
+    loadChannelsForTeam,
+    loadSidebarDirectMessagesProfiles,
+    peek,
+    selectDefaultTeam,
+    selectInitialChannel,
+    showModalOverCurrentContext,
+    recordLoadTime,
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(Channel);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(Channel);
