@@ -25,8 +25,9 @@ describe('user_profile', () => {
         loadBot: jest.fn(),
         setButtons: jest.fn(),
         dismissModal: jest.fn(),
-        resetToChannel: jest.fn(),
         goToScreen: jest.fn(),
+        dismissAllModals: jest.fn(),
+        popToRoot: jest.fn(),
     };
     const baseProps = {
         actions,
@@ -171,6 +172,8 @@ describe('user_profile', () => {
         props.fromSettings = false;
         wrapper.setProps({...props});
         wrapper.instance().navigationButtonPressed(event);
-        expect(props.actions.resetToChannel).toHaveBeenCalledTimes(1);
+        expect(props.actions.dismissAllModals).toHaveBeenCalledTimes(1);
+        expect(props.actions.popToRoot).toHaveBeenCalledTimes(1);
+        expect(props.actions.popToRoot).toHaveBeenCalledWith(props.componentId);
     });
 });
