@@ -8,4 +8,12 @@ export default {
     OPEN_CHANNEL: 'O',
     PRIVATE_CHANNEL: 'P',
     GM_CHANNEL: 'G',
+
+    POST_CHUNK_SIZE: 60,
+
+    SPECIAL_MENTIONS: [
+        'all',
+        'channel',
+        'here',
+    ],
 };
