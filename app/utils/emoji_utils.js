@@ -105,3 +105,38 @@ export function doesMatchNamedEmoji(emojiName) {
 
     return false;
 }
+
+export function parseNeededCustomEmojisFromText(message, systemEmojis, customEmojisByName, nonExistentEmoji) {
+    if (!message.includes(':')) {
+        return [];
+    }
+    const pattern = /:([A-Za-z0-9_-]+):/gi;
+
+    const customEmojis = new Set();
+
+    let match;
+    while ((match = pattern.exec(message)) !== null) {
+        if (!match) {
+            continue;
+        }
+
+        if (systemEmojis.includes(match[1])) {
+            // It's a system emoji, go the next match
+            continue;
+        }
+
+        if (nonExistentEmoji.includes(match[1])) {
+            // We've previously confirmed this is not a custom emoji
+            continue;
+        }
+
+        if (customEmojisByName.includes(match[1])) {
+            // We have the emoji, go to the next match
+            continue;
+        }
+
+        customEmojis.add(match[1]);
+    }
+
+    return Array.from(customEmojis);
+}
