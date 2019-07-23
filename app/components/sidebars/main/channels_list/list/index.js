@@ -38,22 +38,23 @@ const filterZeroUnreads = memoizeResult((sections) => {
 function mapStateToProps(state) {
     const config = getConfig(state);
     const license = getLicense(state);
-    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+    const currentUserId = getCurrentUserId(state);
+    const roles = currentUserId ? getCurrentUserRoles(state) : '';
     const currentTeamId = getCurrentTeamId(state);
     const isAdmin = checkIsAdmin(roles);
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const sidebarPrefs = getSidebarPreferences(state);
     const lastUnreadChannel = DeviceTypes.IS_TABLET ? state.views.channel.keepChannelIdAsUnread : null;
-    const unreadChannelIds = getSortedUnreadChannelIds(state, lastUnreadChannel);
-    const favoriteChannelIds = getSortedFavoriteChannelIds(state);
-    const orderedChannelIds = filterZeroUnreads(getOrderedChannelIds(
+    const unreadChannelIds = currentUserId ? getSortedUnreadChannelIds(state, lastUnreadChannel) : [];
+    const favoriteChannelIds = currentUserId ? getSortedFavoriteChannelIds(state) : [];
+    const orderedChannelIds = currentUserId ? filterZeroUnreads(getOrderedChannelIds(
         state,
         lastUnreadChannel,
         sidebarPrefs.grouping,
         sidebarPrefs.sorting,
         true, // The mobile app should always display the Unreads section regardless of user settings (MM-13420)
         sidebarPrefs.favorite_at_top === 'true' && favoriteChannelIds.length,
-    ));
+    )) : [];
 
     let canJoinPublicChannels = true;
     if (hasNewPermissions(state)) {
