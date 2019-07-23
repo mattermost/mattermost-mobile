@@ -98,7 +98,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         const directChannels = Object.values(channels).filter((c) => (isDirectChannel(c) || isGroupChannel(c)));
         directChannels.forEach((channel) => {
             const member = myMembers[channel.id];
-            if (isDirectChannel(channel) && !isDirectChannelVisible(currentUserId, myPreferences, channel) && member?.mention_count > 0) {
+            if (isDirectChannel(channel) && !isDirectChannelVisible(currentUserId, myPreferences, channel) && member && member.mention_count > 0) {
                 const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
                 let pref = dmPrefs.get(teammateId);
                 if (pref) {
@@ -108,7 +108,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
                 }
                 dmPrefs.set(teammateId, pref);
                 prefs.push(pref);
-            } else if (isGroupChannel(channel) && !isGroupChannelVisible(myPreferences, channel) && (member?.mention_count > 0 || member?.msg_count < channel.total_msg_count)) {
+            } else if (isGroupChannel(channel) && !isGroupChannelVisible(myPreferences, channel) && member && (member.mention_count > 0 || member.msg_count < channel.total_msg_count)) {
                 const id = channel.id;
                 let pref = gmPrefs.get(id);
                 if (pref) {
