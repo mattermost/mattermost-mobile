@@ -1,39 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+import {realmConnect} from 'realm-react-redux';
 
-import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentTeamId, getMySortedTeamIds, getJoinableTeamIds} from 'mattermost-redux/selectors/entities/teams';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
+import {General} from 'app/constants';
 import {showModal} from 'app/actions/navigation';
-import {handleTeamChange} from 'app/actions/views/select_team';
-import {getCurrentLocale} from 'app/selectors/i18n';
+import {handleTeamChange} from 'app/realm/actions/team';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {removeProtocol} from 'app/utils/url';
 
 import TeamsList from './teams_list';
 
-function mapStateToProps(state) {
-    const locale = getCurrentLocale(state);
+import options from 'app/store/realm_options';
 
+function mapPropsToQueries(realm) {
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+    const user = realm.objectForPrimaryKey('User', general.currentUserId);
+    const openTeams = realm.objects('Team').filtered('allowOpenInvites=true AND deleteAt=0 AND members.user.id != $0', user.id);
+    const myTeams = realm.objects('Team').filtered('members.user.id=$0 AND deleteAt=0', user.id).sorted('displayName');
+    return [myTeams, openTeams];
+}
+
+function mapQueriesToProps([myTeams, openTeams]) {
     return {
-        currentTeamId: getCurrentTeamId(state),
-        currentUrl: removeProtocol(getCurrentUrl(state)),
-        hasOtherJoinableTeams: getJoinableTeamIds(state).length > 0,
-        teamIds: getMySortedTeamIds(state, locale),
-        theme: getTheme(state),
+        currentUrl: removeProtocol(EphemeralStore.currentServerUrl),
+        hasOtherJoinableTeams: !openTeams.isEmpty(),
+        teams: myTeams,
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            handleTeamChange,
-            showModal,
-        }, dispatch),
-    };
-}
+const mapRealmDispatchToProps = {
+    handleTeamChange,
+    showModal,
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(TeamsList);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(TeamsList);

@@ -32,15 +32,13 @@ const VIEWABILITY_CONFIG = {
 
 export default class TeamsList extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            handleTeamChange: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
-        }).isRequired,
+        handleTeamChange: PropTypes.func.isRequired,
+        showModal: PropTypes.func.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         hasOtherJoinableTeams: PropTypes.bool,
-        teamIds: PropTypes.array.isRequired,
+        teams: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -57,7 +55,7 @@ export default class TeamsList extends PureComponent {
     }
 
     selectTeam = (teamId) => {
-        const {actions, closeChannelDrawer, currentTeamId} = this.props;
+        const {closeChannelDrawer, currentTeamId, handleTeamChange} = this.props;
 
         if (teamId !== currentTeamId) {
             telemetry.reset();
@@ -68,7 +66,7 @@ export default class TeamsList extends PureComponent {
         requestAnimationFrame(() => {
             if (teamId !== currentTeamId) {
                 tracker.teamSwitch = Date.now();
-                actions.handleTeamChange(teamId);
+                handleTeamChange(teamId);
             }
 
             closeChannelDrawer();
@@ -77,7 +75,7 @@ export default class TeamsList extends PureComponent {
 
     goToSelectTeam = preventDoubleTap(() => {
         const {intl} = this.context;
-        const {currentUrl, theme, actions} = this.props;
+        const {currentUrl, theme, showModal} = this.props;
         const screen = 'SelectTeam';
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
         const passProps = {
@@ -93,11 +91,25 @@ export default class TeamsList extends PureComponent {
             },
         };
 
-        actions.showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps, options);
     });
 
     keyExtractor = (item) => {
-        return item;
+        return item.id || item;
+    };
+
+    getMentionCount = (team) => {
+        const member = team.members[0];
+        let badgeCount = 0;
+        if (member) {
+            if (member.mentionCount) {
+                badgeCount = member.mentionCount;
+            } else if (member.msgCount) {
+                badgeCount = -1;
+            }
+        }
+
+        return badgeCount;
     };
 
     listContentPadding = () => {
@@ -115,16 +127,23 @@ export default class TeamsList extends PureComponent {
     };
 
     renderItem = ({item}) => {
+        const {currentTeamId, currentUrl, theme} = this.props;
         return (
             <TeamsListItem
+                currentTeamId={currentTeamId}
+                currentUrl={currentUrl}
                 selectTeam={this.selectTeam}
-                teamId={item}
+                teamId={item.id}
+                displayName={item.displayName}
+                mentionCount={this.getMentionCount(item)}
+                name={item.name}
+                theme={theme}
             />
         );
     };
 
     render() {
-        const {hasOtherJoinableTeams, teamIds, theme} = this.props;
+        const {hasOtherJoinableTeams, teams, theme} = this.props;
         const styles = getStyleSheet(theme);
 
         let moreAction;
@@ -156,7 +175,7 @@ export default class TeamsList extends PureComponent {
                 </View>
                 <FlatList
                     contentContainerStyle={this.listContentPadding()}
-                    data={teamIds}
+                    data={teams}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}
                     viewabilityConfig={VIEWABILITY_CONFIG}

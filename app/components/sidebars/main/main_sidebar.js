@@ -315,6 +315,7 @@ export default class ChannelSidebar extends Component {
 
     renderNavigationView = (drawerWidth) => {
         const {
+            currentTeamId,
             teamsCount,
             theme,
             previewChannel,
@@ -349,6 +350,8 @@ export default class ChannelSidebar extends Component {
                 >
                     <TeamsList
                         closeChannelDrawer={this.closeChannelDrawer}
+                        currentTeamId={currentTeamId}
+                        theme={theme}
                     />
                 </View>
             );
