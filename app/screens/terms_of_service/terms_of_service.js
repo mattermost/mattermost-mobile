@@ -20,16 +20,6 @@ import {t} from 'app/utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
-const errorTitle = {
-    id: t('mobile.terms_of_service.get_terms_error_title'),
-    defaultMessage: 'Unable to load terms of service.',
-};
-
-const errorDescription = {
-    id: t('mobile.terms_of_service.get_terms_error_description'),
-    defaultMessage: 'Make sure you have an active internet connection and try again. If this issue persists, contact your System Administrator.',
-};
-
 export default class TermsOfService extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -237,6 +227,7 @@ export default class TermsOfService extends PureComponent {
     render() {
         const {theme} = this.props;
         const styles = getStyleSheet(theme);
+        const FormattedText = require('app/components/formatted_text').default;
 
         const blockStyles = getMarkdownBlockStyles(theme);
         const textStyles = getMarkdownTextStyles(theme);
@@ -246,11 +237,36 @@ export default class TermsOfService extends PureComponent {
         }
 
         if (this.state.getTermsError) {
+            const errorTitle = {
+                id: t('mobile.terms_of_service.get_terms_error_title'),
+                defaultMessage: 'Unable to load terms of service.',
+            };
+
+            const errorDescription = {
+                id: t('mobile.failed_network_action.shortDescription'),
+                defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
+                values: {
+                    type: (
+                        <FormattedText
+                            id='mobile.failed_network_action.description.page'
+                            defaultMessage='Page'
+                        />
+                    ),
+                    refresh: (
+                        <FormattedText
+                            id='mobile.failed_network_action.retry'
+                            defaultMessage='try again'
+                            style={styles.linkText}
+                            onPress={this.getTerms}
+                        />
+                    ),
+                },
+            };
+
             return (
                 <View style={styles.container}>
                     <StatusBar/>
                     <FailedNetworkAction
-                        onRetry={this.getTerms}
                         theme={theme}
                         errorTitle={errorTitle}
                         errorDescription={errorDescription}

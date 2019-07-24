@@ -27,16 +27,6 @@ import TeamIcon from 'app/components/team_icon';
 
 const TEAMS_PER_PAGE = 50;
 
-const errorTitle = {
-    id: t('error.team_not_found.title'),
-    defaultMessage: 'Team Not Found',
-};
-
-const errorDescription = {
-    id: t('mobile.failed_network_action.shortDescription'),
-    defaultMessage: 'Make sure you have an active connection and try again.',
-};
-
 export default class SelectTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -171,16 +161,16 @@ export default class SelectTeam extends PureComponent {
 
     renderItem = ({item}) => {
         const {currentUrl, theme} = this.props;
-        const styles = getStyleSheet(theme);
+        const style = getStyleFromTheme(theme);
 
         if (item.id === 'mobile.select_team.no_teams') {
             return (
-                <View style={styles.teamWrapper}>
-                    <View style={styles.teamContainer}>
+                <View style={style.teamWrapper}>
+                    <View style={style.teamContainer}>
                         <FormattedText
                             id={item.id}
                             defaultMessage={item.defaultMessage}
-                            style={styles.noTeam}
+                            style={style.noTeam}
                         />
                     </View>
                 </View>
@@ -188,29 +178,29 @@ export default class SelectTeam extends PureComponent {
         }
 
         return (
-            <View style={styles.teamWrapper}>
+            <View style={style.teamWrapper}>
                 <TouchableOpacity
                     onPress={preventDoubleTap(() => this.onSelectTeam(item))}
                 >
-                    <View style={styles.teamContainer}>
+                    <View style={style.teamContainer}>
                         <TeamIcon
                             teamId={item.id}
-                            styleContainer={styles.teamIconContainer}
-                            styleText={styles.teamIconText}
-                            styleImage={styles.imageContainer}
+                            styleContainer={style.teamIconContainer}
+                            styleText={style.teamIconText}
+                            styleImage={style.imageContainer}
                         />
-                        <View style={styles.teamNameContainer}>
+                        <View style={style.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
                                 ellipsizeMode='tail'
-                                style={styles.teamName}
+                                style={style.teamName}
                             >
                                 {item.display_name}
                             </Text>
                             <Text
                                 numberOfLines={1}
                                 ellipsizeMode='tail'
-                                style={styles.teamUrl}
+                                style={style.teamUrl}
                             >
                                 {`${currentUrl}/${item.name}`}
                             </Text>
@@ -224,7 +214,7 @@ export default class SelectTeam extends PureComponent {
     render() {
         const {theme} = this.props;
         const {teams} = this.state;
-        const styles = getStyleSheet(theme);
+        const style = getStyleFromTheme(theme);
 
         if (this.state.joining) {
             return <Loading/>;
@@ -232,11 +222,31 @@ export default class SelectTeam extends PureComponent {
 
         if (this.props.teamsRequest.status === RequestStatus.FAILURE) {
             const FailedNetworkAction = require('app/components/failed_network_action').default;
+
+            const errorDescription = {
+                id: t('mobile.failed_network_action.shortDescription'),
+                defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
+                values: {
+                    type: (
+                        <FormattedText
+                            id='mobile.failed_network_action.description.teams'
+                            defaultMessage='Teams'
+                        />
+                    ),
+                    refresh: (
+                        <FormattedText
+                            id='mobile.failed_network_action.retry'
+                            defaultMessage='try again'
+                            style={style.link}
+                            onPress={this.getTeams}
+                        />
+                    ),
+                },
+            };
+
             return (
                 <FailedNetworkAction
-                    onRetry={this.getTeams}
                     theme={theme}
-                    errorTitle={errorTitle}
                     errorDescription={errorDescription}
                 />
             );
@@ -258,17 +268,17 @@ export default class SelectTeam extends PureComponent {
         }
 
         return (
-            <View style={styles.container}>
+            <View style={style.container}>
                 <StatusBar/>
-                <View style={styles.headingContainer}>
-                    <View style={styles.headingWrapper}>
+                <View style={style.headingContainer}>
+                    <View style={style.headingWrapper}>
                         <FormattedText
                             id='mobile.select_team.join_open'
                             defaultMessage='Open teams you can join'
-                            style={styles.heading}
+                            style={style.heading}
                         />
                     </View>
-                    <View style={styles.line}/>
+                    <View style={style.line}/>
                 </View>
                 <CustomList
                     data={teams}
@@ -287,7 +297,7 @@ export default class SelectTeam extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
@@ -348,6 +358,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         teamUrl: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 12,
+        },
+        link: {
+            color: theme.linkColor,
         },
     };
 });

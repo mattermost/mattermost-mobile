@@ -6,7 +6,6 @@ import React, {PureComponent} from 'react';
 import {
     Keyboard,
     Platform,
-    StyleSheet,
     View,
 } from 'react-native';
 
@@ -14,6 +13,7 @@ import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PostList from 'app/components/post_list';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import {ViewTypes} from 'app/constants';
@@ -186,27 +186,37 @@ export default class ChannelPostList extends PureComponent {
         } = this.props;
 
         const {visiblePostIds} = this.state;
+        const style = getStyleFromTheme(theme);
         let component;
 
-        // if (visiblePostIds.length === 0 && channelRefreshingFailed) {
-        if (visiblePostIds.length > 0 || channelRefreshingFailed) {
+        if (visiblePostIds.length === 0 && channelRefreshingFailed) {
             const FailedNetworkAction = require('app/components/failed_network_action').default;
-
-            const errorTitle = {
-                id: t('mobile.failed_network_action.title'),
-                defaultMessage: 'No internet connection',
-            };
+            const FormattedText = require('app/components/formatted_text').default;
 
             const errorDescription = {
-                id: t('mobile.failed_network_action.messages'),
-                defaultMessage: 'Messages will load when you have an internet connection or try again.',
+                id: t('mobile.failed_network_action.shortDescription'),
+                defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
+                values: {
+                    type: (
+                        <FormattedText
+                            id='mobile.failed_network_action.description.messages'
+                            defaultMessage='messages'
+                        />
+                    ),
+                    refresh: (
+                        <FormattedText
+                            id='mobile.failed_network_action.retry'
+                            defaultMessage='try again'
+                            style={style.link}
+                            onPress={this.loadPostsRetry}
+                        />
+                    ),
+                },
             };
 
             component = (
                 <FailedNetworkAction
-                    onRetry={this.loadPostsRetry}
                     theme={theme}
-                    errorTitle={errorTitle}
                     errorDescription={errorDescription}
                 />
             );
@@ -241,8 +251,13 @@ export default class ChannelPostList extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            flex: 1,
+        },
+        link: {
+            color: theme.linkColor,
+        },
+    };
 });

@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {TouchableOpacity, View} from 'react-native';
+import {View} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -13,7 +13,6 @@ import Cloud from './cloud';
 
 export default class FailedNetworkAction extends PureComponent {
     static propTypes = {
-        onRetry: PropTypes.func,
         theme: PropTypes.object.isRequired,
         errorTitle: PropTypes.object,
         errorDescription: PropTypes.object,
@@ -25,13 +24,27 @@ export default class FailedNetworkAction extends PureComponent {
             defaultMessage: 'No internet connection',
         },
         errorDescription: {
-            id: t('mobile.failed_network_action.description'),
-            defaultMessage: 'There seems to be a problem with your internet connection. Make sure you have an active connection and try again.',
+            id: t('mobile.failed_network_action.shortDescription'),
+            defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
+            values: {
+                type: (
+                    <FormattedText
+                        id='mobile.failed_network_action.description.messages'
+                        defaultMessage='messages'
+                    />
+                ),
+                refresh: (
+                    <FormattedText
+                        id='mobile.failed_network_action.retry'
+                        defaultMessage='try again'
+                    />
+                ),
+            },
         },
     };
 
     render() {
-        const {theme, onRetry} = this.props;
+        const {theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -50,19 +63,8 @@ export default class FailedNetworkAction extends PureComponent {
                     id={this.props.errorDescription.id}
                     defaultMessage={this.props.errorDescription.message}
                     style={style.description}
+                    values={this.props.errorDescription.values}
                 />
-                {onRetry &&
-                <TouchableOpacity
-                    onPress={onRetry}
-                    style={style.retryContainer}
-                >
-                    <FormattedText
-                        id='mobile.failed_network_action.retry'
-                        defaultMessage='Try Again'
-                        style={style.retry}
-                    />
-                </TouchableOpacity>
-                }
             </View>
         );
     }
@@ -75,12 +77,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             justifyContent: 'center',
             paddingHorizontal: 15,
+            paddingBottom: 100,
         },
         title: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
             fontSize: 20,
             fontWeight: '600',
             marginBottom: 15,
+            marginTop: 10,
         },
         description: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
