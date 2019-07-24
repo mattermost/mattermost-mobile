@@ -15,7 +15,6 @@ import {Navigation} from 'react-native-navigation';
 import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import FailedNetworkAction from 'app/components/failed_network_action';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
@@ -232,6 +231,7 @@ export default class SelectTeam extends PureComponent {
         }
 
         if (this.props.teamsRequest.status === RequestStatus.FAILURE) {
+            const FailedNetworkAction = require('app/components/failed_network_action').default;
             return (
                 <FailedNetworkAction
                     onRetry={this.getTeams}

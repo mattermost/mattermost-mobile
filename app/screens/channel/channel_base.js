@@ -257,18 +257,18 @@ export default class ChannelBase extends PureComponent {
             theme,
         } = this.props;
 
-        const errorTitle = {
-            id: t('error.team_not_found.title'),
-            defaultMessage: 'Team Not Found',
-        };
-
-        const errorDescription = {
-            id: t('mobile.failed_network_action.shortDescription'),
-            defaultMessage: 'Make sure you have an active connection and try again.',
-        };
-
         if (!currentChannelId) {
             if (channelsRequestFailed) {
+                const errorTitle = {
+                    id: t('error.team_not_found.title'),
+                    defaultMessage: 'Team Not Found',
+                };
+
+                const errorDescription = {
+                    id: t('mobile.failed_network_action.shortDescription'),
+                    defaultMessage: 'Make sure you have an active connection and try again.',
+                };
+
                 return (
                     <FailedNetworkAction
                         onRetry={this.retryLoadChannels}
