@@ -24,6 +24,7 @@ jest.mock('react-native-notifications', () => {
         removeDeliveredNotifications: jest.fn((ids) => {
             deliveredNotifications = deliveredNotifications.filter((n) => !ids.includes(n.identifier));
         }),
+        cancelAllLocalNotifications: jest.fn(),
         NotificationAction: jest.fn(),
         NotificationCategory: jest.fn(),
     };
@@ -132,5 +133,18 @@ describe('PushNotification', () => {
             const badgeNumber = channel2DeliveredNotifications.lenth + channel2ForegroundNotifications.length;
             expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(badgeNumber);
         });
+    });
+
+    it('should clear all notifications', () => {
+        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
+        const cancelAllLocalNotifications = jest.spyOn(PushNotification, 'cancelAllLocalNotifications');
+        const clearForegroundNotifications = jest.spyOn(PushNotification, 'clearForegroundNotifications');
+
+        PushNotification.clearNotifications();
+        expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(0);
+        expect(NotificationsIOS.setBadgesCount).toHaveBeenCalledWith(0);
+        expect(cancelAllLocalNotifications).toHaveBeenCalled();
+        expect(NotificationsIOS.cancelAllLocalNotifications).toHaveBeenCalled();
+        expect(clearForegroundNotifications).toHaveBeenCalled();
     });
 });
