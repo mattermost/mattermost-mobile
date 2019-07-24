@@ -225,8 +225,6 @@ class GlobalEventHandler {
         dispatch(setServerVersion(''));
         Client4.serverVersion = '';
 
-        PushNotifications.clearNotifications();
-
         const credentials = await getAppCredentials();
 
         if (credentials) {
