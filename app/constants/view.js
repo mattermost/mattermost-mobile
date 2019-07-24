@@ -27,6 +27,8 @@ export const NotificationLevels = {
     NONE: 'none',
 };
 
+export const NOTIFY_ALL_MEMBERS = 5;
+
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
     SERVER_URL_CHANGED: null,
