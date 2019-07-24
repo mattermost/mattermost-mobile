@@ -20,6 +20,8 @@ import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
 
+import {t} from 'app/utils/i18n';
+
 let ChannelIntro = null;
 let LoadMorePosts = null;
 
@@ -180,15 +182,33 @@ export default class ChannelPostList extends PureComponent {
             lastViewedAt,
             loadMorePostsVisible,
             refreshing,
+            theme,
         } = this.props;
 
         const {visiblePostIds} = this.state;
         let component;
 
-        if (visiblePostIds.length === 0 && channelRefreshingFailed) {
-            const Loading = require('app/components/channel_loader').default;
+        // if (visiblePostIds.length === 0 && channelRefreshingFailed) {
+        if (visiblePostIds.length > 0 || channelRefreshingFailed) {
+            const FailedNetworkAction = require('app/components/failed_network_action').default;
+
+            const errorTitle = {
+                id: t('mobile.failed_network_action.title'),
+                defaultMessage: 'No internet connection',
+            };
+
+            const errorDescription = {
+                id: t('mobile.failed_network_action.messages'),
+                defaultMessage: 'Messages will load when you have an internet connection or try again.',
+            };
+
             component = (
-                <Loading channelIsLoading={true}/>
+                <FailedNetworkAction
+                    onRetry={this.loadPostsRetry}
+                    theme={theme}
+                    errorTitle={errorTitle}
+                    errorDescription={errorDescription}
+                />
             );
         } else {
             component = (

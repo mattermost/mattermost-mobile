@@ -85,6 +85,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         description: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
             fontSize: 17,
+            lineHeight: 25,
             textAlign: 'center',
         },
         retryContainer: {
