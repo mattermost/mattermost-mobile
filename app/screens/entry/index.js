@@ -3,7 +3,6 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {setDeviceToken} from 'mattermost-redux/actions/general';
 import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
@@ -31,7 +30,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             autoUpdateTimezone,
-            setDeviceToken,
         }, dispatch),
     };
 }
