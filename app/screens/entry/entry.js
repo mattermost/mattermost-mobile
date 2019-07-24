@@ -126,7 +126,16 @@ export default class Entry extends PureComponent {
                 autoUpdateTimezone(deviceTimezone);
             }
 
-            this.setAppCredentials();
+            const {currentUserId} = state.entities.users;
+
+            if (app.waitForRehydration) {
+                app.waitForRehydration = false;
+            }
+
+            if (currentUserId) {
+                Client4.setUserId(currentUserId);
+            }
+
             this.setStartupThemes();
             this.handleNotification();
             this.loadSystemEmojis();
@@ -143,21 +152,6 @@ export default class Entry extends PureComponent {
     configurePushNotifications = () => {
         const configureNotifications = lazyLoadPushNotifications();
         configureNotifications();
-    };
-
-    setAppCredentials = () => {
-        const {getState} = store;
-        const state = getState();
-
-        const {currentUserId} = state.entities.users;
-
-        if (app.waitForRehydration) {
-            app.waitForRehydration = false;
-        }
-
-        if (currentUserId) {
-            Client4.setUserId(currentUserId);
-        }
     };
 
     setStartupThemes = () => {
