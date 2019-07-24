@@ -15,7 +15,6 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EmptyToolbar from 'app/components/start/empty_toolbar';
-import FailedNetworkAction from 'app/components/failed_network_action';
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import MainSidebar from 'app/components/sidebars/main';
 import SafeAreaView from 'app/components/safe_area_view';
@@ -259,6 +258,7 @@ export default class ChannelBase extends PureComponent {
 
         if (!currentChannelId) {
             if (channelsRequestFailed) {
+                const FailedNetworkAction = require('app/components/failed_network_action').default;
                 const errorTitle = {
                     id: t('error.team_not_found.title'),
                     defaultMessage: 'Team Not Found',
