@@ -47,7 +47,7 @@ export default class PostAttachmentImage extends React.PureComponent {
                 <View ref={this.image}>
                     <ProgressiveImage
                         style={[styles.image, {width: this.props.width, height: this.props.height}]}
-                        defaultSource={{uri: this.props.uri}}
+                        imageUri={this.props.uri}
                         resizeMode='contain'
                         onError={this.props.onError}
                     />
