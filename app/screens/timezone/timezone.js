@@ -18,7 +18,6 @@ import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getDeviceTimezone} from 'app/utils/timezone';
-import {DeviceTypes, ViewTypes} from 'app/constants';
 
 export default class Timezone extends PureComponent {
     static propTypes = {
@@ -144,8 +143,6 @@ export default class Timezone extends PureComponent {
         } = this.props;
         const {useAutomaticTimezone} = this.state;
         const style = getStyleSheet(theme);
-
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         return (
             <View style={style.container}>
