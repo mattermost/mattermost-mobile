@@ -16,7 +16,7 @@ import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostPreHeader from 'app/components/post_header/post_pre_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
-import {NavigationTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes, NavigationTypes} from 'app/constants';
 import {fromAutoResponder} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -67,6 +67,7 @@ export default class Post extends PureComponent {
         isCommentMention: PropTypes.bool,
         location: PropTypes.string,
         isBot: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -243,6 +244,7 @@ export default class Post extends PureComponent {
             skipFlaggedHeader,
             skipPinnedHeader,
             location,
+            isLandscape,
         } = this.props;
 
         if (!post) {
@@ -298,9 +300,11 @@ export default class Post extends PureComponent {
         const replyBarStyle = this.replyBarStyle();
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         return (
             <TouchableHighlight
-                style={[style.postStyle, highlighted]}
+                style={[style.postStyle, highlighted, padding]}
                 onPress={this.handlePress}
                 onLongPress={this.showPostOptions}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}

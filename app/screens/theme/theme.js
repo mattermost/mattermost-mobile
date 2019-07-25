@@ -5,7 +5,7 @@ import React from 'react';
 import {Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import SafeAreaView from 'app/components/safe_area_view';
+
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
@@ -120,25 +120,23 @@ export default class Theme extends React.PureComponent {
         const {customTheme} = this.state;
         const style = getStyleSheet(theme);
         return (
-            <SafeAreaView>
-                <View style={style.container}>
-                    <StatusBar/>
-                    <View style={style.wrapper}>
-                        <View style={style.tilesContainer}>
-                            {this.renderAllowedThemeTiles()}
-                        </View>
-
-                        {customTheme &&
-                            <Section
-                                disableHeader={true}
-                                theme={theme}
-                            >
-                                {this.renderCustomThemeRow({item: customTheme})}
-                            </Section>
-                        }
+            <View style={style.container}>
+                <StatusBar/>
+                <View style={style.wrapper}>
+                    <View style={style.tilesContainer}>
+                        {this.renderAllowedThemeTiles()}
                     </View>
+
+                    {customTheme &&
+                        <Section
+                            disableHeader={true}
+                            theme={theme}
+                        >
+                            {this.renderCustomThemeRow({item: customTheme})}
+                        </Section>
+                    }
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 }

@@ -9,6 +9,7 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 function section(props) {
     const {
@@ -22,9 +23,12 @@ function section(props) {
         headerId,
         headerValues,
         theme,
+        isLandscape,
     } = props;
 
     const style = getStyleSheet(theme);
+
+    const margin = DeviceTypes.IS_IPHONE_X && isLandscape ? {marginHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {marginHorizontal: 15};
 
     return (
         <View style={style.container}>
@@ -33,7 +37,7 @@ function section(props) {
                     id={headerId}
                     defaultMessage={headerDefaultMessage}
                     values={headerValues}
-                    style={style.header}
+                    style={[style.header, margin]}
                 />
             }
             <View style={style.items}>
@@ -44,7 +48,7 @@ function section(props) {
                     id={footerId}
                     defaultMessage={footerDefaultMessage}
                     values={footerValues}
-                    style={style.footer}
+                    style={[style.footer, margin]}
                 />
             }
         </View>
@@ -62,6 +66,7 @@ section.propTypes = {
     headerId: PropTypes.string,
     headerValues: PropTypes.object,
     theme: PropTypes.object.isRequired,
+    isLandscape: PropTypes.bool.isRequired,
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -70,7 +75,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginBottom: 30,
         },
         header: {
-            marginHorizontal: 15,
             marginBottom: 10,
             fontSize: 13,
             color: changeOpacity(theme.centerChannelColor, 0.5),
@@ -83,7 +87,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         footer: {
-            marginHorizontal: 15,
             marginTop: 10,
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),

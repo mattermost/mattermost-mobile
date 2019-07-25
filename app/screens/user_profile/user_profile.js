@@ -11,10 +11,9 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
-import SafeAreaView from 'app/components/safe_area_view';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
-
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import ProfilePicture from 'app/components/profile_picture';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
@@ -49,6 +48,7 @@ export default class UserProfile extends PureComponent {
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
         fromSettings: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -137,14 +137,16 @@ export default class UserProfile extends PureComponent {
     };
 
     buildDisplayBlock = (property) => {
-        const {theme, user} = this.props;
+        const {theme, user, isLandscape} = this.props;
         const style = createStyleSheet(theme);
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         if (user.hasOwnProperty(property) && user[property].length > 0) {
             return (
                 <View>
-                    <Text style={style.header}>{property.toUpperCase()}</Text>
-                    <Text style={style.text}>{user[property]}</Text>
+                    <Text style={[style.header, padding]}>{property.toUpperCase()}</Text>
+                    <Text style={[style.text, padding]}>{user[property]}</Text>
                 </View>
             );
         }
@@ -153,8 +155,10 @@ export default class UserProfile extends PureComponent {
     };
 
     buildTimezoneBlock = () => {
-        const {theme, user, militaryTime} = this.props;
+        const {theme, user, militaryTime, isLandscape} = this.props;
         const style = createStyleSheet(theme);
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         const currentTimezone = getUserCurrentTimezone(user.timezone);
         if (!currentTimezone) {
@@ -167,9 +171,9 @@ export default class UserProfile extends PureComponent {
                 <FormattedText
                     id='mobile.routes.user_profile.local_time'
                     defaultMessage='LOCAL TIME'
-                    style={style.header}
+                    style={[style.header, padding]}
                 />
-                <Text style={style.text}>
+                <Text style={[style.text, padding]}>
                     <FormattedTime
                         timeZone={currentTimezone}
                         hour12={!militaryTime}
@@ -268,8 +272,11 @@ export default class UserProfile extends PureComponent {
             if (!this.props.bot) {
                 return null;
             }
+
+            const padding = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
             return (
-                <View style={style.content}>
+                <View style={[style.content, padding]}>
                     <View>
                         <Text style={style.header}>{'DESCRIPTION'}</Text>
                         <Text style={style.text}>{this.props.bot.description || ''}</Text>
@@ -290,7 +297,7 @@ export default class UserProfile extends PureComponent {
     }
 
     render() {
-        const {theme, user} = this.props;
+        const {theme, user, isLandscape} = this.props;
         const style = createStyleSheet(theme);
 
         if (!user) {
@@ -298,35 +305,34 @@ export default class UserProfile extends PureComponent {
         }
 
         return (
-            <SafeAreaView>
-                <View style={style.container}>
-                    <StatusBar/>
-                    <ScrollView
-                        style={style.scrollView}
-                    >
-                        <View style={style.top}>
-                            <ProfilePicture
-                                userId={user.id}
-                                size={150}
-                                statusBorderWidth={6}
-                                statusSize={40}
-                            />
-                            {this.getDisplayName()}
-                            <Text style={style.username}>{`@${user.username}`}</Text>
-                        </View>
-                        {this.renderDetailsBlock(style)}
-                        <UserProfileRow
-                            action={this.sendMessage}
-                            defaultMessage='Send Message'
-                            icon='paper-plane-o'
-                            iconType='fontawesome'
-                            textId={t('mobile.routes.user_profile.send_message')}
-                            theme={theme}
+            <View style={style.container}>
+                <StatusBar/>
+                <ScrollView
+                    style={style.scrollView}
+                >
+                    <View style={style.top}>
+                        <ProfilePicture
+                            userId={user.id}
+                            size={150}
+                            statusBorderWidth={6}
+                            statusSize={40}
                         />
-                        {this.renderAdditionalOptions()}
-                    </ScrollView>
-                </View>
-            </SafeAreaView>
+                        {this.getDisplayName()}
+                        <Text style={style.username}>{`@${user.username}`}</Text>
+                    </View>
+                    {this.renderDetailsBlock(style)}
+                    <UserProfileRow
+                        action={this.sendMessage}
+                        defaultMessage='Send Message'
+                        icon='paper-plane-o'
+                        iconType='fontawesome'
+                        textId={t('mobile.routes.user_profile.send_message')}
+                        theme={theme}
+                        isLandscape={isLandscape}
+                    />
+                    {this.renderAdditionalOptions()}
+                </ScrollView>
+            </View>
         );
     }
 }

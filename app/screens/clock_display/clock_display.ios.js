@@ -4,7 +4,7 @@ import React from 'react';
 import {
     View,
 } from 'react-native';
-import SafeAreaView from 'app/components/safe_area_view';
+
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
@@ -17,52 +17,53 @@ import ClockDisplayBase from './clock_display_base';
 
 export default class ClockDisplay extends ClockDisplayBase {
     render() {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {newMilitaryTime} = this.state;
         const style = getStyleSheet(theme);
 
         return (
-            <SafeAreaView>
-                <View style={style.container}>
-                    <StatusBar/>
-                    <View style={style.wrapper}>
-                        <Section
-                            disableHeader={true}
-                            footerId={t('user.settings.display.preferTime')}
-                            footerDefaultMessage='Select how you prefer time displayed.'
+            <View style={style.container}>
+                <StatusBar/>
+                <View style={style.wrapper}>
+                    <Section
+                        disableHeader={true}
+                        footerId={t('user.settings.display.preferTime')}
+                        footerDefaultMessage='Select how you prefer time displayed.'
+                        theme={theme}
+                        isLandscape={isLandscape}
+                    >
+                        <SectionItem
+                            label={(
+                                <FormattedText
+                                    id='user.settings.display.normalClock'
+                                    defaultMessage='12-hour clock (example: 4:00 PM)'
+                                />
+                            )}
+                            action={this.setMilitaryTime}
+                            actionType='select'
+                            actionValue='false'
+                            selected={newMilitaryTime === 'false'}
                             theme={theme}
-                        >
-                            <SectionItem
-                                label={(
-                                    <FormattedText
-                                        id='user.settings.display.normalClock'
-                                        defaultMessage='12-hour clock (example: 4:00 PM)'
-                                    />
-                                )}
-                                action={this.setMilitaryTime}
-                                actionType='select'
-                                actionValue='false'
-                                selected={newMilitaryTime === 'false'}
-                                theme={theme}
-                            />
-                            <View style={style.separator}/>
-                            <SectionItem
-                                label={(
-                                    <FormattedText
-                                        id='user.settings.display.militaryClock'
-                                        defaultMessage='24-hour clock (example: 16:00)'
-                                    />
-                                )}
-                                action={this.setMilitaryTime}
-                                actionType='select'
-                                actionValue='true'
-                                selected={newMilitaryTime === 'true'}
-                                theme={theme}
-                            />
-                        </Section>
-                    </View>
+                            isLandscape={isLandscape}
+                        />
+                        <View style={style.divider}/>
+                        <SectionItem
+                            label={(
+                                <FormattedText
+                                    id='user.settings.display.militaryClock'
+                                    defaultMessage='24-hour clock (example: 16:00)'
+                                />
+                            )}
+                            action={this.setMilitaryTime}
+                            actionType='select'
+                            actionValue='true'
+                            selected={newMilitaryTime === 'true'}
+                            theme={theme}
+                            isLandscape={isLandscape}
+                        />
+                    </Section>
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 }
@@ -77,6 +78,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
             paddingTop: 35,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            height: 1,
         },
     };
 });

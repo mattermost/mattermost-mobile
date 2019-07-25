@@ -8,7 +8,6 @@ import {
     View,
 } from 'react-native';
 import {injectIntl} from 'react-intl';
-import SafeAreaView from 'app/components/safe_area_view';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
@@ -34,7 +33,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
     };
 
     renderMentionSection(style) {
-        const {currentUser, theme} = this.props;
+        const {currentUser, theme, isLandscape} = this.props;
 
         let mentionKeysComponent;
         if (this.state.mention_keys) {
@@ -53,6 +52,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                 headerId={t('mobile.notification_settings_mentions.wordsTrigger')}
                 headerDefaultMessage='WORDS THAT TRIGGER MENTIONS'
                 theme={theme}
+                isLandscape={isLandscape}
             >
                 {currentUser.first_name?.length > 0 &&
                 <View>
@@ -72,6 +72,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                         actionType='toggle'
                         selected={this.state.first_name === 'true'}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <View style={style.separator}/>
                 </View>
@@ -92,6 +93,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                     action={this.toggleUsernameMention}
                     actionType='toggle'
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <SectionItem
@@ -110,6 +112,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                     actionType='toggle'
                     selected={this.state.channel === 'true'}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <SectionItem
@@ -123,19 +126,21 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                     action={this.goToNotificationSettingsMentionKeywords}
                     actionType='arrow'
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             </Section>
         );
     }
 
     renderReplySection(style) {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
 
         return (
             <Section
                 headerId={t('mobile.account_notifications.reply.header')}
                 headerDefaultMessage='SEND REPLY NOTIFICATIONS FOR'
                 theme={theme}
+                isLandscape={isLandscape}
             >
                 <SectionItem
                     label={(
@@ -149,6 +154,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                     actionValue='any'
                     selected={this.state.comments === 'any'}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <SectionItem
@@ -163,6 +169,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                     actionValue='root'
                     selected={this.state.comments === 'root'}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <SectionItem
@@ -177,6 +184,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                     actionValue='never'
                     selected={this.state.comments === 'never'}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             </Section>
         );
@@ -187,19 +195,17 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
         const style = getStyleSheet(theme);
 
         return (
-            <SafeAreaView>
-                <View style={style.container}>
-                    <StatusBar/>
-                    <ScrollView
-                        style={style.scrollView}
-                        contentContainerStyle={style.scrollViewContent}
-                        alwaysBounceVertical={false}
-                    >
-                        {this.renderMentionSection(style)}
-                        {this.renderReplySection(style)}
-                    </ScrollView>
-                </View>
-            </SafeAreaView>
+            <View style={style.container}>
+                <StatusBar/>
+                <ScrollView
+                    style={style.scrollView}
+                    contentContainerStyle={style.scrollViewContent}
+                    alwaysBounceVertical={false}
+                >
+                    {this.renderMentionSection(style)}
+                    {this.renderReplySection(style)}
+                </ScrollView>
+            </View>
         );
     }
 }

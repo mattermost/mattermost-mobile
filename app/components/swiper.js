@@ -169,11 +169,12 @@ export default class Swiper extends PureComponent {
 
         const {width, height} = Dimensions.get('window');
         const bottom = this.paginationBottom(width, height);
+        const drawerWidth = (width > height) ? width - 44 : width;
         let style;
         if (DeviceTypes.IS_IPHONE_X) {
             style = {
                 bottom,
-                width,
+                drawerWidth,
             };
         } else {
             style = {

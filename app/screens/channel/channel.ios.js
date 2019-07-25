@@ -38,6 +38,7 @@ export default class ChannelIOS extends ChannelBase {
         const {height} = Dimensions.get('window');
         const {
             currentChannelId,
+            isLandscape,
         } = this.props;
 
         const channelLoaderStyle = [style.channelLoader, {height}];
@@ -107,7 +108,7 @@ export default class ChannelIOS extends ChannelBase {
 
         const drawerContent = (
             <React.Fragment>
-                { DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? renderLandscapeSafeView : renderPortraitSafeView }
+                { DeviceTypes.IS_IPHONE_X && isLandscape ? renderLandscapeSafeView : renderPortraitSafeView }
                 <KeyboardTrackingView
                     ref={this.keyboardTracker}
                     scrollViewNativeID={currentChannelId}

@@ -9,7 +9,6 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {DocumentPickerUtil} from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
-import SafeAreaView from 'app/components/safe_area_view';
 import {Client4} from 'mattermost-redux/client';
 
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
@@ -100,6 +99,7 @@ export default class EditProfile extends PureComponent {
         positionDisabled: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         commandType: PropTypes.string.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -322,7 +322,7 @@ export default class EditProfile extends PureComponent {
 
     renderFirstNameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {firstNameDisabled, theme} = this.props;
+        const {firstNameDisabled, theme, isLandscape} = this.props;
         const {firstName} = this.state;
 
         return (
@@ -337,13 +337,14 @@ export default class EditProfile extends PureComponent {
                 onChange={this.updateField}
                 theme={theme}
                 value={firstName}
+                isLandscape={isLandscape}
             />
         );
     };
 
     renderLastNameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {lastNameDisabled, theme} = this.props;
+        const {lastNameDisabled, theme, isLandscape} = this.props;
         const {lastName} = this.state;
 
         return (
@@ -359,6 +360,7 @@ export default class EditProfile extends PureComponent {
                     onChange={this.updateField}
                     theme={theme}
                     value={lastName}
+                    isLandscape={isLandscape}
                 />
             </View>
         );
@@ -366,7 +368,7 @@ export default class EditProfile extends PureComponent {
 
     renderUsernameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {currentUser, theme} = this.props;
+        const {currentUser, theme, isLandscape} = this.props;
         const {username} = this.state;
         const disabled = currentUser.auth_service !== '';
 
@@ -383,13 +385,14 @@ export default class EditProfile extends PureComponent {
                 onChange={this.updateField}
                 theme={theme}
                 value={username}
+                isLandscape={isLandscape}
             />
         );
     };
 
     renderEmailSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {currentUser, theme} = this.props;
+        const {currentUser, theme, isLandscape} = this.props;
         const {email} = this.state;
 
         let helpText;
@@ -444,6 +447,7 @@ export default class EditProfile extends PureComponent {
                     onChange={this.updateField}
                     theme={theme}
                     value={email}
+                    isLandscape={isLandscape}
                 />
             </View>
         );
@@ -451,7 +455,7 @@ export default class EditProfile extends PureComponent {
 
     renderNicknameSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {nicknameDisabled, theme} = this.props;
+        const {nicknameDisabled, theme, isLandscape} = this.props;
         const {nickname} = this.state;
 
         return (
@@ -467,13 +471,14 @@ export default class EditProfile extends PureComponent {
                 onChange={this.updateField}
                 theme={theme}
                 value={nickname}
+                isLandscape={isLandscape}
             />
         );
     };
 
     renderPositionSettings = () => {
         const {formatMessage} = this.context.intl;
-        const {positionDisabled, theme} = this.props;
+        const {positionDisabled, theme, isLandscape} = this.props;
         const {position} = this.state;
 
         return (
@@ -489,6 +494,7 @@ export default class EditProfile extends PureComponent {
                 onChange={this.updateField}
                 theme={theme}
                 value={position}
+                isLandscape={isLandscape}
             />
         );
     };
@@ -576,33 +582,31 @@ export default class EditProfile extends PureComponent {
         }
 
         return (
-            <SafeAreaView>
-                <View style={style.flex}>
-                    <StatusBar/>
-                    <KeyboardAwareScrollView
-                        bounces={false}
-                        innerRef={this.scrollViewRef}
-                        style={style.container}
-                    >
-                        {displayError}
-                        <View style={[style.scrollView]}>
-                            {this.renderProfilePicture()}
-                            {this.renderFirstNameSettings()}
-                            <View style={style.separator}/>
-                            {this.renderLastNameSettings()}
-                            <View style={style.separator}/>
-                            {this.renderUsernameSettings()}
-                            <View style={style.separator}/>
-                            {this.renderEmailSettings()}
-                            <View style={style.separator}/>
-                            {this.renderNicknameSettings()}
-                            <View style={style.separator}/>
-                            {this.renderPositionSettings()}
-                            <View style={style.footer}/>
-                        </View>
-                    </KeyboardAwareScrollView>
-                </View>
-            </SafeAreaView>
+            <View style={style.flex}>
+                <StatusBar/>
+                <KeyboardAwareScrollView
+                    bounces={false}
+                    innerRef={this.scrollViewRef}
+                    style={style.container}
+                >
+                    {displayError}
+                    <View style={[style.scrollView]}>
+                        {this.renderProfilePicture()}
+                        {this.renderFirstNameSettings()}
+                        <View style={style.separator}/>
+                        {this.renderLastNameSettings()}
+                        <View style={style.separator}/>
+                        {this.renderUsernameSettings()}
+                        <View style={style.separator}/>
+                        {this.renderEmailSettings()}
+                        <View style={style.separator}/>
+                        {this.renderNicknameSettings()}
+                        <View style={style.separator}/>
+                        {this.renderPositionSettings()}
+                        <View style={style.footer}/>
+                    </View>
+                </KeyboardAwareScrollView>
+            </View>
         );
     }
 }

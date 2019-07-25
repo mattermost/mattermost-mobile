@@ -11,7 +11,7 @@ import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
-import {ViewTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -31,6 +31,7 @@ export default class ChannelsList extends PureComponent {
         theme: PropTypes.object.isRequired,
         drawerOpened: PropTypes.bool,
         previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -90,10 +91,13 @@ export default class ChannelsList extends PureComponent {
             onShowTeams,
             theme,
             previewChannel,
+            isLandscape,
         } = this.props;
 
         const {searching, term} = this.state;
         const styles = getStyleSheet(theme);
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         let list;
         if (searching) {
@@ -127,7 +131,7 @@ export default class ChannelsList extends PureComponent {
         };
 
         const title = (
-            <View style={styles.searchContainer}>
+            <View style={[styles.searchContainer, padding]}>
                 <SearchBar
                     ref='search_bar'
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
@@ -234,6 +238,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.sidebarText, 0.1),
             height: 1,
+            width: '100%',
         },
         actionContainer: {
             alignItems: 'center',

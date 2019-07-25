@@ -531,7 +531,7 @@ export default class ChannelInfo extends PureComponent {
                         }
                     </View>
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel && !channelIsArchived &&
-                    <View style={style.footer}>
+                    <View style={[style.rowsContainer, style.footer]}>
                         <ChannelInfoRow
                             action={this.handleDelete}
                             defaultMessage='Archive Channel'
@@ -544,7 +544,7 @@ export default class ChannelInfo extends PureComponent {
                     </View>
                     }
                     {this.renderCloseDirect() &&
-                    <View style={style.footer}>
+                    <View style={[style.rowsContainer, style.footer]}>
                         <ChannelInfoRow
                             action={this.handleClose}
                             defaultMessage={defaultMessage}

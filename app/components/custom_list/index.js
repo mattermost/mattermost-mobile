@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {FlatList, Keyboard, Platform, SectionList, Text, View} from 'react-native';
 
-import {ListTypes} from 'app/constants';
+import {ListTypes, DeviceTypes, ViewTypes} from 'app/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 export const FLATLIST = 'flat';
@@ -30,12 +30,14 @@ export default class CustomList extends PureComponent {
         selectable: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         shouldRenderSeparator: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         listType: FLATLIST,
         showNoResults: true,
         shouldRenderSeparator: true,
+        isLandscape: false,
     };
 
     constructor(props) {
@@ -148,12 +150,15 @@ export default class CustomList extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const style = getStyleFromTheme(this.props.theme);
+        const {theme, isLandscape} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         return (
             <View style={style.sectionWrapper}>
                 <View style={style.sectionContainer}>
-                    <Text style={style.sectionText}>{section.id}</Text>
+                    <Text style={[style.sectionText, padding]}>{section.id}</Text>
                 </View>
             </View>
         );

@@ -19,6 +19,7 @@ export default class UnreadIndicator extends PureComponent {
         style: ViewPropTypes.style,
         onPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
+        textStyle: ViewPropTypes.style,
     };
 
     static defaultProps = {
@@ -40,7 +41,7 @@ export default class UnreadIndicator extends PureComponent {
                     style={[style.container, this.props.style]}
                 >
                     <FormattedText
-                        style={style.indicatorText}
+                        style={[style.indicatorText, this.props.textStyle]}
                         id='sidebar.unreads'
                         defaultMessage='More unreads'
                     />
@@ -64,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             position: 'absolute',
             borderRadius: 15,
-            marginHorizontal: 15,
+            marginHorizontal: 25,
             height: 25,
         },
         indicatorText: {

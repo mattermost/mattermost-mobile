@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
-
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
@@ -46,6 +46,7 @@ export default class UserListRow extends React.PureComponent {
             teammateNameDisplay,
             theme,
             user,
+            isLandscape,
         } = this.props;
 
         const {id, username} = user;
@@ -62,6 +63,8 @@ export default class UserListRow extends React.PureComponent {
         const teammateDisplay = displayUsername(user, teammateNameDisplay);
         const showTeammateDisplay = teammateDisplay !== username;
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape && enabled ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         return (
             <View style={style.container}>
                 <CustomListRow
@@ -70,6 +73,7 @@ export default class UserListRow extends React.PureComponent {
                     enabled={enabled}
                     selectable={selectable}
                     selected={selected}
+                    isLandscape={isLandscape}
                 >
                     <View style={style.profileContainer}>
                         <ProfilePicture

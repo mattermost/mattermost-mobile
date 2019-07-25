@@ -15,6 +15,8 @@ import ChannelMentionItem from './channel_mention_item';
 
 import {getUser} from 'mattermost-redux/selectors/entities/users';
 
+import {isLandscape} from 'app/selectors/device';
+
 function mapStateToProps(state, ownProps) {
     const channel = getChannel(state, ownProps.channelId);
     const displayName = getChannelNameForSearchAutocomplete(state, ownProps.channelId);
@@ -33,6 +35,7 @@ function mapStateToProps(state, ownProps) {
         type: channel.type,
         isBot,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

@@ -10,12 +10,11 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
-import SafeAreaView from 'app/components/safe_area_view';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
-
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
@@ -42,6 +41,7 @@ export default class ChannelMembers extends PureComponent {
         currentChannelMembers: PropTypes.array,
         currentUserId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -280,15 +280,17 @@ export default class ChannelMembers extends PureComponent {
 
     renderNoResults = () => {
         const {loading} = this.state;
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
 
         if (loading || this.page === -1) {
             return null;
         }
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         return (
-            <View style={style.noResultContainer}>
+            <View style={[style.noResultContainer, padding]}>
                 <FormattedText
                     id='mobile.custom_list.no_results'
                     defaultMessage='No Results'
@@ -310,7 +312,7 @@ export default class ChannelMembers extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme, canManageUsers} = this.props;
+        const {theme, canManageUsers, isLandscape} = this.props;
         const {
             removing,
             loading,
@@ -360,44 +362,45 @@ export default class ChannelMembers extends PureComponent {
             listType = SECTIONLIST;
         }
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         return (
-            <SafeAreaView>
-                <KeyboardLayout>
-                    <StatusBar/>
-                    <View style={style.searchBar}>
-                        <SearchBar
-                            ref='search_bar'
-                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                            backgroundColor='transparent'
-                            inputHeight={33}
-                            inputStyle={searchBarInput}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                            titleCancelColor={theme.centerChannelColor}
-                            onChangeText={this.onSearch}
-                            onSearchButtonPress={this.onSearch}
-                            onCancelButtonPress={this.clearSearch}
-                            autoCapitalize='none'
-                            value={term}
-                        />
-                    </View>
-                    <CustomList
-                        data={data}
-                        extraData={selectedIds}
-                        key='custom_list'
-                        listType={listType}
-                        loading={loading}
-                        loadingComponent={this.renderLoading()}
-                        noResults={this.renderNoResults()}
-                        onLoadMore={this.getProfiles}
-                        onRowPress={this.handleSelectProfile}
-                        renderItem={canManageUsers ? this.renderSelectableItem : this.renderUnselectableItem}
-                        theme={theme}
+            <KeyboardLayout>
+                <StatusBar/>
+                <View style={[style.searchBar, padding]}>
+                    <SearchBar
+                        ref='search_bar'
+                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        backgroundColor='transparent'
+                        inputHeight={33}
+                        inputStyle={searchBarInput}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
+                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                        titleCancelColor={theme.centerChannelColor}
+                        onChangeText={this.onSearch}
+                        onSearchButtonPress={this.onSearch}
+                        onCancelButtonPress={this.clearSearch}
+                        autoCapitalize='none'
+                        value={term}
                     />
-                </KeyboardLayout>
-            </SafeAreaView>
+                </View>
+                <CustomList
+                    data={data}
+                    extraData={selectedIds}
+                    key='custom_list'
+                    listType={listType}
+                    loading={loading}
+                    loadingComponent={this.renderLoading()}
+                    noResults={this.renderNoResults()}
+                    onLoadMore={this.getProfiles}
+                    onRowPress={this.handleSelectProfile}
+                    renderItem={canManageUsers ? this.renderSelectableItem : this.renderUnselectableItem}
+                    theme={theme}
+                    isLandscape={isLandscape}
+                />
+            </KeyboardLayout>
         );
     }
 }

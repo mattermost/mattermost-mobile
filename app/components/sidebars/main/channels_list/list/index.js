@@ -19,7 +19,7 @@ import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'matt
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import {showModal} from 'app/actions/navigation';
-
+import {isLandscape} from 'app/selectors/device';
 import {DeviceTypes, ViewTypes} from 'app/constants';
 
 import List from './list';
@@ -67,6 +67,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         unreadChannelIds,
         orderedChannelIds,
+        isLandscape: isLandscape(state),
     };
 }
 

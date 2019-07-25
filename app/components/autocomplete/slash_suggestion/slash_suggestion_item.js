@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 export default class SlashSuggestionItem extends PureComponent {
     static propTypes = {
@@ -17,6 +18,7 @@ export default class SlashSuggestionItem extends PureComponent {
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         trigger: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     completeSuggestion = () => {
@@ -30,14 +32,16 @@ export default class SlashSuggestionItem extends PureComponent {
             hint,
             theme,
             trigger,
+            isLandscape,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 8};
 
         return (
             <TouchableOpacity
                 onPress={this.completeSuggestion}
-                style={style.row}
+                style={[style.row, padding]}
             >
                 <Text style={style.suggestionName}>{`/${trigger} ${hint}`}</Text>
                 <Text style={style.suggestionDescription}>{description}</Text>

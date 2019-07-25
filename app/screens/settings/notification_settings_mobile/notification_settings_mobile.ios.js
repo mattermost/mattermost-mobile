@@ -20,7 +20,7 @@ import NotificationSettingsMobileBase from './notification_settings_mobile_base'
 
 class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
     renderMobilePushSection(style) {
-        const {config, theme} = this.props;
+        const {config, theme, isLandscape} = this.props;
 
         const pushNotificationsEnabled = config.SendPushNotifications === 'true';
         return (
@@ -28,6 +28,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 headerId={t('mobile.notification_settings_mobile.push_activity')}
                 headerDefaultMessage='SEND NOTIFICATIONS'
                 theme={theme}
+                isLandscape={isLandscape}
             >
                 {pushNotificationsEnabled &&
                 <View>
@@ -43,6 +44,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                         actionValue='all'
                         selected={this.state.push === 'all'}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <View style={style.separator}/>
                     <SectionItem
@@ -57,6 +59,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                         actionValue='mention'
                         selected={this.state.push === 'mention'}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <View style={style.separator}/>
                     <SectionItem
@@ -71,6 +74,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                         actionValue='none'
                         selected={this.state.push === 'none'}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                 </View>
                 }
@@ -86,7 +90,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
     }
 
     renderMobilePushStatusSection(style) {
-        const {config, theme} = this.props;
+        const {config, theme, isLandscape} = this.props;
 
         const showSection = config.SendPushNotifications === 'true' && this.state.push !== 'none';
         if (!showSection) {
@@ -98,6 +102,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 headerId={t('mobile.notification_settings_mobile.push_status')}
                 headerDefaultMessage='TRIGGER PUSH NOTIFICATIONS WHEN'
                 theme={theme}
+                isLandscape={isLandscape}
             >
                 <SectionItem
                     label={(
@@ -111,6 +116,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                     actionValue='online'
                     selected={this.state.push_status === 'online'}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <SectionItem
@@ -125,6 +131,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                     actionValue='away'
                     selected={this.state.push_status === 'away'}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <SectionItem
@@ -139,6 +146,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                     actionValue='offline'
                     selected={this.state.push_status === 'offline'}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             </Section>
         );

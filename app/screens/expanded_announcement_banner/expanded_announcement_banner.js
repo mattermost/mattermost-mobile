@@ -5,10 +5,9 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {ScrollView, View} from 'react-native';
 import Button from 'react-native-button';
-import SafeAreaView from 'app/components/safe_area_view';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -59,7 +58,7 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
         }
 
         return (
-            <SafeAreaView>
+            <SafeAreaView useLandscapeMargin={true}>
                 <View style={style.container}>
                     <ScrollView
                         style={style.scrollContainer}

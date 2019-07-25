@@ -23,6 +23,7 @@ import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_lo
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getShortenedURL} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 export default class EditChannelInfo extends PureComponent {
     static propTypes = {
@@ -51,6 +52,7 @@ export default class EditChannelInfo extends PureComponent {
         oldChannelURL: PropTypes.string,
         oldHeader: PropTypes.string,
         oldPurpose: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -181,6 +183,7 @@ export default class EditChannelInfo extends PureComponent {
             channelURL,
             header,
             purpose,
+            isLandscape,
         } = this.props;
         const {error, saving} = this.props;
         const fullUrl = currentTeamUrl + '/channels';
@@ -190,6 +193,8 @@ export default class EditChannelInfo extends PureComponent {
 
         const displayHeaderOnly = channelType === General.DM_CHANNEL ||
             channelType === General.GM_CHANNEL;
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         if (saving) {
             return (
@@ -204,7 +209,7 @@ export default class EditChannelInfo extends PureComponent {
         if (error) {
             displayError = (
                 <View style={[style.errorContainer, {width: deviceWidth}]}>
-                    <View style={style.errorWrapper}>
+                    <View style={[style.errorWrapper, padding]}>
                         <ErrorText error={error}/>
                     </View>
                 </View>
@@ -225,12 +230,12 @@ export default class EditChannelInfo extends PureComponent {
                                 <View>
                                     <View>
                                         <FormattedText
-                                            style={style.title}
+                                            style={[style.title, padding]}
                                             id='channel_modal.name'
                                             defaultMessage='Name'
                                         />
                                     </View>
-                                    <View style={style.inputContainer}>
+                                    <View style={[style.inputContainer, padding]}>
                                         <TextInputWithLocalizedPlaceholder
                                             ref={this.nameInput}
                                             value={displayName}
@@ -249,7 +254,7 @@ export default class EditChannelInfo extends PureComponent {
                             {/*TODO: Hide channel url field until it's added to CreateChannel */}
                             {false && editing && !displayHeaderOnly && (
                                 <View>
-                                    <View style={style.titleContainer30}>
+                                    <View style={[style.titleContainer30, padding]}>
                                         <FormattedText
                                             style={style.title}
                                             id='rename_channel.url'
@@ -259,7 +264,7 @@ export default class EditChannelInfo extends PureComponent {
                                             {shortUrl}
                                         </Text>
                                     </View>
-                                    <View style={style.inputContainer}>
+                                    <View style={[style.inputContainer, padding]}>
                                         <TextInputWithLocalizedPlaceholder
                                             ref={this.urlInput}
                                             value={channelURL}
@@ -277,7 +282,7 @@ export default class EditChannelInfo extends PureComponent {
                             )}
                             {!displayHeaderOnly && (
                                 <View>
-                                    <View style={style.titleContainer30}>
+                                    <View style={[style.titleContainer30, padding]}>
                                         <FormattedText
                                             style={style.title}
                                             id='channel_modal.purpose'
@@ -289,7 +294,7 @@ export default class EditChannelInfo extends PureComponent {
                                             defaultMessage='(optional)'
                                         />
                                     </View>
-                                    <View style={style.inputContainer}>
+                                    <View style={[style.inputContainer, padding]}>
                                         <TextInputWithLocalizedPlaceholder
                                             ref={this.purposeInput}
                                             value={purpose}
@@ -308,14 +313,14 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View>
                                         <FormattedText
-                                            style={style.helpText}
+                                            style={[style.helpText, padding]}
                                             id='channel_modal.descriptionHelp'
                                             defaultMessage='Describe how this channel should be used.'
                                         />
                                     </View>
                                 </View>
                             )}
-                            <View style={style.titleContainer15}>
+                            <View style={[style.titleContainer15, padding]}>
                                 <FormattedText
                                     style={style.title}
                                     id='channel_modal.header'
@@ -327,7 +332,7 @@ export default class EditChannelInfo extends PureComponent {
                                     defaultMessage='(optional)'
                                 />
                             </View>
-                            <View style={style.inputContainer}>
+                            <View style={[style.inputContainer, padding]}>
                                 <TextInputWithLocalizedPlaceholder
                                     ref={this.headerInput}
                                     value={header}
@@ -347,7 +352,7 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <View ref={this.lastText}>
                                 <FormattedText
-                                    style={style.helpText}
+                                    style={[style.helpText, padding]}
                                     id='channel_modal.headerHelp'
                                     defaultMessage={'Set text that will appear in the header of the channel beside the channel name. For example, include frequently used links by typing [Link Title](http://example.com).'}
                                 />

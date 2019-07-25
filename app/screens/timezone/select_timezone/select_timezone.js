@@ -15,7 +15,7 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import SelectTimezoneRow from './select_timezone_row';
 
-import {ListTypes} from 'app/constants';
+import {ListTypes, DeviceTypes, ViewTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const ITEM_HEIGHT = 45;
@@ -31,6 +31,7 @@ export default class Timezone extends PureComponent {
         timezones: PropTypes.array.isRequired,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -83,12 +84,13 @@ export default class Timezone extends PureComponent {
                 timezone={timezone}
                 selectedTimezone={this.props.selectedTimezone}
                 onPress={this.timezoneSelected}
+                isLandscape={this.props.isLandscape}
             />
         );
     };
 
     render() {
-        const {theme, initialScrollIndex} = this.props;
+        const {theme, initialScrollIndex, isLandscape} = this.props;
         const {value} = this.state;
         const {intl} = this.context;
         const style = getStyleSheet(theme);
@@ -99,10 +101,12 @@ export default class Timezone extends PureComponent {
             fontSize: 15,
         };
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={style.header}>
+                <View style={[style.header, padding]}>
                     <SearchBar
                         ref='searchBar'
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}

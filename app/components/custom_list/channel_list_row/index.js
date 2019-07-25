@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
-
+import {isLandscape} from 'app/selectors/device';
 import ChannelListRow from './channel_list_row';
 
 function makeMapStateToProps() {
@@ -16,6 +16,7 @@ function makeMapStateToProps() {
         return {
             theme: getTheme(state),
             channel: getChannel(state, ownProps),
+            isLandscape: isLandscape(state),
         };
     };
 }

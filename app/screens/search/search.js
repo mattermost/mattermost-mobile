@@ -28,7 +28,7 @@ import PostSeparator from 'app/components/post_separator';
 import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import {DeviceTypes, ListTypes} from 'app/constants';
+import {DeviceTypes, ListTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -335,19 +335,20 @@ export default class Search extends PureComponent {
     };
 
     renderModifiers = ({item}) => {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
 
         return (
             <Modifier
                 item={item}
                 setModifierValue={this.setModifierValue}
                 theme={theme}
+                isLandscape={isLandscape}
             />
         );
     };
 
     renderPost = ({item, index}) => {
-        const {postIds, theme} = this.props;
+        const {postIds, theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
 
         if (item.id) {
@@ -373,8 +374,10 @@ export default class Search extends PureComponent {
             separator = <PostSeparator theme={theme}/>;
         }
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         return (
-            <View style={style.postResult}>
+            <View style={[style.postResult, padding]}>
                 <ChannelDisplayName postId={item}/>
                 {this.archivedIndicator(postIds[index], style)}
                 <SearchResultPost
@@ -403,15 +406,17 @@ export default class Search extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {title} = section;
         const style = getStyleFromTheme(theme);
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE - 16} : {paddingHorizontal: 0};
 
         if (title) {
             return (
                 <View style={style.sectionWrapper}>
                     <View style={style.sectionContainer}>
-                        <Text style={style.sectionLabel}>
+                        <Text style={[style.sectionLabel, padding]}>
                             {title}
                         </Text>
                     </View>
@@ -423,7 +428,7 @@ export default class Search extends PureComponent {
     };
 
     renderRecentItem = ({item}) => {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
 
         return (
             <RecentItem
@@ -431,6 +436,7 @@ export default class Search extends PureComponent {
                 removeSearchTerms={this.removeSearchTerms}
                 setRecentValue={this.setRecentValue}
                 theme={theme}
+                isLandscape={isLandscape}
             />
         );
     };
@@ -678,6 +684,8 @@ export default class Search extends PureComponent {
             fontSize: 15,
         };
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         return (
             <SafeAreaView
                 excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_X}
@@ -685,7 +693,7 @@ export default class Search extends PureComponent {
             >
                 <KeyboardLayout>
                     <StatusBar/>
-                    <View style={style.header}>
+                    <View style={[style.header, padding]}>
                         <SearchBar
                             ref='searchBar'
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}

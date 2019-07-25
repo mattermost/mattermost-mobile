@@ -14,7 +14,7 @@ import {getTheme, getTeammateNameDisplaySetting} from 'mattermost-redux/selector
 import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
-
+import {isLandscape} from 'app/selectors/device';
 import {getDraftForChannel} from 'app/selectors/views';
 
 import ChannelItem from './channel_item';
@@ -81,6 +81,7 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             unreadMsgs,
             isBot,
+            isLandscape: isLandscape(state),
         };
     };
 }

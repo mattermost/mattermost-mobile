@@ -3,9 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text, TouchableOpacity, View, SafeAreaView} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
 import VectorIcon from 'app/components/vector_icon.js';
 
@@ -25,11 +25,13 @@ export default class SettingsItem extends PureComponent {
         separator: PropTypes.bool,
         showArrow: PropTypes.bool,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         isDestructor: false,
         separator: true,
+        isLandscape: false,
     };
 
     renderText = () => {
@@ -76,6 +78,7 @@ export default class SettingsItem extends PureComponent {
             separator,
             showArrow,
             theme,
+            isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -108,31 +111,31 @@ export default class SettingsItem extends PureComponent {
             additionalComponent = rightComponent;
         }
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingLeft: 0};
+
         return (
-            <SafeAreaView style={style.safeAreaView}>
-                <TouchableOpacity
-                    onPress={onPress}
-                >
-                    <View style={style.container}>
-                        {icon &&
-                        <View style={style.iconContainer}>
-                            {icon}
-                        </View>
-                        }
-                        <View style={style.wrapper}>
-                            <View style={style.labelContainer}>
-                                {this.renderText()}
-                                {Boolean(additionalComponent) &&
-                                <View style={style.arrowContainer}>
-                                    {additionalComponent}
-                                </View>
-                                }
-                            </View>
-                            {divider}
-                        </View>
+            <TouchableOpacity
+                onPress={onPress}
+            >
+                <View style={[style.container, padding]}>
+                    {icon &&
+                    <View style={style.iconContainer}>
+                        {icon}
                     </View>
-                </TouchableOpacity>
-            </SafeAreaView>
+                    }
+                    <View style={style.wrapper}>
+                        <View style={style.labelContainer}>
+                            {this.renderText()}
+                            {Boolean(additionalComponent) &&
+                            <View style={style.arrowContainer}>
+                                {additionalComponent}
+                            </View>
+                            }
+                        </View>
+                        {divider}
+                    </View>
+                </View>
+            </TouchableOpacity>    
         );
     }
 }

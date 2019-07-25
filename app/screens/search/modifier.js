@@ -7,6 +7,7 @@ import {Text, TouchableHighlight, View} from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 export const MODIFIER_LABEL_HEIGHT = 58;
 
@@ -15,6 +16,11 @@ export default class Modifier extends PureComponent {
         item: PropTypes.object.isRequired,
         setModifierValue: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
+    };
+
+    static defaultProps = {
+        isLandscape: false,
     };
 
     handlePress = () => {
@@ -24,8 +30,10 @@ export default class Modifier extends PureComponent {
     };
 
     render() {
-        const {item, theme} = this.props;
+        const {item, theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 16};
 
         return (
             <TouchableHighlight
@@ -34,7 +42,7 @@ export default class Modifier extends PureComponent {
                 onPress={this.handlePress}
             >
                 <View style={style.modifierItemContainer}>
-                    <View style={style.modifierItemWrapper}>
+                    <View style={[style.modifierItemWrapper, padding]}>
                         <View style={style.modifierItemLabelContainer}>
                             <View style={style.modifierLabelIconContainer}>
                                 <AwesomeIcon
@@ -69,7 +77,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         modifierItemWrapper: {
             flex: 1,
             flexDirection: 'column',
-            paddingHorizontal: 16,
         },
         modifierItemLabelContainer: {
             alignItems: 'center',

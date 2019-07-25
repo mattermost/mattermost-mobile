@@ -32,6 +32,7 @@ class AdvancedSettings extends PureComponent {
         }).isRequired,
         intl: intlShape.isRequired,
         theme: PropTypes.object,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     state = {
@@ -104,7 +105,7 @@ class AdvancedSettings extends PureComponent {
             return null;
         }
 
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -117,6 +118,7 @@ class AdvancedSettings extends PureComponent {
                     separator={false}
                     showArrow={false}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.divider}/>
                 <SettingsItem
@@ -127,6 +129,7 @@ class AdvancedSettings extends PureComponent {
                     separator={false}
                     showArrow={false}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.divider}/>
             </View>
@@ -134,7 +137,7 @@ class AdvancedSettings extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -156,6 +159,7 @@ class AdvancedSettings extends PureComponent {
                         showArrow={false}
                         rightComponent={this.renderCacheFileSize()}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <View style={style.divider}/>
                     {this.renderSentryDebugOptions()}

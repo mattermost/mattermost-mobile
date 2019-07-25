@@ -11,7 +11,7 @@ import {
 import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {General} from 'mattermost-redux/constants';
 import {injectIntl, intlShape} from 'react-intl';
-
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -28,6 +28,7 @@ class ChannelIntro extends PureComponent {
         currentChannelMembers: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -298,18 +299,20 @@ class ChannelIntro extends PureComponent {
     };
 
     render() {
-        const {currentChannel, theme} = this.props;
+        const {currentChannel, theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
         const channelType = currentChannel.type;
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         let profiles;
         if (channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL) {
             profiles = (
                 <View>
-                    <View style={style.profilesContainer}>
+                    <View style={[style.profilesContainer, padding]}>
                         {this.buildProfiles()}
                     </View>
-                    <View style={style.namesContainer}>
+                    <View style={[style.namesContainer, padding]}>
                         {this.buildNames()}
                     </View>
                 </View>
@@ -319,7 +322,7 @@ class ChannelIntro extends PureComponent {
         return (
             <View style={style.container}>
                 {profiles}
-                <View style={style.contentContainer}>
+                <View style={[style.contentContainer, padding]}>
                     {this.buildContent()}
                 </View>
             </View>

@@ -115,4 +115,5 @@ export default {
     DATA_SOURCE_CHANNELS: 'channels',
     NotificationLevels,
     SidebarSectionTypes,
+    IOS_HORIZONTAL_LANDSCAPE: 44,
 };

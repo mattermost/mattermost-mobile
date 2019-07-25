@@ -12,6 +12,7 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 export default class TextSetting extends PureComponent {
     static propTypes = {
@@ -35,6 +36,7 @@ export default class TextSetting extends PureComponent {
         value: PropTypes.string.isRequired,
         multiline: PropTypes.bool,
         showRequiredAsterisk: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
         keyboardType: PropTypes.oneOf([
             'default',
             'number-pad',
@@ -52,6 +54,7 @@ export default class TextSetting extends PureComponent {
         multiline: false,
         showRequiredAsterisk: false,
         keyboardType: 'default',
+        isLandscape: false,
     };
 
     onChangeText = (value) => {
@@ -72,6 +75,7 @@ export default class TextSetting extends PureComponent {
             value,
             multiline,
             showRequiredAsterisk,
+            isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -139,15 +143,18 @@ export default class TextSetting extends PureComponent {
             );
         }
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+        const noediting = disabled ? style.disabled : null;
+
         return (
             <View>
-                <View style={style.titleContainer}>
+                <View style={[style.titleContainer, padding]}>
                     {labelContent}
                     {asterisk}
                     {optionalContent}
                 </View>
-                <View style={style.inputContainer}>
-                    <View style={disabled ? style.disabled : null}>
+                <View style={[style.inputContainer, padding, noediting]}>
+                    <View>
                         <TextInput
                             value={value}
                             placeholder={placeholder}
@@ -165,9 +172,11 @@ export default class TextSetting extends PureComponent {
                         />
                     </View>
                 </View>
-                {disabledTextContent}
-                {helpTextContent}
-                {errorTextContent}
+                <View style={padding}>
+                    {disabledTextContent}
+                    {helpTextContent}
+                    {errorTextContent}
+                </View>
             </View>
         );
     }

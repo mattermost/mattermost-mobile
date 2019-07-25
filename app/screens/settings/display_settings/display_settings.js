@@ -25,6 +25,7 @@ export default class DisplaySettings extends PureComponent {
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -72,7 +73,7 @@ export default class DisplaySettings extends PureComponent {
     });
 
     render() {
-        const {theme, enableTimezone, enableTheme} = this.props;
+        const {theme, enableTimezone, enableTheme, isLandscape} = this.props;
         const {showClockDisplaySettings} = this.state;
         const style = getStyleSheet(theme);
 
@@ -100,6 +101,7 @@ export default class DisplaySettings extends PureComponent {
                     separator={false}
                     showArrow={false}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -119,6 +121,7 @@ export default class DisplaySettings extends PureComponent {
                             separator={true}
                             showArrow={false}
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     )}
                     <SettingsItem
@@ -130,6 +133,7 @@ export default class DisplaySettings extends PureComponent {
                         separator={disableClockDisplaySeparator}
                         showArrow={false}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     {timezoneOption}
                     <View style={style.divider}/>

@@ -59,7 +59,7 @@ export default class ChannelNavBar extends PureComponent {
         const {isLandscape, onPress, theme} = this.props;
         const {openChannelDrawer, openSettingsDrawer} = this.props;
         const style = getStyleFromTheme(theme);
-        const padding = {paddingHorizontal: 0, paddingLeft: 0, paddingRight: 0, paddingTop: 0};
+        const padding = {paddingHorizontal: 0, paddingTop: 0};
 
         let height;
         switch (Platform.OS) {
@@ -78,9 +78,8 @@ export default class ChannelNavBar extends PureComponent {
             }
 
             if (DeviceTypes.IS_IPHONE_X && isLandscape) {
-                padding.paddingHorizontal = 10;
-                padding.paddingLeft = 44;
-                padding.paddingRight = 44;
+                padding.paddingHorizontal = 44;
+                height += 10;
             }
             break;
         }

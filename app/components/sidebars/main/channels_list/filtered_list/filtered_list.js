@@ -21,9 +21,8 @@ import {General} from 'mattermost-redux/constants';
 import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {t} from 'app/utils/i18n';
-
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {ListTypes} from 'app/constants';
+import {ListTypes, DeviceTypes, ViewTypes} from 'app/constants';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -55,6 +54,7 @@ class FilteredList extends Component {
         term: PropTypes.string,
         theme: PropTypes.object.isRequired,
         previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -412,12 +412,14 @@ class FilteredList extends Component {
     };
 
     render() {
-        const {styles} = this.props;
+        const {styles, isLandscape} = this.props;
         const {dataSource} = this.state;
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         return (
             <View
-                style={styles.container}
+                style={[styles.container, padding]}
             >
                 <FlatList
                     data={dataSource}

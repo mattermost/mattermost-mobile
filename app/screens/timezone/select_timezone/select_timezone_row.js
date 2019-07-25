@@ -11,6 +11,7 @@ import {
 
 import CheckMark from 'app/components/checkmark';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 const ITEM_HEIGHT = 45;
 
@@ -20,6 +21,7 @@ export default class SelectTimezoneRow extends PureComponent {
         timezone: PropTypes.string.isRequired,
         selectedTimezone: PropTypes.string,
         onPress: PropTypes.func.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     timezoneSelected = () => {
@@ -28,7 +30,7 @@ export default class SelectTimezoneRow extends PureComponent {
     };
 
     render() {
-        const {theme, timezone, selectedTimezone} = this.props;
+        const {theme, timezone, selectedTimezone, isLandscape} = this.props;
         const styles = getStyleSheet(theme);
 
         const selected = timezone === selectedTimezone && (
@@ -39,9 +41,11 @@ export default class SelectTimezoneRow extends PureComponent {
             />
         );
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 15};
+
         return (
             <TouchableOpacity
-                style={styles.itemContainer}
+                style={[styles.itemContainer, padding]}
                 key={timezone}
                 onPress={this.timezoneSelected}
             >

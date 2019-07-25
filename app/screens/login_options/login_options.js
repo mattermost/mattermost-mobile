@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
-import {ViewTypes} from 'app/constants';
+import {ViewTypes, DeviceTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
@@ -30,6 +30,7 @@ export default class LoginOptions extends PureComponent {
         }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -250,10 +251,12 @@ export default class LoginOptions extends PureComponent {
     };
 
     render() {
+        const padding = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 15};
+
         return (
             <ScrollView
                 style={style.container}
-                contentContainerStyle={style.innerContainer}
+                contentContainerStyle={[style.innerContainer, padding]}
                 ref={this.scrollRef}
             >
                 <StatusBar/>
@@ -292,7 +295,6 @@ const style = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
-        paddingHorizontal: 15,
         flex: 1,
     },
 });

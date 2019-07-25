@@ -18,10 +18,9 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import SafeAreaView from 'app/components/safe_area_view';
 
 import {RequestStatus} from 'mattermost-redux/constants';
-
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -53,6 +52,7 @@ export default class Login extends PureComponent {
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
         loginRequest: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -351,69 +351,69 @@ export default class Login extends PureComponent {
             );
         }
 
+        const padding = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 15};
+
         return (
-            <SafeAreaView>
-                <View style={style.container}>
-                    <StatusBar/>
-                    <TouchableWithoutFeedback onPress={this.blur}>
-                        <KeyboardAwareScrollView
-                            ref={this.scrollRef}
-                            style={style.container}
-                            contentContainerStyle={style.innerContainer}
-                            keyboardShouldPersistTaps='handled'
-                            enableOnAndroid={true}
-                        >
-                            <Image
-                                source={require('assets/images/logo.png')}
+            <View style={style.container}>
+                <StatusBar/>
+                <TouchableWithoutFeedback onPress={this.blur}>
+                    <KeyboardAwareScrollView
+                        ref={this.scrollRef}
+                        style={style.container}
+                        contentContainerStyle={[style.innerContainer, padding]}
+                        keyboardShouldPersistTaps='handled'
+                        enableOnAndroid={true}
+                    >
+                        <Image
+                            source={require('assets/images/logo.png')}
+                        />
+                        <View>
+                            <Text style={GlobalStyles.header}>
+                                {this.props.config.SiteName}
+                            </Text>
+                            <FormattedText
+                                style={GlobalStyles.subheader}
+                                id='web.root.signup_info'
+                                defaultMessage='All team communication in one place, searchable and accessible anywhere'
                             />
-                            <View>
-                                <Text style={GlobalStyles.header}>
-                                    {this.props.config.SiteName}
-                                </Text>
-                                <FormattedText
-                                    style={GlobalStyles.subheader}
-                                    id='web.root.signup_info'
-                                    defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                                />
-                            </View>
-                            <ErrorText error={this.getLoginErrorMessage()}/>
-                            <TextInput
-                                ref={this.loginRef}
-                                value={this.props.loginId}
-                                onChangeText={this.props.actions.handleLoginIdChanged}
-                                style={GlobalStyles.inputBox}
-                                placeholder={this.createLoginPlaceholder()}
-                                placeholderTextColor={changeOpacity('#000', 0.5)}
-                                autoCorrect={false}
-                                autoCapitalize='none'
-                                keyboardType='email-address'
-                                returnKeyType='next'
-                                underlineColorAndroid='transparent'
-                                onSubmitEditing={this.passwordFocus}
-                                blurOnSubmit={false}
-                                disableFullscreenUI={true}
-                            />
-                            <TextInput
-                                ref={this.passwordRef}
-                                value={this.props.password}
-                                onChangeText={this.props.actions.handlePasswordChanged}
-                                style={GlobalStyles.inputBox}
-                                placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
-                                placeholderTextColor={changeOpacity('#000', 0.5)}
-                                secureTextEntry={true}
-                                autoCorrect={false}
-                                autoCapitalize='none'
-                                underlineColorAndroid='transparent'
-                                returnKeyType='go'
-                                onSubmitEditing={this.preSignIn}
-                                disableFullscreenUI={true}
-                            />
-                            {proceed}
-                            {forgotPassword}
-                        </KeyboardAwareScrollView>
-                    </TouchableWithoutFeedback>
-                </View>
-            </SafeAreaView>
+                        </View>
+                        <ErrorText error={this.getLoginErrorMessage()}/>
+                        <TextInput
+                            ref={this.loginRef}
+                            value={this.props.loginId}
+                            onChangeText={this.props.actions.handleLoginIdChanged}
+                            style={GlobalStyles.inputBox}
+                            placeholder={this.createLoginPlaceholder()}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                            autoCorrect={false}
+                            autoCapitalize='none'
+                            keyboardType='email-address'
+                            returnKeyType='next'
+                            underlineColorAndroid='transparent'
+                            onSubmitEditing={this.passwordFocus}
+                            blurOnSubmit={false}
+                            disableFullscreenUI={true}
+                        />
+                        <TextInput
+                            ref={this.passwordRef}
+                            value={this.props.password}
+                            onChangeText={this.props.actions.handlePasswordChanged}
+                            style={GlobalStyles.inputBox}
+                            placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                            secureTextEntry={true}
+                            autoCorrect={false}
+                            autoCapitalize='none'
+                            underlineColorAndroid='transparent'
+                            returnKeyType='go'
+                            onSubmitEditing={this.preSignIn}
+                            disableFullscreenUI={true}
+                        />
+                        {proceed}
+                        {forgotPassword}
+                    </KeyboardAwareScrollView>
+                </TouchableWithoutFeedback>
+            </View>
         );
     }
 }
