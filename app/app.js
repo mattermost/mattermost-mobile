@@ -6,6 +6,7 @@ import {Linking, NativeModules, Platform, Text} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
 
+import {setDeviceToken} from 'mattermost-redux/actions/general';
 import {loadMe} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -127,10 +128,12 @@ export default class App {
 
                     // if for any case the url and the token aren't valid proceed with re-hydration
                     if (url && url !== 'undefined' && token && token !== 'undefined') {
-                        this.deviceToken = deviceToken;
+                        const {dispatch} = store;
+
                         this.currentUserId = currentUserId;
                         this.token = token;
                         this.url = url;
+                        dispatch(setDeviceToken(deviceToken));
                         Client4.setUrl(url);
                         Client4.setToken(token);
                         await setCSRFFromCookie(url);
