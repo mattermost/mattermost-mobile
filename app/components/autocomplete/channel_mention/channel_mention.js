@@ -232,6 +232,7 @@ export default class ChannelMention extends PureComponent {
                 renderSectionHeader={this.renderSectionHeader}
                 ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
+                nestedScrollEnabled
             />
         );
     }

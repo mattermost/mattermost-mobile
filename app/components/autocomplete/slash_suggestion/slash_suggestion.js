@@ -172,6 +172,7 @@ export default class SlashSuggestion extends Component {
                 ItemSeparatorComponent={AutocompleteDivider}
                 pageSize={10}
                 initialListSize={10}
+                nestedScrollEnabled
             />
         );
     }
