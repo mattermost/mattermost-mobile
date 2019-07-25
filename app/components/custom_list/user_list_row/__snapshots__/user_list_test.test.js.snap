@@ -14,6 +14,7 @@ exports[`UserListRow should match snapshot 1`] = `
   <CustomListRow
     enabled={true}
     id="21345"
+    isLandscape={false}
     onPress={[Function]}
   >
     <View
@@ -112,6 +113,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
   <CustomListRow
     enabled={true}
     id="21345"
+    isLandscape={false}
     onPress={[Function]}
   >
     <View
@@ -208,6 +210,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
   <CustomListRow
     enabled={true}
     id="21345"
+    isLandscape={false}
     onPress={[Function]}
   >
     <View

@@ -39,6 +39,7 @@ describe('user_profile', () => {
         militaryTime: false,
         isMyUser: false,
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     const user = {

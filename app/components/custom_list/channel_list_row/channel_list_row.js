@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+
 import CustomListRow from 'app/components/custom_list/custom_list_row';
 
 export default class ChannelListRow extends React.PureComponent {

@@ -9,10 +9,15 @@ exports[`Permalink should match snapshot 1`] = `
 >
   <View
     style={
-      Object {
-        "flex": 1,
-        "marginTop": 20,
-      }
+      Array [
+        Object {
+          "flex": 1,
+          "marginTop": 20,
+        },
+        Object {
+          "marginHorizontal": 0,
+        },
+      ]
     }
   >
     <withAnimatable(View)

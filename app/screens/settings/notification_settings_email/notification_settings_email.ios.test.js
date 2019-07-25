@@ -37,6 +37,7 @@ describe('NotificationSettingsEmailIos', () => {
         siteName: 'Mattermost',
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot, renderEmailSection', () => {

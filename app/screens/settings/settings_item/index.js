@@ -135,7 +135,7 @@ export default class SettingsItem extends PureComponent {
                         {divider}
                     </View>
                 </View>
-            </TouchableOpacity>    
+            </TouchableOpacity>
         );
     }
 }

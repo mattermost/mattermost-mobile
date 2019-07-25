@@ -49,6 +49,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -139,6 +140,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -236,6 +238,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
         },
       ]
     }
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -326,6 +329,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -416,6 +420,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="section"
     loading={false}
     loadingComponent={null}
@@ -506,6 +511,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="section"
     loading={false}
     loadingComponent={null}

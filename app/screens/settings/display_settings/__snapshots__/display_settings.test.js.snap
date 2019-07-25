@@ -33,6 +33,7 @@ exports[`DisplaySettings should match snapshot 1`] = `
       iconName="ios-time"
       iconType="ion"
       isDestructor={false}
+      isLandscape={false}
       onPress={[Function]}
       separator={false}
       showArrow={false}

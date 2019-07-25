@@ -425,7 +425,7 @@ export default class List extends PureComponent {
 
         const paddingBottom = this.listContentPadding();
 
-        const unreadBarStyles = DeviceTypes.IS_IPHONE_X && isLandscape ? {width: width - 32, marginLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE + 16} : {width} 
+        const unreadBarStyles = DeviceTypes.IS_IPHONE_X && isLandscape ? {width: width - 32, marginLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE + 16} : {width};
 
         const unreadTextStyles = DeviceTypes.IS_IPHONE_X && isLandscape ? {marginLeft: -44} : null;
 
