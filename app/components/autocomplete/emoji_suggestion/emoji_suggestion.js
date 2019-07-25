@@ -209,7 +209,7 @@ export default class EmojiSuggestion extends Component {
                 ItemSeparatorComponent={AutocompleteDivider}
                 pageSize={10}
                 initialListSize={10}
-                nestedScrollEnabled
+                nestedScrollEnabled={true}
             />
         );
     }
