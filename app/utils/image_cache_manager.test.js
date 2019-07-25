@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import RNFetchBlob from 'rn-fetch-blob';
 
-import ImageCacheManager, {getCacheFile} from 'app/utils/image_cache_manager';
+import ImageCacheManager, {getCacheFile, hashCode} from 'app/utils/image_cache_manager';
 import {emptyFunction} from 'app/utils/general';
 import * as fileUtils from 'app/utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -291,5 +291,23 @@ describe('ImageCacheManager.cache', () => {
         expect(ImageCacheManager.listeners).toMatchObject({});
         expect(existingListener).toHaveBeenCalledWith(fileUri);
         expect(newListener).toHaveBeenCalledWith(fileUri);
+    });
+
+    it('should parse the uri to get the correct protocol', async () => {
+        const fileUri = 'HTTPS://file-uri/ABC123';
+        const expectedFileUri = 'https://file-uri/ABC123';
+        const fileName = null;
+
+        const incorrectHash = hashCode(fileUri);
+        const expectedHash = hashCode(expectedFileUri);
+        expect(incorrectHash).not.toBe(expectedHash);
+
+        RNFetchBlob.fs.exists.mockReturnValueOnce(false);
+        RNFetchBlob.fs.existsWithDiffExt.mockReturnValueOnce(null);
+        RNFetchBlob.fetch.mockReturnValueOnce({respInfo: {respType: '', headers: {}}});
+
+        const path = await ImageCacheManager.cache(fileName, fileUri, emptyFunction); // eslint-disable-line no-await-in-loop
+        const localFilename = path.substring(path.lastIndexOf('/') + 1, path.length);
+        expect(localFilename).toEqual(`${expectedHash}.png`);
     });
 });
