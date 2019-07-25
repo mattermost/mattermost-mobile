@@ -38,11 +38,13 @@ export default class ChannelIOS extends ChannelBase {
         const {height} = Dimensions.get('window');
         const {
             currentChannelId,
+            theme,
         } = this.props;
+        const style = getStyleFromTheme(theme);
 
-        const channelLoaderStyle = [getStyleFromTheme.channelLoader, {height}];
+        const channelLoaderStyle = [style.channelLoader, {height}];
         if ((DeviceTypes.IS_IPHONE_X || DeviceTypes.IS_TABLET)) {
-            channelLoaderStyle.push(getStyleFromTheme.iOSHomeIndicator);
+            channelLoaderStyle.push(style.iOSHomeIndicator);
         }
 
         const drawerContent = (

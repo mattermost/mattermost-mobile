@@ -442,6 +442,7 @@
   "mobile.terms_of_service.alert_cancel": "Cancel",
   "mobile.terms_of_service.alert_ok": "OK",
   "mobile.terms_of_service.alert_retry": "Try Again",
+  "mobile.terms_of_service.get_terms_error_description": "Make sure you have an internet connection or {refresh}. If this issue persists, contact your System Administrator.",
   "mobile.terms_of_service.terms_rejected": "You must agree to the terms of service before accessing {siteName}. Please contact your System Administrator for more details.",
   "mobile.timezone_settings.automatically": "Set automatically",
   "mobile.timezone_settings.manual": "Change timezone",

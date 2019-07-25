@@ -254,13 +254,13 @@ export default class SelectTeam extends PureComponent {
 
         if (this.props.currentUserIsGuest) {
             return (
-                <View style={styles.container}>
+                <View style={style.container}>
                     <StatusBar/>
-                    <View style={styles.headingContainer}>
+                    <View style={style.headingContainer}>
                         <FormattedText
                             id='mobile.select_team.guest_cant_join_team'
                             defaultMessage='Your guest account has no teams or channels assigned. Please contact an administrator.'
-                            style={styles.heading}
+                            style={style.heading}
                         />
                     </View>
                 </View>

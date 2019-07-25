@@ -64,14 +64,13 @@ export default class ChannelLoader extends PureComponent {
 
     componentDidMount() {
         EventEmitter.on('switch_channel', this.handleChannelSwitch);
-        this.toggleOpacity();
     }
 
     componentWillUnmount() {
         EventEmitter.off('switch_channel', this.handleChannelSwitch);
     }
 
-    toggleOpacity = () => {
+    startLoadingAnimation = () => {
         Animated.loop(
             Animated.sequence([
                 Animated.timing(this.state.barsOpacity, {
@@ -88,7 +87,15 @@ export default class ChannelLoader extends PureComponent {
         ).start();
     };
 
+    stopLoadingAnimation = () => {
+        Animated.timing(
+            this.state.barsOpacity
+        ).stop();
+    }
+
     componentDidUpdate() {
+        this.startLoadingAnimation();
+
         if (this.state.switch) {
             const {
                 handleSelectChannel,
@@ -100,6 +107,7 @@ export default class ChannelLoader extends PureComponent {
             setTimeout(() => {
                 handleSelectChannel(channel.id);
                 setChannelLoading(false);
+                this.stopLoadingAnimation();
             }, 250);
         }
     }
@@ -112,6 +120,7 @@ export default class ChannelLoader extends PureComponent {
             >
                 <ImageContent
                     size={32}
+                    animate='fade'
                     lineNumber={3}
                     lineSpacing={5}
                     firstLineWidth='80%'

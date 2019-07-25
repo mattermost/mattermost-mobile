@@ -285,10 +285,18 @@ export default class ChannelBase extends PureComponent {
                 };
 
                 return (
-                    <FailedNetworkAction
-                        theme={theme}
-                        errorDescription={errorDescription}
-                    />
+                    <SafeAreaView>
+                        <View style={style.flex}>
+                            <EmptyToolbar
+                                theme={theme}
+                                isLandscape={isLandscape}
+                            />
+                            <FailedNetworkAction
+                                theme={theme}
+                                errorDescription={errorDescription}
+                            />
+                        </View>
+                    </SafeAreaView>
                 );
             }
 

@@ -243,15 +243,9 @@ export default class TermsOfService extends PureComponent {
             };
 
             const errorDescription = {
-                id: t('mobile.failed_network_action.shortDescription'),
-                defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
+                id: t('mobile.terms_of_service.get_terms_error_description'),
+                defaultMessage: 'Make sure you have an internet connection or {refresh}. If this issue persists, contact your System Administrator.',
                 values: {
-                    type: (
-                        <FormattedText
-                            id='mobile.failed_network_action.description.page'
-                            defaultMessage='Page'
-                        />
-                    ),
                     refresh: (
                         <FormattedText
                             id='mobile.failed_network_action.retry'

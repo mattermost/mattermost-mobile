@@ -36,6 +36,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -66,6 +67,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -96,6 +98,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -126,6 +129,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -156,6 +160,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -186,6 +191,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -216,6 +222,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -246,6 +253,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -276,6 +284,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -306,6 +315,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -336,6 +346,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -366,6 +377,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
@@ -396,6 +408,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     }
   >
     <ImageContent
+      animate="fade"
       color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}

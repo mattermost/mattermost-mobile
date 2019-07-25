@@ -20,8 +20,9 @@ import ChannelBase, {ClientUpgradeListener, getStyleFromTheme} from './channel_b
 export default class ChannelAndroid extends ChannelBase {
     render() {
         const {height} = Dimensions.get('window');
+        const style = getStyleFromTheme(this.props.theme);
 
-        const channelLoaderStyle = [getStyleFromTheme.channelLoader, {height}];
+        const channelLoaderStyle = [style.channelLoader, {height}];
         const drawerContent = (
             <SafeAreaView>
                 <StatusBar/>
@@ -32,7 +33,7 @@ export default class ChannelAndroid extends ChannelBase {
                     onPress={this.goToChannelInfo}
                 />
                 <KeyboardLayout>
-                    <View style={getStyleFromTheme.flex}>
+                    <View style={style.flex}>
                         <ChannelPostList/>
                     </View>
                     <PostTextbox
