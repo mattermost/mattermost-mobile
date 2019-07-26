@@ -210,6 +210,16 @@ class PushNotification {
         foregroundNotifications[channelId] += 1;
         await AsyncStorage.setItem(FOREGROUND_NOTIFICATIONS_KEY, JSON.stringify(foregroundNotifications));
     }
+
+    clearForegroundNotifications = () => {
+        AsyncStorage.removeItem(FOREGROUND_NOTIFICATIONS_KEY);
+    };
+
+    clearNotifications = () => {
+        this.setApplicationIconBadgeNumber(0);
+        this.cancelAllLocalNotifications(); // TODO: Only cancel the local notifications that belong to this server
+        this.clearForegroundNotifications(); // TODO: Only clear the foreground notifications that belong to this server
+    }
 }
 
 export default new PushNotification();
