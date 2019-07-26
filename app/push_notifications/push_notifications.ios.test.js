@@ -38,6 +38,8 @@ describe('PushNotification', () => {
         getMessage: jest.fn(),
     };
 
+    afterEach(() => AsyncStorage.clear());
+
     it('should track foreground notifications for channel', async () => {
         let item = await AsyncStorage.getItem(FOREGROUND_NOTIFICATIONS_KEY);
         expect(item).toBe(null);
@@ -116,7 +118,7 @@ describe('PushNotification', () => {
         const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
         await PushNotification.clearChannelNotifications(channel1ID);
 
-        NotificationsIOS.getDeliveredNotifications(async (deliveredNotifs) => {
+        await NotificationsIOS.getDeliveredNotifications(async (deliveredNotifs) => {
             expect(deliveredNotifs.length).toBe(2);
             const channel1DeliveredNotifications = deliveredNotifs.filter((n) => n.userInfo.channel_id === channel1ID);
             const channel2DeliveredNotifications = deliveredNotifs.filter((n) => n.userInfo.channel_id === channel2ID);
@@ -125,12 +127,13 @@ describe('PushNotification', () => {
 
             const item = await AsyncStorage.getItem(FOREGROUND_NOTIFICATIONS_KEY);
             const foregroundNotifs = JSON.parse(item);
+
             const channel1ForegroundNotifications = foregroundNotifs[channel1ID];
             const channel2ForegroundNotifications = foregroundNotifs[channel2ID];
-            expect(channel1ForegroundNotifications.length).toBe(0);
-            expect(channel2ForegroundNotifications.length).toBe(1);
+            expect(channel1ForegroundNotifications).toBe(undefined);
+            expect(channel2ForegroundNotifications).toBe(1);
 
-            const badgeNumber = channel2DeliveredNotifications.lenth + channel2ForegroundNotifications.length;
+            const badgeNumber = channel2DeliveredNotifications.length + channel2ForegroundNotifications;
             expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(badgeNumber);
         });
     });
