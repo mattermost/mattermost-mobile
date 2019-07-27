@@ -291,8 +291,8 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
   <FailedNetworkAction
     errorDescription={
       Object {
-        "defaultMessage": "Make sure you have an internet connection or {refresh}. If this issue persists, contact your System Administrator.",
-        "id": "mobile.terms_of_service.get_terms_error_description",
+        "defaultMessage": "{type} will load when you have an internet connection or {refresh}.",
+        "id": "mobile.failed_network_action.shortDescription",
         "values": Object {
           "refresh": <FormattedText
             defaultMessage="try again"
@@ -304,13 +304,17 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
               }
             }
           />,
+          "type": <FormattedText
+            defaultMessage="Messages"
+            id="mobile.failed_network_action.description.messages"
+          />,
         },
       }
     }
     errorTitle={
       Object {
-        "defaultMessage": "Unable to load terms of service.",
-        "id": "mobile.terms_of_service.get_terms_error_title",
+        "defaultMessage": "No internet connection",
+        "id": "mobile.failed_network_action.title",
       }
     }
     theme={
