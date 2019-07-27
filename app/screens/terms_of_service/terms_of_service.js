@@ -237,20 +237,21 @@ export default class TermsOfService extends PureComponent {
         }
 
         if (this.state.getTermsError) {
-            const errorTitle = {
-                id: t('mobile.terms_of_service.get_terms_error_title'),
-                defaultMessage: 'Unable to load terms of service.',
-            };
-
             const errorDescription = {
-                id: t('mobile.terms_of_service.get_terms_error_description'),
-                defaultMessage: 'Make sure you have an internet connection or {refresh}. If this issue persists, contact your System Administrator.',
+                id: t('mobile.failed_network_action.shortDescription'),
+                defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
                 values: {
+                    type: (
+                        <FormattedText
+                            id='mobile.failed_network_action.description.messages'
+                            defaultMessage='Messages'
+                        />
+                    ),
                     refresh: (
                         <FormattedText
                             id='mobile.failed_network_action.retry'
                             defaultMessage='try again'
-                            style={styles.linkText}
+                            style={textStyles.link}
                             onPress={this.getTerms}
                         />
                     ),
@@ -262,7 +263,6 @@ export default class TermsOfService extends PureComponent {
                     <StatusBar/>
                     <FailedNetworkAction
                         theme={theme}
-                        errorTitle={errorTitle}
                         errorDescription={errorDescription}
                     />
                 </View>
@@ -301,9 +301,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
-        },
-        linkText: {
-            color: theme.linkColor,
         },
         scrollView: {
             flex: 1,
