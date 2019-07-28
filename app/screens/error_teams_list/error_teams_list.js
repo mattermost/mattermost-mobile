@@ -10,11 +10,9 @@ import {
 import {Navigation} from 'react-native-navigation';
 
 import FailedNetworkAction from 'app/components/failed_network_action';
-import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
 
 export default class ErrorTeamsList extends PureComponent {
     static propTypes = {
@@ -79,27 +77,6 @@ export default class ErrorTeamsList extends PureComponent {
         const {theme} = this.props;
         const style = getStyleFromTheme(theme);
 
-        const errorDescription = {
-            id: t('mobile.failed_network_action.shortDescription'),
-            defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
-            values: {
-                type: (
-                    <FormattedText
-                        id='mobile.failed_network_action.description.teams'
-                        defaultMessage='Teams'
-                    />
-                ),
-                refresh: (
-                    <FormattedText
-                        id='mobile.failed_network_action.retry'
-                        defaultMessage='try again'
-                        style={style.link}
-                        onPress={this.getUserInfo}
-                    />
-                ),
-            },
-        };
-
         if (this.state.loading) {
             return <Loading/>;
         }
@@ -108,8 +85,8 @@ export default class ErrorTeamsList extends PureComponent {
             <View style={style.container}>
                 <StatusBar/>
                 <FailedNetworkAction
+                    onRetry={this.getUserInfo}
                     theme={theme}
-                    errorDescription={errorDescription}
                 />
             </View>
         );
@@ -121,9 +98,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
-        },
-        link: {
-            color: theme.linkColor,
         },
     };
 });

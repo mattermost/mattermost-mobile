@@ -13,39 +13,33 @@ import Cloud from './cloud';
 
 export default class FailedNetworkAction extends PureComponent {
     static propTypes = {
+        onRetry: PropTypes.func,
         theme: PropTypes.object.isRequired,
-        errorTitle: PropTypes.object,
-        errorDescription: PropTypes.object,
     };
 
-    static defaultProps = {
-        errorTitle: {
+    render() {
+        const {theme, onRetry} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        const errorTitle = {
             id: t('mobile.failed_network_action.title'),
             defaultMessage: 'No internet connection',
-        },
-        errorDescription: {
+        };
+
+        const errorDescription = {
             id: t('mobile.failed_network_action.shortDescription'),
-            defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
+            defaultMessage: 'Messages will load when you have an internet connection or {refresh}.',
             values: {
-                type: (
-                    <FormattedText
-                        id='mobile.failed_network_action.description.messages'
-                        defaultMessage='messages'
-                    />
-                ),
                 refresh: (
                     <FormattedText
                         id='mobile.failed_network_action.retry'
                         defaultMessage='try again'
+                        style={style.link}
+                        onPress={onRetry}
                     />
                 ),
             },
-        },
-    };
-
-    render() {
-        const {theme} = this.props;
-        const style = getStyleFromTheme(theme);
+        };
 
         return (
             <View style={style.container}>
@@ -55,15 +49,15 @@ export default class FailedNetworkAction extends PureComponent {
                     width={76}
                 />
                 <FormattedText
-                    id={this.props.errorTitle.id}
-                    defaultMessage={this.props.errorTitle.defaultMessage}
+                    id={errorTitle.id}
+                    defaultMessage={errorTitle.defaultMessage}
                     style={style.title}
                 />
                 <FormattedText
-                    id={this.props.errorDescription.id}
-                    defaultMessage={this.props.errorDescription.message}
+                    id={errorDescription.id}
+                    defaultMessage={errorDescription.message}
                     style={style.description}
-                    values={this.props.errorDescription.values}
+                    values={errorDescription.values}
                 />
             </View>
         );
@@ -92,13 +86,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             lineHeight: 25,
             textAlign: 'center',
         },
-        retryContainer: {
-            marginTop: 30,
-        },
-        retry: {
-            color: changeOpacity(theme.centerChannelColor, 0.7),
-            fontSize: 16,
-            fontWeight: '600',
+        link: {
+            color: theme.linkColor,
         },
     };
 });

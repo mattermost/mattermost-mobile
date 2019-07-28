@@ -77,11 +77,13 @@ export default class ChannelLoader extends PureComponent {
                     toValue: 1,
                     duration: 750,
                     easing: Easing.quad,
+                    useNativeDriver: true,
                 }),
                 Animated.timing(this.state.barsOpacity, {
                     toValue: 0.6,
                     duration: 750,
                     easing: Easing.quad,
+                    useNativeDriver: true,
                 }),
             ]),
         ).start();
@@ -93,8 +95,12 @@ export default class ChannelLoader extends PureComponent {
         ).stop();
     }
 
-    componentDidUpdate() {
-        this.startLoadingAnimation();
+    componentDidUpdate(prevProps) {
+        if (prevProps.channelIsLoading === false && this.props.channelIsLoading === true) {
+            this.startLoadingAnimation();
+        } else if (prevProps.channelIsLoading === true && this.props.channelIsLoading === false) {
+            this.stopLoadingAnimation();
+        }
 
         if (this.state.switch) {
             const {
@@ -107,7 +113,6 @@ export default class ChannelLoader extends PureComponent {
             setTimeout(() => {
                 handleSelectChannel(channel.id);
                 setChannelLoading(false);
-                this.stopLoadingAnimation();
             }, 250);
         }
     }

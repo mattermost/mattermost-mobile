@@ -2,34 +2,7 @@
 
 exports[`SelectTeam should match snapshot for fail of teams 1`] = `
 <FailedNetworkAction
-  errorDescription={
-    Object {
-      "defaultMessage": "{type} will load when you have an internet connection or {refresh}.",
-      "id": "mobile.failed_network_action.shortDescription",
-      "values": Object {
-        "refresh": <FormattedText
-          defaultMessage="try again"
-          id="mobile.failed_network_action.retry"
-          onPress={[Function]}
-          style={
-            Object {
-              "color": "#2389d7",
-            }
-          }
-        />,
-        "type": <FormattedText
-          defaultMessage="Teams"
-          id="mobile.failed_network_action.description.teams"
-        />,
-      },
-    }
-  }
-  errorTitle={
-    Object {
-      "defaultMessage": "No internet connection",
-      "id": "mobile.failed_network_action.title",
-    }
-  }
+  onRetry={[Function]}
   theme={
     Object {
       "awayIndicator": "#ffbc42",

@@ -7,6 +7,7 @@ import {intlShape} from 'react-intl';
 import {
     Keyboard,
     FlatList,
+    StyleSheet,
     SafeAreaView,
     View,
 } from 'react-native';
@@ -23,8 +24,7 @@ import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
 import SearchResultPost from 'app/screens/search/search_result_post';
 import ChannelDisplayName from 'app/screens/search/channel_display_name';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
+import {changeOpacity} from 'app/utils/theme';
 
 export default class RecentMentions extends PureComponent {
     static propTypes = {
@@ -195,36 +195,13 @@ export default class RecentMentions extends PureComponent {
 
     render() {
         const {didFail, isLoading, postIds, theme} = this.props;
-        const FormattedText = require('app/components/formatted_text').default;
-        const style = getStyleFromTheme(theme);
-
-        const errorDescription = {
-            id: t('mobile.failed_network_action.shortDescription'),
-            defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
-            values: {
-                type: (
-                    <FormattedText
-                        id='mobile.failed_network_action.description.messages'
-                        defaultMessage='messages'
-                    />
-                ),
-                refresh: (
-                    <FormattedText
-                        id='mobile.failed_network_action.retry'
-                        defaultMessage='try again'
-                        style={style.link}
-                        onPress={this.retry}
-                    />
-                ),
-            },
-        };
 
         let component;
         if (didFail) {
             component = (
                 <FailedNetworkAction
+                    onRetry={this.retry}
                     theme={theme}
-                    errorDescription={errorDescription}
                 />
             );
         } else if (isLoading) {
@@ -258,13 +235,8 @@ export default class RecentMentions extends PureComponent {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        link: {
-            color: theme.linkColor,
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
 });

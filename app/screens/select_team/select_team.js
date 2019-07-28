@@ -223,31 +223,10 @@ export default class SelectTeam extends PureComponent {
         if (this.props.teamsRequest.status === RequestStatus.FAILURE) {
             const FailedNetworkAction = require('app/components/failed_network_action').default;
 
-            const errorDescription = {
-                id: t('mobile.failed_network_action.shortDescription'),
-                defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
-                values: {
-                    type: (
-                        <FormattedText
-                            id='mobile.failed_network_action.description.teams'
-                            defaultMessage='Teams'
-                        />
-                    ),
-                    refresh: (
-                        <FormattedText
-                            id='mobile.failed_network_action.retry'
-                            defaultMessage='try again'
-                            style={style.link}
-                            onPress={this.getTeams}
-                        />
-                    ),
-                },
-            };
-
             return (
                 <FailedNetworkAction
+                    onRetry={this.getTeams}
                     theme={theme}
-                    errorDescription={errorDescription}
                 />
             );
         }
@@ -358,9 +337,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         teamUrl: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 12,
-        },
-        link: {
-            color: theme.linkColor,
         },
     };
 });

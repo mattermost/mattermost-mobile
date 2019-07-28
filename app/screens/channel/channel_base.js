@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Keyboard,
+    StyleSheet,
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -26,8 +27,6 @@ import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
 
 import LocalConfig from 'assets/config';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
 
 export let ClientUpgradeListener;
 
@@ -256,33 +255,9 @@ export default class ChannelBase extends PureComponent {
             theme,
         } = this.props;
 
-        const style = getStyleFromTheme(theme);
-
         if (!currentChannelId) {
             if (channelsRequestFailed) {
                 const FailedNetworkAction = require('app/components/failed_network_action').default;
-                const FormattedText = require('app/components/formatted_text').default;
-
-                const errorDescription = {
-                    id: t('mobile.failed_network_action.shortDescription'),
-                    defaultMessage: '{type} will load when you have an internet connection or {refresh}.',
-                    values: {
-                        type: (
-                            <FormattedText
-                                id='mobile.failed_network_action.description.messages'
-                                defaultMessage='messages'
-                            />
-                        ),
-                        refresh: (
-                            <FormattedText
-                                id='mobile.failed_network_action.retry'
-                                defaultMessage='try again'
-                                style={style.link}
-                                onPress={this.retryLoadChannels}
-                            />
-                        ),
-                    },
-                };
 
                 return (
                     <SafeAreaView>
@@ -292,8 +267,8 @@ export default class ChannelBase extends PureComponent {
                                 isLandscape={isLandscape}
                             />
                             <FailedNetworkAction
+                                onRetry={this.retryLoadChannels}
                                 theme={theme}
-                                errorDescription={errorDescription}
                             />
                         </View>
                     </SafeAreaView>
@@ -334,21 +309,16 @@ export default class ChannelBase extends PureComponent {
     }
 }
 
-export const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        flex: {
-            flex: 1,
-        },
-        channelLoader: {
-            position: 'absolute',
-            width: '100%',
-            flex: 1,
-        },
-        iOSHomeIndicator: {
-            paddingBottom: 5,
-        },
-        link: {
-            color: theme.linkColor,
-        },
-    };
+export const style = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+    channelLoader: {
+        position: 'absolute',
+        width: '100%',
+        flex: 1,
+    },
+    iOSHomeIndicator: {
+        paddingBottom: 5,
+    },
 });
