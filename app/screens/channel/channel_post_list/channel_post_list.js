@@ -6,6 +6,7 @@ import React, {PureComponent} from 'react';
 import {
     Keyboard,
     Platform,
+    StyleSheet,
     View,
 } from 'react-native';
 
@@ -19,8 +20,6 @@ import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
-
-import {t} from 'app/utils/i18n';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -186,7 +185,6 @@ export default class ChannelPostList extends PureComponent {
         } = this.props;
 
         const {visiblePostIds} = this.state;
-        const style = getStyleFromTheme(theme);
         let component;
 
         if (visiblePostIds.length === 0 && channelRefreshingFailed) {
@@ -229,13 +227,8 @@ export default class ChannelPostList extends PureComponent {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        link: {
-            color: theme.linkColor,
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
 });

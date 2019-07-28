@@ -7,8 +7,8 @@ import {intlShape} from 'react-intl';
 import {
     Keyboard,
     FlatList,
-    StyleSheet,
     SafeAreaView,
+    StyleSheet,
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';

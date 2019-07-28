@@ -16,7 +16,7 @@ import {DeviceTypes} from 'app/constants';
 
 import LocalConfig from 'assets/config';
 
-import ChannelBase, {ClientUpgradeListener, style} from './channel_base'
+import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
