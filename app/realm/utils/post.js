@@ -6,6 +6,7 @@ import {General} from 'app/constants';
 export function postDataToRealm(post, owner) {
     const postData = {
         id: post.id,
+        channelId: post.channel_id,
         createAt: post.create_at,
         updateAt: post.update_at,
         deleteAt: post.delete_at,

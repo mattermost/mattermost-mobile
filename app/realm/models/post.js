@@ -17,6 +17,7 @@ export class Post extends Realm.Object {
         primaryKey: 'id',
         properties: {
             id: 'string',
+            channelId: {type: 'string', indexed: true},
             createAt: {type: 'int', indexed: true},
             updateAt: {type: 'int', indexed: true},
             deleteAt: {type: 'int', default: 0},
