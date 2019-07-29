@@ -37,21 +37,6 @@ export default class FailedNetworkAction extends PureComponent {
             defaultMessage: 'No internet connection',
         };
 
-        const errorDescription = {
-            id: t(errorId),
-            defaultMessage: {errorDefaultMessage},
-            values: {
-                refresh: (
-                    <FormattedText
-                        id={actionId}
-                        defaultMessage={actionDefaultMessage}
-                        style={style.link}
-                        onPress={action}
-                    />
-                ),
-            },
-        };
-
         return (
             <View style={style.container}>
                 <Cloud
