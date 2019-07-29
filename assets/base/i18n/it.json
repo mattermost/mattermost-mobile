@@ -70,7 +70,7 @@
   "combined_system_message.you": "Tu",
   "create_comment.addComment": "Aggiungi un commento...",
   "create_post.deactivated": "Stai visualizzando un canale archiviato con un utente disattivato.",
-  "create_post.write": "Scrive su {channelDisplayName}",
+  "create_post.write": "Scrivi a {channelDisplayName}",
   "edit_post.editPost": "Modifica post...",
   "edit_post.save": "Salva",
   "error.team_not_found.title": "Squadra Non Trovata",
