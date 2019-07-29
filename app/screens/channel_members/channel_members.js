@@ -14,7 +14,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
@@ -287,10 +287,8 @@ export default class ChannelMembers extends PureComponent {
             return null;
         }
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
-
         return (
-            <View style={[style.noResultContainer, padding]}>
+            <View style={[style.noResultContainer, padding(isLandscape)]}>
                 <FormattedText
                     id='mobile.custom_list.no_results'
                     defaultMessage='No Results'
@@ -362,12 +360,10 @@ export default class ChannelMembers extends PureComponent {
             listType = SECTIONLIST;
         }
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
-
         return (
             <KeyboardLayout>
                 <StatusBar/>
-                <View style={[style.searchBar, padding]}>
+                <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
                         ref='search_bar'
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}

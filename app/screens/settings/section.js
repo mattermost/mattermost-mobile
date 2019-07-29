@@ -9,7 +9,7 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 
 function section(props) {
     const {
@@ -28,8 +28,6 @@ function section(props) {
 
     const style = getStyleSheet(theme);
 
-    const margin = DeviceTypes.IS_IPHONE_X && isLandscape ? {marginHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {marginHorizontal: 15};
-
     return (
         <View style={style.container}>
             {(headerId && !disableHeader) &&
@@ -37,7 +35,7 @@ function section(props) {
                     id={headerId}
                     defaultMessage={headerDefaultMessage}
                     values={headerValues}
-                    style={[style.header, margin]}
+                    style={[style.header, margin(isLandscape)]}
                 />
             }
             <View style={style.items}>
@@ -75,6 +73,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginBottom: 30,
         },
         header: {
+            marginHorizontal: 15,
             marginBottom: 10,
             fontSize: 13,
             color: changeOpacity(theme.centerChannelColor, 0.5),

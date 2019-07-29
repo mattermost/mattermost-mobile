@@ -10,7 +10,7 @@ import {
 import {intlShape} from 'react-intl';
 
 import {General} from 'mattermost-redux/constants';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
@@ -95,8 +95,6 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
             />
         );
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
-
         return (
             <View style={style.container}>
                 <StatusBar/>
@@ -145,7 +143,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                     <FormattedText
                         id={'mobile.notification_settings.auto_responder.footer_message'}
                         defaultMessage={'Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies sets your status to Out of Office and disables email and push notifications.'}
-                        style={[style.footer, padding]}
+                        style={[style.footer, padding(isLandscape)]}
                     />
                 </View>
             </View>

@@ -28,9 +28,7 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
           "flex": 1,
           "flexDirection": "row",
         },
-        Object {
-          "paddingHorizontal": 0,
-        },
+        null,
       ]
     }
   >

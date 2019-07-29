@@ -12,7 +12,7 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class TextSetting extends PureComponent {
     static propTypes = {
@@ -143,17 +143,16 @@ export default class TextSetting extends PureComponent {
             );
         }
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
         const noediting = disabled ? style.disabled : null;
 
         return (
             <View>
-                <View style={[style.titleContainer, padding]}>
+                <View style={[style.titleContainer, padding(isLandscape)]}>
                     {labelContent}
                     {asterisk}
                     {optionalContent}
                 </View>
-                <View style={[style.inputContainer, padding, noediting]}>
+                <View style={[style.inputContainer, padding(isLandscape), noediting]}>
                     <View>
                         <TextInput
                             value={value}
@@ -172,7 +171,7 @@ export default class TextSetting extends PureComponent {
                         />
                     </View>
                 </View>
-                <View style={padding}>
+                <View style={padding(isLandscape)}>
                     {disabledTextContent}
                     {helpTextContent}
                     {errorTextContent}

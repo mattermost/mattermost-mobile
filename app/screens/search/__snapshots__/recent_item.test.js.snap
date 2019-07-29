@@ -16,9 +16,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
           "flexDirection": "row",
           "height": 42,
         },
-        Object {
-          "paddingHorizontal": 16,
-        },
+        null,
       ]
     }
   >
@@ -29,6 +27,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
           "flex": 1,
           "fontSize": 14,
           "height": 20,
+          "paddingHorizontal": 16,
         }
       }
     >

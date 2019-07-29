@@ -12,7 +12,7 @@ import {
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class AtMentionItem extends PureComponent {
     static propTypes = {
@@ -50,13 +50,11 @@ export default class AtMentionItem extends PureComponent {
         const style = getStyleFromTheme(theme);
         const hasFullName = firstName.length > 0 && lastName.length > 0;
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
-
         return (
             <TouchableOpacity
                 key={userId}
                 onPress={this.completeMention}
-                style={[style.row, padding]}
+                style={[style.row, padding(isLandscape)]}
             >
                 <View style={style.rowPicture}>
                     <ProfilePicture

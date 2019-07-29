@@ -21,6 +21,7 @@ commonSelectors.getCurrentChannelId = jest.fn();
 teamSelectors.getCurrentTeamId = jest.fn();
 teamSelectors.getCurrentTeamUrl = jest.fn();
 deviceSelectors.getDimensions = jest.fn();
+deviceSelectors.isLandscape = jest.fn();
 preferencesSelectors.getTheme = jest.fn();
 
 describe('mapStateToProps', () => {

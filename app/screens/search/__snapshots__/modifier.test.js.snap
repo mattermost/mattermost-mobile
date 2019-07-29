@@ -23,10 +23,9 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
           Object {
             "flex": 1,
             "flexDirection": "column",
-          },
-          Object {
             "paddingHorizontal": 16,
           },
+          null,
         ]
       }
     >

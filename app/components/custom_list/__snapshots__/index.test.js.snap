@@ -122,9 +122,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
             "color": "#3d3c40",
             "fontWeight": "600",
           },
-          Object {
-            "paddingHorizontal": 0,
-          },
+          null,
         ]
       }
     >

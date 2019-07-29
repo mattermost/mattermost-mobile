@@ -10,9 +10,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           Object {
             "marginVertical": 5,
           },
-          Object {
-            "paddingHorizontal": 0,
-          },
+          null,
         ]
       }
     >
