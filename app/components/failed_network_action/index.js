@@ -22,9 +22,9 @@ export default class FailedNetworkAction extends PureComponent {
     };
 
     static defaultProps = {
-        actionId: 'mobile.failed_network_action.retry',
+        actionId: t('mobile.failed_network_action.retry'),
         actionDefaultMessage: 'try again',
-        errorId: 'mobile.failed_network_action.shortDescription',
+        errorId: t('mobile.failed_network_action.shortDescription'),
         errorDefaultMessage: 'Messages will load when you have an internet connection or {refresh}.',
     };
 
@@ -65,10 +65,19 @@ export default class FailedNetworkAction extends PureComponent {
                     style={style.title}
                 />
                 <FormattedText
-                    id={errorDescription.id}
-                    defaultMessage={errorDescription.message}
+                    id={errorId}
+                    defaultMessage={errorDefaultMessage}
                     style={style.description}
-                    values={errorDescription.values}
+                    values={{
+                        refresh: (
+                            <FormattedText
+                                id={actionId}
+                                defaultMessage={actionDefaultMessage}
+                                style={style.link}
+                                onPress={action}
+                            />
+                        ),
+                    }}
                 />
             </View>
         );
