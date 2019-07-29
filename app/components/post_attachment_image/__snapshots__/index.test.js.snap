@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostAttachmentImage should match snapshot 1`] = `
+<TouchableWithoutFeedback
+  onPress={[Function]}
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "justifyContent": "flex-start",
+        "marginBottom": 6,
+        "marginTop": 10,
+      },
+      Object {
+        "height": 100,
+      },
+    ]
+  }
+>
+  <View>
+    <ForwardRef(forwardConnectRef)
+      imageUri="uri"
+      onError={[MockFunction]}
+      resizeMode="contain"
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "borderRadius": 3,
+            "justifyContent": "center",
+            "marginVertical": 1,
+          },
+          Object {
+            "height": 100,
+            "width": 100,
+          },
+        ]
+      }
+    />
+  </View>
+</TouchableWithoutFeedback>
+`;

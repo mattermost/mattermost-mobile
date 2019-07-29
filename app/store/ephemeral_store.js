@@ -6,22 +6,22 @@ class EphemeralStore {
         this.appStarted = false;
         this.appStartedFromPushNotification = false;
         this.deviceToken = null;
-        this.componentIdStack = [];
+        this.navigationComponentIdStack = [];
         this.currentServerUrl = null;
         this.realmStores = {};
     }
 
-    getTopComponentId = () => this.componentIdStack[0];
+    getNavigationTopComponentId = () => this.navigationComponentIdStack[0];
+    getNavigationComponentIds = () => this.navigationComponentIdStack;
 
-    addComponentIdToStack = (componentId) => {
-        this.componentIdStack.unshift(componentId);
-    };
+    addNavigationComponentId = (componentId) => {
+        const index = this.navigationComponentIdStack.indexOf(componentId);
+        if (index > 0) {
+            this.navigationComponentIdStack.slice(index, 1);
+        }
 
-    removeComponentIdFromStack = (componentId) => {
-        this.componentIdStack = this.componentIdStack.filter((id) => {
-            return id !== componentId;
-        });
-    };
+        this.navigationComponentIdStack.unshift(componentId);
+    }
 
     getRealmStoreForCurrentServer = () => {
         return this.realmStores[this.currentServerUrl];

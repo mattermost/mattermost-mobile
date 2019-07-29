@@ -15,7 +15,6 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';
-import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
@@ -188,9 +187,11 @@ export default class ChannelPostList extends PureComponent {
         let component;
 
         if (visiblePostIds.length === 0 && channelRefreshingFailed) {
+            const FailedNetworkAction = require('app/components/failed_network_action').default;
+
             component = (
-                <PostListRetry
-                    retry={this.loadPostsRetry}
+                <FailedNetworkAction
+                    onRetry={this.loadPostsRetry}
                     theme={theme}
                 />
             );

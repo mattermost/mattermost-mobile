@@ -100,11 +100,8 @@ const launchAppAndAuthenticateIfNeeded = async () => {
 Navigation.events().registerAppLaunchedListener(() => {
     init();
 
-    // Keep track of the latest componentId to appear and disappear
+    // Keep track of the latest componentId to appear
     Navigation.events().registerComponentDidAppearListener(({componentId}) => {
-        ephemeralStore.addComponentIdToStack(componentId);
-    });
-    Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
-        ephemeralStore.removeComponentIdFromStack(componentId);
+        ephemeralStore.addNavigationComponentId(componentId);
     });
 });

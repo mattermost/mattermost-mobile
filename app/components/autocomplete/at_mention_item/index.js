@@ -9,6 +9,8 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import AtMentionItem from './at_mention_item';
 
+import {isGuest} from 'app/utils/users';
+
 function mapStateToProps(state, ownProps) {
     const user = getUser(state, ownProps.userId);
 
@@ -17,6 +19,7 @@ function mapStateToProps(state, ownProps) {
         lastName: user.last_name,
         username: user.username,
         isBot: Boolean(user.is_bot),
+        isGuest: isGuest(user),
         theme: getTheme(state),
     };
 }

@@ -257,12 +257,21 @@ export default class ChannelBase extends PureComponent {
 
         if (!currentChannelId) {
             if (channelsRequestFailed) {
-                const PostListRetry = require('app/components/post_list_retry').default;
+                const FailedNetworkAction = require('app/components/failed_network_action').default;
+
                 return (
-                    <PostListRetry
-                        retry={this.retryLoadChannels}
-                        theme={theme}
-                    />
+                    <SafeAreaView>
+                        <View style={style.flex}>
+                            <EmptyToolbar
+                                theme={theme}
+                                isLandscape={isLandscape}
+                            />
+                            <FailedNetworkAction
+                                onRetry={this.retryLoadChannels}
+                                theme={theme}
+                            />
+                        </View>
+                    </SafeAreaView>
                 );
             }
 

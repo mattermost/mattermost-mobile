@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "1.21.1",
+  "version": "1.22.0",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -101,6 +101,7 @@
     "jsdom-global": "3.0.2",
     "metro-react-native-babel-preset": "0.54.0",
     "mmjstool": "github:mattermost/mattermost-utilities",
+    "mock-async-storage": "2.2.0",
     "nyc": "14.1.1",
     "react-dom": "16.8.6",
     "react-test-renderer": "16.8.6",

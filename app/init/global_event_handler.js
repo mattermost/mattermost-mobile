@@ -149,8 +149,7 @@ class GlobalEventHandler {
         deleteFileCache(); //TODO: The cache of files should be for each individual server
         removeAppCredentials(serverUrl);
 
-        PushNotifications.setApplicationIconBadgeNumber(0);
-        PushNotifications.cancelAllLocalNotifications(); // TODO: Only cancel the notification that belongs to this server
+        PushNotifications.clearNotifications();
 
         if (this.launchApp) {
             //TODO: Select the next available server if there is one
@@ -229,6 +228,8 @@ class GlobalEventHandler {
 
     serverUpgradeNeeded = async () => {
         const {dispatch} = this.reduxStore;
+
+        dispatch(setServerVersion(''));
 
         const credentials = await getAppCredentials();
 

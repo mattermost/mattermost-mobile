@@ -13,17 +13,6 @@ import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-
-const errorTitle = {
-    id: t('error.team_not_found.title'),
-    defaultMessage: 'Team Not Found',
-};
-
-const errorDescription = {
-    id: t('mobile.failed_network_action.shortDescription'),
-    defaultMessage: 'Make sure you have an active connection and try again.',
-};
 
 export default class ErrorTeamsList extends PureComponent {
     static propTypes = {
@@ -86,27 +75,25 @@ export default class ErrorTeamsList extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const styles = getStyleSheet(theme);
+        const style = getStyleFromTheme(theme);
 
         if (this.state.loading) {
             return <Loading/>;
         }
 
         return (
-            <View style={styles.container}>
+            <View style={style.container}>
                 <StatusBar/>
                 <FailedNetworkAction
                     onRetry={this.getUserInfo}
                     theme={theme}
-                    errorTitle={errorTitle}
-                    errorDescription={errorDescription}
                 />
             </View>
         );
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
