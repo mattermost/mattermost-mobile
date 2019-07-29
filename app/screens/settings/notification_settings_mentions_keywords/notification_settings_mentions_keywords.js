@@ -4,7 +4,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
@@ -61,8 +61,6 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
         const {keywords} = this.state;
 
         const style = getStyleSheet(theme);
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 15};
-
         return (
             <View style={style.container}>
                 <StatusBar/>
@@ -80,7 +78,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                             onSubmitEditing={this.handleSubmit}
                             multiline={true}
                             numberOfLines={1}
-                            style={[style.input, padding]}
+                            style={[style.input, padding(isLandscape)]}
                             autoCapitalize='none'
                             autoCorrect={false}
                             placeholder={{id: 'mobile.notification_settings_mentions.keywordsDescription', defaultMessage: 'Other words that trigger a mention'}}
@@ -88,7 +86,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                             returnKeyType='done'
                         />
                     </View>
-                    <View style={[style.helpContainer, padding]}>
+                    <View style={[style.helpContainer, padding(isLandscape)]}>
                         <FormattedText
                             id='mobile.notification_settings_mentions.keywordsHelp'
                             defaultMessage='Keywords are non-case sensitive and should be separated by a comma.'
@@ -126,6 +124,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         helpContainer: {
             marginTop: 10,
+            paddingHorizontal: 15,
         },
         help: {
             color: changeOpacity(theme.centerChannelColor, 0.4),

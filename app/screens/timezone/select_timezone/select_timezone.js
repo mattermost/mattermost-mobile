@@ -15,8 +15,9 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import SelectTimezoneRow from './select_timezone_row';
 
-import {ListTypes, DeviceTypes, ViewTypes} from 'app/constants';
+import {ListTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const ITEM_HEIGHT = 45;
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
@@ -101,12 +102,10 @@ export default class Timezone extends PureComponent {
             fontSize: 15,
         };
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
-
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={[style.header, padding]}>
+                <View style={[style.header, padding(isLandscape)]}>
                     <SearchBar
                         ref='searchBar'
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}

@@ -22,7 +22,8 @@ import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {t} from 'app/utils/i18n';
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {ListTypes, DeviceTypes, ViewTypes} from 'app/constants';
+import {ListTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -400,7 +401,7 @@ class FilteredList extends Component {
                 <View>
                     {topDivider && this.renderDivider(styles, 0)}
                     <View style={styles.titleContainer}>
-                        <Text style={styles.title}>
+                        <Text style={[styles.title, padding(this.props.isLandscape)]}>
                             {formatMessage({id, defaultMessage}).toUpperCase()}
                         </Text>
                         {action && this.renderSectionAction(styles, action)}
@@ -412,14 +413,12 @@ class FilteredList extends Component {
     };
 
     render() {
-        const {styles, isLandscape} = this.props;
+        const {styles} = this.props;
         const {dataSource} = this.state;
-
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         return (
             <View
-                style={[styles.container, padding]}
+                style={styles.container}
             >
                 <FlatList
                     data={dataSource}

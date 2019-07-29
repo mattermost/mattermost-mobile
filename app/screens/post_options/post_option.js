@@ -12,7 +12,7 @@ import {
     TouchableNativeFeedback,
     View,
 } from 'react-native';
-
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import copy from 'assets/images/post_menu/copy.png';
 import edit from 'assets/images/post_menu/edit.png';
 import emoji from 'assets/images/post_menu/emoji.png';
@@ -39,6 +39,7 @@ export default class PostOption extends PureComponent {
         icon: PropTypes.string.isRequired,
         onPress: PropTypes.func.isRequired,
         text: PropTypes.string.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     handleOnPress = () => {
@@ -49,7 +50,7 @@ export default class PostOption extends PureComponent {
     };
 
     render() {
-        const {destructive, icon, text} = this.props;
+        const {destructive, icon, text, isLandscape} = this.props;
         const image = icons[icon];
 
         const Touchable = Platform.select({
@@ -70,7 +71,7 @@ export default class PostOption extends PureComponent {
         });
 
         return (
-            <View style={style.container} >
+            <View style={[style.container, padding(isLandscape)]} >
                 <Touchable
                     onPress={this.handleOnPress}
                     {...touchableProps}

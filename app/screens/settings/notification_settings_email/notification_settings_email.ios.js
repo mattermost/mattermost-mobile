@@ -13,7 +13,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 
@@ -30,8 +30,6 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
         } = this.props;
         const {newInterval} = this.state;
         const style = getStyleSheet(theme);
-
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 15};
 
         return (
             <Section
@@ -115,7 +113,7 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                 <FormattedText
                     id='user.settings.general.emailHelp2'
                     defaultMessage='Email has been disabled by your System Administrator. No notification emails will be sent until it is enabled.'
-                    style={[style.disabled, padding]}
+                    style={[style.disabled, padding(isLandscape)]}
                 />
                 }
             </Section>
@@ -163,6 +161,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         disabled: {
             color: theme.centerChannelColor,
             fontSize: 15,
+            paddingHorizontal: 15,
             paddingVertical: 10,
         },
     };

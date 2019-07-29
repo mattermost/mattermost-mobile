@@ -11,8 +11,8 @@ import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
-import {DeviceTypes, ViewTypes} from 'app/constants';
-
+import {ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import List from './list';
@@ -97,8 +97,6 @@ export default class ChannelsList extends PureComponent {
         const {searching, term} = this.state;
         const styles = getStyleSheet(theme);
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
-
         let list;
         if (searching) {
             list = (
@@ -131,7 +129,7 @@ export default class ChannelsList extends PureComponent {
         };
 
         const title = (
-            <View style={[styles.searchContainer, padding]}>
+            <View style={[styles.searchContainer, padding(isLandscape)]}>
                 <SearchBar
                     ref='search_bar'
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}

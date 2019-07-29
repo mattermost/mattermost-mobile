@@ -27,6 +27,8 @@ import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
     waitForInteraction: true,
@@ -352,12 +354,10 @@ export default class List extends PureComponent {
             topSeparator,
         } = section;
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingLeft: 0};
-
         return (
             <View>
                 {topSeparator && this.renderSectionSeparator()}
-                <View style={[styles.titleContainer, padding]}>
+                <View style={[styles.titleContainer, padding(isLandscape)]}>
                     <Text style={styles.title}>
                         {intl.formatMessage({id, defaultMessage}).toUpperCase()}
                     </Text>

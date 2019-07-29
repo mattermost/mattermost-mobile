@@ -11,7 +11,7 @@ import {
 import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {General} from 'mattermost-redux/constants';
 import {injectIntl, intlShape} from 'react-intl';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -303,16 +303,14 @@ class ChannelIntro extends PureComponent {
         const style = getStyleSheet(theme);
         const channelType = currentChannel.type;
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
-
         let profiles;
         if (channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL) {
             profiles = (
                 <View>
-                    <View style={[style.profilesContainer, padding]}>
+                    <View style={[style.profilesContainer, padding(isLandscape)]}>
                         {this.buildProfiles()}
                     </View>
-                    <View style={[style.namesContainer, padding]}>
+                    <View style={[style.namesContainer, padding(isLandscape)]}>
                         {this.buildNames()}
                     </View>
                 </View>
@@ -322,7 +320,7 @@ class ChannelIntro extends PureComponent {
         return (
             <View style={style.container}>
                 {profiles}
-                <View style={[style.contentContainer, padding]}>
+                <View style={[style.contentContainer, padding(isLandscape)]}>
                     {this.buildContent()}
                 </View>
             </View>

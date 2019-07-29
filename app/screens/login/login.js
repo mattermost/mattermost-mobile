@@ -20,7 +20,7 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {RequestStatus} from 'mattermost-redux/constants';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -351,8 +351,6 @@ export default class Login extends PureComponent {
             );
         }
 
-        const padding = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 15};
-
         return (
             <View style={style.container}>
                 <StatusBar/>
@@ -360,7 +358,7 @@ export default class Login extends PureComponent {
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
                         style={style.container}
-                        contentContainerStyle={[style.innerContainer, padding]}
+                        contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
                         keyboardShouldPersistTaps='handled'
                         enableOnAndroid={true}
                     >

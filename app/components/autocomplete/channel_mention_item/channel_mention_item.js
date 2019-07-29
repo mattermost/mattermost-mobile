@@ -10,7 +10,7 @@ import {
 
 import {General} from 'mattermost-redux/constants';
 import BotTag from 'app/components/bot_tag';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelMentionItem extends PureComponent {
@@ -46,7 +46,6 @@ export default class ChannelMentionItem extends PureComponent {
         } = this.props;
 
         const style = getStyleFromTheme(theme);
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 8};
 
         if (type === General.DM_CHANNEL || type === General.GM_CHANNEL) {
             if (!displayName) {
@@ -56,7 +55,7 @@ export default class ChannelMentionItem extends PureComponent {
                 <TouchableOpacity
                     key={channelId}
                     onPress={this.completeMention}
-                    style={[style.row, padding]}
+                    style={[style.row, padding(isLandscape)]}
                 >
                     <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
                     <BotTag
@@ -70,7 +69,7 @@ export default class ChannelMentionItem extends PureComponent {
             <TouchableOpacity
                 key={channelId}
                 onPress={this.completeMention}
-                style={[style.row, padding]}
+                style={[style.row, padding(isLandscape)]}
             >
                 <Text style={style.rowDisplayName}>{displayName}</Text>
                 <Text style={style.rowName}>{` (~${name})`}</Text>

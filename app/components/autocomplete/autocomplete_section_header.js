@@ -7,7 +7,7 @@ import {ActivityIndicator, View} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class AutocompleteSectionHeader extends PureComponent {
     static propTypes = {
@@ -26,11 +26,9 @@ export default class AutocompleteSectionHeader extends PureComponent {
         const {defaultMessage, id, loading, theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
 
-        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 8};
-
         return (
             <View style={style.sectionWrapper}>
-                <View style={[style.section, padding]}>
+                <View style={[style.section, padding(isLandscape)]}>
                     <FormattedText
                         id={id}
                         defaultMessage={defaultMessage}

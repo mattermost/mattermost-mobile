@@ -8,7 +8,7 @@ import {
     View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ConditionalTouchable from 'app/components/conditional_touchable';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
@@ -29,14 +29,13 @@ export default class CustomListRow extends React.PureComponent {
     };
 
     render() {
-        const padding = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? {paddingLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingLeft: 0};
         return (
             <ConditionalTouchable
                 touchable={Boolean(this.props.enabled && this.props.onPress)}
                 onPress={this.props.onPress}
                 style={style.touchable}
             >
-                <View style={[style.container, padding]}>
+                <View style={[style.container, padding(this.props.isLandscape)]}>
                     {this.props.selectable &&
                         <View style={style.selectorContainer}>
                             <View style={[style.selector, (this.props.selected && style.selectorFilled), (!this.props.enabled && style.selectorDisabled)]}>
