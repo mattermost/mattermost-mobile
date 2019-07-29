@@ -13,7 +13,7 @@ import {
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
 import VectorIcon from 'app/components/vector_icon.js';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -70,9 +70,11 @@ function userProfileRow(props) {
 
     const style = createStyleSheet(theme);
 
+    const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE + 15} : {paddingHorizontal: 15};
+
     const RowComponent = (
         <View style={style.wrapper}>
-            <View style={[style.container, padding(isLandscape, +15)]}>
+            <View style={[style.container, padding]}>
                 <VectorIcon
                     name={icon}
                     size={iconSize}

@@ -16,12 +16,11 @@ import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostPreHeader from 'app/components/post_header/post_pre_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
-import {NavigationTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes, NavigationTypes} from 'app/constants';
 import {fromAutoResponder} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import {Posts} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -301,9 +300,11 @@ export default class Post extends PureComponent {
         const replyBarStyle = this.replyBarStyle();
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         return (
             <TouchableHighlight
-                style={[style.postStyle, highlighted, padding(isLandscape)]}
+                style={[style.postStyle, highlighted, padding]}
                 onPress={this.handlePress}
                 onLongPress={this.showPostOptions}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}

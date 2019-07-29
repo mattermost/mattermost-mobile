@@ -10,7 +10,7 @@ import {
     StyleSheet,
 } from 'react-native';
 import {NativeViewGestureHandler} from 'react-native-gesture-handler';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+
 import ReactionHeaderItem from './reaction_header_item';
 
 export default class ReactionHeader extends PureComponent {
@@ -20,7 +20,6 @@ export default class ReactionHeader extends PureComponent {
         onSelectReaction: PropTypes.func.isRequired,
         reactions: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     handleOnPress = (emoji) => {
@@ -52,7 +51,6 @@ export default class ReactionHeader extends PureComponent {
                         alwaysBounceHorizontal={false}
                         horizontal={true}
                         overScrollMode='never'
-                        style={padding(this.props.isLandscape, -10)}
                     >
                         {this.renderReactionHeaderItems()}
                     </ScrollView>

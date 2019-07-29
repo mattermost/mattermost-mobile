@@ -224,10 +224,12 @@ export default class PinnedPosts extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
-                <StatusBar/>
-                {component}
-            </View>
+            <SafeAreaView style={style.container}>
+                <View style={style.container}>
+                    <StatusBar/>
+                    {component}
+                </View>
+            </SafeAreaView>
         );
     }
 }

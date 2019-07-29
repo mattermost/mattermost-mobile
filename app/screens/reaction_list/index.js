@@ -10,7 +10,7 @@ import {getCurrentUserId, makeGetProfilesByIdsAndUsernames} from 'mattermost-red
 import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {dismissModal} from 'app/actions/navigation';
-import {isLandscape} from 'app/selectors/device';
+
 import {getUniqueUserIds} from 'app/utils/reaction';
 
 import ReactionList from './reaction_list';
@@ -29,7 +29,6 @@ function makeMapStateToProps() {
             teammateNameDisplay: getTeammateNameDisplaySetting(state),
             theme: getTheme(state),
             userProfiles: getProfilesByIdsAndUsernames(state, {allUserIds}) || [],
-            isLandscape: isLandscape(state),
         };
     };
 }

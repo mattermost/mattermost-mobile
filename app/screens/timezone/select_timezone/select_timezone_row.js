@@ -11,7 +11,7 @@ import {
 
 import CheckMark from 'app/components/checkmark';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 const ITEM_HEIGHT = 45;
 
@@ -41,9 +41,11 @@ export default class SelectTimezoneRow extends PureComponent {
             />
         );
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 15};
+
         return (
             <TouchableOpacity
-                style={[styles.itemContainer, padding(isLandscape)]}
+                style={[styles.itemContainer, padding]}
                 key={timezone}
                 onPress={this.timezoneSelected}
             >

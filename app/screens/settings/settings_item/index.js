@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text, TouchableOpacity, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
 import VectorIcon from 'app/components/vector_icon.js';
 
@@ -111,11 +111,13 @@ export default class SettingsItem extends PureComponent {
             additionalComponent = rightComponent;
         }
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingLeft: 0};
+
         return (
             <TouchableOpacity
                 onPress={onPress}
             >
-                <View style={[style.container, padding(isLandscape)]}>
+                <View style={[style.container, padding]}>
                     {icon &&
                     <View style={style.iconContainer}>
                         {icon}

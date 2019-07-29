@@ -12,7 +12,7 @@ import {
 import {intlShape} from 'react-intl';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import RemoveMarkdown from 'app/components/remove_markdown';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 const {View: AnimatedView} = Animated;
 
@@ -97,13 +97,15 @@ export default class AnnouncementBanner extends PureComponent {
             color: bannerTextColor,
         };
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         return (
             <AnimatedView
                 style={[style.bannerContainer, bannerStyle]}
             >
                 <TouchableOpacity
                     onPress={this.handlePress}
-                    style={[style.wrapper, padding(isLandscape)]}
+                    style={[style.wrapper, padding]}
                 >
                     <Text
                         ellipsizeMode='tail'

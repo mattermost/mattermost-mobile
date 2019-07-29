@@ -9,7 +9,7 @@ import {
     View,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import CheckMark from 'app/components/checkmark';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -72,8 +72,10 @@ function sectionItem(props) {
         );
     }
 
+    const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 15};
+
     const component = (
-        <View style={[style.container, padding(isLandscape)]}>
+        <View style={[style.container, padding]}>
             <View style={description ? style.doubleContainer : style.singleContainer}>
                 {labelComponent}
                 {descriptionComponent}
@@ -113,7 +115,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: 15,
         },
         singleContainer: {
             alignItems: 'center',

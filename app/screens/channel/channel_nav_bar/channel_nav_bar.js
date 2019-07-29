@@ -13,7 +13,6 @@ import ChannelDrawerButton from './channel_drawer_button';
 import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';
 import SettingDrawerButton from './settings_drawer_button';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {
     ANDROID_TOP_LANDSCAPE,
@@ -60,6 +59,7 @@ export default class ChannelNavBar extends PureComponent {
         const {isLandscape, onPress, theme} = this.props;
         const {openChannelDrawer, openSettingsDrawer} = this.props;
         const style = getStyleFromTheme(theme);
+        const padding = {paddingHorizontal: 0, paddingTop: 0};
 
         let height;
         switch (Platform.OS) {
@@ -76,6 +76,11 @@ export default class ChannelNavBar extends PureComponent {
             } else if (isLandscape) {
                 height = IOS_TOP_LANDSCAPE;
             }
+
+            if (DeviceTypes.IS_IPHONE_X && isLandscape) {
+                padding.paddingHorizontal = 44;
+                height += 10;
+            }
             break;
         }
 
@@ -85,7 +90,7 @@ export default class ChannelNavBar extends PureComponent {
         }
 
         return (
-            <View style={[style.header, padding(isLandscape), {height}]}>
+            <View style={[style.header, padding, {height}]}>
                 <ChannelDrawerButton
                     openDrawer={openChannelDrawer}
                     visible={drawerButtonVisible}

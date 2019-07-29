@@ -33,7 +33,6 @@ export default class OptionsModal extends PureComponent {
             PropTypes.string,
             PropTypes.object,
         ]),
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -82,7 +81,6 @@ export default class OptionsModal extends PureComponent {
         const {
             items,
             title,
-            isLandscape,
         } = this.props;
 
         return (
@@ -94,7 +92,6 @@ export default class OptionsModal extends PureComponent {
                             onCancelPress={this.handleCancel}
                             onItemPress={this.onItemPress}
                             title={title}
-                            isLandscape={isLandscape}
                         />
                     </AnimatedView>
                 </View>

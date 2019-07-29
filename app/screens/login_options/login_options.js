@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
-import {ViewTypes} from 'app/constants';
+import {ViewTypes, DeviceTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
@@ -22,7 +22,6 @@ import {preventDoubleTap} from 'app/utils/tap';
 import LocalConfig from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
 import logo from 'assets/images/logo.png';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class LoginOptions extends PureComponent {
     static propTypes = {
@@ -252,10 +251,12 @@ export default class LoginOptions extends PureComponent {
     };
 
     render() {
+        const padding = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 15};
+
         return (
             <ScrollView
                 style={style.container}
-                contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
+                contentContainerStyle={[style.innerContainer, padding]}
                 ref={this.scrollRef}
             >
                 <StatusBar/>
@@ -294,7 +295,6 @@ const style = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
-        paddingHorizontal: 15,
         flex: 1,
     },
 });

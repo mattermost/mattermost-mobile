@@ -13,7 +13,7 @@ import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import ProfilePicture from 'app/components/profile_picture';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
@@ -140,11 +140,13 @@ export default class UserProfile extends PureComponent {
         const {theme, user, isLandscape} = this.props;
         const style = createStyleSheet(theme);
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
         if (user.hasOwnProperty(property) && user[property].length > 0) {
             return (
                 <View>
-                    <Text style={[style.header, padding(isLandscape)]}>{property.toUpperCase()}</Text>
-                    <Text style={[style.text, padding(isLandscape)]}>{user[property]}</Text>
+                    <Text style={[style.header, padding]}>{property.toUpperCase()}</Text>
+                    <Text style={[style.text, padding]}>{user[property]}</Text>
                 </View>
             );
         }
@@ -155,6 +157,8 @@ export default class UserProfile extends PureComponent {
     buildTimezoneBlock = () => {
         const {theme, user, militaryTime, isLandscape} = this.props;
         const style = createStyleSheet(theme);
+
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
 
         const currentTimezone = getUserCurrentTimezone(user.timezone);
         if (!currentTimezone) {
@@ -167,9 +171,9 @@ export default class UserProfile extends PureComponent {
                 <FormattedText
                     id='mobile.routes.user_profile.local_time'
                     defaultMessage='LOCAL TIME'
-                    style={[style.header, padding(isLandscape)]}
+                    style={[style.header, padding]}
                 />
-                <Text style={[style.text, padding(isLandscape)]}>
+                <Text style={[style.text, padding]}>
                     <FormattedTime
                         timeZone={currentTimezone}
                         hour12={!militaryTime}
@@ -269,8 +273,10 @@ export default class UserProfile extends PureComponent {
                 return null;
             }
 
+            const padding = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 0};
+
             return (
-                <View style={[style.content, padding(this.props.isLandscape)]}>
+                <View style={[style.content, padding]}>
                     <View>
                         <Text style={style.header}>{'DESCRIPTION'}</Text>
                         <Text style={style.text}>{this.props.bot.description || ''}</Text>

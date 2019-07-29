@@ -34,7 +34,6 @@ export default class ReactionList extends PureComponent {
         theme: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string,
         userProfiles: PropTypes.array,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -165,7 +164,7 @@ export default class ReactionList extends PureComponent {
     };
 
     renderHeader = (forwardedRef) => {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const {selected, sortedReactionsForHeader} = this.state;
 
         return (
@@ -175,7 +174,6 @@ export default class ReactionList extends PureComponent {
                 reactions={sortedReactionsForHeader}
                 theme={theme}
                 forwardedRef={forwardedRef}
-                isLandscape={isLandscape}
             />
         );
     };

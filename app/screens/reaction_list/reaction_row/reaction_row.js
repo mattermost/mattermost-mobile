@@ -16,7 +16,6 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import ProfilePicture from 'app/components/profile_picture';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import Emoji from 'app/components/emoji';
 
@@ -29,7 +28,6 @@ export default class ReactionRow extends React.PureComponent {
         teammateNameDisplay: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -57,7 +55,6 @@ export default class ReactionRow extends React.PureComponent {
             emojiName,
             teammateNameDisplay,
             user,
-            isLandscape,
         } = this.props;
 
         if (!user.id) {
@@ -69,7 +66,7 @@ export default class ReactionRow extends React.PureComponent {
 
         return (
             <View style={style.container}>
-                <View style={[style.profileContainer, padding(isLandscape)]}>
+                <View style={style.profileContainer}>
                     <TouchableOpacity
                         key={user.id}
                         onPress={preventDoubleTap(this.goToUserProfile)}

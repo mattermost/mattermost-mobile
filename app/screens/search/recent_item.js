@@ -7,7 +7,7 @@ import {Text, TouchableHighlight, TouchableOpacity, View} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 export const RECENT_LABEL_HEIGHT = 42;
 
@@ -39,6 +39,8 @@ export default class RecentItem extends PureComponent {
         const {item, theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingHorizontal: 16};
+
         return (
             <TouchableHighlight
                 key={item.terms}
@@ -46,7 +48,7 @@ export default class RecentItem extends PureComponent {
                 onPress={this.handlePress}
             >
                 <View
-                    style={[style.recentItemContainer, padding(isLandscape)]}
+                    style={[style.recentItemContainer, padding]}
                 >
                     <Text
                         style={style.recentItemLabel}
@@ -82,7 +84,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             height: 20,
             flex: 1,
-            paddingHorizontal: 16,
         },
         recentRemove: {
             alignItems: 'center',

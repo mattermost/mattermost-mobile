@@ -26,7 +26,7 @@ import PostListRetry from 'app/components/post_list_retry';
 import SafeAreaView from 'app/components/safe_area_view';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -385,6 +385,8 @@ export default class Permalink extends PureComponent {
             );
         }
 
+        const margin = DeviceTypes.IS_IPHONE_X && isLandscape ? {marginHorizontal: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {marginHorizontal: 0};
+
         return (
             <SafeAreaView
                 backgroundColor='transparent'
@@ -393,7 +395,7 @@ export default class Permalink extends PureComponent {
                 forceTop={44}
             >
                 <View
-                    style={[style.container, margin(isLandscape)]}
+                    style={[style.container, margin]}
                 >
                     <Animatable.View
                         ref='view'

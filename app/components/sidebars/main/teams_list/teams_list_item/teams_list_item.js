@@ -12,7 +12,7 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
 import TeamIcon from 'app/components/team_icon';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -66,13 +66,15 @@ export default class TeamsListItem extends React.PureComponent {
             />
         );
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddinLeft: 0};
+
         return (
             <View style={styles.teamWrapper}>
                 <TouchableHighlight
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                     onPress={this.selectTeam}
                 >
-                    <View style={[styles.teamContainer, padding(isLandscape)]}>
+                    <View style={[styles.teamContainer, padding]}>
                         <TeamIcon
                             teamId={teamId}
                             styleContainer={styles.teamIconContainer}

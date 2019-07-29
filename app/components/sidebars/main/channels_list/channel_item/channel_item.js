@@ -13,7 +13,7 @@ import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
 import {General} from 'mattermost-redux/constants';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -172,6 +172,8 @@ export default class ChannelItem extends PureComponent {
             mutedStyle = style.muted;
         }
 
+        const padding = DeviceTypes.IS_IPHONE_X && isLandscape ? {paddingLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE} : {paddingLeft: 0};
+
         const icon = (
             <ChannelIcon
                 isActive={isActive}
@@ -196,7 +198,7 @@ export default class ChannelItem extends PureComponent {
                     onPress={this.onPress}
                     onPressIn={this.onPreview}
                 >
-                    <View style={[style.container, mutedStyle, padding(isLandscape)]}>
+                    <View style={[style.container, mutedStyle, padding]}>
                         {extraBorder}
                         <View style={[style.item, extraItemStyle]}>
                             {icon}

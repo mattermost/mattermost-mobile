@@ -15,7 +15,7 @@ import DeviceInfo from 'react-native-device-info';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import AppIcon from 'app/components/app_icon';
 import Config from 'assets/config';
 
@@ -215,11 +215,17 @@ export default class About extends PureComponent {
             );
         }
 
+        const padding = {paddingLeft: 0, paddingRight: 0};
+        if (DeviceTypes.IS_IPHONE_X && isLandscape) {
+            padding.paddingLeft = ViewTypes.IOS_HORIZONTAL_LANDSCAPE;
+            padding.paddingRight = ViewTypes.IOS_HORIZONTAL_LANDSCAPE;
+        }
+
         return (
             <View style={style.wrapper}>
                 <StatusBar/>
                 <ScrollView
-                    style={[style.scrollView, padding(isLandscape)]}
+                    style={[style.scrollView, padding]}
                     contentContainerStyle={style.scrollViewContent}
                 >
                     <View style={style.logoContainer}>

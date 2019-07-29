@@ -43,7 +43,6 @@ export default class PostOptions extends PureComponent {
         isMyPost: PropTypes.bool,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -64,7 +63,7 @@ export default class PostOptions extends PureComponent {
 
     getAddReactionOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canAddReaction, isLandscape} = this.props;
+        const {canAddReaction} = this.props;
 
         if (canAddReaction) {
             return (
@@ -73,7 +72,6 @@ export default class PostOptions extends PureComponent {
                     icon='emoji'
                     text={formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'})}
                     onPress={this.handleAddReaction}
-                    isLandscape={isLandscape}
                 />
             );
         }
@@ -83,7 +81,7 @@ export default class PostOptions extends PureComponent {
 
     getReplyOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canReply, isLandscape} = this.props;
+        const {canReply} = this.props;
 
         if (canReply) {
             return (
@@ -92,7 +90,6 @@ export default class PostOptions extends PureComponent {
                     icon='reply'
                     text={formatMessage({id: 'mobile.post_info.reply', defaultMessage: 'Reply'})}
                     onPress={this.handleReply}
-                    isLandscape={isLandscape}
                 />
             );
         }
@@ -102,7 +99,7 @@ export default class PostOptions extends PureComponent {
 
     getCopyPermalink = () => {
         const {formatMessage} = this.context.intl;
-        const {canCopyPermalink, isLandscape} = this.props;
+        const {canCopyPermalink} = this.props;
 
         if (canCopyPermalink) {
             return (
@@ -111,7 +108,6 @@ export default class PostOptions extends PureComponent {
                     icon='link'
                     text={formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'})}
                     onPress={this.handleCopyPermalink}
-                    isLandscape={isLandscape}
                 />
             );
         }
@@ -121,7 +117,7 @@ export default class PostOptions extends PureComponent {
 
     getCopyText = () => {
         const {formatMessage} = this.context.intl;
-        const {canCopyText, isLandscape} = this.props;
+        const {canCopyText} = this.props;
 
         if (canCopyText) {
             return (
@@ -130,7 +126,6 @@ export default class PostOptions extends PureComponent {
                     icon='copy'
                     text={formatMessage({id: 'mobile.post_info.copy_text', defaultMessage: 'Copy Text'})}
                     onPress={this.handleCopyText}
-                    isLandscape={isLandscape}
                 />
             );
         }
@@ -140,7 +135,7 @@ export default class PostOptions extends PureComponent {
 
     getDeleteOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canDelete, isLandscape} = this.props;
+        const {canDelete} = this.props;
 
         if (canDelete) {
             return (
@@ -150,7 +145,6 @@ export default class PostOptions extends PureComponent {
                     icon='trash'
                     text={formatMessage({id: 'post_info.del', defaultMessage: 'Delete'})}
                     onPress={this.handlePostDelete}
-                    isLandscape={isLandscape}
                 />
             );
         }
@@ -160,7 +154,7 @@ export default class PostOptions extends PureComponent {
 
     getEditOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canEdit, canEditUntil, isLandscape} = this.props;
+        const {canEdit, canEditUntil} = this.props;
 
         if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
             return (
@@ -169,7 +163,6 @@ export default class PostOptions extends PureComponent {
                     icon='edit'
                     text={formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'})}
                     onPress={this.handlePostEdit}
-                    isLandscape={isLandscape}
                 />
             );
         }
@@ -179,7 +172,7 @@ export default class PostOptions extends PureComponent {
 
     getFlagOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canFlag, isFlagged, isLandscape} = this.props;
+        const {canFlag, isFlagged} = this.props;
 
         if (!canFlag) {
             return null;
@@ -192,7 +185,6 @@ export default class PostOptions extends PureComponent {
                     icon='flag'
                     text={formatMessage({id: 'mobile.post_info.unflag', defaultMessage: 'Unflag'})}
                     onPress={this.handleUnflagPost}
-                    isLandscape={isLandscape}
                 />
             );
         }
@@ -203,14 +195,13 @@ export default class PostOptions extends PureComponent {
                 icon='flag'
                 text={formatMessage({id: 'mobile.post_info.flag', defaultMessage: 'Flag'})}
                 onPress={this.handleFlagPost}
-                isLandscape={isLandscape}
             />
         );
     };
 
     getPinOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canPin, post, isLandscape} = this.props;
+        const {canPin, post} = this.props;
 
         if (!canPin) {
             return null;
@@ -223,7 +214,6 @@ export default class PostOptions extends PureComponent {
                     icon='pin'
                     text={formatMessage({id: 'mobile.post_info.unpin', defaultMessage: 'Unpin from Channel'})}
                     onPress={this.handleUnpinPost}
-                    isLandscape={isLandscape}
                 />
             );
         }
@@ -234,7 +224,6 @@ export default class PostOptions extends PureComponent {
                 icon='pin'
                 text={formatMessage({id: 'mobile.post_info.pin', defaultMessage: 'Pin to Channel'})}
                 onPress={this.handlePinPost}
-                isLandscape={isLandscape}
             />
         );
     };
