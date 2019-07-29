@@ -13,12 +13,23 @@ import Cloud from './cloud';
 
 export default class FailedNetworkAction extends PureComponent {
     static propTypes = {
-        onRetry: PropTypes.func,
+        action: PropTypes.func,
+        actionId: PropTypes.string,
+        actionDefaultMessage: PropTypes.string,
+        errorId: PropTypes.string,
+        errorDefaultMessage: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        actionId: 'mobile.failed_network_action.retry',
+        actionDefaultMessage: 'try again',
+        errorId: 'mobile.failed_network_action.shortDescription',
+        errorDefaultMessage: 'Messages will load when you have an internet connection or {refresh}.',
+    };
+
     render() {
-        const {theme, onRetry} = this.props;
+        const {action, actionId, actionDefaultMessage, errorId, errorDefaultMessage, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         const errorTitle = {
@@ -27,15 +38,15 @@ export default class FailedNetworkAction extends PureComponent {
         };
 
         const errorDescription = {
-            id: t('mobile.failed_network_action.shortDescription'),
-            defaultMessage: 'Messages will load when you have an internet connection or {refresh}.',
+            id: t(errorId),
+            defaultMessage: {errorDefaultMessage},
             values: {
                 refresh: (
                     <FormattedText
-                        id='mobile.failed_network_action.retry'
-                        defaultMessage='try again'
+                        id={actionId}
+                        defaultMessage={actionDefaultMessage}
                         style={style.link}
-                        onPress={onRetry}
+                        onPress={action}
                     />
                 ),
             },
