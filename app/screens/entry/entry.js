@@ -63,6 +63,7 @@ export default class Entry extends PureComponent {
         initializeModules: PropTypes.func,
         actions: PropTypes.shape({
             autoUpdateTimezone: PropTypes.func.isRequired,
+            setDeviceToken: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -108,6 +109,7 @@ export default class Entry extends PureComponent {
         const {
             actions: {
                 autoUpdateTimezone,
+                setDeviceToken,
             },
             enableTimezone,
             deviceTimezone,
@@ -134,6 +136,10 @@ export default class Entry extends PureComponent {
 
             if (currentUserId) {
                 Client4.setUserId(currentUserId);
+            }
+
+            if (app.deviceToken) {
+                setDeviceToken(app.deviceToken);
             }
 
             this.setStartupThemes();
