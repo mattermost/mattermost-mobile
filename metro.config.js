@@ -33,13 +33,10 @@ const config = {
                     moduleMap[resolve(realPath)] = true;
                 }
             });
+
             return {
                 preloadedModules: moduleMap,
-                transform: {
-                    inlineRequires: {
-                        blacklist: moduleMap,
-                    },
-                },
+                transform: {},
             };
         },
     },
