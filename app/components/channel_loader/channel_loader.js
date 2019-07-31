@@ -13,6 +13,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 function calculateMaxRows(height) {
     return Math.round(height / 100);
@@ -29,6 +30,7 @@ export default class ChannelLoader extends PureComponent {
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         height: PropTypes.number,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
@@ -120,6 +122,7 @@ export default class ChannelLoader extends PureComponent {
             channelIsLoading,
             style: styleProp,
             theme,
+            isLandscape,
         } = this.props;
 
         if (!channelIsLoading) {
@@ -131,7 +134,7 @@ export default class ChannelLoader extends PureComponent {
 
         return (
             <View
-                style={[style.container, styleProp, {backgroundColor: bg}]}
+                style={[style.container, styleProp, padding(isLandscape), {backgroundColor: bg}]}
                 onLayout={this.handleLayout}
             >
                 {Array(this.state.maxRows).fill().map((item, index) => this.buildSections({

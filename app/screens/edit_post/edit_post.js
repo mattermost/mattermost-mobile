@@ -15,6 +15,7 @@ import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -32,6 +33,7 @@ export default class EditPost extends PureComponent {
         editPostRequest: PropTypes.object.isRequired,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -146,7 +148,7 @@ export default class EditPost extends PureComponent {
     };
 
     render() {
-        const {deviceHeight, deviceWidth, theme} = this.props;
+        const {deviceHeight, deviceWidth, theme, isLandscape} = this.props;
         const {editing, message, error} = this.state;
 
         const style = getStyleSheet(theme);
@@ -178,7 +180,7 @@ export default class EditPost extends PureComponent {
                 <StatusBar/>
                 <View style={style.scrollView}>
                     {displayError}
-                    <View style={[style.inputContainer, {height}]}>
+                    <View style={[style.inputContainer, padding(isLandscape), {height}]}>
                         <TextInputWithLocalizedPlaceholder
                             ref={this.messageRef}
                             value={message}

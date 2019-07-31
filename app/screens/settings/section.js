@@ -46,7 +46,7 @@ function section(props) {
                     id={footerId}
                     defaultMessage={footerDefaultMessage}
                     values={footerValues}
-                    style={[style.footer, margin]}
+                    style={[style.footer, margin(isLandscape)]}
                 />
             }
         </View>

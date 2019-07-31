@@ -12,7 +12,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 
@@ -82,7 +82,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 <FormattedText
                     id='user.settings.push_notification.disabled_long'
                     defaultMessage='Push notifications for mobile devices have been disabled by your System Administrator.'
-                    style={style.disabled}
+                    style={[style.disabled, padding(isLandscape)]}
                 />
                 }
             </Section>

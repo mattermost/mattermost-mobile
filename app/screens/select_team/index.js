@@ -10,6 +10,7 @@ import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 
 import {resetToChannel, dismissModal} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
+import {isLandscape} from 'app/selectors/device';
 
 import SelectTeam from './select_team.js';
 
@@ -17,6 +18,7 @@ function mapStateToProps(state) {
     return {
         teamsRequest: state.requests.teams.getTeams,
         teams: getJoinableTeams(state),
+        isLandscape: isLandscape(state),
     };
 }
 

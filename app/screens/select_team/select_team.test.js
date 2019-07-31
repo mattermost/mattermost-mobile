@@ -44,6 +44,7 @@ describe('SelectTeam', () => {
             status: RequestStatus.FAILURE,
         },
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot for fail of teams', async () => {

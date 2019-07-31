@@ -31,6 +31,7 @@ import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGH
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {RNTextInputReset} = NativeModules;
 
@@ -71,6 +72,7 @@ export default class PostTextBoxBase extends PureComponent {
         onCloseChannel: PropTypes.func,
         cursorPositionEvent: PropTypes.string,
         valueEvent: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -592,7 +594,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     renderTextBox = () => {
         const {intl} = this.context;
-        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme} = this.props;
+        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
 
         if (channelIsArchived) {
@@ -605,7 +607,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         return (
             <View
-                style={style.inputWrapper}
+                style={[style.inputWrapper, padding(isLandscape)]}
                 onLayout={this.handleLayout}
             >
                 {this.getAttachmentButton()}
