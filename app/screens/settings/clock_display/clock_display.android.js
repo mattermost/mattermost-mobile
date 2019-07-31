@@ -19,7 +19,7 @@ import ClockDisplayBase from './clock_display_base';
 export default class ClockDisplay extends ClockDisplayBase {
     static propTypes = {
         showModal: PropTypes.bool.isRequired,
-        militaryTime: PropTypes.bool.isRequired,
+        militaryTime: PropTypes.string.isRequired,
         onClose: PropTypes.func.isRequired,
     };
 

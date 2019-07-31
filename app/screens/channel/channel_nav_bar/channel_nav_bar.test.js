@@ -8,31 +8,22 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import {DeviceTypes} from 'app/constants';
 
-import MainSidebar from './main_sidebar';
+import ChannelNavBar from './channel_nav_bar';
 
 jest.mock('react-intl');
 
-describe('MainSidebar', () => {
+describe('ChannelNavBar', () => {
     const baseProps = {
-        actions: {
-            getTeams: jest.fn(),
-            logChannelSwitch: jest.fn(),
-            makeDirectChannel: jest.fn(),
-            setChannelDisplayName: jest.fn(),
-            setChannelLoading: jest.fn(),
-        },
-        blurPostTextBox: jest.fn(),
-        currentTeamId: 'current-team-id',
-        currentUserId: 'current-user-id',
-        deviceWidth: 10,
         isLandscape: false,
-        teamsCount: 2,
+        openChannelDrawer: jest.fn(),
+        openSettingsDrawer: jest.fn(),
+        onPress: jest.fn(),
         theme: Preferences.THEMES.default,
     };
 
     test('should match, full snapshot', () => {
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <ChannelNavBar {...baseProps}/>
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -40,7 +31,7 @@ describe('MainSidebar', () => {
 
     test('should not set the permanentSidebar state if not Tablet', () => {
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <ChannelNavBar {...baseProps}/>
         );
 
         wrapper.instance().handlePermanentSidebar();
@@ -49,7 +40,7 @@ describe('MainSidebar', () => {
 
     test('should set the permanentSidebar state if Tablet', async () => {
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <ChannelNavBar {...baseProps}/>
         );
 
         DeviceTypes.IS_TABLET = true;
