@@ -9,12 +9,12 @@ import {
     Text,
     TouchableHighlight,
     View,
-    SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 function createTouchableComponent(children, action) {
     return (
@@ -25,7 +25,7 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, textColor, textId, togglable, theme, shouldRender} = props;
+    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -53,28 +53,26 @@ function channelInfoRow(props) {
     }
 
     const RowComponent = (
-        <SafeAreaView>
-            <View style={style.container}>
-                {iconElement}
-                <FormattedText
-                    style={[style.label, {color: textColor || theme.centerChannelColor}]}
-                    id={textId}
-                    defaultMessage={defaultMessage}
+        <View style={[style.container, padding(isLandscape)]}>
+            {iconElement}
+            <FormattedText
+                style={[style.label, {color: textColor || theme.centerChannelColor}]}
+                id={textId}
+                defaultMessage={defaultMessage}
+            />
+            <Text style={style.detail}>{detail}</Text>
+            {togglable ?
+                <Switch
+                    onValueChange={action}
+                    value={detail}
+                /> :
+                <Icon
+                    name='angle-right'
+                    size={20}
+                    style={style.rightIcon}
                 />
-                <Text style={style.detail}>{detail}</Text>
-                {togglable ?
-                    <Switch
-                        onValueChange={action}
-                        value={detail}
-                    /> :
-                    <Icon
-                        name='angle-right'
-                        size={20}
-                        style={style.rightIcon}
-                    />
-                }
-            </View>
-        </SafeAreaView>
+            }
+        </View>
     );
 
     if (togglable) {

@@ -71,11 +71,11 @@ export default class PostOption extends PureComponent {
         });
 
         return (
-            <View style={[style.container, padding(isLandscape)]} >
+            <View style={style.container} >
                 <Touchable
                     onPress={this.handleOnPress}
                     {...touchableProps}
-                    style={style.row}
+                    style={[style.row, padding(isLandscape)]}
                 >
                     <View style={style.row}>
                         <View style={style.icon}>
