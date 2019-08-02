@@ -12,6 +12,7 @@ import {setDeepLinkURL} from 'app/actions/views/root';
 import initialState from 'app/initial_state';
 import {getAppCredentials} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
+import 'app/init/device';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
