@@ -366,6 +366,7 @@ export default class ChannelAddMembers extends PureComponent {
                     onRowPress={this.handleSelectProfile}
                     renderItem={this.renderItem}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             </KeyboardLayout>
         );

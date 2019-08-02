@@ -7,7 +7,7 @@ import {FlatList, Keyboard, Platform, SectionList, Text, View} from 'react-nativ
 
 import {ListTypes} from 'app/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export const FLATLIST = 'flat';
 export const SECTIONLIST = 'section';

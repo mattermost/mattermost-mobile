@@ -7,7 +7,6 @@ import {intlShape} from 'react-intl';
 import {
     Keyboard,
     FlatList,
-    SafeAreaView,
     StyleSheet,
     View,
 } from 'react-native';
@@ -225,12 +224,10 @@ export default class RecentMentions extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.container}>
-                <View style={style.container}>
-                    <StatusBar/>
-                    {component}
-                </View>
-            </SafeAreaView>
+            <View style={style.container}>
+                <StatusBar/>
+                {component}
+            </View>
         );
     }
 }
