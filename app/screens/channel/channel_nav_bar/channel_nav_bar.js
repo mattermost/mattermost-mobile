@@ -4,6 +4,9 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Dimensions, Platform, View} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
@@ -38,12 +41,15 @@ export default class ChannelNavBar extends PureComponent {
     componentDidMount() {
         this.mounted = true;
         this.handleDimensions();
+        this.handlePermanentSidebar();
         Dimensions.addEventListener('change', this.handleDimensions);
+        EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
     }
 
     componentWillUnmount() {
         this.mounted = false;
         Dimensions.removeEventListener('change', this.handleDimensions);
+        EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
     }
 
     handleDimensions = () => {
@@ -51,6 +57,14 @@ export default class ChannelNavBar extends PureComponent {
             mattermostManaged.isRunningInSplitView().then((result) => {
                 const isSplitView = Boolean(result.isSplitView);
                 this.setState({isSplitView});
+            });
+        }
+    };
+
+    handlePermanentSidebar = () => {
+        if (DeviceTypes.IS_TABLET && this.mounted) {
+            AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS).then((enabled) => {
+                this.setState({permanentSidebar: enabled === 'true'});
             });
         }
     };
@@ -84,7 +98,7 @@ export default class ChannelNavBar extends PureComponent {
         }
 
         let drawerButtonVisible = false;
-        if (!DeviceTypes.IS_TABLET || this.state.isSplitView) {
+        if (!DeviceTypes.IS_TABLET || this.state.isSplitView || !this.state.permanentSidebar) {
             drawerButtonVisible = true;
         }
 
