@@ -25,7 +25,6 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
     visible={true}
   />
   <Connect(ChannelTitle)
-    canHaveSubtitle={true}
     onPress={[MockFunction]}
   />
   <Connect(ChannelSearchButton)
