@@ -8,6 +8,7 @@
 
 #import "Mattermost+RCTUITextView.h"
 #import "RCTUITextView.h"
+#import "RCTMultilineTextInputView.h"
 
 @implementation Mattermost_RCTUITextView
 
@@ -36,6 +37,44 @@
   }
   
   return [super canPerformAction:action withSender:sender];
+}
+
+-(void)paste:(id)sender {
+  [super paste:sender];
+  
+  UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+  if (!pasteboard.hasImages) {
+    return;
+  }
+  
+  NSString *uri = pasteboard.string;
+  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF BEGINSWITH 'public'"];
+  NSString *mimeType = [[pasteboard.pasteboardTypes filteredArrayUsingPredicate:predicate] firstObject];
+  
+  NSData *imageData;
+  if ([mimeType isEqualToString:@"public.jpeg"]) {
+    imageData = UIImageJPEGRepresentation(pasteboard.image, 1.0);
+  } else {
+    imageData = UIImagePNGRepresentation(pasteboard.image);
+  }
+  
+  NSString *tempFilename = [[NSProcessInfo processInfo] globallyUniqueString];
+  NSURL *tempFileURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:tempFilename]];
+  BOOL success = [imageData writeToURL:tempFileURL atomically:YES];
+  
+  if (success) {
+    uri = tempFileURL.absoluteString;
+  }
+  
+  RCTMultilineTextInputView* textInputView = [self valueForKey:@"textInputDelegate"];
+  NSString* reactTag = [textInputView valueForKey:@"reactTag"];
+  RCTDirectEventBlock onChange = textInputView.onChange;
+  onChange(@{
+             @"type": mimeType,
+             @"uri": uri,
+             @"text": self.attributedText.string,
+             @"target": reactTag,
+             });
 }
 
 @end

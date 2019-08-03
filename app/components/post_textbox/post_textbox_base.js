@@ -590,6 +590,11 @@ export default class PostTextBoxBase extends PureComponent {
         );
     }
 
+    onChange = (event) => {
+        const {nativeEvent} = event;
+        console.log(nativeEvent);
+    }
+
     renderTextBox = () => {
         const {intl} = this.context;
         const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme} = this.props;
@@ -625,6 +630,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
                         editable={!channelIsReadOnly}
+                        onChange={this.onChange}
                     />
                     <Fade visible={this.isSendButtonVisible()}>
                         <SendButton
