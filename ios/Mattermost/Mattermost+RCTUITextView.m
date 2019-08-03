@@ -8,6 +8,7 @@
 
 #import "Mattermost+RCTUITextView.h"
 #import "RCTUITextView.h"
+#import <React/RCTUtils.h>
 #import "RCTMultilineTextInputView.h"
 
 @implementation Mattermost_RCTUITextView
@@ -47,6 +48,7 @@
     return;
   }
   
+  UIImage *image = pasteboard.image;
   NSString *uri = pasteboard.string;
   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF BEGINSWITH 'public'"];
   NSString *mimeType = [[pasteboard.pasteboardTypes filteredArrayUsingPredicate:predicate] firstObject];
@@ -66,10 +68,22 @@
     uri = tempFileURL.absoluteString;
   }
   
+  BOOL vertical = (image.size.width < image.size.height) ? YES : NO;
+  
+  NSISO8601DateFormatter *dateFormatter = [[NSISO8601DateFormatter alloc] init];
+  NSString *timestamp = [dateFormatter stringFromDate:[NSDate date]];
+  
   RCTMultilineTextInputView* textInputView = [self valueForKey:@"textInputDelegate"];
   NSString* reactTag = [textInputView valueForKey:@"reactTag"];
   RCTDirectEventBlock onChange = textInputView.onChange;
   onChange(@{
+             @"file": tempFilename,
+             @"fileSize": @([imageData length]),
+             @"height": @(image.size.height),
+             @"width": @(image.size.width),
+             @"isVertical": @(vertical),
+             @"origURL": uri,
+             @"timestamp": timestamp,
              @"type": mimeType,
              @"uri": uri,
              @"text": self.attributedText.string,
