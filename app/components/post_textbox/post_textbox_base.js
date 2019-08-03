@@ -591,6 +591,11 @@ export default class PostTextBoxBase extends PureComponent {
     }
 
     handlePasteImage = (image) => {
+        const {maxFileSize} = this.props;
+        if (image.fileSize > maxFileSize) {
+            this.onShowFileSizeWarning();
+            return;
+        }
         this.handleUploadFiles([image]);
     }
 

@@ -42,7 +42,7 @@
   NSString *timestamp = [dateFormatter stringFromDate:[NSDate date]];
   
   return @{
-           @"file": tempFilename,
+           @"fileName": tempFilename,
            @"fileSize": @([imageData length]),
            @"height": @(image.size.height),
            @"width": @(image.size.width),
