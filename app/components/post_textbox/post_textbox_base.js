@@ -527,7 +527,7 @@ export default class PostTextBoxBase extends PureComponent {
         const {formatMessage} = this.context.intl;
         const fileSizeWarning = formatMessage({
             id: 'file_upload.fileAbove',
-            defaultMessage: 'File above {max}MB cannot be uploaded: {filename}',
+            defaultMessage: 'File above {max} cannot be uploaded: {filename}',
         }, {
             max: getFormattedFileSize({size: this.props.maxFileSize}),
             filename,
@@ -593,7 +593,7 @@ export default class PostTextBoxBase extends PureComponent {
     handlePasteImage = (image) => {
         const {maxFileSize} = this.props;
         if (image.fileSize > maxFileSize) {
-            this.onShowFileSizeWarning();
+            this.onShowFileSizeWarning(image.fileName);
             return;
         }
         this.handleUploadFiles([image]);
