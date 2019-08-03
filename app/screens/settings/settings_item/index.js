@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text, TouchableOpacity, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {paddingRight, paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import VectorIcon from 'app/components/vector_icon.js';
 
@@ -115,14 +115,14 @@ export default class SettingsItem extends PureComponent {
             <TouchableOpacity
                 onPress={onPress}
             >
-                <View style={[style.container, padding(isLandscape)]}>
+                <View style={[style.container, paddingLeft(isLandscape)]}>
                     {icon &&
                     <View style={style.iconContainer}>
                         {icon}
                     </View>
                     }
                     <View style={style.wrapper}>
-                        <View style={style.labelContainer}>
+                        <View style={[style.labelContainer, paddingRight(isLandscape)]}>
                             {this.renderText()}
                             {Boolean(additionalComponent) &&
                             <View style={style.arrowContainer}>
