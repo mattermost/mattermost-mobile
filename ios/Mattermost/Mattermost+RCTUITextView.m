@@ -54,13 +54,16 @@
   NSString *mimeType = [[pasteboard.pasteboardTypes filteredArrayUsingPredicate:predicate] firstObject];
   
   NSData *imageData;
+  NSString *extension;
   if ([mimeType isEqualToString:@"public.jpeg"]) {
     imageData = UIImageJPEGRepresentation(pasteboard.image, 1.0);
+    extension = @".jpg";
   } else {
     imageData = UIImagePNGRepresentation(pasteboard.image);
+    extension = @".png";
   }
   
-  NSString *tempFilename = [[NSProcessInfo processInfo] globallyUniqueString];
+  NSString *tempFilename = [NSString stringWithFormat:@"%@%@", [[NSProcessInfo processInfo] globallyUniqueString], extension];
   NSURL *tempFileURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:tempFilename]];
   BOOL success = [imageData writeToURL:tempFileURL atomically:YES];
   

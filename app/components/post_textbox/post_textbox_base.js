@@ -12,7 +12,6 @@ import {
     NativeModules,
     Platform,
     Text,
-    TextInput,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
@@ -26,6 +25,7 @@ import Fade from 'app/components/fade';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
 import SendButton from 'app/components/send_button';
+import PasteableTextInput from 'app/components/pasteable_text_input';
 
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {t} from 'app/utils/i18n';
@@ -590,9 +590,8 @@ export default class PostTextBoxBase extends PureComponent {
         );
     }
 
-    onChange = (event) => {
-        const {nativeEvent} = event;
-        console.log(nativeEvent);
+    handlePasteImage = (image) => {
+        this.handleUploadFiles([image]);
     }
 
     renderTextBox = () => {
@@ -615,7 +614,7 @@ export default class PostTextBoxBase extends PureComponent {
             >
                 {this.getAttachmentButton()}
                 <View style={this.getInputContainerStyle()}>
-                    <TextInput
+                    <PasteableTextInput
                         ref={this.input}
                         value={textValue}
                         onChangeText={this.handleTextChange}
@@ -630,7 +629,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
                         editable={!channelIsReadOnly}
-                        onChange={this.onChange}
+                        onPaste={this.handlePasteImage}
                     />
                     <Fade visible={this.isSendButtonVisible()}>
                         <SendButton
