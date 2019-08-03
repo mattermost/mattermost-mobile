@@ -92,6 +92,9 @@
              @"text": self.attributedText.string,
              @"target": reactTag,
              });
+  
+  // Dismiss contextual menu
+  [self resignFirstResponder];
 }
 
 @end
