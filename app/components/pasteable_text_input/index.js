@@ -6,9 +6,10 @@ import {TextInput} from 'react-native';
 class PasteableTextInput extends React.Component {
     onChange = (event) => {
         const {nativeEvent} = event;
+        const {image} = nativeEvent;
         const {onPaste, onChange} = this.props;
-        if (nativeEvent.type) {
-            return onPaste?.(nativeEvent);
+        if (image) {
+            return onPaste?.(image);
         }
 
         return onChange?.(event);
