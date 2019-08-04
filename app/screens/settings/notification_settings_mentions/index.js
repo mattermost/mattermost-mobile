@@ -22,7 +22,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             goToScreen,
         }, dispatch),
-
     };
 }
 

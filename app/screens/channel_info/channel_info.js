@@ -64,7 +64,6 @@ export default class ChannelInfo extends PureComponent {
         ignoreChannelMentions: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-
     };
 
     static contextTypes = {
