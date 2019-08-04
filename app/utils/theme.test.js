@@ -8,7 +8,7 @@ describe('getHighlightStyleFromTheme', () => {
     const themes = [{
         codeTheme: 'github',
     }, {
-        codeTheme: 'a11y-light',
+        codeTheme: 'atom-one-light',
     }, {
         codeTheme: 'androidstudio',
     }, {
@@ -21,10 +21,10 @@ describe('getHighlightStyleFromTheme', () => {
         expect(theme).toBe(HighlightStyles.github);
     });
 
-    it('should return a11yLight style for codeTheme="a11y-light" (snake-case to camelCase)', () => {
+    it('should return a11yLight style for codeTheme="atom-one-light" (snake-case to camelCase)', () => {
         const theme = getHighlightStyleFromTheme(themes[1]);
         expect(theme).toBeTruthy();
-        expect(theme).toBe(HighlightStyles.a11yLight);
+        expect(theme).toBe(HighlightStyles.atomOneLight);
     });
 
     it('should return androidstudio style for codeTheme="androidstudio" (no case conversion)', () => {
