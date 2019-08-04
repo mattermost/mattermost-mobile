@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    Dimensions,
     Keyboard,
     StyleSheet,
     View,
@@ -263,6 +264,7 @@ export default class ChannelBase extends PureComponent {
         const {channelsRequestFailed} = this.state;
 
         if (!currentChannelId) {
+            const dimensions = Dimensions.get('window');
             if (channelsRequestFailed) {
                 const FailedNetworkAction = require('app/components/failed_network_action').default;
 
@@ -271,7 +273,7 @@ export default class ChannelBase extends PureComponent {
                         <View style={style.flex}>
                             <EmptyToolbar
                                 theme={theme}
-                                isLandscape={isLandscape}
+                                isLandscape={dimensions.width > dimensions.height}
                             />
                             <FailedNetworkAction
                                 onRetry={this.retryLoadChannels}
@@ -288,6 +290,7 @@ export default class ChannelBase extends PureComponent {
                     <View style={style.flex}>
                         <EmptyToolbar theme={theme}/>
                         <ChannelLoader
+                            isLandscape={dimensions.width > dimensions.height}
                             channelIsLoading={true}
                             theme={theme}
                         />
