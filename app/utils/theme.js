@@ -48,12 +48,9 @@ export function isThemeSwitchingEnabled(state) {
 import * as HighlightStyles from 'react-syntax-highlighter/styles/hljs';
 
 const snakeCaseToCamelCase = (str) => str.replace(
-    /([-_][a-z])/g, 
-    (group) => group.toUpperCase()
-        .replace('-', '')
-        .replace('_', '')
+    /([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', '')
 );
 
-export function getHighlightStyleFromTheme(theme) { 
-    return HighlightStyles[snakeCaseToCamelCase(theme.codeTheme)] || HighlightStyles.github 
-};
+export function getHighlightStyleFromTheme(theme) {
+    return HighlightStyles[snakeCaseToCamelCase(theme.codeTheme)] || HighlightStyles.github;
+}

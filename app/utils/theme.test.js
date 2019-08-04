@@ -11,7 +11,7 @@ describe('getHighlightStyleFromTheme', () => {
         codeTheme: 'a11y-light',
     }, {
         codeTheme: 'androidstudio',
-    },{
+    }, {
         codeTheme: 'invalid_theme',
     }];
 

@@ -6,7 +6,6 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     Clipboard,
-    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -18,9 +17,8 @@ import SyntaxHighlighter from 'react-native-syntax-highlighter';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';
 import BottomSheet from 'app/utils/bottom_sheet';
-import {getDisplayNameForLanguage} from 'app/utils/markdown';
+import {getDisplayNameForLanguage, getCodeFont} from 'app/utils/markdown';
 import {preventDoubleTap} from 'app/utils/tap';
-import {getCodeFont} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getHighlightStyleFromTheme} from 'app/utils/theme';
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -46,12 +44,13 @@ export default class MarkdownCodeBlock extends React.PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {actions, language, content} = this.props;
+        const {actions, language, content, textStyle} = this.props;
         const {intl} = this.context;
         const screen = 'Code';
         const passProps = {
             content,
             language,
+            textStyle,
         };
 
         const languageDisplayName = getDisplayNameForLanguage(language);
@@ -170,16 +169,14 @@ export default class MarkdownCodeBlock extends React.PureComponent {
                     </View>
                     <View style={style.rightColumn}>
                         <View style={style.code}>
-                            {/*<Text style={[style.codeText, this.props.textStyle]}>*/}
-                                <SyntaxHighlighter 
-                                    language={this.props.language}
-                                    style={getHighlightStyleFromTheme(this.props.theme)}
-                                    highlighter={"hljs"}
-                                    customStyle={{...style.codeText, ...this.props.textStyle}}
-                                >
-                                    {content}
-                                </SyntaxHighlighter>
-                            {/*</Text>*/}
+                            <SyntaxHighlighter
+                                language={this.props.language}
+                                style={getHighlightStyleFromTheme(this.props.theme)}
+                                highlighter={'hljs'}
+                                customStyle={{...style.codeText, ...this.props.textStyle}}
+                            >
+                                {content}
+                            </SyntaxHighlighter>
                         </View>
                         {plusMoreLines}
                     </View>

@@ -15,6 +15,7 @@ import {
 
 import SyntaxHighlighter from 'react-native-syntax-highlighter';
 
+import CustomPropTypes from 'app/constants/custom_prop_types';
 import {getCodeFont} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles, getHighlightStyleFromTheme} from 'app/utils/theme';
 
@@ -26,6 +27,8 @@ export default class Code extends React.PureComponent {
         componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,
+        language: PropTypes.string,
+        textStyle: CustomPropTypes.Style,
     };
 
     componentDidMount() {
@@ -72,26 +75,25 @@ export default class Code extends React.PureComponent {
         let textComponent;
         if (Platform.OS === 'ios') {
             textComponent = (
-                <SyntaxHighlighter 
+                <SyntaxHighlighter
                     language={this.props.language}
                     style={getHighlightStyleFromTheme(this.props.theme)}
                     highlighter={'hljs'}
-                    customStyle={style.codeText}
                     CodeTag={TextInput}
-                    codeTagProps={{editable: false, multiline: true, style: style.codeText}}
+                    codeTagProps={{editable: false, multiline: true, style: {...style.codeText, ...this.props.textStyle}}}
                 >
                     {this.props.content}
                 </SyntaxHighlighter>
             );
         } else {
             textComponent = (
-                <SyntaxHighlighter 
+                <SyntaxHighlighter
                     language={this.props.language}
                     style={getHighlightStyleFromTheme(this.props.theme)}
                     highlighter={'hljs'}
-                    customStyle={style.codeText}
+                    customStyle={{...style.codeText, ...this.props.textStyle}}
                     CodeTag={Text}
-                    codeTagProps={{selectable: true, style: style.codeText}}
+                    codeTagProps={{selectable: true, style: {...style.codeText, ...this.props.textStyle}}}
                 >
                     {this.props.content}
                 </SyntaxHighlighter>
@@ -163,10 +165,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 18,
             ...Platform.select({
                 android: {
-                    paddingVertical: 2.5,
+                    paddingVertical: 2,
                 },
                 ios: {
-                    top: -6,
+                    top: -10,
                 },
             }),
         },
