@@ -21,7 +21,7 @@ describe('getHighlightStyleFromTheme', () => {
         expect(theme).toBe(HighlightStyles.github);
     });
 
-    it('should return a11yLight style for codeTheme="atom-one-light" (snake-case to camelCase)', () => {
+    it('should return atomOneLight style for codeTheme="atom-one-light" (snake-case to camelCase)', () => {
         const theme = getHighlightStyleFromTheme(themes[1]);
         expect(theme).toBeTruthy();
         expect(theme).toBe(HighlightStyles.atomOneLight);
