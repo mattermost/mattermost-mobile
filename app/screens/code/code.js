@@ -13,8 +13,10 @@ import {
     View,
 } from 'react-native';
 
+import SyntaxHighlighter from 'react-native-syntax-highlighter';
+
 import {getCodeFont} from 'app/utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles, getHighlightStyleFromTheme} from 'app/utils/theme';
 
 export default class Code extends React.PureComponent {
     static propTypes = {
@@ -70,21 +72,29 @@ export default class Code extends React.PureComponent {
         let textComponent;
         if (Platform.OS === 'ios') {
             textComponent = (
-                <TextInput
-                    editable={false}
-                    multiline={true}
-                    value={this.props.content}
-                    style={[style.codeText]}
-                />
+                <SyntaxHighlighter 
+                    language={this.props.language}
+                    style={getHighlightStyleFromTheme(this.props.theme)}
+                    highlighter={'hljs'}
+                    customStyle={style.codeText}
+                    CodeTag={TextInput}
+                    codeTagProps={{editable: false, multiline: true, style: style.codeText}}
+                >
+                    {this.props.content}
+                </SyntaxHighlighter>
             );
         } else {
             textComponent = (
-                <Text
-                    selectable={true}
-                    style={style.codeText}
+                <SyntaxHighlighter 
+                    language={this.props.language}
+                    style={getHighlightStyleFromTheme(this.props.theme)}
+                    highlighter={'hljs'}
+                    customStyle={style.codeText}
+                    CodeTag={Text}
+                    codeTagProps={{selectable: true, style: style.codeText}}
                 >
                     {this.props.content}
-                </Text>
+                </SyntaxHighlighter>
             );
         }
 
@@ -141,17 +151,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexGrow: 0,
             flexShrink: 1,
             width: '100%',
+            backgroundColor: getHighlightStyleFromTheme(theme).hljs.background,
         },
         code: {
             paddingHorizontal: 6,
-            ...Platform.select({
-                android: {
-                    paddingVertical: 4,
-                },
-                ios: {
-                    top: -4,
-                },
-            }),
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
@@ -159,9 +162,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 12,
             lineHeight: 18,
             ...Platform.select({
+                android: {
+                    paddingVertical: 2.5,
+                },
                 ios: {
-                    margin: 0,
-                    padding: 0,
+                    top: -6,
                 },
             }),
         },

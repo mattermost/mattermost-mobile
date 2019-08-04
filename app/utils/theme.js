@@ -6,6 +6,7 @@ import {Navigation} from 'react-native-navigation';
 
 import * as ThemeUtils from 'mattermost-redux/utils/theme_utils';
 
+
 export function makeStyleSheetFromTheme(getStyleFromTheme) {
     return ThemeUtils.makeStyleFromTheme((theme) => {
         return StyleSheet.create(getStyleFromTheme(theme));
@@ -42,3 +43,18 @@ export function isThemeSwitchingEnabled(state) {
     const {config} = state.entities.general;
     return config.EnableThemeSelection === 'true';
 }
+
+// getHighlightStyleFromTheme
+
+import * as HighlightStyles from 'react-syntax-highlighter/styles/hljs';
+
+const snakeCaseToCamelCase = (str) => str.replace(
+    /([-_][a-z])/g, 
+    (group) => group.toUpperCase()
+        .replace('-', '')
+        .replace('_', '')
+);
+
+export function getHighlightStyleFromTheme(theme) { 
+    return HighlightStyles[snakeCaseToCamelCase(theme.codeTheme)] || HighlightStyles.github 
+};

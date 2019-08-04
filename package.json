@@ -55,6 +55,7 @@
     "react-native-slider": "0.11.0",
     "react-native-status-bar-size": "0.3.3",
     "react-native-svg": "9.4.0",
+    "react-native-syntax-highlighter": "2.0.1",
     "react-native-vector-icons": "6.4.2",
     "react-native-video": "4.4.1",
     "react-native-webview": "github:mattermost/react-native-webview#34e1dbef70413134ddda85df863c962f24b8826e",
