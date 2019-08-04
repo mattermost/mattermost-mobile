@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "ClipboardManager.h"
+#import "NSData+MimeType.h"
 
 @implementation ClipboardManager
 
@@ -15,18 +16,18 @@
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   UIImage *image = pasteboard.image;
   NSString *uri = pasteboard.string;
-  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF BEGINSWITH 'public'"];
-  NSString *mimeType = [[pasteboard.pasteboardTypes filteredArrayUsingPredicate:predicate] firstObject];
+  NSArray<NSString *> *types = pasteboard.pasteboardTypes;
   
   NSData *imageData;
-  NSString *extension;
-  if ([mimeType isEqualToString:@"public.jpeg"]) {
-    imageData = UIImageJPEGRepresentation(pasteboard.image, 1.0);
-    extension = @".jpg";
+  if ([types[0] isEqual:@"public.jpeg"]) {
+    imageData = UIImageJPEGRepresentation(image, 1.0);
+  } else if ([types[0] isEqual:@"public.png"]) {
+    imageData = UIImagePNGRepresentation(image);
   } else {
-    imageData = UIImagePNGRepresentation(pasteboard.image);
-    extension = @".png";
+    imageData = [pasteboard dataForPasteboardType:types[0]];
   }
+  NSString *extension = [imageData extension];
+  NSString *mimeType = [imageData mimeType];
   
   NSString *tempFilename = [NSString stringWithFormat:@"%@%@", [[NSProcessInfo processInfo] globallyUniqueString], extension];
   NSURL *tempFileURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:tempFilename]];
