@@ -11,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import {General, WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -79,9 +80,11 @@ export default class ChannelSidebar extends Component {
         this.mounted = true;
         this.props.actions.getTeams();
         this.handleDimensions();
+        this.handlePermanentSidebar();
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.on('renderDrawer', this.handleShowDrawerContent);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
+        EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         Dimensions.addEventListener('change', this.handleDimensions);
     }
@@ -103,7 +106,7 @@ export default class ChannelSidebar extends Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const {currentTeamId, deviceWidth, isLandscape, teamsCount} = this.props;
-        const {openDrawerOffset, isSplitView, show, searching} = this.state;
+        const {openDrawerOffset, isSplitView, permanentSidebar, show, searching} = this.state;
 
         if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching) {
             return true;
@@ -112,7 +115,8 @@ export default class ChannelSidebar extends Component {
         return nextProps.currentTeamId !== currentTeamId ||
             nextProps.isLandscape !== isLandscape || nextProps.deviceWidth !== deviceWidth ||
             nextProps.teamsCount !== teamsCount ||
-            nextState.isSplitView !== isSplitView;
+            nextState.isSplitView !== isSplitView ||
+            nextState.permanentSidebar !== permanentSidebar;
     }
 
     componentWillUnmount() {
@@ -120,6 +124,7 @@ export default class ChannelSidebar extends Component {
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         EventEmitter.off('renderDrawer', this.handleShowDrawerContent);
+        EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
         Dimensions.addEventListener('change', this.handleDimensions);
     }
@@ -139,6 +144,13 @@ export default class ChannelSidebar extends Component {
                 const isSplitView = Boolean(result.isSplitView);
                 this.setState({isSplitView});
             });
+        }
+    };
+
+    handlePermanentSidebar = async () => {
+        if (DeviceTypes.IS_TABLET && this.mounted) {
+            const enabled = await AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS);
+            this.setState({permanentSidebar: enabled === 'true'});
         }
     };
 
@@ -396,7 +408,7 @@ export default class ChannelSidebar extends Component {
     render() {
         const {children, deviceWidth} = this.props;
         const {openDrawerOffset} = this.state;
-        const isTablet = DeviceTypes.IS_TABLET && !this.state.isSplitView;
+        const isTablet = DeviceTypes.IS_TABLET && !this.state.isSplitView && this.state.permanentSidebar;
         const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
 
         return (
