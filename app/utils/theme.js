@@ -6,7 +6,6 @@ import {Navigation} from 'react-native-navigation';
 
 import * as ThemeUtils from 'mattermost-redux/utils/theme_utils';
 
-
 export function makeStyleSheetFromTheme(getStyleFromTheme) {
     return ThemeUtils.makeStyleFromTheme((theme) => {
         return StyleSheet.create(getStyleFromTheme(theme));

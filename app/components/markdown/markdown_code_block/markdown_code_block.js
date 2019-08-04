@@ -51,7 +51,7 @@ export default class MarkdownCodeBlock extends React.PureComponent {
         const screen = 'Code';
         const passProps = {
             content,
-            language
+            language,
         };
 
         const languageDisplayName = getDisplayNameForLanguage(language);
