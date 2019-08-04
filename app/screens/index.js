@@ -21,7 +21,6 @@ export function registerScreens(store) {
         );
     };
 
-    // TODO: Bring back the About screen and delete the test screen
     Navigation.registerComponent('About', () => wrapWithContextProvider(require('app/screens/about').default), () => require('app/screens/about').default);
     Navigation.registerComponent('AddReaction', () => wrapWithContextProvider(require('app/screens/add_reaction').default), () => require('app/screens/add_reaction').default);
     Navigation.registerComponent('AdvancedSettings', () => wrapWithContextProvider(require('app/screens/settings/advanced_settings').default), () => require('app/screens/settings/advanced_settings').default);
@@ -31,7 +30,7 @@ export function registerScreens(store) {
     Navigation.registerComponent('ChannelMembers', () => wrapWithContextProvider(require('app/screens/channel_members').default), () => require('app/screens/channel_members').default);
     Navigation.registerComponent('ChannelPeek', () => wrapWithContextProvider(require('app/screens/channel_peek').default), () => require('app/screens/channel_peek').default);
     Navigation.registerComponent('ClientUpgrade', () => wrapWithContextProvider(require('app/screens/client_upgrade').default), () => require('app/screens/client_upgrade').default);
-    Navigation.registerComponent('ClockDisplay', () => wrapWithContextProvider(require('app/screens/clock_display').default), () => require('app/screens/clock_display').default);
+    Navigation.registerComponent('ClockDisplaySettings', () => wrapWithContextProvider(require('app/screens/settings/clock_display').default), () => require('app/screens/settings/clock_display').default);
     Navigation.registerComponent('Code', () => wrapWithContextProvider(require('app/screens/code').default), () => require('app/screens/code').default);
     Navigation.registerComponent('CreateChannel', () => wrapWithContextProvider(require('app/screens/create_channel').default), () => require('app/screens/create_channel').default);
     Navigation.registerComponent('DisplaySettings', () => wrapWithContextProvider(require('app/screens/settings/display_settings').default), () => require('app/screens/settings/display_settings').default);
@@ -66,16 +65,17 @@ export function registerScreens(store) {
     Navigation.registerComponent('SelectorScreen', () => wrapWithContextProvider(require('app/screens/selector_screen').default), () => require('app/screens/selector_screen').default);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), () => SelectServer);
     Navigation.registerComponent('SelectTeam', () => wrapWithContextProvider(require('app/screens/select_team').default), () => require('app/screens/select_team').default);
-    Navigation.registerComponent('SelectTimezone', () => wrapWithContextProvider(require('app/screens/timezone/select_timezone').default), () => require('app/screens/timezone/select_timezone').default);
+    Navigation.registerComponent('SelectTimezone', () => wrapWithContextProvider(require('app/screens/settings/timezone/select_timezone').default), () => require('app/screens/settings/timezone/select_timezone').default);
     Navigation.registerComponent('Settings', () => wrapWithContextProvider(require('app/screens/settings/general').default), () => require('app/screens/settings/general').default);
+    Navigation.registerComponent('SidebarSettings', () => wrapWithContextProvider(require('app/screens/settings/sidebar').default), () => require('app/screens/settings/sidebar').default);
     Navigation.registerComponent('SSO', () => wrapWithContextProvider(require('app/screens/sso').default), () => require('app/screens/sso').default);
     Navigation.registerComponent('Table', () => wrapWithContextProvider(require('app/screens/table').default), () => require('app/screens/table').default);
     Navigation.registerComponent('TableImage', () => wrapWithContextProvider(require('app/screens/table_image').default), () => require('app/screens/table_image').default);
     Navigation.registerComponent('TermsOfService', () => wrapWithContextProvider(require('app/screens/terms_of_service').default), () => require('app/screens/terms_of_service').default);
     Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(require('app/screens/text_preview').default), () => require('app/screens/text_preview').default);
-    Navigation.registerComponent('ThemeSettings', () => wrapWithContextProvider(require('app/screens/theme').default), () => require('app/screens/theme').default);
+    Navigation.registerComponent('ThemeSettings', () => wrapWithContextProvider(require('app/screens/settings/theme').default), () => require('app/screens/settings/theme').default);
     Navigation.registerComponent('Thread', () => wrapWithContextProvider(require('app/screens/thread').default), () => require('app/screens/thread').default);
-    Navigation.registerComponent('TimezoneSettings', () => wrapWithContextProvider(require('app/screens/timezone').default), () => require('app/screens/timezone').default);
+    Navigation.registerComponent('TimezoneSettings', () => wrapWithContextProvider(require('app/screens/settings/timezone').default), () => require('app/screens/settings/timezone').default);
     Navigation.registerComponent('ErrorTeamsList', () => wrapWithContextProvider(require('app/screens/error_teams_list').default), () => require('app/screens/error_teams_list').default);
     Navigation.registerComponent('UserProfile', () => wrapWithContextProvider(require('app/screens/user_profile').default), () => require('app/screens/user_profile').default);
 }

@@ -714,6 +714,9 @@ lane :upload_file_to_s3 do |options|
     s3_bucket = ENV['AWS_BUCKET_NAME']
     s3_folder = ''
 
+    version_number = ''
+    build_number = ''
+
     if is_build_pr
       s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}"
     else
@@ -752,7 +755,23 @@ lane :upload_file_to_s3 do |options|
       })
     end
 
+    public_link = "https://#{s3_bucket}/#{s3_folder}/#{file}"
+    if file == 'Mattermost-simulator-x86_64.app.zip'
+      pretext = '#### New iOS build for VM/Simulator'
+      msg = "Download link: #{public_link}"
+      send_message_to_mattermost({
+                                   :version_number => version_number,
+                                   :build_number => build_number,
+                                   :pretext => pretext,
+                                   :title => '',
+                                   :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
+                                   :msg => msg,
+                                   :default_payloads => [],
+                                   :success => true,
+                               })
+    end
+
     UI.success("S3 bucket @#{s3_bucket}, object @#{s3_folder}/#{file}")
-    UI.success("S3 public path: https://#{s3_bucket}/#{s3_folder}/#{file}")
+    UI.success("S3 public path: #{public_link}")
   end
 end
