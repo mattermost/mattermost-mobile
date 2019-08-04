@@ -13,7 +13,6 @@
 #import "ClipboardManager.h"
 
 @implementation Mattermost_RCTUITextView
-
 @end
 
 @implementation RCTUITextView (DisableCopyPaste)
@@ -49,19 +48,21 @@
     return;
   }
   
-  NSDictionary *image = [ClipboardManager getCopiedImage];
-  
   RCTMultilineTextInputView* textInputView = [self valueForKey:@"textInputDelegate"];
-  NSString* reactTag = [textInputView valueForKey:@"reactTag"];
   RCTDirectEventBlock onChange = textInputView.onChange;
-  onChange(@{
-             @"image": image,
-             @"text": self.attributedText.string,
-             @"target": reactTag,
-             });
+  if (onChange) {
+    NSDictionary *image = [ClipboardManager getCopiedImage];
+    NSString* reactTag = [textInputView valueForKey:@"reactTag"];
+
+    onChange(@{
+               @"image": image,
+               @"text": self.attributedText.string,
+               @"target": reactTag,
+               });
   
-  // Dismiss contextual menu
-  [self resignFirstResponder];
+    // Dismiss contextual menu
+    [self resignFirstResponder];
+  }
 }
 
 @end
