@@ -5,6 +5,7 @@ import DeepLinkTypes from './deep_linking';
 import DeviceTypes from './device';
 import ListTypes from './list';
 import NavigationTypes from './navigation';
+import Posts from './posts';
 import PermissionTypes from './permissions';
 import ViewTypes, {UpgradeTypes} from './view';
 
@@ -14,7 +15,7 @@ import Preferences from './preferences';
 export {
     General,
     Preferences,
-
+    Posts,
     DeepLinkTypes,
     DeviceTypes,
     ListTypes,
