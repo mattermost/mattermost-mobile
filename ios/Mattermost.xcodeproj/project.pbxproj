@@ -105,6 +105,7 @@
 		895C9A56B94A45C1BAF568FE /* Entypo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AC6EB561E1F64C17A69D2FAD /* Entypo.ttf */; };
 		8D26455C994F46C39B1392F2 /* libRNSafeArea.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9263CF9B16054263B13EA23B /* libRNSafeArea.a */; };
 		92F9F0EA22F6C15B0035885A /* ClipboardManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 92F9F09C22F6C15B0035885A /* ClipboardManager.m */; };
+		9260D93322F83CA200F51A82 /* OnPasteEventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9260D93222F83CA200F51A82 /* OnPasteEventManager.m */; };
 		92F9F0ED22F702E10035885A /* NSData+MimeType.m in Sources */ = {isa = PBXBuildFile; fileRef = 92F9F0EC22F702E10035885A /* NSData+MimeType.m */; };
 		9358B95F95184EE0A4DCE629 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */; };
 		A08D512E7ADC40CCAD055A9E /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */; };
@@ -870,6 +871,8 @@
 		84E325FF229834C30055068A /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		8F0B22D2C9924FAFA7FB681C /* Roboto-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-LightItalic.ttf"; path = "../assets/fonts/Roboto-LightItalic.ttf"; sourceTree = "<group>"; };
 		920B7301B6F84DDD80677487 /* RNGestureHandler.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNGestureHandler.xcodeproj; path = "../node_modules/react-native-gesture-handler/ios/RNGestureHandler.xcodeproj"; sourceTree = "<group>"; };
+		9260D93122F83CA200F51A82 /* OnPasteEventManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = OnPasteEventManager.h; path = Mattermost/OnPasteEventManager.h; sourceTree = "<group>"; };
+		9260D93222F83CA200F51A82 /* OnPasteEventManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = OnPasteEventManager.m; path = Mattermost/OnPasteEventManager.m; sourceTree = "<group>"; };
 		9263CF9B16054263B13EA23B /* libRNSafeArea.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNSafeArea.a; sourceTree = "<group>"; };
 		92F9F09C22F6C15B0035885A /* ClipboardManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ClipboardManager.m; path = Mattermost/ClipboardManager.m; sourceTree = "<group>"; };
 		92F9F0E922F6C15B0035885A /* ClipboardManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ClipboardManager.h; path = Mattermost/ClipboardManager.h; sourceTree = "<group>"; };
@@ -1133,6 +1136,8 @@
 				7F292AA51E8ABB1100A450A3 /* splash.png */,
 				7F5BA34522B99B7B005B05D3 /* Mattermost+RCTUITextView.h */,
 				7F5BA34622B99B7B005B05D3 /* Mattermost+RCTUITextView.m */,
+				9260D93122F83CA200F51A82 /* OnPasteEventManager.h */,
+				9260D93222F83CA200F51A82 /* OnPasteEventManager.m */,
 				92F9F0EB22F702E10035885A /* NSData+MimeType.h */,
 				92F9F0EC22F702E10035885A /* NSData+MimeType.m */,
 			);
@@ -2653,6 +2658,7 @@
 				7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */,
 				7F240ACD220D460300637665 /* MattermostBucketModule.m in Sources */,
 				7F5BA34722B99B7B005B05D3 /* Mattermost+RCTUITextView.m in Sources */,
+				9260D93322F83CA200F51A82 /* OnPasteEventManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

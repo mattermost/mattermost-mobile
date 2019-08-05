@@ -2,7 +2,10 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import PropTypes from 'prop-types';
-import {TextInput} from 'react-native';
+import {TextInput, NativeEventEmitter, NativeModules} from 'react-native';
+
+const {OnPasteEventManager} = NativeModules;
+const OnPasteEventEmitter = new NativeEventEmitter(OnPasteEventManager);
 
 class PasteableTextInput extends React.Component {
     static propTypes = {
@@ -11,15 +14,17 @@ class PasteableTextInput extends React.Component {
         forwardRef: PropTypes.any,
     }
 
-    onChange = (event) => {
-        const {nativeEvent} = event;
-        const {image} = nativeEvent;
-        const {onPaste, onChange} = this.props;
-        if (image) {
-            return onPaste?.(image);
-        }
+    componentDidMount() {
+        this.subscription = OnPasteEventEmitter.addListener('onPaste', this.onPaste);
+    }
 
-        return onChange?.(event);
+    componentWillUnmount() {
+        this.subscription.remove();
+    }
+
+    onPaste = (event) => {
+        const {onPaste} = this.props;
+        onPaste?.(event);
     }
 
     render() {
@@ -28,7 +33,6 @@ class PasteableTextInput extends React.Component {
             <TextInput
                 {...props}
                 ref={forwardRef}
-                onChange={this.onChange}
             />
         );
     }

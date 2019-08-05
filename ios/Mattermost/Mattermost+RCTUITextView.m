@@ -11,6 +11,7 @@
 #import <React/RCTUtils.h>
 #import "RCTMultilineTextInputView.h"
 #import "ClipboardManager.h"
+#import "OnPasteEventManager.h"
 
 @implementation Mattermost_RCTUITextView
 @end
@@ -48,21 +49,11 @@
     return;
   }
   
-  RCTMultilineTextInputView* textInputView = [self valueForKey:@"textInputDelegate"];
-  RCTDirectEventBlock onChange = textInputView.onChange;
-  if (onChange) {
-    NSDictionary *image = [ClipboardManager getCopiedImage];
-    NSString* reactTag = [textInputView valueForKey:@"reactTag"];
+  NSDictionary *image = [ClipboardManager getCopiedImage];
+  [OnPasteEventManager pasteImage:image];
 
-    onChange(@{
-               @"image": image,
-               @"text": self.attributedText.string,
-               @"target": reactTag,
-               });
-  
-    // Dismiss contextual menu
-    [self resignFirstResponder];
-  }
+  // Dismiss contextual menu
+  [self resignFirstResponder];
 }
 
 @end
