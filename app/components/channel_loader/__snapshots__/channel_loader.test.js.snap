@@ -16,7 +16,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     ]
   }
 >
-  <View
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -30,12 +30,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -43,8 +46,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -58,12 +61,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -71,8 +77,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -86,12 +92,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -99,8 +108,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -114,12 +123,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -127,8 +139,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -142,12 +154,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -155,8 +170,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -170,12 +185,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -183,8 +201,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -198,12 +216,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -211,8 +232,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -226,12 +247,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -239,8 +263,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -254,12 +278,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -267,8 +294,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -282,12 +309,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -295,8 +325,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -310,12 +340,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -323,8 +356,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -338,12 +371,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -351,8 +387,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
-  <View
+  </AnimatedComponent>
+  <AnimatedComponent
     style={
       Array [
         Object {
@@ -366,12 +402,15 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
+        Object {
+          "opacity": 0.6,
+        },
       ]
     }
   >
     <ImageContent
       animate="fade"
-      color="rgba(61,60,64,0.2)"
+      color="rgba(61,60,64,0.15)"
       firstLineWidth="80%"
       hasRadius={true}
       lineNumber={3}
@@ -379,6 +418,6 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </View>
+  </AnimatedComponent>
 </View>
 `;

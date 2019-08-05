@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
+    Platform,
     StyleSheet,
     TouchableWithoutFeedback,
     View,
@@ -75,7 +76,11 @@ export default class OptionsModal extends PureComponent {
     };
 
     onItemPress = () => {
-        this.close();
+        if (Platform.OS === 'android') {
+            this.close();
+        } else {
+            this.props.actions.dismissModal();
+        }
     };
 
     render() {

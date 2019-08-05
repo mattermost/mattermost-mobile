@@ -11,6 +11,7 @@ import {
 
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
+import GuestTag from 'app/components/guest_tag';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
@@ -21,6 +22,7 @@ export default class AtMentionItem extends PureComponent {
         onPress: PropTypes.func.isRequired,
         userId: PropTypes.string.isRequired,
         username: PropTypes.string,
+        isGuest: PropTypes.bool,
         isBot: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -45,6 +47,7 @@ export default class AtMentionItem extends PureComponent {
             theme,
             isBot,
             isLandscape,
+            isGuest,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -67,6 +70,10 @@ export default class AtMentionItem extends PureComponent {
                 <Text style={style.rowUsername}>{`@${username}`}</Text>
                 <BotTag
                     show={isBot}
+                    theme={theme}
+                />
+                <GuestTag
+                    show={isGuest}
                     theme={theme}
                 />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}

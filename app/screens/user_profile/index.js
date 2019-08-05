@@ -18,8 +18,9 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {
     setButtons,
     dismissModal,
-    resetToChannel,
     goToScreen,
+    dismissAllModals,
+    popToRoot,
 } from 'app/actions/navigation';
 
 import UserProfile from './user_profile';
@@ -53,8 +54,9 @@ function mapDispatchToProps(dispatch) {
             loadBot,
             setButtons,
             dismissModal,
-            resetToChannel,
             goToScreen,
+            dismissAllModals,
+            popToRoot,
         }, dispatch),
     };
 }

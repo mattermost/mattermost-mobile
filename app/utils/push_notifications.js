@@ -140,9 +140,9 @@ class PushNotificationUtils {
                     userInfo: {
                         localNotification: true,
                         localTest: true,
+                        channel_id: data.channel_id,
                     },
                 });
-                console.warn('Failed to send reply to push notification', result.error); // eslint-disable-line no-console
                 completed();
                 return;
             }
@@ -190,6 +190,10 @@ class PushNotificationUtils {
         };
 
         unsubscribeFromStore = this.store.subscribe(waitForHydration);
+    }
+
+    getNotification = () => {
+        return PushNotifications.getNotification();
     }
 }
 

@@ -19,9 +19,11 @@ import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import StatusBar from 'app/components/status_bar';
 import BotTag from 'app/components/bot_tag';
+import GuestTag from 'app/components/guest_tag';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {isGuest} from 'app/utils/users';
 
 import UserProfileRow from './user_profile_row';
 import Config from 'assets/config';
@@ -34,8 +36,9 @@ export default class UserProfile extends PureComponent {
             loadBot: PropTypes.func.isRequired,
             setButtons: PropTypes.func.isRequired,
             dismissModal: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
+            dismissAllModals: PropTypes.func.isRequired,
+            popToRoot: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
@@ -100,17 +103,15 @@ export default class UserProfile extends PureComponent {
     }
 
     close = () => {
-        const {actions, fromSettings} = this.props;
+        const {actions, fromSettings, componentId} = this.props;
 
         if (fromSettings) {
             actions.dismissModal();
             return;
         }
 
-        const passProps = {
-            disableTermsModal: true,
-        };
-        actions.resetToChannel(passProps);
+        actions.dismissAllModals();
+        actions.popToRoot(componentId);
     };
 
     getDisplayName = () => {
@@ -127,6 +128,10 @@ export default class UserProfile extends PureComponent {
                     </Text>
                     <BotTag
                         show={Boolean(user.is_bot)}
+                        theme={theme}
+                    />
+                    <GuestTag
+                        show={isGuest(user)}
                         theme={theme}
                     />
                 </View>

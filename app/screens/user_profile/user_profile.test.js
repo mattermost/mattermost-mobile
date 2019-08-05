@@ -7,6 +7,7 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import UserProfile from './user_profile.js';
 import BotTag from 'app/components/bot_tag';
+import GuestTag from 'app/components/guest_tag';
 
 jest.mock('react-intl');
 jest.mock('app/utils/theme', () => {
@@ -24,8 +25,9 @@ describe('user_profile', () => {
         loadBot: jest.fn(),
         setButtons: jest.fn(),
         dismissModal: jest.fn(),
-        resetToChannel: jest.fn(),
         goToScreen: jest.fn(),
+        dismissAllModals: jest.fn(),
+        popToRoot: jest.fn(),
     };
     const baseProps = {
         actions,
@@ -89,6 +91,32 @@ describe('user_profile', () => {
         )).toEqual(true);
     });
 
+    test('should contain guest tag', async () => {
+        const guestUser = {
+            email: 'test@test.com',
+            first_name: 'test',
+            id: '4hzdnk6mg7gepe7yze6m3domnc',
+            last_name: 'fake',
+            nickname: 'nick',
+            username: 'fred',
+            roles: 'system_guest',
+        };
+
+        const wrapper = shallow(
+            <UserProfile
+                {...baseProps}
+                user={guestUser}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.containsMatchingElement(
+            <GuestTag
+                show={true}
+                theme={baseProps.theme}
+            />
+        )).toEqual(true);
+    });
+
     test('should push EditProfile', async () => {
         const wrapper = shallow(
             <UserProfile
@@ -145,6 +173,8 @@ describe('user_profile', () => {
         props.fromSettings = false;
         wrapper.setProps({...props});
         wrapper.instance().navigationButtonPressed(event);
-        expect(props.actions.resetToChannel).toHaveBeenCalledTimes(1);
+        expect(props.actions.dismissAllModals).toHaveBeenCalledTimes(1);
+        expect(props.actions.popToRoot).toHaveBeenCalledTimes(1);
+        expect(props.actions.popToRoot).toHaveBeenCalledWith(props.componentId);
     });
 });

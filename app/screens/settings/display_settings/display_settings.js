@@ -9,12 +9,12 @@ import {
     View,
 } from 'react-native';
 
-import SettingsItem from 'app/screens/settings/settings_item';
+import {DeviceTypes} from 'app/constants';
 import StatusBar from 'app/components/status_bar';
+import ClockDisplay from 'app/screens/settings/clock_display';
+import SettingsItem from 'app/screens/settings/settings_item';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import ClockDisplay from 'app/screens/clock_display';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
@@ -52,6 +52,15 @@ export default class DisplaySettings extends PureComponent {
         }
 
         this.setState({showClockDisplaySettings: true});
+    });
+
+    goToSidebarSettings = preventDoubleTap(() => {
+        const {actions, theme} = this.props;
+        const {intl} = this.context;
+        const screen = 'SidebarSettings';
+        const title = intl.formatMessage({id: 'mobile.display_settings.sidebar', defaultMessage: 'Sidebar'});
+
+        actions.goToScreen(screen, title, {theme});
     });
 
     goToTimezoneSettings = preventDoubleTap(() => {
@@ -106,11 +115,28 @@ export default class DisplaySettings extends PureComponent {
             );
         }
 
+        let sidebar;
+        if (DeviceTypes.IS_TABLET) {
+            sidebar = (
+                <SettingsItem
+                    defaultMessage='Sidebar'
+                    i18nId='mobile.display_settings.sidebar'
+                    iconName='columns'
+                    iconType='fontawesome'
+                    onPress={this.goToSidebarSettings}
+                    separator={true}
+                    showArrow={false}
+                    theme={theme}
+                />
+            );
+        }
+
         return (
             <View style={style.container}>
                 <StatusBar/>
                 <View style={style.wrapper}>
                     <View style={style.divider}/>
+                    {sidebar}
                     {enableTheme && (
                         <SettingsItem
                             defaultMessage='Theme'

@@ -4,6 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Animated,
+    Easing,
     View,
     Dimensions,
 } from 'react-native';
@@ -14,6 +16,8 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+
+const {View: AnimatedView} = Animated;
 
 function calculateMaxRows(height) {
     return Math.round(height / 100);
@@ -40,6 +44,7 @@ export default class ChannelLoader extends PureComponent {
         const maxRows = calculateMaxRows(height);
 
         this.state = {
+            barsOpacity: new Animated.Value(0.6),
             switch: false,
             maxRows,
         };
@@ -67,7 +72,38 @@ export default class ChannelLoader extends PureComponent {
         EventEmitter.off('switch_channel', this.handleChannelSwitch);
     }
 
-    componentDidUpdate() {
+    startLoadingAnimation = () => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(this.state.barsOpacity, {
+                    toValue: 1,
+                    duration: 750,
+                    easing: Easing.quad,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(this.state.barsOpacity, {
+                    toValue: 0.6,
+                    duration: 750,
+                    easing: Easing.quad,
+                    useNativeDriver: true,
+                }),
+            ]),
+        ).start();
+    };
+
+    stopLoadingAnimation = () => {
+        Animated.timing(
+            this.state.barsOpacity
+        ).stop();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.channelIsLoading === false && this.props.channelIsLoading === true) {
+            this.startLoadingAnimation();
+        } else if (prevProps.channelIsLoading === true && this.props.channelIsLoading === false) {
+            this.stopLoadingAnimation();
+        }
+
         if (this.state.switch) {
             const {
                 handleSelectChannel,
@@ -85,9 +121,9 @@ export default class ChannelLoader extends PureComponent {
 
     buildSections({key, style, bg, color}) {
         return (
-            <View
+            <AnimatedView
                 key={key}
-                style={[style.section, {backgroundColor: bg}]}
+                style={[style.section, {backgroundColor: bg}, {opacity: this.state.barsOpacity}]}
             >
                 <ImageContent
                     size={32}
@@ -97,9 +133,9 @@ export default class ChannelLoader extends PureComponent {
                     firstLineWidth='80%'
                     hasRadius={true}
                     textSize={14}
-                    color={changeOpacity(color, 0.2)}
+                    color={changeOpacity(color, 0.15)}
                 />
-            </View>
+            </AnimatedView>
         );
     }
 

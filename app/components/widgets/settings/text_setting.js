@@ -46,6 +46,7 @@ export default class TextSetting extends PureComponent {
             'phone-pad',
             'url',
         ]),
+        secureTextEntry: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -55,6 +56,7 @@ export default class TextSetting extends PureComponent {
         showRequiredAsterisk: false,
         keyboardType: 'default',
         isLandscape: false,
+        secureTextEntry: false,
     };
 
     onChangeText = (value) => {
@@ -76,6 +78,7 @@ export default class TextSetting extends PureComponent {
             multiline,
             showRequiredAsterisk,
             isLandscape,
+            secureTextEntry,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -168,6 +171,7 @@ export default class TextSetting extends PureComponent {
                             disableFullscreenUI={true}
                             multiline={multiline}
                             keyboardType={keyboardType}
+                            secureTextEntry={secureTextEntry}
                         />
                     </View>
                 </View>

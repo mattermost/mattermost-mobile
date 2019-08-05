@@ -125,14 +125,14 @@ import os.log
     }
     
     public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?) {
-        let store = StoreManager.shared() as StoreManager
-        let entities = store.getEntities(true)
-        if (entities != nil) {
-            let serverURL = store.getServerUrl()
-            let sessionToken = store.getToken()
-            let urlString = "\(serverURL!)/api/v4/notifications/ack"
-            
-            if (notificationId != nil) {
+        if (notificationId != nil) {
+            let store = StoreManager.shared() as StoreManager
+            let entities = store.getEntities(true)
+            if (entities != nil) {
+                let serverURL = store.getServerUrl()
+                let sessionToken = store.getToken()
+                let urlString = "\(serverURL!)/api/v4/notifications/ack"
+
                 let jsonObject: [String: Any] = [
                     "id": notificationId as Any,
                     "received_at": receivedAt,

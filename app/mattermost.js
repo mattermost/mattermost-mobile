@@ -12,6 +12,7 @@ import {setDeepLinkURL} from 'app/actions/views/root';
 import initialState from 'app/initial_state';
 import {getAppCredentials} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
+import 'app/init/device';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
@@ -87,11 +88,8 @@ const launchAppAndAuthenticateIfNeeded = async () => {
 Navigation.events().registerAppLaunchedListener(() => {
     init();
 
-    // Keep track of the latest componentId to appear and disappear
+    // Keep track of the latest componentId to appear
     Navigation.events().registerComponentDidAppearListener(({componentId}) => {
-        EphemeralStore.addComponentIdToStack(componentId);
-    });
-    Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
-        EphemeralStore.removeComponentIdFromStack(componentId);
+        EphemeralStore.addNavigationComponentId(componentId);
     });
 });

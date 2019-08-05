@@ -201,10 +201,8 @@ export default class PostList extends PureComponent {
     };
 
     handleScrollToIndexFailed = () => {
-        requestAnimationFrame(() => {
-            this.hasDoneInitialScroll = false;
-            this.scrollToInitialIndexIfNeeded(1, 1);
-        });
+        this.hasDoneInitialScroll = false;
+        this.scrollToInitialIndexIfNeeded(1, 1);
     };
 
     handleSetScrollToBottom = () => {
@@ -290,17 +288,17 @@ export default class PostList extends PureComponent {
         if (
             width > 0 &&
             height > 0 &&
-            this.props.initialIndex > 0 &&
-            !this.hasDoneInitialScroll &&
-            this.flatListRef?.current
+            !this.hasDoneInitialScroll
         ) {
             requestAnimationFrame(() => {
-                this.flatListRef.current.scrollToIndex({
-                    animated: false,
-                    index: this.props.initialIndex,
-                    viewOffset: 0,
-                    viewPosition: 1, // 0 is at bottom
-                });
+                if (this.props.initialIndex > 0 && this.flatListRef?.current) {
+                    this.flatListRef.current.scrollToIndex({
+                        animated: false,
+                        index: this.props.initialIndex,
+                        viewOffset: 0,
+                        viewPosition: 1, // 0 is at bottom
+                    });
+                }
             });
             this.hasDoneInitialScroll = true;
         }

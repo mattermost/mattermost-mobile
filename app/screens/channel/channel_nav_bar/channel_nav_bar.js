@@ -4,6 +4,9 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Dimensions, Platform, View} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
@@ -39,12 +42,15 @@ export default class ChannelNavBar extends PureComponent {
     componentDidMount() {
         this.mounted = true;
         this.handleDimensions();
+        this.handlePermanentSidebar();
         Dimensions.addEventListener('change', this.handleDimensions);
+        EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
     }
 
     componentWillUnmount() {
         this.mounted = false;
         Dimensions.removeEventListener('change', this.handleDimensions);
+        EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
     }
 
     handleDimensions = () => {
@@ -56,12 +62,21 @@ export default class ChannelNavBar extends PureComponent {
         }
     };
 
+    handlePermanentSidebar = () => {
+        if (DeviceTypes.IS_TABLET && this.mounted) {
+            AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS).then((enabled) => {
+                this.setState({permanentSidebar: enabled === 'true'});
+            });
+        }
+    };
+
     render() {
         const {isLandscape, onPress, theme} = this.props;
         const {openChannelDrawer, openSettingsDrawer} = this.props;
         const style = getStyleFromTheme(theme);
 
         let height;
+        let canHaveSubtitle = true;
         switch (Platform.OS) {
         case 'android':
             height = ANDROID_TOP_PORTRAIT;
@@ -75,12 +90,17 @@ export default class ChannelNavBar extends PureComponent {
                 height -= 1;
             } else if (isLandscape) {
                 height = IOS_TOP_LANDSCAPE;
+                canHaveSubtitle = false;
+            }
+
+            if (DeviceTypes.IS_IPHONE_X && isLandscape) {
+                canHaveSubtitle = false;
             }
             break;
         }
 
         let drawerButtonVisible = false;
-        if (!DeviceTypes.IS_TABLET || this.state.isSplitView) {
+        if (!DeviceTypes.IS_TABLET || this.state.isSplitView || !this.state.permanentSidebar) {
             drawerButtonVisible = true;
         }
 
@@ -90,7 +110,10 @@ export default class ChannelNavBar extends PureComponent {
                     openDrawer={openChannelDrawer}
                     visible={drawerButtonVisible}
                 />
-                <ChannelTitle onPress={onPress}/>
+                <ChannelTitle
+                    onPress={onPress}
+                    canHaveSubtitle={canHaveSubtitle}
+                />
                 <ChannelSearchButton
                     theme={theme}
                 />
