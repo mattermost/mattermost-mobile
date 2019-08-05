@@ -413,6 +413,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
   <CustomListRow
     enabled={true}
     id="21345"
+    isLandscape={false}
     onPress={[Function]}
   >
     <View

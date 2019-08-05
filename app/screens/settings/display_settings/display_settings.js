@@ -127,6 +127,7 @@ export default class DisplaySettings extends PureComponent {
                     separator={true}
                     showArrow={false}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             );
         }
