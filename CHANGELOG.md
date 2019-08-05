@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
 ## 1.21.2 Release
-- Release Date: TBD
+- Release Date: August 1, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Combatibility
@@ -9,7 +9,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixing an issue where the mobile apps log out without a session expiry notification.
+ - Fixed an issue where the mobile apps logged out without a session expiry notification.
 
 ## 1.21.1 Release
 - Release Date: July 22, 2019
