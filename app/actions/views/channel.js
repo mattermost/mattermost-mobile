@@ -386,7 +386,6 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
                 data: channelId,
             },
-            setChannelLoading(false),
             {
                 type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
                 teamId: currentTeamId,
