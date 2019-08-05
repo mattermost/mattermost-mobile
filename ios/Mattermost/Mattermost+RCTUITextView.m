@@ -10,8 +10,8 @@
 #import "RCTUITextView.h"
 #import <React/RCTUtils.h>
 #import "RCTMultilineTextInputView.h"
-#import "ClipboardManager.h"
 #import "OnPasteEventManager.h"
+#import "UIPasteboard+GetImageInfo.h"
 
 @implementation Mattermost_RCTUITextView
 @end
@@ -49,7 +49,7 @@
     return;
   }
   
-  NSDictionary *image = [ClipboardManager getCopiedImage];
+  NSDictionary *image = [pasteboard getCopiedImage];
   [OnPasteEventManager pasteImage:image];
 
   // Dismiss contextual menu
