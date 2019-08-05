@@ -17,3 +17,24 @@ export function getUtcOffsetForTimeZone(timezone) {
     return moment.tz(timezone).utcOffset();
 }
 
+export function getUserCurrentTimezone(userTimezone) {
+    if (!userTimezone) {
+        return null;
+    }
+
+    const {
+        useAutomaticTimezone,
+        automaticTimezone,
+        manualTimezone,
+    } = userTimezone;
+
+    let useAutomatic = useAutomaticTimezone;
+    if (typeof useAutomaticTimezone === 'string') {
+        useAutomatic = useAutomaticTimezone === 'true';
+    }
+
+    if (useAutomatic) {
+        return automaticTimezone;
+    }
+    return manualTimezone;
+}
