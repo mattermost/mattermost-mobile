@@ -37,6 +37,7 @@ export default class ChannelIOS extends ChannelBase {
     render() {
         const {height} = Dimensions.get('window');
         const {
+            currentTeamId,
             currentChannelId,
             currentUserId,
             theme,
@@ -45,6 +46,15 @@ export default class ChannelIOS extends ChannelBase {
         const channelLoaderStyle = [style.channelLoader, {height}];
         if ((DeviceTypes.IS_IPHONE_X || DeviceTypes.IS_TABLET)) {
             channelLoaderStyle.push(style.iOSHomeIndicator);
+        }
+
+        if (!currentTeamId) {
+            return (
+                <ChannelLoader
+                    height={height}
+                    style={channelLoaderStyle}
+                />
+            );
         }
 
         const drawerContent = (
