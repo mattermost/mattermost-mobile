@@ -22,6 +22,8 @@ RCT_EXPORT_MODULE();
 
 -(void)stopObserving {
   hasListeners = NO;
+  
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 -(NSArray<NSString *>*)supportedEvents {
