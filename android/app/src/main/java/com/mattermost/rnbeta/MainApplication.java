@@ -1,8 +1,8 @@
 package com.mattermost.rnbeta;
 
 import android.app.Activity;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.content.Context;
 import android.content.RestrictionsManager;
 import android.os.Bundle;
@@ -27,7 +27,7 @@ import io.sentry.RNSentryModule;
 import io.sentry.RNSentryEventEmitter;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
 import com.inprogress.reactnativeyoutube.YouTubeStandaloneModule;
-import com.reactlibrary.RNReactNativeDocViewerModule;
+import com.philipphecht.RNDocViewerModule;
 import com.reactnativedocumentpicker.DocumentPicker;
 import com.oblador.keychain.KeychainModule;
 import com.reactnativecommunity.asyncstorage.AsyncStorageModule;
@@ -141,8 +141,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return new ReactNativeExceptionHandlerModule(reactContext);
                   case "YouTubeStandaloneModule":
                     return new YouTubeStandaloneModule(reactContext);
-                  case "RNReactNativeDocViewer":
-                    return new RNReactNativeDocViewerModule(reactContext);
+                  case "RNDocViewer":
+                    return new RNDocViewerModule(reactContext);
                   case "RNDocumentPicker":
                     return new DocumentPicker(reactContext);
                   case "RNKeychainManager":
@@ -179,7 +179,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("RNSentryEventEmitter", new ReactModuleInfo("RNSentryEventEmitter", "com.sentry.RNSentryEventEmitter", false, false, true, false, false));
                     map.put("ReactNativeExceptionHandler", new ReactModuleInfo("ReactNativeExceptionHandler", "com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule", false, false, false, false, false));
                     map.put("YouTubeStandaloneModule", new ReactModuleInfo("YouTubeStandaloneModule", "com.inprogress.reactnativeyoutube.YouTubeStandaloneModule", false, false, false, false, false));
-                    map.put("RNReactNativeDocViewer", new ReactModuleInfo("RNReactNativeDocViewer", "com.reactlibrary.RNReactNativeDocViewerModule", false, false, false, false, false));
+                    map.put("RNDocViewer", new ReactModuleInfo("RNDocViewer", "com.philipphecht.RNDocViewerModule", false, false, false, false, false));
                     map.put("RNDocumentPicker", new ReactModuleInfo("RNDocumentPicker", "com.reactnativedocumentpicker.DocumentPicker", false, false, false, false, false));
                     map.put("RNKeychainManager", new ReactModuleInfo("RNKeychainManager", "com.oblador.keychain.KeychainModule", false, false, true, false, false));
                     map.put(AsyncStorageModule.NAME, new ReactModuleInfo(AsyncStorageModule.NAME, "com.reactnativecommunity.asyncstorage.AsyncStorageModule", false, false, false, false, false));

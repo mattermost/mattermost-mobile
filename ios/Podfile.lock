@@ -1,16 +1,338 @@
 PODS:
+  - boost-for-react-native (1.63.0)
+  - BVLinearGradient (2.5.4):
+    - React
+  - DoubleConversion (1.1.6)
+  - Folly (2018.10.22.00):
+    - boost-for-react-native
+    - DoubleConversion
+    - Folly/Default (= 2018.10.22.00)
+    - glog
+  - Folly/Default (2018.10.22.00):
+    - boost-for-react-native
+    - DoubleConversion
+    - glog
+  - glog (0.3.5)
+  - jail-monkey (2.2.0):
+    - React
+  - React (0.60.4):
+    - React-Core (= 0.60.4)
+    - React-DevSupport (= 0.60.4)
+    - React-RCTActionSheet (= 0.60.4)
+    - React-RCTAnimation (= 0.60.4)
+    - React-RCTBlob (= 0.60.4)
+    - React-RCTImage (= 0.60.4)
+    - React-RCTLinking (= 0.60.4)
+    - React-RCTNetwork (= 0.60.4)
+    - React-RCTSettings (= 0.60.4)
+    - React-RCTText (= 0.60.4)
+    - React-RCTVibration (= 0.60.4)
+    - React-RCTWebSocket (= 0.60.4)
+  - React-Core (0.60.4):
+    - Folly (= 2018.10.22.00)
+    - React-cxxreact (= 0.60.4)
+    - React-jsiexecutor (= 0.60.4)
+    - yoga (= 0.60.4.React)
+  - React-cxxreact (0.60.4):
+    - boost-for-react-native (= 1.63.0)
+    - DoubleConversion
+    - Folly (= 2018.10.22.00)
+    - glog
+    - React-jsinspector (= 0.60.4)
+  - React-DevSupport (0.60.4):
+    - React-Core (= 0.60.4)
+    - React-RCTWebSocket (= 0.60.4)
+  - React-fishhook (0.60.4)
+  - React-jsi (0.60.4):
+    - boost-for-react-native (= 1.63.0)
+    - DoubleConversion
+    - Folly (= 2018.10.22.00)
+    - glog
+    - React-jsi/Default (= 0.60.4)
+  - React-jsi/Default (0.60.4):
+    - boost-for-react-native (= 1.63.0)
+    - DoubleConversion
+    - Folly (= 2018.10.22.00)
+    - glog
+  - React-jsiexecutor (0.60.4):
+    - DoubleConversion
+    - Folly (= 2018.10.22.00)
+    - glog
+    - React-cxxreact (= 0.60.4)
+    - React-jsi (= 0.60.4)
+  - React-jsinspector (0.60.4)
+  - react-native-cookies (3.2.0):
+    - React
+  - react-native-document-picker (2.3.0):
+    - React
+  - react-native-image-picker (0.28.1):
+    - React
+  - react-native-netinfo (3.1.3):
+    - React
+  - react-native-notifications (1.5.0):
+    - React
+  - react-native-safe-area (0.5.1):
+    - React
+  - react-native-video (4.4.1):
+    - React
+    - react-native-video/Video (= 4.4.1)
+  - react-native-video/Video (4.4.1):
+    - React
+  - react-native-webview (5.8.1):
+    - React
+  - react-native-youtube (1.1.0):
+    - React
+  - React-RCTActionSheet (0.60.4):
+    - React-Core (= 0.60.4)
+  - React-RCTAnimation (0.60.4):
+    - React-Core (= 0.60.4)
+  - React-RCTBlob (0.60.4):
+    - React-Core (= 0.60.4)
+    - React-RCTNetwork (= 0.60.4)
+    - React-RCTWebSocket (= 0.60.4)
+  - React-RCTImage (0.60.4):
+    - React-Core (= 0.60.4)
+    - React-RCTNetwork (= 0.60.4)
+  - React-RCTLinking (0.60.4):
+    - React-Core (= 0.60.4)
+  - React-RCTNetwork (0.60.4):
+    - React-Core (= 0.60.4)
+  - React-RCTSettings (0.60.4):
+    - React-Core (= 0.60.4)
+  - React-RCTText (0.60.4):
+    - React-Core (= 0.60.4)
+  - React-RCTVibration (0.60.4):
+    - React-Core (= 0.60.4)
+  - React-RCTWebSocket (0.60.4):
+    - React-Core (= 0.60.4)
+    - React-fishhook (= 0.60.4)
+  - ReactNativeExceptionHandler (2.10.7):
+    - React
+  - ReactNativeNavigation (3.0.0-alpha.10):
+    - React
+  - ReactNativePermissions (1.1.1):
+    - React
+  - rn-fetch-blob (0.10.6):
+    - React-Core
+  - RNCAsyncStorage (1.4.0):
+    - React
+  - RNDeviceInfo (2.1.2):
+    - React
+  - RNGestureHandler (1.2.1):
+    - React
+  - RNKeychain (3.1.3):
+    - React
+  - RNReactNativeDocViewer (1.0.0):
+    - React
+  - RNSVG (9.4.0):
+    - React
+  - RNVectorIcons (6.4.2):
+    - React
+  - Sentry (4.1.3):
+    - Sentry/Core (= 4.1.3)
+  - Sentry/Core (4.1.3)
+  - SentryReactNative (0.43.1):
+    - React
+    - Sentry (~> 4.1.3)
   - XCDYouTubeKit (2.7.1)
+  - yoga (0.60.4.React)
 
 DEPENDENCIES:
+  - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
+  - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
+  - Folly (from `../node_modules/react-native/third-party-podspecs/Folly.podspec`)
+  - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
+  - jail-monkey (from `../node_modules/jail-monkey`)
+  - React (from `../node_modules/react-native/`)
+  - React-Core (from `../node_modules/react-native/React`)
+  - React-cxxreact (from `../node_modules/react-native/ReactCommon/cxxreact`)
+  - React-DevSupport (from `../node_modules/react-native/React`)
+  - React-fishhook (from `../node_modules/react-native/Libraries/fishhook`)
+  - React-jsi (from `../node_modules/react-native/ReactCommon/jsi`)
+  - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
+  - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
+  - react-native-cookies (from `../node_modules/react-native-cookies/ios`)
+  - react-native-document-picker (from `../node_modules/react-native-document-picker`)
+  - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - react-native-notifications (from `../node_modules/react-native-notifications`)
+  - react-native-safe-area (from `../node_modules/react-native-safe-area`)
+  - react-native-video (from `../node_modules/react-native-video`)
+  - react-native-webview (from `../node_modules/react-native-webview`)
+  - react-native-youtube (from `../node_modules/react-native-youtube`)
+  - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
+  - React-RCTAnimation (from `../node_modules/react-native/Libraries/NativeAnimation`)
+  - React-RCTBlob (from `../node_modules/react-native/Libraries/Blob`)
+  - React-RCTImage (from `../node_modules/react-native/Libraries/Image`)
+  - React-RCTLinking (from `../node_modules/react-native/Libraries/LinkingIOS`)
+  - React-RCTNetwork (from `../node_modules/react-native/Libraries/Network`)
+  - React-RCTSettings (from `../node_modules/react-native/Libraries/Settings`)
+  - React-RCTText (from `../node_modules/react-native/Libraries/Text`)
+  - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
+  - React-RCTWebSocket (from `../node_modules/react-native/Libraries/WebSocket`)
+  - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
+  - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
+  - ReactNativePermissions (from `../node_modules/react-native-permissions`)
+  - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
+  - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
+  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
+  - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNKeychain (from `../node_modules/react-native-keychain`)
+  - RNReactNativeDocViewer (from `../node_modules/react-native-doc-viewer`)
+  - RNSVG (from `../node_modules/react-native-svg`)
+  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
+  - SentryReactNative (from `../node_modules/react-native-sentry`)
   - XCDYouTubeKit (= 2.7.1)
+  - yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
+    - boost-for-react-native
+    - Sentry
     - XCDYouTubeKit
 
-SPEC CHECKSUMS:
-  XCDYouTubeKit: c8567fd5cb388a3099fa26eee4b30df2a467847d
+EXTERNAL SOURCES:
+  BVLinearGradient:
+    :path: "../node_modules/react-native-linear-gradient"
+  DoubleConversion:
+    :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
+  Folly:
+    :podspec: "../node_modules/react-native/third-party-podspecs/Folly.podspec"
+  glog:
+    :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
+  jail-monkey:
+    :path: "../node_modules/jail-monkey"
+  React:
+    :path: "../node_modules/react-native/"
+  React-Core:
+    :path: "../node_modules/react-native/React"
+  React-cxxreact:
+    :path: "../node_modules/react-native/ReactCommon/cxxreact"
+  React-DevSupport:
+    :path: "../node_modules/react-native/React"
+  React-fishhook:
+    :path: "../node_modules/react-native/Libraries/fishhook"
+  React-jsi:
+    :path: "../node_modules/react-native/ReactCommon/jsi"
+  React-jsiexecutor:
+    :path: "../node_modules/react-native/ReactCommon/jsiexecutor"
+  React-jsinspector:
+    :path: "../node_modules/react-native/ReactCommon/jsinspector"
+  react-native-cookies:
+    :path: "../node_modules/react-native-cookies/ios"
+  react-native-document-picker:
+    :path: "../node_modules/react-native-document-picker"
+  react-native-image-picker:
+    :path: "../node_modules/react-native-image-picker"
+  react-native-netinfo:
+    :path: "../node_modules/@react-native-community/netinfo"
+  react-native-notifications:
+    :path: "../node_modules/react-native-notifications"
+  react-native-safe-area:
+    :path: "../node_modules/react-native-safe-area"
+  react-native-video:
+    :path: "../node_modules/react-native-video"
+  react-native-webview:
+    :path: "../node_modules/react-native-webview"
+  react-native-youtube:
+    :path: "../node_modules/react-native-youtube"
+  React-RCTActionSheet:
+    :path: "../node_modules/react-native/Libraries/ActionSheetIOS"
+  React-RCTAnimation:
+    :path: "../node_modules/react-native/Libraries/NativeAnimation"
+  React-RCTBlob:
+    :path: "../node_modules/react-native/Libraries/Blob"
+  React-RCTImage:
+    :path: "../node_modules/react-native/Libraries/Image"
+  React-RCTLinking:
+    :path: "../node_modules/react-native/Libraries/LinkingIOS"
+  React-RCTNetwork:
+    :path: "../node_modules/react-native/Libraries/Network"
+  React-RCTSettings:
+    :path: "../node_modules/react-native/Libraries/Settings"
+  React-RCTText:
+    :path: "../node_modules/react-native/Libraries/Text"
+  React-RCTVibration:
+    :path: "../node_modules/react-native/Libraries/Vibration"
+  React-RCTWebSocket:
+    :path: "../node_modules/react-native/Libraries/WebSocket"
+  ReactNativeExceptionHandler:
+    :path: "../node_modules/react-native-exception-handler"
+  ReactNativeNavigation:
+    :path: "../node_modules/react-native-navigation"
+  ReactNativePermissions:
+    :path: "../node_modules/react-native-permissions"
+  rn-fetch-blob:
+    :path: "../node_modules/rn-fetch-blob"
+  RNCAsyncStorage:
+    :path: "../node_modules/@react-native-community/async-storage"
+  RNDeviceInfo:
+    :path: "../node_modules/react-native-device-info"
+  RNGestureHandler:
+    :path: "../node_modules/react-native-gesture-handler"
+  RNKeychain:
+    :path: "../node_modules/react-native-keychain"
+  RNReactNativeDocViewer:
+    :path: "../node_modules/react-native-doc-viewer"
+  RNSVG:
+    :path: "../node_modules/react-native-svg"
+  RNVectorIcons:
+    :path: "../node_modules/react-native-vector-icons"
+  SentryReactNative:
+    :path: "../node_modules/react-native-sentry"
+  yoga:
+    :path: "../node_modules/react-native/ReactCommon/yoga"
 
-PODFILE CHECKSUM: 63cb0d0aef536c8cbf15bf664fcfe31852a13dd1
+SPEC CHECKSUMS:
+  boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
+  BVLinearGradient: b0b70acf63ee888829b7c2ebbf6b50e227396e55
+  DoubleConversion: 5805e889d232975c086db112ece9ed034df7a0b2
+  Folly: 30e7936e1c45c08d884aa59369ed951a8e68cf51
+  glog: 1f3da668190260b06b429bb211bfbee5cd790c28
+  jail-monkey: f62830045fe452550b248e3ecf788ef99b0b5ee1
+  React: c438ccc7e14e86d4702bb92d7e262f549ffaa995
+  React-Core: c76495f5c14e73c0f803b89c3fa83f804da61bd6
+  React-cxxreact: f64bc64cf4682d6ea5a064f6017da72482858682
+  React-DevSupport: 30336bca00f72681eac995d21a31b963e7d5cfec
+  React-fishhook: 73dc8058ca42828cc92e8fbba6cd9571100e10ca
+  React-jsi: 40f467ff088c811c6630acccb4aea57ea7ccb1b5
+  React-jsiexecutor: e4b4717060a0cd8d0270323b5655a68c95432efd
+  React-jsinspector: 044105eea064aec81adc5e4d777a8f6589e7d094
+  react-native-cookies: a9abe7c8154a268bdda24bf9f6ab8f00ac8632fe
+  react-native-document-picker: e7934f6a3c898a1b62fa68b1f09371beef6ac51a
+  react-native-image-picker: f42de90075c5b1af53417af927631d909a1a746e
+  react-native-netinfo: f4039dc64d3a55da59d6d03d4bd667d0a9f5450e
+  react-native-notifications: 4626ecc0189e1b0594b1f422c17e64849390e30d
+  react-native-safe-area: cec86d422df9430ab60511916a3fa18f87d21e1e
+  react-native-video: 44c6befbc1526283ca1919891fcebe4680feade4
+  react-native-webview: a42108b827082f8f0333529b0772102031d5960d
+  react-native-youtube: 7ab01f1320b037d605e6c6ac9d59cc2b92091799
+  React-RCTActionSheet: 08864c609d9f959abf3d51fdd93f8bc6e91f21eb
+  React-RCTAnimation: a4547e9fac2627ded3df9d302f5558b475faf819
+  React-RCTBlob: 62d5c263a2adb8f7a2cafd601beba18a2d99cbbb
+  React-RCTImage: 963859de2b05d2037d1b7842cdbddc8d7f3a2f3b
+  React-RCTLinking: 5998a7db9a6156ed112b006d01f76b2d1cc83d98
+  React-RCTNetwork: 0b676e8194f3f893db813007d37e37e9820173a3
+  React-RCTSettings: fdd7606f1b6050eced69fc6046d5db6768aefd57
+  React-RCTText: 36c0532feb5521cb295ba80e7e44b70cf1c36fc7
+  React-RCTVibration: dabb8d59bb47e1d9124b3f77bfdc1b33d42b0a74
+  React-RCTWebSocket: f32b93e0953d7c07fd5dd45305406282cfdc95cf
+  ReactNativeExceptionHandler: 2ef25736761126fe199c412ed179e479661de794
+  ReactNativeNavigation: 20522060de61b1c293ec50681a6aa11488596286
+  ReactNativePermissions: 9f2d9c45c98800795e6c2ed330e25d11a66a8169
+  rn-fetch-blob: 23c8bcfa4140451a146073f0605f6c4af5cc0fcd
+  RNCAsyncStorage: 6ae5aba8a41bfe0a9f21885ec91faf23ca3fe7ee
+  RNDeviceInfo: 5b5b42b12587207b6bd686441ac42d19d8e07933
+  RNGestureHandler: 7ccf2f3f60458e084f9ada01fbaf610f6fef073c
+  RNKeychain: 5381e340056c23de103d73ae59cbddc6ffc21d97
+  RNReactNativeDocViewer: 1ff418afb9b3d1a1050ab2ee9fee882ed6bfe6a6
+  RNSVG: 4834be1d644eb77f0e3f6de851881b83758a3124
+  RNVectorIcons: 8c52e1e8da1153613fdef44748e865c25556cb9c
+  Sentry: 4e8a17b61ddd116f89536cc81d567fdee1ebca96
+  SentryReactNative: fc630be25b30c1a494b478ba1fa38f761cc6da20
+  XCDYouTubeKit: c8567fd5cb388a3099fa26eee4b30df2a467847d
+  yoga: 88c514f310aff89b94a14c5fbf44b95735af0cb7
+
+PODFILE CHECKSUM: 95026a8dffce6c4e106c00b93ff7168aa2e7628b
 
 COCOAPODS: 1.5.3
