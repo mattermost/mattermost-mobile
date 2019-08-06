@@ -13,7 +13,7 @@ import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
 import {General} from 'mattermost-redux/constants';
-
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -40,6 +40,7 @@ export default class ChannelItem extends PureComponent {
         isSearchResult: PropTypes.bool,
         isBot: PropTypes.bool.isRequired,
         previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -98,6 +99,7 @@ export default class ChannelItem extends PureComponent {
             isSearchResult,
             channel,
             isBot,
+            isLandscape,
         } = this.props;
 
         const isArchived = channel.delete_at > 0;
@@ -194,7 +196,7 @@ export default class ChannelItem extends PureComponent {
                     onPress={this.onPress}
                     onPressIn={this.onPreview}
                 >
-                    <View style={[style.container, mutedStyle]}>
+                    <View style={[style.container, mutedStyle, padding(isLandscape)]}>
                         {extraBorder}
                         <View style={[style.item, extraItemStyle]}>
                             {icon}

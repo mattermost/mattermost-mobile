@@ -17,7 +17,7 @@ import ClockDisplayBase from './clock_display_base';
 
 export default class ClockDisplay extends ClockDisplayBase {
     render() {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {newMilitaryTime} = this.state;
         const style = getStyleSheet(theme);
 
@@ -30,6 +30,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                         footerId={t('user.settings.display.preferTime')}
                         footerDefaultMessage='Select how you prefer time displayed.'
                         theme={theme}
+                        isLandscape={isLandscape}
                     >
                         <SectionItem
                             label={(
@@ -43,8 +44,9 @@ export default class ClockDisplay extends ClockDisplayBase {
                             actionValue='false'
                             selected={newMilitaryTime === 'false'}
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
-                        <View style={style.separator}/>
+                        <View style={style.divider}/>
                         <SectionItem
                             label={(
                                 <FormattedText
@@ -57,6 +59,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                             actionValue='true'
                             selected={newMilitaryTime === 'true'}
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     </Section>
                 </View>
@@ -75,6 +78,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
             paddingTop: 35,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            height: 1,
         },
     };
 });

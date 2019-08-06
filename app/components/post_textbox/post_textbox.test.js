@@ -47,6 +47,7 @@ describe('PostTextBox', () => {
         onCloseChannel: jest.fn(),
         cursorPositionEvent: '',
         valueEvent: '',
+        isLandscape: false,
     };
 
     test('should match, full snapshot', () => {

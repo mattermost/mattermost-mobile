@@ -25,10 +25,12 @@ export default class SafeAreaIos extends PureComponent {
         navBarBackgroundColor: PropTypes.string,
         headerComponent: PropTypes.node,
         theme: PropTypes.object.isRequired,
+        useLandscapeMargin: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         keyboardOffset: 0,
+        useLandscapeMargin: false,
     };
 
     constructor(props) {
@@ -150,7 +152,7 @@ export default class SafeAreaIos extends PureComponent {
     };
 
     render() {
-        const {backgroundColor, children, footerColor, footerComponent, keyboardOffset, theme} = this.props;
+        const {backgroundColor, children, footerColor, footerComponent, keyboardOffset, theme, useLandscapeMargin} = this.props;
         const {keyboard, safeAreaInsets} = this.state;
 
         let bgColor = theme.centerChannelBg;
@@ -173,6 +175,8 @@ export default class SafeAreaIos extends PureComponent {
                 style={{
                     flex: 1,
                     backgroundColor: bgColor,
+                    marginLeft: useLandscapeMargin ? safeAreaInsets.left : 0,
+                    marginRight: useLandscapeMargin ? safeAreaInsets.right : 0,
                 }}
             >
                 {this.renderTopBar()}

@@ -26,6 +26,7 @@ import PostListRetry from 'app/components/post_list_retry';
 import SafeAreaView from 'app/components/safe_area_view';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -75,6 +76,7 @@ export default class Permalink extends PureComponent {
         onPress: PropTypes.func,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -334,6 +336,7 @@ export default class Permalink extends PureComponent {
             currentUserId,
             focusedPostId,
             theme,
+            isLandscape,
         } = this.props;
         const {
             error,
@@ -390,7 +393,7 @@ export default class Permalink extends PureComponent {
                 forceTop={44}
             >
                 <View
-                    style={style.container}
+                    style={[style.container, margin(isLandscape)]}
                 >
                     <Animatable.View
                         ref='view'

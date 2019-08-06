@@ -46,7 +46,7 @@ import {
     selectPenultimateChannel,
     setChannelDisplayName,
 } from 'app/actions/views/channel';
-
+import {isLandscape} from 'app/selectors/device';
 import ChannelInfo from './channel_info';
 
 function mapStateToProps(state) {
@@ -111,6 +111,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         canManageUsers,
         isBot,
+        isLandscape: isLandscape(state),
     };
 }
 

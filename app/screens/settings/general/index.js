@@ -8,7 +8,7 @@ import {clearErrors} from 'mattermost-redux/actions/errors';
 import {getCurrentUrl, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
+import {isLandscape} from 'app/selectors/device';
 import {goToScreen, dismissModal} from 'app/actions/navigation';
 import {purgeOfflineStore} from 'app/actions/views/root';
 import {removeProtocol} from 'app/utils/url';
@@ -26,6 +26,7 @@ function mapStateToProps(state) {
         currentTeamId: state.entities.teams.currentTeamId,
         currentUrl: removeProtocol(getCurrentUrl(state)),
         joinableTeams: getJoinableTeams(state),
+        isLandscape: isLandscape(state),
     };
 }
 

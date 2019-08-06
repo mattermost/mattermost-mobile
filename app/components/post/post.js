@@ -21,6 +21,7 @@ import {fromAutoResponder} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import {Posts} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -67,6 +68,7 @@ export default class Post extends PureComponent {
         isCommentMention: PropTypes.bool,
         location: PropTypes.string,
         isBot: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -243,6 +245,7 @@ export default class Post extends PureComponent {
             skipFlaggedHeader,
             skipPinnedHeader,
             location,
+            isLandscape,
         } = this.props;
 
         if (!post) {
@@ -300,7 +303,7 @@ export default class Post extends PureComponent {
 
         return (
             <TouchableHighlight
-                style={[style.postStyle, highlighted]}
+                style={[style.postStyle, highlighted, padding(isLandscape)]}
                 onPress={this.handlePress}
                 onLongPress={this.showPostOptions}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}

@@ -39,6 +39,7 @@ export default class ChannelMention extends PureComponent {
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
         serverVersion: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -195,6 +196,7 @@ export default class ChannelMention extends PureComponent {
                 defaultMessage={section.defaultMessage}
                 loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
+                isLandscape={this.props.isLandscape}
             />
         );
     };
