@@ -133,9 +133,7 @@ export default class PostList extends PureComponent {
     };
 
     handleContentSizeChange = (contentWidth, contentHeight) => {
-        setTimeout(() => {
-            // this.scrollToInitialIndexIfNeeded(contentWidth, contentHeight);
-            this.setState({contentHeight});
+        this.setState({contentHeight}, () => {
             if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
                 // We still have less than 1 screen of posts loaded with more to get, so load more
                 this.props.onLoadMoreUp();
