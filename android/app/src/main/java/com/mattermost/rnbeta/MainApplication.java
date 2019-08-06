@@ -193,7 +193,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SvgPackage(),
             new LinearGradientPackage(),
             new ReactVideoPackage(),
-            new RNGestureHandlerPackage()
+            new RNGestureHandlerPackage(),
+            new RNPasteableTextInputPackage()
     );
   }
 

@@ -120,10 +120,15 @@ export default class FileUploadItem extends PureComponent {
             'X-CSRF-Token': Client4.csrf,
         };
 
+        let filePath = file.localPath;
+        if (file.localPath.startsWith('http')) {
+            filePath = await this.downloadFile(file);
+        }
+
         const fileInfo = {
             name: 'files',
             filename: encodeHeaderURIStringToUTF8(fileData.name),
-            data: RNFetchBlob.wrap(file.localPath.replace('file://', '')),
+            data: RNFetchBlob.wrap(filePath.replace('file://', '')),
             type: fileData.type,
         };
 
@@ -144,6 +149,18 @@ export default class FileUploadItem extends PureComponent {
         this.uploadPromise.uploadProgress(this.handleUploadProgress);
         this.uploadPromise.then(this.handleUploadCompleted).catch(this.handleUploadError);
     };
+
+    downloadFile = async (file) => {
+        try {
+            const options = {fileCache: true};
+            this.tempDownloadPath = await RNFetchBlob.config(options).fetch('GET', file.localPath);
+            return this.tempDownloadPath.path();
+        } catch (e) {
+            this.handleUploadError(e);
+        }
+
+        return null;
+    }
 
     renderProgress = (fill) => {
         const realFill = Number(fill.toFixed(0));
