@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
-import {Sentry} from 'react-native-sentry';
+import * as Sentry from '@sentry/react-native';
 
 import Config from 'assets/config';
 

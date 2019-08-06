@@ -86,8 +86,6 @@ if (System.getenv("SENTRY_ENABLED") == "true") {
         logLevel: "error",
         flavorAware: false
     ]
-
-    apply from: "../../node_modules/react-native-sentry/sentry.gradle"
 }
 
 /**
@@ -235,7 +233,6 @@ dependencies {
     implementation project(':react-native-local-auth')
     implementation project(':jail-monkey')
     implementation project(':react-native-youtube')
-    implementation project(':react-native-sentry')
     implementation project(':react-native-exception-handler')
     implementation project(':rn-fetch-blob')
     implementation project(':react-native-webview')
