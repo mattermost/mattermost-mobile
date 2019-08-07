@@ -44,7 +44,7 @@ export default class DisplaySettings extends PureComponent {
         const {intl} = this.context;
 
         if (Platform.OS === 'ios') {
-            const screen = 'ClockDisplay';
+            const screen = 'ClockDisplaySettings';
             const title = intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'});
             actions.goToScreen(screen, title);
             return;
