@@ -18,6 +18,7 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import ProgressiveImage from 'app/components/progressive_image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import {getCurrentServerUrl} from 'app/init/credentials';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import ImageCacheManager from 'app/utils/image_cache_manager';
@@ -42,7 +43,7 @@ export default class MarkdownImage extends React.Component {
         imagesMetadata: PropTypes.object,
         linkDestination: PropTypes.string,
         isReplyPost: PropTypes.bool,
-        serverURL: PropTypes.string.isRequired,
+        serverURL: PropTypes.string,
         source: PropTypes.string.isRequired,
         errorTextStyle: CustomPropTypes.Style,
     };
@@ -95,11 +96,15 @@ export default class MarkdownImage extends React.Component {
         this.mounted = false;
     }
 
-    getSource = () => {
+    getSource = async () => {
         let source = this.props.source;
+        let serverUrl = this.props.serverURL;
+        if (!serverUrl) {
+            serverUrl = await getCurrentServerUrl();
+        }
 
         if (source.startsWith('/')) {
-            source = this.props.serverURL + '/' + source;
+            source = serverUrl + '/' + source;
         }
 
         return source;

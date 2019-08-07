@@ -7,6 +7,7 @@ import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import {getCurrentServerUrl} from 'app/init/credentials';
 import {preventDoubleTap} from 'app/utils/tap';
 
 export default class MarkdownTableImage extends React.PureComponent {
@@ -17,7 +18,7 @@ export default class MarkdownTableImage extends React.PureComponent {
         children: PropTypes.node.isRequired,
         source: PropTypes.string.isRequired,
         textStyle: CustomPropTypes.Style.isRequired,
-        serverURL: PropTypes.string.isRequired,
+        serverURL: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
@@ -40,11 +41,16 @@ export default class MarkdownTableImage extends React.PureComponent {
         actions.goToScreen(screen, title, passProps);
     });
 
-    getImageSource = () => {
+    getImageSource = async () => {
         let source = this.props.source;
+        let serverUrl = this.props.serverURL;
+
+        if (!serverUrl) {
+            serverUrl = await getCurrentServerUrl();
+        }
 
         if (source.startsWith('/')) {
-            source = `${this.props.serverURL}/${source}`;
+            source = `${serverUrl}/${source}`;
         }
 
         return source;
