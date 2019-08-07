@@ -35,19 +35,9 @@
     uri = tempFileURL.absoluteString;
   }
   
-  BOOL vertical = (image.size.width < image.size.height) ? YES : NO;
-  
-  NSISO8601DateFormatter *dateFormatter = [[NSISO8601DateFormatter alloc] init];
-  NSString *timestamp = [dateFormatter stringFromDate:[NSDate date]];
-  
   return @{
            @"fileName": tempFilename,
            @"fileSize": @([imageData length]),
-           @"height": @(image.size.height),
-           @"width": @(image.size.width),
-           @"isVertical": @(vertical),
-           @"origURL": uri,
-           @"timestamp": timestamp,
            @"type": mimeType,
            @"uri": uri,
            };
