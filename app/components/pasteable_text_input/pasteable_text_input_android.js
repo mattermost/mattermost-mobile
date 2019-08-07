@@ -9,6 +9,7 @@ import requireNativeComponent from 'requireNativeComponent';
 const AndroidTextInput = requireNativeComponent('PasteableTextInputAndroid');
 
 class PasteableTextInputAndroid extends TextInput {
+    // Override React Native's TextInput render for Android
     _renderAndroid = () => {
         const props = Object.assign({}, this.props);
         props.style = [this.props.style];

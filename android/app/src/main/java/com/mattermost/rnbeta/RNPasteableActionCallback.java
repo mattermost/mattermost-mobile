@@ -8,8 +8,6 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.reactnativenavigation.parse.params.Bool;
-
 public class RNPasteableActionCallback implements ActionMode.Callback {
 
     private RNPasteableEditText mEditText;
@@ -30,7 +28,7 @@ public class RNPasteableActionCallback implements ActionMode.Callback {
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        if (item.getItemId() == android.R.id.paste && this.showCustomHandleOnPaste()) {
+        if (item.getItemId() == android.R.id.paste && this.shouldCustomHandlePaste()) {
             mEditText.getOnPasteListener().onPaste();
             mode.finish();
         } else {
@@ -45,7 +43,7 @@ public class RNPasteableActionCallback implements ActionMode.Callback {
 
     }
 
-    private boolean showCustomHandleOnPaste() {
+    private boolean shouldCustomHandlePaste() {
         ClipboardManager clipboardManager = (ClipboardManager) mEditText.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clipData = clipboardManager.getPrimaryClip();
 
