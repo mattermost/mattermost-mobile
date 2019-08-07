@@ -84,6 +84,7 @@ export default class FileUploadItem extends PureComponent {
             actions.uploadFailed([file.clientId], channelId, rootId, response.message);
         }
         this.uploadPromise = null;
+        this.cleanUpTempFile();
     };
 
     handleUploadError = (error) => {
@@ -92,6 +93,7 @@ export default class FileUploadItem extends PureComponent {
             actions.uploadFailed([file.clientId], channelId, rootId, error);
         }
         this.uploadPromise = null;
+        this.cleanUpTempFile();
     };
 
     handleUploadProgress = (loaded, total) => {
@@ -160,6 +162,15 @@ export default class FileUploadItem extends PureComponent {
         }
 
         return null;
+    }
+
+    cleanUpTempFile = () => {
+        if (!this.tempDownloadPath) {
+            return;
+        }
+
+        this.tempDownloadPath.flush();
+        this.tempDownloadPath = null;
     }
 
     renderProgress = (fill) => {
