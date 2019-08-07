@@ -44,63 +44,8 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
     protected void addEventEmitters(ThemedReactContext reactContext, ReactEditText editText) {
         super.addEventEmitters(reactContext, editText);
 
-        ((RNPasteableEditText)editText).setOnPasteListener(new RNEditTextOnPasteListener() {
-            @Override
-            public void onPaste() {
-                ClipboardManager clipboardManager = (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clipData = clipboardManager.getPrimaryClip();
-
-                ClipData.Item item = clipData.getItemAt(0);
-                if (item == null) {
-                    return;
-                }
-
-                Uri itemUri = item.getUri();
-                if (itemUri == null) {
-                    return;
-                }
-
-                String uri = itemUri.toString();
-                // Special handle for Google docs
-                if (itemUri.toString().equals("content://com.google.android.apps.docs.editors.kix.editors.clipboard")) {
-                    String htmlText = item.getHtmlText();
-                    // Find uri from html
-                    Matcher matcher = Patterns.WEB_URL.matcher(htmlText);
-                    if (matcher.find()) {
-                        uri = htmlText.substring(matcher.start(1), matcher.end());
-                    }
-                }
-
-                if (uri.startsWith("http")) {
-                    Thread pastImageFromUrlThread = new Thread(new RNPasteableImageFromUrl(reactContext, editText, uri));
-                    pastImageFromUrlThread.start();
-                    return;
-                }
-
-                String extension = MimeTypeMap.getFileExtensionFromUrl(uri);
-                if (extension == null) {
-                    return;
-                }
-
-                String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-                if (mimeType == null) {
-                    return;
-                }
-
-                WritableMap event = Arguments.createMap();
-                event.putString("type", mimeType);
-                event.putDouble("fileSize", 0);
-                event.putString("fileName", URLUtil.guessFileName(uri, null, mimeType));
-                event.putString("uri", uri);
-                reactContext
-                        .getJSModule(RCTEventEmitter.class)
-                        .receiveEvent(
-                                editText.getId(),
-                                "onPaste",
-                                event
-                        );
-            }
-        });
+        RNPasteableEditText pasteableEditText = (RNPasteableEditText)editText;
+        pasteableEditText.setOnPasteListener(new RNPasteableEditTextOnPasteListener(pasteableEditText));
     }
 
     @Nullable
