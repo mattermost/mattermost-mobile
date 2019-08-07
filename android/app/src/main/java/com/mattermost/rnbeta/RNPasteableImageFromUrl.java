@@ -29,11 +29,15 @@ public class RNPasteableImageFromUrl implements Runnable {
             URL url = new URL(mUri);
             try {
                 URLConnection u = url.openConnection();
-                // Get fileSize
-                long length = Long.parseLong(u.getHeaderField("Content-Length"));
 
                 // Get type
                 String type = u.getHeaderField("Content-Type");
+                if (!type.startsWith("image")) {
+                    return;
+                }
+
+                // Get fileSize
+                long length = Long.parseLong(u.getHeaderField("Content-Length"));
 
                 // Get fileName
                 String contentDisposition = u.getHeaderField("Content-Disposition");
