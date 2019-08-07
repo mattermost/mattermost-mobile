@@ -65,6 +65,10 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
             return;
         }
 
+        uri = RealPathUtil.getRealPathFromURI(reactContext, itemUri);
+        if (uri == null) {
+            return;
+        }
         uri = "file://" + uri;
 
         // Get type
@@ -82,7 +86,7 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         long fileSize = 0;
         try {
             ContentResolver contentResolver = reactContext.getContentResolver();
-            AssetFileDescriptor assetFileDescriptor = contentResolver.openAssetFileDescriptor(Uri.parse(uri), "r");
+            AssetFileDescriptor assetFileDescriptor = contentResolver.openAssetFileDescriptor(itemUri, "r");
             fileSize = assetFileDescriptor.getLength();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
