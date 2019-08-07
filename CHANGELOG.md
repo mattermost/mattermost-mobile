@@ -15,26 +15,30 @@
 #### Android Q Improvements
 
 ### Improvements
+ - Added a setting for tablets to enable or disable fixed sidebar.
  - Changed "about" section references to use the site name when it is configured in **System Console > Custom Branding > Site Name**.
  - Added support for plus-sign and period/dot in custom URL schemes.
- - Added "Edit profile" button to right-hand sie menu and user's own profile pop-over.
+ - Added "Edit profile" button to right-hand side menu and to users' own profile pop-over.
  - Message draft is now saved when closing the app.
- - Removing a link preview on webapp now also removes it on mobile app.
+ - Removing a link preview on webapp now also removes it on the mobile app.
  - Added ability to select and copy channel header text.
 
 ### Bug Fixes
  - Fixed a few mobile app crash / fatal error issues.
  - Fixed an issue where old theme's colors were applied to navigation bar during screen transitions.
- - Fixed an issue on iOS where returning from landscape video playback on moved status bar under notch.
+ - Fixed an issue on iOS where returning from landscape video playback moved status bar under notch.
  - Fixed an issue where contents of ephemeral posts from /giphy were not being displayed on mobile.
  - Fixed an issue where team/channel page dots at the bottom of left-hand side overlapped with the last Direct Message channel.
  - Fixed an issue where network reconnection incorrectly showed refreshing messages failed.
  - Fixed an issue with a dark blue section at the bottom of channel list on iPhone X.
+ - Fixed an issue where "Message failed to send" had confusing app badge behaviour.
+ - Fixed an issue where a white screen was briefly shown after pressing "Send Message" when viewing a user's profile.
+ - Fixed an issue on Android where using "Https" instead of "https" in the url of an image didn't show the preview.
+ - Fixed an issue where the client ``setCSRFFromCookie`` did not look for subpaths when accessing cookies.
+ - Fixed an issue where archived teams reappeared in selector.
  
 ### Known Issues
-  - Buttons inside ephemeral posts are not clickable / functional on the mobile app. [MM-15084](https://mattermost.atlassian.net/browse/MM-15084)
   - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
-  
 
 ## 1.21.0 Release
 - Release Date: July 16, 2019
