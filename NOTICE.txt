@@ -314,7 +314,7 @@ SOFTWARE.
 
 ## core-js
 
-This product contains 'core-js' by Espen Hovlandsdal.
+This product contains 'core-js' by Denis Pushkarev.
 
 Modular standard library for JavaScript.
 
