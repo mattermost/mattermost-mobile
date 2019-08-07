@@ -35,6 +35,8 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
         int inputType = editText.getInputType();
         editText.setInputType(inputType & (~InputType.TYPE_TEXT_FLAG_MULTI_LINE));
         editText.setReturnKeyType("done");
+        editText.setCustomInsertionActionModeCallback(new RNPasteableActionCallback(editText));
+        editText.setCustomSelectionActionModeCallback(new RNPasteableActionCallback(editText));
         return editText;
     }
 

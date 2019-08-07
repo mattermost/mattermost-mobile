@@ -12,16 +12,11 @@ public class RNPasteableEditText extends ReactEditText {
         super(context);
     }
 
-    @Override
-    public boolean onTextContextMenuItem(int id) {
-        if (id == android.R.id.paste && mOnPasteListener != null) {
-            mOnPasteListener.onPaste();
-        }
-
-        return super.onTextContextMenuItem(id);
-    }
-
     public void setOnPasteListener(RNEditTextOnPasteListener listener) {
         mOnPasteListener = listener;
+    }
+
+    public RNEditTextOnPasteListener getOnPasteListener() {
+        return mOnPasteListener;
     }
 }
