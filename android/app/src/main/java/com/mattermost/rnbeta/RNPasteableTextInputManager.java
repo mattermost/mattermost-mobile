@@ -2,11 +2,10 @@ package com.mattermost.rnbeta;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.text.InputType;
-import android.util.Log;
+import android.util.Patterns;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 
@@ -18,11 +17,8 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.react.views.textinput.ReactEditText;
 import com.facebook.react.views.textinput.ReactTextInputManager;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import javax.annotation.Nullable;
 
@@ -57,12 +53,29 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
                     return;
                 }
 
-                String text = item.getText().toString();
-                if (!text.startsWith("http")) {
+                Uri itemUri = item.getUri();
+                if (itemUri == null) {
                     return;
                 }
 
-                String extension = MimeTypeMap.getFileExtensionFromUrl(text);
+                String uri = itemUri.toString();
+                // Special handle for Google docs
+                if (itemUri.toString().equals("content://com.google.android.apps.docs.editors.kix.editors.clipboard")) {
+                    String htmlText = item.getHtmlText();
+                    // Find uri from html
+                    Matcher matcher = Patterns.WEB_URL.matcher(htmlText);
+                    if (matcher.find()) {
+                        uri = htmlText.substring(matcher.start(1), matcher.end());
+                    }
+                }
+
+                if (uri.startsWith("http")) {
+                    Thread pastImageFromUrlThread = new Thread(new PasteImageFromUrl(reactContext, editText, uri));
+                    pastImageFromUrlThread.start();
+                    return;
+                }
+
+                String extension = MimeTypeMap.getFileExtensionFromUrl(uri);
                 if (extension == null) {
                     return;
                 }
@@ -74,8 +87,9 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
 
                 WritableMap event = Arguments.createMap();
                 event.putString("type", mimeType);
-                event.putString("fileName", URLUtil.guessFileName(text, null, mimeType));
-                event.putString("uri", text);
+                event.putDouble("fileSize", 0);
+                event.putString("fileName", URLUtil.guessFileName(uri, null, mimeType));
+                event.putString("uri", uri);
                 reactContext
                         .getJSModule(RCTEventEmitter.class)
                         .receiveEvent(
