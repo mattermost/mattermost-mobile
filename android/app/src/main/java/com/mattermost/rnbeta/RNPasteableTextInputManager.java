@@ -72,7 +72,7 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
                 }
 
                 if (uri.startsWith("http")) {
-                    Thread pastImageFromUrlThread = new Thread(new PasteImageFromUrl(reactContext, editText, uri));
+                    Thread pastImageFromUrlThread = new Thread(new RNPasteableImageFromUrl(reactContext, editText, uri));
                     pastImageFromUrlThread.start();
                     return;
                 }

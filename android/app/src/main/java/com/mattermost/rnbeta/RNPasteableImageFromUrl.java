@@ -11,13 +11,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class PasteImageFromUrl implements Runnable {
+public class RNPasteableImageFromUrl implements Runnable {
 
     private ReactContext mContext;
     private String mUri;
     private ReactEditText mTarget;
 
-    PasteImageFromUrl(ReactContext context, ReactEditText target, String uri) {
+    RNPasteableImageFromUrl(ReactContext context, ReactEditText target, String uri) {
         mContext = context;
         mUri = uri;
         mTarget = target;
