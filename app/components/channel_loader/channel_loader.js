@@ -19,7 +19,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 const {View: AnimatedView} = Animated;
 
 function calculateMaxRows(height) {
-    return Math.round(height / 100);
+    return Math.round(height / 120);
 }
 
 export default class ChannelLoader extends PureComponent {
