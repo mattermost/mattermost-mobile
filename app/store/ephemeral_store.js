@@ -19,6 +19,13 @@ class EphemeralStore {
         }
 
         this.navigationComponentIdStack.unshift(componentId);
+    };
+
+    removeNavigationComponentId = (componentId) => {
+        const index = this.navigationComponentIdStack.indexOf(componentId);
+        if (index >= 0) {
+            this.navigationComponentIdStack.splice(index, 1);
+        }
     }
 }
 

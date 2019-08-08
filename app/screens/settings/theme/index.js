@@ -11,7 +11,6 @@ import {savePreferences} from 'mattermost-redux/actions/preferences';
 
 import {getAllowedThemes, getCustomTheme} from 'app/selectors/theme';
 import {isLandscape, isTablet} from 'app/selectors/device';
-import {applyTheme} from 'app/actions/navigation';
 
 import Theme from './theme';
 
@@ -28,7 +27,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
     actions: bindActionCreators({
         savePreferences,
-        applyTheme,
     }, dispatch),
 });
 
