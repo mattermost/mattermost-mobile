@@ -69,7 +69,6 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         if (uri == null) {
             return;
         }
-        uri = "file://" + uri;
 
         // Get type
         String extension = MimeTypeMap.getFileExtensionFromUrl(uri);
@@ -99,7 +98,7 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         event.putString("type", mimeType);
         event.putDouble("fileSize", fileSize);
         event.putString("fileName", fileName);
-        event.putString("uri", uri);
+        event.putString("uri", "file://" + uri);
         reactContext
                 .getJSModule(RCTEventEmitter.class)
                 .receiveEvent(
