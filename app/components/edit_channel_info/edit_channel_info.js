@@ -337,7 +337,7 @@ export default class EditChannelInfo extends PureComponent {
                                 maxHeight={200}
                                 onChangeText={this.onHeaderChangeText}
                                 value={header}
-                                nestedScrollEnabled
+                                nestedScrollEnabled={true}
                             />
                             <View style={[style.inputContainer, padding(isLandscape)]}>
                                 <TextInputWithLocalizedPlaceholder
