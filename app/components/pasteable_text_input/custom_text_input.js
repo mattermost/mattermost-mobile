@@ -1,5 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+/* eslint-disable no-underscore-dangle */
+
 import React from 'react';
 import {TextInput, Text, TouchableWithoutFeedback} from 'react-native';
 import UIManager from 'UIManager';
@@ -45,6 +48,7 @@ class CustomTextInput extends TextInput {
                 onSelectionChange={this._onSelectionChange}
                 onTextInput={this._onTextInput}
                 text={this._getText()}
+                // eslint-disable-next-line react/no-children-prop
                 children={children}
                 disableFullscreenUI={this.props.disableFullscreenUI}
                 textBreakStrategy={this.props.textBreakStrategy}
@@ -72,7 +76,7 @@ class CustomTextInput extends TextInput {
     _onPaste = (event) => {
         const {nativeEvent} = event;
         const {onPaste} = this.props;
-        onPaste?.(nativeEvent);
+        return onPaste?.(nativeEvent);
     }
 }
 

@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import {TextInput, NativeEventEmitter, NativeModules} from 'react-native';
@@ -27,7 +28,7 @@ class PasteableTextInput extends React.Component {
 
     onPaste = (event) => {
         const {onPaste} = this.props;
-        onPaste?.(event);
+        return onPaste?.(event);
     }
 
     render() {
