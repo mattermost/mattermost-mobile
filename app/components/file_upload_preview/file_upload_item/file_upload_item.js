@@ -124,7 +124,12 @@ export default class FileUploadItem extends PureComponent {
 
         let filePath = file.localPath;
         if (file.localPath.startsWith('http')) {
-            filePath = await this.downloadFile(file);
+            try {
+                this.tempDownloadFile = await this.downloadFile(file);
+                filePath = this.tempDownloadFile.path();
+            } catch (e) {
+                this.handleUploadError(e);
+            }
         }
 
         const fileInfo = {
@@ -153,24 +158,18 @@ export default class FileUploadItem extends PureComponent {
     };
 
     downloadFile = async (file) => {
-        try {
-            const options = {fileCache: true};
-            this.tempDownloadPath = await RNFetchBlob.config(options).fetch('GET', file.localPath);
-            return this.tempDownloadPath.path();
-        } catch (e) {
-            this.handleUploadError(e);
-        }
-
-        return null;
+        const options = {fileCache: true};
+        const tempDownloadFile = await RNFetchBlob.config(options).fetch('GET', file.localPath);
+        return tempDownloadFile;
     }
 
     cleanUpTempFile = () => {
-        if (!this.tempDownloadPath) {
+        if (!this.tempDownloadFile) {
             return;
         }
 
-        this.tempDownloadPath.flush();
-        this.tempDownloadPath = null;
+        this.tempDownloadFile.flush();
+        this.tempDownloadFile = null;
     }
 
     renderProgress = (fill) => {
