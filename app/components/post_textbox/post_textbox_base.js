@@ -28,6 +28,7 @@ import FormattedText from 'app/components/formatted_text';
 import SendButton from 'app/components/send_button';
 
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import {NOTIFY_ALL_MEMBERS} from 'app/constants/view';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -50,6 +51,7 @@ export default class PostTextBoxBase extends PureComponent {
             handleCommentDraftSelectionChanged: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
             selectPenultimateChannel: PropTypes.func.isRequired,
+            getChannelTimezones: PropTypes.func.isRequired,
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
@@ -71,6 +73,10 @@ export default class PostTextBoxBase extends PureComponent {
         onCloseChannel: PropTypes.func,
         cursorPositionEvent: PropTypes.string,
         valueEvent: PropTypes.string,
+        currentChannelMembersCount: PropTypes.number,
+        enableConfirmNotificationsToChannel: PropTypes.bool,
+        isTimezoneEnabled: PropTypes.bool,
+        currentChannel: PropTypes.object,
     };
 
     static defaultProps = {
@@ -93,10 +99,11 @@ export default class PostTextBoxBase extends PureComponent {
             keyboardType: 'default',
             top: 0,
             value: props.value,
+            channelTimezoneCount: 0,
         };
     }
 
-    componentDidMount() {
+    componentDidMount(prevProps) {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
 
         EventEmitter.on(event, this.handleInsertTextToDraft);
@@ -105,6 +112,10 @@ export default class PostTextBoxBase extends PureComponent {
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
+        }
+
+        if (this.props.isTimezoneEnabled !== prevProps?.isTimezoneEnabled || prevProps?.channelId !== this.props.channelId) {
+            this.numberOfTimezones().then((channelTimezoneCount) => this.setState({channelTimezoneCount}));
         }
     }
 
@@ -131,6 +142,11 @@ export default class PostTextBoxBase extends PureComponent {
             this.input.current.blur();
         }
     };
+
+    numberOfTimezones = async () => {
+        const {data} = await this.props.actions.getChannelTimezones(this.props.channelId);
+        return data?.length || 0;
+    }
 
     canSend = () => {
         const {files, maxMessageLength, uploadFileRequestStatus} = this.props;
@@ -389,10 +405,9 @@ export default class PostTextBoxBase extends PureComponent {
     }
 
     sendMessage = () => {
-        const {actions, currentUserId, channelId, files, rootId} = this.props;
+        const {files} = this.props;
         const {intl} = this.context;
         const {value} = this.state;
-
         if (files.length === 0 && !value) {
             Alert.alert(
                 intl.formatMessage({
@@ -408,62 +423,136 @@ export default class PostTextBoxBase extends PureComponent {
                 }],
             );
         } else {
+            const currentMembersCount = this.props.currentChannelMembersCount;
+            const notificationsToChannel = this.props.enableConfirmNotificationsToChannel;
+            const toAllorChannel = this.textContainsAtAllAtChannel(value);
+
             if (value.indexOf('/') === 0) {
                 this.sendCommand(value);
+            } else if (notificationsToChannel && currentMembersCount > NOTIFY_ALL_MEMBERS && toAllorChannel) {
+                this.showSendToAllOrChannelAlert(currentMembersCount);
             } else {
-                const postFiles = files.filter((f) => !f.failed);
-                const post = {
-                    user_id: currentUserId,
-                    channel_id: channelId,
-                    root_id: rootId,
-                    parent_id: rootId,
-                    message: value,
-                };
-
-                actions.createPost(post, postFiles);
-
-                if (postFiles.length) {
-                    actions.handleClearFiles(channelId, rootId);
-                }
+                this.doSubmitMessage();
             }
-
-            if (Platform.OS === 'ios') {
-                // On iOS, if the PostTextbox height increases from its
-                // initial height (due to a multiline post or a post whose
-                // message wraps, for example), then when the text is cleared
-                // the PostTextbox height decrease will be animated. This
-                // animation in conjunction with the PostList animation as it
-                // receives the newly created post is causing issues in the iOS
-                // PostList component as it fails to properly react to its content
-                // size changes. While a proper fix is determined for the PostList
-                // component, a small delay in triggering the height decrease
-                // animation gives the PostList enough time to first handle content
-                // size changes from the new post.
-                setTimeout(() => {
-                    this.handleTextChange('');
-                }, 250);
-            } else {
-                this.handleTextChange('');
-            }
-
-            this.changeDraft('');
-
-            let callback;
-            if (Platform.OS === 'android') {
-                // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
-                // are typed successively without blurring the input
-                const nextState = {
-                    keyboardType: 'email-address',
-                };
-
-                callback = () => this.setState({keyboardType: 'default'});
-
-                this.setState(nextState, callback);
-            }
-
-            EventEmitter.emit('scroll-to-bottom');
         }
     };
+
+    textContainsAtAllAtChannel = (text) => {
+        const textWithoutCode = text.replace(/(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)| *(`{3,}|~{3,})[ .]*(\S+)? *\n([\s\S]*?\s*)\3 *(?:\n+|$)/g, '');
+        return (/\B@(all|channel)\b/i).test(textWithoutCode);
+    }
+
+    showSendToAllOrChannelAlert = (currentMembersCount) => {
+        const {intl} = this.context;
+        const {channelTimezoneCount} = this.state;
+        const {isTimezoneEnabled} = this.props;
+
+        let notifyAllMessage = '';
+        if (isTimezoneEnabled && channelTimezoneCount) {
+            notifyAllMessage = (
+                intl.formatMessage(
+                    {
+                        id: 'mobile.post_textbox.entire_channel.message.with_timezones',
+                        defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers} people in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
+                    },
+                    {
+                        totalMembers: currentMembersCount - 1,
+                        timezones: channelTimezoneCount,
+                    }
+                )
+            );
+        } else {
+            notifyAllMessage = (
+                intl.formatMessage(
+                    {
+                        id: 'mobile.post_textbox.entire_channel.message',
+                        defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers} people. Are you sure you want to do this?',
+                    },
+                    {
+                        totalMembers: currentMembersCount - 1,
+                    }
+                )
+            );
+        }
+
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.post_textbox.entire_channel.title',
+                defaultMessage: 'Confirm sending notifications to entire channel',
+            }),
+            notifyAllMessage,
+            [
+                {
+                    text: intl.formatMessage({
+                        id: 'mobile.post_textbox.entire_channel.cancel',
+                        defaultMessage: 'Cancel',
+                    }),
+                },
+                {
+                    text: intl.formatMessage({
+                        id: 'mobile.post_textbox.entire_channel.confirm',
+                        defaultMessage: 'Confirm',
+                    }),
+                    onPress: () => this.doSubmitMessage(),
+                },
+            ],
+        );
+    }
+
+    doSubmitMessage = () => {
+        const {actions, currentUserId, channelId, files, rootId} = this.props;
+        const {value} = this.state;
+        const postFiles = files.filter((f) => !f.failed);
+        const post = {
+            user_id: currentUserId,
+            channel_id: channelId,
+            root_id: rootId,
+            parent_id: rootId,
+            message: value,
+        };
+
+        actions.createPost(post, postFiles);
+
+        if (postFiles.length) {
+            actions.handleClearFiles(channelId, rootId);
+        }
+
+        if (Platform.OS === 'ios') {
+            // On iOS, if the PostTextbox height increases from its
+            // initial height (due to a multiline post or a post whose
+            // message wraps, for example), then when the text is cleared
+            // the PostTextbox height decrease will be animated. This
+            // animation in conjunction with the PostList animation as it
+            // receives the newly created post is causing issues in the iOS
+            // PostList component as it fails to properly react to its content
+            // size changes. While a proper fix is determined for the PostList
+            // component, a small delay in triggering the height decrease
+            // animation gives the PostList enough time to first handle content
+            // size changes from the new post.
+            setTimeout(() => {
+                this.handleTextChange('');
+            }, 250);
+        } else {
+            this.handleTextChange('');
+        }
+
+        this.changeDraft('');
+
+        let callback;
+        if (Platform.OS === 'android') {
+            // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
+            // are typed successively without blurring the input
+            const nextState = {
+                keyboardType: 'email-address',
+            };
+
+            callback = () => this.setState({keyboardType: 'default'});
+
+            this.setState(nextState, callback);
+        }
+
+        EventEmitter.emit('scroll-to-bottom');
+    }
 
     getStatusFromSlashCommand = (message) => {
         const tokens = message.split(' ');
