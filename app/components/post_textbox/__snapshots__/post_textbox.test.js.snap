@@ -66,8 +66,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         ]
       }
     >
-      <TextInput
-        allowFontScaling={true}
+      <ForwardRef(WrappedPasteableTextInput)
         blurOnSubmit={false}
         disableFullscreenUI={true}
         editable={true}
@@ -75,10 +74,10 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         multiline={true}
         onChangeText={[Function]}
         onEndEditing={[Function]}
+        onPaste={[Function]}
         onSelectionChange={[Function]}
         placeholder="Write to Test Channel"
         placeholderTextColor="rgba(0,0,0,0.5)"
-        rejectResponderTermination={true}
         style={
           Object {
             "color": "#000",
