@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Platform, TextInput, NativeEventEmitter, NativeModules} from 'react-native';
-import PasteableTextInputAndroid from './pasteable_text_input_android';
+import {TextInput, NativeEventEmitter, NativeModules} from 'react-native';
+import CustomTextInput from './custom_text_input';
 
 const {OnPasteEventManager} = NativeModules;
 const OnPasteEventEmitter = new NativeEventEmitter(OnPasteEventManager);
@@ -20,7 +20,9 @@ class PasteableTextInput extends React.Component {
     }
 
     componentWillUnmount() {
-        this.subscription.remove();
+        if (this.subscription) {
+            this.subscription.remove();
+        }
     }
 
     onPaste = (event) => {
@@ -30,17 +32,9 @@ class PasteableTextInput extends React.Component {
 
     render() {
         const {forwardRef, ...props} = this.props;
-        if (Platform.OS === 'android') {
-            return (
-                <PasteableTextInputAndroid
-                    {...props}
-                    ref={forwardRef}
-                />
-            );
-        }
 
         return (
-            <TextInput
+            <CustomTextInput
                 {...props}
                 ref={forwardRef}
             />
