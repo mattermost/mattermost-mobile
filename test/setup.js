@@ -34,6 +34,11 @@ jest.mock('NativeModules', () => {
                 END: 'END',
             },
         },
+        RNKeychainManager: {
+            SECURITY_LEVEL_ANY: 'ANY',
+            SECURITY_LEVEL_SECURE_SOFTWARE: 'SOFTWARE',
+            SECURITY_LEVEL_SECURE_HARDWARE: 'HARDWARE',
+        },
     };
 });
 jest.mock('NativeEventEmitter');

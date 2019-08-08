@@ -25,6 +25,7 @@ import LocalConfig from 'assets/config';
 class Settings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            applyTheme: PropTypes.func.isRequired,
             clearErrors: PropTypes.func.isRequired,
             purgeOfflineStore: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
@@ -48,6 +49,11 @@ class Settings extends PureComponent {
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
+    componentDidAppear() {
+        const {actions, componentId} = this.props;
+        actions.applyTheme(componentId);
     }
 
     navigationButtonPressed({buttonId}) {

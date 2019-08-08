@@ -17,8 +17,10 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
 import {DeviceTypes, ListTypes, ViewTypes} from 'app/constants';
+import {getCurrentServerUrl} from 'app/init/credentials';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {removeProtocol} from 'app/utils/url';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
 
@@ -36,7 +38,6 @@ export default class TeamsList extends PureComponent {
         showModal: PropTypes.func.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
-        currentUrl: PropTypes.string.isRequired,
         hasOtherJoinableTeams: PropTypes.bool,
         teams: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
@@ -49,8 +50,16 @@ export default class TeamsList extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.state = {
+            serverUrl: '',
+        };
+
         MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
+        });
+
+        getCurrentServerUrl().then((url) => {
+            this.setState({serverUrl: removeProtocol(url)});
         });
     }
 
@@ -73,13 +82,14 @@ export default class TeamsList extends PureComponent {
         });
     };
 
-    goToSelectTeam = preventDoubleTap(() => {
+    goToSelectTeam = preventDoubleTap(async () => {
         const {intl} = this.context;
-        const {currentUrl, theme, showModal} = this.props;
+        const {theme, showModal} = this.props;
+        const {serverUrl} = this.state;
         const screen = 'SelectTeam';
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
         const passProps = {
-            currentUrl,
+            currentUrl: serverUrl,
             theme,
         };
         const options = {
@@ -127,11 +137,11 @@ export default class TeamsList extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {currentTeamId, currentUrl, theme} = this.props;
+        const {currentTeamId, theme} = this.props;
         return (
             <TeamsListItem
                 currentTeamId={currentTeamId}
-                currentUrl={currentUrl}
+                currentUrl={this.state.serverUrl}
                 selectTeam={this.selectTeam}
                 teamId={item.id}
                 displayName={item.displayName}
@@ -174,6 +184,7 @@ export default class TeamsList extends PureComponent {
                     {moreAction}
                 </View>
                 <FlatList
+                    extraData={this.state.serverUrl}
                     contentContainerStyle={this.listContentPadding()}
                     data={teams}
                     renderItem={this.renderItem}

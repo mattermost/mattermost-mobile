@@ -6,8 +6,6 @@ import {realmConnect} from 'realm-react-redux';
 import {General} from 'app/constants';
 import {showModal} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/realm/actions/team';
-import EphemeralStore from 'app/store/ephemeral_store';
-import {removeProtocol} from 'app/utils/url';
 
 import TeamsList from './teams_list';
 
@@ -23,7 +21,6 @@ function mapPropsToQueries(realm) {
 
 function mapQueriesToProps([myTeams, openTeams]) {
     return {
-        currentUrl: removeProtocol(EphemeralStore.currentServerUrl),
         hasOtherJoinableTeams: !openTeams.isEmpty(),
         teams: myTeams,
     };

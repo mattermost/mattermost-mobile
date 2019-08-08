@@ -103,7 +103,6 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
         horizontalRule: {
             backgroundColor: theme.centerChannelColor,
             height: StyleSheet.hairlineWidth,
-            flex: 1,
             marginVertical: 10,
         },
         quoteBlockIcon: {

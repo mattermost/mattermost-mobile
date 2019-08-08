@@ -267,41 +267,43 @@ export default class Permalink extends PureComponent {
         const {formatMessage} = intl;
         let focusChannelId = channelId;
 
-        const post = await actions.getPostThread(focusedPostId, false);
-        if (post.error && (!postIds || !postIds.length)) {
-            if (this.mounted && isPermalink && post.error.message.toLowerCase() !== 'network request failed') {
-                this.setState({
-                    error: formatMessage({
-                        id: 'permalink.error.access',
-                        defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.',
-                    }),
-                    title: formatMessage({
-                        id: 'mobile.search.no_results',
-                        defaultMessage: 'No Results Found',
-                    }),
-                });
-            } else if (this.mounted) {
-                this.setState({error: post.error.message, retry: true});
+        if (focusedPostId) {
+            const post = await actions.getPostThread(focusedPostId, false);
+            if (post.error && (!postIds || !postIds.length)) {
+                if (this.mounted && isPermalink && post.error.message.toLowerCase() !== 'network request failed') {
+                    this.setState({
+                        error: formatMessage({
+                            id: 'permalink.error.access',
+                            defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.',
+                        }),
+                        title: formatMessage({
+                            id: 'mobile.search.no_results',
+                            defaultMessage: 'No Results Found',
+                        }),
+                    });
+                } else if (this.mounted) {
+                    this.setState({error: post.error.message, retry: true});
+                }
+
+                return;
             }
 
-            return;
-        }
-
-        if (!channelId) {
-            const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
-            focusChannelId = focusedPost ? focusedPost.channel_id : '';
-            if (focusChannelId) {
-                const {data: channel} = await actions.getChannel(focusChannelId);
-                if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
-                    await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+            if (!channelId) {
+                const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
+                focusChannelId = focusedPost ? focusedPost.channel_id : '';
+                if (focusChannelId) {
+                    const {data: channel} = await actions.getChannel(focusChannelId);
+                    if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
+                        await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+                    }
                 }
             }
-        }
 
-        await actions.getPostsAround(focusChannelId, focusedPostId, 10);
+            await actions.getPostsAround(focusChannelId, focusedPostId, 10);
 
-        if (this.mounted) {
-            this.setState({loading: false});
+            if (this.mounted) {
+                this.setState({loading: false});
+            }
         }
     };
 

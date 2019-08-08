@@ -402,24 +402,22 @@ export function dismissOverlay(componentId) {
     };
 }
 
-export function applyTheme() {
+export function applyTheme(componentId) {
     return (dispatch, getState) => {
         const theme = getReduxOrRealmTheme(getState());
 
-        EphemeralStore.getNavigationComponentIds().forEach((componentId) => {
-            Navigation.mergeOptions(componentId, {
-                topBar: {
-                    backButton: {
-                        color: theme.sidebarHeaderTextColor,
-                    },
-                    background: {
-                        color: theme.sidebarHeaderBg,
-                    },
-                    title: {
-                        color: theme.sidebarHeaderTextColor,
-                    },
+        Navigation.mergeOptions(componentId, {
+            topBar: {
+                backButton: {
+                    color: theme.sidebarHeaderTextColor,
                 },
-            });
+                background: {
+                    color: theme.sidebarHeaderBg,
+                },
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                },
+            },
         });
     };
 }
