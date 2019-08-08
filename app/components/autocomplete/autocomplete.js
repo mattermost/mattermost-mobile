@@ -193,6 +193,7 @@ export default class Autocomplete extends PureComponent {
                         onChangeText={this.onChangeText}
                         onResultCountChange={this.handleAtMentionCountChange}
                         value={value || ''}
+                        nestedScrollEnabled={this.props.nestedScrollEnabled}
                     />
                     <ChannelMention
                         {...this.props}
