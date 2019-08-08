@@ -32,7 +32,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "horizontalRule": Object {
             "backgroundColor": "#3d3c40",
-            "flex": 1,
             "height": 0.5,
             "marginVertical": 10,
           },
@@ -167,7 +166,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "horizontalRule": Object {
             "backgroundColor": "#3d3c40",
-            "flex": 1,
             "height": 0.5,
             "marginVertical": 10,
           },
@@ -374,7 +372,6 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           },
           "horizontalRule": Object {
             "backgroundColor": "#3d3c40",
-            "flex": 1,
             "height": 0.5,
             "marginVertical": 10,
           },
