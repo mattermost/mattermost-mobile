@@ -411,7 +411,7 @@ export default class PostTextBoxBase extends PureComponent {
         return this.canSend() || this.isFileLoading();
     }
 
-    sendMessage = async () => {
+    sendMessage = () => {
         const {files} = this.props;
         const {intl} = this.context;
         const {value} = this.state;
@@ -453,26 +453,7 @@ export default class PostTextBoxBase extends PureComponent {
         const {intl} = this.context;
         const {channelTimezoneCount} = this.state;
         const {isTimezoneEnabled} = this.props;
-        const notifyAllTitle = (
-            intl.formatMessage({
-                id: 'mobile.post_textbox.entire_channel.title',
-                defaultMessage: 'Confirm sending notifications to entire channel',
-            })
-        );
 
-        const notifyAllConfirm = (
-            intl.formatMessage({
-                id: 'mobile.post_textbox.entire_channel.confirm',
-                defaultMessage: 'Confirm',
-            })
-        );
-
-        const notifyAllCancel = (
-            intl.formatMessage({
-                id: 'mobile.post_textbox.entire_channel.cancel',
-                defaultMessage: 'Cancel',
-            })
-        );
         let notifyAllMessage = '';
         if (isTimezoneEnabled && channelTimezoneCount) {
             notifyAllMessage = (
@@ -502,14 +483,23 @@ export default class PostTextBoxBase extends PureComponent {
         }
 
         Alert.alert(
-            notifyAllTitle,
+            intl.formatMessage({
+                id: 'mobile.post_textbox.entire_channel.title',
+                defaultMessage: 'Confirm sending notifications to entire channel',
+            }),
             notifyAllMessage,
             [
                 {
-                    text: notifyAllCancel,
+                    text: intl.formatMessage({ 
+                        id: 'mobile.post_textbox.entire_channel.cancel', 
+                        defaultMessage: 'Cancel',
+                    }),
                 },
                 {
-                    text: notifyAllConfirm,
+                    text: intl.formatMessage({
+                        id: 'mobile.post_textbox.entire_channel.confirm',
+                        defaultMessage: 'Confirm',
+                    }),
                     onPress: () => this.doSubmitMessage(),
                 },
             ],
