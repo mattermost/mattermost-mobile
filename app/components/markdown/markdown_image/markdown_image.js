@@ -104,7 +104,7 @@ export default class MarkdownImage extends React.Component {
         }
 
         if (source.startsWith('/')) {
-            source = serverUrl + '/' + source;
+            source = serverUrl + source;
         }
 
         return source;
