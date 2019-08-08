@@ -103,7 +103,7 @@ export default class PostTextBoxBase extends PureComponent {
         };
     }
 
-    async componentDidMount() {
+    componentDidMount(prevProps) {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
 
         EventEmitter.on(event, this.handleInsertTextToDraft);
@@ -114,26 +114,14 @@ export default class PostTextBoxBase extends PureComponent {
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         }
 
-        if (this.props.isTimezoneEnabled) {
-            const {data} = await this.props.actions.getChannelTimezones(this.props.channelId);
-            if (data) {
-                this.setState({channelTimezoneCount: data.length}); // eslint-disable-line react/no-did-mount-set-state
-            } else {
-                this.setState({channelTimezoneCount: 0}); // eslint-disable-line react/no-did-mount-set-state
-            }
+        if (this.props.isTimezoneEnabled !== prevProps?.isTimezoneEnabled || prevProps?.channelId !== this.props.channelId) {
+            this.numberOfTimezones().then((channelTimezoneCount) => this.setState({channelTimezoneCount}));
         }
     }
 
-    async componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps(nextProps) {
         if (nextProps.channelId !== this.props.channelId || nextProps.rootId !== this.props.rootId) {
-            let channelTimezoneCount = 0;
-            if (nextProps.isTimezoneEnabled) {
-                const {data} = await nextProps.actions.getChannelTimezones(nextProps.channelId);
-                if (data) {
-                    channelTimezoneCount = data.length;
-                }
-            }
-            this.setState({value: nextProps.value, channelTimezoneCount});
+            this.setState({value: nextProps.value});
         }
     }
 
@@ -154,6 +142,11 @@ export default class PostTextBoxBase extends PureComponent {
             this.input.current.blur();
         }
     };
+
+    numberOfTimezones = async () => {
+        const {data} = await this.props.actions.getChannelTimezones(this.props.channelId);
+        return data?.length || 0;
+    }
 
     canSend = () => {
         const {files, maxMessageLength, uploadFileRequestStatus} = this.props;
@@ -490,8 +483,8 @@ export default class PostTextBoxBase extends PureComponent {
             notifyAllMessage,
             [
                 {
-                    text: intl.formatMessage({ 
-                        id: 'mobile.post_textbox.entire_channel.cancel', 
+                    text: intl.formatMessage({
+                        id: 'mobile.post_textbox.entire_channel.cancel',
                         defaultMessage: 'Cancel',
                     }),
                 },
