@@ -16,4 +16,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(null, mapDispatchToProps)(FileAttachmentDocument);
+export default connect(null, mapDispatchToProps, null, {forwardRef: true})(FileAttachmentDocument);
