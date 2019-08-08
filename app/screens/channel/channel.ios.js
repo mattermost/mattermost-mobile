@@ -70,6 +70,7 @@ export default class ChannelIOS extends ChannelBase {
                     <ChannelLoader
                         height={height}
                         style={channelLoaderStyle}
+                        spacing={true}
                     />
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
                 </SafeAreaView>

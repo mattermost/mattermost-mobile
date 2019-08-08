@@ -19,7 +19,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 const {View: AnimatedView} = Animated;
 
 function calculateMaxRows(height) {
-    return Math.round(height / 120);
+    return Math.round(height / 100);
 }
 
 export default class ChannelLoader extends PureComponent {
@@ -33,6 +33,7 @@ export default class ChannelLoader extends PureComponent {
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         height: PropTypes.number,
+        spacing: PropTypes.bool,
     };
 
     constructor(props) {
@@ -155,11 +156,17 @@ export default class ChannelLoader extends PureComponent {
         const {
             channelIsLoading,
             style: styleProp,
+            spacing,
             theme,
         } = this.props;
 
         if (!channelIsLoading) {
             return null;
+        }
+
+        let marginBottom = 0;
+        if (spacing) {
+            marginBottom = 50;
         }
 
         const style = getStyleSheet(theme);
@@ -170,12 +177,14 @@ export default class ChannelLoader extends PureComponent {
                 style={[style.container, styleProp, {backgroundColor: bg}]}
                 onLayout={this.handleLayout}
             >
-                {Array(this.state.maxRows).fill().map((item, index) => this.buildSections({
-                    key: index,
-                    style,
-                    bg,
-                    color: theme.centerChannelColor,
-                }))}
+                <View style={[style.subContainer, {marginBottom}]}>
+                    {Array(this.state.maxRows).fill().map((item, index) => this.buildSections({
+                        key: index,
+                        style,
+                        bg,
+                        color: theme.centerChannelColor,
+                    }))}
+                </View>
             </View>
         );
     }
@@ -185,6 +194,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
+        },
+        subContainer: {
+            flex: 1,
+            overflow: 'hidden',
         },
         section: {
             backgroundColor: theme.centerChannelBg,
