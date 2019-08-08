@@ -124,6 +124,14 @@ export default class PostList extends PureComponent {
 
     componentWillUnmount() {
         EventEmitter.off('scroll-to-bottom', this.handleSetScrollToBottom);
+
+        if (this.animationFrameIndexFailed) {
+            cancelAnimationFrame(this.animationFrameIndexFailed);
+        }
+
+        if (this.animationFrameInitialIndex) {
+            cancelAnimationFrame(this.animationFrameInitialIndex);
+        }
     }
 
     handleClosePermalink = () => {
@@ -206,7 +214,7 @@ export default class PostList extends PureComponent {
     };
 
     handleScrollToIndexFailed = () => {
-        requestAnimationFrame(() => {
+        this.animationFrameIndexFailed = requestAnimationFrame(() => {
             if (this.props.initialIndex > 0 && this.state.contentHeight > 0) {
                 this.hasDoneInitialScroll = false;
                 this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
@@ -296,7 +304,7 @@ export default class PostList extends PureComponent {
     scrollToInitialIndexIfNeeded = (index) => {
         if (!this.hasDoneInitialScroll && this.flatListRef?.current) {
             this.hasDoneInitialScroll = true;
-            requestAnimationFrame(() => {
+            this.animationFrameInitialIndex = requestAnimationFrame(() => {
                 this.flatListRef.current.scrollToIndex({
                     animated: false,
                     index,
