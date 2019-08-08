@@ -126,8 +126,11 @@ export default class ChannelBase extends PureComponent {
 
         if (nextProps.currentChannelId !== this.props.currentChannelId &&
             nextProps.currentTeamId === this.props.currentTeamId) {
-            nextProps.actions.getChannelStats(nextProps.currentChannelId);
             PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
+        }
+
+        if (nextProps.currentChannelId !== this.props.currentChannelId) {
+            this.props.actions.getChannelStats(nextProps.currentChannelId);
         }
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
