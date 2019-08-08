@@ -33,6 +33,7 @@ export default class SlashSuggestion extends Component {
         onResultCountChange: PropTypes.func.isRequired,
         value: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
+        nestedScrollEnabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -151,7 +152,7 @@ export default class SlashSuggestion extends Component {
     )
 
     render() {
-        const {maxListHeight, theme} = this.props;
+        const {maxListHeight, theme, nestedScrollEnabled} = this.props;
 
         if (!this.state.active) {
             // If we are not in an active state return null so nothing is rendered
@@ -172,7 +173,7 @@ export default class SlashSuggestion extends Component {
                 ItemSeparatorComponent={AutocompleteDivider}
                 pageSize={10}
                 initialListSize={10}
-                nestedScrollEnabled={true}
+                nestedScrollEnabled={nestedScrollEnabled}
             />
         );
     }

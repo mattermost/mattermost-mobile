@@ -33,12 +33,14 @@ export default class Autocomplete extends PureComponent {
         enableDateSuggestion: PropTypes.bool.isRequired,
         valueEvent: PropTypes.string,
         cursorPositionEvent: PropTypes.string,
+        nestedScrollEnabled: PropTypes.bool,
     };
 
     static defaultProps = {
         isSearch: false,
         cursorPosition: 0,
         enableDateSuggestion: false,
+        nestedScrollEnabled: false,
     };
 
     static getDerivedStateFromProps(props, state) {
@@ -199,6 +201,7 @@ export default class Autocomplete extends PureComponent {
                         onChangeText={this.onChangeText}
                         onResultCountChange={this.handleChannelMentionCountChange}
                         value={value || ''}
+                        nestedScrollEnabled={this.props.nestedScrollEnabled}
                     />
                     <EmojiSuggestion
                         {...this.props}
@@ -207,6 +210,7 @@ export default class Autocomplete extends PureComponent {
                         onChangeText={this.onChangeText}
                         onResultCountChange={this.handleEmojiCountChange}
                         value={value || ''}
+                        nestedScrollEnabled={this.props.nestedScrollEnabled}
                     />
                     <SlashSuggestion
                         {...this.props}
@@ -214,6 +218,7 @@ export default class Autocomplete extends PureComponent {
                         onChangeText={this.onChangeText}
                         onResultCountChange={this.handleCommandCountChange}
                         value={value || ''}
+                        nestedScrollEnabled={this.props.nestedScrollEnabled}
                     />
                     {(this.props.isSearch && this.props.enableDateSuggestion) &&
                     <DateSuggestion
