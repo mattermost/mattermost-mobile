@@ -416,7 +416,10 @@ export default class SelectServer extends PureComponent {
         }
 
         return (
-            <SafeAreaView useLandscapeMargin={true}>
+            <SafeAreaView
+                excludeHeader={true}
+                useLandscapeMargin={true}
+            >
                 <KeyboardAvoidingView
                     behavior='padding'
                     style={style.container}
