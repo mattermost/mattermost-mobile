@@ -57,6 +57,7 @@ function mapStateToProps(state) {
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
+    const currentChannelPinnedPostCount = currentChannelStats && currentChannelStats.pinnedpost_count;
     let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
     const currentChannelMember = getMyCurrentChannelMembership(state);
     const currentUserId = getCurrentUserId(state);
@@ -101,6 +102,7 @@ function mapStateToProps(state) {
         currentChannelCreatorName,
         currentChannelMemberCount,
         currentChannelGuestCount,
+        currentChannelPinnedPostCount,
         currentUserId,
         currentUserIsGuest,
         isChannelMuted: isChannelMuted(currentChannelMember),
