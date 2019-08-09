@@ -23,6 +23,7 @@ describe('ReactionList', () => {
         teammateNameDisplay: 'username',
         userProfiles: [{id: 'user_id_1', username: 'username_1'}, {id: 'user_id_2', username: 'username_2'}],
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot', () => {

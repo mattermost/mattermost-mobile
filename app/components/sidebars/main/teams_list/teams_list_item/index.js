@@ -4,6 +4,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
     Text,
     TouchableHighlight,
     View,
@@ -11,8 +12,8 @@ import {
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TeamIcon from 'app/components/team_icon';
-
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -26,6 +27,32 @@ export default class TeamsListItem extends React.PureComponent {
         selectTeam: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+    };
+
+    constructor(props) {
+        super(props);
+
+        const {width, height} = Dimensions.get('window');
+        const isLandscape = width > height;
+
+        this.state = {
+            isLandscape,
+        };
+    }
+
+    componentDidMount() {
+        Dimensions.addEventListener('change', this.handleDimensions);
+    }
+
+    componentWillUnmount() {
+        Dimensions.removeEventListener('change', this.handleDimensions);
+    }
+
+    handleDimensions = ({window}) => {
+        const {width, height} = window;
+        const isLandscape = width > height;
+
+        this.setState({isLandscape});
     };
 
     selectTeam = preventDoubleTap(() => {
@@ -70,7 +97,7 @@ export default class TeamsListItem extends React.PureComponent {
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                     onPress={this.selectTeam}
                 >
-                    <View style={styles.teamContainer}>
+                    <View style={[styles.teamContainer, padding(this.state.isLandscape)]}>
                         <TeamIcon
                             teamId={teamId}
                             styleContainer={styles.teamIconContainer}

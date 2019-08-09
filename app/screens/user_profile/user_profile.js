@@ -11,10 +11,9 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
-
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ProfilePicture from 'app/components/profile_picture';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
@@ -52,6 +51,7 @@ export default class UserProfile extends PureComponent {
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
         fromSettings: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -142,14 +142,14 @@ export default class UserProfile extends PureComponent {
     };
 
     buildDisplayBlock = (property) => {
-        const {theme, user} = this.props;
+        const {theme, user, isLandscape} = this.props;
         const style = createStyleSheet(theme);
 
         if (user.hasOwnProperty(property) && user[property].length > 0) {
             return (
                 <View>
-                    <Text style={style.header}>{property.toUpperCase()}</Text>
-                    <Text style={style.text}>{user[property]}</Text>
+                    <Text style={[style.header, padding(isLandscape)]}>{property.toUpperCase()}</Text>
+                    <Text style={[style.text, padding(isLandscape)]}>{user[property]}</Text>
                 </View>
             );
         }
@@ -158,7 +158,7 @@ export default class UserProfile extends PureComponent {
     };
 
     buildTimezoneBlock = () => {
-        const {theme, user, militaryTime} = this.props;
+        const {theme, user, militaryTime, isLandscape} = this.props;
         const style = createStyleSheet(theme);
 
         const currentTimezone = getUserCurrentTimezone(user.timezone);
@@ -172,9 +172,9 @@ export default class UserProfile extends PureComponent {
                 <FormattedText
                     id='mobile.routes.user_profile.local_time'
                     defaultMessage='LOCAL TIME'
-                    style={style.header}
+                    style={[style.header, padding(isLandscape)]}
                 />
-                <Text style={style.text}>
+                <Text style={[style.text, padding(isLandscape)]}>
                     <FormattedTime
                         timeZone={currentTimezone}
                         hour12={!militaryTime}
@@ -273,8 +273,9 @@ export default class UserProfile extends PureComponent {
             if (!this.props.bot) {
                 return null;
             }
+
             return (
-                <View style={style.content}>
+                <View style={[style.content, padding(this.props.isLandscape)]}>
                     <View>
                         <Text style={style.header}>{'DESCRIPTION'}</Text>
                         <Text style={style.text}>{this.props.bot.description || ''}</Text>
@@ -295,7 +296,7 @@ export default class UserProfile extends PureComponent {
     }
 
     render() {
-        const {theme, user} = this.props;
+        const {theme, user, isLandscape} = this.props;
         const style = createStyleSheet(theme);
 
         if (!user) {
@@ -326,6 +327,7 @@ export default class UserProfile extends PureComponent {
                         iconType='fontawesome'
                         textId={t('mobile.routes.user_profile.send_message')}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     {this.renderAdditionalOptions()}
                 </ScrollView>

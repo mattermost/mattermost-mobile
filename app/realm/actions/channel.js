@@ -230,3 +230,23 @@ export function getProfilesInChannel(channelId) {
         }
     };
 }
+
+export function getChannelStats(channelId) {
+    return async (dispatch) => {
+        let data;
+
+        try {
+            data = await Client4.getChannelStats(channelId);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        dispatch({
+            type: ChannelTypes.RECEIVED_CHANNEL_STATS,
+            data,
+        });
+
+        return {data};
+    };
+}

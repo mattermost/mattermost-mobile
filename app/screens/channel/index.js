@@ -5,7 +5,7 @@ import {realmConnect} from 'realm-react-redux';
 
 import {peek, goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 import {General, Preferences} from 'app/constants';
-import {loadChannelsForTeam, loadSidebarDirectMessagesProfiles, selectInitialChannel} from 'app/realm/actions/channel';
+import {getChannelStats, loadChannelsForTeam, loadSidebarDirectMessagesProfiles, selectInitialChannel} from 'app/realm/actions/channel';
 import {recordLoadTime} from 'app/realm/actions/general';
 import {selectDefaultTeam} from 'app/realm/actions/team';
 import {getTheme} from 'app/realm/selectors/theme';
@@ -32,6 +32,7 @@ function mapQueriesToProps([currentUser, general, themePreference]) {
 }
 
 const mapRealmDispatchToProps = {
+    getChannelStats,
     goToScreen,
     loadChannelsForTeam,
     loadSidebarDirectMessagesProfiles,

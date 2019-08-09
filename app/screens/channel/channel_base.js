@@ -38,6 +38,7 @@ export default class ChannelBase extends PureComponent {
         currentTeamId: PropTypes.string,
         currentUserId: PropTypes.string,
         disableTermsModal: PropTypes.bool,
+        getChannelStats: PropTypes.func.isRequired,
         goToScreen: PropTypes.func.isRequired,
         loadChannelsForTeam: PropTypes.func.isRequired,
         loadSidebarDirectMessagesProfiles: PropTypes.func.isRequired,
@@ -108,6 +109,8 @@ export default class ChannelBase extends PureComponent {
         if (!this.props.skipMetrics) {
             telemetry.end(['start:channel_screen']);
         }
+
+        this.props.getChannelStats(this.props.currentChannelId);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -128,6 +131,10 @@ export default class ChannelBase extends PureComponent {
         if (nextProps.currentChannelId !== this.props.currentChannelId &&
             nextProps.currentTeamId === this.props.currentTeamId) {
             PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
+        }
+
+        if (nextProps.currentChannelId !== this.props.currentChannelId) {
+            this.props.getChannelStats(nextProps.currentChannelId);
         }
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {

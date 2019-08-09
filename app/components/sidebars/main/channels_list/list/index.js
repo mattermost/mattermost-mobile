@@ -21,7 +21,7 @@ import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
 import Permissions from 'mattermost-redux/constants/permissions';
 
 import {showModal} from 'app/actions/navigation';
-
+import {isLandscape} from 'app/selectors/device';
 import {DeviceTypes, ViewTypes} from 'app/constants';
 
 import List from './list';
@@ -79,6 +79,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         unreadChannelIds,
         orderedChannelIds,
+        isLandscape: isLandscape(state),
     };
 }
 

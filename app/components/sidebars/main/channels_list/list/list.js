@@ -20,12 +20,14 @@ import {General} from 'mattermost-redux/constants';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {DeviceTypes, ListTypes} from 'app/constants';
+import {DeviceTypes, ListTypes, ViewTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 
 import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
+
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -45,6 +47,7 @@ export default class List extends PureComponent {
         theme: PropTypes.object.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
         previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
         actions: PropTypes.shape({
             showModal: PropTypes.func.isRequired,
         }).isRequired,
@@ -342,7 +345,7 @@ export default class List extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const {styles} = this.props;
+        const {styles, isLandscape} = this.props;
         const {intl} = this.context;
         const {
             action,
@@ -355,7 +358,7 @@ export default class List extends PureComponent {
         return (
             <View>
                 {topSeparator && this.renderSectionSeparator()}
-                <View style={styles.titleContainer}>
+                <View style={[styles.titleContainer, padding(isLandscape)]}>
                     <Text style={styles.title}>
                         {intl.formatMessage({id, defaultMessage}).toUpperCase()}
                     </Text>
@@ -418,10 +421,14 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const {styles, theme} = this.props;
+        const {styles, theme, isLandscape} = this.props;
         const {sections, width, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
+
+        const unreadBarStyles = DeviceTypes.IS_IPHONE_X && isLandscape ? {width: width - 32, marginLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE + 16} : {width};
+
+        const unreadTextStyles = DeviceTypes.IS_IPHONE_X && isLandscape ? {marginLeft: -44} : null;
 
         return (
             <View
@@ -445,7 +452,8 @@ export default class List extends PureComponent {
                 {showIndicator &&
                 <UnreadIndicator
                     show={showIndicator}
-                    style={[styles.above, {width}]}
+                    style={[styles.above, unreadBarStyles]}
+                    textStyle={unreadTextStyles}
                     onPress={this.scrollToTop}
                     theme={theme}
                 />

@@ -11,7 +11,7 @@ import {
 import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {General} from 'mattermost-redux/constants';
 import {injectIntl, intlShape} from 'react-intl';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
 import GuestTag from 'app/components/guest_tag';
@@ -30,6 +30,7 @@ class ChannelIntro extends PureComponent {
         currentChannelMembers: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -307,7 +308,7 @@ class ChannelIntro extends PureComponent {
     };
 
     render() {
-        const {currentChannel, theme} = this.props;
+        const {currentChannel, theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
         const channelType = currentChannel.type;
 
@@ -315,10 +316,10 @@ class ChannelIntro extends PureComponent {
         if (channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL) {
             profiles = (
                 <View>
-                    <View style={style.profilesContainer}>
+                    <View style={[style.profilesContainer, padding(isLandscape)]}>
                         {this.buildProfiles()}
                     </View>
-                    <View style={style.namesContainer}>
+                    <View style={[style.namesContainer, padding(isLandscape)]}>
                         {this.buildNames()}
                     </View>
                 </View>
@@ -328,7 +329,7 @@ class ChannelIntro extends PureComponent {
         return (
             <View style={style.container}>
                 {profiles}
-                <View style={style.contentContainer}>
+                <View style={[style.contentContainer, padding(isLandscape)]}>
                     {this.buildContent()}
                 </View>
             </View>

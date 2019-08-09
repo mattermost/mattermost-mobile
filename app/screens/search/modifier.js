@@ -7,6 +7,7 @@ import {Text, TouchableHighlight, View} from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export const MODIFIER_LABEL_HEIGHT = 58;
 
@@ -15,6 +16,11 @@ export default class Modifier extends PureComponent {
         item: PropTypes.object.isRequired,
         setModifierValue: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
+    };
+
+    static defaultProps = {
+        isLandscape: false,
     };
 
     handlePress = () => {
@@ -24,7 +30,7 @@ export default class Modifier extends PureComponent {
     };
 
     render() {
-        const {item, theme} = this.props;
+        const {item, theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -34,7 +40,7 @@ export default class Modifier extends PureComponent {
                 onPress={this.handlePress}
             >
                 <View style={style.modifierItemContainer}>
-                    <View style={style.modifierItemWrapper}>
+                    <View style={[style.modifierItemWrapper, padding(isLandscape)]}>
                         <View style={style.modifierItemLabelContainer}>
                             <View style={style.modifierLabelIconContainer}>
                                 <AwesomeIcon

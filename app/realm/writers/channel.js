@@ -112,6 +112,16 @@ function channels(realm, action) {
         break;
     }
 
+    case ChannelTypes.RECEIVED_CHANNEL_STATS: {
+        const data = action.data || action.payload;
+
+        const channel = realm.objectForPrimaryKey('Channel', data.channel_id);
+        if (channel) {
+            channel.memberCount = data.member_count;
+        }
+        break;
+    }
+
     default:
         break;
     }

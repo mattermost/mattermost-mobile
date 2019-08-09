@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
-
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
 import GuestTag from 'app/components/guest_tag';
@@ -48,6 +47,7 @@ export default class UserListRow extends React.PureComponent {
             teammateNameDisplay,
             theme,
             user,
+            isLandscape,
         } = this.props;
 
         const {id, username} = user;
@@ -72,6 +72,7 @@ export default class UserListRow extends React.PureComponent {
                     enabled={enabled}
                     selectable={selectable}
                     selected={selected}
+                    isLandscape={isLandscape}
                 >
                     <View style={style.profileContainer}>
                         <ProfilePicture
