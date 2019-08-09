@@ -34,6 +34,7 @@
  - Fixed an issue on Android where using "Https" instead of "https" in the url of an image didn't show the preview.
  - Fixed an issue where the client ``setCSRFFromCookie`` did not look for subpaths when accessing cookies.
  - Fixed an issue where archived teams reappeared in selector.
+ - Fixed an issue where users' profile picture and name did not get updated after websocket disconnect.
  
 ### Known Issues
   - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
