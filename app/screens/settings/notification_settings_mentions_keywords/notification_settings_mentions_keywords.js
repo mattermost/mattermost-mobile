@@ -107,6 +107,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
+            flex: 1,
             paddingTop: 35,
         },
         inputContainer: {
