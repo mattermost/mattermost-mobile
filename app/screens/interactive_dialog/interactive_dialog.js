@@ -19,7 +19,7 @@ export default class InteractiveDialog extends PureComponent {
     static propTypes = {
         url: PropTypes.string.isRequired,
         callbackId: PropTypes.string,
-        elements: PropTypes.arrayOf(PropTypes.object).isRequired,
+        elements: PropTypes.arrayOf(PropTypes.object),
         notifyOnCancel: PropTypes.bool,
         state: PropTypes.string,
         theme: PropTypes.object,
@@ -38,9 +38,11 @@ export default class InteractiveDialog extends PureComponent {
         super(props);
 
         const values = {};
-        props.elements.forEach((e) => {
-            values[e.name] = e.default || null;
-        });
+        if (props.elements != null) {
+            props.elements.forEach((e) => {
+                values[e.name] = e.default || null;
+            });
+        }
 
         this.state = {
             values,
@@ -69,18 +71,21 @@ export default class InteractiveDialog extends PureComponent {
         const {elements} = this.props;
         const values = this.state.values;
         const errors = {};
-        elements.forEach((elem) => {
-            const error = checkDialogElementForError(elem, values[elem.name]);
-            if (error) {
-                errors[elem.name] = (
-                    <FormattedText
-                        id={error.id}
-                        defaultMessage={error.defaultMessage}
-                        values={error.values}
-                    />
-                );
-            }
-        });
+
+        if (elements) {
+            elements.forEach((elem) => {
+                const error = checkDialogElementForError(elem, values[elem.name]);
+                if (error) {
+                    errors[elem.name] = (
+                        <FormattedText
+                            id={error.id}
+                            defaultMessage={error.defaultMessage}
+                            values={error.values}
+                        />
+                    );
+                }
+            });
+        }
 
         this.setState({errors});
 
@@ -152,7 +157,7 @@ export default class InteractiveDialog extends PureComponent {
             <View style={style.container}>
                 <ScrollView style={style.scrollView}>
                     <StatusBar/>
-                    {elements.map((e) => {
+                    {elements && elements.map((e) => {
                         return (
                             <DialogElement
                                 key={'dialogelement' + e.name}
