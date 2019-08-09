@@ -256,8 +256,8 @@ export default class PostHeader extends PureComponent {
                         style={style.replyIconContainer}
                     >
                         <ReplyIcon
-                            height={15}
-                            width={15}
+                            height={16}
+                            width={16}
                             color={theme.linkColor}
                         />
                         {!isSearchResult &&
