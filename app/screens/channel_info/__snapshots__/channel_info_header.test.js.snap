@@ -509,18 +509,26 @@ exports[`channel_info_header should match snapshot when DM and hasGuests 1`] = `
         }
       }
     >
-      <FormattedText
-        defaultMessage="This person is a guest"
-        id="channel.isGuest"
+      <View
         style={
           Object {
-            "backgroundColor": "transparent",
-            "color": "#3d3c40",
-            "fontSize": 13,
-            "marginBottom": 10,
+            "paddingHorizontal": 15,
           }
         }
-      />
+      >
+        <FormattedText
+          defaultMessage="This person is a guest"
+          id="channel.isGuest"
+          style={
+            Object {
+              "backgroundColor": "transparent",
+              "color": "#3d3c40",
+              "fontSize": 13,
+              "marginBottom": 10,
+            }
+          }
+        />
+      </View>
     </View>
     <View
       style={
@@ -944,18 +952,26 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         }
       }
     >
-      <FormattedText
-        defaultMessage="This group message has guests"
-        id="channel.hasGuests"
+      <View
         style={
           Object {
-            "backgroundColor": "transparent",
-            "color": "#3d3c40",
-            "fontSize": 13,
-            "marginBottom": 10,
+            "paddingHorizontal": 15,
           }
         }
-      />
+      >
+        <FormattedText
+          defaultMessage="This group message has guests"
+          id="channel.hasGuests"
+          style={
+            Object {
+              "backgroundColor": "transparent",
+              "color": "#3d3c40",
+              "fontSize": 13,
+              "marginBottom": 10,
+            }
+          }
+        />
+      </View>
     </View>
     <View
       style={
@@ -1815,18 +1831,26 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         }
       }
     >
-      <FormattedText
-        defaultMessage="This channel has guests"
-        id="channel.channelHasGuests"
+      <View
         style={
           Object {
-            "backgroundColor": "transparent",
-            "color": "#3d3c40",
-            "fontSize": 13,
-            "marginBottom": 10,
+            "paddingHorizontal": 15,
           }
         }
-      />
+      >
+        <FormattedText
+          defaultMessage="This channel has guests"
+          id="channel.channelHasGuests"
+          style={
+            Object {
+              "backgroundColor": "transparent",
+              "color": "#3d3c40",
+              "fontSize": 13,
+              "marginBottom": 10,
+            }
+          }
+        />
+      </View>
     </View>
     <View
       style={
