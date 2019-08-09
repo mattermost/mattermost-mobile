@@ -326,6 +326,6 @@ export const style = StyleSheet.create({
         flex: 1,
     },
     iOSHomeIndicator: {
-        paddingBottom: 5,
+        paddingBottom: 50,
     },
 });
