@@ -169,15 +169,23 @@ export default class ChannelBase extends PureComponent {
     };
 
     showTermsOfServiceModal = async () => {
+        const {intl} = this.context;
         const {actions, theme} = this.props;
         const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
         const screen = 'TermsOfService';
-        const passProps = {
-            closeButton,
-        };
+        const passProps = {closeButton};
+        const title = intl.formatMessage({id: 'mobile.tos_link', defaultMessage: 'Terms of Service'});
         const options = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
+            },
+            topBar: {
+                visible: true,
+                height: null,
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                    text: title,
+                },
             },
         };
 
