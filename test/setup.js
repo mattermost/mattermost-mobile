@@ -39,6 +39,10 @@ jest.mock('NativeModules', () => {
             SECURITY_LEVEL_SECURE_SOFTWARE: 'SOFTWARE',
             SECURITY_LEVEL_SECURE_HARDWARE: 'HARDWARE',
         },
+        RNCNetInfo: {
+            addEventListener: jest.fn(),
+            getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
+        },
     };
 });
 jest.mock('NativeEventEmitter');
