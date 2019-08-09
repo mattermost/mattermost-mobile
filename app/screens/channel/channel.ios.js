@@ -35,7 +35,7 @@ export default class ChannelIOS extends ChannelBase {
     optionalProps = {previewChannel: this.previewChannel};
 
     render() {
-        const {height} = Dimensions.get('window');
+        const {height, width} = Dimensions.get('window');
         const {
             currentTeamId,
             currentChannelId,
@@ -63,9 +63,12 @@ export default class ChannelIOS extends ChannelBase {
                     <StatusBar/>
                     <NetworkIndicator/>
                     <ChannelNavBar
+                        channelId={currentChannelId}
+                        isLandscape={width > height}
                         openChannelDrawer={this.openChannelSidebar}
                         openSettingsDrawer={this.openSettingsSidebar}
                         onPress={this.goToChannelInfo}
+                        theme={theme}
                     />
                     <ChannelPostList
                         channelId={currentChannelId}

@@ -3,26 +3,17 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import {
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-class SettingDrawerButton extends PureComponent {
+export default class SettingDrawerButton extends PureComponent {
     static propTypes = {
         openDrawer: PropTypes.func.isRequired,
-        theme: PropTypes.object,
-    };
-
-    static defaultProps = {
-        theme: {},
+        theme: PropTypes.object.isRequired,
     };
 
     handlePress = preventDoubleTap(() => {
@@ -72,11 +63,3 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-function mapStateToProps(state) {
-    return {
-        theme: getTheme(state),
-    };
-}
-
-export default connect(mapStateToProps)(SettingDrawerButton);

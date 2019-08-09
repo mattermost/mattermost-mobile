@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {intlShape} from 'react-intl';
 
 import {
     Text,
@@ -18,22 +19,24 @@ import FormattedText from 'app/components/formatted_text';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
-        currentChannelName: PropTypes.string,
-        displayName: PropTypes.string,
-        channelType: PropTypes.string,
-        isChannelMuted: PropTypes.bool,
-        onPress: PropTypes.func,
-        theme: PropTypes.object,
-        isArchived: PropTypes.bool,
-        isGuest: PropTypes.bool.isRequired,
-        hasGuests: PropTypes.bool.isRequired,
         canHaveSubtitle: PropTypes.bool.isRequired,
+        channelType: PropTypes.string.isRequired,
+        displayName: PropTypes.string.isRequired,
+        hasGuests: PropTypes.bool.isRequired,
+        isArchived: PropTypes.bool.isRequired,
+        isChannelMuted: PropTypes.bool.isRequired,
+        isGuest: PropTypes.bool.isRequired,
+        isOwnDM: PropTypes.bool.isRequired,
+        onPress: PropTypes.func.isRequired,
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        currentChannel: {},
         displayName: null,
-        theme: {},
+    };
+
+    static contextTypes = {
+        intl: intlShape,
     };
 
     archiveIcon(style) {
@@ -86,12 +89,19 @@ export default class ChannelTitle extends PureComponent {
     }
 
     render() {
-        const {currentChannelName, displayName, isChannelMuted, onPress, theme} = this.props;
-
+        const {formatMessage} = this.context.intl;
+        const {displayName, isChannelMuted, isOwnDM, onPress, theme} = this.props;
         const style = getStyle(theme);
-
-        const channelName = displayName || currentChannelName;
         const hasGuestsText = this.renderHasGuestsText(style);
+
+        let channelName = displayName;
+        if (isOwnDM) {
+            channelName = formatMessage({
+                id: 'channel_header.directchannel.you',
+                defaultMessage: '{displayname} (you)',
+            }, {displayname: channelName});
+        }
+
         let icon;
         if (channelName) {
             icon = (

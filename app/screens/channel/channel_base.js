@@ -266,12 +266,15 @@ export default class ChannelBase extends PureComponent {
     };
 
     renderChannel(drawerContent, optionalProps = {}) {
-        const {theme} = this.props;
+        const {currentUserId, currentTeamId, theme} = this.props;
 
         return (
             <MainSidebar
+                currentTeamId={currentTeamId}
+                currentUserId={currentUserId}
                 ref={this.channelSidebarRef}
                 blurPostTextBox={this.blurPostTextBox}
+                theme={theme}
                 {...optionalProps}
             >
                 <SettingsSidebar

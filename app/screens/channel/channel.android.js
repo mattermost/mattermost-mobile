@@ -20,7 +20,7 @@ import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
 export default class ChannelAndroid extends ChannelBase {
     render() {
         const {currentChannelId, currentTeamId, currentUserId, theme} = this.props;
-        const {height} = Dimensions.get('window');
+        const {height, width} = Dimensions.get('window');
         const channelLoaderStyle = [style.channelLoader, {height}];
 
         if (!currentTeamId) {
@@ -37,9 +37,12 @@ export default class ChannelAndroid extends ChannelBase {
                 <StatusBar/>
                 <NetworkIndicator/>
                 <ChannelNavBar
+                    channelId={currentChannelId}
+                    isLandscape={width > height}
                     openChannelDrawer={this.openChannelSidebar}
                     openSettingsDrawer={this.openSettingsSidebar}
                     onPress={this.goToChannelInfo}
+                    theme={theme}
                 />
                 <KeyboardLayout>
                     <View style={style.flex}>
