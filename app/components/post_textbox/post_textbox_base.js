@@ -91,6 +91,7 @@ export default class PostTextBoxBase extends PureComponent {
         this.state = {
             cursorPosition: 0,
             keyboardType: 'default',
+            sendingMessage: false,
             top: 0,
             value: props.value,
         };
@@ -278,9 +279,11 @@ export default class PostTextBoxBase extends PureComponent {
     };
 
     handleSendMessage = () => {
-        if (!this.canSend()) {
+        if (!this.canSend() || this.state.sendingMessage) {
             return;
         }
+
+        this.setState({sendingMessage: true});
 
         const {actions, channelId, files, rootId} = this.props;
         const {value} = this.state;
@@ -307,6 +310,9 @@ export default class PostTextBoxBase extends PureComponent {
                 }),
                 [{
                     text: intl.formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
+                    onPress: () => {
+                        this.setState({sendingMessage: false});
+                    },
                 }, {
                     text: intl.formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
                     onPress: () => {
@@ -388,81 +394,72 @@ export default class PostTextBoxBase extends PureComponent {
         return this.canSend() || this.isFileLoading();
     }
 
+    isSendButtonEnabled() {
+        return this.canSend() && !this.state.sendingMessage;
+    }
+
     sendMessage = () => {
         const {actions, currentUserId, channelId, files, rootId} = this.props;
-        const {intl} = this.context;
         const {value} = this.state;
 
-        if (files.length === 0 && !value) {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.post_textbox.empty.title',
-                    defaultMessage: 'Empty Message',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.post_textbox.empty.message',
-                    defaultMessage: 'You are trying to send an empty message.\nPlease make sure you have a message or at least one attached file.',
-                }),
-                [{
-                    text: intl.formatMessage({id: 'mobile.post_textbox.empty.ok', defaultMessage: 'OK'}),
-                }],
-            );
+        if (value.indexOf('/') === 0) {
+            this.sendCommand(value);
         } else {
-            if (value.indexOf('/') === 0) {
-                this.sendCommand(value);
-            } else {
-                const postFiles = files.filter((f) => !f.failed);
-                const post = {
-                    user_id: currentUserId,
-                    channel_id: channelId,
-                    root_id: rootId,
-                    parent_id: rootId,
-                    message: value,
-                };
+            const postFiles = files.filter((f) => !f.failed);
+            const post = {
+                user_id: currentUserId,
+                channel_id: channelId,
+                root_id: rootId,
+                parent_id: rootId,
+                message: value,
+            };
 
-                actions.createPost(post, postFiles);
+            actions.createPost(post, postFiles);
 
-                if (postFiles.length) {
-                    actions.handleClearFiles(channelId, rootId);
-                }
+            if (postFiles.length) {
+                actions.handleClearFiles(channelId, rootId);
             }
-
-            if (Platform.OS === 'ios') {
-                // On iOS, if the PostTextbox height increases from its
-                // initial height (due to a multiline post or a post whose
-                // message wraps, for example), then when the text is cleared
-                // the PostTextbox height decrease will be animated. This
-                // animation in conjunction with the PostList animation as it
-                // receives the newly created post is causing issues in the iOS
-                // PostList component as it fails to properly react to its content
-                // size changes. While a proper fix is determined for the PostList
-                // component, a small delay in triggering the height decrease
-                // animation gives the PostList enough time to first handle content
-                // size changes from the new post.
-                setTimeout(() => {
-                    this.handleTextChange('');
-                }, 250);
-            } else {
-                this.handleTextChange('');
-            }
-
-            this.changeDraft('');
-
-            let callback;
-            if (Platform.OS === 'android') {
-                // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
-                // are typed successively without blurring the input
-                const nextState = {
-                    keyboardType: 'email-address',
-                };
-
-                callback = () => this.setState({keyboardType: 'default'});
-
-                this.setState(nextState, callback);
-            }
-
-            EventEmitter.emit('scroll-to-bottom');
         }
+
+        if (Platform.OS === 'ios') {
+            // On iOS, if the PostTextbox height increases from its
+            // initial height (due to a multiline post or a post whose
+            // message wraps, for example), then when the text is cleared
+            // the PostTextbox height decrease will be animated. This
+            // animation in conjunction with the PostList animation as it
+            // receives the newly created post is causing issues in the iOS
+            // PostList component as it fails to properly react to its content
+            // size changes. While a proper fix is determined for the PostList
+            // component, a small delay in triggering the height decrease
+            // animation gives the PostList enough time to first handle content
+            // size changes from the new post.
+            setTimeout(() => {
+                this.handleTextChange('');
+
+                this.setState({sendingMessage: false});
+            }, 250);
+        } else {
+            this.handleTextChange('');
+
+            this.setState({sendingMessage: false});
+        }
+
+        this.changeDraft('');
+
+        let callback;
+        if (Platform.OS === 'android') {
+            // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
+            // are typed successively without blurring the input
+            const nextState = {
+                keyboardType: 'email-address',
+            };
+
+            callback = () => this.setState({keyboardType: 'default'});
+
+            this.setState(nextState, callback);
+        }
+
+        EventEmitter.emit('scroll-to-bottom');
     };
 
     getStatusFromSlashCommand = (message) => {
@@ -516,6 +513,7 @@ export default class PostTextBoxBase extends PureComponent {
         const {actions, rootId} = this.props;
         actions.addReactionToLatestPost(emoji, rootId);
         this.handleTextChange('');
+        this.setState({sendingMessage: false});
         this.changeDraft('');
     };
 
@@ -628,7 +626,7 @@ export default class PostTextBoxBase extends PureComponent {
                     />
                     <Fade visible={this.isSendButtonVisible()}>
                         <SendButton
-                            disabled={this.isFileLoading()}
+                            disabled={!this.isSendButtonEnabled()}
                             handleSendMessage={this.handleSendMessage}
                             theme={theme}
                         />
