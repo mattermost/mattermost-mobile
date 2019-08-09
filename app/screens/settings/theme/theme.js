@@ -26,7 +26,6 @@ export default class Theme extends React.PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             savePreferences: PropTypes.func.isRequired,
-            applyTheme: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         allowedThemes: PropTypes.arrayOf(PropTypes.object),
@@ -66,7 +65,7 @@ export default class Theme extends React.PureComponent {
             userId,
             teamId,
             allowedThemes,
-            actions: {savePreferences, applyTheme},
+            actions: {savePreferences},
         } = this.props;
         const {customTheme} = this.state;
         const selectedTheme = allowedThemes.concat(customTheme).find((theme) => theme.key === key);
@@ -77,8 +76,7 @@ export default class Theme extends React.PureComponent {
             name: teamId,
             value: JSON.stringify(selectedTheme),
         }]);
-        applyTheme();
-    }
+    };
 
     renderAllowedThemeTiles = () => {
         const {theme, allowedThemes, isLandscape, isTablet} = this.props;

@@ -12,8 +12,6 @@ import {
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const {width: deviceWidth, height: deviceHeight} = Dimensions.get('window');
-
 const checkmark = require('assets/images/themes/check.png');
 
 const tilePadding = 8;
@@ -38,7 +36,8 @@ const ThemeTile = (props) => {
     );
 
     const tilesPerLine = isLandscape || isTablet ? 4 : 2;
-    const fullWidth = isLandscape ? deviceHeight - 40 : deviceWidth;
+    const {width: deviceWidth} = Dimensions.get('window');
+    const fullWidth = isLandscape ? deviceWidth - 40 : deviceWidth;
     const layoutStyle = {
         container: {
             width: (fullWidth / tilesPerLine) - tilePadding,

@@ -66,7 +66,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('SelectTeam', () => wrapper(require('app/screens/select_team').default), () => require('app/screens/select_team').default);
     Navigation.registerComponent('SelectTimezone', () => wrapper(require('app/screens/settings/timezone/select_timezone').default), () => require('app/screens/settings/timezone/select_timezone').default);
     Navigation.registerComponent('Settings', () => wrapper(require('app/screens/settings/general').default), () => require('app/screens/settings/general').default);
-    Navigation.registerComponent('SidebarSettings', () => wrapper(require('app/screens//settings/sidebar').default), () => require('app/screens/settings/sidebar').default);
+    Navigation.registerComponent('SidebarSettings', () => wrapper(require('app/screens/settings/sidebar').default), () => require('app/screens/settings/sidebar').default);
     Navigation.registerComponent('SSO', () => wrapper(require('app/screens/sso').default), () => require('app/screens/sso').default);
     Navigation.registerComponent('Table', () => wrapper(require('app/screens/table').default), () => require('app/screens/table').default);
     Navigation.registerComponent('TableImage', () => wrapper(require('app/screens/table_image').default), () => require('app/screens/table_image').default);

@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {Navigation} from 'react-native-navigation';
 import {intlShape} from 'react-intl';
 import {
     Platform,
@@ -19,6 +20,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            applyTheme: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
@@ -36,6 +38,15 @@ export default class DisplaySettings extends PureComponent {
         showClockDisplaySettings: false,
     };
 
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
+    componentDidAppear() {
+        const {actions, componentId} = this.props;
+        actions.applyTheme(componentId);
+    }
+
     closeClockDisplaySettings = () => {
         this.setState({showClockDisplaySettings: false});
     };
@@ -45,7 +56,7 @@ export default class DisplaySettings extends PureComponent {
         const {intl} = this.context;
 
         if (Platform.OS === 'ios') {
-            const screen = 'ClockDisplay';
+            const screen = 'ClockDisplaySettings';
             const title = intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'});
             actions.goToScreen(screen, title);
             return;

@@ -8,9 +8,10 @@ import {clearErrors} from 'mattermost-redux/actions/errors';
 import {getCurrentUrl, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {isLandscape} from 'app/selectors/device';
-import {goToScreen, dismissModal} from 'app/actions/navigation';
+
+import {applyTheme, goToScreen, dismissModal} from 'app/actions/navigation';
 import {purgeOfflineStore} from 'app/actions/views/root';
+import {isLandscape} from 'app/selectors/device';
 import {removeProtocol} from 'app/utils/url';
 
 import Settings from './settings';
@@ -33,6 +34,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            applyTheme,
             clearErrors,
             purgeOfflineStore,
             goToScreen,

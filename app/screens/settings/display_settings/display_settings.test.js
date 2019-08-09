@@ -16,6 +16,7 @@ jest.mock('react-intl');
 describe('DisplaySettings', () => {
     const baseProps = {
         actions: {
+            applyTheme: jest.fn(),
             goToScreen: jest.fn(),
         },
         theme: Preferences.THEMES.default,

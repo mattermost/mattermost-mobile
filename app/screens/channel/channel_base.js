@@ -41,6 +41,7 @@ export default class ChannelBase extends PureComponent {
             peek: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
             showModalOverCurrentContext: PropTypes.func.isRequired,
+            getChannelStats: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -106,6 +107,8 @@ export default class ChannelBase extends PureComponent {
         if (!this.props.skipMetrics) {
             telemetry.end(['start:channel_screen']);
         }
+
+        this.props.actions.getChannelStats(this.props.currentChannelId);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -124,6 +127,10 @@ export default class ChannelBase extends PureComponent {
         if (nextProps.currentChannelId !== this.props.currentChannelId &&
             nextProps.currentTeamId === this.props.currentTeamId) {
             PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
+        }
+
+        if (nextProps.currentChannelId !== this.props.currentChannelId) {
+            this.props.actions.getChannelStats(nextProps.currentChannelId);
         }
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
