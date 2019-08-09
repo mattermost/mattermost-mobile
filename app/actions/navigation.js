@@ -165,11 +165,14 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
     };
 }
 
-export function popTopScreen() {
+export function popTopScreen(screenId) {
     return () => {
-        const componentId = EphemeralStore.getNavigationTopComponentId();
-
-        Navigation.pop(componentId);
+        if (screenId) {
+            Navigation.pop(screenId);
+        } else {
+            const componentId = EphemeralStore.getNavigationTopComponentId();
+            Navigation.pop(componentId);
+        }
     };
 }
 

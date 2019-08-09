@@ -21,6 +21,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -378,6 +379,8 @@ export default class Login extends PureComponent {
             );
         }
 
+        const {width, height} = Dimensions.get('window');
+
         return (
             <View style={style.container}>
                 <StatusBar/>
@@ -385,7 +388,7 @@ export default class Login extends PureComponent {
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
                         style={style.container}
-                        contentContainerStyle={style.innerContainer}
+                        contentContainerStyle={[style.innerContainer, padding(width > height)]}
                         keyboardShouldPersistTaps='handled'
                         enableOnAndroid={true}
                     >

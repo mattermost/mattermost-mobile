@@ -22,7 +22,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import CustomList from 'app/components/custom_list';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TeamIcon from 'app/components/team_icon';
 
 const TEAMS_PER_PAGE = 50;
@@ -44,6 +44,7 @@ export default class SelectTeam extends PureComponent {
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object,
         teamsRequest: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -160,7 +161,7 @@ export default class SelectTeam extends PureComponent {
     }
 
     renderItem = ({item}) => {
-        const {currentUrl, theme} = this.props;
+        const {currentUrl, theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
 
         if (item.id === 'mobile.select_team.no_teams') {
@@ -178,7 +179,7 @@ export default class SelectTeam extends PureComponent {
         }
 
         return (
-            <View style={style.teamWrapper}>
+            <View style={[style.teamWrapper, padding(isLandscape)]}>
                 <TouchableOpacity
                     onPress={preventDoubleTap(() => this.onSelectTeam(item))}
                 >
@@ -212,7 +213,7 @@ export default class SelectTeam extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {teams} = this.state;
         const style = getStyleFromTheme(theme);
 
@@ -250,7 +251,7 @@ export default class SelectTeam extends PureComponent {
             <View style={style.container}>
                 <StatusBar/>
                 <View style={style.headingContainer}>
-                    <View style={style.headingWrapper}>
+                    <View style={[style.headingWrapper, padding(isLandscape)]}>
                         <FormattedText
                             id='mobile.select_team.join_open'
                             defaultMessage='Open teams you can join'

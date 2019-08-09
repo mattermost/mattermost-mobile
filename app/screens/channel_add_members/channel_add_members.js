@@ -14,7 +14,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
@@ -43,6 +43,7 @@ export default class ChannelAddMembers extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         profilesNotInChannel: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -278,7 +279,7 @@ export default class ChannelAddMembers extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {currentUserId, profilesNotInChannel, theme} = this.props;
+        const {currentUserId, profilesNotInChannel, theme, isLandscape} = this.props;
         const {
             adding,
             loading,
@@ -334,7 +335,7 @@ export default class ChannelAddMembers extends PureComponent {
         return (
             <KeyboardLayout>
                 <StatusBar/>
-                <View style={style.searchBar}>
+                <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
                         ref='search_bar'
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -365,6 +366,7 @@ export default class ChannelAddMembers extends PureComponent {
                     onRowPress={this.handleSelectProfile}
                     renderItem={this.renderItem}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             </KeyboardLayout>
         );

@@ -32,6 +32,7 @@ export default class SlashSuggestion extends Component {
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
         value: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -145,6 +146,7 @@ export default class SlashSuggestion extends Component {
             onPress={this.completeSuggestion}
             theme={this.props.theme}
             trigger={item.trigger}
+            isLandscape={this.props.isLandscape}
         />
     )
 

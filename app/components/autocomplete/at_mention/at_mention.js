@@ -35,6 +35,7 @@ export default class AtMention extends PureComponent {
         teamMembers: PropTypes.array,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -178,6 +179,7 @@ export default class AtMention extends PureComponent {
                 id={section.id}
                 defaultMessage={section.defaultMessage}
                 theme={this.props.theme}
+                isLandscape={this.props.isLandscape}
             />
         );
     };

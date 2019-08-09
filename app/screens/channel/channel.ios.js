@@ -38,6 +38,7 @@ export default class ChannelIOS extends ChannelBase {
         const {height} = Dimensions.get('window');
         const {
             currentChannelId,
+            isLandscape,
         } = this.props;
 
         const channelLoaderStyle = [style.channelLoader, {height}];
@@ -45,8 +46,40 @@ export default class ChannelIOS extends ChannelBase {
             channelLoaderStyle.push(style.iOSHomeIndicator);
         }
 
-        const drawerContent = (
-            <React.Fragment>
+        let safeViewContent;
+        if (DeviceTypes.IS_IPHONE_X && isLandscape) {
+            safeViewContent = (
+                <React.Fragment>
+                    <StatusBar/>
+                    <NetworkIndicator/>
+                    <ChannelNavBar
+                        openChannelDrawer={this.openChannelSidebar}
+                        openSettingsDrawer={this.openSettingsSidebar}
+                        onPress={this.goToChannelInfo}
+                    />
+                    <SafeAreaView>
+                        <ChannelPostList
+                            updateNativeScrollView={this.updateNativeScrollView}
+                        />
+                        <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                            <FileUploadPreview/>
+                            <Autocomplete
+                                maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                                onChangeText={this.handleAutoComplete}
+                                cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                                valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                            />
+                        </View>
+                        <ChannelLoader
+                            height={height}
+                            style={channelLoaderStyle}
+                        />
+                        {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
+                    </SafeAreaView>
+                </React.Fragment>
+            );
+        } else {
+            safeViewContent = (
                 <SafeAreaView>
                     <StatusBar/>
                     <NetworkIndicator/>
@@ -73,6 +106,12 @@ export default class ChannelIOS extends ChannelBase {
                     />
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
                 </SafeAreaView>
+            );
+        }
+
+        const drawerContent = (
+            <React.Fragment>
+                {safeViewContent}
                 <KeyboardTrackingView
                     ref={this.keyboardTracker}
                     scrollViewNativeID={currentChannelId}

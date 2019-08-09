@@ -8,6 +8,7 @@ import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {goToScreen} from 'app/actions/navigation';
+import {isLandscape} from 'app/selectors/device';
 
 import AnnouncementBanner from './announcement_banner';
 
@@ -23,6 +24,7 @@ function mapStateToProps(state) {
         bannerText: config.BannerText,
         bannerTextColor: config.BannerTextColor || '#000',
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

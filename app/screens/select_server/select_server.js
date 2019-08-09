@@ -26,6 +26,7 @@ import merge from 'deepmerge';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
+import SafeAreaView from 'app/components/safe_area_view';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
@@ -433,58 +434,60 @@ export default class SelectServer extends PureComponent {
         }
 
         return (
-            <KeyboardAvoidingView
-                behavior='padding'
-                style={style.container}
-                keyboardVerticalOffset={0}
-                enabled={Platform.OS === 'ios'}
-            >
-                <StatusBar barStyle={statusStyle}/>
-                <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                        <Image
-                            source={require('assets/images/logo.png')}
-                        />
-
-                        <View>
-                            <FormattedText
-                                style={[GlobalStyles.header, GlobalStyles.label]}
-                                id='mobile.components.select_server_view.enterServerUrl'
-                                defaultMessage='Enter Server URL'
+            <SafeAreaView useLandscapeMargin={true}>
+                <KeyboardAvoidingView
+                    behavior='padding'
+                    style={style.container}
+                    keyboardVerticalOffset={0}
+                    enabled={Platform.OS === 'ios'}
+                >
+                    <StatusBar barStyle={statusStyle}/>
+                    <TouchableWithoutFeedback onPress={this.blur}>
+                        <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                            <Image
+                                source={require('assets/images/logo.png')}
                             />
+
+                            <View>
+                                <FormattedText
+                                    style={[GlobalStyles.header, GlobalStyles.label]}
+                                    id='mobile.components.select_server_view.enterServerUrl'
+                                    defaultMessage='Enter Server URL'
+                                />
+                            </View>
+                            <TextInput
+                                ref={this.textInputRef}
+                                value={url}
+                                editable={!inputDisabled}
+                                onChangeText={this.handleTextChanged}
+                                onSubmitEditing={this.handleConnect}
+                                style={inputStyle}
+                                autoCapitalize='none'
+                                autoCorrect={false}
+                                keyboardType='url'
+                                placeholder={formatMessage({
+                                    id: 'mobile.components.select_server_view.siteUrlPlaceholder',
+                                    defaultMessage: 'https://mattermost.example.com',
+                                })}
+                                placeholderTextColor={changeOpacity('#000', 0.5)}
+                                returnKeyType='go'
+                                underlineColorAndroid='transparent'
+                                disableFullscreenUI={true}
+                            />
+                            <Button
+                                onPress={this.handleConnect}
+                                containerStyle={[GlobalStyles.signupButton, style.connectButton]}
+                            >
+                                {buttonIcon}
+                                <Text style={GlobalStyles.signupButtonText}>
+                                    {buttonText}
+                                </Text>
+                            </Button>
+                            <ErrorText error={error}/>
                         </View>
-                        <TextInput
-                            ref={this.textInputRef}
-                            value={url}
-                            editable={!inputDisabled}
-                            onChangeText={this.handleTextChanged}
-                            onSubmitEditing={this.handleConnect}
-                            style={inputStyle}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            keyboardType='url'
-                            placeholder={formatMessage({
-                                id: 'mobile.components.select_server_view.siteUrlPlaceholder',
-                                defaultMessage: 'https://mattermost.example.com',
-                            })}
-                            placeholderTextColor={changeOpacity('#000', 0.5)}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
-                        />
-                        <Button
-                            onPress={this.handleConnect}
-                            containerStyle={[GlobalStyles.signupButton, style.connectButton]}
-                        >
-                            {buttonIcon}
-                            <Text style={GlobalStyles.signupButtonText}>
-                                {buttonText}
-                            </Text>
-                        </Button>
-                        <ErrorText error={error}/>
-                    </View>
-                </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
+                    </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
         );
     }
 }

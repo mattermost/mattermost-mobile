@@ -15,6 +15,7 @@ import Button from 'react-native-button';
 
 import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -257,10 +258,12 @@ class LoginOptions extends PureComponent {
     };
 
     render() {
+        const {height, width} = Dimensions.get('window');
+
         return (
             <ScrollView
                 style={style.container}
-                contentContainerStyle={style.innerContainer}
+                contentContainerStyle={[style.innerContainer, padding(width > height)]}
                 ref={this.scrollRef}
             >
                 <StatusBar/>

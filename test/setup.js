@@ -48,6 +48,7 @@ jest.mock('react-native-device-info', () => {
         getBuildNumber: () => '0',
         getModel: () => 'iPhone X',
         isTablet: () => false,
+        getDeviceLocale: () => 'en_US',
     };
 });
 
@@ -123,3 +124,5 @@ jest.mock('rn-fetch-blob/fs', () => ({
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);
 };
+
+global.window = {};

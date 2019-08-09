@@ -6,6 +6,8 @@ import {connect} from 'react-redux';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getTeam, makeGetBadgeCountForTeamId} from 'mattermost-redux/selectors/entities/teams';
 
+import {isLandscape} from 'app/selectors/device';
+
 import TeamsListItem from './teams_list_item.js';
 
 function makeMapStateToProps() {
@@ -20,6 +22,7 @@ function makeMapStateToProps() {
             mentionCount: getMentionCount(state, ownProps.teamId),
             name: team.name,
             theme: getTheme(state),
+            isLandscape: isLandscape(state),
         };
     };
 }

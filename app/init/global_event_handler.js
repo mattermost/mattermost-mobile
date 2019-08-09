@@ -142,8 +142,11 @@ class GlobalEventHandler {
         const serverUrl = await getCurrentServerUrl();
         const realm = ephemeralStore.getRealmStoreByServer(serverUrl);
 
-        realm.getState().close();
-        deleteRealmStore(serverUrl);
+        if (realm) {
+            realm.getState().close();
+            deleteRealmStore(serverUrl);
+        }
+
         this.reduxStore.dispatch(closeWebSocket(false));
         this.reduxStore.dispatch(setServerVersion(''));
         deleteFileCache(); //TODO: The cache of files should be for each individual server

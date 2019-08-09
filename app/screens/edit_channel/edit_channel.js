@@ -9,7 +9,7 @@ import {
     InteractionManager,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -295,29 +295,31 @@ export default class EditChannel extends PureComponent {
         } = this.state;
 
         return (
-            <EditChannelInfo
-                theme={theme}
-                enableRightButton={this.emitCanUpdateChannel}
-                error={error}
-                saving={updating}
-                channelType={type}
-                currentTeamUrl={currentTeamUrl}
-                onDisplayNameChange={this.onDisplayNameChange}
-                onChannelURLChange={this.onChannelURLChange}
-                onPurposeChange={this.onPurposeChange}
-                onHeaderChange={this.onHeaderChange}
-                displayName={displayName}
-                channelURL={channelURL}
-                header={header}
-                purpose={purpose}
-                editing={true}
-                oldDisplayName={oldDisplayName}
-                oldChannelURL={oldChannelURL}
-                oldPurpose={oldPurpose}
-                oldHeader={oldHeader}
-                deviceWidth={deviceWidth}
-                deviceHeight={deviceHeight}
-            />
+            <SafeAreaView>
+                <EditChannelInfo
+                    theme={theme}
+                    enableRightButton={this.emitCanUpdateChannel}
+                    error={error}
+                    saving={updating}
+                    channelType={type}
+                    currentTeamUrl={currentTeamUrl}
+                    onDisplayNameChange={this.onDisplayNameChange}
+                    onChannelURLChange={this.onChannelURLChange}
+                    onPurposeChange={this.onPurposeChange}
+                    onHeaderChange={this.onHeaderChange}
+                    displayName={displayName}
+                    channelURL={channelURL}
+                    header={header}
+                    purpose={purpose}
+                    editing={true}
+                    oldDisplayName={oldDisplayName}
+                    oldChannelURL={oldChannelURL}
+                    oldPurpose={oldPurpose}
+                    oldHeader={oldHeader}
+                    deviceWidth={deviceWidth}
+                    deviceHeight={deviceHeight}
+                />
+            </SafeAreaView>
         );
     }
 }
