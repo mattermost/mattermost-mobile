@@ -21,12 +21,10 @@
  - Added "Edit profile" button to right-hand side menu and to users' own profile pop-over.
  - Message draft is now saved when closing the app.
  - Removing a link preview on webapp now also removes it on the mobile app.
- - Added ability to select and copy channel header text.
+ - Added ability to select and copy channel header text and purpose.
 
 ### Bug Fixes
  - Fixed a few mobile app crash / fatal error issues.
- - Fixed an issue where old theme's colors were applied to navigation bar during screen transitions.
- - Fixed an issue on iOS where returning from landscape video playback moved status bar under notch.
  - Fixed an issue where contents of ephemeral posts from /giphy were not being displayed on mobile.
  - Fixed an issue where team/channel page dots at the bottom of left-hand side overlapped with the last Direct Message channel.
  - Fixed an issue where network reconnection incorrectly showed refreshing messages failed.
