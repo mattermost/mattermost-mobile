@@ -149,6 +149,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
+            overflow: 'hidden',
         },
         section: {
             backgroundColor: theme.centerChannelBg,
