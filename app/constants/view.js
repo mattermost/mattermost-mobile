@@ -107,7 +107,7 @@ export default {
     MAX_CHANNELNAME_LENGTH: 22,
     ANDROID_TOP_LANDSCAPE: 46,
     ANDROID_TOP_PORTRAIT: 56,
-    IOS_TOP_LANDSCAPE: 32,
+    IOS_TOP_LANDSCAPE: 40,
     IOS_TOP_PORTRAIT: 64,
     IOSX_TOP_PORTRAIT: 88,
     STATUS_BAR_HEIGHT: 20,
@@ -117,4 +117,5 @@ export default {
     DATA_SOURCE_CHANNELS: 'channels',
     NotificationLevels,
     SidebarSectionTypes,
+    IOS_HORIZONTAL_LANDSCAPE: 44,
 };

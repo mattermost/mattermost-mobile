@@ -10,7 +10,7 @@ import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 import {applyTheme, goToScreen} from 'app/actions/navigation';
 import {getAllowedThemes} from 'app/selectors/theme';
 import {isThemeSwitchingEnabled} from 'app/utils/theme';
-
+import {isLandscape} from 'app/selectors/device';
 import DisplaySettings from './display_settings';
 
 function mapStateToProps(state) {
@@ -21,6 +21,7 @@ function mapStateToProps(state) {
         enableTheme,
         enableTimezone,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

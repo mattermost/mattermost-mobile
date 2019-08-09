@@ -18,6 +18,7 @@ jest.mock('app/mattermost_managed', () => ({
 describe('SidebarSettings', () => {
     const baseProps = {
         theme: Preferences.THEMES.default,
+        isLandscape: false,
     };
 
     test('should match, full snapshot', async () => {

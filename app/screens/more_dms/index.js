@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {makeDirectChannel, makeGroupChannel} from 'app/actions/views/more_dms';
-
+import {isLandscape} from 'app/selectors/device';
 import {getProfiles, getProfilesInTeam, searchProfiles} from 'mattermost-redux/actions/users';
 import {General} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
@@ -30,6 +30,7 @@ function mapStateToProps(state) {
         currentDisplayName: state.views.channel.displayName,
         currentUserId: getCurrentUserId(state),
         currentTeamId: getCurrentTeamId(state),
+        isLandscape: isLandscape(state),
     };
 }
 

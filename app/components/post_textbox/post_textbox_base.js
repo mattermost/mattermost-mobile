@@ -32,6 +32,7 @@ import {NOTIFY_ALL_MEMBERS} from 'app/constants/view';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {RNTextInputReset} = NativeModules;
 
@@ -77,6 +78,7 @@ export default class PostTextBoxBase extends PureComponent {
         enableConfirmNotificationsToChannel: PropTypes.bool,
         isTimezoneEnabled: PropTypes.bool,
         currentChannel: PropTypes.object,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -146,7 +148,7 @@ export default class PostTextBoxBase extends PureComponent {
     numberOfTimezones = async () => {
         const {data} = await this.props.actions.getChannelTimezones(this.props.channelId);
         return data?.length || 0;
-    }
+    };
 
     canSend = () => {
         const {files, maxMessageLength, uploadFileRequestStatus} = this.props;
@@ -408,6 +410,7 @@ export default class PostTextBoxBase extends PureComponent {
         const {files} = this.props;
         const {intl} = this.context;
         const {value} = this.state;
+
         if (files.length === 0 && !value) {
             Alert.alert(
                 intl.formatMessage({
@@ -681,7 +684,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     renderTextBox = () => {
         const {intl} = this.context;
-        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme} = this.props;
+        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
 
         if (channelIsArchived) {
@@ -694,7 +697,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         return (
             <View
-                style={style.inputWrapper}
+                style={[style.inputWrapper, padding(isLandscape)]}
                 onLayout={this.handleLayout}
             >
                 {this.getAttachmentButton()}

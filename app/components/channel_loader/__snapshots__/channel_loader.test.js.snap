@@ -9,6 +9,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
         "flex": 1,
       },
       undefined,
+      null,
       Object {
         "backgroundColor": "#ffffff",
       },
