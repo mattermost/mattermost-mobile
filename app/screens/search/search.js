@@ -706,6 +706,7 @@ export default class Search extends PureComponent {
                             value={value}
                             containerStyle={style.searchBarContainer}
                             backArrowSize={28}
+                            keyboardAppearance={theme.keyboardAppearance}
                         />
                     </View>
                     <SectionList

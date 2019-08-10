@@ -192,6 +192,7 @@ export default class EditPost extends PureComponent {
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
+                            keyboardAppearance={this.props.theme.keyboardAppearance}
                         />
                     </View>
                 </View>

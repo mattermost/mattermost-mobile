@@ -468,6 +468,7 @@ export default class MoreDirectMessages extends PureComponent {
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
+                        keyboardAppearance={theme.keyboardAppearance}
                         value={term}
                     />
                     <SelectedUsers

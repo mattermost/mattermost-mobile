@@ -120,6 +120,7 @@ export default class Timezone extends PureComponent {
                         value={value}
                         containerStyle={style.searchBarContainer}
                         showArrow={false}
+                        keyboardAppearance={theme.keyboardAppearance}
                     />
                 </View>
                 <FlatList

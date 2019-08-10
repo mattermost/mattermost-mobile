@@ -476,6 +476,7 @@ export default class EmojiPicker extends PureComponent {
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
                             value={searchTerm}
+                            keyboardAppearance={theme.keyboardAppearance}
                         />
                     </View>
                     <View style={styles.container}>

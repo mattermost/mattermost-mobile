@@ -358,6 +358,7 @@ export default class MoreChannels extends PureComponent {
                             onSearchButtonPress={this.searchChannels}
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
+                            keyboardAppearance={theme.keyboardAppearance}
                             value={term}
                         />
                     </View>

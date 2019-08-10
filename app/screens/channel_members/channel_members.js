@@ -378,6 +378,7 @@ export default class ChannelMembers extends PureComponent {
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
+                        keyboardAppearance={theme.keyboardAppearance}
                         value={term}
                     />
                 </View>

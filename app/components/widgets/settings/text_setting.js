@@ -166,6 +166,7 @@ export default class TextSetting extends PureComponent {
                             multiline={multiline}
                             keyboardType={keyboardType}
                             secureTextEntry={secureTextEntry}
+                            keyboardAppearance={theme.keyboardAppearance}
                         />
                     </View>
                 </View>

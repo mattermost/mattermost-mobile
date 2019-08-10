@@ -84,6 +84,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                             placeholder={{id: 'mobile.notification_settings_mentions.keywordsDescription', defaultMessage: 'Other words that trigger a mention'}}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                             returnKeyType='done'
+                            keyboardAppearance={theme.keyboardAppearance}
                         />
                     </View>
                     <View style={style.helpContainer}>

@@ -79,6 +79,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                                 returnKeyType='done'
                                 returnKeyLabel={this.props.intl.formatMessage({id: 'mobile.notification_settings.modal_save'})}
                                 underlineColorAndroid={theme.linkColor}
+                                keyboardAppearance={theme.keyboardAppearance}
                             />
                             <FormattedText
                                 id='mobile.notification_settings_mentions.keywordsHelp'

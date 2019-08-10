@@ -58,6 +58,7 @@ export default class TextPreview extends React.PureComponent {
                     multiline={true}
                     value={this.props.content}
                     style={[style.codeText]}
+                    keyboardAppearance={this.props.theme.keyboardAppearance}
                 />
             );
         } else {

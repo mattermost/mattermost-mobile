@@ -132,6 +132,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                                     textAlignVertical='top'
                                     underlineColorAndroid='transparent'
                                     returnKeyType='done'
+                                    keyboardAppearance={theme.keyboardAppearance}
                                 />
                             </View>
                         </Section>

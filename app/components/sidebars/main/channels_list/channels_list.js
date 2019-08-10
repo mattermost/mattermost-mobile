@@ -147,6 +147,7 @@ export default class ChannelsList extends PureComponent {
                     onFocus={this.onSearchFocused}
                     searchIconCollapsedMargin={5}
                     searchIconExpandedMargin={5}
+                    keyboardAppearance={theme.keyboardAppearance}
                     value={term}
                     leftComponent={(
                         <SwitchTeamsButton

@@ -714,6 +714,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
                         editable={!channelIsReadOnly}
+                        keyboardAppearance={theme.keyboardAppearance}
                     />
                     <Fade visible={this.isSendButtonVisible()}>
                         <SendButton

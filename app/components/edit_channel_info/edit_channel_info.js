@@ -242,6 +242,7 @@ export default class EditChannelInfo extends PureComponent {
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
+                                            keyboardAppearance={theme.keyboardAppearance}
                                         />
                                     </View>
                                 </View>
@@ -271,6 +272,7 @@ export default class EditChannelInfo extends PureComponent {
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
+                                            keyboardAppearance={theme.keyboardAppearance}
                                         />
                                     </View>
                                 </View>
@@ -304,6 +306,7 @@ export default class EditChannelInfo extends PureComponent {
                                             textAlignVertical='top'
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
+                                            keyboardAppearance={theme.keyboardAppearance}
                                         />
                                     </View>
                                     <View>
@@ -343,6 +346,7 @@ export default class EditChannelInfo extends PureComponent {
                                     textAlignVertical='top'
                                     underlineColorAndroid='transparent'
                                     disableFullscreenUI={true}
+                                    keyboardAppearance={theme.keyboardAppearance}
                                 />
                             </View>
                             <View ref={this.lastText}>
