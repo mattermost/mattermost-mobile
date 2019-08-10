@@ -33,6 +33,7 @@ describe('Login', () => {
             resetToChannel: jest.fn(),
             goToScreen: jest.fn(),
         },
+        isLandscape: false,
     };
 
     test('should show "I forgot my password" with only email login enabled', () => {

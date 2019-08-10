@@ -11,9 +11,7 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
         "width": "100%",
         "zIndex": 10,
       },
-      Object {
-        "paddingHorizontal": 0,
-      },
+      null,
       Object {
         "height": 44,
       },

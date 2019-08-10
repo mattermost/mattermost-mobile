@@ -22,6 +22,7 @@ import {userTyping} from 'app/actions/views/typing';
 import {getCurrentChannelDraft, getThreadDraft} from 'app/selectors/views';
 import {getChannelMembersForDm} from 'app/selectors/channel';
 import {getAllowedServerMaxFileSize} from 'app/utils/file';
+import {isLandscape} from 'app/selectors/device';
 
 import PostTextbox from './post_textbox';
 
@@ -69,6 +70,7 @@ function mapStateToProps(state, ownProps) {
         enableConfirmNotificationsToChannel,
         currentChannelMembersCount,
         isTimezoneEnabled,
+        isLandscape: isLandscape(state),
     };
 }
 

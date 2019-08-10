@@ -17,6 +17,7 @@ import SelectTimezoneRow from './select_timezone_row';
 
 import {ListTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const ITEM_HEIGHT = 45;
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
@@ -31,6 +32,7 @@ export default class Timezone extends PureComponent {
         timezones: PropTypes.array.isRequired,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -83,12 +85,13 @@ export default class Timezone extends PureComponent {
                 timezone={timezone}
                 selectedTimezone={this.props.selectedTimezone}
                 onPress={this.timezoneSelected}
+                isLandscape={this.props.isLandscape}
             />
         );
     };
 
     render() {
-        const {theme, initialScrollIndex} = this.props;
+        const {theme, initialScrollIndex, isLandscape} = this.props;
         const {value} = this.state;
         const {intl} = this.context;
         const style = getStyleSheet(theme);
@@ -102,7 +105,7 @@ export default class Timezone extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={style.header}>
+                <View style={[style.header, padding(isLandscape)]}>
                     <SearchBar
                         ref='searchBar'
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}

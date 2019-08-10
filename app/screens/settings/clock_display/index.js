@@ -8,7 +8,7 @@ import {getTheme, get as getPreference} from 'mattermost-redux/selectors/entitie
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import Preferences from 'mattermost-redux/constants/preferences';
-
+import {isLandscape} from 'app/selectors/device';
 import ClockDisplay from './clock_display';
 
 function mapStateToProps(state) {
@@ -19,6 +19,7 @@ function mapStateToProps(state) {
         userId: currentUserId,
         theme: getTheme(state),
         militaryTime,
+        isLandscape: isLandscape(state),
     };
 }
 

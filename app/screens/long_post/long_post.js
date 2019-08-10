@@ -21,6 +21,7 @@ import SafeAreaView from 'app/components/safe_area_view';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -57,6 +58,7 @@ export default class LongPost extends PureComponent {
         onPermalinkPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -163,6 +165,7 @@ export default class LongPost extends PureComponent {
             onPermalinkPress,
             postId,
             theme,
+            isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -183,7 +186,7 @@ export default class LongPost extends PureComponent {
                 footerColor='transparent'
                 forceTop={44}
             >
-                <View style={style.container}>
+                <View style={[style.container, margin(isLandscape)]}>
                     <Animatable.View
                         ref='view'
                         animation='zoomIn'

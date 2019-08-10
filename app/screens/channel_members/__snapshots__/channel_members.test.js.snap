@@ -5,9 +5,12 @@ exports[`ChannelMembers should match snapshot 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -43,6 +46,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
   <CustomList
     data={Array []}
     extraData={Object {}}
+    isLandscape={false}
     listType="section"
     loading={false}
     loadingComponent={null}

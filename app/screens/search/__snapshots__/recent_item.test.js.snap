@@ -9,12 +9,15 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
 >
   <View
     style={
-      Object {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 42,
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 42,
+        },
+        null,
+      ]
     }
   >
     <Text

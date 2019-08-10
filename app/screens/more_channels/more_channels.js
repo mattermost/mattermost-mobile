@@ -10,7 +10,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import CustomList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import FormattedText from 'app/components/formatted_text';
@@ -40,6 +40,7 @@ export default class MoreChannels extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -320,7 +321,7 @@ export default class MoreChannels extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {adding, channels, loading, term} = this.state;
         const more = term ? () => true : this.getChannels;
         const style = getStyleFromTheme(theme);
@@ -342,7 +343,7 @@ export default class MoreChannels extends PureComponent {
 
             content = (
                 <React.Fragment>
-                    <View style={style.searchBar}>
+                    <View style={[style.searchBar, padding(isLandscape)]}>
                         <SearchBar
                             ref='search_bar'
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
