@@ -36,6 +36,7 @@ describe('EditChannelInfo', () => {
         oldChannelURL: '/team_a/channels/channel_old',
         oldHeader: 'old_header',
         oldPurpose: 'old_purpose',
+        isLandscape: true,
     };
 
     test('should have called onHeaderChangeText on text change from Autocomplete', () => {
