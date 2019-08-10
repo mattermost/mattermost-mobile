@@ -28,7 +28,7 @@ import {
     changeOpacity,
     makeStyleSheetFromTheme,
     setNavigatorStyles,
-    getKeyboardAppearanceFromTheme
+    getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
