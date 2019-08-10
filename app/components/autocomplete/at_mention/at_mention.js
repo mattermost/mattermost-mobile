@@ -35,11 +35,8 @@ export default class AtMention extends PureComponent {
         teamMembers: PropTypes.array,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
-<<<<<<< HEAD
         isLandscape: PropTypes.bool.isRequired,
-=======
         nestedScrollEnabled: PropTypes.bool,
->>>>>>> [MM-13843] nestedScrollEnabled on at_mention
     };
 
     static defaultProps = {
