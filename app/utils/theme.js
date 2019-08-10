@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {StyleSheet} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
+
+import tinyColor from 'tinycolor2';
 
 import * as ThemeUtils from 'mattermost-redux/utils/theme_utils';
 
@@ -41,4 +43,8 @@ export function setNavigatorStyles(componentId, theme) {
 export function isThemeSwitchingEnabled(state) {
     const {config} = state.entities.general;
     return config.EnableThemeSelection === 'true';
+}
+
+export function getKeyboardAppearanceFromTheme(theme) {
+    return tinyColor(theme.centerChannelBg).isLight() ? 'light' : 'dark';
 }

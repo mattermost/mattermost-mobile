@@ -8,7 +8,12 @@ import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 export default class NotificationSettingsMentionsKeywords extends PureComponent {
     static propTypes = {
@@ -84,7 +89,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                             placeholder={{id: 'mobile.notification_settings_mentions.keywordsDescription', defaultMessage: 'Other words that trigger a mention'}}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                             returnKeyType='done'
-                            keyboardAppearance={theme.keyboardAppearance}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         />
                     </View>
                     <View style={[style.helpContainer, padding(isLandscape)]}>

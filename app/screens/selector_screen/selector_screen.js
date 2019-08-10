@@ -24,7 +24,12 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {ViewTypes} from 'app/constants';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme
+} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
 export default class SelectorScreen extends PureComponent {
@@ -333,7 +338,7 @@ export default class SelectorScreen extends PureComponent {
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
-                        keyboardAppearance={theme.keyboardAppearance}
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
                     />
                 </View>

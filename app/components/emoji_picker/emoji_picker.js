@@ -25,7 +25,11 @@ import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import {DeviceTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {
+    makeStyleSheetFromTheme,
+    changeOpacity,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import EmojiPickerRow from './emoji_picker_row';
 
@@ -479,7 +483,7 @@ export default class EmojiPicker extends PureComponent {
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
                             value={searchTerm}
-                            keyboardAppearance={theme.keyboardAppearance}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         />
                     </View>
                     <View style={styles.container}>

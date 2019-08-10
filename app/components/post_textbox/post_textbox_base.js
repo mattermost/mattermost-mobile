@@ -31,7 +31,11 @@ import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGH
 import {NOTIFY_ALL_MEMBERS} from 'app/constants/view';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {RNTextInputReset} = NativeModules;
@@ -717,7 +721,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
                         editable={!channelIsReadOnly}
-                        keyboardAppearance={theme.keyboardAppearance}
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     />
                     <Fade visible={this.isSendButtonVisible()}>
                         <SendButton

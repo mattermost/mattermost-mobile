@@ -37,7 +37,6 @@ const allowedThemes = [
         mentionHighlightBg: '#ffe577',
         mentionHighlightLink: '#166de0',
         codeTheme: 'github',
-        keyboardAppearance: 'light',
         key: 'default',
     },
     {
@@ -65,7 +64,6 @@ const allowedThemes = [
         mentionHighlightBg: '#f3e197',
         mentionHighlightLink: '#2f81b7',
         codeTheme: 'github',
-        keyboardAppearance: 'light',
         key: 'organization',
     },
     {
@@ -93,7 +91,6 @@ const allowedThemes = [
         mentionHighlightBg: '#984063',
         mentionHighlightLink: '#a4ffeb',
         codeTheme: 'solarized-dark',
-        keyboardAppearance: 'dark',
         key: 'mattermostDark',
     },
     {
@@ -121,7 +118,6 @@ const allowedThemes = [
         mentionHighlightBg: '#784098',
         mentionHighlightLink: '#a4ffeb',
         codeTheme: 'monokai',
-        keyboardAppearance: 'dark',
         key: 'windows10',
     },
 ];

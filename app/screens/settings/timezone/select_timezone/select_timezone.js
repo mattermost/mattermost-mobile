@@ -16,7 +16,11 @@ import StatusBar from 'app/components/status_bar';
 import SelectTimezoneRow from './select_timezone_row';
 
 import {ListTypes} from 'app/constants';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const ITEM_HEIGHT = 45;
@@ -123,7 +127,7 @@ export default class Timezone extends PureComponent {
                         value={value}
                         containerStyle={style.searchBarContainer}
                         showArrow={false}
-                        keyboardAppearance={theme.keyboardAppearance}
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     />
                 </View>
                 <FlatList

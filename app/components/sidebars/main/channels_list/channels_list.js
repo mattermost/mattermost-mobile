@@ -13,7 +13,11 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 import List from './list';
 import SwitchTeamsButton from './switch_teams_button';
@@ -149,7 +153,7 @@ export default class ChannelsList extends PureComponent {
                     onFocus={this.onSearchFocused}
                     searchIconCollapsedMargin={5}
                     searchIconExpandedMargin={5}
-                    keyboardAppearance={theme.keyboardAppearance}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                     leftComponent={(
                         <SwitchTeamsButton
