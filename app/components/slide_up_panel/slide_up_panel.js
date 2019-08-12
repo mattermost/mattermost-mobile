@@ -130,12 +130,12 @@ export default class SlideUpPanel extends PureComponent {
         }).start();
     }
 
-    closeWithAnimation = () => {
+    closeWithAnimation = (cb) => {
         Animated.timing(this.translateYOffset, {
             duration: 200,
             toValue: this.snapPoints[2],
             useNativeDriver: true,
-        }).start(() => this.props.onRequestClose());
+        }).start(() => this.props.onRequestClose(cb));
     };
 
     onHeaderHandlerStateChange = ({nativeEvent}) => {
