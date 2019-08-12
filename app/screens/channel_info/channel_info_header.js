@@ -68,11 +68,13 @@ export default class ChannelInfoHeader extends React.PureComponent {
         }
         return (
             <View style={style.section}>
-                <FormattedText
-                    style={style.header}
-                    id={messageId}
-                    defaultMessage={defaultMessage}
-                />
+                <View style={style.row}>
+                    <FormattedText
+                        style={style.header}
+                        id={messageId}
+                        defaultMessage={defaultMessage}
+                    />
+                </View>
             </View>
         );
     }
