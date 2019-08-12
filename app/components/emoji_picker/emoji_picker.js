@@ -164,15 +164,17 @@ export default class EmojiPicker extends PureComponent {
         });
     };
 
-    changeSearchTerm = (text) => {
-        const searchTerm = filterEmojiSearchInput(text);
-        const nextState = {searchTerm};
+    changeSearchTerm = (rawText) => {
+        const searchTerm = filterEmojiSearchInput(rawText);
+        const nextState = {
+            searchTerm: rawText
+        };
+        this.setState(nextState);
 
         if (!searchTerm) {
             nextState.currentSectionIndex = 0;
+            return;
         }
-
-        this.setState(nextState);
 
         clearTimeout(this.searchTermTimeout);
         const timeout = searchTerm ? 100 : 0;
