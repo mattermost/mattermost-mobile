@@ -213,23 +213,28 @@ NotificationSettingsMentionsKeywords {
               placeholderTextColor="rgba(61,60,64,0.4)"
               returnKeyType="done"
               style={
-                Object {
-                  "color": "#3d3c40",
-                  "fontSize": 15,
-                  "height": 150,
-                  "paddingHorizontal": 15,
-                  "paddingVertical": 10,
-                }
+                Array [
+                  Object {
+                    "color": "#3d3c40",
+                    "fontSize": 15,
+                    "height": 150,
+                    "paddingVertical": 10,
+                  },
+                  null,
+                ]
               }
               value=""
             />
           </View>
           <View
             style={
-              Object {
-                "marginTop": 10,
-                "paddingHorizontal": 15,
-              }
+              Array [
+                Object {
+                  "marginTop": 10,
+                  "paddingHorizontal": 15,
+                },
+                null,
+              ]
             }
           >
             <FormattedText
