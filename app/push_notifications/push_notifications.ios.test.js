@@ -59,6 +59,17 @@ describe('PushNotification', () => {
         expect(foregroundNotifications[channel2ID]).toBe(undefined);
     });
 
+    it('should NOT track foreground notifications for channel when opened', async () => {
+        let item = await AsyncStorage.getItem(FOREGROUND_NOTIFICATIONS_KEY);
+        expect(item).toBe(null);
+
+        PushNotification.trackForegroundNotification = jest.fn();
+        PushNotification.onNotificationOpened(notification);
+        expect(PushNotification.trackForegroundNotification).not.toBeCalled();
+        item = await AsyncStorage.getItem(FOREGROUND_NOTIFICATIONS_KEY);
+        expect(item).toBe(null);
+    });
+
     it('should increment badge number when foreground notification is received', () => {
         const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
 
