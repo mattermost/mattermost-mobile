@@ -53,7 +53,7 @@ class Settings extends PureComponent {
 
     componentDidAppear() {
         const {actions, componentId} = this.props;
-        actions.applyTheme(componentId);
+        actions.applyTheme(componentId, true);
     }
 
     navigationButtonPressed({buttonId}) {
