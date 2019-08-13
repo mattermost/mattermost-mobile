@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {dismissAllModals} from 'app/actions/navigation';
 import {purgeOfflineStore} from 'app/actions/views/root';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isLandscape} from 'app/selectors/device';
@@ -19,6 +20,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            dismissAllModals,
             purgeOfflineStore,
         }, dispatch),
     };

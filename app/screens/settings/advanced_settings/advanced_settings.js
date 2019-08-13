@@ -28,6 +28,7 @@ import Config from 'assets/config';
 class AdvancedSettings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            dismissAllModals: PropTypes.func.isRequired,
             purgeOfflineStore: PropTypes.func.isRequired,
         }).isRequired,
         intl: intlShape.isRequired,
@@ -74,6 +75,10 @@ class AdvancedSettings extends PureComponent {
         await deleteFileCache();
         this.setState({cacheSize: 0, cacheSizedFetched: true});
         actions.purgeOfflineStore();
+
+        if (Platform.OS === 'android') {
+            actions.dismissAllModals();
+        }
     });
 
     renderCacheFileSize = () => {
