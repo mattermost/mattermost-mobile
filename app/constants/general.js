@@ -10,6 +10,7 @@ export default {
     GM_CHANNEL: 'G',
 
     POST_CHUNK_SIZE: 60,
+    TEAMS_CHUNK_SIZE: 50,
 
     SPECIAL_MENTIONS: [
         'all',

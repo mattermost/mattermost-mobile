@@ -48,10 +48,10 @@ export function removeTeamMemberships(realm, general, user, teamMembersMap) {
     });
 }
 
-export function createOrUpdateTeams(realm, data, teamMembersMap) {
+export function createOrUpdateTeams(realm, data, teamMembersMap = null) {
     if (data.teams?.length) {
         data.teams.forEach((teamData) => {
-            teamData.members = teamMembersMap.get(teamData.id) || [];
+            teamData.members = teamMembersMap?.get(teamData.id) || [];
             realm.create('Team', teamDataToRealm(teamData), true);
         });
     }
@@ -81,6 +81,13 @@ function myTeamsWriter(realm, action) {
         const generalRealm = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         generalRealm.currentTeamId = data;
         generalRealm.currentChannelId = null;
+        break;
+    }
+
+    case TeamTypes.RECEIVED_TEAMS_LIST: {
+        const data = action.data || action.payload;
+
+        createOrUpdateTeams(realm, data);
         break;
     }
 

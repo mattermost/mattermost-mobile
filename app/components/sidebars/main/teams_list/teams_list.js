@@ -39,7 +39,7 @@ export default class TeamsList extends PureComponent {
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         hasOtherJoinableTeams: PropTypes.bool,
-        teams: PropTypes.object.isRequired,
+        teams: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
