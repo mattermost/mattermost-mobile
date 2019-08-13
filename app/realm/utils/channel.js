@@ -10,6 +10,7 @@ export function channelDataToRealm(channel) {
         createAt: channel.create_at,
         updateAt: channel.update_at,
         deleteAt: channel.delete_at,
+        creatorId: channel.creator_id,
         team: channel.team,
         type: channel.type,
         displayName: channel.display_name,
@@ -20,6 +21,7 @@ export function channelDataToRealm(channel) {
         purpose: channel.purpose,
         groupConstrained: channel.group_constrained || false,
         members: channel.members,
+        guestCount: channel.guest_count,
     };
 }
 
@@ -29,6 +31,7 @@ export function channelMemberDataToRealm(member) {
         user: member.user,
         roles: member.roles,
         lastViewAt: member.last_viewed_at,
+        lastUpdateAt: member.last_update_at,
         msgCount: member.msg_count,
         mentionCount: member.mention_count,
         notifyProps: JSON.stringify(member.notify_props),

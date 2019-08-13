@@ -18,6 +18,7 @@ export class Channel extends Realm.Object {
             createAt: 'int',
             updateAt: 'int',
             deleteAt: {type: 'int', default: 0},
+            creatorId: 'string?',
             team: 'Team?',
             type: {type: 'string', indexed: true},
             displayName: {type: 'string', default: ''},
@@ -29,6 +30,7 @@ export class Channel extends Realm.Object {
             groupConstrained: {type: 'bool', default: false},
             members: 'ChannelMember[]',
             memberCount: {type: 'int', default: 0},
+            guestCount: {type: 'int', default: 0},
         },
     }
 }
@@ -69,6 +71,7 @@ export class ChannelMember extends Realm.Object {
             user: 'User',
             roles: 'string?',
             lastViewAt: {type: 'int', default: 0},
+            lastUpdateAt: {type: 'int', default: 0},
             msgCount: {type: 'int', default: 0},
             mentionCount: {type: 'int', default: 0},
             notifyProps: 'string?',
