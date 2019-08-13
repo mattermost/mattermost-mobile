@@ -151,12 +151,10 @@ export function selectInitialChannel(teamId) {
         const lastChannel = realm.objectForPrimaryKey('Channel', lastChannelId);
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
 
-        const isDMVisible = lastChannel?.type === General.DM_CHANNEL && isDirectMessageVisible(realm, general.currentUserId, lastChannel.name);
-        const isGMVisible = lastChannel?.type === General.DM_CHANNEL && isGroupMessageVisible(realm, lastChannelId);
-
+        const isDirectChannel = lastChannel?.type === General.DM_CHANNEL || lastChannel?.type === General.GM_CHANNEL;
         const isMember = lastChannel?.members.filtered('user.id=$0', general.currentUserId);
 
-        if (isMember?.length && (lastChannel?.team.id === teamId || isDMVisible || isGMVisible)) {
+        if (isMember?.length && (lastChannel?.team?.id === teamId || isDirectChannel)) {
             return dispatch(handleSelectChannel(lastChannelId, false, teamId));
         }
 
@@ -204,24 +202,26 @@ export function handleSelectChannel(channelId, fromPushNotification = false, tea
         const realm = getState();
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         const currentChannelId = general.currentChannelId;
+
         let currentChannel = null;
         if (currentChannelId) {
             currentChannel = realm.objectForPrimaryKey('Channel', currentChannelId);
         }
 
-        const lastTeamId = currentChannel?.team?.id || general.currentTeamId || teamId;
+        const lastTeamId = currentChannel?.team?.id || general.currentTeamId;
 
         // If the app is open from push notification, we already fetched the posts.
         if (!fromPushNotification) {
             dispatch(loadPostsWithRetry(channelId));
         }
 
-        // TODO: Fix the team based on the channel
-        reduxStore.dispatch({
-            type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-            teamId: lastTeamId,
-            channelId,
-        });
+        if (currentChannelId) {
+            reduxStore.dispatch({
+                type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
+                teamId: lastTeamId,
+                channelId: currentChannelId,
+            });
+        }
 
         await dispatch({
             type: ChannelTypes.SELECT_CHANNEL,
