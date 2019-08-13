@@ -12,35 +12,37 @@ import {
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
-import {General} from 'mattermost-redux/constants';
 import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+import {General} from 'app/constants';
+import {getChannelDisplayName, isChannelMuted, isOwnDirectMessage} from 'app/utils/channels';
+import {displayUserName, isSystemAdmin} from 'app/utils/users';
+
+import memoize from 'memoize-one';
+
 const {View: AnimatedView} = Animated;
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
-        channelId: PropTypes.string.isRequired,
         channel: PropTypes.object,
+        channelId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
-        displayName: PropTypes.string.isRequired,
-        isChannelMuted: PropTypes.bool,
         currentUserId: PropTypes.string.isRequired,
+        experimentalHideTownSquare: PropTypes.string,
+        isChannelMuted: PropTypes.bool,
+        isFavorite: PropTypes.bool.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
+        isSearchResult: PropTypes.bool,
         isUnread: PropTypes.bool,
         hasDraft: PropTypes.bool,
-        mentions: PropTypes.number.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
-        shouldHideChannel: PropTypes.bool,
-        showUnreadForMsgs: PropTypes.bool.isRequired,
-        theme: PropTypes.object.isRequired,
-        unreadMsgs: PropTypes.number.isRequired,
-        isSearchResult: PropTypes.bool,
-        isBot: PropTypes.bool.isRequired,
         previewChannel: PropTypes.func,
-        isLandscape: PropTypes.bool.isRequired,
+        teammateDisplayNameSettings: PropTypes.string,
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
@@ -51,9 +53,73 @@ export default class ChannelItem extends PureComponent {
         intl: intlShape,
     };
 
+    getDisplayName = memoize(
+        (channel, currentUserId, teammateDisplayNameSettings) => {
+            let displayName = '';
+            if (channel.fake) {
+                displayName = displayUserName(channel, teammateDisplayNameSettings);
+            } else if (channel.type === General.DM_CHANNEL && isOwnDirectMessage(channel, currentUserId)) {
+                displayName = getChannelDisplayName(channel, '', teammateDisplayNameSettings);
+            } else {
+                displayName = getChannelDisplayName(channel, currentUserId, teammateDisplayNameSettings);
+            }
+
+            return displayName;
+        }
+    );
+
+    getMemberCount = () => {
+        const {channel} = this.props;
+
+        switch (channel.type) {
+        case General.DM_CHANNEL:
+            return 1;
+        case General.GM_CHANNEL:
+            return channel.members.length - 1;
+        default:
+            return channel.members.length;
+        }
+    };
+
+    getMentions = () => {
+        const {channel, currentUserId} = this.props;
+        const member = this.getMyChannelMember(channel, currentUserId);
+
+        return member?.mentionCount || 0;
+    };
+
+    getMyChannelMember = memoize(
+        (channel, currentUserId) => channel?.members.filtered('user.id = $0', currentUserId)[0],
+    );
+
+    getTeammate = memoize(
+        (channel, currentUserId) => channel?.members.filtered('user.id != $0', currentUserId)[0],
+    );
+
+    getTeammateStatus = () => {
+        const {channel, currentUserId} = this.props;
+        if (channel.type !== General.DM_CHANNEL) {
+            return null;
+        }
+
+        const teammate = this.getTeammate(channel, currentUserId);
+
+        return teammate?.status || 'offline';
+    };
+
+    isBot = () => {
+        // TODO: Determine if is bot from a search Result
+        const {channel, currentUserId} = this.props;
+        const teammate = this.getTeammate(channel, currentUserId);
+
+        return teammate?.isBot || false;
+    };
+
     onPress = preventDoubleTap(() => {
-        const {channelId, currentChannelId, displayName, onSelectChannel, channel} = this.props;
+        const {channelId, currentChannelId, currentUserId, onSelectChannel, channel, teammateDisplayNameSettings} = this.props;
         const {type, fake} = channel;
+        const displayName = this.getDisplayName(channel, currentUserId, teammateDisplayNameSettings);
+
         requestAnimationFrame(() => {
             onSelectChannel({id: channelId, display_name: displayName, fake, type}, currentChannelId);
         });
@@ -81,26 +147,58 @@ export default class ChannelItem extends PureComponent {
     };
 
     showChannelAsUnread = () => {
-        return this.props.mentions > 0 || (this.props.unreadMsgs > 0 && this.props.showUnreadForMsgs);
+        const {channel, currentUserId} = this.props;
+        if (!channel.members.length) {
+            return false;
+        }
+
+        const myMember = this.getMyChannelMember(channel, currentUserId);
+        if (!myMember) {
+            return false;
+        }
+
+        const hasUnreads = (channel.totalMsgCount - myMember.msgCount) > 0;
+        const showUnreadForMsgs = myMember.notifyPropsAsJSON?.mark_unread !== General.MENTION; //eslint-disable-line camelcase
+        return myMember.mentionCount > 0 || (hasUnreads > 0 && showUnreadForMsgs);
+    };
+
+    shouldHideChannel = () => {
+        const {
+            channel,
+            currentChannelId,
+            currentUserId,
+            experimentalHideTownSquare,
+            isFavorite,
+            isSearchResult,
+        } = this.props;
+        const myMember = this.getMyChannelMember(channel, currentUserId);
+        const isAdmin = isSystemAdmin(myMember?.user);
+
+        return (
+            channel?.name === General.DEFAULT_CHANNEL &&
+            channel.id !== currentChannelId &&
+            isAdmin && !isFavorite && !isSearchResult &&
+            experimentalHideTownSquare === 'true'
+        );
     };
 
     render() {
         const {
+            channel,
             channelId,
             currentChannelId,
-            displayName,
-            isChannelMuted,
             currentUserId,
             isUnread,
             hasDraft,
-            mentions,
-            shouldHideChannel,
             theme,
             isSearchResult,
-            channel,
-            isBot,
             isLandscape,
+            teammateDisplayNameSettings,
         } = this.props;
+
+        if (!channel) {
+            return null;
+        }
 
         const isArchived = channel.delete_at > 0;
 
@@ -110,35 +208,33 @@ export default class ChannelItem extends PureComponent {
             return null;
         }
 
-        if (!this.showChannelAsUnread() && shouldHideChannel) {
-            return null;
-        }
-
-        if (!this.props.displayName) {
+        if (!this.showChannelAsUnread() && this.shouldHideChannel()) {
             return null;
         }
 
         const {intl} = this.context;
 
-        let channelDisplayName = displayName;
-        let isCurrenUser = false;
+        let channelDisplayName = this.getDisplayName(channel, currentUserId, teammateDisplayNameSettings);
+        let isCurrentUser = false;
 
         if (channel.type === General.DM_CHANNEL) {
             if (isSearchResult) {
-                isCurrenUser = channel.id === currentUserId;
+                isCurrentUser = channel.id === currentUserId;
             } else {
-                isCurrenUser = channel.teammate_id === currentUserId;
+                isCurrentUser = isOwnDirectMessage(channel, currentUserId);
             }
         }
-        if (isCurrenUser) {
+
+        if (isCurrentUser) {
             channelDisplayName = intl.formatMessage({
                 id: 'channel_header.directchannel.you',
-                defaultMessage: '{displayName} (you)',
-            }, {displayname: displayName});
+                defaultMessage: '{displayname} (you)',
+            }, {displayname: channelDisplayName});
         }
 
         const style = getStyleSheet(theme);
         const isActive = channelId === currentChannelId;
+        const mentions = this.getMentions();
 
         let extraItemStyle;
         let extraTextStyle;
@@ -168,7 +264,7 @@ export default class ChannelItem extends PureComponent {
             );
         }
 
-        if (isChannelMuted) {
+        if (isChannelMuted(this.getMyChannelMember(channel, currentUserId))) {
             mutedStyle = style.muted;
         }
 
@@ -177,14 +273,14 @@ export default class ChannelItem extends PureComponent {
                 isActive={isActive}
                 channelId={channelId}
                 isUnread={isUnread}
-                hasDraft={hasDraft && channelId !== currentChannelId}
-                membersCount={displayName.split(',').length}
+                hasDraft={hasDraft && !isActive}
+                membersCount={this.getMemberCount()}
                 size={16}
-                status={channel.status}
+                status={this.getTeammateStatus()}
                 theme={theme}
                 type={channel.type}
                 isArchived={isArchived}
-                isBot={isBot}
+                isBot={this.isBot()}
             />
         );
 
