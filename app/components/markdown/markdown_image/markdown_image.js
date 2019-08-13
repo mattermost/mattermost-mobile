@@ -18,7 +18,7 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import ProgressiveImage from 'app/components/progressive_image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import {getCurrentServerUrl} from 'app/init/credentials';
+import EphemeralStore from 'app/store/ephemeral_store';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import ImageCacheManager from 'app/utils/image_cache_manager';
@@ -43,7 +43,6 @@ export default class MarkdownImage extends React.Component {
         imagesMetadata: PropTypes.object,
         linkDestination: PropTypes.string,
         isReplyPost: PropTypes.bool,
-        serverURL: PropTypes.string,
         source: PropTypes.string.isRequired,
         errorTextStyle: CustomPropTypes.Style,
     };
@@ -66,11 +65,10 @@ export default class MarkdownImage extends React.Component {
         this.mounted = false;
     }
 
-    async componentDidMount() {
+    componentDidMount() {
         this.mounted = true;
 
-        const source = await this.getSource();
-        ImageCacheManager.cache(null, source, this.setImageUrl);
+        ImageCacheManager.cache(null, this.getSource(), this.setImageUrl);
     }
 
     static getDerivedStateFromProps(props) {
@@ -86,11 +84,10 @@ export default class MarkdownImage extends React.Component {
         return null;
     }
 
-    async componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps) {
         if (this.props.source !== prevProps.source) {
             // getSource also depends on serverURL, but that shouldn't change while this is mounted
-            const source = await this.getSource();
-            ImageCacheManager.cache(null, source, this.setImageUrl);
+            ImageCacheManager.cache(null, this.getSource(), this.setImageUrl);
         }
     }
 
@@ -98,15 +95,11 @@ export default class MarkdownImage extends React.Component {
         this.mounted = false;
     }
 
-    getSource = async () => {
+    getSource = () => {
         let source = this.props.source;
-        let serverUrl = this.props.serverURL;
-        if (!serverUrl) {
-            serverUrl = await getCurrentServerUrl();
-        }
 
         if (source.startsWith('/')) {
-            source = serverUrl + source;
+            source = EphemeralStore.currentServerUrl + source;
         }
 
         return source;
@@ -178,14 +171,14 @@ export default class MarkdownImage extends React.Component {
         Clipboard.setString(this.props.linkDestination || this.props.source);
     };
 
-    handlePreviewImage = async () => {
+    handlePreviewImage = () => {
         const {
             originalHeight,
             originalWidth,
             uri,
         } = this.state;
         const {actions} = this.props;
-        const link = await this.getSource();
+        const link = this.getSource();
         let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
         const extension = filename.split('.').pop();
 
