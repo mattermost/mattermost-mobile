@@ -25,7 +25,7 @@ let LoadMorePosts = null;
 
 export default class ChannelPostList extends PureComponent {
     static propTypes = {
-        channelId: PropTypes.string.isRequired,
+        channelId: PropTypes.string,
         currentUserId: PropTypes.string,
         goToScreen: PropTypes.func.isRequired,
         lastViewedAt: PropTypes.number,

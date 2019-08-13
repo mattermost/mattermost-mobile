@@ -5,6 +5,7 @@ import React from 'react';
 import {Dimensions, View} from 'react-native';
 
 import ChannelLoader from 'app/components/channel_loader';
+import EmptyToolbar from 'app/components/empty_toolbar';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import NetworkIndicator from 'app/components/network_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
@@ -25,10 +26,13 @@ export default class ChannelAndroid extends ChannelBase {
 
         if (!currentTeamId) {
             return (
-                <ChannelLoader
-                    height={height}
-                    style={channelLoaderStyle}
-                />
+                <SafeAreaView>
+                    <EmptyToolbar theme={theme}/>
+                    <ChannelLoader
+                        height={height}
+                        style={channelLoaderStyle}
+                    />
+                </SafeAreaView>
             );
         }
 
