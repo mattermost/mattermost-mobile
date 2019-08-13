@@ -6,7 +6,7 @@ import DeviceTypes from './device';
 import ListTypes from './list';
 import NavigationTypes from './navigation';
 import Posts from './posts';
-import PermissionTypes from './permissions';
+import Permissions from './permissions';
 import ViewTypes, {UpgradeTypes} from './view';
 
 import General from './general';
@@ -20,7 +20,7 @@ export {
     DeviceTypes,
     ListTypes,
     NavigationTypes,
-    PermissionTypes,
+    Permissions,
     UpgradeTypes,
     ViewTypes,
 };

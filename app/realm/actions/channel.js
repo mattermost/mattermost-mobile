@@ -3,7 +3,7 @@
 
 import {Client4} from 'mattermost-redux/client';
 
-import {General, PermissionTypes, Preferences, ViewTypes} from 'app/constants';
+import {General, Permissions, Preferences, ViewTypes} from 'app/constants';
 import {ChannelTypes, UserTypes} from 'app/realm/action_types';
 import {isDirectMessageVisible, isGroupMessageVisible} from 'app/realm/utils/channel';
 import {reducePermissionsToSet} from 'app/realm/utils/role';
@@ -176,7 +176,7 @@ export function selectDefaultChannel(teamId) {
             const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel.filtered('members.user.id=$0', currentUser.id).length);
 
             const permissions = realm.objects('Role').reduce(reducePermissionsToSet.bind(`${teamMember.roles} ${currentUser.roles}`), new Set());
-            const canIJoinPublicChannelsInTeam = permissions.has(PermissionTypes.JOIN_PUBLIC_CHANNELS);
+            const canIJoinPublicChannelsInTeam = permissions.has(Permissions.JOIN_PUBLIC_CHANNELS);
 
             let channel;
             if (iAmMemberOfTheTeamDefaultChannel || canIJoinPublicChannelsInTeam) {
