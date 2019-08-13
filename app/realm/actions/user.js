@@ -13,7 +13,7 @@ import ephemeralStore from 'app/store/ephemeral_store';
 import {setCSRFFromCookie} from 'app/utils/security';
 import {getDeviceTimezone} from 'app/utils/timezone';
 
-import {saveConfigAndLicense} from './general';
+import {loadConfigAndLicense, saveConfigAndLicense} from './general';
 import {forceLogoutIfNecessary} from './helpers';
 import {loadRolesIfNeeded} from './role';
 
@@ -172,6 +172,8 @@ export function loadMe(loginUser) {
             if (roles.size > 0) {
                 dispatch(loadRolesIfNeeded(roles));
             }
+
+            await dispatch(loadConfigAndLicense());
 
             return data;
         } catch (error) {
