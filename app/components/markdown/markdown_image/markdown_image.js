@@ -66,10 +66,11 @@ export default class MarkdownImage extends React.Component {
         this.mounted = false;
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         this.mounted = true;
 
-        ImageCacheManager.cache(null, this.getSource(), this.setImageUrl);
+        const source = await this.getSource();
+        ImageCacheManager.cache(null, source, this.setImageUrl);
     }
 
     static getDerivedStateFromProps(props) {
@@ -85,10 +86,11 @@ export default class MarkdownImage extends React.Component {
         return null;
     }
 
-    componentDidUpdate(prevProps) {
+    async componentDidUpdate(prevProps) {
         if (this.props.source !== prevProps.source) {
             // getSource also depends on serverURL, but that shouldn't change while this is mounted
-            ImageCacheManager.cache(null, this.getSource(), this.setImageUrl);
+            const source = await this.getSource();
+            ImageCacheManager.cache(null, source, this.setImageUrl);
         }
     }
 
@@ -176,14 +178,14 @@ export default class MarkdownImage extends React.Component {
         Clipboard.setString(this.props.linkDestination || this.props.source);
     };
 
-    handlePreviewImage = () => {
+    handlePreviewImage = async () => {
         const {
             originalHeight,
             originalWidth,
             uri,
         } = this.state;
         const {actions} = this.props;
-        const link = this.getSource();
+        const link = await this.getSource();
         let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
         const extension = filename.split('.').pop();
 
