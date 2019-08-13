@@ -362,15 +362,21 @@ export function dismissOverlay(componentId) {
     };
 }
 
-export function applyTheme(componentId) {
+export function applyTheme(componentId, skipBackButtonStyle = false) {
     return () => {
         const theme = getDefaultThemeFromConfig(); // TODO: Get the theme based on Realm
 
+        let backButton = {
+            color: theme.sidebarHeaderTextColor,
+        };
+
+        if (skipBackButtonStyle && Platform.OS === 'android') {
+            backButton = null;
+        }
+
         Navigation.mergeOptions(componentId, {
             topBar: {
-                backButton: {
-                    color: theme.sidebarHeaderTextColor,
-                },
+                backButton,
                 background: {
                     color: theme.sidebarHeaderBg,
                 },
