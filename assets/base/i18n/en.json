@@ -135,6 +135,7 @@
   "mobile.advanced_settings.delete_title": "Delete Documents & Data",
   "mobile.advanced_settings.timezone": "Timezone",
   "mobile.advanced_settings.title": "Advanced Settings",
+  "mobile.alert_dialog.alertCancel": "Cancel",
   "mobile.android.camera_permission_denied_description": "To take photos and videos with your camera, please change your permission settings.",
   "mobile.android.camera_permission_denied_title": "Camera access is required",
   "mobile.android.permission_denied_dismiss": "Dismiss",
