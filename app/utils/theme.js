@@ -5,6 +5,7 @@ import {StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import * as ThemeUtils from 'mattermost-redux/utils/theme_utils';
+import * as HighlightStyles from 'react-syntax-highlighter/styles/hljs';
 
 export function makeStyleSheetFromTheme(getStyleFromTheme) {
     return ThemeUtils.makeStyleFromTheme((theme) => {
@@ -44,8 +45,6 @@ export function isThemeSwitchingEnabled(state) {
 }
 
 // getHighlightStyleFromTheme
-
-import * as HighlightStyles from 'react-syntax-highlighter/styles/hljs';
 
 const snakeCaseToCamelCase = (str) => str.replace(
     /([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', '')
