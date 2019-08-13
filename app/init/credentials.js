@@ -40,6 +40,7 @@ export const getAppCredentials = async () => {
     const serverUrl = await AsyncStorage.getItem(CURRENT_SERVER);
 
     if (serverUrl) {
+        EphemeralStore.currentServerUrl = serverUrl;
         return getInternetCredentials(serverUrl);
     }
 
