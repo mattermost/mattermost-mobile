@@ -7,6 +7,9 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
+import Fade from 'app/components/fade';
+import SendButton from 'app/components/send_button';
+
 import PostTextbox from './post_textbox.ios';
 
 jest.mock('NativeEventEmitter');
@@ -241,5 +244,74 @@ describe('PostTextBox', () => {
             const containsAtChannel = wrapper.instance().textContainsAtAllAtChannel(data.text);
             assert.equal(containsAtChannel, data.result, data.text);
         }
+    });
+
+    describe('send button', () => {
+        test('should initially disable and hide the send button', () => {
+            const wrapper = shallowWithIntl(
+                <PostTextbox {...baseProps}/>
+            );
+
+            expect(wrapper.find(Fade).prop('visible')).toBe(false);
+            expect(wrapper.find(SendButton).prop('disabled')).toBe(true);
+        });
+
+        test('should show a disabled send button when uploading a file', () => {
+            const props = {
+                ...baseProps,
+                files: [{loading: true}],
+            };
+
+            const wrapper = shallowWithIntl(
+                <PostTextbox {...props}/>
+            );
+
+            expect(wrapper.find(Fade).prop('visible')).toBe(true);
+            expect(wrapper.find(SendButton).prop('disabled')).toBe(true);
+        });
+
+        test('should show an enabled send button after uploading a file', () => {
+            const props = {
+                ...baseProps,
+                files: [{loading: false}],
+            };
+
+            const wrapper = shallowWithIntl(
+                <PostTextbox {...props}/>
+            );
+
+            expect(wrapper.find(Fade).prop('visible')).toBe(true);
+            expect(wrapper.find(SendButton).prop('disabled')).toBe(false);
+        });
+
+        test('should show an enabled send button with a message', () => {
+            const props = {
+                ...baseProps,
+                value: 'test',
+            };
+
+            const wrapper = shallowWithIntl(
+                <PostTextbox {...props}/>
+            );
+
+            expect(wrapper.find(Fade).prop('visible')).toBe(true);
+            expect(wrapper.find(SendButton).prop('disabled')).toBe(false);
+        });
+
+        test('should show a disabled send button while sending the message', () => {
+            const props = {
+                ...baseProps,
+                value: 'test',
+            };
+
+            const wrapper = shallowWithIntl(
+                <PostTextbox {...props}/>
+            );
+
+            wrapper.setState({sendingMessage: true});
+
+            expect(wrapper.find(Fade).prop('visible')).toBe(true);
+            expect(wrapper.find(SendButton).prop('disabled')).toBe(true);
+        });
     });
 });
