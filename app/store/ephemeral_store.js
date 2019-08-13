@@ -7,6 +7,7 @@ class EphemeralStore {
         this.appStartedFromPushNotification = false;
         this.deviceToken = null;
         this.navigationComponentIdStack = [];
+        this.currentServerUrl = null;
     }
 
     getNavigationTopComponentId = () => this.navigationComponentIdStack[0];
