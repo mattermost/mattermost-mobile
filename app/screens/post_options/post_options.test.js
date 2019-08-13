@@ -110,8 +110,14 @@ describe('PostOptions', () => {
         expect(Alert.alert).toBeCalled();
 
         // Trigger on press of Delete in the Alert
+        const closeWithAnimation = jest.spyOn(wrapper.instance(), 'closeWithAnimation');
         Alert.alert.mock.calls[0][2][1].onPress();
+        expect(closeWithAnimation).toBeCalled();
 
+        // get the callback that gets called by closeWithAnimation
+        const callback = closeWithAnimation.mock.calls[0][0];
+
+        callback();
         expect(actions.deletePost).toBeCalled();
         expect(actions.removePost).toBeCalled();
     });
