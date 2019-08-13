@@ -225,3 +225,26 @@ export function autoUpdateTimezone(deviceTimezone) {
         }
     };
 }
+
+export function getProfilesByIds(userIds, options) {
+    return async (dispatch) => {
+        try {
+            const users = await Client4.getProfilesByIds(userIds, options);
+            const statuses = await Client4.getStatusesByIds(userIds);
+            const data = {
+                users,
+                statuses,
+            };
+
+            dispatch({
+                type: UserTypes.RECEIVED_PROFILES,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+    };
+}

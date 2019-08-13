@@ -7,6 +7,28 @@ import {General} from 'app/constants';
 import {ChannelTypes} from 'app/realm/action_types';
 import {channelDataToRealm, channelMemberDataToRealm} from 'app/realm/utils/channel';
 
+function storeChannelAndMember(realm, channel, member) {
+    const user = realm.objectForPrimaryKey('User', member?.user_id); //eslint-disable-line camelcase
+
+    if (user && channel) {
+        const channelRealm = realm.objectForPrimaryKey('Channel', channel.id);
+        if (channelRealm) {
+            // when the channel already exists
+            let memberRealm = channelRealm.members.find((m) => m.id === `${channel.id}-${user.id}`);
+            if (memberRealm) {
+                // when the member already exists
+                memberRealm = channelMemberDataToRealm(member);
+            } else {
+                channelRealm.members.push(channelMemberDataToRealm(member));
+            }
+        } else {
+            channel.team = realm.objectForPrimaryKey('Team', channel.team_id);
+            channel.members = [channelMemberDataToRealm(member)];
+            realm.create('Channel', channelDataToRealm(channel), true);
+        }
+    }
+}
+
 function channels(realm, action) {
     switch (action.type) {
     case ChannelTypes.RECEIVED_MY_CHANNELS: {
@@ -132,6 +154,24 @@ function channels(realm, action) {
         break;
     }
 
+    case ChannelTypes.RECEIVED_CHANNEL_AND_MEMBER: {
+        const data = action.data || action.payload;
+        const {member, channel} = data;
+
+        storeChannelAndMember(realm, channel, member);
+
+        break;
+    }
+
+    case ChannelTypes.CREATE_DIRECT_CHANNEL: {
+        const data = action.data || action.payload;
+        const {channel, members} = data;
+
+        if (members?.length) {
+            members.forEach((member) => storeChannelAndMember(realm, channel, member));
+        }
+        break;
+    }
     default:
         break;
     }

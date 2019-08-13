@@ -7,6 +7,7 @@ import ListTypes from './list';
 import NavigationTypes from './navigation';
 import Posts from './posts';
 import Permissions from './permissions';
+import Roles from './roles';
 import ViewTypes, {UpgradeTypes} from './view';
 
 import General from './general';
@@ -21,6 +22,7 @@ export {
     ListTypes,
     NavigationTypes,
     Permissions,
+    Roles,
     UpgradeTypes,
     ViewTypes,
 };

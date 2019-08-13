@@ -1,14 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {batchActions} from 'redux-batched-actions';
 import {Client4} from 'mattermost-redux/client';
 
-import {General, Permissions, Preferences, ViewTypes} from 'app/constants';
+import {General, Permissions, Preferences, Roles, ViewTypes} from 'app/constants';
 import {ChannelTypes, UserTypes} from 'app/realm/action_types';
+import {getProfilesByIds} from 'app/realm/actions/user';
 import telemetry from 'app/telemetry';
 import {isDirectMessageVisible, isGroupMessageVisible} from 'app/realm/utils/channel';
 import {reducePermissionsToSet} from 'app/realm/utils/role';
-import {getUserIdFromChannelName, isOwnDirectMessage, sortChannelsByDisplayName} from 'app/utils/channels';
+import {buildPreference} from 'app/realm/utils/preference';
+import {getDirectChannelName, getUserIdFromChannelName, isOwnDirectMessage, sortChannelsByDisplayName} from 'app/utils/channels';
 
 import {forceLogoutIfNecessary} from './helpers';
 import {loadPostsWithRetry} from './post';
@@ -65,15 +68,6 @@ export function loadChannelsForTeam(teamId) {
 }
 
 export function loadSidebarDirectMessagesProfiles(teamId) {
-    function buildPref(name, category, userId) {
-        return {
-            user_id: userId,
-            category,
-            name,
-            value: 'true',
-        };
-    }
-
     return async (dispatch, getState) => {
         const realm = getState();
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
@@ -96,14 +90,16 @@ export function loadSidebarDirectMessagesProfiles(teamId) {
 
                 // when then DM is hidden but has new messages
                 if (!isDirectMessageVisible(realm, general.currentUserId, c.name) && myChannelMember?.mentionCount) {
-                    prefs.push(buildPref(teammateId, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId));
+                    prefs.push(buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, teammateId));
+                    prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
                 }
                 break;
             }
             case General.GM_CHANNEL:
                 // when then GM is hidden but has new messages
                 if (!isGroupMessageVisible(realm, c.id) && (myChannelMember.mentionCount > 0 || myChannelMember.msgCount < myChannelMember.channels[0].totalMsgCount)) {
-                    prefs.push(buildPref(c.id, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId));
+                    prefs.push(buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, c.id));
+                    prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
                 }
 
                 break;
@@ -311,5 +307,136 @@ export function logChannelSwitch(channelId, currentChannelId) {
 
         telemetry.reset();
         telemetry.start(metrics);
+    };
+}
+
+export function joinChannel(userId, teamId, channelId, channelName) {
+    return async (dispatch) => {
+        let member;
+        let channel;
+
+        try {
+            if (channelId) {
+                member = await Client4.addToChannel(userId, channelId);
+                channel = await Client4.getChannel(channelId);
+            } else if (channelName) {
+                channel = await Client4.getChannelByName(teamId, channelName, true);
+                if ((channel.type === General.GM_CHANNEL) || (channel.type === General.DM_CHANNEL)) {
+                    member = await Client4.getChannelMember(channel.id, userId);
+                } else {
+                    member = await Client4.addToChannel(userId, channel.id);
+                }
+            }
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        Client4.trackEvent('action', 'action_channels_join', {channel_id: channelId});
+
+        dispatch({
+            type: ChannelTypes.RECEIVED_CHANNEL_AND_MEMBER,
+            data: {
+                channel,
+                member,
+            },
+        });
+
+        if (member) {
+            dispatch(loadRolesIfNeeded(member.roles.split(' ')));
+        }
+
+        return {data: {channel, member}};
+    };
+}
+
+export function makeDirectChannel(otherUserId, switchToChannel = true) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const channelName = getDirectChannelName(general.currentUserId, otherUserId);
+
+        dispatch(getProfilesByIds([otherUserId]));
+
+        let result;
+        let channel = realm.objects('Channel').filtered('name = $0', channelName);
+        if (channel?.members.length) {
+            result = {data: channel};
+
+            dispatch(showDirectChannelIfNecessary(channel.id, otherUserId));
+        } else {
+            result = await dispatch(createDirectChannel(otherUserId));
+            channel = result.data;
+        }
+
+        if (channel && switchToChannel) {
+            dispatch(handleSelectChannel(channel.id));
+        }
+
+        return result;
+    };
+}
+
+export function showDirectChannelIfNecessary(channelId, otherUserId) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const currentUserId = general.currentUserId;
+        const channelName = getDirectChannelName(currentUserId, otherUserId);
+        if (!isDirectMessageVisible(realm, currentUserId, channelName)) {
+            const prefs = [
+                buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId),
+                buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channelId, Date.now().toString()),
+            ];
+            dispatch(savePreferences(currentUserId, prefs));
+        }
+
+        return {data: true};
+    };
+}
+
+export function createDirectChannel(otherUserId) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const currentUserId = general.currentUserId;
+
+        let channel;
+        try {
+            channel = await Client4.createDirectChannel([currentUserId, otherUserId]);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        const prefs = [
+            buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId),
+            buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channel.id, Date.now().toString()),
+        ];
+
+        const myMember = {
+            channel_id: channel.id,
+            user_id: currentUserId,
+            roles: `${Roles.CHANNEL_USER_ROLE}`,
+            last_viewed_at: 0,
+            last_update_at: channel.create_at,
+            msg_count: 0,
+            mention_count: 0,
+            notify_props: {desktop: 'default', mark_unread: 'all'},
+        };
+
+        const members = [myMember, {...myMember, user_id: otherUserId}];
+        dispatch(batchActions([
+            savePreferences(currentUserId, prefs),
+            {
+                type: ChannelTypes.CREATE_DIRECT_CHANNEL,
+                data: {
+                    channel,
+                    members,
+                },
+            },
+        ]));
+
+        return {data: channel};
     };
 }
