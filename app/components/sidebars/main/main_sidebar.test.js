@@ -14,13 +14,13 @@ jest.mock('react-intl');
 
 describe('MainSidebar', () => {
     const baseProps = {
-        actions: {
-            getTeams: jest.fn(),
-            logChannelSwitch: jest.fn(),
-            makeDirectChannel: jest.fn(),
-            setChannelDisplayName: jest.fn(),
-            setChannelLoading: jest.fn(),
-        },
+        getTeams: jest.fn(),
+        handleSelectChannel: jest.fn(),
+        joinChannel: jest.fn(),
+        logChannelSwitch: jest.fn(),
+        makeDirectChannel: jest.fn(),
+        setChannelDisplayName: jest.fn(),
+        setChannelLoading: jest.fn(),
         blurPostTextBox: jest.fn(),
         currentTeamId: 'current-team-id',
         currentUserId: 'current-user-id',
