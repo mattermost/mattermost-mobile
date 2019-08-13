@@ -29,6 +29,30 @@ function storeProfile(realm, profile) {
     return user;
 }
 
+function storeProfilesAndMembers(realm, general, data) {
+    const {channelId, profiles, statuses} = data;
+    const channel = realm.objectForPrimaryKey('Channel', channelId);
+
+    if (channel) {
+        profiles.forEach((profile) => {
+            if (profile.id !== general.currentUserId) {
+                const status = statuses.find((s) => s.user_id === profile.id);
+                const user = storeProfile(realm, {...profile, ...status});
+
+                const channelMember = realm.objectForPrimaryKey('ChannelMember', `${channelId}-${profile.id}`);
+                if (!channelMember) {
+                    const member = {
+                        id: `${channelId}-${profile.id}`,
+                        user,
+                    };
+
+                    channel.members.push(member);
+                }
+            }
+        });
+    }
+}
+
 function currentUserWriter(realm, action) {
     switch (action.type) {
     case UserTypes.RECEIVED_ME: {
@@ -100,28 +124,20 @@ function profilesWriter(realm, action) {
 
     case UserTypes.RECEIVED_PROFILES_IN_CHANNEL: {
         const data = action.data || action.payload;
-        const {channelId, profiles, statuses} = data;
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
-        const channel = realm.objectForPrimaryKey('Channel', channelId);
+        storeProfilesAndMembers(realm, general, data);
+        break;
+    }
 
-        if (channel) {
-            profiles.forEach((profile) => {
-                if (profile.id !== general.currentUserId) {
-                    const status = statuses.find((s) => s.user_id === profile.id);
-                    const user = storeProfile(realm, {...profile, ...status});
+    case UserTypes.RECEIVED_BATCH_PROFILES_IN_CHANNEL: {
+        const batch = action.data || action.payload;
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
 
-                    const channelMember = realm.objectForPrimaryKey('ChannelMember', `${channelId}-${profile.id}`);
-                    if (!channelMember) {
-                        const member = {
-                            id: `${channelId}-${profile.id}`,
-                            user,
-                        };
-
-                        channel.members.push(member);
-                    }
-                }
-            });
-        }
+        batch.forEach((item) => {
+            if (item?.data) {
+                storeProfilesAndMembers(realm, general, item.data);
+            }
+        });
         break;
     }
 

@@ -7,7 +7,7 @@ import {General, PermissionTypes, Preferences, ViewTypes} from 'app/constants';
 import {ChannelTypes, UserTypes} from 'app/realm/action_types';
 import {isDirectMessageVisible, isGroupMessageVisible} from 'app/realm/utils/channel';
 import {reducePermissionsToSet} from 'app/realm/utils/role';
-import {getUserIdFromChannelName, sortChannelsByDisplayName} from 'app/utils/channels';
+import {getUserIdFromChannelName, isOwnDirectMessage, sortChannelsByDisplayName} from 'app/utils/channels';
 
 import {forceLogoutIfNecessary} from './helpers';
 import {loadPostsWithRetry} from './post';
@@ -23,6 +23,8 @@ import {
     loadProfilesAndTeamMembersForDMSidebar as loadProfilesAndTeamMembersForDMSidebarRedux,
     setChannelLoading as setChannelLoadingRedux,
 } from 'app/actions/views/channel';
+
+const MAX_PROFILE_TRIES = 3;
 
 export function loadChannelsForTeam(teamId) {
     return async (dispatch) => {
@@ -71,18 +73,19 @@ export function loadSidebarDirectMessagesProfiles(teamId) {
         };
     }
 
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const realm = getState();
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         const directChannels = realm.objects('Channel').filtered('type=$0 OR type=$1', General.DM_CHANNEL, General.GM_CHANNEL);
-        const prefs = [];
-        reduxStore.dispatch(loadProfilesAndTeamMembersForDMSidebarRedux(teamId || general.currentTeamId));
         const currentUserId = general.currentUserId;
+        const prefs = [];
+        let promises = [];
+        reduxStore.dispatch(loadProfilesAndTeamMembersForDMSidebarRedux(teamId || general.currentTeamId));
 
         directChannels.forEach((c) => {
             // we only have the current user, so we need to load the other channel members
-            if (!c.members.length || (c.members.length === 1 && c.members[0].user.id === currentUserId)) {
-                dispatch(getProfilesInChannel(c.id));
+            if (!c.members.length || (c.members.length === 1 && c.members[0].user.id === currentUserId && !isOwnDirectMessage(c, currentUserId))) {
+                promises.push(dispatch(getProfilesInChannel(c.id, true)));
             }
 
             const myChannelMember = c.members.filtered('user.id=$0', currentUserId)[0];
@@ -105,6 +108,30 @@ export function loadSidebarDirectMessagesProfiles(teamId) {
                 break;
             }
         });
+
+        if (promises.length) {
+            for (let i = 0; i < MAX_PROFILE_TRIES; i++) {
+                const result = await Promise.all(promises); // eslint-disable-line no-await-in-loop
+                const failed = [];
+                result.forEach((p, index) => {
+                    if (p.error) {
+                        failed.push(directChannels[index].id);
+                    }
+                });
+
+                dispatch({
+                    type: UserTypes.RECEIVED_BATCH_PROFILES_IN_CHANNEL,
+                    data: result,
+                });
+
+                if (failed.length) {
+                    promises = failed.map((id) => dispatch(getProfilesInChannel(id, true)));
+                    continue;
+                }
+
+                break;
+            }
+        }
 
         if (prefs.length) {
             dispatch(savePreferences(currentUserId, prefs));
@@ -220,7 +247,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false, tea
     };
 }
 
-export function getProfilesInChannel(channelId) {
+export function getProfilesInChannel(channelId, batch = false) {
     return async (dispatch) => {
         try {
             const profiles = await Client4.getProfilesInChannel(channelId);
@@ -232,10 +259,12 @@ export function getProfilesInChannel(channelId) {
                 statuses,
             };
 
-            dispatch({
-                type: UserTypes.RECEIVED_PROFILES_IN_CHANNEL,
-                data,
-            });
+            if (!batch) {
+                dispatch({
+                    type: UserTypes.RECEIVED_PROFILES_IN_CHANNEL,
+                    data,
+                });
+            }
 
             return {data};
         } catch (error) {

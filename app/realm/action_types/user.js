@@ -8,4 +8,5 @@ export default keyMirror({
     UPDATE_ME: null,
     RECEIVED_PROFILES: null,
     RECEIVED_PROFILES_IN_CHANNEL: null,
+    RECEIVED_BATCH_PROFILES_IN_CHANNEL: null,
 });
