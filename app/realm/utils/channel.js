@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {General, Preferences} from 'app/constants';
-import {displayUserName} from './users';
+import {displayUserName} from './user';
 
 export function channelDataToRealm(channel) {
     return {
