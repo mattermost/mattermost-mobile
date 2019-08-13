@@ -16,6 +16,7 @@ describe('NotificationSettingsMentionsKeywords', () => {
         },
         componentId: 'component-id',
         keywords: '',
+        isLandscape: false,
         onBack: jest.fn(),
         theme: Preferences.THEMES.default,
     };
