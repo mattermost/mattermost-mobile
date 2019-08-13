@@ -8,10 +8,16 @@ import {General, Permissions, Preferences, Roles, ViewTypes} from 'app/constants
 import {ChannelTypes, UserTypes} from 'app/realm/action_types';
 import {getProfilesByIds} from 'app/realm/actions/user';
 import telemetry from 'app/telemetry';
-import {isDirectMessageVisible, isGroupMessageVisible} from 'app/realm/utils/channel';
+import {
+    isDirectMessageVisible,
+    isGroupMessageVisible,
+    getDirectChannelName,
+    getUserIdFromChannelName,
+    isOwnDirectMessage,
+    sortChannelsByDisplayName,
+} from 'app/realm/utils/channel';
 import {reducePermissionsToSet} from 'app/realm/utils/role';
 import {buildPreference} from 'app/realm/utils/preference';
-import {getDirectChannelName, getUserIdFromChannelName, isOwnDirectMessage, sortChannelsByDisplayName} from 'app/utils/channels';
 
 import {forceLogoutIfNecessary} from './helpers';
 import {loadPostsWithRetry} from './post';
@@ -71,6 +77,7 @@ export function loadSidebarDirectMessagesProfiles(teamId) {
     return async (dispatch, getState) => {
         const realm = getState();
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const preferences = realm.objects('Preference');
         const directChannels = realm.objects('Channel').filtered('type=$0 OR type=$1', General.DM_CHANNEL, General.GM_CHANNEL);
         const currentUserId = general.currentUserId;
         const prefs = [];
@@ -89,7 +96,7 @@ export function loadSidebarDirectMessagesProfiles(teamId) {
                 const teammateId = getUserIdFromChannelName(currentUserId, c.name);
 
                 // when then DM is hidden but has new messages
-                if (!isDirectMessageVisible(realm, general.currentUserId, c.name) && myChannelMember?.mentionCount) {
+                if (!isDirectMessageVisible(preferences, general.currentUserId, c.name) && myChannelMember?.mentionCount) {
                     prefs.push(buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, teammateId));
                     prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
                 }
@@ -97,7 +104,7 @@ export function loadSidebarDirectMessagesProfiles(teamId) {
             }
             case General.GM_CHANNEL:
                 // when then GM is hidden but has new messages
-                if (!isGroupMessageVisible(realm, c.id) && (myChannelMember.mentionCount > 0 || myChannelMember.msgCount < myChannelMember.channels[0].totalMsgCount)) {
+                if (!isGroupMessageVisible(preferences, c.id) && (myChannelMember.mentionCount > 0 || myChannelMember.msgCount < myChannelMember.channels[0].totalMsgCount)) {
                     prefs.push(buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, c.id));
                     prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
                 }
@@ -381,9 +388,10 @@ export function showDirectChannelIfNecessary(channelId, otherUserId) {
     return async (dispatch, getState) => {
         const realm = getState();
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const preferences = realm.objects('Preference');
         const currentUserId = general.currentUserId;
         const channelName = getDirectChannelName(currentUserId, otherUserId);
-        if (!isDirectMessageVisible(realm, currentUserId, channelName)) {
+        if (!isDirectMessageVisible(preferences, currentUserId, channelName)) {
             const prefs = [
                 buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId),
                 buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channelId, Date.now().toString()),

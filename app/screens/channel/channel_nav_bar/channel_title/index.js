@@ -5,7 +5,7 @@ import {realmConnect} from 'realm-react-redux';
 
 import {General, Preferences} from 'app/constants';
 import options from 'app/store/realm_options';
-import {getChannelDisplayName, isChannelMuted, isOwnDirectMessage} from 'app/utils/channels';
+import {getChannelDisplayName, isChannelMuted, isOwnDirectMessage} from 'app/realm/utils/channel';
 import {getDisplayNameSettings, isGuest} from 'app/realm/utils/users';
 
 import ChannelTitle from './channel_title';
