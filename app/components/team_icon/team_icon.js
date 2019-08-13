@@ -17,11 +17,11 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class TeamIcon extends React.PureComponent {
     static propTypes = {
-        teamId: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
+        teamId: PropTypes.string, // eslint-disable-line react/no-unused-prop-types
         styleContainer: PropTypes.any,
         styleText: PropTypes.any,
         styleImage: PropTypes.any,
-        team: PropTypes.object.isRequired,
+        team: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
 
@@ -29,7 +29,7 @@ export default class TeamIcon extends React.PureComponent {
         super(props);
 
         const {team} = props;
-        if (team.last_team_icon_update) {
+        if (team?.last_team_icon_update) { // eslint-disable-line camelcase
             ImageCacheManager.cache('', Client4.getTeamIconUrl(team.id, team.last_team_icon_update), this.setImageURL);
         }
 
@@ -42,7 +42,7 @@ export default class TeamIcon extends React.PureComponent {
     componentWillReceiveProps(nextProps) {
         this.setState({imageError: false});
 
-        if (this.props.team.last_team_icon_update !== nextProps.team.last_team_icon_update) {
+        if (this.props.team?.last_team_icon_update !== nextProps.team?.last_team_icon_update) { // eslint-disable-line camelcase
             const {team} = nextProps;
             ImageCacheManager.cache('', Client4.getTeamIconUrl(team.id, team.last_team_icon_update), this.setImageURL);
         }
@@ -60,6 +60,10 @@ export default class TeamIcon extends React.PureComponent {
             styleText,
             styleImage,
         } = this.props;
+
+        if (!team) {
+            return null;
+        }
 
         const styles = getStyleSheet(theme);
 
