@@ -5,6 +5,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import {General, Permissions, Preferences, ViewTypes} from 'app/constants';
 import {ChannelTypes, UserTypes} from 'app/realm/action_types';
+import telemetry from 'app/telemetry';
 import {isDirectMessageVisible, isGroupMessageVisible} from 'app/realm/utils/channel';
 import {reducePermissionsToSet} from 'app/realm/utils/role';
 import {getUserIdFromChannelName, isOwnDirectMessage, sortChannelsByDisplayName} from 'app/utils/channels';
@@ -290,5 +291,25 @@ export function getChannelStats(channelId) {
         });
 
         return {data};
+    };
+}
+
+export function logChannelSwitch(channelId, currentChannelId) {
+    return (dispatch, getState) => {
+        if (channelId === currentChannelId) {
+            return;
+        }
+
+        const metrics = [];
+        const realm = getState();
+        const postsInChannel = realm.objects('Post').filtered('channelId = $0', channelId);
+        if (postsInChannel.isEmpty()) {
+            metrics.push('channel:switch_initial');
+        } else {
+            metrics.push('channel:switch_loaded');
+        }
+
+        telemetry.reset();
+        telemetry.start(metrics);
     };
 }
