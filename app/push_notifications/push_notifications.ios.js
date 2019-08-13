@@ -54,7 +54,9 @@ class PushNotification {
             this.onNotification(this.deviceNotification);
         }
 
-        this.trackForegroundNotification(data.channel_id);
+        if (foreground) {
+            this.trackForegroundNotification(data.channel_id);
+        }
     };
 
     handleReply = (action, completed) => {
