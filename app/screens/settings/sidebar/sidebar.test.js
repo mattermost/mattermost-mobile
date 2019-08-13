@@ -49,13 +49,11 @@ describe('SidebarSettings', () => {
         );
 
         const mainProps = {
-            actions: {
-                getTeams: jest.fn(),
-                logChannelSwitch: jest.fn(),
-                makeDirectChannel: jest.fn(),
-                setChannelDisplayName: jest.fn(),
-                setChannelLoading: jest.fn(),
-            },
+            getTeams: jest.fn(),
+            handleSelectChannel: jest.fn(),
+            logChannelSwitch: jest.fn(),
+            joinChannel: jest.fn(),
+            makeDirectChannel: jest.fn(),
             blurPostTextBox: jest.fn(),
             currentTeamId: 'current-team-id',
             currentUserId: 'current-user-id',
