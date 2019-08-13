@@ -88,7 +88,8 @@ export default class ThreadBase extends PureComponent {
     }
 
     close = () => {
-        this.props.actions.popTopScreen();
+        const {actions, componentId} = this.props;
+        actions.popTopScreen(componentId);
     };
 
     handleAutoComplete = (value) => {

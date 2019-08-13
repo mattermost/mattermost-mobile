@@ -166,11 +166,14 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
     };
 }
 
-export function popTopScreen() {
+export function popTopScreen(screenId) {
     return () => {
-        const componentId = EphemeralStore.getNavigationTopComponentId();
-
-        Navigation.pop(componentId);
+        if (screenId) {
+            Navigation.pop(screenId);
+        } else {
+            const componentId = EphemeralStore.getNavigationTopComponentId();
+            Navigation.pop(componentId);
+        }
     };
 }
 
@@ -360,24 +363,22 @@ export function dismissOverlay(componentId) {
     };
 }
 
-export function applyTheme() {
+export function applyTheme(componentId) {
     return (dispatch, getState) => {
         const theme = getTheme(getState());
 
-        EphemeralStore.getNavigationComponentIds().forEach((componentId) => {
-            Navigation.mergeOptions(componentId, {
-                topBar: {
-                    backButton: {
-                        color: theme.sidebarHeaderTextColor,
-                    },
-                    background: {
-                        color: theme.sidebarHeaderBg,
-                    },
-                    title: {
-                        color: theme.sidebarHeaderTextColor,
-                    },
+        Navigation.mergeOptions(componentId, {
+            topBar: {
+                backButton: {
+                    color: theme.sidebarHeaderTextColor,
                 },
-            });
+                background: {
+                    color: theme.sidebarHeaderBg,
+                },
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                },
+            },
         });
     };
 }

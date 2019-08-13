@@ -17,6 +17,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
       alwaysBounceHorizontal={false}
       horizontal={true}
       overScrollMode="never"
+      style={null}
     >
       <ReactionHeaderItem
         count={2}

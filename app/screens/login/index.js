@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {login} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-
+import {isLandscape} from 'app/selectors/device';
 import {resetToChannel, goToScreen} from 'app/actions/navigation';
 import LoginActions from 'app/actions/views/login';
 
@@ -23,6 +23,7 @@ function mapStateToProps(state) {
         config,
         license,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

@@ -13,6 +13,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
 import GuestTag from 'app/components/guest_tag';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class AtMentionItem extends PureComponent {
     static propTypes = {
@@ -24,6 +25,7 @@ export default class AtMentionItem extends PureComponent {
         isGuest: PropTypes.bool,
         isBot: PropTypes.bool,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -44,6 +46,7 @@ export default class AtMentionItem extends PureComponent {
             username,
             theme,
             isBot,
+            isLandscape,
             isGuest,
         } = this.props;
 
@@ -54,7 +57,7 @@ export default class AtMentionItem extends PureComponent {
             <TouchableOpacity
                 key={userId}
                 onPress={this.completeMention}
-                style={style.row}
+                style={[style.row, padding(isLandscape)]}
             >
                 <View style={style.rowPicture}>
                     <ProfilePicture

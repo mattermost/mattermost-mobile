@@ -3,11 +3,10 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getTeam, makeGetBadgeCountForTeamId} from 'mattermost-redux/selectors/entities/teams';
 
-import {removeProtocol} from 'app/utils/url';
+import {isLandscape} from 'app/selectors/device';
 
 import TeamsListItem from './teams_list_item.js';
 
@@ -19,11 +18,11 @@ function makeMapStateToProps() {
 
         return {
             currentTeamId: getCurrentTeamId(state),
-            currentUrl: removeProtocol(getCurrentUrl(state)),
             displayName: team.display_name,
             mentionCount: getMentionCount(state, ownProps.teamId),
             name: team.name,
             theme: getTheme(state),
+            isLandscape: isLandscape(state),
         };
     };
 }

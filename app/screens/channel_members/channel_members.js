@@ -14,7 +14,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
@@ -41,6 +41,7 @@ export default class ChannelMembers extends PureComponent {
         currentChannelMembers: PropTypes.array,
         currentUserId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -279,7 +280,7 @@ export default class ChannelMembers extends PureComponent {
 
     renderNoResults = () => {
         const {loading} = this.state;
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
 
         if (loading || this.page === -1) {
@@ -287,7 +288,7 @@ export default class ChannelMembers extends PureComponent {
         }
 
         return (
-            <View style={style.noResultContainer}>
+            <View style={[style.noResultContainer, padding(isLandscape)]}>
                 <FormattedText
                     id='mobile.custom_list.no_results'
                     defaultMessage='No Results'
@@ -309,7 +310,7 @@ export default class ChannelMembers extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme, canManageUsers} = this.props;
+        const {theme, canManageUsers, isLandscape} = this.props;
         const {
             removing,
             loading,
@@ -362,7 +363,7 @@ export default class ChannelMembers extends PureComponent {
         return (
             <KeyboardLayout>
                 <StatusBar/>
-                <View style={style.searchBar}>
+                <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
                         ref='search_bar'
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -393,6 +394,7 @@ export default class ChannelMembers extends PureComponent {
                     onRowPress={this.handleSelectProfile}
                     renderItem={canManageUsers ? this.renderSelectableItem : this.renderUnselectableItem}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             </KeyboardLayout>
         );

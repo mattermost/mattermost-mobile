@@ -22,6 +22,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import LocalConfig from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
 import logo from 'assets/images/logo.png';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class LoginOptions extends PureComponent {
     static propTypes = {
@@ -30,6 +31,7 @@ export default class LoginOptions extends PureComponent {
         }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -253,7 +255,7 @@ export default class LoginOptions extends PureComponent {
         return (
             <ScrollView
                 style={style.container}
-                contentContainerStyle={style.innerContainer}
+                contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
                 ref={this.scrollRef}
             >
                 <StatusBar/>

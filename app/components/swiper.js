@@ -12,7 +12,7 @@ import {
     View,
 } from 'react-native';
 
-import {DeviceTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 
 export default class Swiper extends PureComponent {
@@ -169,11 +169,12 @@ export default class Swiper extends PureComponent {
 
         const {width, height} = Dimensions.get('window');
         const bottom = this.paginationBottom(width, height);
+        const drawerWidth = (width > height) ? width - ViewTypes.IOS_HORIZONTAL_LANDSCAPE : width;
         let style;
         if (DeviceTypes.IS_IPHONE_X) {
             style = {
                 bottom,
-                width,
+                drawerWidth,
             };
         } else {
             style = {

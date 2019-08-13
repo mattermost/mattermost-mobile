@@ -92,4 +92,8 @@ Navigation.events().registerAppLaunchedListener(() => {
     Navigation.events().registerComponentDidAppearListener(({componentId}) => {
         EphemeralStore.addNavigationComponentId(componentId);
     });
+
+    Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
+        EphemeralStore.removeNavigationComponentId(componentId);
+    });
 });

@@ -22,6 +22,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class SidebarSettings extends PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -52,6 +53,7 @@ export default class SidebarSettings extends PureComponent {
 
         const {
             theme,
+            isLandscape,
         } = this.props;
         const {enabled} = this.state;
         const style = getStyleSheet(theme);
@@ -63,6 +65,7 @@ export default class SidebarSettings extends PureComponent {
                     <Section
                         disableHeader={true}
                         theme={theme}
+                        isLandscape={isLandscape}
                     >
                         <View style={style.divider}/>
                         <SectionItem
@@ -82,6 +85,7 @@ export default class SidebarSettings extends PureComponent {
                             actionType='toggle'
                             selected={enabled}
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                         <View style={style.divider}/>
                     </Section>
