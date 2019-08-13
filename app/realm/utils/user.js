@@ -21,5 +21,6 @@ export function userDataToRealm(user) {
         status: user.status,
         termsOfServiceId: user.terms_of_service_id,
         termsOfServiceCreateAt: user.terms_of_service_create_at,
+        isBot: user.is_bot || false,
     };
 }
