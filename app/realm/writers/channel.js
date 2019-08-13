@@ -77,18 +77,22 @@ function channels(realm, action) {
 
         const nextRealmChannel = realm.objectForPrimaryKey('Channel', nextChannel.id);
         const nextChannelMember = realm.objectForPrimaryKey('ChannelMember', `${nextChannel.id}-${general.currentUserId}`);
-        const nextTeamMember = realm.objectForPrimaryKey('TeamMember', `${nextRealmChannel.team.id}-${general.currentUserId}`);
+        const nextTeamMember = realm.objectForPrimaryKey('TeamMember', `${nextRealmChannel.team?.id}-${general.currentUserId}`);
 
-        const nextMsgAmount = Math.abs(nextRealmChannel.totalMsgCount - nextChannelMember.msgCount);
         const nextChannelMemberMsgCount = nextChannelMember.msgCount;
-        const nextTeamMemberMsgCount = nextTeamMember.msgCount;
         const nextChannelMemberMentionCount = nextChannelMember.mentionCount;
-        const nextTeamMemberMentionCount = nextTeamMember.mentionCount;
 
-        nextChannelMember.msgCount = Math.max(nextMsgAmount, 0);
+        nextChannelMember.msgCount = nextRealmChannel.totalMsgCount;
         nextChannelMember.mentionCount = 0;
-        nextTeamMember.msgCount = Math.max(nextTeamMemberMsgCount - nextChannelMemberMsgCount, 0);
-        nextTeamMember.mentionCount = Math.max(nextTeamMemberMentionCount - nextChannelMemberMentionCount, 0);
+
+        if (nextTeamMember) {
+            const nextTeamMemberMsgCount = nextTeamMember.msgCount;
+            const nextTeamMemberMentionCount = nextTeamMember.mentionCount;
+
+            nextTeamMember.msgCount = Math.max(nextTeamMemberMsgCount - nextChannelMemberMsgCount, 0);
+            nextTeamMember.mentionCount = Math.max(nextTeamMemberMentionCount - nextChannelMemberMentionCount, 0);
+        }
+
         if (nextChannel.setLastViewed) {
             nextChannelMember.lastViewAt = Date.now();
         }
@@ -96,19 +100,22 @@ function channels(realm, action) {
         if (previousChannel.id && previousChannel.id !== nextChannel.id) {
             const prevRealmChannel = realm.objectForPrimaryKey('Channel', previousChannel.id);
             const prevChannelMember = realm.objectForPrimaryKey('ChannelMember', `${previousChannel.id}-${general.currentUserId}`);
-            const prevTeamMember = realm.objectForPrimaryKey('TeamMember', `${prevRealmChannel.team.id}-${general.currentUserId}`);
+            const prevTeamMember = realm.objectForPrimaryKey('TeamMember', `${prevRealmChannel.team?.id}-${general.currentUserId}`);
 
-            if (prevTeamMember && prevChannelMember) {
-                const prevMsgAmount = Math.abs(prevRealmChannel.totalMsgCount - prevChannelMember.msgCount);
+            if (prevChannelMember) {
                 const prevChannelMemberMsgCount = prevChannelMember.msgCount;
-                const prevTeamMemberMsgCount = prevTeamMember.msgCount;
                 const prevChannelMemberMentionCount = prevChannelMember.mentionCount;
-                const prevTeamMemberMentionCount = prevTeamMember.mentionCount;
 
-                prevChannelMember.msgCount = Math.max(prevMsgAmount, 0);
+                if (prevTeamMember) {
+                    const prevTeamMemberMsgCount = prevTeamMember.msgCount;
+                    const prevTeamMemberMentionCount = prevTeamMember.mentionCount;
+
+                    prevTeamMember.msgCount = Math.max(prevTeamMemberMsgCount - prevChannelMemberMsgCount, 0);
+                    prevTeamMember.mentionCount = Math.max(prevTeamMemberMentionCount - prevChannelMemberMentionCount, 0);
+                }
+
+                prevChannelMember.msgCount = prevRealmChannel.totalMsgCount;
                 prevChannelMember.mentionCount = 0;
-                nextTeamMember.msgCount = Math.max(prevTeamMemberMsgCount - prevChannelMemberMsgCount, 0);
-                nextTeamMember.mentionCount = Math.max(prevTeamMemberMentionCount - prevChannelMemberMentionCount, 0);
                 prevChannelMember.lastViewAt = Date.now();
             }
         }
