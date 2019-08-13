@@ -18,5 +18,11 @@ export default {
         'here',
     ],
 
+    DEFAULT_LOCALE: 'en',
+
+    DISABLED: 'disabled',
+    DEFAULT_ON: 'default_on',
+    DEFAULT_OFF: 'default_off',
+
     MENTION: 'mention',
 };
