@@ -39,6 +39,7 @@ NotificationSettingsMentionsKeywords {
       "textComponent": "span",
       "timeZone": null,
     },
+    "isLandscape": false,
     "keywords": "",
     "onBack": [MockFunction],
     "theme": Object {
@@ -125,6 +126,7 @@ NotificationSettingsMentionsKeywords {
             "timeZone": null,
           }
         }
+        isLandscape={false}
         keywords=""
         onBack={[MockFunction]}
         theme={
