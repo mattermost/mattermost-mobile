@@ -44,8 +44,6 @@ export function isThemeSwitchingEnabled(state) {
     return config.EnableThemeSelection === 'true';
 }
 
-// getHighlightStyleFromTheme
-
 const snakeCaseToCamelCase = (str) => str.replace(
     /([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', '')
 );
