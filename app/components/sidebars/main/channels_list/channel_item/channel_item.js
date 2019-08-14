@@ -11,18 +11,17 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
+import memoize from 'memoize-one';
 
 import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
+import {General} from 'app/constants';
+
+import {getChannelDisplayName, isChannelMuted, isOwnDirectMessage} from 'app/realm/utils/channel';
+import {displayUserName, isSystemAdmin} from 'app/realm/utils/user';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import {General} from 'app/constants';
-import {getChannelDisplayName, isChannelMuted, isOwnDirectMessage} from 'app/utils/channels';
-import {displayUserName, isSystemAdmin} from 'app/utils/users';
-
-import memoize from 'memoize-one';
 
 const {View: AnimatedView} = Animated;
 
