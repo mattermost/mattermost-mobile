@@ -15,7 +15,11 @@ import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 import List from './list';
 import SwitchTeamsButton from './switch_teams_button';
@@ -177,6 +181,7 @@ export default class ChannelsList extends PureComponent {
                     onFocus={this.onSearchFocused}
                     searchIconCollapsedMargin={5}
                     searchIconExpandedMargin={5}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                     leftComponent={(
                         <SwitchTeamsButton
@@ -186,6 +191,7 @@ export default class ChannelsList extends PureComponent {
                             theme={theme}
                         />
                     )}
+                    positionRightDelete={5}
                 />
             </View>
         );
