@@ -3,13 +3,22 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
+import {Navigation} from 'react-native-navigation';
 
 import Preferences from 'mattermost-redux/constants/preferences';
+
+import EphemeralStore from 'app/store/ephemeral_store';
 
 import Theme from './theme';
 import ThemeTile from './theme_tile';
 
 jest.mock('react-intl');
+
+jest.mock('react-native-navigation', () => ({
+    Navigation: {
+        mergeOptions: jest.fn(),
+    },
+}));
 
 const allowedThemes = [
     {
@@ -142,5 +151,44 @@ describe('Theme', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find(ThemeTile)).toHaveLength(4);
+    });
+
+    test('should call Navigation.mergeOptions on all navigation components when theme changes', () => {
+        const componentIds = ['component-1', 'component-2', 'component-3'];
+        componentIds.forEach((componentId) => {
+            EphemeralStore.addNavigationComponentId(componentId);
+        });
+
+        const wrapper = shallow(
+            <Theme {...baseProps}/>,
+        );
+
+        const newTheme = allowedThemes[1];
+        wrapper.setProps({theme: newTheme});
+
+        const options = {
+            topBar: {
+                backButton: {
+                    color: newTheme.sidebarHeaderTextColor,
+                },
+                background: {
+                    color: newTheme.sidebarHeaderBg,
+                },
+                title: {
+                    color: newTheme.sidebarHeaderTextColor,
+                },
+                leftButtonColor: newTheme.sidebarHeaderTextColor,
+                rightButtonColor: newTheme.sidebarHeaderTextColor,
+            },
+            layout: {
+                backgroundColor: newTheme.centerChannelBg,
+            },
+        };
+
+        expect(Navigation.mergeOptions.mock.calls).toEqual([
+            [componentIds[2], options],
+            [componentIds[1], options],
+            [componentIds[0], options],
+        ]);
     });
 });

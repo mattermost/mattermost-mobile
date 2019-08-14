@@ -291,7 +291,11 @@ export function dismissModal(options = {}) {
     return () => {
         const componentId = EphemeralStore.getNavigationTopComponentId();
 
-        Navigation.dismissModal(componentId, options);
+        Navigation.dismissModal(componentId, options).catch(() => {
+            // RNN returns a promise rejection if there is no modal to
+            // dismiss. We'll do nothing in this case but we will catch
+            // the rejection here so that the caller doesn't have to.
+        });
     };
 }
 

@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 
-import {applyTheme, goToScreen} from 'app/actions/navigation';
+import {goToScreen} from 'app/actions/navigation';
 import {getAllowedThemes} from 'app/selectors/theme';
 import {isThemeSwitchingEnabled} from 'app/utils/theme';
 
@@ -28,7 +28,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             goToScreen,
-            applyTheme,
         }, dispatch),
     };
 }
