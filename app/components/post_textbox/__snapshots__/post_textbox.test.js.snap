@@ -98,7 +98,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         visible={false}
       >
         <SendButton
-          disabled={false}
+          disabled={true}
           handleSendMessage={[Function]}
           theme={
             Object {
