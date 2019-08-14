@@ -73,13 +73,12 @@ export default class MoreDirectMessages extends PureComponent {
             selectedIds: {},
             selectedCount: 0,
         };
-
-        this.updateNavigationButtons(false, context);
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
         this.mounted = true;
+        this.updateNavigationButtons(false);
 
         this.getProfiles();
     }
