@@ -31,6 +31,9 @@ export function setNavigatorStyles(componentId, theme) {
             },
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,
+            backButton: {
+                color: theme.sidebarHeaderTextColor,
+            },
         },
         layout: {
             backgroundColor: theme.centerChannelBg,
