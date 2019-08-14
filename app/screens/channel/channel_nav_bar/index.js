@@ -110,6 +110,7 @@ export default class ChannelNavBar extends PureComponent {
             <View style={[style.header, padding(isLandscape), {height}]}>
                 <ChannelDrawerButton
                     openDrawer={openChannelDrawer}
+                    theme={theme}
                     visible={drawerButtonVisible}
                 />
                 <ChannelTitle

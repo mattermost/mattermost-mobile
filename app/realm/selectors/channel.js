@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {createSelector} from 'reselect';
+
 import {General, Preferences} from 'app/constants';
 import {getUserIdFromChannelName, isChannelMuted, sortChannelsByRecencyOrAlpha} from 'app/realm/utils/channel';
 import {getDisplayNameSettings} from 'app/realm/utils/user';
@@ -263,6 +265,32 @@ export const getSortedChannelIds = (options) => {
 
     return lastChannels;
 };
+
+export const getDrawerUnreadCount = createSelector(
+    (currentUserId) => currentUserId,
+    (_, teamMembers) => teamMembers,
+    (_, __, directChannels) => directChannels,
+    (currentUserId, teamMembers, directChannels) => {
+        let messages = 0;
+        let mentions = 0;
+
+        directChannels.forEach((channel) => {
+            const total = channel.totalMsgCount;
+            const member = channel.members.filtered('user.id = $0', currentUserId)[0];
+            if (member) {
+                messages += Math.max((total - member.msgCount), 0);
+                mentions += member.mentionCount;
+            }
+        });
+
+        teamMembers.forEach((member) => {
+            messages += member.msgCount;
+            mentions += member.mentionCount;
+        });
+
+        return {messages, mentions};
+    }
+);
 
 function filterChannels(unreadIds, favoriteIds, channels, unreadsAtTop, favoritesAtTop) {
     const channelsArray = channels.filter((c) => {

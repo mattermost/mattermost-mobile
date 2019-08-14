@@ -41,7 +41,7 @@ export function removeTeamMemberships(realm, general, user, teamMembersMap) {
 
             // If we are no longer in the team but is currently selected, we have to clear the selection
             // to let the application select the next default team
-            if (t.id === general.currentTeamId) {
+            if (t.id === general.currentTeamId && user.id === general.currentUserId) {
                 general.currentTeamId = null;
             }
         }
@@ -50,10 +50,27 @@ export function removeTeamMemberships(realm, general, user, teamMembersMap) {
 
 export function createOrUpdateTeams(realm, data, teamMembersMap = null) {
     if (data.teams?.length) {
-        data.teams.forEach((teamData) => {
-            teamData.members = teamMembersMap?.get(teamData.id) || [];
-            realm.create('Team', teamDataToRealm(teamData), true);
-        });
+        const totalTeams = data.teams.length;
+        for (let i = 0; i < totalTeams; i++) {
+            const teamData = data.teams[i];
+            const realmTeam = realm.objectForPrimaryKey('Team', teamData.id);
+            const teamMembers = teamMembersMap?.get(teamData.id) || [];
+
+            if (realmTeam) {
+                const currentMembers = realmTeam.members.map((m) => m);
+                teamMembers.forEach((member) => {
+                    const index = currentMembers.findIndex((c) => c.id === `${teamData.id}-${member.user.id}`);
+                    if (index === -1) {
+                        realmTeam.members.push(member);
+                    } else {
+                        realm.create('TeamMember', member, true);
+                    }
+                });
+            } else {
+                teamData.members = teamMembers;
+                realm.create('Team', teamDataToRealm(teamData), true);
+            }
+        }
     }
 }
 
