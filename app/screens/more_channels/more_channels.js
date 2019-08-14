@@ -76,21 +76,12 @@ export default class MoreChannels extends PureComponent {
             id: 'close-more-channels',
             icon: props.closeButton,
         };
-
-        const buttons = {
-            leftButtons: [this.leftButton],
-        };
-
-        if (props.canCreateChannels) {
-            buttons.rightButtons = [this.rightButton];
-        }
-
-        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
         this.mounted = true;
+        this.setHeaderButtons(this.props.canCreateChannels);
         this.doGetChannels();
     }
 
@@ -166,7 +157,7 @@ export default class MoreChannels extends PureComponent {
 
     getChannels = debounce(this.doGetChannels, 100);
 
-    headerButtons = (createEnabled) => {
+    setHeaderButtons = (createEnabled) => {
         const {actions, canCreateChannels, componentId} = this.props;
         const buttons = {
             leftButtons: [this.leftButton],
@@ -195,7 +186,7 @@ export default class MoreChannels extends PureComponent {
         const {actions, currentTeamId, currentUserId} = this.props;
         const {channels} = this.state;
 
-        this.headerButtons(false);
+        this.setHeaderButtons(false);
         this.setState({adding: true});
 
         const channel = channels.find((c) => c.id === id);
@@ -213,7 +204,7 @@ export default class MoreChannels extends PureComponent {
                     displayName: channel ? channel.display_name : '',
                 }
             );
-            this.headerButtons(true);
+            this.setHeaderButtons(true);
             this.setState({adding: false});
         } else {
             if (channel) {
