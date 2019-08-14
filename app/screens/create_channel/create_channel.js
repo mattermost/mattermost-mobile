@@ -67,16 +67,6 @@ export default class CreateChannel extends PureComponent {
         if (props.closeButton) {
             this.left = {...this.leftButton, icon: props.closeButton};
         }
-
-        const buttons = {
-            rightButtons: [this.rightButton],
-        };
-
-        if (this.left) {
-            buttons.leftButtons = [this.left];
-        }
-
-        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
