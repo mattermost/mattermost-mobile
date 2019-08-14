@@ -349,9 +349,10 @@ export default class PostOptions extends PureComponent {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: () => {
-                    actions.deletePost(post);
-                    actions.removePost(post);
-                    this.closeWithAnimation();
+                    this.closeWithAnimation(() => {
+                        actions.deletePost(post);
+                        actions.removePost(post);
+                    });
                 },
             }]
         );
