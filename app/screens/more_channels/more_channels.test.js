@@ -52,14 +52,14 @@ describe('MoreChannels', () => {
         expect(baseProps.actions.dismissModal).toHaveBeenCalledTimes(1);
     });
 
-    test('should call props.actions.setButtons on headerButtons', () => {
+    test('should call props.actions.setButtons on setHeaderButtons', () => {
         const wrapper = shallow(
             <MoreChannels {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(1);
-        wrapper.instance().headerButtons(true);
+        wrapper.instance().setHeaderButtons(true);
         expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(2);
     });
 
