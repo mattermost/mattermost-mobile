@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {General, Preferences} from 'app/constants';
-import {getUserIdFromChannelName, isChannelMuted, sortChannelsByRecencyOrAlpha} from 'app/utils/channels';
-import {getDisplayNameSettings} from 'app/utils/users';
+import {getUserIdFromChannelName, isChannelMuted, sortChannelsByRecencyOrAlpha} from 'app/realm/utils/channel';
+import {getDisplayNameSettings} from 'app/realm/utils/user';
 
 import {createIdsSelector} from './helper';
 
