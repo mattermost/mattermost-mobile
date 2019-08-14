@@ -44,7 +44,7 @@ exports[`ChannelItem should match snapshot 1`] = `
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status={null}
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -94,7 +94,7 @@ exports[`ChannelItem should match snapshot 1`] = `
             ]
           }
         >
-          display_name
+          Test Channel
         </Text>
       </View>
     </View>
@@ -157,7 +157,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status="offline"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -207,7 +207,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             ]
           }
         >
-          {displayName} (you)
+          {displayname} (you)
         </Text>
       </View>
     </View>
@@ -270,7 +270,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status="offline"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -320,7 +320,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             ]
           }
         >
-          {displayName} (you)
+          {displayname} (you)
         </Text>
       </View>
     </View>
@@ -383,7 +383,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status="offline"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -433,8 +433,32 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
             ]
           }
         >
-          display_name
+          Another Account
         </Text>
+        <Badge
+          count={1}
+          countStyle={
+            Object {
+              "color": "#145dbf",
+              "fontSize": 10,
+            }
+          }
+          extraPaddingHorizontal={10}
+          minHeight={20}
+          minWidth={20}
+          onPress={[Function]}
+          style={
+            Object {
+              "backgroundColor": undefined,
+              "borderColor": "#1153ab",
+              "borderRadius": 10,
+              "borderWidth": 1,
+              "padding": 3,
+              "position": "relative",
+              "right": 16,
+            }
+          }
+        />
       </View>
     </View>
   </TouchablePreview>
@@ -485,7 +509,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status="offline"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -535,8 +559,32 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
             ]
           }
         >
-          display_name
+          Another Account
         </Text>
+        <Badge
+          count={1}
+          countStyle={
+            Object {
+              "color": "#145dbf",
+              "fontSize": 10,
+            }
+          }
+          extraPaddingHorizontal={10}
+          minHeight={20}
+          minWidth={20}
+          onPress={[Function]}
+          style={
+            Object {
+              "backgroundColor": undefined,
+              "borderColor": "#1153ab",
+              "borderRadius": 10,
+              "borderWidth": 1,
+              "padding": 3,
+              "position": "relative",
+              "right": 16,
+            }
+          }
+        />
       </View>
     </View>
   </TouchablePreview>
@@ -544,10 +592,6 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and not searchResults or currentChannel 1`] = `null`;
-
-exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
-
-exports[`ChannelItem should match snapshot for showUnreadForMsgs 1`] = `null`;
 
 exports[`ChannelItem should match snapshot with draft 1`] = `
 <AnimatedComponent>
@@ -593,7 +637,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status={null}
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -643,7 +687,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
             ]
           }
         >
-          display_name
+          Test Channel
         </Text>
       </View>
     </View>
@@ -667,9 +711,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             "flexDirection": "row",
             "height": 44,
           },
-          Object {
-            "opacity": 0.5,
-          },
+          undefined,
           null,
         ]
       }
@@ -697,7 +739,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status={null}
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -747,7 +789,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             ]
           }
         >
-          display_name
+          Test Channel
         </Text>
         <Badge
           count={1}

@@ -199,7 +199,7 @@ export default class ChannelItem extends PureComponent {
             return null;
         }
 
-        const isArchived = channel.delete_at > 0;
+        const isArchived = channel.deleteAt > 0;
 
         // Only ever show an archived channel if it's the currently viewed channel.
         // It should disappear as soon as one navigates to another channel.
