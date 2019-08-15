@@ -164,7 +164,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...Platform.select({
                 android: {
                     fontSize: 13.25,
-                    top: -2,
                 },
                 ios: {
                     fontSize: 12,
