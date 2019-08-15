@@ -202,7 +202,10 @@ export default class PostHeader extends PureComponent {
             dateComponent = (
                 <View style={style.datetime}>
                     <Text style={style.time}>
-                        <FormattedDate value={createAt}/>
+                        <FormattedDate
+                            timeZone={userTimezone}
+                            value={createAt}
+                        />
                     </Text>
                     <Text style={style.time}>
                         <FormattedTime

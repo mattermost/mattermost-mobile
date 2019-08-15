@@ -36,6 +36,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         isArchived: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
+        timeZone: PropTypes.string,
     };
 
     static contextTypes = {
@@ -98,6 +99,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isArchived,
             isBot,
             isGroupConstrained,
+            timeZone,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -128,76 +130,76 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
+                {this.renderHasGuestText(style)}
                 {purpose.length > 0 &&
-                    <View style={style.section}>
-                        <TouchableHighlight
-                            underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                            onLongPress={this.handlePurposeLongPress}
-                        >
-                            <View style={style.row}>
-                                <FormattedText
-                                    style={style.header}
-                                    id='channel_info.purpose'
-                                    defaultMessage='Purpose'
-                                />
-                                <Markdown
-                                    onPermalinkPress={onPermalinkPress}
-                                    baseTextStyle={baseTextStyle}
-                                    textStyles={textStyles}
-                                    blockStyles={blockStyles}
-                                    value={purpose}
-                                />
-                            </View>
-                        </TouchableHighlight>
-                    </View>
+                <View style={style.section}>
+                    <TouchableHighlight
+                        underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                        onLongPress={this.handlePurposeLongPress}
+                    >
+                        <View style={style.row}>
+                            <FormattedText
+                                style={style.header}
+                                id='channel_info.purpose'
+                                defaultMessage='Purpose'
+                            />
+                            <Markdown
+                                onPermalinkPress={onPermalinkPress}
+                                baseTextStyle={baseTextStyle}
+                                textStyles={textStyles}
+                                blockStyles={blockStyles}
+                                value={purpose}
+                            />
+                        </View>
+                    </TouchableHighlight>
+                </View>
                 }
                 {header.length > 0 &&
-                    <View style={style.section}>
-                        <TouchableHighlight
-                            underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                            onLongPress={this.handleHeaderLongPress}
-                        >
-                            <View style={style.row}>
-                                <FormattedText
-                                    style={style.header}
-                                    id='channel_info.header'
-                                    defaultMessage='Header'
-                                />
-                                <Markdown
-                                    onPermalinkPress={onPermalinkPress}
-                                    baseTextStyle={baseTextStyle}
-                                    textStyles={textStyles}
-                                    blockStyles={blockStyles}
-                                    value={header}
-                                />
-                            </View>
-                        </TouchableHighlight>
-                    </View>
+                <View style={style.section}>
+                    <TouchableHighlight
+                        underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                        onLongPress={this.handleHeaderLongPress}
+                    >
+                        <View style={style.row}>
+                            <FormattedText
+                                style={style.header}
+                                id='channel_info.header'
+                                defaultMessage='Header'
+                            />
+                            <Markdown
+                                onPermalinkPress={onPermalinkPress}
+                                baseTextStyle={baseTextStyle}
+                                textStyles={textStyles}
+                                blockStyles={blockStyles}
+                                value={header}
+                            />
+                        </View>
+                    </TouchableHighlight>
+                </View>
                 }
                 {isGroupConstrained &&
-                    <Text style={[style.createdBy, style.row]}>
-                        <FormattedText
-                            id='mobile.routes.channelInfo.groupManaged'
-                            defaultMessage='Members are managed by linked groups'
-                        />
-                    </Text>
+                <Text style={[style.createdBy, style.row]}>
+                    <FormattedText
+                        id='mobile.routes.channelInfo.groupManaged'
+                        defaultMessage='Members are managed by linked groups'
+                    />
+                </Text>
                 }
                 {creator &&
-                    <Text style={[style.createdBy, style.row]}>
-                        <FormattedText
-                            id='mobile.routes.channelInfo.createdBy'
-                            defaultMessage='Created by {creator} on '
-                            values={{
-                                creator,
-                            }}
-                        />
-                        <FormattedDate
-                            value={new Date(createAt)}
-                            year='numeric'
-                            month='long'
-                            day='2-digit'
-                        />
-                    </Text>
+                <Text style={[style.createdBy, style.row]}>
+                    <FormattedText
+                        id='mobile.routes.channelInfo.createdBy'
+                        defaultMessage='Created by {creator} on '
+                        values={{
+                            creator,
+                        }}
+                    />
+                    <FormattedDate
+                        format='LL'
+                        timeZone={timeZone}
+                        value={createAt}
+                    />
+                </Text>
                 }
             </View>
         );
