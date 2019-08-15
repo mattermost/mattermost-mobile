@@ -130,6 +130,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
+                {this.renderHasGuestText(style)}
                 {purpose.length > 0 &&
                 <View style={style.section}>
                     <TouchableHighlight
