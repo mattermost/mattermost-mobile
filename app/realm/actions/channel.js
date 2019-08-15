@@ -212,20 +212,18 @@ export function handleSelectChannel(channelId, fromPushNotification = false, tea
             currentChannel = realm.objectForPrimaryKey('Channel', currentChannelId);
         }
 
-        const lastTeamId = currentChannel?.team?.id || general.currentTeamId;
+        const lastTeamId = teamId || currentChannel?.team?.id || general.currentTeamId;
 
         // If the app is open from push notification, we already fetched the posts.
         if (!fromPushNotification) {
             dispatch(loadPostsWithRetry(channelId));
         }
 
-        if (currentChannelId) {
-            reduxStore.dispatch({
-                type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-                teamId: lastTeamId,
-                channelId: currentChannelId,
-            });
-        }
+        reduxStore.dispatch({
+            type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
+            teamId: lastTeamId,
+            channelId,
+        });
 
         await dispatch({
             type: ChannelTypes.SELECT_CHANNEL,
