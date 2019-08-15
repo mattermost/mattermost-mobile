@@ -15,6 +15,7 @@
 #### Android Q Improvements
 
 ### Improvements
+ - Added support for Interactive Dialog with no elements.
  - Added a setting for tablets to enable or disable fixed sidebar.
  - Changed "about" section references to use the site name when it is configured in **System Console > Custom Branding > Site Name**.
  - Added support for plus-sign and period/dot in custom URL schemes.
@@ -25,6 +26,7 @@
 
 ### Bug Fixes
  - Fixed a few mobile app crash / fatal error issues.
+ - Fixed an issue where timestamps were off on Android.
  - Fixed an issue where contents of ephemeral posts from /giphy were not being displayed on mobile.
  - Fixed an issue where team/channel page dots at the bottom of left-hand side overlapped with the last Direct Message channel.
  - Fixed an issue where network reconnection incorrectly showed refreshing messages failed.
