@@ -167,7 +167,7 @@ export default class EmojiPicker extends PureComponent {
     changeSearchTerm = (rawText) => {
         const searchTerm = filterEmojiSearchInput(rawText);
         const nextState = {
-            searchTerm: rawText
+            searchTerm: rawText,
         };
         this.setState(nextState);
 
