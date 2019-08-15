@@ -91,9 +91,8 @@ export default class Code extends React.PureComponent {
                     language={this.props.language}
                     style={getHighlightStyleFromTheme(this.props.theme)}
                     highlighter={'hljs'}
-                    customStyle={{...style.codeText, ...this.props.textStyle}}
-                    CodeTag={Text}
-                    codeTagProps={{selectable: true, style: {...style.codeText, ...this.props.textStyle}}}
+                    fontFamily={style.codeText.fontFamily}
+                    fontSize={style.codeText.fontSize}
                 >
                     {this.props.content}
                 </SyntaxHighlighter>
@@ -161,13 +160,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             fontFamily: getCodeFont(),
-            fontSize: 12,
             lineHeight: 18,
             ...Platform.select({
                 android: {
-                    paddingVertical: 2,
+                    fontSize: 13.25,
+                    top: -2,
                 },
                 ios: {
+                    fontSize: 12,
                     top: -10,
                 },
             }),
