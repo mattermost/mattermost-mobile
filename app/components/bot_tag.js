@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
 
@@ -45,6 +45,11 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             marginRight: 2,
             marginBottom: 1,
+            ...Platform.select({
+                android: {
+                    marginBottom: 0,
+                },
+            }),
             marginLeft: 2,
             paddingVertical: 2,
             paddingHorizontal: 4,
