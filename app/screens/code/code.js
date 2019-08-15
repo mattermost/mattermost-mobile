@@ -93,6 +93,7 @@ export default class Code extends React.PureComponent {
                     highlighter={'hljs'}
                     fontFamily={style.codeText.fontFamily}
                     fontSize={style.codeText.fontSize}
+                    customStyle={{...style.codeText, ...this.props.textStyle}}
                 >
                     {this.props.content}
                 </SyntaxHighlighter>
@@ -164,6 +165,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...Platform.select({
                 android: {
                     fontSize: 13.25,
+                    top: -2,
                 },
                 ios: {
                     fontSize: 12,
