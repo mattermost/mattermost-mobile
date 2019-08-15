@@ -143,8 +143,7 @@ class GlobalEventHandler {
         deleteFileCache();
         removeAppCredentials();
 
-        PushNotifications.setApplicationIconBadgeNumber(0);
-        PushNotifications.cancelAllLocalNotifications(); // TODO: Only cancel the notification that belongs to this server
+        PushNotifications.clearNotifications();
 
         if (this.launchApp) {
             this.launchApp();
@@ -225,8 +224,6 @@ class GlobalEventHandler {
 
         dispatch(setServerVersion(''));
         Client4.serverVersion = '';
-        PushNotifications.setApplicationIconBadgeNumber(0);
-        PushNotifications.cancelAllLocalNotifications(); // TODO: Only cancel the notification that belongs to this server
 
         const credentials = await getAppCredentials();
 

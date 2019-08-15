@@ -6,9 +6,12 @@ exports[`MoreChannels should match snapshot 1`] = `
   <React.Fragment>
     <View
       style={
-        Object {
-          "marginVertical": 5,
-        }
+        Array [
+          Object {
+            "marginVertical": 5,
+          },
+          null,
+        ]
       }
     >
       <SearchBarIos
@@ -50,6 +53,7 @@ exports[`MoreChannels should match snapshot 1`] = `
         ]
       }
       extraData={true}
+      isLandscape={false}
       listType="flat"
       loading={true}
       loadingComponent={

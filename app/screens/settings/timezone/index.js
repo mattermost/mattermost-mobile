@@ -9,7 +9,7 @@ import {getSupportedTimezones as getTimezones} from 'mattermost-redux/selectors/
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getUserTimezone} from 'mattermost-redux/selectors/entities/timezone';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
-
+import {isLandscape} from 'app/selectors/device';
 import {goToScreen} from 'app/actions/navigation';
 import {updateUser} from 'app/actions/views/edit_profile';
 
@@ -25,6 +25,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         userTimezone,
         timezones,
+        isLandscape: isLandscape(state),
     };
 }
 

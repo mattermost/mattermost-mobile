@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
-
+import {isLandscape} from 'app/selectors/device';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTeammateNameDisplaySetting, getTheme, getBool} from 'mattermost-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
@@ -18,8 +18,9 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {
     setButtons,
     dismissModal,
-    resetToChannel,
     goToScreen,
+    dismissAllModals,
+    popToRoot,
 } from 'app/actions/navigation';
 
 import UserProfile from './user_profile';
@@ -41,6 +42,7 @@ function mapStateToProps(state, ownProps) {
         militaryTime,
         theme: getTheme(state),
         isMyUser: getCurrentUserId(state) === ownProps.userId,
+        isLandscape: isLandscape(state),
     };
 }
 
@@ -52,8 +54,9 @@ function mapDispatchToProps(dispatch) {
             loadBot,
             setButtons,
             dismissModal,
-            resetToChannel,
             goToScreen,
+            dismissAllModals,
+            popToRoot,
         }, dispatch),
     };
 }

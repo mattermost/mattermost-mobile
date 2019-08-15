@@ -29,6 +29,7 @@ describe('UserListRow', () => {
         },
         theme: Preferences.THEMES.default,
         teammateNameDisplay: 'test',
+        isLandscape: false,
     };
 
     test('should match snapshot', () => {
@@ -49,6 +50,22 @@ describe('UserListRow', () => {
         const newProps = {
             ...baseProps,
             user: deactivatedUser,
+        };
+
+        const wrapper = shallow(
+            <UserListRow {...newProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for guest user', () => {
+        const newProps = {
+            ...baseProps,
+            user: {
+                ...baseProps.user,
+                roles: 'system_guest',
+            },
         };
 
         const wrapper = shallow(

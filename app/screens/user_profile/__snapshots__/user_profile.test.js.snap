@@ -82,6 +82,37 @@ exports[`user_profile should match snapshot 1`] = `
             }
           }
         />
+        <GuestTag
+          show={false}
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+        />
       </View>
       <Text
         style={
@@ -106,23 +137,29 @@ exports[`user_profile should match snapshot 1`] = `
       <View>
         <Text
           style={
-            Object {
-              "color": undefined,
-              "fontSize": 13,
-              "fontWeight": "600",
-              "marginBottom": 10,
-              "marginTop": 25,
-            }
+            Array [
+              Object {
+                "color": undefined,
+                "fontSize": 13,
+                "fontWeight": "600",
+                "marginBottom": 10,
+                "marginTop": 25,
+              },
+              null,
+            ]
           }
         >
           USERNAME
         </Text>
         <Text
           style={
-            Object {
-              "color": "#3d3c40",
-              "fontSize": 15,
-            }
+            Array [
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 15,
+              },
+              null,
+            ]
           }
         >
           fred
@@ -131,23 +168,29 @@ exports[`user_profile should match snapshot 1`] = `
       <View>
         <Text
           style={
-            Object {
-              "color": undefined,
-              "fontSize": 13,
-              "fontWeight": "600",
-              "marginBottom": 10,
-              "marginTop": 25,
-            }
+            Array [
+              Object {
+                "color": undefined,
+                "fontSize": 13,
+                "fontWeight": "600",
+                "marginBottom": 10,
+                "marginTop": 25,
+              },
+              null,
+            ]
           }
         >
           NICKNAME
         </Text>
         <Text
           style={
-            Object {
-              "color": "#3d3c40",
-              "fontSize": 15,
-            }
+            Array [
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 15,
+              },
+              null,
+            ]
           }
         >
           nick
@@ -161,6 +204,7 @@ exports[`user_profile should match snapshot 1`] = `
       iconColor="rgba(0, 0, 0, 0.7)"
       iconSize={15}
       iconType="fontawesome"
+      isLandscape={false}
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={

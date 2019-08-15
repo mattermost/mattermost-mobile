@@ -57,5 +57,8 @@ export default makeStyleSheetFromTheme((theme) => {
         destructor: {
             color: theme.errorTextColor,
         },
+        safeAreaView: {
+            backgroundColor: 'white',
+        },
     };
 });

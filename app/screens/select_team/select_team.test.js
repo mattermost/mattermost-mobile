@@ -36,6 +36,7 @@ describe('SelectTeam', () => {
     const baseProps = {
         actions,
         currentChannelId: 'someId',
+        currentUserIsGuest: false,
         currentUrl: 'test',
         userWithoutTeams: false,
         teams: [],
@@ -44,6 +45,7 @@ describe('SelectTeam', () => {
             status: RequestStatus.FAILURE,
         },
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot for fail of teams', async () => {
@@ -77,6 +79,27 @@ describe('SelectTeam', () => {
         await getTeams();
         expect(wrapper.state('page')).toEqual(1);
         wrapper.update();
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when user is a guest', async () => {
+        const props = {
+            ...baseProps,
+            currentUserIsGuest: true,
+            teams: [{
+                id: 'kemjcpu9bi877yegqjs18ndp4r',
+                invite_id: 'ojsnudhqzbfzpk6e4n6ip1hwae',
+                name: 'test',
+            }],
+            teamsRequest: {
+                status: RequestStatus.SUCCESS,
+            },
+        };
+
+        const wrapper = shallow(
+            <SelectTeam {...props}/>,
+        );
+        await getTeams();
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

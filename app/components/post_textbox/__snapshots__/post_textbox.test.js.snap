@@ -6,14 +6,17 @@ exports[`PostTextBox should match, full snapshot 1`] = `
   <View
     onLayout={[Function]}
     style={
-      Object {
-        "alignItems": "flex-end",
-        "backgroundColor": "#ffffff",
-        "borderTopColor": "rgba(61,60,64,0.2)",
-        "borderTopWidth": 1,
-        "flexDirection": "row",
-        "paddingVertical": 4,
-      }
+      Array [
+        Object {
+          "alignItems": "flex-end",
+          "backgroundColor": "#ffffff",
+          "borderTopColor": "rgba(61,60,64,0.2)",
+          "borderTopWidth": 1,
+          "flexDirection": "row",
+          "paddingVertical": 4,
+        },
+        null,
+      ]
     }
   >
     <Connect(AttachmentButton)
@@ -98,7 +101,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         visible={false}
       >
         <SendButton
-          disabled={false}
+          disabled={true}
           handleSendMessage={[Function]}
           theme={
             Object {

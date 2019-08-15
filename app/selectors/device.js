@@ -14,7 +14,7 @@ export function getStatusBarHeight(state) {
 }
 
 export function isLandscape(state) {
-    return state.device.orientation === 'LANDSCAPE';
+    return state.device.dimension.deviceWidth > state.device.dimension.deviceHeight;
 }
 
 export function isTablet(state) {

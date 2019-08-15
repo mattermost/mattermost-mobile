@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
 import RemoveMarkdown from 'app/components/remove_markdown';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {View: AnimatedView} = Animated;
 
@@ -27,6 +27,7 @@ export default class AnnouncementBanner extends PureComponent {
         bannerText: PropTypes.string,
         bannerTextColor: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -84,6 +85,7 @@ export default class AnnouncementBanner extends PureComponent {
             bannerColor,
             bannerText,
             bannerTextColor,
+            isLandscape,
         } = this.props;
 
         const bannerStyle = {
@@ -101,7 +103,7 @@ export default class AnnouncementBanner extends PureComponent {
             >
                 <TouchableOpacity
                     onPress={this.handlePress}
-                    style={style.wrapper}
+                    style={[style.wrapper, padding(isLandscape)]}
                 >
                     <Text
                         ellipsizeMode='tail'

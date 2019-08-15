@@ -7,7 +7,6 @@ import {
     View,
     ViewPropTypes,
 } from 'react-native';
-import moment from 'moment-timezone';
 
 import FormattedDate from 'app/components/formatted_date';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -25,25 +24,14 @@ export default class DateHeader extends PureComponent {
         const {theme, timeZone, date} = this.props;
         const style = getStyleSheet(theme);
 
-        const dateFormatProps = {
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            value: new Date(date),
-        };
-
-        if (timeZone) {
-            dateFormatProps.value = moment.tz(date, timeZone).toDate();
-        }
-
         return (
             <View style={[style.container, this.props.style]}>
                 <View style={style.line}/>
                 <View style={style.dateContainer}>
                     <FormattedDate
                         style={style.date}
-                        {...dateFormatProps}
+                        timeZone={timeZone}
+                        value={date}
                     />
                 </View>
                 <View style={style.line}/>

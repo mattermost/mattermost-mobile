@@ -18,6 +18,7 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import ProgressiveImage from 'app/components/progressive_image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import EphemeralStore from 'app/store/ephemeral_store';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import ImageCacheManager from 'app/utils/image_cache_manager';
@@ -42,7 +43,6 @@ export default class MarkdownImage extends React.Component {
         imagesMetadata: PropTypes.object,
         linkDestination: PropTypes.string,
         isReplyPost: PropTypes.bool,
-        serverURL: PropTypes.string.isRequired,
         source: PropTypes.string.isRequired,
         errorTextStyle: CustomPropTypes.Style,
     };
@@ -99,7 +99,7 @@ export default class MarkdownImage extends React.Component {
         let source = this.props.source;
 
         if (source.startsWith('/')) {
-            source = this.props.serverURL + '/' + source;
+            source = EphemeralStore.currentServerUrl + source;
         }
 
         return source;
