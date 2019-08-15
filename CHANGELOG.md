@@ -10,9 +10,8 @@
 
 ### Highlights
 
-#### React Native Navigation
-
-#### Android Q Improvements
+#### Support for iOS13 and Android Q
+ - Added support for iOS13 and Android Q which are to be released later this year.
 
 ### Improvements
  - Added support for Interactive Dialog with no elements.
@@ -30,8 +29,8 @@
  - Fixed an issue where contents of ephemeral posts from /giphy were not being displayed on mobile.
  - Fixed an issue where team/channel page dots at the bottom of left-hand side overlapped with the last Direct Message channel.
  - Fixed an issue where network reconnection incorrectly showed refreshing messages failed.
- - Fixed an issue with a dark blue section at the bottom of channel list on iPhone X.
- - Fixed an issue where "Message failed to send" had confusing app badge behaviour.
+ - Fixed an issue with the channel sidebar theme colors not being respected on iPhone X.
+ - Fixed an issue where "Message failed to send" had incorrect app badge behaviour.
  - Fixed an issue where a white screen was briefly shown after pressing "Send Message" when viewing a user's profile.
  - Fixed an issue on Android where using "Https" instead of "https" in the url of an image didn't show the preview.
  - Fixed an issue where the client ``setCSRFFromCookie`` did not look for subpaths when accessing cookies.
