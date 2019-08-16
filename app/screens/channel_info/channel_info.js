@@ -493,6 +493,7 @@ export default class ChannelInfo extends PureComponent {
             theme,
             isBot,
             isLandscape,
+            actions: {popToRoot},
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -533,6 +534,7 @@ export default class ChannelInfo extends PureComponent {
                         isBot={isBot}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
+                        popToRoot={popToRoot}
                     />
                     }
                     <View style={style.rowsContainer}>

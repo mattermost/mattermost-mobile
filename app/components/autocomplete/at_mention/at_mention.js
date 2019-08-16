@@ -36,6 +36,7 @@ export default class AtMention extends PureComponent {
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
+        nestedScrollEnabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -207,7 +208,7 @@ export default class AtMention extends PureComponent {
     };
 
     render() {
-        const {maxListHeight, theme} = this.props;
+        const {maxListHeight, theme, nestedScrollEnabled} = this.props;
         const {mentionComplete, sections} = this.state;
 
         if (sections.length === 0 || mentionComplete) {
@@ -228,6 +229,7 @@ export default class AtMention extends PureComponent {
                 renderSectionHeader={this.renderSectionHeader}
                 ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
+                nestedScrollEnabled={nestedScrollEnabled}
             />
         );
     }
