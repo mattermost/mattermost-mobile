@@ -42,6 +42,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
         timeZone: PropTypes.string,
+        popToRoot: PropTypes.func.isRequired,
     };
 
     static contextTypes = {
@@ -137,6 +138,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isBot,
             isGroupConstrained,
             timeZone,
+            popToRoot,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -210,6 +212,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                         textStyles={textStyles}
                                         blockStyles={blockStyles}
                                         value={header}
+                                        onChannelLinkPress={popToRoot}
                                     />
                                 </View>
                             </TouchableHighlight>
