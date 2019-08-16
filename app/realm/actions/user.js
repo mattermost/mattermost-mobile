@@ -5,11 +5,11 @@ import allSettled from 'promise.allsettled';
 
 import {Client4} from 'mattermost-redux/client';
 
+import {General} from 'app/constants';
 import {GeneralTypes, UserTypes} from 'app/realm/action_types';
 import {setAppCredentials} from 'app/init/credentials';
-import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
-import ephemeralStore from 'app/store/ephemeral_store';
 import {configureRealmStore} from 'app/store/';
+import ephemeralStore from 'app/store/ephemeral_store';
 import {setCSRFFromCookie} from 'app/utils/security';
 import {getDeviceTimezone} from 'app/utils/timezone';
 
@@ -202,7 +202,7 @@ export function updateMe(user) {
 
 export function autoUpdateTimezone(deviceTimezone) {
     return async (dispatch, getState) => {
-        const general = getState().objectForPrimaryKey('General', GENERAL_SCHEMA_ID);
+        const general = getState().objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         const currentUser = general?.currentUser;
         const currentTimezone = general?.currentUser?.timezoneAsJson;
         const newTimezoneExists = currentTimezone.automaticTimezone !== deviceTimezone;

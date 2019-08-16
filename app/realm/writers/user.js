@@ -3,8 +3,8 @@
 
 import {combineWriters} from 'realm-react-redux';
 
-import {UserTypes} from 'app/realm/action_types';
-import {GENERAL_SCHEMA_ID} from 'app/realm/models/general';
+import {General} from 'app/constants';
+import {PreferenceTypes, UserTypes} from 'app/realm/action_types';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {userDataToRealm} from 'app/realm/utils/user';
 
@@ -20,39 +20,111 @@ function resetPreferences(realm, data) {
     }
 }
 
+function storeProfile(realm, profile) {
+    let user = realm.objectForPrimaryKey('User', profile.id);
+    if (!user || user.updateAt !== profile.update_at || user.status !== profile.status) {
+        user = realm.create('User', userDataToRealm(profile), true);
+    }
+
+    return user;
+}
+
 function currentUserWriter(realm, action) {
     switch (action.type) {
     case UserTypes.RECEIVED_ME: {
         const data = action.data || action.payload;
-        const user = userDataToRealm(data.user);
+        const user = storeProfile(realm, data.user);
 
-        let realmUser = realm.objectForPrimaryKey('User', user.id);
-        if (!realmUser || user.updateAt !== realmUser.updateAt) {
-            realmUser = realm.create('User', user, true);
+        let realmGeneral = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        if (realmGeneral) {
+            realmGeneral.currentUserId = user.id;
+            realmGeneral.deviceToken = ephemeralStore.deviceToken;
+        } else {
+            realmGeneral = realm.create('General', {
+                id: General.REALM_SCHEMA_ID,
+                currentUserId: user.id,
+                deviceToken: ephemeralStore.deviceToken,
+            }, true);
         }
-
-        realm.create('General', {
-            id: GENERAL_SCHEMA_ID,
-            currentUserId: user.id,
-            deviceToken: ephemeralStore.deviceToken,
-        }, true);
 
         resetPreferences(realm, data);
 
         const teamMembersMap = mapTeamMembers(data, user);
 
         // Remove membership from teams
-        removeTeamMemberships(realm, user, teamMembersMap);
+        removeTeamMemberships(realm, realmGeneral, user, teamMembersMap);
 
         createOrUpdateTeams(realm, data, teamMembersMap);
         break;
     }
+
     case UserTypes.UPDATE_ME: {
         const data = action.data || action.payload;
-        const user = userDataToRealm(data);
-        realm.create('User', user, true);
+        storeProfile(realm, data);
         break;
     }
+
+    case PreferenceTypes.RECEIVED_PREFERENCES: {
+        const data = action.data || action.payload;
+        data.forEach((p) => {
+            const preference = {
+                id: `${p.category}-${p.name}`,
+                ...p,
+            };
+
+            realm.create('Preference', preference, true);
+        });
+
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+function profilesWriter(realm, action) {
+    switch (action.type) {
+    case UserTypes.RECEIVED_PROFILES: {
+        const data = action.data || action.payload;
+        data.users.forEach((u) => {
+            const status = data.statuses?.find((s) => s.user_id === u.id);
+            if (status) {
+                u.status = status.status;
+            }
+
+            storeProfile(realm, u);
+        });
+        break;
+    }
+
+    case UserTypes.RECEIVED_PROFILES_IN_CHANNEL: {
+        const data = action.data || action.payload;
+        const {channelId, profiles, statuses} = data;
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const channel = realm.objectForPrimaryKey('Channel', channelId);
+
+        if (channel) {
+            profiles.forEach((profile) => {
+                if (profile.id !== general.currentUserId) {
+                    const status = statuses.find((s) => s.user_id === profile.id);
+                    const user = storeProfile(realm, {...profile, ...status});
+
+                    const channelMember = realm.objectForPrimaryKey('ChannelMember', `${channelId}-${profile.id}`);
+                    if (!channelMember) {
+                        const member = {
+                            id: `${channelId}-${profile.id}`,
+                            user,
+                        };
+
+                        channel.members.push(member);
+                    }
+                }
+            });
+        }
+        break;
+    }
+
     default:
         break;
     }
@@ -60,4 +132,5 @@ function currentUserWriter(realm, action) {
 
 export default combineWriters([
     currentUserWriter,
+    profilesWriter,
 ]);

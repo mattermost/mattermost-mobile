@@ -26,6 +26,12 @@ export default class User extends Realm.Object {
         return `${this.firstName.trim()} ${this.lastName.trim()}`;
     }
 
+    snapshot = () => {
+        return {
+            ...this,
+        };
+    };
+
     static schema = {
         name: 'User',
         primaryKey: 'id',
@@ -46,6 +52,8 @@ export default class User extends Realm.Object {
             timezone: 'string?',
             lastPictureUpdate: 'int',
             status: {type: 'string', default: 'offline', indexed: true},
+            termsOfServiceId: 'string?',
+            termsOfServiceCreateAt: {type: 'int', default: 0},
         },
     };
 }

@@ -6,7 +6,7 @@ import {realmConnect} from 'realm-react-redux';
 import {resetToChannel, goToScreen} from 'app/actions/navigation';
 import {scheduleExpiredNotification, sendPasswordResetEmail} from 'app/realm/actions/general';
 import {login} from 'app/realm/actions/user';
-import options from 'app/store/realm_context_options';
+import options from 'app/store/realm_options';
 import {reduxStore} from 'app/store';
 
 import Login from './login.js';

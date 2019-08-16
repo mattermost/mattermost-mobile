@@ -4,6 +4,12 @@
 import Realm from 'realm';
 
 export class Channel extends Realm.Object {
+    snapshot = () => {
+        return {
+            ...this,
+        };
+    };
+
     static schema = {
         name: 'Channel',
         primaryKey: 'id',
@@ -12,7 +18,7 @@ export class Channel extends Realm.Object {
             createAt: 'int',
             updateAt: 'int',
             deleteAt: {type: 'int', default: 0},
-            team: 'Team',
+            team: 'Team?',
             type: {type: 'string', indexed: true},
             displayName: {type: 'string', default: ''},
             name: 'string',
@@ -47,6 +53,12 @@ export class ChannelMember extends Realm.Object {
     set notifyPropsFromJSON(props) {
         this.notifyProps = JSON.stringify(props);
     }
+
+    snapshot = () => {
+        return {
+            ...this,
+        };
+    };
 
     static schema = {
         name: 'ChannelMember',

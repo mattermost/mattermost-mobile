@@ -10,6 +10,7 @@ class EphemeralStore {
         this.allNavigationComponentIds = [];
         this.currentServerUrl = null;
         this.realmStores = {};
+        this.postsForChannelSince = {};
     }
 
     getNavigationTopComponentId = () => this.navigationComponentIdStack[0];

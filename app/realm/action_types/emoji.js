@@ -4,8 +4,7 @@
 import keyMirror from 'app/utils/key_mirror';
 
 export default keyMirror({
-    RECEIVED_ME: null,
-    UPDATE_ME: null,
-    RECEIVED_PROFILES: null,
-    RECEIVED_PROFILES_IN_CHANNEL: null,
+    RECEIVED_CUSTOM_AND_NON_EXISTENT_EMOJIS: null,
+    RECEIVED_CUSTOM_EMOJI: null,
+    CUSTOM_EMOJI_DOES_NOT_EXIST: null,
 });

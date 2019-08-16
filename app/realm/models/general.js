@@ -2,8 +2,6 @@
 // See LICENSE.txt for license information.
 import Realm from 'realm';
 
-export const GENERAL_SCHEMA_ID = 'general';
-
 export default class General extends Realm.Object {
     get config() {
         try {

@@ -13,11 +13,13 @@ export function userDataToRealm(user) {
         firstName: user.first_name,
         lastName: user.last_name,
         roles: user.roles,
-        notifyProps: JSON.stringify(user.notify_props),
+        notifyProps: user.notify_props ? JSON.stringify(user.notify_props) : '',
         locale: user.locale,
         position: user.position,
-        timezone: JSON.stringify(user.timezone),
+        timezone: user.timezone ? JSON.stringify(user.timezone) : '',
         lastPictureUpdate: user.last_picture_update || user.update_at || user.create_at,
         status: user.status,
+        termsOfServiceId: user.terms_of_service_id,
+        termsOfServiceCreateAt: user.terms_of_service_create_at,
     };
 }

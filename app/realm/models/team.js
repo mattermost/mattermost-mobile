@@ -16,6 +16,7 @@ export class Team extends Realm.Object {
             type: 'string',
             description: 'string?',
             groupConstrained: {type: 'bool', default: false},
+            allowOpenInvites: {type: 'bool', default: false},
             members: 'TeamMember[]',
         },
     }

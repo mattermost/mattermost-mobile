@@ -26,17 +26,21 @@ const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
 
 export default class ChannelIOS extends ChannelBase {
     previewChannel = (passProps, options) => {
-        const {actions} = this.props;
+        const {peek} = this.props;
         const screen = 'ChannelPeek';
 
-        actions.peek(screen, passProps, options);
+        peek(screen, passProps, options);
     };
 
     optionalProps = {previewChannel: this.previewChannel};
 
     render() {
         const {height} = Dimensions.get('window');
-        const {currentChannelId} = this.props;
+        const {
+            currentChannelId,
+            currentUserId,
+            theme,
+        } = this.props;
 
         const channelLoaderStyle = [style.channelLoader, {height}];
         if ((DeviceTypes.IS_IPHONE_X || DeviceTypes.IS_TABLET)) {
@@ -54,7 +58,10 @@ export default class ChannelIOS extends ChannelBase {
                         onPress={this.goToChannelInfo}
                     />
                     <ChannelPostList
+                        channelId={currentChannelId}
+                        currentUserId={currentUserId}
                         updateNativeScrollView={this.updateNativeScrollView}
+                        theme={theme}
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
                         <FileUploadPreview/>

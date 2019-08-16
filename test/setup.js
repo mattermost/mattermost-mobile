@@ -53,7 +53,7 @@ jest.mock('react-native-device-info', () => {
         getBuildNumber: () => '0',
         getModel: () => 'iPhone X',
         isTablet: () => false,
-        getDeviceLocale: () => 'en_US',
+        getDeviceLocale: () => 'en-US',
     };
 });
 

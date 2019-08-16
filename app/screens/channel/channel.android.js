@@ -19,6 +19,7 @@ import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
 
 export default class ChannelAndroid extends ChannelBase {
     render() {
+        const {currentChannelId, currentUserId, theme} = this.props;
         const {height} = Dimensions.get('window');
 
         const channelLoaderStyle = [style.channelLoader, {height}];
@@ -33,7 +34,11 @@ export default class ChannelAndroid extends ChannelBase {
                 />
                 <KeyboardLayout>
                     <View style={style.flex}>
-                        <ChannelPostList/>
+                        <ChannelPostList
+                            channelId={currentChannelId}
+                            currentUserId={currentUserId}
+                            theme={theme}
+                        />
                     </View>
                     <PostTextbox
                         ref={this.postTextbox}
