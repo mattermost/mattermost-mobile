@@ -14,12 +14,12 @@ import {buildPostAttachmentText} from 'app/utils/post';
 import {forceLogoutIfNecessary} from './helpers';
 
 export function getCustomEmojiByName(name: string) {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         let data;
         try {
             data = await Client4.getCustomEmojiByName(name);
         } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
+            forceLogoutIfNecessary(error);
 
             if (error.status_code === 404) {
                 dispatch({type: EmojiTypes.CUSTOM_EMOJI_DOES_NOT_EXIST, data: name});
