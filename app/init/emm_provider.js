@@ -134,7 +134,7 @@ class EMMProvider {
     };
 
     showNotSecuredAlert = (translations) => {
-        return new Promise((resolve) => {
+        return new Promise(async (resolve) => {
             const options = [];
 
             if (Platform.OS === 'android') {
@@ -152,9 +152,22 @@ class EMMProvider {
                 style: 'cancel',
             });
 
+            let message;
+            if (Platform.OS === 'ios') {
+                const {supportsFaceId} = await mattermostManaged.supportsFaceId();
+
+                if (supportsFaceId) {
+                    message = translations[t('mobile.managed.not_secured.ios')];
+                } else {
+                    message = translations[t('mobile.managed.not_secured.ios.touchId')];
+                }
+            } else {
+                message = translations[t('mobile.managed.not_secured.android')];
+            }
+
             Alert.alert(
                 translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
-                Platform.OS === 'ios' ? translations[t('mobile.managed.not_secured.ios')] : translations[t('mobile.managed.not_secured.android')],
+                message,
                 options,
                 {cancelable: false, onDismiss: resolve},
             );
