@@ -52,7 +52,10 @@ export default class ChannelIOS extends ChannelBase {
         if (!currentTeamId) {
             return (
                 <SafeAreaView>
-                    <EmptyToolbar theme={theme}/>
+                    <EmptyToolbar
+                        isLandscape={width > height}
+                        theme={theme}
+                    />
                     <ChannelLoader
                         height={height}
                         style={channelLoaderStyle}
