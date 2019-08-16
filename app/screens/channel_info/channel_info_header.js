@@ -42,7 +42,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
         timeZone: PropTypes.string,
-        popToRoot: PropTypes.func.isRequired,
+        popToRoot: PropTypes.func,
     };
 
     static contextTypes = {
