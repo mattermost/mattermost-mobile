@@ -39,12 +39,12 @@ export function loadPostsWithRetry(channelId) {
             }
         } else {
             const {lastConnectAt} = 0; // state.websocket; last time the WS connected
-            const lastGetPosts = EphemeralStore.postsForChannelSince[channelId];
+            const lastGetPostsTime = EphemeralStore.postsForChannelSince[channelId];
 
             let since;
-            if (lastGetPosts && lastGetPosts < lastConnectAt) {
+            if (lastGetPostsTime && lastGetPostsTime < lastConnectAt) {
                 // Since the websocket disconnected, we may have missed some posts since then
-                since = lastGetPosts;
+                since = lastGetPostsTime;
             } else {
                 // Trust that we've received all posts since the last time the websocket disconnected
                 // so just get any that have changed since the latest one we've received
