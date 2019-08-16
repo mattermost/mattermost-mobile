@@ -39,6 +39,7 @@
  
 ### Known Issues
   - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
+  - Some Giphy actions do not work in ephemeral posts. [MM-17842](https://mattermost.atlassian.net/browse/MM-17842)
 
 ## 1.21.2 Release
 - Release Date: August 1, 2019
