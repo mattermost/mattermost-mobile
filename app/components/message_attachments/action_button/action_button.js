@@ -12,18 +12,17 @@ import ActionButtonText from './action_button_text';
 export default class ActionButton extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            doPostActionWithCookie: PropTypes.func.isRequired,
+            doPostAction: PropTypes.func.isRequired,
         }).isRequired,
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        cookie: PropTypes.string.isRequired,
     };
 
     handleActionPress = preventDoubleTap(() => {
-        const {actions, id, postId, cookie} = this.props;
-        actions.doPostActionWithCookie(postId, id, cookie);
+        const {actions, id, postId} = this.props;
+        actions.doPostAction(postId, id);
     }, 4000);
 
     render() {
