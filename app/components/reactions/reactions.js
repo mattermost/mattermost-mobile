@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Image,
-    ScrollView,
+    View,
     TouchableOpacity,
 } from 'react-native';
 import {intlShape} from 'react-intl';
@@ -165,14 +165,9 @@ export default class Reactions extends PureComponent {
         }
 
         return (
-            <ScrollView
-                alwaysBounceHorizontal={false}
-                horizontal={true}
-                overScrollMode='never'
-                keyboardShouldPersistTaps={'always'}
-            >
+            <View style={styles.reactionsContainer}>
                 {reactionElements}
-            </ScrollView>
+            </View>
         );
     }
 }
@@ -198,6 +193,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 2,
             paddingHorizontal: 6,
             width: 40,
+        },
+        reactionsContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignContent: 'flex-start',
         },
     };
 });
