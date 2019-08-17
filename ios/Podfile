@@ -31,6 +31,8 @@ target 'Mattermost' do
 
   pod 'XCDYouTubeKit', '2.7.1'
 
+  pod 'RNSentry', :path => '../node_modules/@sentry/react-native'
+
   target 'MattermostTests' do
     inherit! :search_paths
     # Pods for testing

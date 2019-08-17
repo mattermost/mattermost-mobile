@@ -10,7 +10,7 @@ export function createSentryMiddleware() {
     return (store) => { // eslint-disable-line no-unused-vars
         return (next) => {
             return (action) => {
-                Sentry.captureBreadcrumb(makeBreadcrumbFromAction(action));
+                Sentry.addBreadcrumb(makeBreadcrumbFromAction(action));
 
                 return next(action);
             };

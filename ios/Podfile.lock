@@ -124,16 +124,16 @@ PODS:
     - React
   - RNReactNativeDocViewer (1.0.0):
     - React
+  - RNSentry (1.0.0-beta.5):
+    - React
+    - Sentry (~> 4.4.0)
   - RNSVG (9.4.0):
     - React
   - RNVectorIcons (6.4.2):
     - React
-  - Sentry (4.1.3):
-    - Sentry/Core (= 4.1.3)
-  - Sentry/Core (4.1.3)
-  - SentryReactNative (0.43.1):
-    - React
-    - Sentry (~> 4.1.3)
+  - Sentry (4.4.0):
+    - Sentry/Core (= 4.4.0)
+  - Sentry/Core (4.4.0)
   - XCDYouTubeKit (2.7.1)
   - yoga (0.60.4.React)
 
@@ -179,9 +179,9 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNReactNativeDocViewer (from `../node_modules/react-native-doc-viewer`)
+  - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
-  - SentryReactNative (from `../node_modules/react-native-sentry`)
   - XCDYouTubeKit (= 2.7.1)
   - yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -274,12 +274,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNReactNativeDocViewer:
     :path: "../node_modules/react-native-doc-viewer"
+  RNSentry:
+    :path: "../node_modules/@sentry/react-native"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
-  SentryReactNative:
-    :path: "../node_modules/react-native-sentry"
   yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -326,13 +326,13 @@ SPEC CHECKSUMS:
   RNGestureHandler: 7ccf2f3f60458e084f9ada01fbaf610f6fef073c
   RNKeychain: 5381e340056c23de103d73ae59cbddc6ffc21d97
   RNReactNativeDocViewer: 1ff418afb9b3d1a1050ab2ee9fee882ed6bfe6a6
+  RNSentry: ea67b65b328405ed060f43a2940003ed93b5c4eb
   RNSVG: 4834be1d644eb77f0e3f6de851881b83758a3124
   RNVectorIcons: 8c52e1e8da1153613fdef44748e865c25556cb9c
-  Sentry: 4e8a17b61ddd116f89536cc81d567fdee1ebca96
-  SentryReactNative: fc630be25b30c1a494b478ba1fa38f761cc6da20
+  Sentry: 26650184fe71eb7476dfd2737acb5ea6cc64b4b1
   XCDYouTubeKit: c8567fd5cb388a3099fa26eee4b30df2a467847d
   yoga: 88c514f310aff89b94a14c5fbf44b95735af0cb7
 
-PODFILE CHECKSUM: 95026a8dffce6c4e106c00b93ff7168aa2e7628b
+PODFILE CHECKSUM: 1356a2df03002d410ff9229ccc636ff4265594cd
 
 COCOAPODS: 1.5.3

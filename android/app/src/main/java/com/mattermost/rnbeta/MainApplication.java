@@ -23,8 +23,6 @@ import com.wix.reactnativenotifications.RNNotificationsModule;
 import io.tradle.react.LocalAuthModule;
 import com.gantix.JailMonkey.JailMonkeyModule;
 import com.RNFetchBlob.RNFetchBlob;
-import io.sentry.RNSentryModule;
-import io.sentry.RNSentryEventEmitter;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
 import com.inprogress.reactnativeyoutube.YouTubeStandaloneModule;
 import com.philipphecht.RNDocViewerModule;
@@ -33,6 +31,7 @@ import com.oblador.keychain.KeychainModule;
 import com.reactnativecommunity.asyncstorage.AsyncStorageModule;
 import com.reactnativecommunity.netinfo.NetInfoModule;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
+import io.sentry.RNSentryPackage;
 
 import com.brentvatne.react.ReactVideoPackage;
 import com.BV.LinearGradient.LinearGradientPackage;
@@ -133,10 +132,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return NotificationPreferencesModule.getInstance(instance, reactContext);
                   case "RNTextInputReset":
                     return new RNTextInputResetModule(reactContext);
-                  case "RNSentry":
-                    return new RNSentryModule(reactContext);
-                  case "RNSentryEventEmitter":
-                    return new RNSentryEventEmitter(reactContext);
                   case "ReactNativeExceptionHandler":
                     return new ReactNativeExceptionHandlerModule(reactContext);
                   case "YouTubeStandaloneModule":
@@ -175,8 +170,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("RNLocalAuth", new ReactModuleInfo("RNLocalAuth", "io.tradle.react.LocalAuthModule", false, false, false, false, false));
                     map.put("JailMonkey", new ReactModuleInfo("JailMonkey", "com.gantix.JailMonkey.JailMonkeyModule", false, false, true, false, false));
                     map.put("RNFetchBlob", new ReactModuleInfo("RNFetchBlob", "com.RNFetchBlob.RNFetchBlob", false, false, true, false, false));
-                    map.put("RNSentry", new ReactModuleInfo("RNSentry", "com.sentry.RNSentryModule", false, false, true, false, false));
-                    map.put("RNSentryEventEmitter", new ReactModuleInfo("RNSentryEventEmitter", "com.sentry.RNSentryEventEmitter", false, false, true, false, false));
                     map.put("ReactNativeExceptionHandler", new ReactModuleInfo("ReactNativeExceptionHandler", "com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule", false, false, false, false, false));
                     map.put("YouTubeStandaloneModule", new ReactModuleInfo("YouTubeStandaloneModule", "com.inprogress.reactnativeyoutube.YouTubeStandaloneModule", false, false, false, false, false));
                     map.put("RNDocViewer", new ReactModuleInfo("RNDocViewer", "com.philipphecht.RNDocViewerModule", false, false, false, false, false));
@@ -193,7 +186,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SvgPackage(),
             new LinearGradientPackage(),
             new ReactVideoPackage(),
-            new RNGestureHandlerPackage()
+            new RNGestureHandlerPackage(),
+            new RNSentryPackage()
     );
   }
 

@@ -79,6 +79,7 @@ project.ext.react = [
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
+apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 if (System.getenv("SENTRY_ENABLED") == "true") {
@@ -209,6 +210,7 @@ configurations.all {
 }
 
 dependencies {
+    implementation project(':@sentry_react-native')
     // Make sure to put android-jsc at the top
     implementation "org.webkit:android-jsc-intl:r241213"
 
