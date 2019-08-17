@@ -119,6 +119,7 @@ export default class EditProfile extends PureComponent {
         const buttons = {
             rightButtons: [this.rightButton],
         };
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.rightButton.text = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
         props.actions.setButtons(props.componentId, buttons);

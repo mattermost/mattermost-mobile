@@ -65,6 +65,7 @@ export default class UserProfile extends PureComponent {
         super(props);
 
         if (props.isMyUser) {
+            this.rightButton.color = props.theme.sidebarHeaderTextColor;
             this.rightButton.text = context.intl.formatMessage({id: 'mobile.routes.user_profile.edit', defaultMessage: 'Edit'});
 
             const buttons = {
