@@ -66,6 +66,7 @@ export default class MoreChannels extends PureComponent {
         };
 
         this.rightButton = {
+            color: props.theme.sidebarHeaderTextColor,
             id: 'create-pub-channel',
             text: context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
             showAsAction: 'always',
