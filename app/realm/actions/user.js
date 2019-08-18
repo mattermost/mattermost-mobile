@@ -5,7 +5,7 @@ import allSettled from 'promise.allsettled';
 
 import {Client4} from 'mattermost-redux/client';
 
-import {General} from 'app/constants';
+import {General, NavigationTypes} from 'app/constants';
 import {GeneralTypes, UserTypes} from 'app/realm/action_types';
 import {setAppCredentials} from 'app/init/credentials';
 import {configureRealmStore} from 'app/store/';
@@ -19,6 +19,7 @@ import {loadRolesIfNeeded} from './role';
 
 // TODO: Remove redux compatibility
 import {completeLogin} from 'mattermost-redux/actions/users';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {reduxStore} from 'app/store';
 import {handleSuccessfulLogin as handleSuccessfulLoginRedux} from 'app/actions/views/login';
 
@@ -307,5 +308,39 @@ export function searchProfiles(term, options = {}) {
             forceLogoutIfNecessary(error);
             return {error};
         }
+    };
+}
+
+export function setStatus(data) {
+    return async (dispatch) => {
+        try {
+            await Client4.updateStatus(data);
+
+            dispatch({
+                type: UserTypes.RECEIVED_STATUS,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+    };
+}
+
+export function logout() {
+    return async () => {
+        try {
+            await Client4.logout();
+        } catch (e) {
+            // nothing here
+        }
+
+        // TODO: Remove redux
+        reduxStore.dispatch({type: 'LOGOUT_SUCCESS'});
+        EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
+
+        return {data: true};
     };
 }

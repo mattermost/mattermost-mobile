@@ -10,4 +10,5 @@ export default keyMirror({
     RECEIVED_PROFILES_IN_CHANNEL: null,
     RECEIVED_BATCH_PROFILES_IN_CHANNEL: null,
     RECEIVE_PROFILES_IN_TEAM: null,
+    RECEIVED_STATUS: null,
 });

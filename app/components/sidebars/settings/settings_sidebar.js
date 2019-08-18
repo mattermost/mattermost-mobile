@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     BackHandler,
+    Dimensions,
     InteractionManager,
     Keyboard,
     ScrollView,
@@ -34,25 +35,15 @@ const DRAWER_TABLET_WIDTH = 300;
 
 export default class SettingsDrawer extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            logout: PropTypes.func.isRequired,
-            setStatus: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-        }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
-        currentUser: PropTypes.object.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
-        status: PropTypes.string,
+        currentUser: PropTypes.object,
+        dismissModal: PropTypes.func.isRequired,
+        logout: PropTypes.func.isRequired,
+        setStatus: PropTypes.func.isRequired,
+        showModal: PropTypes.func.isRequired,
+        showModalOverCurrentContext: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-    };
-
-    static defaultProps = {
-        currentUser: {},
-        status: 'offline',
     };
 
     static contextTypes = {
@@ -61,6 +52,8 @@ export default class SettingsDrawer extends PureComponent {
 
     constructor(props) {
         super(props);
+
+        this.drawer = React.createRef();
 
         MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
@@ -78,8 +71,8 @@ export default class SettingsDrawer extends PureComponent {
     }
 
     handleAndroidBack = () => {
-        if (this.refs.drawer && this.drawerOpened) {
-            this.refs.drawer.closeDrawer();
+        if (this.drawer?.current && this.drawerOpened) {
+            this.drawer.current.closeDrawer();
             return true;
         }
 
@@ -89,14 +82,14 @@ export default class SettingsDrawer extends PureComponent {
     openSettingsSidebar = () => {
         this.props.blurPostTextBox();
 
-        if (this.refs.drawer && !this.drawerOpened) {
-            this.refs.drawer.openDrawer();
+        if (this.drawer?.current && !this.drawerOpened) {
+            this.drawer.current.openDrawer();
         }
     };
 
     closeSettingsSidebar = () => {
-        if (this.refs.drawer && this.drawerOpened) {
-            this.refs.drawer.closeDrawer();
+        if (this.drawer?.current && this.drawerOpened) {
+            this.drawer.current.closeDrawer();
         }
     };
 
@@ -111,7 +104,7 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     handleSetStatus = preventDoubleTap(() => {
-        const {actions} = this.props;
+        const {showModalOverCurrentContext} = this.props;
         const items = [{
             action: () => this.setStatus(General.ONLINE),
             text: {
@@ -138,7 +131,7 @@ export default class SettingsDrawer extends PureComponent {
             },
         }];
 
-        actions.showModalOverCurrentContext('OptionsModal', {items});
+        showModalOverCurrentContext('OptionsModal', {items});
     });
 
     goToEditProfile = preventDoubleTap(() => {
@@ -192,7 +185,7 @@ export default class SettingsDrawer extends PureComponent {
     });
 
     logout = preventDoubleTap(() => {
-        const {logout} = this.props.actions;
+        const {logout} = this.props;
         this.closeSettingsSidebar();
         logout();
     });
@@ -200,7 +193,7 @@ export default class SettingsDrawer extends PureComponent {
     openModal = (screen, title, passProps) => {
         this.closeSettingsSidebar();
 
-        const {actions} = this.props;
+        const {showModal} = this.props;
         const options = {
             topBar: {
                 leftButtons: [{
@@ -211,7 +204,7 @@ export default class SettingsDrawer extends PureComponent {
         };
 
         InteractionManager.runAfterInteractions(() => {
-            actions.showModal(screen, title, passProps, options);
+            showModal(screen, title, passProps, options);
         });
     };
 
@@ -224,9 +217,14 @@ export default class SettingsDrawer extends PureComponent {
         );
     };
 
-    renderUserStatusLabel = (userId) => {
+    renderUserStatusLabel = () => {
+        const {currentUser, theme} = this.props;
+
         return (
-            <StatusLabel userId={userId}/>
+            <StatusLabel
+                status={currentUser.status}
+                theme={theme}
+            />
         );
     };
 
@@ -251,10 +249,11 @@ export default class SettingsDrawer extends PureComponent {
                         <UserInfo
                             onPress={this.goToUserProfile}
                             user={currentUser}
+                            theme={theme}
                         />
                         <View style={style.block}>
                             <DrawerItem
-                                labelComponent={this.renderUserStatusLabel(currentUser.id)}
+                                labelComponent={this.renderUserStatusLabel()}
                                 leftComponent={this.renderUserStatusIcon(currentUser.id)}
                                 separator={false}
                                 onPress={this.handleSetStatus}
@@ -327,18 +326,18 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     updateStatus = (status) => {
-        const {currentUser: {id: currentUserId}} = this.props;
-        this.props.actions.setStatus({
-            user_id: currentUserId,
+        const {currentUser} = this.props;
+        this.props.setStatus({
+            user_id: currentUser.id,
             status,
         });
     };
 
     setStatus = (status) => {
-        const {status: currentUserStatus, actions} = this.props;
+        const {currentUser, dismissModal} = this.props;
 
-        if (currentUserStatus === General.OUT_OF_OFFICE) {
-            actions.dismissModal();
+        if (currentUser.status === General.OUT_OF_OFFICE) {
+            dismissModal();
             this.closeSettingsSidebar();
             this.confirmReset(status);
             return;
@@ -348,12 +347,13 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     render() {
-        const {children, deviceWidth} = this.props;
-        const drawerWidth = DeviceTypes.IS_TABLET ? DRAWER_TABLET_WIDTH : (deviceWidth - DRAWER_INITIAL_OFFSET);
+        const {children} = this.props;
+        const {width} = Dimensions.get('window');
+        const drawerWidth = DeviceTypes.IS_TABLET ? DRAWER_TABLET_WIDTH : (width - DRAWER_INITIAL_OFFSET);
 
         return (
             <DrawerLayout
-                ref='drawer'
+                ref={this.drawer}
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}

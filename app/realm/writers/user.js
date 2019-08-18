@@ -186,6 +186,17 @@ function profilesWriter(realm, action) {
         break;
     }
 
+    case UserTypes.RECEIVED_STATUS: {
+        const data = action.data || action.payload;
+        const user = realm.objectForPrimaryKey('User', data?.user_id); //eslint-disable-line camelcase
+
+        if (user && data?.status) {
+            user.status = data.status;
+        }
+
+        break;
+    }
+
     default:
         break;
     }
