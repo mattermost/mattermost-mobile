@@ -4,19 +4,21 @@
 import {createSelector} from 'reselect';
 
 import {General, Preferences} from 'app/constants';
+import {SidebarSectionTypes} from 'app/constants/view'; // TODO: Move to constants
 import {getUserIdFromChannelName, isChannelMuted, sortChannelsByRecencyOrAlpha} from 'app/realm/utils/channel';
-import {getDisplayNameSettings} from 'app/realm/utils/user';
+import {getDisplayNameSettings, sortUsersByDisplayName} from 'app/realm/utils/user';
 
 import {createIdsSelector} from './helper';
 
 let lastChannels;
-const hasChannelsChanged = (channels) => {
-    if (!lastChannels || lastChannels.length !== channels.length) {
+let lastFilteredChannels;
+const hasChannelsChanged = (channels, last) => {
+    if (!last || last.length !== channels.length) {
         return true;
     }
 
     for (let i = 0; i < channels.length; i++) {
-        if (channels[i].type !== lastChannels[i].type || channels[i].items !== lastChannels[i].items) {
+        if (channels[i].type !== last[i].type || channels[i].items !== last[i].items) {
             return true;
         }
     }
@@ -24,10 +26,10 @@ const hasChannelsChanged = (channels) => {
     return false;
 };
 
-export const getSortedUnreadChannelIds = createIdsSelector(
+export const getSortedUnreadChannels = createSelector(
     (options) => options,
     (options) => {
-        const {currentUserId, lastUnreadChannelId, teamChannels} = options;
+        const {currentUserId, lastUnreadChannelId, teamChannels, filterArchived} = options;
         const channels = [];
         const members = {};
 
@@ -35,56 +37,77 @@ export const getSortedUnreadChannelIds = createIdsSelector(
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
             const hasMessages = (channel.totalMsgCount - member.msgCount) > 0;
             const hasMentions = member.mentionCount > 0;
+            const isArchived = channel.deleteAt > 0 && filterArchived;
 
             if (
-                channel.id === lastUnreadChannelId ||
-                (member.notifyPropsAsJSON && member.notifyPropsAsJSON.mark_unread !== 'mention' && hasMessages) ||
-                hasMentions
+                !isArchived && (
+                    channel.id === lastUnreadChannelId ||
+                    (member.notifyPropsAsJSON && member.notifyPropsAsJSON.mark_unread !== 'mention' && hasMessages) ||
+                    hasMentions
+                )
             ) {
                 members[channel.id] = member;
                 channels.push(channel);
             }
         });
 
-        return mapAndSortChannelIds(channels, members, {...options, sortMentionsFirst: true});
+        return mapAndSortChannels(channels, members, {...options, sortMentionsFirst: true});
     }
 );
 
-export const getSortedFavoriteChannelIds = createIdsSelector(
+export const getSortedUnreadChannelIds = createIdsSelector(
+    getSortedUnreadChannels,
+    (unreads) => {
+        return unreads.map((c) => c.id);
+    }
+);
+
+export const getSortedFavoriteChannels = createSelector(
     getSortedUnreadChannelIds,
     (options) => options,
     (unreadIds, options) => {
-        const {currentUserId, preferences, teamChannels} = options;
+        const {currentUserId, preferences, teamChannels, filterArchived} = options;
         const favoriteIds = preferences.filtered('category = $0', Preferences.CATEGORY_FAVORITE_CHANNEL).map((favorite) => favorite.name);
         const channels = [];
         const members = {};
 
         teamChannels.forEach((channel) => {
+            const isArchived = channel.deleteAt > 0 && filterArchived;
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
-            if (favoriteIds.includes(channel.id) && !unreadIds.includes(channel.id)) {
+            if (favoriteIds.includes(channel.id) && !unreadIds.includes(channel.id) && !isArchived) {
                 members[channel.id] = member;
                 channels.push(channel);
             }
         });
 
-        return mapAndSortChannelIds(channels, members, options);
+        return mapAndSortChannels(channels, members, options);
     }
 );
 
-export const getSortedPublicChannelIds = createIdsSelector(
+export const getSortedFavoriteChannelIds = createIdsSelector(
+    getSortedFavoriteChannels,
+    (favorites) => {
+        return favorites.map((c) => c.id);
+    }
+);
+
+export const getSortedPublicChannels = createSelector(
     getSortedUnreadChannelIds,
     getSortedFavoriteChannelIds,
     (options) => options,
     (unreadIds, favoriteIds, options) => {
-        const {currentUserId, favoritesAtTop, unreadsAtTop, teamChannels} = options;
+        const {currentUserId, favoritesAtTop, unreadsAtTop, teamChannels, filterArchived} = options;
         const channels = [];
         const members = {};
 
         teamChannels.filtered('type = $0', General.OPEN_CHANNEL).forEach((channel) => {
+            const isArchived = channel.deleteAt > 0 && filterArchived;
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
 
-            members[channel.id] = member;
-            channels.push(channel);
+            if (!isArchived) {
+                members[channel.id] = member;
+                channels.push(channel);
+            }
         });
 
         const publicChannels = filterChannels(
@@ -95,24 +118,34 @@ export const getSortedPublicChannelIds = createIdsSelector(
             favoritesAtTop,
         );
 
-        return mapAndSortChannelIds(publicChannels, members, options);
+        return mapAndSortChannels(publicChannels, members, options);
     }
 );
 
-export const getSortedPrivateChannelIds = createIdsSelector(
+export const getSortedPublicChannelIds = createIdsSelector(
+    getSortedPublicChannels,
+    (channels) => {
+        return channels.map((c) => c.id);
+    }
+);
+
+export const getSortedPrivateChannels = createSelector(
     getSortedUnreadChannelIds,
     getSortedFavoriteChannelIds,
     (options) => options,
     (unreadIds, favoriteIds, options) => {
-        const {currentUserId, favoritesAtTop, unreadsAtTop, teamChannels} = options;
+        const {currentUserId, favoritesAtTop, unreadsAtTop, teamChannels, filterArchived} = options;
         const channels = [];
         const members = {};
 
         teamChannels.filtered('type = $0', General.PRIVATE_CHANNEL).forEach((channel) => {
+            const isArchived = channel.deleteAt > 0 && filterArchived;
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
 
-            members[channel.id] = member;
-            channels.push(channel);
+            if (!isArchived) {
+                members[channel.id] = member;
+                channels.push(channel);
+            }
         });
 
         const privateChannels = filterChannels(
@@ -123,21 +156,32 @@ export const getSortedPrivateChannelIds = createIdsSelector(
             favoritesAtTop,
         );
 
-        return mapAndSortChannelIds(privateChannels, members, options);
+        return mapAndSortChannels(privateChannels, members, options);
     }
 );
 
-export const getSortedDirectChannelIds = createIdsSelector(
+export const getSortedPrivateChannelIds = createIdsSelector(
+    getSortedPrivateChannels,
+    (channels) => {
+        return channels.map((c) => c.id);
+    }
+);
+
+export const getSortedDirectChannels = createSelector(
     getSortedUnreadChannelIds,
     getSortedFavoriteChannelIds,
     (options) => options,
     (unreadIds, favoriteIds, options) => {
-        const {currentUserId, favoritesAtTop, preferences, teamChannels, unreadsAtTop} = options;
+        const {currentUserId, favoritesAtTop, preferences, teamChannels, unreadsAtTop, showHiddenDirectChannels} = options;
         const channels = [];
         const members = {};
-        const visibleDirectIds = preferences.
-            filtered('(category = $0 OR category = $1) AND value = "true"', Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, Preferences.CATEGORY_GROUP_CHANNEL_SHOW).
-            map((p) => p.name);
+        let visibleDirectIds;
+
+        if (!showHiddenDirectChannels) {
+            visibleDirectIds = preferences.
+                filtered('(category = $0 OR category = $1) AND value = "true"', Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, Preferences.CATEGORY_GROUP_CHANNEL_SHOW).
+                map((p) => p.name);
+        }
 
         teamChannels.
             filtered('type = $0 OR type = $1', General.DM_CHANNEL, General.GM_CHANNEL).
@@ -149,11 +193,11 @@ export const getSortedDirectChannelIds = createIdsSelector(
                 case General.DM_CHANNEL: {
                     const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
                     const teammate = channel.members.filtered('user.id = $0', teammateId)[0];
-                    add = visibleDirectIds.includes(teammateId) && !autoCloseDirectChannel(member, teammate?.deleteAt || 0, options);
+                    add = showHiddenDirectChannels || (visibleDirectIds.includes(teammateId) && !autoCloseDirectChannel(member, teammate?.deleteAt || 0, options));
                     break;
                 }
                 case General.GM_CHANNEL:
-                    add = visibleDirectIds.includes(channel.id) && !autoCloseDirectChannel(member, 0, options);
+                    add = showHiddenDirectChannels || (visibleDirectIds.includes(channel.id) && !autoCloseDirectChannel(member, 0, options));
                     break;
                 }
 
@@ -171,24 +215,34 @@ export const getSortedDirectChannelIds = createIdsSelector(
             favoritesAtTop,
         );
 
-        return mapAndSortChannelIds(directChannels, members, options);
+        return mapAndSortChannels(directChannels, members, options);
     }
 );
 
-export const getAllSortedChannelIds = createIdsSelector(
+export const getSortedDirectChannelIds = createIdsSelector(
+    getSortedDirectChannels,
+    (channels) => {
+        return channels.map((c) => c.id);
+    }
+);
+
+export const getAllSortedChannels = createSelector(
     getSortedUnreadChannelIds,
     getSortedFavoriteChannelIds,
     (options) => options,
     (unreadIds, favoriteIds, options) => {
-        const {currentUserId, favoritesAtTop, unreadsAtTop, teamChannels} = options;
+        const {currentUserId, favoritesAtTop, unreadsAtTop, teamChannels, filterArchived} = options;
         const channels = [];
         const members = {};
 
         teamChannels.forEach((channel) => {
+            const isArchived = channel.deleteAt > 0 && filterArchived;
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
 
-            members[channel.id] = member;
-            channels.push(channel);
+            if (!isArchived) {
+                members[channel.id] = member;
+                channels.push(channel);
+            }
         });
 
         const allChannels = filterChannels(
@@ -199,7 +253,134 @@ export const getAllSortedChannelIds = createIdsSelector(
             favoritesAtTop,
         );
 
-        return mapAndSortChannelIds(allChannels, members, options);
+        return mapAndSortChannels(allChannels, members, options);
+    }
+);
+
+export const getAllSortedChannelIds = createIdsSelector(
+    getAllSortedChannels,
+    (channels) => {
+        return channels.map((c) => c.id);
+    }
+);
+
+export const getSortedPublicAndPrivateChannels = createSelector(
+    getSortedUnreadChannelIds,
+    getSortedFavoriteChannelIds,
+    (options) => options,
+    (unreadIds, favoriteIds, options) => {
+        const {currentUserId, favoritesAtTop, unreadsAtTop, teamChannels, filterArchived} = options;
+        const channels = [];
+        const members = {};
+
+        teamChannels.
+            filtered('type = $0 OR type = $1', General.OPEN_CHANNEL, General.PRIVATE_CHANNEL).
+            forEach((channel) => {
+                const isArchived = channel.deleteAt > 0 && filterArchived;
+                const member = channel.members.filtered('user.id = $0', currentUserId)[0];
+
+                if (!isArchived) {
+                    members[channel.id] = member;
+                    channels.push(channel);
+                }
+            });
+
+        const allChannels = filterChannels(
+            unreadIds,
+            favoriteIds,
+            channels,
+            unreadsAtTop,
+            favoritesAtTop,
+        );
+
+        return mapAndSortChannels(allChannels, members, options);
+    }
+);
+
+export const getSortedArchivedChannels = createSelector(
+    (options) => options,
+    (options) => {
+        const {currentUserId, teamChannels} = options;
+        const channels = [];
+        const members = {};
+
+        teamChannels.
+            filtered('type = $0 OR type = $1', General.OPEN_CHANNEL, General.PRIVATE_CHANNEL).
+            forEach((channel) => {
+                const isArchived = channel.deleteAt;
+                const member = channel.members.filtered('user.id = $0', currentUserId)[0];
+
+                if (isArchived) {
+                    members[channel.id] = member;
+                    channels.push(channel);
+                }
+            });
+
+        const allChannels = filterChannels(
+            [],
+            [],
+            channels,
+            false,
+            false,
+        );
+
+        return mapAndSortChannels(allChannels, members, options);
+    }
+);
+
+export const getSortedOtherChannels = createSelector(
+    (options) => options,
+    (options) => {
+        const {currentUserId, teamChannels} = options;
+        const channels = [];
+
+        teamChannels.
+            filtered('type = $0 OR type = $1', General.OPEN_CHANNEL, General.PRIVATE_CHANNEL).
+            forEach((channel) => {
+                const member = channel.members.filtered('user.id = $0', currentUserId)[0];
+
+                if (!member) {
+                    channels.push(channel);
+                }
+            });
+
+        const allChannels = filterChannels(
+            [],
+            [],
+            channels,
+            false,
+            false,
+        );
+
+        return mapAndSortChannels(allChannels, null, options);
+    }
+);
+
+export const getSortedProfilesWithoutDM = createSelector(
+    (options) => options,
+    (options) => {
+        const {currentUserId, locale, preferences, profiles, restrictDms, teammateDisplayNameSettings} = options;
+        const teammateDisplayNamePref = preferences.filtered('category = $0 AND name = $1', Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT)[0];
+        const displayNameSettings = getDisplayNameSettings(teammateDisplayNameSettings, teammateDisplayNamePref);
+        const lang = locale || General.DEFAULT_LOCALE;
+        const result = [];
+
+        let users = profiles;
+        if (restrictDms) {
+            users = profiles.map((p) => p.user);
+        }
+
+        users.forEach((profile) => {
+            if (profile.id !== currentUserId) {
+                const directChannel = preferences.filtered('category = $0 AND name = $1', Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, profile.id);
+
+                if (directChannel.isEmpty()) {
+                    result.push(profile);
+                }
+            }
+        });
+
+        return result.sort(sortUsersByDisplayName.bind(null, lang, displayNameSettings));
     }
 );
 
@@ -208,28 +389,28 @@ export const getSortedChannelIds = (options) => {
 
     if (options.grouping === 'by_type') {
         channels.push({
-            type: 'public',
+            type: SidebarSectionTypes.PUBLIC,
             name: 'PUBLIC CHANNELS',
             items: getSortedPublicChannelIds(options),
         });
 
         channels.push({
-            type: 'private',
+            type: SidebarSectionTypes.PRIVATE,
             name: 'PRIVATE CHANNELS',
             items: getSortedPrivateChannelIds(options),
         });
 
         channels.push({
-            type: 'direct',
+            type: SidebarSectionTypes.DIRECT,
             name: 'DIRECT MESSAGES',
             items: getSortedDirectChannelIds(options),
         });
     } else {
         // Combine all channel types
-        let type = 'alpha';
+        let type = SidebarSectionTypes.ALPHA;
         let name = 'CHANNELS';
         if (options.sortingType === 'recent') {
-            type = 'recent';
+            type = SidebarSectionTypes.RECENT_ACTIVITY;
             name = 'RECENT ACTIVITY';
         }
 
@@ -242,7 +423,7 @@ export const getSortedChannelIds = (options) => {
 
     if (options.favoritesAtTop) {
         channels.unshift({
-            type: 'favorite',
+            type: SidebarSectionTypes.FAVORITE,
             name: 'FAVORITE CHANNELS',
             items: getSortedFavoriteChannelIds(options),
         });
@@ -252,18 +433,69 @@ export const getSortedChannelIds = (options) => {
         const items = getSortedUnreadChannelIds(options);
         if (items.length) {
             channels.unshift({
-                type: 'unreads',
+                type: SidebarSectionTypes.UNREADS,
                 name: 'UNREADS',
                 items,
             });
         }
     }
 
-    if (hasChannelsChanged(channels)) {
+    if (hasChannelsChanged(channels, lastChannels)) {
         lastChannels = channels;
     }
 
     return lastChannels;
+};
+
+export const getFilteredChannels = (options) => {
+    const channels = [];
+
+    channels.push({
+        type: SidebarSectionTypes.ALPHA,
+        name: 'CHANNELS',
+        items: getSortedPublicAndPrivateChannels(options),
+    });
+
+    channels.push({
+        type: SidebarSectionTypes.DIRECT,
+        name: 'DIRECT MESSAGES',
+        items: getSortedDirectChannels(options),
+    });
+
+    if (options.canJoinPublicChannels) {
+        channels.push({
+            type: SidebarSectionTypes.OTHER,
+            name: 'OTHER CHANNELS',
+            items: getSortedOtherChannels(options),
+        });
+    }
+
+    channels.push({
+        type: SidebarSectionTypes.ARCHIVED,
+        name: 'ARCHIVED',
+        items: getSortedArchivedChannels(options),
+    });
+
+    const unreads = getSortedUnreadChannels(options);
+    if (unreads.length) {
+        channels.unshift({
+            type: SidebarSectionTypes.UNREADS,
+            name: 'UNREADS',
+            items: unreads,
+        });
+    }
+
+    channels.push({
+        type: SidebarSectionTypes.MEMBERS,
+        name: 'MEMBERS',
+        items: getSortedProfilesWithoutDM(options),
+    });
+
+    if (hasChannelsChanged(channels, lastFilteredChannels)) {
+        lastFilteredChannels = channels;
+    }
+
+    return lastFilteredChannels;
 };
 
 export const getDrawerUnreadCount = createSelector(
@@ -310,7 +542,7 @@ function filterChannels(unreadIds, favoriteIds, channels, unreadsAtTop, favorite
     return channelsArray;
 }
 
-function mapAndSortChannelIds(channels, myMembers, options) {
+function mapAndSortChannels(channels, myMembers, options) {
     const {
         currentUserId,
         locale,
@@ -324,30 +556,31 @@ function mapAndSortChannelIds(channels, myMembers, options) {
     const teammateDisplayNamePref = preferences.filtered('category = $0 AND name = $1', Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT)[0];
     const displayNameSettings = getDisplayNameSettings(teammateDisplayNameSettings, teammateDisplayNamePref);
 
-    const mutedChannelIds = channels.
+    const mutedChannels = channels.
         filter((c) => isChannelMuted(myMembers[c.id])).
-        sort(sortChannelsByRecencyOrAlpha.bind(null, currentUserId, lang, displayNameSettings, myMembers, sortingType)).
-        map((c) => c.id);
+        sort(sortChannelsByRecencyOrAlpha.bind(null, currentUserId, lang, displayNameSettings, myMembers, sortingType));
 
+    const mutedChannelIds = mutedChannels.map((c) => c.id);
+
+    let channelsWithMentions = [];
     let channelIdsWithMentions = [];
-    if (sortMentionsFirst) {
-        channelIdsWithMentions = channels.
+    if (sortMentionsFirst && myMembers) {
+        channelsWithMentions = channels.
             filter((c) => {
                 const member = myMembers[c.id];
                 return member?.mentionCount > 0 && !isChannelMuted(member);
             }).
-            sort(sortChannelsByRecencyOrAlpha.bind(null, currentUserId, lang, displayNameSettings, myMembers, sortingType)).
-            map((c) => c.id);
+            sort(sortChannelsByRecencyOrAlpha.bind(null, currentUserId, lang, displayNameSettings, myMembers, sortingType));
+        channelIdsWithMentions = channelsWithMentions.map((c) => c.id);
     }
 
-    const otherChannelIds = channels.
+    const otherChannels = channels.
         filter((c) => {
             return !mutedChannelIds.includes(c.id) && !channelIdsWithMentions.includes(c.id);
         }).
-        sort(sortChannelsByRecencyOrAlpha.bind(null, currentUserId, lang, displayNameSettings, myMembers, sortingType)).
-        map((c) => c.id);
+        sort(sortChannelsByRecencyOrAlpha.bind(null, currentUserId, lang, displayNameSettings, myMembers, sortingType));
 
-    return sortMentionsFirst ? channelIdsWithMentions.concat(mutedChannelIds, otherChannelIds) : otherChannelIds.concat(mutedChannelIds);
+    return sortMentionsFirst ? channelsWithMentions.concat(otherChannels, mutedChannels) : otherChannels.concat(mutedChannels);
 }
 
 function autoCloseDirectChannel(member, archivedTime, options) {

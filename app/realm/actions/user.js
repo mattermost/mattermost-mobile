@@ -229,10 +229,10 @@ export function autoUpdateTimezone(deviceTimezone) {
 export function getProfilesByIds(userIds, options) {
     return async (dispatch) => {
         try {
-            const users = await Client4.getProfilesByIds(userIds, options);
+            const profiles = await Client4.getProfilesByIds(userIds, options);
             const statuses = await Client4.getStatusesByIds(userIds);
             const data = {
-                users,
+                profiles,
                 statuses,
             };
 
@@ -240,6 +240,67 @@ export function getProfilesByIds(userIds, options) {
                 type: UserTypes.RECEIVED_PROFILES,
                 data,
             });
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+    };
+}
+
+export function getProfilesInTeam(teamId, page = 0, perPage = General.PROFILE_CHUNK_SIZE, sort = '') {
+    return async (dispatch) => {
+        try {
+            const profiles = await Client4.getProfilesInTeam(teamId, page, perPage, sort);
+            const userIds = profiles.map((p) => p.id);
+            const statuses = await Client4.getStatusesByIds(userIds);
+
+            const data = {
+                profiles,
+                statuses,
+                teamId,
+            };
+
+            dispatch({
+                type: UserTypes.RECEIVE_PROFILES_IN_TEAM,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+    };
+}
+
+export function searchProfiles(term, options = {}) {
+    return async (dispatch) => {
+        try {
+            const profiles = await Client4.searchChannels(term, options);
+            const userIds = profiles.map((p) => p.id);
+            const statuses = await Client4.getStatusesByIds(userIds);
+
+            const data = {
+                profiles,
+                statuses,
+            };
+
+            if (options.in_team) {
+                dispatch({
+                    type: UserTypes.RECEIVE_PROFILES_IN_TEAM,
+                    data: {
+                        ...data,
+                        teamId: options.in_team,
+                    },
+                });
+            } else {
+                dispatch({
+                    type: UserTypes.RECEIVED_PROFILES,
+                    data,
+                });
+            }
 
             return {data};
         } catch (error) {

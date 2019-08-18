@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {batchActions} from 'redux-batched-actions';
 import {Client4} from 'mattermost-redux/client';
 
 import {General, Permissions, Preferences, Roles, ViewTypes} from 'app/constants';
@@ -364,8 +363,8 @@ export function makeDirectChannel(otherUserId, switchToChannel = true) {
         dispatch(getProfilesByIds([otherUserId]));
 
         let result;
-        let channel = realm.objects('Channel').filtered('name = $0', channelName);
-        if (channel?.members.length) {
+        let channel = realm.objects('Channel').filtered('name = $0', channelName)[0];
+        if (channel?.members?.length) {
             result = {data: channel};
 
             dispatch(showDirectChannelIfNecessary(channel.id, otherUserId));
@@ -432,17 +431,38 @@ export function createDirectChannel(otherUserId) {
         };
 
         const members = [myMember, {...myMember, user_id: otherUserId}];
-        dispatch(batchActions([
-            savePreferences(currentUserId, prefs),
-            {
-                type: ChannelTypes.CREATE_DIRECT_CHANNEL,
-                data: {
-                    channel,
-                    members,
-                },
+        await dispatch({
+            type: ChannelTypes.CREATE_DIRECT_CHANNEL,
+            data: {
+                channel,
+                members,
             },
-        ]));
+        });
+        dispatch(savePreferences(currentUserId, prefs));
 
         return {data: channel};
+    };
+}
+
+export function searchChannels(teamId, term) {
+    return async (dispatch) => {
+        try {
+            const channels = await Client4.searchChannels(teamId, term);
+
+            const data = {
+                channels,
+                teamId,
+            };
+
+            dispatch({
+                type: ChannelTypes.RECEIVED_CHANNELS,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
     };
 }

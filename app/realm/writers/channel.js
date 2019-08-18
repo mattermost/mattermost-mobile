@@ -33,6 +33,11 @@ function removeChannelMembershipsIfNeeded(realm, channelMembersMap) {
     });
 }
 
+function storeChannel(realm, channel) {
+    channel.team = realm.objectForPrimaryKey('Team', channel.team_id) || null;
+    realm.create('Channel', channelDataToRealm(channel), true);
+}
+
 function storeChannelAndMember(realm, channel, member) {
     const realmChannel = realm.objectForPrimaryKey('Channel', channel.id);
 
@@ -48,11 +53,10 @@ function storeChannelAndMember(realm, channel, member) {
         }
     } else {
         // when we need to create a new channel
-        channel.members = member;
+        channel.members = [member];
     }
 
-    channel.team = realm.objectForPrimaryKey('Team', channel.team_id);
-    realm.create('Channel', channelDataToRealm(channel), true);
+    storeChannel(realm, channel);
 }
 
 function updateChannelUnreadCounts(realm, currentUserId, channelId, setLastViewed) {
@@ -101,7 +105,6 @@ function channels(realm, action) {
                 });
             }
         }
-
         break;
     }
 
@@ -137,7 +140,14 @@ function channels(realm, action) {
         const data = action.data || action.payload;
         const {member, channel} = data;
 
-        storeChannelAndMember(realm, channel, member);
+        if (member) {
+            const user = realm.objectForPrimaryKey('User', member.user_id);
+
+            if (user) {
+                member.user = user;
+                storeChannelAndMember(realm, channel, channelMemberDataToRealm(member));
+            }
+        }
 
         break;
     }
@@ -147,10 +157,33 @@ function channels(realm, action) {
         const {channel, members} = data;
 
         if (members?.length) {
-            members.forEach((member) => storeChannelAndMember(realm, channel, member));
+            members.forEach((member) => {
+                const user = realm.objectForPrimaryKey('User', member.user_id);
+
+                if (user) {
+                    member.user = user;
+                    storeChannelAndMember(realm, channel, channelMemberDataToRealm(member));
+                }
+            });
         }
         break;
     }
+
+    case ChannelTypes.RECEIVED_CHANNELS: {
+        const data = action.data || action.payload;
+
+        if (data.channels?.length) {
+            data.channels.forEach((channel) => {
+                const channelRealm = realm.objectForPrimaryKey('Channel', channel.id);
+                if (!channelRealm) {
+                    storeChannel(realm, channel);
+                }
+            });
+        }
+
+        break;
+    }
+
     default:
         break;
     }

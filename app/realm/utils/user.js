@@ -37,8 +37,8 @@ export function isSystemAdmin(user) {
     return haveRole(user?.roles, Roles.SYSTEM_ADMIN_ROLE);
 }
 
-export function displayUserName(user, teammateNameDisplaySetting, useFallbackUsername = true) {
-    let name = useFallbackUsername ? getLocalizedMessage(user?.locale || General.DEFAULT_LOCALE, 'channel_loader.someone') : '';
+export function displayUserName(user, locale, teammateNameDisplaySetting, useFallbackUsername = true) {
+    let name = useFallbackUsername ? getLocalizedMessage(locale || General.DEFAULT_LOCALE, 'channel_loader.someone') : '';
 
     if (user) {
         switch (teammateNameDisplaySetting) {
@@ -68,4 +68,11 @@ export function getDisplayNameSettings(teammateNameDisplaySetting, teammateNameD
         return teammateNameDisplaySetting;
     }
     return Preferences.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME;
+}
+
+export function sortUsersByDisplayName(locale, teammateNameDisplaySettings, a, b) {
+    const displayNameA = displayUserName(a, locale, teammateNameDisplaySettings);
+    const displayNameB = displayUserName(b, locale, teammateNameDisplaySettings);
+
+    return displayNameA.toLowerCase().localeCompare(displayNameB.toLowerCase(), locale, {numeric: true});
 }

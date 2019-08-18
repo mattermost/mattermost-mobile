@@ -77,8 +77,8 @@ export function getUserIdFromChannelName(userId, channelName) {
 }
 
 export function sortChannelsByDisplayName(currentUserId, locale, teammateNameDisplaySettings, a, b) {
-    const displayNameA = getChannelDisplayName(a, currentUserId, teammateNameDisplaySettings);
-    const displayNameB = getChannelDisplayName(b, currentUserId, teammateNameDisplaySettings);
+    const displayNameA = getChannelDisplayName(a, currentUserId, locale, teammateNameDisplaySettings);
+    const displayNameB = getChannelDisplayName(b, currentUserId, locale, teammateNameDisplaySettings);
 
     return displayNameA.toLowerCase().localeCompare(displayNameB.toLowerCase(), locale, {numeric: true});
 }
@@ -91,7 +91,7 @@ export function sortChannelsByRecency(channelMembers, a, b) {
 }
 
 export function sortChannelsByRecencyOrAlpha(currentUserId, locale, teammateNameDisplaySettings, channelMembers, sortingType, a, b) {
-    if (sortingType === 'recent') {
+    if (sortingType === 'recent' && channelMembers) {
         return sortChannelsByRecency(channelMembers, a, b);
     }
 
@@ -102,7 +102,7 @@ export function isChannelMuted(member) {
     return member?.notifyPropsAsJSON?.mark_unread === General.MENTION || false; //eslint-disable-line camelcase
 }
 
-export function getChannelDisplayName(channel, currentUserId, teammateNameDisplaySetting) {
+export function getChannelDisplayName(channel, currentUserId, locale, teammateNameDisplaySetting) {
     if (channel?.type === General.OPEN_CHANNEL || channel?.type === General.PRIVATE_CHANNEL) {
         return channel.displayName;
     }
@@ -110,8 +110,8 @@ export function getChannelDisplayName(channel, currentUserId, teammateNameDispla
     const names = [];
     if (channel?.members?.length) {
         channel.members.forEach((m) => {
-            if (m.user.id !== currentUserId) {
-                names.push(displayUserName(m.user, teammateNameDisplaySetting));
+            if (m.user.id !== currentUserId || isOwnDirectMessage(channel, currentUserId)) {
+                names.push(displayUserName(m.user, locale, teammateNameDisplaySetting));
             }
         });
     }
