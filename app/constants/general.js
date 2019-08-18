@@ -11,6 +11,7 @@ export default {
 
     POST_CHUNK_SIZE: 60,
     TEAMS_CHUNK_SIZE: 50,
+    PROFILE_CHUNK_SIZE: 100,
 
     SPECIAL_MENTIONS: [
         'all',
@@ -25,4 +26,7 @@ export default {
     DEFAULT_OFF: 'default_off',
 
     MENTION: 'mention',
+
+    RESTRICT_DIRECT_MESSAGE_ANY: 'any',
+    RESTRICT_DIRECT_MESSAGE_TEAM: 'team',
 };
