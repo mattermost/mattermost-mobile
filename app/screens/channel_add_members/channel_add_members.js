@@ -73,6 +73,7 @@ export default class ChannelAddMembers extends PureComponent {
             enalbed: false,
             id: 'add-members',
             text: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
+            color: props.theme.sidebarHeaderTextColor,
             showAsAction: 'always',
         };
 
