@@ -30,4 +30,4 @@ const mapRealmDispatchToProps = {
     makeDirectChannel,
 };
 
-export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, {forwardRef: true, ...options})(MainSidebar);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(MainSidebar);
