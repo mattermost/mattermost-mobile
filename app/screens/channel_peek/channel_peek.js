@@ -31,10 +31,12 @@ export default class ChannelPeek extends PureComponent {
     constructor(props) {
         super(props);
 
-        props.actions.loadPostsIfNecessaryWithRetry(props.channelId);
-        this.state = {
-            visiblePostIds: this.getVisiblePostIds(props),
-        };
+        this.state = {};
+
+        if (props.channelId) {
+            props.actions.loadPostsIfNecessaryWithRetry(props.channelId);
+            this.state.visiblePostIds = this.getVisiblePostIds(props);
+        }
     }
 
     componentDidMount() {
@@ -76,6 +78,10 @@ export default class ChannelPeek extends PureComponent {
 
         const {visiblePostIds} = this.state;
         const style = getStyle(theme);
+
+        if (!channelId) {
+            return null;
+        }
 
         return (
             <View style={style.container}>
