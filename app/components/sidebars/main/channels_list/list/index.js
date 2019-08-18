@@ -4,11 +4,12 @@
 import {realmConnect} from 'realm-react-redux';
 
 import {showModal} from 'app/actions/navigation';
-import {General, DeviceTypes, Permissions} from 'app/constants';
+import {General, DeviceTypes, Permissions, Preferences} from 'app/constants';
 
 import {getSortedChannelIds, getSortedUnreadChannelIds, getSortedFavoriteChannelIds} from 'app/realm/selectors/channel';
 import {getSidebarPreferences} from 'app/realm/selectors/preference';
 import {havePermission, mergeRoles} from 'app/realm/utils/role';
+import {getDisplayNameSettings} from 'app/realm/utils/user';
 import options from 'app/store/realm_options';
 
 import List from './list';
@@ -18,7 +19,7 @@ function mapPropsToQueries(realm, ownProps) {
     const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
     const currentUser = realm.objectForPrimaryKey('User', general.currentUserId);
     const preferences = realm.objects('Preference');
-    const teamChannels = realm.objects('Channel').filtered('(team = null OR team.id = $0) AND deleteAt = 0 AND members.user.id=$1', currentTeamId, currentUser.id);
+    const teamChannels = realm.objects('Channel').filtered('(team = null OR team.id = $0) AND members.user.id=$1', currentTeamId, currentUser.id);
     const teamMember = realm.objectForPrimaryKey('TeamMember', `${currentTeamId}-${currentUser.id}`);
     const roles = realm.objects('Role');
 
@@ -28,7 +29,8 @@ function mapPropsToQueries(realm, ownProps) {
 function mapQueriesToProps([general, currentUser, preferences, teamChannels, teamMember, roles]) {
     const config = general.config;
     const sidebarPrefs = getSidebarPreferences(config, preferences);
-    const teammateDisplayNameSettings = config?.TeammateNameDisplay;
+    const teammateDisplayNamePref = preferences.filtered('category = $0 AND name = $1', Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT)[0];
+    const teammateDisplayNameSettings = getDisplayNameSettings(config?.TeammateNameDisplay, teammateDisplayNamePref);
 
     const opts = {
         closeUnusedDirectMessages: config?.CloseUnusedDirectMessages,
@@ -50,7 +52,7 @@ function mapQueriesToProps([general, currentUser, preferences, teamChannels, tea
     const favoriteChannelIds = getSortedFavoriteChannelIds(opts);
     const orderedChannelIds = getSortedChannelIds(opts);
     const myRoles = mergeRoles(currentUser, teamMember);
-    const canJoinPublicChannels = havePermission(roles, Permissions.JOIN_PUBLIC_CHANNELS);
+    const canJoinPublicChannels = havePermission(roles, myRoles, Permissions.JOIN_PUBLIC_CHANNELS);
     const canCreatePublicChannels = havePermission(roles, myRoles, Permissions.CREATE_PUBLIC_CHANNEL);
     const canCreatePrivateChannels = havePermission(roles, myRoles, Permissions.CREATE_PRIVATE_CHANNEL);
 

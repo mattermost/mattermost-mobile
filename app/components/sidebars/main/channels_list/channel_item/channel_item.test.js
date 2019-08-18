@@ -21,7 +21,6 @@ describe('ChannelItem', () => {
         id: 'channel_id',
         deleteAt: 0,
         type: General.OPEN_CHANNEL,
-        fake: false,
         status: 'online',
         displayName: 'Test Channel',
         totalMsgCount: 2,
@@ -46,12 +45,14 @@ describe('ChannelItem', () => {
         currentChannelId: 'current_channel_id',
         currentUserId: 'current_user_id',
         experimentalHideTownSquare: 'false',
+        fake: false,
         isChannelMuted: false,
         isFavorite: false,
         isLandscape: false,
         isSearchResult: false,
         isUnread: true,
         hasDraft: false,
+        locale: 'en',
         onSelectChannel: jest.fn(),
         previewChannel: jest.fn(),
         teammateDisplayNameSettings: Preferences.TEAMMATE_NAME_DISPLAY.SHOW_FULLNAME,
@@ -365,7 +366,7 @@ describe('ChannelItem', () => {
         wrapper.find(Navigation.TouchablePreview).simulate('press');
         jest.runAllTimers();
 
-        const expectedChannelParams = {id: baseProps.channelId, display_name: channel.displayName, fake: channel.fake, type: channel.type};
+        const expectedChannelParams = {id: baseProps.channelId, displayName: channel.displayName, fake: false, type: channel.type};
         expect(baseProps.onSelectChannel).toHaveBeenCalledWith(expectedChannelParams, baseProps.currentChannelId);
     });
 });

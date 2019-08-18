@@ -227,7 +227,7 @@ export default class MainSidebar extends PureComponent {
         EventEmitter.emit(Events.SET_CHANNEL_LOADING, channel.id !== currentChannelId);
 
         setTimeout(async () => {
-            const displayValue = {displayName: channel.display_name};
+            const displayValue = {displayName: channel.displayName};
             const utils = require('app/utils/general');
 
             let result;
@@ -384,6 +384,7 @@ export default class MainSidebar extends PureComponent {
                     showTeams={showTeams}
                     drawerOpened={this.state.drawerOpened}
                     drawerWidth={drawerWidth}
+                    theme={theme}
                 >
                     {lists}
                 </DrawerSwiper>

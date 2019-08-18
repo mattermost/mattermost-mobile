@@ -32,12 +32,14 @@ export default class ChannelItem extends PureComponent {
         currentChannelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         experimentalHideTownSquare: PropTypes.string,
+        fake: PropTypes.bool,
         isChannelMuted: PropTypes.bool,
-        isFavorite: PropTypes.bool.isRequired,
+        isFavorite: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
         isSearchResult: PropTypes.bool,
         isUnread: PropTypes.bool,
         hasDraft: PropTypes.bool,
+        locale: PropTypes.string,
         onSelectChannel: PropTypes.func.isRequired,
         previewChannel: PropTypes.func,
         teammateDisplayNameSettings: PropTypes.string,
@@ -53,14 +55,14 @@ export default class ChannelItem extends PureComponent {
     };
 
     getDisplayName = memoize(
-        (channel, currentUserId, teammateDisplayNameSettings) => {
+        (channel, currentUserId, locale, teammateDisplayNameSettings) => {
             let displayName = '';
-            if (channel.fake) {
-                displayName = displayUserName(channel, teammateDisplayNameSettings);
+            if (this.props.fake) {
+                displayName = displayUserName(channel, locale, teammateDisplayNameSettings);
             } else if (channel.type === General.DM_CHANNEL && isOwnDirectMessage(channel, currentUserId)) {
-                displayName = getChannelDisplayName(channel, '', teammateDisplayNameSettings);
+                displayName = getChannelDisplayName(channel, '', locale, teammateDisplayNameSettings);
             } else {
-                displayName = getChannelDisplayName(channel, currentUserId, teammateDisplayNameSettings);
+                displayName = getChannelDisplayName(channel, currentUserId, locale, teammateDisplayNameSettings);
             }
 
             return displayName;
@@ -74,9 +76,9 @@ export default class ChannelItem extends PureComponent {
         case General.DM_CHANNEL:
             return 1;
         case General.GM_CHANNEL:
-            return channel.members.length - 1;
+            return channel?.members?.length - 1;
         default:
-            return channel.members.length;
+            return channel?.members?.length;
         }
     };
 
@@ -88,11 +90,11 @@ export default class ChannelItem extends PureComponent {
     };
 
     getMyChannelMember = memoize(
-        (channel, currentUserId) => channel?.members.filtered('user.id = $0', currentUserId)[0],
+        (channel, currentUserId) => channel?.members?.filtered('user.id = $0', currentUserId)[0],
     );
 
     getTeammate = memoize(
-        (channel, currentUserId) => channel?.members.filtered('user.id != $0', currentUserId)[0],
+        (channel, currentUserId) => channel?.members?.filtered('user.id != $0', currentUserId)[0],
     );
 
     getTeammateStatus = () => {
@@ -115,12 +117,12 @@ export default class ChannelItem extends PureComponent {
     };
 
     onPress = preventDoubleTap(() => {
-        const {channelId, currentChannelId, currentUserId, onSelectChannel, channel, teammateDisplayNameSettings} = this.props;
-        const {type, fake} = channel;
-        const displayName = this.getDisplayName(channel, currentUserId, teammateDisplayNameSettings);
+        const {channelId, currentChannelId, currentUserId, fake, onSelectChannel, channel, locale, teammateDisplayNameSettings} = this.props;
+        const type = channel.type || General.DM_CHANNEL;
+        const displayName = this.getDisplayName(channel, currentUserId, locale, teammateDisplayNameSettings);
 
         requestAnimationFrame(() => {
-            onSelectChannel({id: channelId, display_name: displayName, fake, type}, currentChannelId);
+            onSelectChannel({id: channelId, displayName, fake, type}, currentChannelId);
         });
     });
 
@@ -147,7 +149,7 @@ export default class ChannelItem extends PureComponent {
 
     showChannelAsUnread = () => {
         const {channel, currentUserId} = this.props;
-        if (!channel.members.length) {
+        if (!channel?.members?.length) {
             return false;
         }
 
@@ -187,8 +189,10 @@ export default class ChannelItem extends PureComponent {
             channelId,
             currentChannelId,
             currentUserId,
+            fake,
             isUnread,
             hasDraft,
+            locale,
             theme,
             isSearchResult,
             isLandscape,
@@ -213,7 +217,7 @@ export default class ChannelItem extends PureComponent {
 
         const {intl} = this.context;
 
-        let channelDisplayName = this.getDisplayName(channel, currentUserId, teammateDisplayNameSettings);
+        let channelDisplayName = this.getDisplayName(channel, currentUserId, locale, teammateDisplayNameSettings);
         let isCurrentUser = false;
 
         if (channel.type === General.DM_CHANNEL) {
@@ -277,7 +281,7 @@ export default class ChannelItem extends PureComponent {
                 size={16}
                 status={this.getTeammateStatus()}
                 theme={theme}
-                type={channel.type}
+                type={channel.type || General.DM_CHANNEL}
                 isArchived={isArchived}
                 isBot={this.isBot()}
             />
@@ -289,7 +293,7 @@ export default class ChannelItem extends PureComponent {
                     touchableComponent={TouchableHighlight}
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                     onPress={this.onPress}
-                    onPressIn={this.onPreview}
+                    onPressIn={fake ? null : this.onPreview}
                 >
                     <View style={[style.container, mutedStyle, padding(isLandscape)]}>
                         {extraBorder}

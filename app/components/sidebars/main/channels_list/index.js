@@ -104,8 +104,7 @@ export default class ChannelsList extends PureComponent {
 
     onSearchCancel = () => {
         this.props.onSearchEnds();
-        this.setState({searching: false});
-        this.onSearch('');
+        this.setState({searching: false, term: ''});
     };
 
     render() {
@@ -124,18 +123,17 @@ export default class ChannelsList extends PureComponent {
 
         let list;
         if (searching) {
-            // TODO: Migrate to realm
-            // list = (
-            //     <FilteredList
-            //         currentTeamId={currentTeamId}
-            //         isLandscape={isLandscape}
-            //         onSelectChannel={this.onSelectChannel}
-            //         styles={styles}
-            //         term={term}
-            //         previewChannel={previewChannel}
-            //         theme={theme}
-            //     />
-            // );
+            list = (
+                <FilteredList
+                    currentTeamId={currentTeamId}
+                    isLandscape={isLandscape}
+                    onSelectChannel={this.onSelectChannel}
+                    styles={styles}
+                    term={term}
+                    previewChannel={previewChannel}
+                    theme={theme}
+                />
+            );
         } else {
             list = (
                 <List

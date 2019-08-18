@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import deepEqual from 'deep-equal';
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
@@ -17,50 +16,37 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {changeOpacity} from 'app/utils/theme';
 
-import {General} from 'mattermost-redux/constants';
-import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {t} from 'app/utils/i18n';
-import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {ListTypes} from 'app/constants';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
+import {General, ListTypes} from 'app/constants';
+import {SidebarSectionTypes} from 'app/constants/view';
+import {getChannelDisplayName} from 'app/realm/utils/channel';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
-class FilteredList extends Component {
+class FilteredList extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            getProfilesInTeam: PropTypes.func.isRequired,
-            makeGroupMessageVisibleIfNecessary: PropTypes.func.isRequired,
-            searchChannels: PropTypes.func.isRequired,
-            searchProfiles: PropTypes.func.isRequired,
-        }).isRequired,
-        channels: PropTypes.object.isRequired,
-        currentTeam: PropTypes.object.isRequired,
+        channels: PropTypes.array.isRequired,
+        currentTeamId: PropTypes.string,
         currentUserId: PropTypes.string,
-        currentChannel: PropTypes.object,
+        currentChannelId: PropTypes.string,
+        getProfilesInTeam: PropTypes.func.isRequired,
         groupChannelMemberDetails: PropTypes.object,
         intl: intlShape.isRequired,
-        teammateNameDisplay: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
+        locale: PropTypes.string,
+        makeGroupMessageVisibleIfNecessary: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
-        otherChannels: PropTypes.array,
-        archivedChannels: PropTypes.array,
-        profiles: PropTypes.object,
-        teamProfiles: PropTypes.object,
+        previewChannel: PropTypes.func,
         searchOrder: PropTypes.array.isRequired,
-        pastDirectMessages: PropTypes.array,
         restrictDms: PropTypes.bool.isRequired,
-        statuses: PropTypes.object,
+        searchChannels: PropTypes.func.isRequired,
+        searchProfiles: PropTypes.func.isRequired,
         styles: PropTypes.object.isRequired,
         term: PropTypes.string,
+        teammateDisplayNameSettings: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        previewChannel: PropTypes.func,
-        isLandscape: PropTypes.bool.isRequired,
-    };
-
-    static defaultProps = {
-        currentChannel: {},
-        pastDirectMessages: [],
     };
 
     constructor(props) {
@@ -72,28 +58,23 @@ class FilteredList extends Component {
         };
 
         this.state = {
-            dataSource: this.buildData(props),
+            data: this.buildData(props),
         };
     }
 
     componentDidMount() {
         if (this.props.restrictDms) {
-            this.props.actions.getProfilesInTeam(this.props.currentTeam.id);
+            this.props.getProfilesInTeam(this.props.currentTeamId);
         }
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return !deepEqual(this.props, nextProps, {strict: true}) || !deepEqual(this.state, nextState, {strict: true});
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.term !== nextProps.term) {
-            const {actions, currentTeam} = this.props;
+            const {currentTeamId, searchChannels, searchProfiles} = this.props;
             const {term} = nextProps;
-            const {searchChannels, searchProfiles} = actions;
-            const dataSource = this.buildData(this.props, term);
+            const data = this.buildData(nextProps, term);
 
-            this.setState({dataSource, term});
+            this.setState({data, term});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
@@ -102,234 +83,69 @@ class FilteredList extends Component {
                     return;
                 }
 
-                searchProfiles(term, {allow_inactive: true});
-                searchChannels(currentTeam.id, term);
+                const profileOptions = {
+                    allow_inactive: true,
+                };
+                if (nextProps.restrictDms) {
+                    profileOptions.team_id = currentTeamId;
+                }
+
+                searchProfiles(term, profileOptions);
+                searchChannels(currentTeamId, term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         }
     }
 
-    onSelectChannel = (channel) => {
-        const {actions, currentChannel} = this.props;
-        const {makeGroupMessageVisibleIfNecessary} = actions;
+    buildArchivedSection = (props, term) => {
+        return this.buildSectionData(props, SidebarSectionTypes.ARCHIVED, term);
+    };
 
-        if (channel.type === General.GM_CHANNEL) {
-            makeGroupMessageVisibleIfNecessary(channel.id);
+    buildData = (props, term) => {
+        if (!props.currentChannelId) {
+            return null;
         }
 
-        this.props.onSelectChannel(channel, currentChannel.id);
+        return this.buildSections(props, term);
     };
 
-    createChannelElement = (channel) => {
-        return (
-            <ChannelItem
-                channelId={channel.id}
-                channel={channel}
-                isSearchResult={true}
-                isUnread={channel.isUnread}
-                mentions={0}
-                onSelectChannel={this.onSelectChannel}
-                previewChannel={this.props.previewChannel}
-            />
-        );
+    buildChannelSection = (props, term) => {
+        return this.buildSectionData(props, SidebarSectionTypes.ALPHA, term);
     };
 
-    filterChannels = (channels, term) => {
-        if (!term) {
-            return channels;
+    buildDirectSection = (props, term) => {
+        return this.buildSectionData(props, SidebarSectionTypes.DIRECT, term);
+    };
+
+    buildOtherChannelSection = (props, term) => {
+        return this.buildSectionData(props, SidebarSectionTypes.OTHER, term);
+    };
+
+    buildProfilesSection = (props, term) => {
+        return this.buildSectionData(props, SidebarSectionTypes.MEMBERS, term, true);
+    };
+
+    buildSectionData = (props, type, term, isFake = false) => {
+        let items;
+        const channels = props.channels.find((c) => c.type === type);
+        if (isFake) {
+            items = channels?.items?.map((c) => ({
+                ...c,
+                fake: true,
+                fullName: c.fullName,
+                type: c.type || General.DM_CHANNEL,
+            }));
+        } else {
+            items = channels?.items;
         }
 
-        const text = term.toLowerCase();
-        return channels.filter((c) => {
-            const fieldsToCheck = ['display_name', 'username', 'email', 'full_name', 'nickname'];
+        if (items?.length) {
+            return this.filterChannels(items, term);
+        }
 
-            let match = false;
-            for (const field of fieldsToCheck) {
-                if (c.hasOwnProperty(field) && c[field].toLowerCase().includes(text)) {
-                    match = true;
-                    break;
-                }
-            }
-
-            return match;
-        });
+        return [];
     };
 
-    getSectionBuilders = () => ({
-        unreads: {
-            builder: this.buildUnreadChannelsForSearch,
-            id: t('mobile.channel_list.unreads'),
-            defaultMessage: 'UNREADS',
-        },
-        channels: {
-            builder: this.buildChannelsForSearch,
-            id: t('mobile.channel_list.channels'),
-            defaultMessage: 'CHANNELS',
-        },
-        dms: {
-            builder: this.buildCurrentDMSForSearch,
-            id: t('sidebar.direct'),
-            defaultMessage: 'DIRECT MESSAGES',
-        },
-        members: {
-            builder: this.buildMembersForSearch,
-            id: t('mobile.channel_list.members'),
-            defaultMessage: 'MEMBERS',
-        },
-        nonmembers: {
-            builder: this.buildOtherMembersForSearch,
-            id: t('mobile.channel_list.not_member'),
-            defaultMessage: 'NOT A MEMBER',
-        },
-        archived: {
-            builder: this.buildArchivedForSearch,
-            id: t('mobile.channel_list.archived'),
-            defaultMessage: 'ARCHIVED',
-        },
-    });
-
-    buildUnreadChannelsForSearch = (props, term) => {
-        const {unreadChannels} = props.channels;
-
-        return this.filterChannels(unreadChannels, term).map((item) => {
-            item.isUnread = true;
-            return item;
-        });
-    };
-
-    buildCurrentDMSForSearch = (props, term) => {
-        const {channels, teammateNameDisplay, profiles, statuses, pastDirectMessages, groupChannelMemberDetails} = props;
-        const {favoriteChannels} = channels;
-
-        const favoriteDms = favoriteChannels.filter((c) => {
-            return c.type === General.DM_CHANNEL;
-        });
-
-        const directChannelUsers = [];
-        let groupChannels = [];
-
-        channels.directAndGroupChannels.forEach((c) => {
-            if (c.type === General.DM_CHANNEL) {
-                if (profiles.hasOwnProperty(c.teammate_id)) {
-                    directChannelUsers.push(profiles[c.teammate_id]);
-                }
-            } else {
-                groupChannels.push(c);
-            }
-        });
-
-        const pastDirectMessageUsers = pastDirectMessages.map((p) => profiles[p]).filter((p) => typeof p !== 'undefined');
-
-        const dms = [...directChannelUsers, ...pastDirectMessageUsers].map((u) => {
-            const displayName = displayUsername(u, teammateNameDisplay, false);
-
-            return {
-                id: u.id,
-                status: statuses[u.id],
-                display_name: displayName,
-                username: u.username,
-                email: u.email,
-                type: General.DM_CHANNEL,
-                fake: true,
-                nickname: u.nickname,
-                fullname: `${u.first_name} ${u.last_name}`,
-                delete_at: u.delete_at,
-                isBot: u.is_bot,
-
-                // need name key for DM's as we use it for sortChannelsByDisplayName with same display_name
-                name: displayName,
-            };
-        });
-
-        groupChannels = groupChannels.map((channel) => {
-            return {
-                ...channel,
-                ...groupChannelMemberDetails[channel.id],
-            };
-        });
-
-        return this.filterChannels([...favoriteDms, ...dms, ...groupChannels], term).sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
-    }
-
-    buildMembersForSearch = (props, term) => {
-        const {channels, currentUserId, teammateNameDisplay, profiles, teamProfiles, statuses, pastDirectMessages, restrictDms} = props;
-        const {favoriteChannels, unreadChannels} = channels;
-
-        const favoriteAndUnreadDms = [...favoriteChannels, ...unreadChannels].filter((c) => {
-            return c.type === General.DM_CHANNEL;
-        });
-
-        const directAndGroupChannelMembers = [...channels.directAndGroupChannels, ...favoriteAndUnreadDms].filter((c) => c.type === General.DM_CHANNEL).map((c) => c.teammate_id);
-
-        const profilesToUse = restrictDms ? teamProfiles : profiles;
-
-        const userNotInDirectOrGroupChannels = Object.values(profilesToUse).filter((u) => directAndGroupChannelMembers.indexOf(u.id) === -1 && pastDirectMessages.indexOf(u.id) === -1 && u.id !== currentUserId);
-
-        const members = userNotInDirectOrGroupChannels.map((u) => {
-            const displayName = displayUsername(u, teammateNameDisplay, false);
-
-            return {
-                id: u.id,
-                status: statuses[u.id],
-                display_name: displayName,
-                username: u.username,
-                email: u.email,
-                name: displayName,
-                type: General.DM_CHANNEL,
-                fake: true,
-                nickname: u.nickname,
-                fullname: `${u.first_name} ${u.last_name}`,
-                delete_at: u.delete_at,
-                isBot: u.is_bot,
-            };
-        });
-
-        const fakeDms = this.filterChannels([...members], term);
-
-        return [...fakeDms].sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
-    }
-
-    buildChannelsForSearch = (props, term) => {
-        const {
-            favoriteChannels,
-            publicChannels,
-            privateChannels,
-        } = props.channels;
-
-        const favorites = favoriteChannels.filter((c) => {
-            return c.type !== General.DM_CHANNEL && c.type !== General.GM_CHANNEL;
-        });
-
-        return this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term).
-            sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
-    }
-
-    buildArchivedForSearch = (props, term) => {
-        const {currentChannel, archivedChannels} = props;
-
-        return this.filterChannels(archivedChannels.reduce((acc, channel) => {
-            // when there is no search text, display an archived channel only if we are in it at the moment.
-            if (term || channel.id === currentChannel.id) {
-                acc.push({...channel});
-            }
-
-            return acc;
-        }, []), term);
-    }
-
-    buildOtherMembersForSearch = (props, term) => {
-        const {otherChannels} = props;
-
-        const notMemberOf = otherChannels.map((o) => {
-            return {
-                ...o,
-                fake: true,
-            };
-        });
-
-        return this.filterChannels(notMemberOf, term);
-    }
-
-    buildSectionsForSearch = (props, term) => {
+    buildSections = (props, term) => {
         const items = [];
         const {searchOrder, styles} = props;
         const sectionBuilders = this.getSectionBuilders();
@@ -352,12 +168,85 @@ class FilteredList extends Component {
         return items;
     };
 
-    buildData = (props, term) => {
-        if (!props.currentChannel) {
-            return null;
+    buildUnreadSection = (props, term) => {
+        return this.buildSectionData(props, SidebarSectionTypes.UNREADS, term);
+    };
+
+    extractItemKey = (item) => item.id || item;
+
+    filterChannels = (channels, term) => {
+        if (!term) {
+            return channels;
         }
 
-        return this.buildSectionsForSearch(props, term);
+        const {currentUserId, locale, teammateDisplayNameSettings} = this.props;
+        const text = term.toLowerCase();
+        return channels.filter((c) => {
+            const fieldsToCheck = ['displayName', 'fullName', 'username', 'nickname'];
+
+            let match = false;
+            for (const field of fieldsToCheck) {
+                const isActualDirectMessage = (c.type === General.DM_CHANNEL && c.members?.length) || c.type === General.GM_CHANNEL;
+                if (field === 'displayName' && isActualDirectMessage) {
+                    if (getChannelDisplayName(c, currentUserId, locale, teammateDisplayNameSettings).toLowerCase().includes(text)) {
+                        match = true;
+                        break;
+                    }
+                } else if (c[field] && c[field].toLowerCase().includes(text)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            return match;
+        });
+    };
+
+    getMyChannelMember = (channel, currentUserId) => {
+        return channel?.members.filtered('user.id = $0', currentUserId)[0];
+    };
+
+    getSectionBuilders = () => ({
+        unreads: {
+            builder: this.buildUnreadSection,
+            id: t('mobile.channel_list.unreads'),
+            defaultMessage: 'UNREADS',
+        },
+        alpha: {
+            builder: this.buildChannelSection,
+            id: t('mobile.channel_list.channels'),
+            defaultMessage: 'CHANNELS',
+        },
+        direct: {
+            builder: this.buildDirectSection,
+            id: t('sidebar.direct'),
+            defaultMessage: 'DIRECT MESSAGES',
+        },
+        members: {
+            builder: this.buildProfilesSection,
+            id: t('mobile.channel_list.members'),
+            defaultMessage: 'MEMBERS',
+        },
+        other: {
+            builder: this.buildOtherChannelSection,
+            id: t('mobile.channel_list.not_member'),
+            defaultMessage: 'NOT A MEMBER',
+        },
+        archived: {
+            builder: this.buildArchivedSection,
+            id: t('mobile.channel_list.archived'),
+            defaultMessage: 'ARCHIVED',
+        },
+    });
+
+    onSelectChannel = (channel) => {
+        const {currentChannelId, makeGroupMessageVisibleIfNecessary} = this.props;
+
+        if (channel.type === General.GM_CHANNEL) {
+            makeGroupMessageVisibleIfNecessary(channel.id);
+        }
+
+        this.props.onSelectChannel(channel, currentChannelId);
     };
 
     renderSectionAction = (styles, action) => {
@@ -386,8 +275,28 @@ class FilteredList extends Component {
 
     renderItem = ({item}) => {
         if (!item.isTitle) {
-            return this.createChannelElement(item);
+            const {isLandscape, previewChannel, teammateDisplayNameSettings, theme} = this.props;
+
+            let isUnread = false;
+            if (item.members) {
+                isUnread = this.showChannelAsUnread(item);
+            }
+
+            return (
+                <ChannelItem
+                    channelId={item.id}
+                    fake={item.fake}
+                    isLandscape={isLandscape}
+                    isSearchResult={true}
+                    isUnread={isUnread}
+                    onSelectChannel={this.onSelectChannel}
+                    previewChannel={previewChannel}
+                    teammateDisplayNameSettings={teammateDisplayNameSettings}
+                    theme={theme}
+                />
+            );
         }
+
         return item.title;
     };
 
@@ -412,18 +321,34 @@ class FilteredList extends Component {
         };
     };
 
+    showChannelAsUnread = (channel) => {
+        const {currentUserId} = this.props;
+        if (!channel?.members?.length) {
+            return false;
+        }
+
+        const myMember = this.getMyChannelMember(channel, currentUserId);
+        if (!myMember) {
+            return false;
+        }
+
+        const hasUnreads = (channel.totalMsgCount - myMember.msgCount) > 0;
+        const showUnreadForMsgs = myMember.notifyPropsAsJSON?.mark_unread !== General.MENTION; //eslint-disable-line camelcase
+        return myMember.mentionCount > 0 || (hasUnreads > 0 && showUnreadForMsgs);
+    };
+
     render() {
         const {styles} = this.props;
-        const {dataSource} = this.state;
+        const {data} = this.state;
 
         return (
             <View
                 style={styles.container}
             >
                 <FlatList
-                    data={dataSource}
+                    data={data}
                     renderItem={this.renderItem}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={this.extractItemKey}
                     onViewableItemsChanged={this.updateUnreadIndicators}
                     {...this.keyboardDismissProp}
                     keyboardShouldPersistTaps={'always'}

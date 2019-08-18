@@ -18,15 +18,20 @@ function mapPropsToQueries(realm, ownProps) {
     let channel;
     if (fake) {
         // If the channel is fake it means that is a user without a DM channel
-        channel = realm.objectForPrimaryKey('User', channelId);
+        channel = realm.objectForPrimaryKey('User', channelId) || {addListener: () => true, removeListener: () => true};
     } else {
-        channel = realm.objectForPrimaryKey('Channel', channelId);
+        channel = realm.objectForPrimaryKey('Channel', channelId) || {addListener: () => true, removeListener: () => true};
     }
 
     return [general, channel, currentUser];
 }
 
-function mapQueriesToProps([general, channel]) {
+function mapQueriesToProps([general, realmChannel, currentUser]) {
+    let channel = null;
+    if (realmChannel.id) {
+        channel = realmChannel;
+    }
+
     const reduxState = reduxStore.getState();
     const channelDraft = getDraftForChannel(reduxState, channel?.id);
 
@@ -35,6 +40,7 @@ function mapQueriesToProps([general, channel]) {
         currentChannelId: general.currentChannelId,
         currentUserId: general.currentUserId,
         hasDraft: Boolean(channelDraft.draft.trim() || channelDraft.files.length),
+        locale: currentUser?.locale,
         experimentalHideTownSquare: general.config?.ExperimentalHideTownSquareinLHS,
     };
 }
