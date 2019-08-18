@@ -3,5 +3,6 @@
 
 export default {
     allowUnsafeWrites: true,
+    forwardRef: true,
     watchUnsafeWrites: true,
 };
