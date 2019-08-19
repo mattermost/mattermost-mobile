@@ -296,9 +296,11 @@ export default class PostTextBoxBase extends PureComponent {
     };
 
     handleSendMessage = () => {
-        if (!this.canSend()) {
+        if (!this.isSendButtonEnabled()) {
             return;
         }
+
+        this.setState({sendingMessage: true});
 
         const {actions, channelId, files, rootId} = this.props;
         const {value} = this.state;
@@ -325,6 +327,9 @@ export default class PostTextBoxBase extends PureComponent {
                 }),
                 [{
                     text: intl.formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
+                    onPress: () => {
+                        this.setState({sendingMessage: false});
+                    },
                 }, {
                     text: intl.formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
                     onPress: () => {
@@ -406,37 +411,23 @@ export default class PostTextBoxBase extends PureComponent {
         return this.canSend() || this.isFileLoading();
     }
 
+    isSendButtonEnabled() {
+        return this.canSend() && !this.isFileLoading() && !this.state.sendingMessage;
+    }
+
     sendMessage = () => {
-        const {files} = this.props;
-        const {intl} = this.context;
         const {value} = this.state;
 
-        if (files.length === 0 && !value) {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.post_textbox.empty.title',
-                    defaultMessage: 'Empty Message',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.post_textbox.empty.message',
-                    defaultMessage: 'You are trying to send an empty message.\nPlease make sure you have a message or at least one attached file.',
-                }),
-                [{
-                    text: intl.formatMessage({id: 'mobile.post_textbox.empty.ok', defaultMessage: 'OK'}),
-                }],
-            );
-        } else {
-            const currentMembersCount = this.props.currentChannelMembersCount;
-            const notificationsToChannel = this.props.enableConfirmNotificationsToChannel;
-            const toAllorChannel = this.textContainsAtAllAtChannel(value);
+        const currentMembersCount = this.props.currentChannelMembersCount;
+        const notificationsToChannel = this.props.enableConfirmNotificationsToChannel;
+        const toAllOrChannel = this.textContainsAtAllAtChannel(value);
 
-            if (value.indexOf('/') === 0) {
-                this.sendCommand(value);
-            } else if (notificationsToChannel && currentMembersCount > NOTIFY_ALL_MEMBERS && toAllorChannel) {
-                this.showSendToAllOrChannelAlert(currentMembersCount);
-            } else {
-                this.doSubmitMessage();
-            }
+        if (value.indexOf('/') === 0) {
+            this.sendCommand(value);
+        } else if (notificationsToChannel && currentMembersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
+            this.showSendToAllOrChannelAlert(currentMembersCount);
+        } else {
+            this.doSubmitMessage();
         }
     };
 
@@ -490,6 +481,9 @@ export default class PostTextBoxBase extends PureComponent {
                         id: 'mobile.post_textbox.entire_channel.cancel',
                         defaultMessage: 'Cancel',
                     }),
+                    onPress: () => {
+                        this.setState({sendingMessage: false});
+                    },
                 },
                 {
                     text: intl.formatMessage({
@@ -534,9 +528,11 @@ export default class PostTextBoxBase extends PureComponent {
             // size changes from the new post.
             setTimeout(() => {
                 this.handleTextChange('');
+                this.setState({sendingMessage: false});
             }, 250);
         } else {
             this.handleTextChange('');
+            this.setState({sendingMessage: false});
         }
 
         this.changeDraft('');
@@ -586,6 +582,7 @@ export default class PostTextBoxBase extends PureComponent {
         const status = this.getStatusFromSlashCommand(msg);
         if (userIsOutOfOffice && this.isStatusSlashCommand(status)) {
             confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
+            this.setState({sendingMessage: false});
             return;
         }
 
@@ -602,13 +599,21 @@ export default class PostTextBoxBase extends PureComponent {
                 error.message
             );
         }
+
+        this.handleTextChange('');
+        this.changeDraft('');
+
+        this.setState({sendingMessage: false});
     };
 
     sendReaction = (emoji) => {
         const {actions, rootId} = this.props;
         actions.addReactionToLatestPost(emoji, rootId);
+
         this.handleTextChange('');
         this.changeDraft('');
+
+        this.setState({sendingMessage: false});
     };
 
     onShowFileMaxWarning = () => {
@@ -720,7 +725,7 @@ export default class PostTextBoxBase extends PureComponent {
                     />
                     <Fade visible={this.isSendButtonVisible()}>
                         <SendButton
-                            disabled={this.isFileLoading()}
+                            disabled={!this.isSendButtonEnabled()}
                             handleSendMessage={this.handleSendMessage}
                             theme={theme}
                         />

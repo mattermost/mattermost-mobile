@@ -37,6 +37,7 @@ export default class EmojiSuggestion extends Component {
         rootId: PropTypes.string,
         value: PropTypes.string,
         serverVersion: PropTypes.string,
+        nestedScrollEnabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -188,7 +189,7 @@ export default class EmojiSuggestion extends Component {
     getItemLayout = ({index}) => ({length: 40, offset: 40 * index, index})
 
     render() {
-        const {maxListHeight, theme} = this.props;
+        const {maxListHeight, theme, nestedScrollEnabled} = this.props;
 
         if (!this.state.active) {
             // If we are not in an active state return null so nothing is rendered
@@ -209,6 +210,7 @@ export default class EmojiSuggestion extends Component {
                 ItemSeparatorComponent={AutocompleteDivider}
                 pageSize={10}
                 initialListSize={10}
+                nestedScrollEnabled={nestedScrollEnabled}
             />
         );
     }

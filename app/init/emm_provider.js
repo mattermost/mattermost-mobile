@@ -4,7 +4,7 @@
 import {Alert, Platform} from 'react-native';
 
 import {handleLoginIdChanged} from 'app/actions/views/login';
-import {handleServerUrlChanged} from 'app/actions/views/select_server';
+import {setServerUrl} from 'app/actions/views/select_server';
 import {getTranslations} from 'app/i18n';
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
@@ -93,7 +93,7 @@ class EMMProvider {
         const {dispatch} = store;
 
         if (LocalConfig.AutoSelectServerUrl) {
-            dispatch(handleServerUrlChanged(LocalConfig.DefaultServerUrl));
+            dispatch(setServerUrl(LocalConfig.DefaultServerUrl));
             this.allowOtherServers = false;
         }
 
@@ -122,7 +122,7 @@ class EMMProvider {
             }
 
             if (this.emmServerUrl) {
-                dispatch(handleServerUrlChanged(this.emmServerUrl));
+                dispatch(setServerUrl(this.emmServerUrl));
             }
 
             if (this.emmUsername) {

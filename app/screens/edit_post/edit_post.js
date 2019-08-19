@@ -53,6 +53,7 @@ export default class EditPost extends PureComponent {
         super(props);
 
         this.state = {message: props.post.message};
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.rightButton.text = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
 
         props.actions.setButtons(props.componentId, {

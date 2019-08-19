@@ -50,15 +50,19 @@ export default class PostOptions extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    close = () => {
-        this.props.actions.dismissModal();
+    close = async (cb) => {
+        await this.props.actions.dismissModal();
+
+        if (typeof cb === 'function') {
+            setTimeout(cb, 300);
+        }
     };
 
-    closeWithAnimation = () => {
+    closeWithAnimation = (cb) => {
         if (this.slideUpPanel) {
-            this.slideUpPanel.closeWithAnimation();
+            this.slideUpPanel.closeWithAnimation(cb);
         } else {
-            this.close();
+            this.close(cb);
         }
     };
 
@@ -279,8 +283,7 @@ export default class PostOptions extends PureComponent {
         const {actions, theme} = this.props;
         const {formatMessage} = this.context.intl;
 
-        this.close();
-        setTimeout(() => {
+        this.close(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
                 const screen = 'AddReaction';
                 const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
@@ -291,15 +294,14 @@ export default class PostOptions extends PureComponent {
 
                 actions.showModal(screen, title, passProps);
             });
-        }, 300);
+        });
     };
 
     handleReply = () => {
         const {post} = this.props;
-        this.closeWithAnimation();
-        setTimeout(() => {
+        this.closeWithAnimation(() => {
             EventEmitter.emit('goToThread', post);
-        }, 250);
+        });
     };
 
     handleAddReactionToPost = (emoji) => {
@@ -358,9 +360,10 @@ export default class PostOptions extends PureComponent {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: () => {
-                    actions.deletePost(post);
-                    actions.removePost(post);
-                    this.closeWithAnimation();
+                    this.closeWithAnimation(() => {
+                        actions.deletePost(post);
+                        actions.removePost(post);
+                    });
                 },
             }]
         );
@@ -370,8 +373,7 @@ export default class PostOptions extends PureComponent {
         const {actions, theme, post} = this.props;
         const {intl} = this.context;
 
-        this.close();
-        setTimeout(() => {
+        this.close(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
                 const screen = 'EditPost';
                 const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
@@ -382,7 +384,7 @@ export default class PostOptions extends PureComponent {
 
                 actions.showModal(screen, title, passProps);
             });
-        }, 300);
+        });
     };
 
     handleUnflagPost = () => {

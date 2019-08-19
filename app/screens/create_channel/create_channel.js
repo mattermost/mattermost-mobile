@@ -63,20 +63,11 @@ export default class CreateChannel extends PureComponent {
         };
 
         this.rightButton.text = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
 
         if (props.closeButton) {
             this.left = {...this.leftButton, icon: props.closeButton};
         }
-
-        const buttons = {
-            rightButtons: [this.rightButton],
-        };
-
-        if (this.left) {
-            buttons.leftButtons = [this.left];
-        }
-
-        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
