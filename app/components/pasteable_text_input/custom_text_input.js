@@ -76,7 +76,7 @@ class CustomTextInput extends TextInput {
     _onPaste = (event) => {
         const {nativeEvent} = event;
         const {onPaste} = this.props;
-        return onPaste?.(nativeEvent);
+        return onPaste?.(nativeEvent.data);
     }
 }
 

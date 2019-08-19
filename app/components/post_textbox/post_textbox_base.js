@@ -590,13 +590,22 @@ export default class PostTextBoxBase extends PureComponent {
         );
     }
 
-    handlePasteImage = (image) => {
+    handlePasteImages = (images) => {
         const {maxFileSize} = this.props;
-        if (image.fileSize > maxFileSize) {
-            this.onShowFileSizeWarning(image.fileName);
-            return;
+        const filteredImages = images.filter((image) => {
+            const isExceedFileSize = image.fileSize > maxFileSize;
+            if (image.fileSize > maxFileSize) {
+                this.onShowFileSizeWarning(image.fileName);
+            }
+            return !isExceedFileSize;
+        });
+
+        this.handleUploadFiles(filteredImages.slice(0, MAX_FILE_COUNT));
+
+        // Show warning if pasted images are more than MAX_FILE_COUNT
+        if (images.length > MAX_FILE_COUNT) {
+            this.onShowFileMaxWarning();
         }
-        this.handleUploadFiles([image]);
     }
 
     renderTextBox = () => {
@@ -634,7 +643,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
                         editable={!channelIsReadOnly}
-                        onPaste={this.handlePasteImage}
+                        onPaste={this.handlePasteImages}
                     />
                     <Fade visible={this.isSendButtonVisible()}>
                         <SendButton

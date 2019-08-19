@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIPasteboard (GetImageInfo)
 
--(NSDictionary *)getCopiedImage;
+-(NSArray<NSDictionary *> *)getCopiedImages;
 
 @end
 

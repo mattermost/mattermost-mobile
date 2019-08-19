@@ -49,8 +49,8 @@
     return;
   }
   
-  NSDictionary *image = [pasteboard getCopiedImage];
-  [OnPasteEventManager pasteImage:image];
+  NSArray<NSDictionary *> *images = [pasteboard getCopiedImages];
+  [OnPasteEventManager pasteImage:images];
 
   // Dismiss contextual menu
   [self resignFirstResponder];

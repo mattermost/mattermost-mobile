@@ -6,19 +6,17 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
-import android.os.Environment;
-import android.util.Log;
 import android.util.Patterns;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.mattermost.share.RealPathUtil;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.regex.Matcher;
 
@@ -94,11 +92,18 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         // Get fileName
         String fileName = URLUtil.guessFileName(uri, null, mimeType);
 
+        WritableMap image = Arguments.createMap();
+        image.putString("type", mimeType);
+        image.putDouble("fileSize", fileSize);
+        image.putString("fileName", fileName);
+        image.putString("uri", "file://" + uri);
+
+        WritableArray images = Arguments.createArray();
+        images.pushMap(image);
+
         WritableMap event = Arguments.createMap();
-        event.putString("type", mimeType);
-        event.putDouble("fileSize", fileSize);
-        event.putString("fileName", fileName);
-        event.putString("uri", "file://" + uri);
+        event.putArray("data", images);
+
         reactContext
                 .getJSModule(RCTEventEmitter.class)
                 .receiveEvent(

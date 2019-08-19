@@ -35,11 +35,13 @@ RCT_EXPORT_MODULE();
     return;
   }
   
-  [self sendEventWithName:@"onPaste" body:data.userInfo];
+  [self sendEventWithName:@"onPaste" body:data.userInfo[@"data"]];
 }
 
-+(void)pasteImage:(NSDictionary *)data {
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"onPaste" object:data userInfo:data];
++(void)pasteImage:(NSArray<NSDictionary *> *)data {
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"onPaste" object:data userInfo:@{
+                                                                                               @"data": data
+                                                                                               }];
 }
 
 @end
