@@ -36,15 +36,7 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         ClipData clipData = clipboardManager.getPrimaryClip();
 
         ClipData.Item item = clipData.getItemAt(0);
-        if (item == null) {
-            return;
-        }
-
         Uri itemUri = item.getUri();
-        if (itemUri == null) {
-            return;
-        }
-
         String uri = itemUri.toString();
 
         // Special handle for Google docs
