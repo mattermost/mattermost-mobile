@@ -64,6 +64,7 @@ export default class ChannelMembers extends PureComponent {
         };
 
         this.removeButton = {
+            color: props.theme.sidebarHeaderTextColor,
             enabled: false,
             id: 'remove-members',
             showAsAction: 'always',
