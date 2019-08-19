@@ -11,6 +11,7 @@ import {
 import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {Navigation} from 'react-native-navigation';
 
 import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
@@ -20,6 +21,7 @@ import SafeAreaView from 'app/components/safe_area_view';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -43,6 +45,8 @@ export default class LongPost extends PureComponent {
         actions: PropTypes.shape({
             loadThreadIfNecessary: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         channelName: PropTypes.string,
         fileIds: PropTypes.array,
@@ -50,11 +54,11 @@ export default class LongPost extends PureComponent {
         isPermalink: PropTypes.bool,
         inThreadView: PropTypes.bool,
         managedConfig: PropTypes.object,
-        navigator: PropTypes.object,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -65,44 +69,38 @@ export default class LongPost extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    constructor(props) {
-        super(props);
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'backPress') {
+            this.handleClose();
+        }
     }
 
     goToThread = preventDoubleTap((post) => {
-        const {actions, navigator, theme} = this.props;
+        const {actions} = this.props;
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
+        const screen = 'Thread';
+        const title = '';
+        const passProps = {
+            channelId,
+            rootId,
+        };
 
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        const options = {
-            screen: 'Thread',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelId,
-                rootId,
-            },
-        };
-
-        navigator.push(options);
+        actions.goToScreen(screen, title, passProps);
     });
 
     handleClose = () => {
-        const {navigator} = this.props;
+        const {actions} = this.props;
         if (this.refs.view) {
             this.refs.view.zoomOut().then(() => {
-                navigator.dismissModal({animationType: 'none'});
+                actions.dismissModal();
             });
         }
     };
@@ -117,20 +115,9 @@ export default class LongPost extends PureComponent {
         }
     };
 
-    onNavigatorEvent = (event) => {
-        switch (event.id) {
-        case 'backPress':
-            this.handleClose();
-            break;
-        default:
-            break;
-        }
-    };
-
     renderFileAttachments(style) {
         const {
             fileIds,
-            navigator,
             postId,
         } = this.props;
 
@@ -144,7 +131,6 @@ export default class LongPost extends PureComponent {
                         onLongPress={emptyFunction}
                         postId={postId}
                         toggleSelected={emptyFunction}
-                        navigator={navigator}
                     />
                 </View>
             );
@@ -153,7 +139,7 @@ export default class LongPost extends PureComponent {
     }
 
     renderReactions = (style) => {
-        const {hasReactions, navigator, postId} = this.props;
+        const {hasReactions, postId} = this.props;
 
         if (!hasReactions) {
             return null;
@@ -162,7 +148,6 @@ export default class LongPost extends PureComponent {
         return (
             <View style={style.reactions}>
                 <Reactions
-                    navigator={navigator}
                     position='left'
                     postId={postId}
                 />
@@ -176,11 +161,11 @@ export default class LongPost extends PureComponent {
             fileIds,
             hasReactions,
             managedConfig,
-            navigator,
             onHashtagPress,
             onPermalinkPress,
             postId,
             theme,
+            isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -201,7 +186,7 @@ export default class LongPost extends PureComponent {
                 footerColor='transparent'
                 forceTop={44}
             >
-                <View style={style.container}>
+                <View style={[style.container, margin(isLandscape)]}>
                     <Animatable.View
                         ref='view'
                         animation='zoomIn'
@@ -241,7 +226,6 @@ export default class LongPost extends PureComponent {
                                 showLongPost={true}
                                 onHashtagPress={onHashtagPress}
                                 onPermalinkPress={onPermalinkPress}
-                                navigator={navigator}
                                 managedConfig={managedConfig}
                             />
                         </ScrollView>

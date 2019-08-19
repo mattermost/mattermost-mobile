@@ -3,7 +3,6 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
 import moment from 'moment-timezone';
 
@@ -15,33 +14,19 @@ export default class FormattedTime extends React.PureComponent {
         hour12: PropTypes.bool,
     };
 
-    static contextTypes = {
-        intl: intlShape.isRequired,
-    };
-
     getFormattedTime = () => {
-        const {intl} = this.context;
-
         const {
             value,
             timeZone,
             hour12,
         } = this.props;
 
+        const format = hour12 ? 'hh:mm A' : 'HH:mm';
         if (timeZone) {
-            return intl.formatDate(moment.tz(value, timeZone).toDate(), {
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12,
-            });
+            return moment.tz(value, timeZone).format(format);
         }
 
-        // If no timezone is defined fallback to the previous implementation
-        return intl.formatDate(new Date(value), {
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12,
-        });
+        return moment(value).format(format);
     };
 
     render() {

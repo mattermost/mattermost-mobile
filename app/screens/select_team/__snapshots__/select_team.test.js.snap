@@ -2,18 +2,10 @@
 
 exports[`SelectTeam should match snapshot for fail of teams 1`] = `
 <FailedNetworkAction
-  errorDescription={
-    Object {
-      "defaultMessage": "Make sure you have an active connection and try again.",
-      "id": "mobile.failed_network_action.shortDescription",
-    }
-  }
-  errorTitle={
-    Object {
-      "defaultMessage": "Team Not Found",
-      "id": "error.team_not_found.title",
-    }
-  }
+  actionDefaultMessage="try again"
+  actionId="mobile.failed_network_action.retry"
+  errorDefaultMessage="Messages will load when you have an internet connection or {refresh}."
+  errorId="mobile.failed_network_action.shortDescription"
   onRetry={[Function]}
   theme={
     Object {
@@ -68,9 +60,12 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   >
     <View
       style={
-        Object {
-          "marginRight": 15,
-        }
+        Array [
+          Object {
+            "marginRight": 15,
+          },
+          null,
+        ]
       }
     >
       <FormattedText
@@ -97,6 +92,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   <CustomList
     data={Array []}
     extraData={false}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={
@@ -141,5 +137,39 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
       }
     }
   />
+</View>
+`;
+
+exports[`SelectTeam should match snapshot when user is a guest 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "marginHorizontal": 16,
+        "marginTop": 20,
+      }
+    }
+  >
+    <FormattedText
+      defaultMessage="Your guest account has no teams or channels assigned. Please contact an administrator."
+      id="mobile.select_team.guest_cant_join_team"
+      style={
+        Object {
+          "color": undefined,
+          "fontSize": 13,
+        }
+      }
+    />
+  </View>
 </View>
 `;

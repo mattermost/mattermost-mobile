@@ -37,13 +37,15 @@ export default class SettingsDrawer extends PureComponent {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
+            showModal: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
         currentUser: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-        navigator: PropTypes.object,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
@@ -66,10 +68,12 @@ export default class SettingsDrawer extends PureComponent {
     }
 
     componentDidMount() {
+        EventEmitter.on('close_settings_sidebar', this.closeSettingsSidebar);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
     componentWillUnmount() {
+        EventEmitter.off('close_settings_sidebar', this.closeSettingsSidebar);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
@@ -107,6 +111,7 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     handleSetStatus = preventDoubleTap(() => {
+        const {actions} = this.props;
         const items = [{
             action: () => this.setStatus(General.ONLINE),
             text: {
@@ -133,31 +138,18 @@ export default class SettingsDrawer extends PureComponent {
             },
         }];
 
-        this.props.navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                items,
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext',
-            },
-        });
+        actions.showModalOverCurrentContext('OptionsModal', {items});
     });
 
     goToEditProfile = preventDoubleTap(() => {
         const {currentUser} = this.props;
         const {formatMessage} = this.context.intl;
+        const commandType = 'ShowModal';
 
         this.openModal(
             'EditProfile',
             formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
-            {currentUser}
+            {currentUser, commandType}
         );
     });
 
@@ -179,6 +171,17 @@ export default class SettingsDrawer extends PureComponent {
         );
     });
 
+    goToUserProfile = preventDoubleTap(() => {
+        const userId = this.props.currentUser.id;
+        const {formatMessage} = this.context.intl;
+
+        this.openModal(
+            'UserProfile',
+            formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
+            {userId, fromSettings: true}
+        );
+    });
+
     goToSettings = preventDoubleTap(() => {
         const {intl} = this.context;
 
@@ -195,31 +198,20 @@ export default class SettingsDrawer extends PureComponent {
     });
 
     openModal = (screen, title, passProps) => {
-        const {navigator, theme} = this.props;
-
         this.closeSettingsSidebar();
 
+        const {actions} = this.props;
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton,
+                }],
+            },
+        };
+
         InteractionManager.runAfterInteractions(() => {
-            navigator.showModal({
-                screen,
-                title,
-                animationType: 'slide-up',
-                animated: true,
-                backButtonTitle: '',
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg,
-                },
-                navigatorButtons: {
-                    leftButtons: [{
-                        id: 'close-settings',
-                        icon: this.closeButton,
-                    }],
-                },
-                passProps,
-            });
+            actions.showModal(screen, title, passProps, options);
         });
     };
 
@@ -239,7 +231,7 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     renderNavigationView = () => {
-        const {currentUser, navigator, theme} = this.props;
+        const {currentUser, theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -249,7 +241,6 @@ export default class SettingsDrawer extends PureComponent {
                 footerColor={theme.centerChannelBg}
                 footerComponent={<View style={style.container}/>}
                 headerComponent={<View style={style.container}/>}
-                navigator={navigator}
                 theme={theme}
             >
                 <View style={style.container}>
@@ -258,7 +249,7 @@ export default class SettingsDrawer extends PureComponent {
                         contentContainerStyle={style.wrapper}
                     >
                         <UserInfo
-                            onPress={this.goToEditProfile}
+                            onPress={this.goToUserProfile}
                             user={currentUser}
                         />
                         <View style={style.block}>
@@ -293,6 +284,15 @@ export default class SettingsDrawer extends PureComponent {
                         </View>
                         <View style={style.separator}/>
                         <View style={style.block}>
+                            <DrawerItem
+                                defaultMessage='Edit Profile'
+                                i18nId='mobile.routes.edit_profile'
+                                iconName='ios-person'
+                                iconType='ion'
+                                onPress={this.goToEditProfile}
+                                separator={true}
+                                theme={theme}
+                            />
                             <DrawerItem
                                 defaultMessage='Settings'
                                 i18nId='mobile.routes.settings'
@@ -335,12 +335,10 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     setStatus = (status) => {
-        const {status: currentUserStatus, navigator} = this.props;
+        const {status: currentUserStatus, actions} = this.props;
 
         if (currentUserStatus === General.OUT_OF_OFFICE) {
-            navigator.dismissModal({
-                animationType: 'none',
-            });
+            actions.dismissModal();
             this.closeSettingsSidebar();
             this.confirmReset(status);
             return;

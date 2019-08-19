@@ -7,6 +7,7 @@ import {
     Platform,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import ErrorText from 'app/components/error_text';
 import Loading from 'app/components/loading';
@@ -14,6 +15,7 @@ import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -21,14 +23,17 @@ export default class EditPost extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             editPost: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
         }),
+        componentId: PropTypes.string,
         closeButton: PropTypes.object,
         deviceHeight: PropTypes.number,
         deviceWidth: PropTypes.number,
         editPostRequest: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -48,22 +53,24 @@ export default class EditPost extends PureComponent {
         super(props);
 
         this.state = {message: props.post.message};
-        this.rightButton.title = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
+        this.rightButton.text = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        props.navigator.setButtons({
+        props.actions.setButtons(props.componentId, {
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
             rightButtons: [this.rightButton],
         });
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.focus();
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         const {editPostRequest} = nextProps;
@@ -87,23 +94,34 @@ export default class EditPost extends PureComponent {
         }
     }
 
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'close-edit-post':
+            this.close();
+            break;
+        case 'edit-post':
+            this.onEditPost();
+            break;
+        }
+    }
+
     close = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'slide-down',
-        });
+        this.props.actions.dismissModal();
     };
 
     emitCanEditPost = (enabled) => {
-        this.props.navigator.setButtons({
+        const {actions, componentId} = this.props;
+        actions.setButtons(componentId, {
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         });
     };
 
     emitEditing = (loading) => {
-        this.props.navigator.setButtons({
+        const {actions, componentId} = this.props;
+        actions.setButtons(componentId, {
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
-            rightButtons: [{...this.rightButton, disabled: loading}],
+            rightButtons: [{...this.rightButton, enabled: !loading}],
         });
     };
 
@@ -121,19 +139,6 @@ export default class EditPost extends PureComponent {
         this.props.actions.editPost(post);
     };
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-edit-post':
-                this.close();
-                break;
-            case 'edit-post':
-                this.onEditPost();
-                break;
-            }
-        }
-    };
-
     onPostChangeText = (message) => {
         this.setState({message});
         if (message) {
@@ -144,7 +149,7 @@ export default class EditPost extends PureComponent {
     };
 
     render() {
-        const {deviceHeight, deviceWidth, theme} = this.props;
+        const {deviceHeight, deviceWidth, theme, isLandscape} = this.props;
         const {editing, message, error} = this.state;
 
         const style = getStyleSheet(theme);
@@ -176,7 +181,7 @@ export default class EditPost extends PureComponent {
                 <StatusBar/>
                 <View style={style.scrollView}>
                     {displayError}
-                    <View style={[style.inputContainer, {height}]}>
+                    <View style={[style.inputContainer, padding(isLandscape), {height}]}>
                         <TextInputWithLocalizedPlaceholder
                             ref={this.messageRef}
                             value={message}

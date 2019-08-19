@@ -1,5 +1,5 @@
 #import "StoreManager.h"
-#import "Constants.h"
+#import "MMMConstants.h"
 
 @implementation StoreManager
 +(instancetype)shared {
@@ -15,8 +15,9 @@
 -(instancetype)init {
   self = [super init];
   if (self) {
-    self.bucket = [[MattermostBucket alloc] init];
-    [self getEntities:true];
+      self.bucket = [[MattermostBucket alloc] init];
+      self.keychain = [[MMKeychainManager alloc] init];
+      [self getEntities:true];
   }
   return self;
 }
@@ -31,7 +32,7 @@
   return channel;
 }
 
--(NSDictionary *)getChannelsBySections:(NSString *)forTeamId {
+-(NSDictionary *)getChannelsBySections:(NSString *)forTeamId excludeArchived:(BOOL)excludeArchived {
   NSDictionary *channelsStore = [self.entities objectForKey:@"channels"];
   NSString *currentUserId = [self getCurrentUserId];
   NSString *currentChannelId = [self getCurrentChannelId];
@@ -44,6 +45,12 @@
   
   for (NSString * key in channels) {
     NSMutableDictionary *channel = [[channels objectForKey:key] mutableCopy];
+
+    NSNumber *deleteAt = [channel objectForKey:@"delete_at"];
+    if (excludeArchived && ![deleteAt isEqualToNumber:@0]) {
+      continue;
+    }
+
     NSString *team_id = [channel objectForKey:@"team_id"];
     NSString *channelType = [channel objectForKey:@"type"];
     BOOL isDM = [channelType isEqualToString:@"D"];
@@ -144,10 +151,12 @@
 }
 
 -(NSString *)getToken {
-  NSDictionary *general = [self.entities objectForKey:@"general"];
-  NSDictionary *credentials = [general objectForKey:@"credentials"];
+    NSDictionary *options = @{
+        @"accessGroup": APP_GROUP_ID
+    };
+    NSDictionary *credentials = [self.keychain getInternetCredentialsForServer:[self getServerUrl] withOptions:options];
   
-  return [credentials objectForKey:@"token"];
+  return [credentials objectForKey:@"password"];
 }
 
 -(UInt64)scanValueFromConfig:(NSDictionary *)config key:(NSString *)key {

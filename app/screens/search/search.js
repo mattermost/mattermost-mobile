@@ -12,6 +12,7 @@ import {
     View,
 } from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -31,6 +32,7 @@ import {DeviceTypes, ListTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import ChannelDisplayName from './channel_display_name';
 import Modifier, {MODIFIER_LABEL_HEIGHT} from './modifier';
@@ -55,11 +57,14 @@ export default class Search extends PureComponent {
             getMorePostsForSearch: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         initialValue: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
-        navigator: PropTypes.object,
         postIds: PropTypes.array,
         archivedPostIds: PropTypes.arrayOf(PropTypes.string),
         recent: PropTypes.array.isRequired,
@@ -85,8 +90,6 @@ export default class Search extends PureComponent {
     constructor(props) {
         super(props);
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-
         this.contentOffsetY = 0;
         this.state = {
             channelName: '',
@@ -97,6 +100,8 @@ export default class Search extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         if (this.props.initialValue) {
             this.search(this.props.initialValue);
         }
@@ -140,6 +145,16 @@ export default class Search extends PureComponent {
         }
     }
 
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'backPress') {
+            if (this.state.preview) {
+                this.refs.preview.handleClose();
+            } else {
+                this.props.actions.dismissModal();
+            }
+        }
+    }
+
     archivedIndicator = (postID, style) => {
         const channelIsArchived = this.props.archivedPostIds.includes(postID);
         let archivedIndicator = null;
@@ -165,13 +180,12 @@ export default class Search extends PureComponent {
     };
 
     cancelSearch = preventDoubleTap(() => {
-        const {navigator} = this.props;
         this.handleTextChanged('', true);
-        navigator.dismissModal({animationType: 'slide-down'});
+        this.props.actions.dismissModal();
     });
 
     goToThread = (post) => {
-        const {actions, navigator, theme} = this.props;
+        const {actions} = this.props;
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
 
@@ -179,28 +193,19 @@ export default class Search extends PureComponent {
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        const options = {
-            screen: 'Thread',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelId,
-                rootId,
-            },
+        const screen = 'Thread';
+        const title = '';
+        const passProps = {
+            channelId,
+            rootId,
         };
 
-        navigator.push(options);
+        actions.goToScreen(screen, title, passProps);
     };
 
     handleHashtagPress = (hashtag) => {
         if (this.showingPermalink) {
-            this.props.navigator.dismissModal();
+            this.props.actions.dismissModal();
             this.handleClosePermalink();
         }
 
@@ -298,16 +303,6 @@ export default class Search extends PureComponent {
         }
     }, 100);
 
-    onNavigatorEvent = (event) => {
-        if (event.id === 'backPress') {
-            if (this.state.preview) {
-                this.refs.preview.handleClose();
-            } else {
-                this.props.navigator.dismissModal();
-            }
-        }
-    };
-
     previewPost = (post) => {
         Keyboard.dismiss();
 
@@ -341,19 +336,20 @@ export default class Search extends PureComponent {
     };
 
     renderModifiers = ({item}) => {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
 
         return (
             <Modifier
                 item={item}
                 setModifierValue={this.setModifierValue}
                 theme={theme}
+                isLandscape={isLandscape}
             />
         );
     };
 
     renderPost = ({item, index}) => {
-        const {postIds, theme} = this.props;
+        const {postIds, theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
 
         if (item.id) {
@@ -380,14 +376,13 @@ export default class Search extends PureComponent {
         }
 
         return (
-            <View style={style.postResult}>
+            <View style={[style.postResult, padding(isLandscape)]}>
                 <ChannelDisplayName postId={item}/>
                 {this.archivedIndicator(postIds[index], style)}
                 <SearchResultPost
                     postId={item}
                     previewPost={this.previewPost}
                     goToThread={this.goToThread}
-                    navigator={this.props.navigator}
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={mattermostManaged.getCachedConfig()}
@@ -410,7 +405,7 @@ export default class Search extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {title} = section;
         const style = getStyleFromTheme(theme);
 
@@ -418,7 +413,7 @@ export default class Search extends PureComponent {
             return (
                 <View style={style.sectionWrapper}>
                     <View style={style.sectionContainer}>
-                        <Text style={style.sectionLabel}>
+                        <Text style={[style.sectionLabel, padding(isLandscape, -16)]}>
                             {title}
                         </Text>
                     </View>
@@ -430,7 +425,7 @@ export default class Search extends PureComponent {
     };
 
     renderRecentItem = ({item}) => {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
 
         return (
             <RecentItem
@@ -438,6 +433,7 @@ export default class Search extends PureComponent {
                 removeSearchTerms={this.removeSearchTerms}
                 setRecentValue={this.setRecentValue}
                 theme={theme}
+                isLandscape={isLandscape}
             />
         );
     };
@@ -447,29 +443,24 @@ export default class Search extends PureComponent {
     };
 
     showPermalinkView = (postId, isPermalink) => {
-        const {actions, navigator} = this.props;
+        const {actions} = this.props;
 
         actions.selectFocusedPostId(postId);
 
         if (!this.showingPermalink) {
+            const screen = 'Permalink';
+            const passProps = {
+                isPermalink,
+                onClose: this.handleClosePermalink,
+            };
             const options = {
-                screen: 'Permalink',
-                animationType: 'none',
-                backButtonTitle: '',
-                overrideBackPress: true,
-                navigatorStyle: {
-                    navBarHidden: true,
-                    screenBackgroundColor: changeOpacity('#000', 0.2),
-                    modalPresentationStyle: 'overCurrentContext',
-                },
-                passProps: {
-                    isPermalink,
-                    onClose: this.handleClosePermalink,
+                layout: {
+                    backgroundColor: changeOpacity('#000', 0.2),
                 },
             };
 
             this.showingPermalink = true;
-            navigator.showModal(options);
+            actions.showModalOverCurrentContext(screen, passProps, options);
         }
     };
 
@@ -697,7 +688,7 @@ export default class Search extends PureComponent {
             >
                 <KeyboardLayout>
                     <StatusBar/>
-                    <View style={style.header}>
+                    <View style={[style.header, padding(isLandscape)]}>
                         <SearchBar
                             ref='searchBar'
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}

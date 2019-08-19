@@ -4,11 +4,16 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
     InteractionManager,
+    Platform,
     ScrollView,
     StyleSheet,
     View,
 } from 'react-native';
+
+import {DeviceTypes, ViewTypes} from 'app/constants';
+import mattermostManaged from 'app/mattermost_managed';
 
 export default class Swiper extends PureComponent {
     static propTypes = {
@@ -18,10 +23,6 @@ export default class Swiper extends PureComponent {
         initialPage: PropTypes.number,
         keyboardShouldPersistTaps: PropTypes.string,
         onIndexChanged: PropTypes.func,
-        paginationStyle: PropTypes.oneOfType([
-            PropTypes.object,
-            PropTypes.number,
-        ]),
         scrollEnabled: PropTypes.bool,
         showsPagination: PropTypes.bool,
         style: PropTypes.oneOfType([
@@ -166,10 +167,26 @@ export default class Swiper extends PureComponent {
             }
         }
 
+        const {width, height} = Dimensions.get('window');
+        const bottom = this.paginationBottom(width, height);
+        const drawerWidth = (width > height) ? width - ViewTypes.IOS_HORIZONTAL_LANDSCAPE : width;
+        let style;
+        if (DeviceTypes.IS_IPHONE_X) {
+            style = {
+                bottom,
+                drawerWidth,
+            };
+        } else {
+            style = {
+                bottom,
+                flex: 1,
+            };
+        }
+
         return (
             <View
                 pointerEvents='none'
-                style={[styles.pagination, this.props.paginationStyle]}
+                style={[styles.pagination, style]}
             >
                 {dots}
             </View>
@@ -182,9 +199,7 @@ export default class Swiper extends PureComponent {
         }
 
         this.scrollView.scrollTo({x: (index * this.props.width), animated});
-        if (index === 0) {
-            this.offset = 0;
-        }
+        this.updateIndex(this.props.width * index);
     };
 
     updateIndex = (offset) => {
@@ -197,6 +212,23 @@ export default class Swiper extends PureComponent {
         index = parseInt(index + Math.round(diff / this.props.width), 10);
         this.offset = offset;
         this.setState({index});
+    };
+
+    paginationBottom = (width, height) => {
+        if (DeviceTypes.IS_TABLET) {
+            if (Platform.OS === 'ios' && mattermostManaged.hasSafeAreaInsets) {
+                return 14;
+            }
+
+            return 24;
+        }
+
+        const landscape = width > height;
+        if (DeviceTypes.IS_IPHONE_X) {
+            return landscape ? 14 : 4;
+        }
+
+        return 24;
     };
 
     render() {
@@ -244,15 +276,11 @@ const styles = StyleSheet.create({
     },
     pagination: {
         position: 'absolute',
-        bottom: 25,
         left: 0,
         right: 0,
         flexDirection: 'row',
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'transparent',
-        marginBottom: 13,
     },
     dotStyle: {
         width: 8,

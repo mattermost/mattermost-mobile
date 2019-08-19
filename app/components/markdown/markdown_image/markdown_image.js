@@ -18,6 +18,7 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import ProgressiveImage from 'app/components/progressive_image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import EphemeralStore from 'app/store/ephemeral_store';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import ImageCacheManager from 'app/utils/image_cache_manager';
@@ -33,14 +34,15 @@ const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
 export default class MarkdownImage extends React.Component {
     static propTypes = {
+        actions: PropTypes.shape({
+            showModalOverCurrentContext: PropTypes.func.isRequired,
+        }).isRequired,
         children: PropTypes.node,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         imagesMetadata: PropTypes.object,
         linkDestination: PropTypes.string,
         isReplyPost: PropTypes.bool,
-        navigator: PropTypes.object.isRequired,
-        serverURL: PropTypes.string.isRequired,
         source: PropTypes.string.isRequired,
         errorTextStyle: CustomPropTypes.Style,
     };
@@ -97,7 +99,7 @@ export default class MarkdownImage extends React.Component {
         let source = this.props.source;
 
         if (source.startsWith('/')) {
-            source = this.props.serverURL + '/' + source;
+            source = EphemeralStore.currentServerUrl + source;
         }
 
         return source;
@@ -111,6 +113,11 @@ export default class MarkdownImage extends React.Component {
 
     handleSizeReceived = (width, height) => {
         if (!this.mounted) {
+            return;
+        }
+
+        if (!width || !height) {
+            this.setState({failed: true});
             return;
         }
 
@@ -170,6 +177,7 @@ export default class MarkdownImage extends React.Component {
             originalWidth,
             uri,
         } = this.state;
+        const {actions} = this.props;
         const link = this.getSource();
         let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
         const extension = filename.split('.').pop();
@@ -190,7 +198,8 @@ export default class MarkdownImage extends React.Component {
                 localPath: uri,
             },
         }];
-        previewImageAtIndex(this.props.navigator, [this.refs.item], 0, files);
+
+        previewImageAtIndex([this.refs.item], 0, files, actions.showModalOverCurrentContext);
     };
 
     loadImageSize = (source) => {

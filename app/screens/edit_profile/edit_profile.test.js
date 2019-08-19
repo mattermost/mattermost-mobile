@@ -17,26 +17,22 @@ jest.mock('app/utils/theme', () => {
 });
 
 describe('edit_profile', () => {
-    const navigator = {
-        setOnNavigatorEvent: jest.fn(),
-        setButtons: jest.fn(),
-        dismissModal: jest.fn(),
-        push: jest.fn(),
-    };
-
     const actions = {
         updateUser: jest.fn(),
         setProfileImageUri: jest.fn(),
         removeProfileImage: jest.fn(),
+        popTopScreen: jest.fn(),
+        dismissModal: jest.fn(),
+        setButtons: jest.fn(),
     };
 
     const baseProps = {
         actions,
-        config: {
-            ShowEmailAddress: true,
-        },
+        firstNameDisabled: true,
+        lastNameDisabled: true,
+        nicknameDisabled: true,
+        positionDisabled: true,
         theme: Preferences.THEMES.default,
-        navigator,
         currentUser: {
             first_name: 'Dwight',
             last_name: 'Schrute',
@@ -45,6 +41,9 @@ describe('edit_profile', () => {
             nickname: 'Dragon',
             position: 'position',
         },
+        commandType: 'ShowModal',
+        componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot', async () => {
@@ -56,15 +55,9 @@ describe('edit_profile', () => {
     });
 
     test('should match state on handleRemoveProfileImage', () => {
-        const newNavigator = {
-            dismissModal: jest.fn(),
-            setOnNavigatorEvent: jest.fn(),
-            setButtons: jest.fn(),
-        };
         const wrapper = shallow(
             <EditProfile
                 {...baseProps}
-                navigator={newNavigator}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
@@ -78,7 +71,6 @@ describe('edit_profile', () => {
         expect(instance.emitCanUpdateAccount).toHaveBeenCalledTimes(1);
         expect(instance.emitCanUpdateAccount).toBeCalledWith(true);
 
-        expect(newNavigator.dismissModal).toHaveBeenCalledTimes(1);
-        expect(newNavigator.dismissModal).toBeCalledWith({animationType: 'none'});
+        expect(baseProps.actions.dismissModal).toHaveBeenCalledTimes(1);
     });
 });

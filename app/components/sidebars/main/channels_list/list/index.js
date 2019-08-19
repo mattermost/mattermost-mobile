@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
@@ -15,15 +16,19 @@ import {getTheme, getFavoritesPreferences, getSidebarPreferences} from 'mattermo
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {memoizeResult} from 'mattermost-redux/utils/helpers';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
+import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
+import Permissions from 'mattermost-redux/constants/permissions';
 
-import {SidebarSectionTypes} from 'app/constants/view';
+import {showModal} from 'app/actions/navigation';
+import {isLandscape} from 'app/selectors/device';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 
 import List from './list';
 
 const filterZeroUnreads = memoizeResult((sections) => {
     return sections.filter((s) => {
-        if (s.type === SidebarSectionTypes.UNREADS) {
+        if (s.type === ViewTypes.SidebarSectionTypes.UNREADS) {
             return s.items.length > 0;
         }
         return true;
@@ -38,18 +43,28 @@ function mapStateToProps(state) {
     const isAdmin = checkIsAdmin(roles);
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const sidebarPrefs = getSidebarPreferences(state);
-    const unreadChannelIds = getSortedUnreadChannelIds(state, null);
+    const lastUnreadChannel = DeviceTypes.IS_TABLET ? state.views.channel.keepChannelIdAsUnread : null;
+    const unreadChannelIds = getSortedUnreadChannelIds(state, lastUnreadChannel);
     const favoriteChannelIds = getSortedFavoriteChannelIds(state);
     const orderedChannelIds = filterZeroUnreads(getOrderedChannelIds(
         state,
-        null,
+        lastUnreadChannel,
         sidebarPrefs.grouping,
         sidebarPrefs.sorting,
         true, // The mobile app should always display the Unreads section regardless of user settings (MM-13420)
         sidebarPrefs.favorite_at_top === 'true' && favoriteChannelIds.length,
     ));
 
+    let canJoinPublicChannels = true;
+    if (hasNewPermissions(state)) {
+        canJoinPublicChannels = haveITeamPermission(state, {
+            team: currentTeamId,
+            permission: Permissions.JOIN_PUBLIC_CHANNELS,
+        });
+    }
+
     return {
+        canJoinPublicChannels,
         canCreatePrivateChannels: showCreateOption(
             state,
             config,
@@ -63,6 +78,15 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         unreadChannelIds,
         orderedChannelIds,
+        isLandscape: isLandscape(state),
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            showModal,
+        }, dispatch),
     };
 }
 
@@ -76,4 +100,4 @@ function areStatesEqual(next, prev) {
     return equalChannels && equalConfig && equalRoles && equalUsers && equalFav;
 }
 
-export default connect(mapStateToProps, null, null, {pure: true, areStatesEqual})(List);
+export default connect(mapStateToProps, mapDispatchToProps, null, {pure: true, areStatesEqual})(List);

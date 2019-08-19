@@ -6,6 +6,8 @@ import PropTypes from 'prop-types';
 import {Dimensions, Keyboard, NativeModules, View} from 'react-native';
 import SafeArea from 'react-native-safe-area';
 
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -21,21 +23,18 @@ export default class SafeAreaIos extends PureComponent {
         forceTop: PropTypes.number,
         keyboardOffset: PropTypes.number.isRequired,
         navBarBackgroundColor: PropTypes.string,
-        navigator: PropTypes.object,
         headerComponent: PropTypes.node,
         theme: PropTypes.object.isRequired,
+        useLandscapeMargin: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         keyboardOffset: 0,
+        useLandscapeMargin: false,
     };
 
     constructor(props) {
         super(props);
-
-        if (props.navigator) {
-            props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        }
 
         this.state = {
             keyboard: false,
@@ -57,6 +56,7 @@ export default class SafeAreaIos extends PureComponent {
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.getSafeAreaInsets);
+        EventEmitter.on('update_safe_area_view', this.getSafeAreaInsets);
         this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
         this.getStatusBarHeight();
@@ -65,6 +65,7 @@ export default class SafeAreaIos extends PureComponent {
     componentWillUnmount() {
         this.mounted = false;
         Dimensions.removeEventListener('change', this.getSafeAreaInsets);
+        EventEmitter.off('update_safe_area_view', this.getSafeAreaInsets);
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
         this.mounted = false;
@@ -104,15 +105,6 @@ export default class SafeAreaIos extends PureComponent {
 
     keyboardWillShow = () => {
         this.setState({keyboard: true});
-    };
-
-    onNavigatorEvent = (event) => {
-        switch (event.id) {
-        case 'willAppear':
-        case 'didDisappear':
-            this.getSafeAreaInsets();
-            break;
-        }
     };
 
     renderTopBar = () => {
@@ -160,7 +152,7 @@ export default class SafeAreaIos extends PureComponent {
     };
 
     render() {
-        const {backgroundColor, children, footerColor, footerComponent, keyboardOffset, theme} = this.props;
+        const {backgroundColor, children, footerColor, footerComponent, keyboardOffset, theme, useLandscapeMargin} = this.props;
         const {keyboard, safeAreaInsets} = this.state;
 
         let bgColor = theme.centerChannelBg;
@@ -183,6 +175,8 @@ export default class SafeAreaIos extends PureComponent {
                 style={{
                     flex: 1,
                     backgroundColor: bgColor,
+                    marginLeft: useLandscapeMargin ? safeAreaInsets.left : 0,
+                    marginRight: useLandscapeMargin ? safeAreaInsets.right : 0,
                 }}
             >
                 {this.renderTopBar()}

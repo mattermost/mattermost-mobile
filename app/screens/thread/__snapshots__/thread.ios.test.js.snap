@@ -1,0 +1,139 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`thread should match snapshot, has root post 1`] = `
+<React.Fragment>
+  <Connect(SafeAreaIos)
+    excludeHeader={true}
+  >
+    <Connect(StatusBar) />
+    <React.Fragment>
+      <Connect(PostList)
+        currentUserId="member_user_id"
+        indicateNewMessages={false}
+        lastPostIndex={2}
+        lastViewedAt={0}
+        location="thread"
+        onPostPress={[Function]}
+        postIds={
+          Array [
+            "root_id",
+            "post_id_1",
+            "post_id_2",
+          ]
+        }
+        renderFooter={
+          <Loading
+            color="grey"
+            size="large"
+            style={Object {}}
+          />
+        }
+        scrollViewNativeID="threadPostList"
+      />
+      <View
+        nativeID="threadAccessoriesContainer"
+      >
+        <Connect(FileUploadPreview)
+          rootId="root_id"
+        />
+        <ForwardRef(forwardConnectRef)
+          cursorPositionEvent="onThreadTextBoxCursorChange"
+          maxHeight={200}
+          onChangeText={[Function]}
+          rootId="root_id"
+          valueEvent="onThreadTextBoxValueChange"
+        />
+      </View>
+    </React.Fragment>
+  </Connect(SafeAreaIos)>
+  <KeyboardTrackingView
+    accessoriesContainerID="threadAccessoriesContainer"
+    scrollViewNativeID="threadPostList"
+  >
+    <ForwardRef(forwardConnectRef)
+      channelId="channel_id"
+      channelIsArchived={false}
+      cursorPositionEvent="onThreadTextBoxCursorChange"
+      onCloseChannel={[Function]}
+      rootId="root_id"
+      valueEvent="onThreadTextBoxValueChange"
+    />
+  </KeyboardTrackingView>
+</React.Fragment>
+`;
+
+exports[`thread should match snapshot, no root post, loading 1`] = `
+<React.Fragment>
+  <Connect(SafeAreaIos)
+    excludeHeader={true}
+  >
+    <Connect(StatusBar) />
+    <Loading
+      color="grey"
+      size="large"
+      style={Object {}}
+    />
+  </Connect(SafeAreaIos)>
+</React.Fragment>
+`;
+
+exports[`thread should match snapshot, render footer 1`] = `
+<Connect(PostList)
+  currentUserId="member_user_id"
+  indicateNewMessages={false}
+  lastPostIndex={2}
+  lastViewedAt={0}
+  location="thread"
+  onPostPress={[Function]}
+  postIds={
+    Array [
+      "root_id",
+      "post_id_1",
+      "post_id_2",
+    ]
+  }
+  renderFooter={
+    <Loading
+      color="grey"
+      size="large"
+      style={Object {}}
+    />
+  }
+  scrollViewNativeID="threadPostList"
+/>
+`;
+
+exports[`thread should match snapshot, render footer 2`] = `
+<Connect(PostList)
+  currentUserId="member_user_id"
+  indicateNewMessages={false}
+  lastPostIndex={2}
+  lastViewedAt={0}
+  location="thread"
+  onPostPress={[Function]}
+  postIds={
+    Array [
+      "root_id",
+      "post_id_1",
+      "post_id_2",
+    ]
+  }
+  renderFooter={null}
+  scrollViewNativeID="threadPostList"
+/>
+`;
+
+exports[`thread should match snapshot, render footer 3`] = `
+<React.Fragment>
+  <Connect(SafeAreaIos)
+    excludeHeader={true}
+  >
+    <Connect(StatusBar) />
+    <Loading
+      color="grey"
+      size="large"
+      style={Object {}}
+    />
+  </Connect(SafeAreaIos)>
+</React.Fragment>
+`;

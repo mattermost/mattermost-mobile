@@ -12,6 +12,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import List from './list';
@@ -22,7 +23,6 @@ let FilteredList = null;
 
 export default class ChannelsList extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object,
         onJoinChannel: PropTypes.func.isRequired,
         onSearchEnds: PropTypes.func.isRequired,
         onSearchStart: PropTypes.func.isRequired,
@@ -30,6 +30,8 @@ export default class ChannelsList extends PureComponent {
         onShowTeams: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         drawerOpened: PropTypes.bool,
+        previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -49,11 +51,11 @@ export default class ChannelsList extends PureComponent {
         });
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (!nextProps.drawerOpened && this.props.drawerOpened) {
-            this.cancelSearch();
+    cancelSearch = () => {
+        if (this.refs.search_bar) {
+            this.refs.search_bar.cancel();
         }
-    }
+    };
 
     onSelectChannel = (channel, currentChannelId) => {
         if (channel.fake) {
@@ -62,9 +64,7 @@ export default class ChannelsList extends PureComponent {
             this.props.onSelectChannel(channel, currentChannelId);
         }
 
-        if (this.refs.search_bar) {
-            this.refs.search_bar.cancel();
-        }
+        this.cancelSearch();
     };
 
     onSearch = (term) => {
@@ -79,7 +79,7 @@ export default class ChannelsList extends PureComponent {
         this.props.onSearchStart();
     };
 
-    cancelSearch = () => {
+    onSearchCancel = () => {
         this.props.onSearchEnds();
         this.setState({searching: false});
         this.onSearch('');
@@ -88,9 +88,10 @@ export default class ChannelsList extends PureComponent {
     render() {
         const {intl} = this.context;
         const {
-            navigator,
             onShowTeams,
             theme,
+            previewChannel,
+            isLandscape,
         } = this.props;
 
         const {searching, term} = this.state;
@@ -103,14 +104,15 @@ export default class ChannelsList extends PureComponent {
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                     term={term}
+                    previewChannel={previewChannel}
                 />
             );
         } else {
             list = (
                 <List
-                    navigator={navigator}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
+                    previewChannel={previewChannel}
                 />
             );
         }
@@ -127,7 +129,7 @@ export default class ChannelsList extends PureComponent {
         };
 
         const title = (
-            <View style={styles.searchContainer}>
+            <View style={[styles.searchContainer, padding(isLandscape)]}>
                 <SearchBar
                     ref='search_bar'
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
@@ -142,7 +144,7 @@ export default class ChannelsList extends PureComponent {
                     titleCancelColor={theme.sidebarHeaderTextColor}
                     selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     onSearchButtonPress={this.onSearch}
-                    onCancelButtonPress={this.cancelSearch}
+                    onCancelButtonPress={this.onSearchCancel}
                     onChangeText={this.onSearch}
                     onFocus={this.onSearchFocused}
                     searchIconCollapsedMargin={5}
@@ -234,6 +236,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.sidebarText, 0.1),
             height: 1,
+            width: '100%',
         },
         actionContainer: {
             alignItems: 'center',

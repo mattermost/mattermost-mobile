@@ -7,9 +7,10 @@ import PropTypes from 'prop-types';
 import {
     View,
 } from 'react-native';
-import {General} from 'mattermost-redux/constants';
 import {intlShape} from 'react-intl';
 
+import {General} from 'mattermost-redux/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
@@ -23,10 +24,10 @@ import SectionItem from 'app/screens/settings/section_item';
 export default class NotificationSettingsAutoResponder extends PureComponent {
     static propTypes = {
         currentUser: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -44,8 +45,6 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
             defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
         });
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-
         let autoResponderActive = 'false';
         if (props.currentUserStatus === General.OUT_OF_OFFICE && notifyProps.auto_responder_active) {
             autoResponderActive = 'true';
@@ -58,15 +57,9 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
         };
     }
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'ScreenChangedEvent') {
-            switch (event.id) {
-            case 'willDisappear':
-                this.saveUserNotifyProps();
-                break;
-            }
-        }
-    };
+    componentWillUnmount() {
+        this.saveUserNotifyProps();
+    }
 
     saveUserNotifyProps = () => {
         this.props.onBack({
@@ -88,7 +81,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {
             auto_responder_active: autoResponderActive,
             auto_responder_message: autoResponderMessage,
@@ -109,6 +102,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                     <Section
                         disableHeader={true}
                         theme={theme}
+                        isLandscape={isLandscape}
                     >
                         <SectionItem
                             label={autoResponderActiveLabel}
@@ -116,6 +110,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                             actionType='toggle'
                             selected={autoResponderActive === 'true'}
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     </Section>
                     {autoResponderActive === 'true' && (
@@ -123,6 +118,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                             headerId={t('mobile.notification_settings.auto_responder.message_title')}
                             headerDefaultMessage='CUSTOM MESSAGE'
                             theme={theme}
+                            isLandscape={isLandscape}
                         >
                             <View style={style.inputContainer}>
                                 <TextInputWithLocalizedPlaceholder
@@ -147,7 +143,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                     <FormattedText
                         id={'mobile.notification_settings.auto_responder.footer_message'}
                         defaultMessage={'Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies sets your status to Out of Office and disables email and push notifications.'}
-                        style={style.footer}
+                        style={[style.footer, padding(isLandscape)]}
                     />
                 </View>
             </View>

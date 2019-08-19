@@ -11,20 +11,23 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
 import RemoveMarkdown from 'app/components/remove_markdown';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {View: AnimatedView} = Animated;
 
 export default class AnnouncementBanner extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
         bannerColor: PropTypes.string,
         bannerDismissed: PropTypes.bool,
         bannerEnabled: PropTypes.bool,
         bannerText: PropTypes.string,
         bannerTextColor: PropTypes.string,
-        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -52,23 +55,16 @@ export default class AnnouncementBanner extends PureComponent {
     }
 
     handlePress = () => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
+        const {intl} = this.context;
 
-        navigator.push({
-            screen: 'ExpandedAnnouncementBanner',
-            title: this.context.intl.formatMessage({
-                id: 'mobile.announcement_banner.title',
-                defaultMessage: 'Announcement',
-            }),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
+        const screen = 'ExpandedAnnouncementBanner';
+        const title = intl.formatMessage({
+            id: 'mobile.announcement_banner.title',
+            defaultMessage: 'Announcement',
         });
+
+        actions.goToScreen(screen, title);
     };
 
     toggleBanner = (show = true) => {
@@ -89,6 +85,7 @@ export default class AnnouncementBanner extends PureComponent {
             bannerColor,
             bannerText,
             bannerTextColor,
+            isLandscape,
         } = this.props;
 
         const bannerStyle = {
@@ -106,7 +103,7 @@ export default class AnnouncementBanner extends PureComponent {
             >
                 <TouchableOpacity
                     onPress={this.handlePress}
-                    style={style.wrapper}
+                    style={[style.wrapper, padding(isLandscape)]}
                 >
                     <Text
                         ellipsizeMode='tail'

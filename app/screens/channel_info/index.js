@@ -29,7 +29,16 @@ import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from
 import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
+import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 
+import {
+    popTopScreen,
+    goToScreen,
+    popToRoot,
+    dismissModal,
+    showModalOverCurrentContext,
+} from 'app/actions/navigation';
 import {
     closeDMChannel,
     closeGMChannel,
@@ -39,6 +48,8 @@ import {
     selectPenultimateChannel,
     setChannelDisplayName,
 } from 'app/actions/views/channel';
+import {isLandscape} from 'app/selectors/device';
+import {isGuest} from 'app/utils/users';
 
 import ChannelInfo from './channel_info';
 
@@ -50,6 +61,7 @@ function mapStateToProps(state) {
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
+    let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
     const currentChannelMember = getMyCurrentChannelMembership(state);
     const currentUserId = getCurrentUserId(state);
     const favoriteChannels = getSortedFavoriteChannelIds(state);
@@ -61,6 +73,7 @@ function mapStateToProps(state) {
         canManageUsers = false;
     }
     const currentUser = getUser(state, currentUserId);
+    const currentUserIsGuest = isGuest(currentUser);
 
     let status;
     let isBot = false;
@@ -70,6 +83,9 @@ function mapStateToProps(state) {
         status = getStatusForUserId(state, teammateId);
         if (teammate && teammate.is_bot) {
             isBot = true;
+        }
+        if (isGuest(teammate)) {
+            currentChannelGuestCount = 1;
         }
     }
 
@@ -81,6 +97,12 @@ function mapStateToProps(state) {
     const canEditChannel = !channelIsReadOnly && showManagementOptions(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin);
     const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
 
+    const enableTimezone = isTimezoneEnabled(state);
+    let timeZone = null;
+    if (enableTimezone) {
+        timeZone = getUserCurrentTimezone(currentUser.timezone);
+    }
+
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
         viewArchivedChannels,
@@ -88,15 +110,19 @@ function mapStateToProps(state) {
         currentChannel,
         currentChannelCreatorName,
         currentChannelMemberCount,
+        currentChannelGuestCount,
         currentUserId,
+        currentUserIsGuest,
         isChannelMuted: isChannelMuted(currentChannelMember),
-        ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember.notify_props, currentUser.notify_props),
+        ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember && currentChannelMember.notify_props, currentUser.notify_props),
         isCurrent,
         isFavorite,
         status,
         theme: getTheme(state),
         canManageUsers,
         isBot,
+        isLandscape: isLandscape(state),
+        timeZone,
     };
 }
 
@@ -119,6 +145,11 @@ function mapDispatchToProps(dispatch) {
             selectPenultimateChannel,
             setChannelDisplayName,
             handleSelectChannel,
+            popTopScreen,
+            goToScreen,
+            popToRoot,
+            dismissModal,
+            showModalOverCurrentContext,
         }, dispatch),
     };
 }

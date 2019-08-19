@@ -13,6 +13,7 @@ import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import {Navigation} from 'react-native-navigation';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -25,6 +26,7 @@ import PostListRetry from 'app/components/post_list_retry';
 import SafeAreaView from 'app/components/safe_area_view';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -56,6 +58,10 @@ export default class Permalink extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            dismissAllModals: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         channelIsArchived: PropTypes.bool,
@@ -66,11 +72,11 @@ export default class Permalink extends PureComponent {
         focusedPostId: PropTypes.string.isRequired,
         isPermalink: PropTypes.bool,
         myMembers: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
         onClose: PropTypes.func,
         onPress: PropTypes.func,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -131,8 +137,6 @@ export default class Permalink extends PureComponent {
             loading = false;
         }
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-
         this.state = {
             title: channelName,
             loading,
@@ -146,6 +150,8 @@ export default class Permalink extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.mounted = true;
 
         if (this.state.loading) {
@@ -163,40 +169,36 @@ export default class Permalink extends PureComponent {
         this.mounted = false;
     }
 
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'backPress') {
+            this.handleClose();
+        }
+    }
+
     goToThread = preventDoubleTap((post) => {
-        const {actions, navigator, theme} = this.props;
+        const {actions} = this.props;
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
+        const screen = 'Thread';
+        const title = '';
+        const passProps = {
+            channelId,
+            rootId,
+        };
 
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        const options = {
-            screen: 'Thread',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                channelId,
-                rootId,
-            },
-        };
-
-        navigator.push(options);
+        actions.goToScreen(screen, title, passProps);
     });
 
     handleClose = () => {
-        const {actions, navigator, onClose} = this.props;
+        const {actions, onClose} = this.props;
         if (this.refs.view) {
             this.mounted = false;
             this.refs.view.zoomOut().then(() => {
                 actions.selectPost('');
-                navigator.dismissModal({animationType: 'none'});
+                actions.dismissModal();
 
                 if (onClose) {
                     onClose();
@@ -225,7 +227,7 @@ export default class Permalink extends PureComponent {
 
     jumpToChannel = (channelId, channelDisplayName) => {
         if (channelId) {
-            const {actions, channelTeamId, currentTeamId, navigator, onClose, theme} = this.props;
+            const {actions, channelTeamId, currentTeamId, onClose} = this.props;
             const currentChannelId = this.props.channelId;
             const {
                 handleSelectChannel,
@@ -239,23 +241,13 @@ export default class Permalink extends PureComponent {
             if (channelId === currentChannelId) {
                 EventEmitter.emit('reset_channel');
             } else {
-                navigator.resetTo({
-                    screen: 'Channel',
-                    animated: true,
-                    animationType: 'fade',
-                    navigatorStyle: {
-                        navBarHidden: true,
-                        statusBarHidden: false,
-                        statusBarHideWithNavBar: false,
-                        screenBackgroundColor: theme.centerChannelBg,
-                    },
-                    passProps: {
-                        disableTermsModal: true,
-                    },
-                });
+                const passProps = {
+                    disableTermsModal: true,
+                };
+                actions.resetToChannel(passProps);
             }
 
-            navigator.dismissAllModals({animationType: 'slide-down'});
+            actions.dismissAllModals();
 
             if (onClose) {
                 onClose();
@@ -277,51 +269,43 @@ export default class Permalink extends PureComponent {
         const {formatMessage} = intl;
         let focusChannelId = channelId;
 
-        const post = await actions.getPostThread(focusedPostId, false);
-        if (post.error && (!postIds || !postIds.length)) {
-            if (this.mounted && isPermalink && post.error.message.toLowerCase() !== 'network request failed') {
-                this.setState({
-                    error: formatMessage({
-                        id: 'permalink.error.access',
-                        defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.',
-                    }),
-                    title: formatMessage({
-                        id: 'mobile.search.no_results',
-                        defaultMessage: 'No Results Found',
-                    }),
-                });
-            } else if (this.mounted) {
-                this.setState({error: post.error.message, retry: true});
+        if (focusedPostId) {
+            const post = await actions.getPostThread(focusedPostId, false);
+            if (post.error && (!postIds || !postIds.length)) {
+                if (this.mounted && isPermalink && post.error.message.toLowerCase() !== 'network request failed') {
+                    this.setState({
+                        error: formatMessage({
+                            id: 'permalink.error.access',
+                            defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.',
+                        }),
+                        title: formatMessage({
+                            id: 'mobile.search.no_results',
+                            defaultMessage: 'No Results Found',
+                        }),
+                    });
+                } else if (this.mounted) {
+                    this.setState({error: post.error.message, retry: true});
+                }
+
+                return;
             }
 
-            return;
-        }
-
-        if (!channelId) {
-            const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
-            focusChannelId = focusedPost ? focusedPost.channel_id : '';
-            if (focusChannelId) {
-                const {data: channel} = await actions.getChannel(focusChannelId);
-                if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
-                    await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+            if (!channelId) {
+                const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
+                focusChannelId = focusedPost ? focusedPost.channel_id : '';
+                if (focusChannelId) {
+                    const {data: channel} = await actions.getChannel(focusChannelId);
+                    if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
+                        await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+                    }
                 }
             }
-        }
 
-        await actions.getPostsAround(focusChannelId, focusedPostId, 10);
+            await actions.getPostsAround(focusChannelId, focusedPostId, 10);
 
-        if (this.mounted) {
-            this.setState({loading: false});
-        }
-    };
-
-    onNavigatorEvent = (event) => {
-        switch (event.id) {
-        case 'backPress':
-            this.handleClose();
-            break;
-        default:
-            break;
+            if (this.mounted) {
+                this.setState({loading: false});
+            }
         }
     };
 
@@ -353,8 +337,8 @@ export default class Permalink extends PureComponent {
         const {
             currentUserId,
             focusedPostId,
-            navigator,
             theme,
+            isLandscape,
         } = this.props;
         const {
             error,
@@ -398,7 +382,6 @@ export default class Permalink extends PureComponent {
                     lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIdsState) : -1}
                     currentUserId={currentUserId}
                     lastViewedAt={0}
-                    navigator={navigator}
                     highlightPinnedOrFlagged={false}
                 />
             );
@@ -412,7 +395,7 @@ export default class Permalink extends PureComponent {
                 forceTop={44}
             >
                 <View
-                    style={style.container}
+                    style={[style.container, margin(isLandscape)]}
                 >
                     <Animatable.View
                         ref='view'

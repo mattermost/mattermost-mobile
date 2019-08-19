@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Alert,
-    Platform,
     ScrollView,
     View,
 } from 'react-native';
@@ -42,14 +41,20 @@ export default class ChannelInfo extends PureComponent {
             selectPenultimateChannel: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            popTopScreen: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }),
+        componentId: PropTypes.string,
         viewArchivedChannels: PropTypes.bool.isRequired,
         canDeleteChannel: PropTypes.bool.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
+        currentChannelGuestCount: PropTypes.number,
         currentUserId: PropTypes.string,
-        navigator: PropTypes.object,
+        currentUserIsGuest: PropTypes.bool,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
         isChannelMuted: PropTypes.bool.isRequired,
@@ -59,7 +64,12 @@ export default class ChannelInfo extends PureComponent {
         canEditChannel: PropTypes.bool.isRequired,
         ignoreChannelMentions: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
+
+    static defaultProps = {
+        currentChannelGuestCount: 0,
+    }
 
     static contextTypes = {
         intl: intlShape.isRequired,
@@ -82,7 +92,7 @@ export default class ChannelInfo extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
         let isFavorite = this.state.isFavorite;
@@ -104,95 +114,58 @@ export default class ChannelInfo extends PureComponent {
     }
 
     close = (redirect = true) => {
+        const {actions} = this.props;
+
         if (redirect) {
-            this.props.actions.setChannelDisplayName('');
+            actions.setChannelDisplayName('');
         }
-        if (Platform.OS === 'android') {
-            this.props.navigator.dismissModal({animated: true});
-        } else {
-            this.props.navigator.pop({animated: true});
-        }
+
+        actions.popTopScreen();
     };
 
     goToChannelAddMembers = preventDoubleTap(() => {
+        const {actions} = this.props;
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
-        navigator.push({
-            backButtonTitle: '',
-            screen: 'ChannelAddMembers',
-            title: intl.formatMessage({id: 'channel_header.addMembers', defaultMessage: 'Add Members'}),
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        const screen = 'ChannelAddMembers';
+        const title = intl.formatMessage({id: 'channel_header.addMembers', defaultMessage: 'Add Members'});
+
+        actions.goToScreen(screen, title);
     });
 
     goToChannelMembers = preventDoubleTap(() => {
+        const {actions, canManageUsers} = this.props;
         const {intl} = this.context;
-        const {canManageUsers, navigator, theme} = this.props;
         const id = canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers');
         const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
+        const screen = 'ChannelMembers';
+        const title = intl.formatMessage({id, defaultMessage});
 
-        navigator.push({
-            backButtonTitle: '',
-            screen: 'ChannelMembers',
-            title: intl.formatMessage({id, defaultMessage}),
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(screen, title);
     });
 
     goToPinnedPosts = preventDoubleTap(() => {
+        const {actions, currentChannel} = this.props;
         const {formatMessage} = this.context.intl;
-        const {actions, currentChannel, navigator, theme} = this.props;
         const id = t('channel_header.pinnedPosts');
         const defaultMessage = 'Pinned Posts';
+        const screen = 'PinnedPosts';
+        const title = formatMessage({id, defaultMessage});
+        const passProps = {
+            currentChannelId: currentChannel.id,
+        };
 
-        actions.clearPinnedPosts(currentChannel.id);
-        navigator.push({
-            backButtonTitle: '',
-            screen: 'PinnedPosts',
-            title: formatMessage({id, defaultMessage}),
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                currentChannelId: currentChannel.id,
-            },
-        });
+        actions.goToScreen(screen, title, passProps);
     });
 
     handleChannelEdit = preventDoubleTap(() => {
+        const {actions} = this.props;
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
         const id = t('mobile.channel_info.edit');
         const defaultMessage = 'Edit Channel';
+        const screen = 'EditChannel';
+        const title = intl.formatMessage({id, defaultMessage});
 
-        navigator.push({
-            backButtonTitle: '',
-            screen: 'EditChannel',
-            title: intl.formatMessage({id, defaultMessage}),
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(screen, title);
     });
 
     handleLeave = () => {
@@ -336,30 +309,22 @@ export default class ChannelInfo extends PureComponent {
     });
 
     showPermalinkView = (postId) => {
-        const {actions, navigator} = this.props;
+        const {actions} = this.props;
+        const screen = 'Permalink';
+        const passProps = {
+            isPermalink: true,
+            onClose: this.handleClosePermalink,
+        };
+        const options = {
+            layout: {
+                backgroundColor: changeOpacity('#000', 0.2),
+            },
+        };
 
         actions.selectFocusedPostId(postId);
 
-        if (!this.showingPermalink) {
-            const options = {
-                screen: 'Permalink',
-                animationType: 'none',
-                backButtonTitle: '',
-                overrideBackPress: true,
-                navigatorStyle: {
-                    navBarHidden: true,
-                    screenBackgroundColor: changeOpacity('#000', 0.2),
-                    modalPresentationStyle: 'overCurrentContext',
-                },
-                passProps: {
-                    isPermalink: true,
-                    onClose: this.handleClosePermalink,
-                },
-            };
-
-            this.showingPermalink = true;
-            navigator.showModal(options);
-        }
+        this.showingPermalink = true;
+        actions.showModalOverCurrentContext(screen, passProps, options);
     };
 
     renderViewOrManageMembersRow = () => {
@@ -371,11 +336,12 @@ export default class ChannelInfo extends PureComponent {
 
     renderLeaveOrDeleteChannelRow = () => {
         const channel = this.props.currentChannel;
+        const isGuest = this.props.currentUserIsGuest;
         const isDefaultChannel = channel.name === General.DEFAULT_CHANNEL;
         const isDirectMessage = channel.type === General.DM_CHANNEL;
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
-        return !isDefaultChannel && !isDirectMessage && !isGroupMessage;
+        return (!isDefaultChannel && !isDirectMessage && !isGroupMessage) || (isDefaultChannel && isGuest);
     };
 
     renderCloseDirect = () => {
@@ -393,6 +359,7 @@ export default class ChannelInfo extends PureComponent {
             canEditChannel,
             theme,
             currentChannel,
+            isLandscape,
         } = this.props;
 
         if (channelIsArchived) {
@@ -405,6 +372,7 @@ export default class ChannelInfo extends PureComponent {
                         icon='users'
                         textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <View style={style.separator}/>
                 </View>);
@@ -420,6 +388,7 @@ export default class ChannelInfo extends PureComponent {
                     textId={t('mobile.routes.channelInfo.favorite')}
                     togglable={true}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <ChannelInfoRow
@@ -430,6 +399,7 @@ export default class ChannelInfo extends PureComponent {
                     textId={t('channel_notifications.muteChannel.settings')}
                     togglable={true}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <ChannelInfoRow
@@ -440,6 +410,7 @@ export default class ChannelInfo extends PureComponent {
                     textId={t('channel_notifications.ignoreChannelMentions.settings')}
                     togglable={true}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <ChannelInfoRow
@@ -448,6 +419,7 @@ export default class ChannelInfo extends PureComponent {
                     image={pinIcon}
                     textId={t('channel_header.pinnedPosts')}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 {
 
@@ -472,6 +444,7 @@ export default class ChannelInfo extends PureComponent {
                         icon='users'
                         textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                 </React.Fragment>
                 }
@@ -484,6 +457,7 @@ export default class ChannelInfo extends PureComponent {
                         icon='user-plus'
                         textId={t('channel_header.addMembers')}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                 </React.Fragment>
                 }
@@ -496,6 +470,7 @@ export default class ChannelInfo extends PureComponent {
                             icon='edit'
                             textId={t('mobile.channel_info.edit')}
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     </React.Fragment>
                 )}
@@ -509,10 +484,12 @@ export default class ChannelInfo extends PureComponent {
             currentChannel,
             currentChannelCreatorName,
             currentChannelMemberCount,
-            navigator,
+            currentChannelGuestCount,
             status,
             theme,
             isBot,
+            isLandscape,
+            actions: {popToRoot},
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -544,7 +521,6 @@ export default class ChannelInfo extends PureComponent {
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         memberCount={currentChannelMemberCount}
-                        navigator={navigator}
                         onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
                         status={status}
@@ -552,7 +528,9 @@ export default class ChannelInfo extends PureComponent {
                         type={currentChannel.type}
                         isArchived={currentChannel.delete_at !== 0}
                         isBot={isBot}
+                        hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
+                        popToRoot={popToRoot}
                     />
                     }
                     <View style={style.rowsContainer}>
@@ -566,12 +544,13 @@ export default class ChannelInfo extends PureComponent {
                                 icon='sign-out'
                                 textId={t('navbar.leave')}
                                 theme={theme}
+                                isLandscape={isLandscape}
                             />
                         </React.Fragment>
                         }
                     </View>
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel && !channelIsArchived &&
-                    <View style={style.footer}>
+                    <View style={[style.rowsContainer, style.footer]}>
                         <ChannelInfoRow
                             action={this.handleDelete}
                             defaultMessage='Archive Channel'
@@ -580,11 +559,12 @@ export default class ChannelInfo extends PureComponent {
                             textId={t('mobile.routes.channelInfo.delete_channel')}
                             textColor='#CA3B27'
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     </View>
                     }
                     {this.renderCloseDirect() &&
-                    <View style={style.footer}>
+                    <View style={[style.rowsContainer, style.footer]}>
                         <ChannelInfoRow
                             action={this.handleClose}
                             defaultMessage={defaultMessage}
@@ -593,6 +573,7 @@ export default class ChannelInfo extends PureComponent {
                             textId={i18nId}
                             textColor='#CA3B27'
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     </View>
                     }

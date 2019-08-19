@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
-
+import {isLandscape} from 'app/selectors/device';
 import {General} from 'mattermost-redux/constants';
 import {getChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
 import {getChannelsInCurrentTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
@@ -12,10 +12,11 @@ import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
-
-import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+
+import {setButtons, dismissModal, goToScreen} from 'app/actions/navigation';
+import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
 
 import MoreChannels from './more_channels';
 
@@ -42,6 +43,7 @@ function mapStateToProps(state) {
         currentTeamId,
         channels,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 
@@ -53,6 +55,9 @@ function mapDispatchToProps(dispatch) {
             getChannels,
             searchChannels,
             setChannelDisplayName,
+            setButtons,
+            dismissModal,
+            goToScreen,
         }, dispatch),
     };
 }

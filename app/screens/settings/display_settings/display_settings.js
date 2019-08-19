@@ -9,19 +9,23 @@ import {
     View,
 } from 'react-native';
 
-import SettingsItem from 'app/screens/settings/settings_item';
+import {DeviceTypes} from 'app/constants';
 import StatusBar from 'app/components/status_bar';
+import ClockDisplay from 'app/screens/settings/clock_display';
+import SettingsItem from 'app/screens/settings/settings_item';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-
-import ClockDisplay from 'app/screens/clock_display';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object.isRequired,
+        actions: PropTypes.shape({
+            goToScreen: PropTypes.func.isRequired,
+        }).isRequired,
+        componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -32,82 +36,53 @@ export default class DisplaySettings extends PureComponent {
         showClockDisplaySettings: false,
     };
 
-    constructor(props) {
-        super(props);
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-    }
-
     closeClockDisplaySettings = () => {
         this.setState({showClockDisplaySettings: false});
     };
 
     goToClockDisplaySettings = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
 
         if (Platform.OS === 'ios') {
-            navigator.push({
-                screen: 'ClockDisplay',
-                title: intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'}),
-                animated: true,
-                backButtonTitle: '',
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg,
-                },
-            });
+            const screen = 'ClockDisplaySettings';
+            const title = intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'});
+            actions.goToScreen(screen, title);
             return;
         }
 
         this.setState({showClockDisplaySettings: true});
     });
 
-    goToTimezoneSettings = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+    goToSidebarSettings = preventDoubleTap(() => {
+        const {actions, theme} = this.props;
         const {intl} = this.context;
+        const screen = 'SidebarSettings';
+        const title = intl.formatMessage({id: 'mobile.display_settings.sidebar', defaultMessage: 'Sidebar'});
 
-        navigator.push({
-            screen: 'TimezoneSettings',
-            title: intl.formatMessage({id: 'mobile.advanced_settings.timezone', defaultMessage: 'Timezone'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(screen, title, {theme});
+    });
+
+    goToTimezoneSettings = preventDoubleTap(() => {
+        const {actions} = this.props;
+        const {intl} = this.context;
+        const screen = 'TimezoneSettings';
+        const title = intl.formatMessage({id: 'mobile.advanced_settings.timezone', defaultMessage: 'Timezone'});
+
+        actions.goToScreen(screen, title);
     });
 
     goToThemeSettings = preventDoubleTap(() => {
-        const {navigator, theme} = this.props;
+        const {actions} = this.props;
         const {intl} = this.context;
+        const screen = 'ThemeSettings';
+        const title = intl.formatMessage({id: 'mobile.display_settings.theme', defaultMessage: 'Theme'});
 
-        navigator.push({
-            screen: 'ThemeSettings',
-            title: intl.formatMessage({id: 'mobile.display_settings.theme', defaultMessage: 'Theme'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(screen, title);
     });
 
-    onNavigatorEvent = (event) => {
-        if (event.id === 'willAppear') {
-            setNavigatorStyles(this.props.navigator, this.props.theme);
-        }
-    };
-
     render() {
-        const {theme, enableTimezone, enableTheme} = this.props;
+        const {theme, enableTimezone, enableTheme, isLandscape} = this.props;
         const {showClockDisplaySettings} = this.state;
         const style = getStyleSheet(theme);
 
@@ -135,6 +110,24 @@ export default class DisplaySettings extends PureComponent {
                     separator={false}
                     showArrow={false}
                     theme={theme}
+                    isLandscape={isLandscape}
+                />
+            );
+        }
+
+        let sidebar;
+        if (DeviceTypes.IS_TABLET) {
+            sidebar = (
+                <SettingsItem
+                    defaultMessage='Sidebar'
+                    i18nId='mobile.display_settings.sidebar'
+                    iconName='columns'
+                    iconType='fontawesome'
+                    onPress={this.goToSidebarSettings}
+                    separator={true}
+                    showArrow={false}
+                    theme={theme}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -144,6 +137,7 @@ export default class DisplaySettings extends PureComponent {
                 <StatusBar/>
                 <View style={style.wrapper}>
                     <View style={style.divider}/>
+                    {sidebar}
                     {enableTheme && (
                         <SettingsItem
                             defaultMessage='Theme'
@@ -154,6 +148,7 @@ export default class DisplaySettings extends PureComponent {
                             separator={true}
                             showArrow={false}
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     )}
                     <SettingsItem
@@ -165,6 +160,7 @@ export default class DisplaySettings extends PureComponent {
                         separator={disableClockDisplaySeparator}
                         showArrow={false}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     {timezoneOption}
                     <View style={style.divider}/>

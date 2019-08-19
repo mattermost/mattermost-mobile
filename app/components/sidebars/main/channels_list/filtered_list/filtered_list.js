@@ -21,9 +21,9 @@ import {General} from 'mattermost-redux/constants';
 import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {t} from 'app/utils/i18n';
-
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -44,6 +44,7 @@ class FilteredList extends Component {
         teammateNameDisplay: PropTypes.string,
         onSelectChannel: PropTypes.func.isRequired,
         otherChannels: PropTypes.array,
+        archivedChannels: PropTypes.array,
         profiles: PropTypes.object,
         teamProfiles: PropTypes.object,
         searchOrder: PropTypes.array.isRequired,
@@ -53,6 +54,8 @@ class FilteredList extends Component {
         styles: PropTypes.object.isRequired,
         term: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -125,6 +128,7 @@ class FilteredList extends Component {
                 isUnread={channel.isUnread}
                 mentions={0}
                 onSelectChannel={this.onSelectChannel}
+                previewChannel={this.props.previewChannel}
             />
         );
     };
@@ -175,6 +179,11 @@ class FilteredList extends Component {
             builder: this.buildOtherMembersForSearch,
             id: t('mobile.channel_list.not_member'),
             defaultMessage: 'NOT A MEMBER',
+        },
+        archived: {
+            builder: this.buildArchivedForSearch,
+            id: t('mobile.channel_list.archived'),
+            defaultMessage: 'ARCHIVED',
         },
     });
 
@@ -294,6 +303,19 @@ class FilteredList extends Component {
             sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
     }
 
+    buildArchivedForSearch = (props, term) => {
+        const {currentChannel, archivedChannels} = props;
+
+        return this.filterChannels(archivedChannels.reduce((acc, channel) => {
+            // when there is no search text, display an archived channel only if we are in it at the moment.
+            if (term || channel.id === currentChannel.id) {
+                acc.push({...channel});
+            }
+
+            return acc;
+        }, []), term);
+    }
+
     buildOtherMembersForSearch = (props, term) => {
         const {otherChannels} = props;
 
@@ -379,7 +401,7 @@ class FilteredList extends Component {
                 <View>
                     {topDivider && this.renderDivider(styles, 0)}
                     <View style={styles.titleContainer}>
-                        <Text style={styles.title}>
+                        <Text style={[styles.title, padding(this.props.isLandscape)]}>
                             {formatMessage({id, defaultMessage}).toUpperCase()}
                         </Text>
                         {action && this.renderSectionAction(styles, action)}

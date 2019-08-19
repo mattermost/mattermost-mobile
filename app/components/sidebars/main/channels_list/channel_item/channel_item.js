@@ -2,18 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {General} from 'mattermost-redux/constants';
-
 import PropTypes from 'prop-types';
 import {
     Animated,
-    Platform,
     TouchableHighlight,
     Text,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
+import {General} from 'mattermost-redux/constants';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -32,7 +32,6 @@ export default class ChannelItem extends PureComponent {
         isUnread: PropTypes.bool,
         hasDraft: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
-        navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         shouldHideChannel: PropTypes.bool,
         showUnreadForMsgs: PropTypes.bool.isRequired,
@@ -40,6 +39,8 @@ export default class ChannelItem extends PureComponent {
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
         isBot: PropTypes.bool.isRequired,
+        previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -58,28 +59,25 @@ export default class ChannelItem extends PureComponent {
         });
     });
 
-    onPreview = () => {
-        const {channelId, navigator} = this.props;
-        if (Platform.OS === 'ios' && navigator && this.previewRef) {
+    onPreview = ({reactTag}) => {
+        const {channelId, previewChannel} = this.props;
+        if (previewChannel) {
             const {intl} = this.context;
-
-            navigator.push({
-                screen: 'ChannelPeek',
-                previewCommit: false,
-                previewView: this.previewRef,
-                previewActions: [{
-                    id: 'action-mark-as-read',
-                    title: intl.formatMessage({id: 'mobile.channel.markAsRead', defaultMessage: 'Mark As Read'}),
-                }],
-                passProps: {
-                    channelId,
+            const passProps = {
+                channelId,
+            };
+            const options = {
+                preview: {
+                    reactTag,
+                    actions: [{
+                        id: 'action-mark-as-read',
+                        title: intl.formatMessage({id: 'mobile.channel.markAsRead', defaultMessage: 'Mark As Read'}),
+                    }],
                 },
-            });
-        }
-    };
+            };
 
-    setPreviewRef = (ref) => {
-        this.previewRef = ref;
+            previewChannel(passProps, options);
+        }
     };
 
     showChannelAsUnread = () => {
@@ -101,6 +99,7 @@ export default class ChannelItem extends PureComponent {
             isSearchResult,
             channel,
             isBot,
+            isLandscape,
         } = this.props;
 
         const isArchived = channel.delete_at > 0;
@@ -190,13 +189,14 @@ export default class ChannelItem extends PureComponent {
         );
 
         return (
-            <AnimatedView ref={this.setPreviewRef}>
-                <TouchableHighlight
+            <AnimatedView>
+                <Navigation.TouchablePreview
+                    touchableComponent={TouchableHighlight}
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                     onPress={this.onPress}
-                    onLongPress={this.onPreview}
+                    onPressIn={this.onPreview}
                 >
-                    <View style={[style.container, mutedStyle]}>
+                    <View style={[style.container, mutedStyle, padding(isLandscape)]}>
                         {extraBorder}
                         <View style={[style.item, extraItemStyle]}>
                             {icon}
@@ -210,7 +210,7 @@ export default class ChannelItem extends PureComponent {
                             {badge}
                         </View>
                     </View>
-                </TouchableHighlight>
+                </Navigation.TouchablePreview>
             </AnimatedView>
         );
     }
@@ -242,10 +242,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             fontWeight: '600',
             paddingRight: 10,
-            height: '100%',
             flex: 1,
-            textAlignVertical: 'center',
-            lineHeight: 44,
+            alignSelf: 'center',
         },
         textActive: {
             color: theme.sidebarTextActiveColor,

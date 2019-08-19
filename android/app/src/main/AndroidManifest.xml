@@ -19,6 +19,7 @@
       android:installLocation="auto"
       android:networkSecurityConfig="@xml/network_security_config"
     >
+        <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
         <meta-data android:name="android.content.APP_RESTRICTIONS"
                    android:resource="@xml/app_restrictions" />
 
@@ -43,7 +44,8 @@
                android:exported="false" />
         <activity
                 android:name="com.reactnativenavigation.controllers.NavigationActivity"
-                android:configChanges="keyboard|keyboardHidden|orientation|screenSize"/>
+                android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+                android:resizeableActivity="true"/>
         <activity
                 android:name="com.mattermost.share.ShareActivity"
                 android:configChanges="keyboard|keyboardHidden|orientation|screenSize"

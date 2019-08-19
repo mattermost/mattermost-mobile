@@ -40,7 +40,7 @@ export default makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             flex: 1,
             fontSize: 17,
-            lineHeight: 43,
+            alignSelf: 'center',
         },
         arrowContainer: {
             justifyContent: 'center',
@@ -56,6 +56,9 @@ export default makeStyleSheetFromTheme((theme) => {
         },
         destructor: {
             color: theme.errorTextColor,
+        },
+        safeAreaView: {
+            backgroundColor: 'white',
         },
     };
 });

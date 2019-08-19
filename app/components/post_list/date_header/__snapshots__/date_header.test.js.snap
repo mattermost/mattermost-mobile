@@ -31,9 +31,8 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
       }
     }
   >
-    <InjectIntl(FormattedDate)
-      day="2-digit"
-      month="short"
+    <FormattedDate
+      format="ddd, MMM DD, YYYY"
       style={
         Object {
           "color": "#3d3c40",
@@ -41,9 +40,8 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
           "fontWeight": "600",
         }
       }
-      value={1970-01-18T17:19:12.392Z}
-      weekday="short"
-      year="numeric"
+      timeZone="America/New_York"
+      value={1531152392}
     />
   </View>
   <View
@@ -90,9 +88,8 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
       }
     }
   >
-    <InjectIntl(FormattedDate)
-      day="2-digit"
-      month="short"
+    <FormattedDate
+      format="ddd, MMM DD, YYYY"
       style={
         Object {
           "color": "#3d3c40",
@@ -100,9 +97,8 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
           "fontWeight": "600",
         }
       }
-      value={1970-01-18T17:19:12.392Z}
-      weekday="short"
-      year="numeric"
+      timeZone={null}
+      value={1531152392}
     />
   </View>
   <View
@@ -149,9 +145,8 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
       }
     }
   >
-    <InjectIntl(FormattedDate)
-      day="2-digit"
-      month="short"
+    <FormattedDate
+      format="ddd, MMM DD, YYYY"
       style={
         Object {
           "color": "#3d3c40",
@@ -159,9 +154,8 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
           "fontWeight": "600",
         }
       }
-      value={1970-01-18T17:19:12.392Z}
-      weekday="short"
-      year="numeric"
+      timeZone={null}
+      value={1531152392}
     />
   </View>
   <View

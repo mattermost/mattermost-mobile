@@ -12,6 +12,7 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class TextSetting extends PureComponent {
     static propTypes = {
@@ -35,6 +36,7 @@ export default class TextSetting extends PureComponent {
         value: PropTypes.string.isRequired,
         multiline: PropTypes.bool,
         showRequiredAsterisk: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
         keyboardType: PropTypes.oneOf([
             'default',
             'number-pad',
@@ -44,6 +46,7 @@ export default class TextSetting extends PureComponent {
             'phone-pad',
             'url',
         ]),
+        secureTextEntry: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -52,6 +55,8 @@ export default class TextSetting extends PureComponent {
         multiline: false,
         showRequiredAsterisk: false,
         keyboardType: 'default',
+        isLandscape: false,
+        secureTextEntry: false,
     };
 
     onChangeText = (value) => {
@@ -72,6 +77,8 @@ export default class TextSetting extends PureComponent {
             value,
             multiline,
             showRequiredAsterisk,
+            isLandscape,
+            secureTextEntry,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -139,18 +146,21 @@ export default class TextSetting extends PureComponent {
             );
         }
 
+        const noediting = disabled ? style.disabled : null;
+
         return (
             <View>
-                <View style={style.titleContainer}>
+                <View style={[style.titleContainer, padding(isLandscape)]}>
                     {labelContent}
                     {asterisk}
                     {optionalContent}
                 </View>
-                <View style={style.inputContainer}>
-                    <View style={disabled ? style.disabled : null}>
+                <View style={[style.inputContainer, padding(isLandscape), noediting]}>
+                    <View>
                         <TextInput
                             value={value}
                             placeholder={placeholder}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                             onChangeText={this.onChangeText}
                             style={inputStyle}
                             autoCapitalize='none'
@@ -161,12 +171,15 @@ export default class TextSetting extends PureComponent {
                             disableFullscreenUI={true}
                             multiline={multiline}
                             keyboardType={keyboardType}
+                            secureTextEntry={secureTextEntry}
                         />
                     </View>
                 </View>
-                {disabledTextContent}
-                {helpTextContent}
-                {errorTextContent}
+                <View style={padding(isLandscape)}>
+                    {disabledTextContent}
+                    {helpTextContent}
+                    {errorTextContent}
+                </View>
             </View>
         );
     }

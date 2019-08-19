@@ -7,22 +7,12 @@ import {
     InteractionManager,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-
-const errorTitle = {
-    id: t('error.team_not_found.title'),
-    defaultMessage: 'Team Not Found',
-};
-
-const errorDescription = {
-    id: t('mobile.failed_network_action.shortDescription'),
-    defaultMessage: 'Make sure you have an active connection and try again.',
-};
 
 export default class ErrorTeamsList extends PureComponent {
     static propTypes = {
@@ -31,42 +21,42 @@ export default class ErrorTeamsList extends PureComponent {
             connection: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
-        navigator: PropTypes.object,
+        componentId: PropTypes.string,
         theme: PropTypes.object,
     };
 
     constructor(props) {
         super(props);
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         this.state = {
             loading: false,
         };
     }
 
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        const {logout} = this.props.actions;
+        if (buttonId === 'logout') {
+            InteractionManager.runAfterInteractions(logout);
         }
     }
 
     goToChannelView = () => {
-        const {navigator, theme} = this.props;
-
-        navigator.resetTo({
-            screen: 'Channel',
-            animated: false,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            passProps: {
-                disableTermsModal: true,
-            },
-        });
+        const passProps = {
+            disableTermsModal: true,
+        };
+        this.props.actions.resetToChannel(passProps);
     };
 
     getUserInfo = async () => {
@@ -83,38 +73,27 @@ export default class ErrorTeamsList extends PureComponent {
         }
     }
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            const {logout} = this.props.actions;
-            if (event.id === 'logout') {
-                InteractionManager.runAfterInteractions(logout);
-            }
-        }
-    };
-
     render() {
         const {theme} = this.props;
-        const styles = getStyleSheet(theme);
+        const style = getStyleFromTheme(theme);
 
         if (this.state.loading) {
             return <Loading/>;
         }
 
         return (
-            <View style={styles.container}>
+            <View style={style.container}>
                 <StatusBar/>
                 <FailedNetworkAction
                     onRetry={this.getUserInfo}
                     theme={theme}
-                    errorTitle={errorTitle}
-                    errorDescription={errorDescription}
                 />
             </View>
         );
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
-import {TouchableHighlight} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -31,7 +31,6 @@ describe('ChannelItem', () => {
         isUnread: true,
         hasDraft: false,
         mentions: 0,
-        navigator: {push: () => {}}, // eslint-disable-line no-empty-function
         onSelectChannel: () => {}, // eslint-disable-line no-empty-function
         shouldHideChannel: false,
         showUnreadForMsgs: true,
@@ -39,6 +38,7 @@ describe('ChannelItem', () => {
         unreadMsgs: 1,
         isSearchResult: false,
         isBot: false,
+        isLandscape: false,
     };
 
     test('should match snapshot', () => {
@@ -216,7 +216,7 @@ describe('ChannelItem', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        wrapper.find(TouchableHighlight).simulate('press');
+        wrapper.find(Navigation.TouchablePreview).simulate('press');
         jest.runAllTimers();
 
         const expectedChannelParams = {id: baseProps.channelId, display_name: baseProps.displayName, fake: channel.fake, type: channel.type};

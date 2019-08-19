@@ -6,8 +6,8 @@
 // See License.txt for license information.
 //
 
-#import "RCTUITextView.h"
 #import "MattermostManaged.h"
+#import <UploadAttachments/MMMConstants.h>
 
 @implementation MattermostManaged {
   bool hasListeners;
@@ -68,6 +68,7 @@ RCT_EXPORT_MODULE();
 
   return @{
            @"hasSafeAreaInsets": @([self hasSafeAreaInsets]),
+           @"appGroupIdentifier": APP_GROUP_ID
            };
 }
 
@@ -85,6 +86,8 @@ RCT_EXPORT_MODULE();
 - (instancetype)init {
   self = [super init];
   if (self) {
+    _sharedUserDefaults = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedConfigDidChange:) name:@"managedConfigDidChange" object:nil];
     [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification
                                                       object:nil
@@ -122,6 +125,13 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
 
 - (void) remoteConfigChanged {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
+  NSDictionary *group = [self.sharedUserDefaults dictionaryForKey:configurationKey];
+  
+  if (response && ![response isEqualToDictionary:group]) {
+    // copies the managed configuration so it is accessible in the Extensions
+    [self.sharedUserDefaults setObject:response forKey:configurationKey];
+  }
+  
   if (hasListeners) {
     @try {
       [self sendEventWithName:@"managedConfigDidChange" body:response];
@@ -142,31 +152,19 @@ RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve
   }
 }
 
+RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  BOOL isRunningInFullScreen = CGRectEqualToRect(
+                                                 [UIApplication sharedApplication].delegate.window.frame,
+                                                 [UIApplication sharedApplication].delegate.window.screen.bounds);
+  resolve(@{
+            @"isSplitView": @(!isRunningInFullScreen)
+            });
+}
+
 RCT_EXPORT_METHOD(quitApp)
 {
   exit(0);
-}
-
-@end
-
-@implementation RCTUITextView (DisableCopyPaste)
-
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
-{
-  NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  if(response) {
-    NSString *copyPasteProtection = response[@"copyAndPasteProtection"];
-    BOOL prevent = action == @selector(paste:) ||
-    action == @selector(copy:) ||
-    action == @selector(cut:) ||
-    action == @selector(_share:);
-
-    if ([copyPasteProtection isEqual: @"true"] && prevent) {
-      return NO;
-    }
-  }
-
-  return [super canPerformAction:action withSender:sender];
 }
 
 @end

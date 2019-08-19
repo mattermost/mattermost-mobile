@@ -22,25 +22,8 @@ exports[`ReactionList should match snapshot 1`] = `
         }
       }
     >
-      <ReactionRow
+      <Connect(ReactionRow)
         emojiName="+1"
-        navigator={
-          Object {
-            "setOnNavigatorEvent": [MockFunction] {
-              "calls": Array [
-                Array [
-                  [Function],
-                ],
-              ],
-              "results": Array [
-                Object {
-                  "type": "return",
-                  "value": undefined,
-                },
-              ],
-            },
-          }
-        }
         teammateNameDisplay="username"
         theme={
           Object {
@@ -94,25 +77,8 @@ exports[`ReactionList should match snapshot 1`] = `
         }
       }
     >
-      <ReactionRow
+      <Connect(ReactionRow)
         emojiName="smile"
-        navigator={
-          Object {
-            "setOnNavigatorEvent": [MockFunction] {
-              "calls": Array [
-                Array [
-                  [Function],
-                ],
-              ],
-              "results": Array [
-                Object {
-                  "type": "return",
-                  "value": undefined,
-                },
-              ],
-            },
-          }
-        }
         teammateNameDisplay="username"
         theme={
           Object {
@@ -172,25 +138,8 @@ Array [
       }
     }
   >
-    <ReactionRow
+    <Connect(ReactionRow)
       emojiName="+1"
-      navigator={
-        Object {
-          "setOnNavigatorEvent": [MockFunction] {
-            "calls": Array [
-              Array [
-                [Function],
-              ],
-            ],
-            "results": Array [
-              Object {
-                "type": "return",
-                "value": undefined,
-              },
-            ],
-          },
-        }
-      }
       teammateNameDisplay="username"
       theme={
         Object {
@@ -244,25 +193,8 @@ Array [
       }
     }
   >
-    <ReactionRow
+    <Connect(ReactionRow)
       emojiName="smile"
-      navigator={
-        Object {
-          "setOnNavigatorEvent": [MockFunction] {
-            "calls": Array [
-              Array [
-                [Function],
-              ],
-            ],
-            "results": Array [
-              Object {
-                "type": "return",
-                "value": undefined,
-              },
-            ],
-          },
-        }
-      }
       teammateNameDisplay="username"
       theme={
         Object {

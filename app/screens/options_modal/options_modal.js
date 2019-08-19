@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
+    Platform,
     StyleSheet,
     TouchableWithoutFeedback,
     View,
@@ -22,21 +23,22 @@ const DURATION = 200;
 
 export default class OptionsModal extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            dismissModal: PropTypes.func.isRequired,
+        }).isRequired,
         items: PropTypes.array.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        navigator: PropTypes.object,
         onCancelPress: PropTypes.func,
-        onItemPress: PropTypes.func,
         title: PropTypes.oneOfType([
             PropTypes.string,
             PropTypes.object,
         ]),
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         onCancelPress: emptyFunction,
-        onItemPress: emptyFunction,
     };
 
     constructor(props) {
@@ -69,17 +71,23 @@ export default class OptionsModal extends PureComponent {
             toValue: this.props.deviceHeight,
             duration: DURATION,
         }).start(() => {
-            this.props.navigator.dismissModal({
-                animationType: 'none',
-            });
+            this.props.actions.dismissModal();
         });
+    };
+
+    onItemPress = () => {
+        if (Platform.OS === 'android') {
+            this.close();
+        } else {
+            this.props.actions.dismissModal();
+        }
     };
 
     render() {
         const {
             items,
-            onItemPress,
             title,
+            isLandscape,
         } = this.props;
 
         return (
@@ -89,8 +97,9 @@ export default class OptionsModal extends PureComponent {
                         <OptionsModalList
                             items={items}
                             onCancelPress={this.handleCancel}
-                            onItemPress={onItemPress}
+                            onItemPress={this.onItemPress}
                             title={title}
+                            isLandscape={isLandscape}
                         />
                     </AnimatedView>
                 </View>

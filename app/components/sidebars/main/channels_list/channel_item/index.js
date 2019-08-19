@@ -14,8 +14,9 @@ import {getTheme, getTeammateNameDisplaySetting} from 'mattermost-redux/selector
 import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
-
+import {isLandscape} from 'app/selectors/device';
 import {getDraftForChannel} from 'app/selectors/views';
+import {isGuest as isGuestUser} from 'app/utils/users';
 
 import ChannelItem from './channel_item';
 
@@ -30,6 +31,7 @@ function makeMapStateToProps() {
 
         let displayName = channel.display_name;
         let isBot = false;
+        let isGuest = false;
 
         if (channel.type === General.DM_CHANNEL) {
             if (ownProps.isSearchResult) {
@@ -42,6 +44,7 @@ function makeMapStateToProps() {
                 if (teammate && teammate.is_bot) {
                     isBot = true;
                 }
+                isGuest = isGuestUser(teammate);
             }
         }
 
@@ -81,6 +84,8 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             unreadMsgs,
             isBot,
+            isLandscape: isLandscape(state),
+            isGuest,
         };
     };
 }

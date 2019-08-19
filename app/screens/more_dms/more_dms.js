@@ -5,12 +5,14 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {Platform, View} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getGroupDisplayNameFromUserIds} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
@@ -38,15 +40,18 @@ export default class MoreDirectMessages extends PureComponent {
             getProfilesInTeam: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         allProfiles: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        navigator: PropTypes.object,
         restrictDirectMessage: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -59,6 +64,7 @@ export default class MoreDirectMessages extends PureComponent {
         this.searchTimeoutId = 0;
         this.next = true;
         this.page = -1;
+        this.mounted = false;
 
         this.state = {
             profiles: [],
@@ -69,29 +75,42 @@ export default class MoreDirectMessages extends PureComponent {
             selectedIds: {},
             selectedCount: 0,
         };
-
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        this.updateNavigationButtons(false, context);
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+        this.mounted = true;
+        this.updateNavigationButtons(false);
+
         this.getProfiles();
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
     componentDidUpdate(prevProps) {
-        const {navigator, theme} = this.props;
+        const {componentId, theme} = this.props;
         const {selectedCount, startingConversation} = this.state;
         const canStart = selectedCount > 0 && !startingConversation;
 
         this.updateNavigationButtons(canStart);
 
         if (theme !== prevProps.theme) {
-            setNavigatorStyles(navigator, theme);
+            setNavigatorStyles(componentId, theme);
+        }
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === START_BUTTON) {
+            this.startConversation();
+        } else if (buttonId === CLOSE_BUTTON) {
+            this.close();
         }
     }
 
     close = () => {
-        this.props.navigator.dismissModal({animationType: 'slide-down'});
+        this.props.actions.dismissModal();
     };
 
     clearSearch = () => {
@@ -100,7 +119,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     getProfiles = debounce(() => {
         const {loading, term} = this.state;
-        if (this.next && !loading && !term) {
+        if (this.next && !loading && !term && this.mounted) {
             this.setState({loading: true}, () => {
                 const {actions, currentTeamId, restrictDirectMessage} = this.props;
 
@@ -171,13 +190,15 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     loadedProfiles = ({data}) => {
-        const {profiles} = this.state;
-        if (data && !data.length) {
-            this.next = false;
-        }
+        if (this.mounted) {
+            const {profiles} = this.state;
+            if (data && !data.length) {
+                this.next = false;
+            }
 
-        this.page += 1;
-        this.setState({loading: false, profiles: [...profiles, ...data]});
+            this.page += 1;
+            this.setState({loading: false, profiles: [...profiles, ...data]});
+        }
     };
 
     makeDirectChannel = async (id) => {
@@ -233,16 +254,6 @@ export default class MoreDirectMessages extends PureComponent {
         }
 
         return !result.error;
-    };
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            if (event.id === START_BUTTON) {
-                this.startConversation();
-            } else if (event.id === CLOSE_BUTTON) {
-                this.close();
-            }
-        }
     };
 
     onSearch = (text) => {
@@ -316,13 +327,14 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     updateNavigationButtons = (startEnabled, context = this.context) => {
+        const {actions, componentId} = this.props;
         const {formatMessage} = context.intl;
-        this.props.navigator.setButtons({
+        actions.setButtons(componentId, {
             rightButtons: [{
                 id: START_BUTTON,
-                title: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
+                text: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
-                disabled: !startEnabled,
+                enabled: startEnabled,
             }],
         });
     };
@@ -383,7 +395,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {currentUserId, theme} = this.props;
+        const {currentUserId, theme, isLandscape} = this.props;
         const {
             loading,
             profiles,
@@ -441,7 +453,7 @@ export default class MoreDirectMessages extends PureComponent {
         return (
             <KeyboardLayout>
                 <StatusBar/>
-                <View style={style.searchBar}>
+                <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
                         ref='search_bar'
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}

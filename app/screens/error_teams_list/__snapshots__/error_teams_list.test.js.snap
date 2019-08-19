@@ -11,18 +11,10 @@ exports[`ErrorTeamsList should match snapshot 1`] = `
 >
   <Connect(StatusBar) />
   <FailedNetworkAction
-    errorDescription={
-      Object {
-        "defaultMessage": "Make sure you have an active connection and try again.",
-        "id": "mobile.failed_network_action.shortDescription",
-      }
-    }
-    errorTitle={
-      Object {
-        "defaultMessage": "Team Not Found",
-        "id": "error.team_not_found.title",
-      }
-    }
+    actionDefaultMessage="try again"
+    actionId="mobile.failed_network_action.retry"
+    errorDefaultMessage="Messages will load when you have an internet connection or {refresh}."
+    errorId="mobile.failed_network_action.shortDescription"
     onRetry={[Function]}
     theme={
       Object {

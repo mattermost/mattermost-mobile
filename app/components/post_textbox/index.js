@@ -7,10 +7,11 @@ import {connect} from 'react-redux';
 import {General} from 'mattermost-redux/constants';
 import {createPost} from 'mattermost-redux/actions/posts';
 import {setStatus} from 'mattermost-redux/actions/users';
-import {getCurrentChannel, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats} from 'mattermost-redux/selectors/entities/channels';
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+import {getChannelTimezones} from 'mattermost-redux/actions/channels';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
@@ -21,6 +22,7 @@ import {userTyping} from 'app/actions/views/typing';
 import {getCurrentChannelDraft, getThreadDraft} from 'app/selectors/views';
 import {getChannelMembersForDm} from 'app/selectors/channel';
 import {getAllowedServerMaxFileSize} from 'app/utils/file';
+import {isLandscape} from 'app/selectors/device';
 
 import PostTextbox from './post_textbox';
 
@@ -42,8 +44,13 @@ function mapStateToProps(state, ownProps) {
     const currentUserId = getCurrentUserId(state);
     const status = getStatusForUserId(state, currentUserId);
     const userIsOutOfOffice = status === General.OUT_OF_OFFICE;
+    const enableConfirmNotificationsToChannel = config?.EnableConfirmNotificationsToChannel === 'true';
+    const currentChannelStats = getCurrentChannelStats(state);
+    const currentChannelMembersCount = currentChannelStats?.member_count || 0; // eslint-disable-line camelcase
+    const isTimezoneEnabled = config?.ExperimentalTimezone === 'true';
 
     return {
+        currentChannel,
         channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
         channelTeamId: currentChannel ? currentChannel.team_id : '',
         canUploadFiles: canUploadFilesOnMobile(state),
@@ -60,6 +67,10 @@ function mapStateToProps(state, ownProps) {
         theme: getTheme(state),
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
         value: currentDraft.draft,
+        enableConfirmNotificationsToChannel,
+        currentChannelMembersCount,
+        isTimezoneEnabled,
+        isLandscape: isLandscape(state),
     };
 }
 
@@ -79,6 +90,7 @@ function mapDispatchToProps(dispatch) {
             handleCommentDraftSelectionChanged,
             setStatus,
             selectPenultimateChannel,
+            getChannelTimezones,
         }, dispatch),
     };
 }

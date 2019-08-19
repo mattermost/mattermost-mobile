@@ -12,6 +12,9 @@ import {
     View,
 } from 'react-native';
 
+import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
+import {DeviceTypes} from 'app/constants';
+
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {getNearestPoint} from 'app/utils/opengraph';
@@ -25,13 +28,13 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getOpenGraphMetadata: PropTypes.func.isRequired,
+            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         imagesMetadata: PropTypes.object,
         isReplyPost: PropTypes.bool,
         link: PropTypes.string.isRequired,
-        navigator: PropTypes.object.isRequired,
         openGraphData: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
@@ -86,6 +89,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         const bestImage = getNearestPoint(bestDimensions, data.images, 'width', 'height');
         const imageUrl = bestImage.secure_url || bestImage.url;
+
         let ogImage;
         if (imagesMetadata && imagesMetadata[imageUrl]) {
             ogImage = imagesMetadata[imageUrl];
@@ -93,6 +97,12 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         if (!ogImage) {
             ogImage = data.images.find((i) => i.url === imageUrl || i.secure_url === imageUrl);
+        }
+
+        // Fallback when the ogImage does not have dimensions but there is a metaImage defined
+        const metaImages = imagesMetadata ? Object.values(imagesMetadata) : null;
+        if ((!ogImage?.width || !ogImage?.height) && metaImages?.length) {
+            ogImage = metaImages[0];
         }
 
         let dimensions = bestDimensions;
@@ -136,9 +146,16 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             ogImage = openGraphData.images.find((i) => i.url === openGraphImageUrl || i.secure_url === openGraphImageUrl);
         }
 
+        // Fallback when the ogImage does not have dimensions but there is a metaImage defined
+        const metaImages = imagesMetadata ? Object.values(imagesMetadata) : null;
+        if ((!ogImage?.width || !ogImage?.height) && metaImages?.length) {
+            ogImage = metaImages[0];
+        }
+
         if (ogImage?.width && ogImage?.height) {
             this.setImageSize(imageUrl, ogImage.width, ogImage.height);
         } else {
+            // if we get to this point there can be a scroll pop
             Image.getSize(imageUrl, (width, height) => {
                 this.setImageSize(imageUrl, width, height);
             }, () => null);
@@ -162,8 +179,9 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         const {deviceHeight, deviceWidth, isReplyPost} = this.props;
         const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
         const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
+        const tabletOffset = DeviceTypes.IS_TABLET ? TABLET_WIDTH : 0;
 
-        return viewPortWidth;
+        return viewPortWidth - tabletOffset;
     };
 
     goToLink = () => {
@@ -177,6 +195,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             originalWidth,
             originalHeight,
         } = this.state;
+        const {actions} = this.props;
         const filename = this.getFilename(link);
 
         const files = [{
@@ -191,7 +210,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             },
         }];
 
-        previewImageAtIndex(this.props.navigator, [this.refs.item], 0, files);
+        previewImageAtIndex([this.refs.item], 0, files, actions.showModalOverCurrentContext);
     };
 
     renderDescription = () => {

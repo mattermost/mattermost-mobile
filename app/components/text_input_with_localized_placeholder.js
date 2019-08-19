@@ -6,10 +6,16 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {TextInput} from 'react-native';
 
+import {changeOpacity} from 'app/utils/theme';
+
 export default class TextInputWithLocalizedPlaceholder extends PureComponent {
     static propTypes = {
         ...TextInput.propTypes,
         placeholder: PropTypes.object.isRequired,
+    };
+
+    static defaultProps = {
+        placeholderTextColor: changeOpacity('#000', 0.5),
     };
 
     static contextTypes = {

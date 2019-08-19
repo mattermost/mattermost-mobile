@@ -19,6 +19,8 @@ import {
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
+import {RequestStatus} from 'mattermost-redux/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -27,29 +29,30 @@ import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
+import {changeOpacity} from 'app/utils/theme';
 
 import telemetry from 'app/telemetry';
 
-import {RequestStatus} from 'mattermost-redux/constants';
-
-const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
+export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
 export default class Login extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object,
-        theme: PropTypes.object,
         actions: PropTypes.shape({
             handleLoginIdChanged: PropTypes.func.isRequired,
             handlePasswordChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
+            resetToChannel: PropTypes.func.isRequired,
+            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
+        theme: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
         loginRequest: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -66,6 +69,7 @@ export default class Login extends PureComponent {
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
+
         setMfaPreflightDone(false);
     }
 
@@ -84,45 +88,20 @@ export default class Login extends PureComponent {
     goToChannel = () => {
         telemetry.remove(['start:overall']);
 
-        const {navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         this.scheduleSessionExpiredNotification();
 
-        navigator.resetTo({
-            screen: 'Channel',
-            title: '',
-            animated: false,
-            backButtonTitle: '',
-            navigatorStyle: {
-                animated: true,
-                animationType: 'fade',
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-            },
-        });
+        this.props.actions.resetToChannel();
     };
 
     goToMfa = () => {
+        const {actions} = this.props;
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
+        const screen = 'MFA';
+        const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
 
-        this.setState({isLoading: false});
-
-        navigator.push({
-            screen: 'MFA',
-            title: intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        actions.goToScreen(screen, title);
     };
 
     blur = () => {
@@ -309,20 +288,12 @@ export default class Login extends PureComponent {
     };
 
     forgotPassword = () => {
+        const {actions} = this.props;
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
-        navigator.push({
-            screen: 'ForgotPassword',
-            title: intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-        });
+        const screen = 'ForgotPassword';
+        const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
+
+        actions.goToScreen(screen, title);
     }
 
     render() {
@@ -389,7 +360,7 @@ export default class Login extends PureComponent {
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
                         style={style.container}
-                        contentContainerStyle={style.innerContainer}
+                        contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
                         keyboardShouldPersistTaps='handled'
                         enableOnAndroid={true}
                     >
@@ -414,6 +385,7 @@ export default class Login extends PureComponent {
                             onChangeText={this.props.actions.handleLoginIdChanged}
                             style={GlobalStyles.inputBox}
                             placeholder={this.createLoginPlaceholder()}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
                             autoCorrect={false}
                             autoCapitalize='none'
                             keyboardType='email-address'
@@ -430,6 +402,7 @@ export default class Login extends PureComponent {
                             onChangeText={this.props.actions.handlePasswordChanged}
                             style={GlobalStyles.inputBox}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
                             secureTextEntry={true}
                             autoCorrect={false}
                             autoCapitalize='none'

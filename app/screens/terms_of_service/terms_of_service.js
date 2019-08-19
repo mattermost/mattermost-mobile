@@ -9,25 +9,15 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
 import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
 import Markdown from 'app/components/markdown';
 import StatusBar from 'app/components/status_bar';
 
-import {t} from 'app/utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-
-const errorTitle = {
-    id: t('mobile.terms_of_service.get_terms_error_title'),
-    defaultMessage: 'Unable to load terms of service.',
-};
-
-const errorDescription = {
-    id: t('mobile.terms_of_service.get_terms_error_description'),
-    defaultMessage: 'Make sure you have an active internet connection and try again. If this issue persists, contact your System Administrator.',
-};
 
 export default class TermsOfService extends PureComponent {
     static propTypes = {
@@ -35,9 +25,12 @@ export default class TermsOfService extends PureComponent {
             logout: PropTypes.func.isRequired,
             getTermsOfService: PropTypes.func.isRequired,
             updateMyTermsOfServiceStatus: PropTypes.func.isRequired,
+            setButtons: PropTypes.func.isRequired,
+            dismissModal: PropTypes.func.isRequired,
+            dismissAllModals: PropTypes.func.isRequired,
         }).isRequired,
+        componentId: PropTypes.string,
         closeButton: PropTypes.object,
-        navigator: PropTypes.object,
         siteName: PropTypes.string,
         theme: PropTypes.object,
     };
@@ -69,63 +62,64 @@ export default class TermsOfService extends PureComponent {
             termsText: '',
         };
 
-        this.rightButton.title = context.intl.formatMessage({id: 'terms_of_service.agreeButton', defaultMessage: 'I Agree'});
+        this.rightButton.text = context.intl.formatMessage({id: 'terms_of_service.agreeButton', defaultMessage: 'I Agree'});
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.leftButton.icon = props.closeButton;
 
-        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         this.setNavigatorButtons(false);
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+
         this.getTerms();
     }
 
     componentDidUpdate(prevProps) {
         if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.navigator, this.props.theme);
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 
-    onNavigatorEvent = (event) => {
-        if (event.type === 'NavBarButtonPress') {
-            switch (event.id) {
-            case 'close-terms-of-service':
-                this.closeTermsAndLogout();
-                break;
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'close-terms-of-service':
+            this.closeTermsAndLogout();
+            break;
 
-            case 'reject-terms-of-service':
-                this.handleRejectTerms();
-                break;
+        case 'reject-terms-of-service':
+            this.handleRejectTerms();
+            break;
 
-            case 'accept-terms-of-service':
-                this.handleAcceptTerms();
-                break;
-            }
+        case 'accept-terms-of-service':
+            this.handleAcceptTerms();
+            break;
         }
-    };
+    }
 
     setNavigatorButtons = (enabled = true) => {
+        const {actions, componentId} = this.props;
         const buttons = {
-            leftButtons: [{...this.leftButton, disabled: !enabled}],
-            rightButtons: [{...this.rightButton, disabled: !enabled}],
+            leftButtons: [{...this.leftButton, enabled}],
+            rightButtons: [{...this.rightButton, enabled}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        actions.setButtons(componentId, buttons);
     };
 
     enableNavigatorLogout = () => {
         const buttons = {
-            leftButtons: [{...this.leftButton, id: 'close-terms-of-service', disabled: false}],
-            rightButtons: [{...this.rightButton, disabled: true}],
+            leftButtons: [{...this.leftButton, id: 'close-terms-of-service', enabled: true}],
+            rightButtons: [{...this.rightButton, enabled: false}],
         };
 
-        this.props.navigator.setButtons(buttons);
+        this.props.actions.setButtons(buttons);
     };
 
     closeTermsAndLogout = () => {
         const {actions} = this.props;
 
-        this.props.navigator.dismissAllModals();
+        actions.dismissAllModals();
         actions.logout();
     };
 
@@ -162,9 +156,7 @@ export default class TermsOfService extends PureComponent {
         this.registerUserAction(
             true,
             () => {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down',
-                });
+                this.props.actions.dismissModal();
             },
             this.handleAcceptTerms
         );
@@ -233,7 +225,7 @@ export default class TermsOfService extends PureComponent {
     };
 
     render() {
-        const {navigator, theme} = this.props;
+        const {theme} = this.props;
         const styles = getStyleSheet(theme);
 
         const blockStyles = getMarkdownBlockStyles(theme);
@@ -250,8 +242,6 @@ export default class TermsOfService extends PureComponent {
                     <FailedNetworkAction
                         onRetry={this.getTerms}
                         theme={theme}
-                        errorTitle={errorTitle}
-                        errorDescription={errorDescription}
                     />
                 </View>
             );
@@ -266,7 +256,6 @@ export default class TermsOfService extends PureComponent {
                 >
                     <Markdown
                         baseTextStyle={styles.baseText}
-                        navigator={navigator}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         value={this.state.termsText}
@@ -290,9 +279,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
-        },
-        linkText: {
-            color: theme.linkColor,
         },
         scrollView: {
             flex: 1,

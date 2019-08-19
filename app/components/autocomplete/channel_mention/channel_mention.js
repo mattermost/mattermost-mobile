@@ -39,6 +39,8 @@ export default class ChannelMention extends PureComponent {
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
         serverVersion: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
+        nestedScrollEnabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -195,6 +197,7 @@ export default class ChannelMention extends PureComponent {
                 defaultMessage={section.defaultMessage}
                 loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
+                isLandscape={this.props.isLandscape}
             />
         );
     };
@@ -209,7 +212,7 @@ export default class ChannelMention extends PureComponent {
     };
 
     render() {
-        const {maxListHeight, theme} = this.props;
+        const {maxListHeight, theme, nestedScrollEnabled} = this.props;
         const {mentionComplete, sections} = this.state;
 
         if (sections.length === 0 || mentionComplete) {
@@ -230,6 +233,7 @@ export default class ChannelMention extends PureComponent {
                 renderSectionHeader={this.renderSectionHeader}
                 ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
+                nestedScrollEnabled={nestedScrollEnabled}
             />
         );
     }

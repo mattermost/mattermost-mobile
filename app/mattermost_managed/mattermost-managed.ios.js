@@ -45,10 +45,15 @@ export default {
 
         return cachedConfig;
     },
+    goToSecuritySettings: () => {
+        // Do nothing since iOS doesn't allow apps to do this
+    },
     getCachedConfig: () => {
         return cachedConfig;
     },
+    appGroupIdentifier: MattermostManaged.appGroupIdentifier,
     hasSafeAreaInsets: MattermostManaged.hasSafeAreaInsets,
+    isRunningInSplitView: MattermostManaged.isRunningInSplitView,
     isDeviceSecure: async () => {
         try {
             return await LocalAuth.isDeviceSecure();

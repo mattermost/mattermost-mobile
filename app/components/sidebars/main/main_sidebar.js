@@ -5,11 +5,13 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     BackHandler,
+    Dimensions,
     Keyboard,
     StyleSheet,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import {General, WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -17,6 +19,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import SafeAreaView from 'app/components/safe_area_view';
 import DrawerLayout, {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes} from 'app/constants';
+import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 
@@ -44,9 +47,9 @@ export default class ChannelSidebar extends Component {
         currentUserId: PropTypes.string.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-        navigator: PropTypes.object,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
+        previewChannel: PropTypes.func,
     };
 
     static contextTypes = {
@@ -63,20 +66,27 @@ export default class ChannelSidebar extends Component {
 
         this.swiperIndex = 1;
         this.drawerRef = React.createRef();
+        this.channelListRef = React.createRef();
         this.state = {
             show: false,
             openDrawerOffset,
             drawerOpened: false,
             searching: false,
+            isSplitView: false,
         };
     }
 
     componentDidMount() {
+        this.mounted = true;
         this.props.actions.getTeams();
+        this.handleDimensions();
+        this.handlePermanentSidebar();
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.on('renderDrawer', this.handleShowDrawerContent);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
+        EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
+        Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -96,7 +106,7 @@ export default class ChannelSidebar extends Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const {currentTeamId, deviceWidth, isLandscape, teamsCount} = this.props;
-        const {openDrawerOffset, show, searching} = this.state;
+        const {openDrawerOffset, isSplitView, permanentSidebar, show, searching} = this.state;
 
         if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching) {
             return true;
@@ -104,14 +114,19 @@ export default class ChannelSidebar extends Component {
 
         return nextProps.currentTeamId !== currentTeamId ||
             nextProps.isLandscape !== isLandscape || nextProps.deviceWidth !== deviceWidth ||
-            nextProps.teamsCount !== teamsCount;
+            nextProps.teamsCount !== teamsCount ||
+            nextState.isSplitView !== isSplitView ||
+            nextState.permanentSidebar !== permanentSidebar;
     }
 
     componentWillUnmount() {
+        this.mounted = false;
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         EventEmitter.off('renderDrawer', this.handleShowDrawerContent);
+        EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+        Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     handleAndroidBack = () => {
@@ -123,8 +138,24 @@ export default class ChannelSidebar extends Component {
         return false;
     };
 
+    handleDimensions = () => {
+        if (DeviceTypes.IS_TABLET && this.mounted) {
+            mattermostManaged.isRunningInSplitView().then((result) => {
+                const isSplitView = Boolean(result.isSplitView);
+                this.setState({isSplitView});
+            });
+        }
+    };
+
+    handlePermanentSidebar = async () => {
+        if (DeviceTypes.IS_TABLET && this.mounted) {
+            const enabled = await AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS);
+            this.setState({permanentSidebar: enabled === 'true'});
+        }
+    };
+
     handleShowDrawerContent = () => {
-        this.setState({show: true});
+        requestAnimationFrame(() => this.setState({show: true}));
     };
 
     closeChannelDrawer = () => {
@@ -142,6 +173,7 @@ export default class ChannelSidebar extends Component {
     handleDrawerClose = () => {
         this.setState({
             drawerOpened: false,
+            searching: false,
         });
         this.resetDrawer();
         Keyboard.dismiss();
@@ -283,13 +315,21 @@ export default class ChannelSidebar extends Component {
         if (this.drawerSwiper) {
             this.drawerSwiper.resetPage();
         }
+
+        if (this.drawerRef?.current) {
+            this.drawerRef.current.canClose = true;
+        }
+
+        if (this.channelListRef?.current) {
+            this.channelListRef.current.cancelSearch();
+        }
     };
 
     renderNavigationView = (drawerWidth) => {
         const {
-            navigator,
             teamsCount,
             theme,
+            previewChannel,
         } = this.props;
 
         const {
@@ -321,7 +361,6 @@ export default class ChannelSidebar extends Component {
                 >
                     <TeamsList
                         closeChannelDrawer={this.closeChannelDrawer}
-                        navigator={navigator}
                     />
                 </View>
             );
@@ -334,7 +373,7 @@ export default class ChannelSidebar extends Component {
                 style={style.swiperContent}
             >
                 <ChannelsList
-                    navigator={navigator}
+                    ref={this.channelListRef}
                     onSelectChannel={this.selectChannel}
                     onJoinChannel={this.joinChannel}
                     onShowTeams={this.showTeams}
@@ -342,6 +381,7 @@ export default class ChannelSidebar extends Component {
                     onSearchEnds={this.onSearchEnds}
                     theme={theme}
                     drawerOpened={this.state.drawerOpened}
+                    previewChannel={previewChannel}
                 />
             </View>
         );
@@ -350,8 +390,7 @@ export default class ChannelSidebar extends Component {
             <SafeAreaView
                 navBarBackgroundColor={theme.sidebarBg}
                 backgroundColor={theme.sidebarHeaderBg}
-                footerColor={theme.sidebarHeaderBg}
-                navigator={navigator}
+                footerColor={theme.sidebarBg}
             >
                 <DrawerSwiper
                     ref={this.drawerSwiperRef}
@@ -369,6 +408,7 @@ export default class ChannelSidebar extends Component {
     render() {
         const {children, deviceWidth} = this.props;
         const {openDrawerOffset} = this.state;
+        const isTablet = DeviceTypes.IS_TABLET && !this.state.isSplitView && this.state.permanentSidebar;
         const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
 
         return (
@@ -379,7 +419,7 @@ export default class ChannelSidebar extends Component {
                 onDrawerOpen={this.handleDrawerOpen}
                 drawerWidth={drawerWidth}
                 useNativeAnimations={true}
-                isTablet={DeviceTypes.IS_TABLET}
+                isTablet={isTablet}
             >
                 {children}
             </DrawerLayout>
