@@ -31,7 +31,7 @@ import com.oblador.keychain.KeychainModule;
 import com.reactnativecommunity.asyncstorage.AsyncStorageModule;
 import com.reactnativecommunity.netinfo.NetInfoModule;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
-import io.sentry.RNSentryPackage;
+import io.sentry.RNSentryModule;
 
 import com.brentvatne.react.ReactVideoPackage;
 import com.BV.LinearGradient.LinearGradientPackage;
@@ -142,6 +142,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return new DocumentPicker(reactContext);
                   case "RNKeychainManager":
                     return new KeychainModule(reactContext);
+                  case "RNSentry":
+                    return new RNSentryModule(reactContext);
                   case AsyncStorageModule.NAME:
                     return new AsyncStorageModule(reactContext);
                   case NetInfoModule.NAME:
@@ -175,6 +177,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("RNDocViewer", new ReactModuleInfo("RNDocViewer", "com.philipphecht.RNDocViewerModule", false, false, false, false, false));
                     map.put("RNDocumentPicker", new ReactModuleInfo("RNDocumentPicker", "com.reactnativedocumentpicker.DocumentPicker", false, false, false, false, false));
                     map.put("RNKeychainManager", new ReactModuleInfo("RNKeychainManager", "com.oblador.keychain.KeychainModule", false, false, true, false, false));
+                    map.put("RNSentry", new ReactModuleInfo("RNSentry", "com.sentry.RNSentryModule", false, false, true, false, false));
                     map.put(AsyncStorageModule.NAME, new ReactModuleInfo(AsyncStorageModule.NAME, "com.reactnativecommunity.asyncstorage.AsyncStorageModule", false, false, false, false, false));
                     map.put(NetInfoModule.NAME, new ReactModuleInfo(NetInfoModule.NAME, "com.reactnativecommunity.netinfo.NetInfoModule", false, false, false, false, false));
                     return map;
@@ -186,8 +189,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SvgPackage(),
             new LinearGradientPackage(),
             new ReactVideoPackage(),
-            new RNGestureHandlerPackage(),
-            new RNSentryPackage()
+            new RNGestureHandlerPackage()
     );
   }
 
