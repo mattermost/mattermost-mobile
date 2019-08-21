@@ -38,6 +38,13 @@ public class ReceiptDelivery {
                 if (map != null) {
                     String token = map.getString("password");
                     String serverUrl = map.getString("service");
+                    if (serverUrl.isEmpty()) {
+                        String[] credentials = token.split(",[ ]*");
+                        if (credentials.length == 2) {
+                            token = credentials[0];
+                            serverUrl = credentials[1];
+                        }
+                    }
 
                     Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with TOKEN=%s", ackId, type, serverUrl, token));
                     execute(serverUrl, token, ackId, type);
