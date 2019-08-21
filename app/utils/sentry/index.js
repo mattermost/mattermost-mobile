@@ -23,9 +23,6 @@ export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
 
 export function initializeSentry() {
     if (!Config.SentryEnabled) {
-        // Still allow Sentry to configure itself in case other code tries to call it
-        Sentry.init({});
-
         return;
     }
 
@@ -33,6 +30,7 @@ export function initializeSentry() {
 
     if (!dsn) {
         console.warn('Sentry is enabled, but not configured on this platform'); // eslint-disable-line no-console
+        return;
     }
 
     Sentry.init({dsn, ...Config.SentryOptions});
