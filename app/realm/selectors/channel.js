@@ -35,19 +35,21 @@ export const getSortedUnreadChannels = createSelector(
 
         teamChannels.forEach((channel) => {
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
-            const hasMessages = (channel.totalMsgCount - member.msgCount) > 0;
-            const hasMentions = member.mentionCount > 0;
-            const isArchived = channel.deleteAt > 0 && filterArchived;
+            if (member) {
+                const hasMessages = (channel.totalMsgCount - member.msgCount) > 0;
+                const hasMentions = member.mentionCount > 0;
+                const isArchived = channel.deleteAt > 0 && filterArchived;
 
-            if (
-                !isArchived && (
-                    channel.id === lastUnreadChannelId ||
-                    (member.notifyPropsAsJSON && member.notifyPropsAsJSON.mark_unread !== 'mention' && hasMessages) ||
-                    hasMentions
-                )
-            ) {
-                members[channel.id] = member;
-                channels.push(channel);
+                if (
+                    !isArchived && (
+                        channel.id === lastUnreadChannelId ||
+                        (member.notifyPropsAsJSON && member.notifyPropsAsJSON.mark_unread !== 'mention' && hasMessages) ||
+                        hasMentions
+                    )
+                ) {
+                    members[channel.id] = member;
+                    channels.push(channel);
+                }
             }
         });
 
@@ -67,14 +69,14 @@ export const getSortedFavoriteChannels = createSelector(
     (options) => options,
     (unreadIds, options) => {
         const {currentUserId, preferences, teamChannels, filterArchived} = options;
-        const favoriteIds = preferences.filtered('category = $0', Preferences.CATEGORY_FAVORITE_CHANNEL).map((favorite) => favorite.name);
+        const favoriteIds = preferences.filtered('category = $0 AND value = "true"', Preferences.CATEGORY_FAVORITE_CHANNEL).map((favorite) => favorite.name);
         const channels = [];
         const members = {};
 
         teamChannels.forEach((channel) => {
             const isArchived = channel.deleteAt > 0 && filterArchived;
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
-            if (favoriteIds.includes(channel.id) && !unreadIds.includes(channel.id) && !isArchived) {
+            if (favoriteIds.includes(channel.id) && !unreadIds.includes(channel.id) && !isArchived && member) {
                 members[channel.id] = member;
                 channels.push(channel);
             }
@@ -104,7 +106,7 @@ export const getSortedPublicChannels = createSelector(
             const isArchived = channel.deleteAt > 0 && filterArchived;
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
 
-            if (!isArchived) {
+            if (!isArchived && member) {
                 members[channel.id] = member;
                 channels.push(channel);
             }
@@ -142,7 +144,7 @@ export const getSortedPrivateChannels = createSelector(
             const isArchived = channel.deleteAt > 0 && filterArchived;
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
 
-            if (!isArchived) {
+            if (!isArchived && member) {
                 members[channel.id] = member;
                 channels.push(channel);
             }
@@ -201,7 +203,7 @@ export const getSortedDirectChannels = createSelector(
                     break;
                 }
 
-                if (add) {
+                if (add && member) {
                     members[channel.id] = member;
                     channels.push(channel);
                 }
@@ -239,7 +241,7 @@ export const getAllSortedChannels = createSelector(
             const isArchived = channel.deleteAt > 0 && filterArchived;
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
 
-            if (!isArchived) {
+            if (!isArchived && member) {
                 members[channel.id] = member;
                 channels.push(channel);
             }
@@ -279,7 +281,7 @@ export const getSortedPublicAndPrivateChannels = createSelector(
                 const isArchived = channel.deleteAt > 0 && filterArchived;
                 const member = channel.members.filtered('user.id = $0', currentUserId)[0];
 
-                if (!isArchived) {
+                if (!isArchived && member) {
                     members[channel.id] = member;
                     channels.push(channel);
                 }
@@ -310,7 +312,7 @@ export const getSortedArchivedChannels = createSelector(
                 const isArchived = channel.deleteAt;
                 const member = channel.members.filtered('user.id = $0', currentUserId)[0];
 
-                if (isArchived) {
+                if (isArchived && member) {
                     members[channel.id] = member;
                     channels.push(channel);
                 }
@@ -556,11 +558,15 @@ function mapAndSortChannels(channels, myMembers, options) {
     const teammateDisplayNamePref = preferences.filtered('category = $0 AND name = $1', Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT)[0];
     const displayNameSettings = getDisplayNameSettings(teammateDisplayNameSettings, teammateDisplayNamePref);
 
-    const mutedChannels = channels.
-        filter((c) => isChannelMuted(myMembers[c.id])).
-        sort(sortChannelsByRecencyOrAlpha.bind(null, currentUserId, lang, displayNameSettings, myMembers, sortingType));
+    let mutedChannels = [];
+    let mutedChannelIds = [];
+    if (myMembers) {
+        mutedChannels = channels.
+            filter((c) => isChannelMuted(myMembers[c.id])).
+            sort(sortChannelsByRecencyOrAlpha.bind(null, currentUserId, lang, displayNameSettings, myMembers, sortingType));
 
-    const mutedChannelIds = mutedChannels.map((c) => c.id);
+        mutedChannelIds = mutedChannels.map((c) => c.id);
+    }
 
     let channelsWithMentions = [];
     let channelIdsWithMentions = [];
