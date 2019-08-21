@@ -327,10 +327,11 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     updateNavigationButtons = (startEnabled, context = this.context) => {
-        const {actions, componentId} = this.props;
+        const {actions, componentId, theme} = this.props;
         const {formatMessage} = context.intl;
         actions.setButtons(componentId, {
             rightButtons: [{
+                color: theme.sidebarHeaderTextColor,
                 id: START_BUTTON,
                 text: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',

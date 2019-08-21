@@ -99,6 +99,7 @@ export default class EditChannel extends PureComponent {
             header,
         };
 
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.rightButton.text = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
 
         const buttons = {

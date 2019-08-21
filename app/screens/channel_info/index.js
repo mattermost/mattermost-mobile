@@ -35,6 +35,7 @@ import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 import {
     popTopScreen,
     goToScreen,
+    popToRoot,
     dismissModal,
     showModalOverCurrentContext,
 } from 'app/actions/navigation';
@@ -146,6 +147,7 @@ function mapDispatchToProps(dispatch) {
             handleSelectChannel,
             popTopScreen,
             goToScreen,
+            popToRoot,
             dismissModal,
             showModalOverCurrentContext,
         }, dispatch),
