@@ -101,7 +101,7 @@ function loadTranslation(locale) {
         }
 
         if (momentData) {
-            moment.updateLocale(locale, momentData);
+            moment.updateLocale(locale.toLowerCase(), momentData);
         }
     } catch (e) {
         console.error('NO Translation found', e); //eslint-disable-line no-console
