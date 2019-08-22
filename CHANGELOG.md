@@ -11,6 +11,8 @@
 ### Bug Fixes
  - Fixed an issue where the apps crashed when setting the language to Chinese Traditional.
  - Fixed an issue on Android where push notification receipt delivery failed due to invalid server URL.
+ - Fixed an issue where the apps crashed when launched via a notification.
+ - Fixed an issue where a post made while the app was closed did not appear until refresh.
 
 ## 1.22.0 Release
 - Release Date: August 16, 2019
