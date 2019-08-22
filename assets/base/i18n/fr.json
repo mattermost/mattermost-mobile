@@ -518,7 +518,7 @@
   "user.settings.general.email": "E-mail",
   "user.settings.general.emailCantUpdate": "L'adresse e-mail ne peut être mise à jour qu'en utilisant un navigateur web ou l'application de bureau.",
   "user.settings.general.emailGitlabCantUpdate": "La connexion s'effectue par Gitlab. L'adresse e-mail ne peut pas être mise à jour. L'adresse e-mail utilisée pour les notifications par e-mail est {email}.",
-  "user.settings.general.emailGoogleCantUpdate": "La connexion s'effectue par Gitlab. L'adresse e-mail ne peut pas être mise à jour. L'adresse e-mail utilisée pour les notifications par e-mail est {email} .",
+  "user.settings.general.emailGoogleCantUpdate": "La connexion s'effectue par Google. L'adresse e-mail ne peut pas être mise à jour. L'adresse e-mail utilisée pour les notifications par e-mail est {email} .",
   "user.settings.general.emailHelp2": "L'envoi d'e-mails a été désactivé par votre administrateur système. Aucun e-mail de notification ne peut être envoyé.",
   "user.settings.general.emailLdapCantUpdate": "La connexion s'effectue par AD/LDAP. L'adresse e-mail ne peut pas être mise à jour. L'adresse e-mail utilisée pour les notifications par e-mail est {email}.",
   "user.settings.general.emailOffice365CantUpdate": "La connexion s'effectue par Office 365. L'adresse e-mail ne peut pas être mise à jour. L'adresse e-mail utilisée pour les notifications par e-mail est {email} .",
