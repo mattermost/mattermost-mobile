@@ -31,7 +31,11 @@ import StatusBar from 'app/components/status_bar';
 import {DeviceTypes, ListTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import ChannelDisplayName from './channel_display_name';
@@ -709,6 +713,7 @@ export default class Search extends PureComponent {
                             value={value}
                             containerStyle={style.searchBarContainer}
                             backArrowSize={28}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         />
                     </View>
                     <SectionList

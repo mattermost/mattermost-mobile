@@ -68,5 +68,6 @@ export default {
 
         return JailMonkey.trustFall();
     },
+    supportsFaceId: MattermostManaged.supportsFaceId,
     quitApp: MattermostManaged.quitApp,
 };

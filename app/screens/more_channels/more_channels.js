@@ -19,7 +19,12 @@ import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 export default class MoreChannels extends PureComponent {
     static propTypes = {
@@ -351,6 +356,7 @@ export default class MoreChannels extends PureComponent {
                             onSearchButtonPress={this.searchChannels}
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                             value={term}
                         />
                     </View>
