@@ -591,21 +591,22 @@ export default class PostTextBoxBase extends PureComponent {
     }
 
     handlePasteImages = (images) => {
-        const {maxFileSize} = this.props;
+        const {maxFileSize, files} = this.props;
+        const availableCount = MAX_FILE_COUNT - files.length;
+        if (images.length > availableCount) {
+            this.onShowFileMaxWarning();
+            return;
+        }
+
         const filteredImages = images.filter((image) => {
             const isExceedFileSize = image.fileSize > maxFileSize;
-            if (image.fileSize > maxFileSize) {
+            if (isExceedFileSize) {
                 this.onShowFileSizeWarning(image.fileName);
             }
             return !isExceedFileSize;
         });
 
-        this.handleUploadFiles(filteredImages.slice(0, MAX_FILE_COUNT));
-
-        // Show warning if pasted images are more than MAX_FILE_COUNT
-        if (images.length > MAX_FILE_COUNT) {
-            this.onShowFileMaxWarning();
-        }
+        this.handleUploadFiles(filteredImages.slice(0, availableCount));
     }
 
     renderTextBox = () => {
