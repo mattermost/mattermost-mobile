@@ -134,6 +134,10 @@ export default class PostList extends PureComponent {
         }
     }
 
+    getItemCount = () => {
+        return this.props.postIds.length;
+    };
+
     handleClosePermalink = () => {
         const {actions} = this.props;
         actions.selectFocusedPostId('');
@@ -301,9 +305,8 @@ export default class PostList extends PureComponent {
         }, 250);
     };
 
-    scrollToInitialIndexIfNeeded = (index) => {
-        if (!this.hasDoneInitialScroll && this.flatListRef?.current) {
-            this.hasDoneInitialScroll = true;
+    scrollToIndex = (index) => {
+        if (this.flatListRef?.current) {
             this.animationFrameInitialIndex = requestAnimationFrame(() => {
                 this.flatListRef.current.scrollToIndex({
                     animated: false,
@@ -312,6 +315,20 @@ export default class PostList extends PureComponent {
                     viewPosition: 1, // 0 is at bottom
                 });
             });
+        }
+    };
+
+    scrollToInitialIndexIfNeeded = (index, count = 0) => {
+        if (!this.hasDoneInitialScroll && this.flatListRef?.current) {
+            this.hasDoneInitialScroll = true;
+
+            if (index > 0 && index <= this.getItemCount()) {
+                this.scrollToIndex(index);
+            } else if (count < 3) {
+                setTimeout(() => {
+                    this.scrollToInitialIndexIfNeeded(index, count + 1);
+                }, 300);
+            }
         }
     };
 
