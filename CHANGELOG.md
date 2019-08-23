@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
 ## 1.22.1 Release
-- Release Date: TBD
+- Release Date: August 23, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Combatibility
@@ -12,7 +12,7 @@
  - Fixed an issue where the apps crashed when setting the language to Chinese Traditional.
  - Fixed an issue on Android where push notification receipt delivery failed due to invalid server URL.
  - Fixed an issue where the apps crashed when launched via a notification.
- - Fixed an issue where a post made while the app was closed did not appear until refresh.
+ - Fixed an issue where posts made while the app was closed did not appear until refresh.
 
 ## 1.22.0 Release
 - Release Date: August 16, 2019
