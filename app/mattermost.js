@@ -26,7 +26,7 @@ const reduxStore = configureAppStore();
 let realmStore;
 
 const init = async () => {
-    ephemeralStore.currentServerUrl = await getCurrentServerUrl();
+    const credentials = await getAppCredentials();
     if (ephemeralStore.currentServerUrl) {
         realmStore = configureRealmStore(ephemeralStore.currentServerUrl);
         ephemeralStore.setRealmStoreByServer(ephemeralStore.currentServerUrl, realmStore);
@@ -35,7 +35,7 @@ const init = async () => {
     }
 
     if (ephemeralStore.appStarted) {
-        launchApp();
+        launchApp(credentials);
         return;
     }
 
@@ -52,17 +52,16 @@ const init = async () => {
     }
 
     if (!ephemeralStore.appStarted) {
-        launchAppAndAuthenticateIfNeeded();
+        launchAppAndAuthenticateIfNeeded(credentials);
     }
 };
 
-const launchApp = async () => {
+const launchApp = async (credentials) => {
     telemetry.start([
         'start:select_server_screen',
         'start:channel_screen',
     ]);
 
-    const credentials = await getAppCredentials();
     if (credentials) {
         reduxStore.dispatch(loadMeRedux());
 
@@ -79,9 +78,9 @@ const launchApp = async () => {
     ephemeralStore.appStarted = true;
 };
 
-const launchAppAndAuthenticateIfNeeded = async () => {
+const launchAppAndAuthenticateIfNeeded = async (credentials) => {
     await emmProvider.handleManagedConfig(reduxStore);
-    await launchApp();
+    await launchApp(credentials);
 
     if (emmProvider.enabled) {
         if (emmProvider.jailbreakProtection) {

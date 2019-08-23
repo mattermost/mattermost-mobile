@@ -191,7 +191,8 @@ class GlobalEventHandler {
         }
 
         if (this.launchApp) {
-            this.launchApp();
+            const credentials = await getAppCredentials();
+            this.launchApp(credentials);
         }
     };
 
