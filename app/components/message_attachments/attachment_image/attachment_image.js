@@ -48,6 +48,12 @@ export default class AttachmentImage extends PureComponent {
         }
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.imageUrl && (nextProps.imageUrl !== this.props.imageUrl)) {
+            ImageCacheManager.cache(null, nextProps.imageUrl, this.setImageUrl);
+        }
+    }
+
     handlePreviewImage = () => {
         const {actions, imageUrl} = this.props;
         const {
