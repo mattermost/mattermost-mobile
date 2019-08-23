@@ -29,18 +29,16 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
     }
 
     @Override
-    public void onPaste() {
+    public void onPaste(Uri itemUri) {
         ReactContext reactContext = (ReactContext)mEditText.getContext();
-
-        ClipboardManager clipboardManager = (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clipData = clipboardManager.getPrimaryClip();
-
-        ClipData.Item item = clipData.getItemAt(0);
-        Uri itemUri = item.getUri();
         String uri = itemUri.toString();
 
         // Special handle for Google docs
         if (uri.equals("content://com.google.android.apps.docs.editors.kix.editors.clipboard")) {
+            ClipboardManager clipboardManager = (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clipData = clipboardManager.getPrimaryClip();
+
+            ClipData.Item item = clipData.getItemAt(0);
             String htmlText = item.getHtmlText();
             // Find uri from html
             Matcher matcher = Patterns.WEB_URL.matcher(htmlText);

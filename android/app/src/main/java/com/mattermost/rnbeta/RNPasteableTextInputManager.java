@@ -1,24 +1,20 @@
 package com.mattermost.rnbeta;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
-import android.net.Uri;
+import android.os.Bundle;
+import android.support.v13.view.inputmethod.EditorInfoCompat;
+import android.support.v13.view.inputmethod.InputConnectionCompat;
+import android.support.v13.view.inputmethod.InputContentInfoCompat;
+import android.support.v4.os.BuildCompat;
 import android.text.InputType;
-import android.util.Patterns;
-import android.webkit.MimeTypeMap;
-import android.webkit.URLUtil;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.react.views.textinput.ReactEditText;
 import com.facebook.react.views.textinput.ReactTextInputManager;
 
 import java.util.Map;
-import java.util.regex.Matcher;
 
 import javax.annotation.Nullable;
 
@@ -31,7 +27,33 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
 
     @Override
     public ReactEditText createViewInstance(ThemedReactContext context) {
-        RNPasteableEditText editText = new RNPasteableEditText(context);
+        RNPasteableEditText editText = new RNPasteableEditText(context) {
+            @Override
+            public InputConnection onCreateInputConnection(EditorInfo editorInfo) {
+                final InputConnection ic = super.onCreateInputConnection(editorInfo);
+                EditorInfoCompat.setContentMimeTypes(editorInfo,
+                        new String [] {"image/*"});
+
+
+                final InputConnectionCompat.OnCommitContentListener callback =
+                        (inputContentInfo, flags, opts) -> {
+                            // read and display inputContentInfo asynchronously
+                            if (BuildCompat.isAtLeastNMR1() && (flags &
+                                    InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION) != 0) {
+                                try {
+                                    inputContentInfo.requestPermission();
+                                }
+                                catch (Exception e) {
+                                    return false;
+                                }
+                            }
+
+                            this.getOnPasteListener().onPaste(inputContentInfo.getContentUri());
+                            return true;
+                        };
+                return InputConnectionCompat.createWrapper(ic, editorInfo, callback);
+            }
+        };
         int inputType = editText.getInputType();
         editText.setInputType(inputType & (~InputType.TYPE_TEXT_FLAG_MULTI_LINE));
         editText.setReturnKeyType("done");

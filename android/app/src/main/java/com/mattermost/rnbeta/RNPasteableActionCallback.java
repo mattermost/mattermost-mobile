@@ -41,8 +41,9 @@ public class RNPasteableActionCallback implements ActionMode.Callback {
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        if (item.getItemId() == android.R.id.paste && this.shouldCustomHandlePaste()) {
-            mEditText.getOnPasteListener().onPaste();
+        Uri uri = this.getUriInClipboard();
+        if (item.getItemId() == android.R.id.paste && uri != null) {
+            mEditText.getOnPasteListener().onPaste(uri);
             mode.finish();
         } else {
             mEditText.onTextContextMenuItem(item.getItemId());
@@ -69,16 +70,15 @@ public class RNPasteableActionCallback implements ActionMode.Callback {
         }
     }
 
-    private boolean shouldCustomHandlePaste() {
+    private Uri getUriInClipboard() {
         ClipboardManager clipboardManager = (ClipboardManager) mEditText.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clipData = clipboardManager.getPrimaryClip();
 
         ClipData.Item item = clipData.getItemAt(0);
         if (item == null) {
-            return false;
+            return null;
         }
 
-        Uri itemUri = item.getUri();
-        return itemUri != null;
+        return item.getUri();
     }
 }
