@@ -18,6 +18,7 @@ import {goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
 import gitlab from '@assets/images/gitlab.png';
 import google from '@assets/images/google.png';
+import phabricator from '@assets/images/phabricator.png';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {Sso} from '@constants';
@@ -229,6 +230,34 @@ export default class LoginOptions extends PureComponent {
         return null;
     };
 
+    renderPhabricatorOption = () => {
+        const {config} = this.props;
+
+        const forceHideFromLocal = LocalConfig.HidePhabricatorLoginExperimental;
+
+        if (!forceHideFromLocal && config.EnableSignUpWithPhabricator === 'true') {
+            return (
+                <Button
+                    key='phabricator'
+                    onPress={preventDoubleTap(() => this.goToSSO(Sso.PHABRICATOR))}
+                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
+                >
+                    <Image
+                        source={phabricator}
+                        style={{height: 18, marginRight: 5, width: 18}}
+                    />
+                    <Text
+                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                    >
+                        {'Phabricator'}
+                    </Text>
+                </Button>
+            );
+        }
+
+        return null;
+    };
+
     renderO365Option = () => {
         const {config, license} = this.props;
         const forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
@@ -363,6 +392,7 @@ export default class LoginOptions extends PureComponent {
                     {this.renderLdapOption()}
                     {this.renderGitlabOption()}
                     {this.renderGoogleOption()}
+                    {this.renderPhabricatorOption()}
                     {this.renderSamlOption()}
                     {this.renderO365Option()}
                     {this.renderOpenIdOption()}

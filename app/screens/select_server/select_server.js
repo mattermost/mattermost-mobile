@@ -236,6 +236,7 @@ export default class SelectServer extends PureComponent {
         const isLicensed = license.IsLicensed === 'true';
         const samlEnabled = isLicensed && config.EnableSaml === 'true' && license.SAML === 'true';
         const googleEnabled = isLicensed && config.EnableSignUpWithGoogle === 'true';
+        const phabricatorEnabled = isLicensed && config.EnableSignUpWithPhabricator === 'true';
         const o365Enabled = isLicensed && config.EnableSignUpWithOffice365 === 'true' && license.Office365OAuth === 'true';
         const openIdEnabled = isLicensed && config.EnableSignUpWithOpenId === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
@@ -245,6 +246,7 @@ export default class SelectServer extends PureComponent {
             [Sso.SAML]: samlEnabled,
             [Sso.GITLAB]: gitlabEnabled,
             [Sso.GOOGLE]: googleEnabled,
+            [Sso.PHABRICATOR]: phabricatorEnabled,
             [Sso.OFFICE365]: o365Enabled,
             [Sso.OPENID]: openIdEnabled,
         };

@@ -409,6 +409,12 @@ export default class EditProfile extends PureComponent {
                     defaultMessage: 'Login occurs through GitLab. Email cannot be updated. Email address used for notifications is {email}.',
                 }, {email});
                 break;
+            case 'phabricator':
+                helpText = formatMessage({
+                    id: 'user.settings.general.emailPhabricatorCantUpdate',
+                    defaultMessage: 'Login occurs through Phabricator. Email cannot be updated. Email address used for notifications is {email}.',
+                }, {email});
+                break;
             case 'google':
                 helpText = formatMessage({
                     id: 'user.settings.general.emailGoogleCantUpdate',
