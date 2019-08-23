@@ -49,6 +49,10 @@ export default class AttachmentImage extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (nextProps.imageMetadata && (nextProps.imageMetadata !== this.props.imageMetadata)) {
+            this.setImageDimensionsFromMeta(null, nextProps.imageMetadata);
+        }
+
         if (nextProps.imageUrl && (nextProps.imageUrl !== this.props.imageUrl)) {
             ImageCacheManager.cache(null, nextProps.imageUrl, this.setImageUrl);
         }
