@@ -9,6 +9,10 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
+ - Fixed an issue on Android where cancelling a video download twice in a row showed an error.
+ - Fixed an issue on iOS where a bot account icon style was broken.
+ - Fixed an issue on Android where **Channel > Add Members > ADD** text changed to black.
+ - Fixed an issue with an incorrect UI text for location of touch ID setting.
  
 ### Known Issues
 
