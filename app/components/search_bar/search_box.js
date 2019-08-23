@@ -77,6 +77,7 @@ export default class Search extends Component {
         shadowVisible: PropTypes.bool,
         leftComponent: PropTypes.element,
         inputCollapsedMargin: PropTypes.number,
+        keyboardAppearance: PropTypes.string,
     };
 
     static defaultProps = {
@@ -435,6 +436,7 @@ export default class Search extends Component {
                         onFocus={this.onFocus}
                         underlineColorAndroid='transparent'
                         enablesReturnKeyAutomatically={true}
+                        keyboardAppearance={this.props.keyboardAppearance}
                     />
                 </Animated.View>
                 <TouchableWithoutFeedback onPress={this.onFocus}>

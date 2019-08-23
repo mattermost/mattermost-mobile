@@ -26,6 +26,7 @@ exports[`MoreChannels should match snapshot 1`] = `
             "fontSize": 15,
           }
         }
+        keyboardAppearance="light"
         leftComponent={null}
         onBlur={[Function]}
         onCancelButtonPress={[Function]}
