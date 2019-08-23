@@ -63,10 +63,7 @@ public class RNPasteableActionCallback implements ActionMode.Callback {
             boolean shouldDisableMenu = (
                 id == android.R.id.paste
                 || id == android.R.id.copy
-                || id == android.R.id.copyUrl
                 || id == android.R.id.cut
-                || id == android.R.id.shareText
-                || id == android.R.id.replaceText
             );
             item.setEnabled(!shouldDisableMenu);
         }
