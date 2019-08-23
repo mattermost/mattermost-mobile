@@ -127,7 +127,10 @@ class PushNotification {
             ...notification.getData(),
             message: notification.getMessage(),
         };
-        this.handleNotification(info, false, userInteraction);
+
+        if (!userInteraction) {
+            this.handleNotification(info, false, userInteraction);
+        }
     };
 
     onNotificationReceivedForeground = (notification) => {
