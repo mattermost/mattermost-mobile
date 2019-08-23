@@ -11,6 +11,9 @@ import requireNativeComponent from 'requireNativeComponent';
 
 const AndroidTextInput = requireNativeComponent('PasteableTextInputAndroid');
 
+// This class is copied from React Native's TextInput
+// All credit goes to React Native team
+// Source: https://github.com/facebook/react-native/blob/master/Libraries/Components/TextInput/TextInput.js#L1056
 class CustomTextInput extends TextInput {
     // Override React Native's TextInput render for Android
     _renderAndroid = () => {
