@@ -25,6 +25,7 @@ describe('ChannelAddMembers', () => {
         profilesNotInChannel: [],
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should render without error and call functions on mount', () => {

@@ -137,23 +137,29 @@ exports[`user_profile should match snapshot 1`] = `
       <View>
         <Text
           style={
-            Object {
-              "color": undefined,
-              "fontSize": 13,
-              "fontWeight": "600",
-              "marginBottom": 10,
-              "marginTop": 25,
-            }
+            Array [
+              Object {
+                "color": undefined,
+                "fontSize": 13,
+                "fontWeight": "600",
+                "marginBottom": 10,
+                "marginTop": 25,
+              },
+              null,
+            ]
           }
         >
           USERNAME
         </Text>
         <Text
           style={
-            Object {
-              "color": "#3d3c40",
-              "fontSize": 15,
-            }
+            Array [
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 15,
+              },
+              null,
+            ]
           }
         >
           fred
@@ -162,23 +168,29 @@ exports[`user_profile should match snapshot 1`] = `
       <View>
         <Text
           style={
-            Object {
-              "color": undefined,
-              "fontSize": 13,
-              "fontWeight": "600",
-              "marginBottom": 10,
-              "marginTop": 25,
-            }
+            Array [
+              Object {
+                "color": undefined,
+                "fontSize": 13,
+                "fontWeight": "600",
+                "marginBottom": 10,
+                "marginTop": 25,
+              },
+              null,
+            ]
           }
         >
           NICKNAME
         </Text>
         <Text
           style={
-            Object {
-              "color": "#3d3c40",
-              "fontSize": 15,
-            }
+            Array [
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 15,
+              },
+              null,
+            ]
           }
         >
           nick
@@ -192,6 +204,7 @@ exports[`user_profile should match snapshot 1`] = `
       iconColor="rgba(0, 0, 0, 0.7)"
       iconSize={15}
       iconType="fontawesome"
+      isLandscape={false}
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={

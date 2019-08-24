@@ -6,14 +6,16 @@ import {Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
+import Preferences from 'mattermost-redux/constants/preferences';
+
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
-import ThemeTile from './theme_tile';
 import FormattedText from 'app/components/formatted_text';
-
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-import Preferences from 'mattermost-redux/constants/preferences';
+import EphemeralStore from 'app/store/ephemeral_store';
+
+import ThemeTile from './theme_tile';
 
 const thumbnailImages = {
     default: require('assets/images/themes/mattermost.png'),
@@ -26,7 +28,6 @@ export default class Theme extends React.PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             savePreferences: PropTypes.func.isRequired,
-            applyTheme: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         allowedThemes: PropTypes.arrayOf(PropTypes.object),
@@ -57,7 +58,9 @@ export default class Theme extends React.PureComponent {
 
     componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
+            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+                setNavigatorStyles(componentId, this.props.theme);
+            });
         }
     }
 
@@ -66,7 +69,7 @@ export default class Theme extends React.PureComponent {
             userId,
             teamId,
             allowedThemes,
-            actions: {savePreferences, applyTheme},
+            actions: {savePreferences},
         } = this.props;
         const {customTheme} = this.state;
         const selectedTheme = allowedThemes.concat(customTheme).find((theme) => theme.key === key);
@@ -77,8 +80,7 @@ export default class Theme extends React.PureComponent {
             name: teamId,
             value: JSON.stringify(selectedTheme),
         }]);
-        applyTheme();
-    }
+    };
 
     renderAllowedThemeTiles = () => {
         const {theme, allowedThemes, isLandscape, isTablet} = this.props;

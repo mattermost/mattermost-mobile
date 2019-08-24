@@ -54,7 +54,9 @@ class PushNotification {
             this.onNotification(this.deviceNotification);
         }
 
-        this.trackForegroundNotification(data.channel_id);
+        if (foreground) {
+            this.trackForegroundNotification(data.channel_id);
+        }
     };
 
     handleReply = (action, completed) => {
@@ -125,7 +127,10 @@ class PushNotification {
             ...notification.getData(),
             message: notification.getMessage(),
         };
-        this.handleNotification(info, false, userInteraction);
+
+        if (!userInteraction) {
+            this.handleNotification(info, false, userInteraction);
+        }
     };
 
     onNotificationReceivedForeground = (notification) => {

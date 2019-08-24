@@ -43,27 +43,32 @@ export default class PostOptions extends PureComponent {
         isMyPost: PropTypes.bool,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
-    close = () => {
-        this.props.actions.dismissModal();
+    close = async (cb) => {
+        await this.props.actions.dismissModal();
+
+        if (typeof cb === 'function') {
+            setTimeout(cb, 300);
+        }
     };
 
-    closeWithAnimation = () => {
+    closeWithAnimation = (cb) => {
         if (this.slideUpPanel) {
-            this.slideUpPanel.closeWithAnimation();
+            this.slideUpPanel.closeWithAnimation(cb);
         } else {
-            this.close();
+            this.close(cb);
         }
     };
 
     getAddReactionOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canAddReaction} = this.props;
+        const {canAddReaction, isLandscape} = this.props;
 
         if (canAddReaction) {
             return (
@@ -72,6 +77,7 @@ export default class PostOptions extends PureComponent {
                     icon='emoji'
                     text={formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'})}
                     onPress={this.handleAddReaction}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -81,7 +87,7 @@ export default class PostOptions extends PureComponent {
 
     getReplyOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canReply} = this.props;
+        const {canReply, isLandscape} = this.props;
 
         if (canReply) {
             return (
@@ -90,6 +96,7 @@ export default class PostOptions extends PureComponent {
                     icon='reply'
                     text={formatMessage({id: 'mobile.post_info.reply', defaultMessage: 'Reply'})}
                     onPress={this.handleReply}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -99,7 +106,7 @@ export default class PostOptions extends PureComponent {
 
     getCopyPermalink = () => {
         const {formatMessage} = this.context.intl;
-        const {canCopyPermalink} = this.props;
+        const {canCopyPermalink, isLandscape} = this.props;
 
         if (canCopyPermalink) {
             return (
@@ -108,6 +115,7 @@ export default class PostOptions extends PureComponent {
                     icon='link'
                     text={formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'})}
                     onPress={this.handleCopyPermalink}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -117,7 +125,7 @@ export default class PostOptions extends PureComponent {
 
     getCopyText = () => {
         const {formatMessage} = this.context.intl;
-        const {canCopyText} = this.props;
+        const {canCopyText, isLandscape} = this.props;
 
         if (canCopyText) {
             return (
@@ -126,6 +134,7 @@ export default class PostOptions extends PureComponent {
                     icon='copy'
                     text={formatMessage({id: 'mobile.post_info.copy_text', defaultMessage: 'Copy Text'})}
                     onPress={this.handleCopyText}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -135,7 +144,7 @@ export default class PostOptions extends PureComponent {
 
     getDeleteOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canDelete} = this.props;
+        const {canDelete, isLandscape} = this.props;
 
         if (canDelete) {
             return (
@@ -145,6 +154,7 @@ export default class PostOptions extends PureComponent {
                     icon='trash'
                     text={formatMessage({id: 'post_info.del', defaultMessage: 'Delete'})}
                     onPress={this.handlePostDelete}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -154,7 +164,7 @@ export default class PostOptions extends PureComponent {
 
     getEditOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canEdit, canEditUntil} = this.props;
+        const {canEdit, canEditUntil, isLandscape} = this.props;
 
         if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
             return (
@@ -163,6 +173,7 @@ export default class PostOptions extends PureComponent {
                     icon='edit'
                     text={formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'})}
                     onPress={this.handlePostEdit}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -172,7 +183,7 @@ export default class PostOptions extends PureComponent {
 
     getFlagOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canFlag, isFlagged} = this.props;
+        const {canFlag, isFlagged, isLandscape} = this.props;
 
         if (!canFlag) {
             return null;
@@ -185,6 +196,7 @@ export default class PostOptions extends PureComponent {
                     icon='flag'
                     text={formatMessage({id: 'mobile.post_info.unflag', defaultMessage: 'Unflag'})}
                     onPress={this.handleUnflagPost}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -195,13 +207,14 @@ export default class PostOptions extends PureComponent {
                 icon='flag'
                 text={formatMessage({id: 'mobile.post_info.flag', defaultMessage: 'Flag'})}
                 onPress={this.handleFlagPost}
+                isLandscape={isLandscape}
             />
         );
     };
 
     getPinOption = () => {
         const {formatMessage} = this.context.intl;
-        const {canPin, post} = this.props;
+        const {canPin, post, isLandscape} = this.props;
 
         if (!canPin) {
             return null;
@@ -214,6 +227,7 @@ export default class PostOptions extends PureComponent {
                     icon='pin'
                     text={formatMessage({id: 'mobile.post_info.unpin', defaultMessage: 'Unpin from Channel'})}
                     onPress={this.handleUnpinPost}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -224,6 +238,7 @@ export default class PostOptions extends PureComponent {
                 icon='pin'
                 text={formatMessage({id: 'mobile.post_info.pin', defaultMessage: 'Pin to Channel'})}
                 onPress={this.handlePinPost}
+                isLandscape={isLandscape}
             />
         );
     };
@@ -268,8 +283,7 @@ export default class PostOptions extends PureComponent {
         const {actions, theme} = this.props;
         const {formatMessage} = this.context.intl;
 
-        this.close();
-        setTimeout(() => {
+        this.close(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
                 const screen = 'AddReaction';
                 const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
@@ -280,15 +294,14 @@ export default class PostOptions extends PureComponent {
 
                 actions.showModal(screen, title, passProps);
             });
-        }, 300);
+        });
     };
 
     handleReply = () => {
         const {post} = this.props;
-        this.closeWithAnimation();
-        setTimeout(() => {
+        this.closeWithAnimation(() => {
             EventEmitter.emit('goToThread', post);
-        }, 250);
+        });
     };
 
     handleAddReactionToPost = (emoji) => {
@@ -347,9 +360,10 @@ export default class PostOptions extends PureComponent {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: () => {
-                    actions.deletePost(post);
-                    actions.removePost(post);
-                    this.closeWithAnimation();
+                    this.closeWithAnimation(() => {
+                        actions.deletePost(post);
+                        actions.removePost(post);
+                    });
                 },
             }]
         );
@@ -359,8 +373,7 @@ export default class PostOptions extends PureComponent {
         const {actions, theme, post} = this.props;
         const {intl} = this.context;
 
-        this.close();
-        setTimeout(() => {
+        this.close(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
                 const screen = 'EditPost';
                 const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
@@ -371,7 +384,7 @@ export default class PostOptions extends PureComponent {
 
                 actions.showModal(screen, title, passProps);
             });
-        }, 300);
+        });
     };
 
     handleUnflagPost = () => {

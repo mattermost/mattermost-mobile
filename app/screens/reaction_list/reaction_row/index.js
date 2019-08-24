@@ -5,8 +5,14 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {goToScreen} from 'app/actions/navigation';
-
+import {isLandscape} from 'app/selectors/device';
 import ReactionRow from './reaction_row';
+
+function mapStateToProps(state) {
+    return {
+        isLandscape: isLandscape(state),
+    };
+}
 
 function mapDispatchToProps(dispatch) {
     return {
@@ -16,4 +22,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(null, mapDispatchToProps)(ReactionRow);
+export default connect(mapStateToProps, mapDispatchToProps)(ReactionRow);

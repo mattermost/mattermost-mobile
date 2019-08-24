@@ -15,7 +15,7 @@ import DeviceInfo from 'react-native-device-info';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import AppIcon from 'app/components/app_icon';
 import Config from 'assets/config';
 
@@ -27,6 +27,7 @@ export default class About extends PureComponent {
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     componentWillReceiveProps(nextProps) {
@@ -60,7 +61,7 @@ export default class About extends PureComponent {
     }
 
     render() {
-        const {theme, config, license} = this.props;
+        const {theme, config, license, isLandscape} = this.props;
         const style = getStyleSheet(theme);
 
         let title = (
@@ -218,7 +219,7 @@ export default class About extends PureComponent {
             <View style={style.wrapper}>
                 <StatusBar/>
                 <ScrollView
-                    style={style.scrollView}
+                    style={[style.scrollView, padding(isLandscape)]}
                     contentContainerStyle={style.scrollViewContent}
                 >
                     <View style={style.logoContainer}>

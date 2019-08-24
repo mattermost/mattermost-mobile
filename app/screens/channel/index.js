@@ -10,6 +10,7 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/users';
+import {getChannelStats} from 'mattermost-redux/actions/channels';
 
 import {
     loadChannelsIfNecessary,
@@ -40,6 +41,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            getChannelStats,
             connection,
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,

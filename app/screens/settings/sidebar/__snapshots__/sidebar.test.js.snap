@@ -23,6 +23,7 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
   >
     <section
       disableHeader={true}
+      isLandscape={false}
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -69,6 +70,7 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
             id="mobile.sidebar_settings.permanent_description"
           />
         }
+        isLandscape={false}
         label={
           <FormattedText
             defaultMessage="Permanent Sidebar"

@@ -84,4 +84,26 @@ describe('InteractiveDialog', () => {
         wrapper.instance().navigationButtonPressed({buttonId: 'close-dialog'});
         expect(baseProps.actions.submitInteractiveDialog).not.toHaveBeenCalled();
     });
+
+    test('should handle display with no elements', async () => {
+        baseProps.elements = null;
+
+        const wrapper = shallow(
+            <InteractiveDialog
+                {...baseProps}
+                notifyOnCancel={false}
+            />,
+        );
+
+        const dialog = {
+            url: baseProps.url,
+            callback_id: baseProps.callbackId,
+            state: baseProps.state,
+            submission: {},
+        };
+
+        wrapper.instance().handleSubmit();
+        expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledWith(dialog);
+    });
 });

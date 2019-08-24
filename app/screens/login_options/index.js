@@ -8,7 +8,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import {goToScreen} from 'app/actions/navigation';
-
+import {isLandscape} from 'app/selectors/device';
 import LoginOptions from './login_options';
 
 function mapStateToProps(state) {
@@ -18,6 +18,7 @@ function mapStateToProps(state) {
         config,
         license,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

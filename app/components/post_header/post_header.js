@@ -218,7 +218,10 @@ export default class PostHeader extends PureComponent {
             dateComponent = (
                 <View style={style.datetime}>
                     <Text style={style.time}>
-                        <FormattedDate value={createAt}/>
+                        <FormattedDate
+                            timeZone={userTimezone}
+                            value={createAt}
+                        />
                     </Text>
                     <Text style={style.time}>
                         <FormattedTime
@@ -256,8 +259,8 @@ export default class PostHeader extends PureComponent {
                         style={style.replyIconContainer}
                     >
                         <ReplyIcon
-                            height={15}
-                            width={15}
+                            height={16}
+                            width={16}
                             color={theme.linkColor}
                         />
                         {!isSearchResult &&

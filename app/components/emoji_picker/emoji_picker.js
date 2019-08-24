@@ -25,8 +25,12 @@ import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import {DeviceTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-
+import {
+    makeStyleSheetFromTheme,
+    changeOpacity,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import EmojiPickerRow from './emoji_picker_row';
 
 const EMOJI_SIZE = 30;
@@ -34,6 +38,10 @@ const EMOJI_GUTTER = 7.5;
 const SECTION_MARGIN = 15;
 const SECTION_HEADER_HEIGHT = 28;
 const EMOJIS_PER_PAGE = 200;
+
+export function filterEmojiSearchInput(searchText) {
+    return searchText.toLowerCase().replace(/^:|:$/g, '');
+}
 
 export default class EmojiPicker extends PureComponent {
     static propTypes = {
@@ -160,24 +168,25 @@ export default class EmojiPicker extends PureComponent {
         });
     };
 
-    changeSearchTerm = (text) => {
+    changeSearchTerm = (rawText) => {
+        const searchTerm = filterEmojiSearchInput(rawText);
         const nextState = {
-            searchTerm: text,
+            searchTerm: rawText,
         };
-
-        if (!text) {
-            nextState.currentSectionIndex = 0;
-        }
-
         this.setState(nextState);
 
+        if (!searchTerm) {
+            nextState.currentSectionIndex = 0;
+            return;
+        }
+
         clearTimeout(this.searchTermTimeout);
-        const timeout = text ? 100 : 0;
+        const timeout = searchTerm ? 100 : 0;
         this.searchTermTimeout = setTimeout(async () => {
             if (isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
-                await this.props.actions.searchCustomEmojis(text);
+                await this.props.actions.searchCustomEmojis(searchTerm);
             }
-            const filteredEmojis = this.searchEmojis(text);
+            const filteredEmojis = this.searchEmojis(searchTerm);
             this.setState({
                 filteredEmojis,
             });
@@ -210,7 +219,8 @@ export default class EmojiPicker extends PureComponent {
     };
 
     getNumberOfColumns = (deviceWidth) => {
-        return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * 2)) / (EMOJI_SIZE + (EMOJI_GUTTER * 2)))));
+        const shorten = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? 4 : 2;
+        return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / (EMOJI_SIZE + (EMOJI_GUTTER * shorten)))));
     };
 
     renderItem = ({item}) => {
@@ -235,7 +245,7 @@ export default class EmojiPicker extends PureComponent {
                 onPress={() => this.props.onEmojiPress(item)}
                 style={style.flatListRow}
             >
-                <View style={style.flatListEmoji}>
+                <View style={[style.flatListEmoji, padding(this.props.isLandscape)]}>
                     <Emoji
                         emojiName={item}
                         size={20}
@@ -395,6 +405,8 @@ export default class EmojiPicker extends PureComponent {
         const {formatMessage} = intl;
         const styles = getStyleSheetFromTheme(theme);
 
+        const shorten = DeviceTypes.IS_IPHONE_X && isLandscape ? 6 : 2;
+
         let listComponent;
         if (searchTerm) {
             listComponent = (
@@ -414,7 +426,7 @@ export default class EmojiPicker extends PureComponent {
                 <SectionList
                     ref={this.attachSectionList}
                     showsVerticalScrollIndicator={false}
-                    style={[styles.listView, {width: deviceWidth - (SECTION_MARGIN * 2)}]}
+                    style={[styles.listView, {width: deviceWidth - (SECTION_MARGIN * shorten)}]}
                     sections={emojis}
                     renderSectionHeader={this.renderSectionHeader}
                     renderItem={this.renderItem}
@@ -460,7 +472,7 @@ export default class EmojiPicker extends PureComponent {
                     keyboardVerticalOffset={keyboardOffset}
                     enabled={Platform.OS === 'ios'}
                 >
-                    <View style={styles.searchBar}>
+                    <View style={[styles.searchBar, padding(isLandscape)]}>
                         <SearchBar
                             ref='search_bar'
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -476,6 +488,7 @@ export default class EmojiPicker extends PureComponent {
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
                             value={searchTerm}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         />
                     </View>
                     <View style={styles.container}>

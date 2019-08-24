@@ -7,6 +7,7 @@
 //
 
 #import "MattermostManaged.h"
+#import <LocalAuthentication/LocalAuthentication.h>
 #import <UploadAttachments/MMMConstants.h>
 
 @implementation MattermostManaged {
@@ -165,6 +166,19 @@ RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve
 RCT_EXPORT_METHOD(quitApp)
 {
   exit(0);
+}
+
+RCT_EXPORT_METHOD(supportsFaceId:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  LAContext *context = [[LAContext alloc] init];
+  NSError *error;
+
+  // context.biometryType is initialized when canEvaluatePolicy, regardless of the error or return value
+  [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&error];
+
+  resolve(@{
+            @"supportsFaceId": @(context.biometryType == LABiometryTypeFaceID && @available(iOS 11.0, *))
+            });
 }
 
 @end

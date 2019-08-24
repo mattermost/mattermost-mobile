@@ -10,6 +10,7 @@ import {
 
 import {General} from 'mattermost-redux/constants';
 import BotTag from 'app/components/bot_tag';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import GuestTag from 'app/components/guest_tag';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -24,6 +25,7 @@ export default class ChannelMentionItem extends PureComponent {
         isGuest: PropTypes.bool.isRequired,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     completeMention = () => {
@@ -43,6 +45,7 @@ export default class ChannelMentionItem extends PureComponent {
             theme,
             type,
             isBot,
+            isLandscape,
             isGuest,
         } = this.props;
 
@@ -56,7 +59,7 @@ export default class ChannelMentionItem extends PureComponent {
                 <TouchableOpacity
                     key={channelId}
                     onPress={this.completeMention}
-                    style={style.row}
+                    style={[style.row, padding(isLandscape)]}
                 >
                     <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
                     <BotTag
@@ -74,7 +77,7 @@ export default class ChannelMentionItem extends PureComponent {
             <TouchableOpacity
                 key={channelId}
                 onPress={this.completeMention}
-                style={style.row}
+                style={[style.row, padding(isLandscape)]}
             >
                 <Text style={style.rowDisplayName}>{displayName}</Text>
                 <Text style={style.rowName}>{` (~${name})`}</Text>

@@ -1,5 +1,57 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.22.0 Release
+- Release Date: August 16, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Highlights
+
+#### Support for iOS13 and Android Q
+ - Added support for iOS13 and Android Q which are to be released later this year.
+
+### Improvements
+ - Added support for Interactive Dialog with no elements.
+ - Added a setting for tablets to enable or disable fixed sidebar.
+ - Changed "about" section references to use the site name when it is configured in **System Console > Custom Branding > Site Name**.
+ - Added support for plus-sign and period/dot in custom URL schemes.
+ - Added "Edit profile" button to right-hand side menu and to users' own profile pop-over.
+ - Message draft is now saved when closing the app.
+ - Removing a link preview on webapp now also removes it on the mobile app.
+ - Added ability to select and copy channel header text and purpose.
+
+### Bug Fixes
+ - Fixed a few mobile app crash / fatal error issues.
+ - Fixed an issue where timestamps were off on Android.
+ - Fixed an issue where contents of ephemeral posts from /giphy were not being displayed on mobile.
+ - Fixed an issue where team/channel page dots at the bottom of left-hand side overlapped with the last Direct Message channel.
+ - Fixed an issue where network reconnection incorrectly showed refreshing messages failed.
+ - Fixed an issue with the channel sidebar theme colors not being respected on iPhone X.
+ - Fixed an issue where "Message failed to send" had incorrect app badge behaviour.
+ - Fixed an issue where a white screen was briefly shown after pressing "Send Message" when viewing a user's profile.
+ - Fixed an issue on Android where using "Https" instead of "https" in the url of an image didn't show the preview.
+ - Fixed an issue where the client ``setCSRFFromCookie`` did not look for subpaths when accessing cookies.
+ - Fixed an issue where archived teams reappeared in selector.
+ - Fixed an issue where users' profile picture and name did not get updated after websocket disconnect.
+ 
+### Known Issues
+  - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
+  - Some Giphy actions do not work in ephemeral posts. [MM-17842](https://mattermost.atlassian.net/browse/MM-17842)
+
+## 1.21.2 Release
+- Release Date: August 1, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Combatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed an issue where the mobile apps logged out without a session expiry notification.
+
 ## 1.21.1 Release
 - Release Date: July 22, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device

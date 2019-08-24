@@ -11,7 +11,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {dismissModal, goToScreen} from 'app/actions/navigation';
 import {loadThreadIfNecessary} from 'app/actions/views/channel';
-
+import {isLandscape} from 'app/selectors/device';
 import LongPost from './long_post';
 
 function makeMapStateToProps() {
@@ -29,6 +29,7 @@ function makeMapStateToProps() {
             inThreadView: Boolean(state.entities.posts.selectedPostId),
             fileIds: post ? post.file_ids : false,
             theme: getTheme(state),
+            isLandscape: isLandscape(state),
         };
     };
 }
