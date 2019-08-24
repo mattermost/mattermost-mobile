@@ -598,15 +598,13 @@ export default class PostTextBoxBase extends PureComponent {
             return;
         }
 
-        const filteredImages = images.filter((image) => {
-            const isExceedFileSize = image.fileSize > maxFileSize;
-            if (isExceedFileSize) {
-                this.onShowFileSizeWarning(image.fileName);
-            }
-            return !isExceedFileSize;
-        });
+        const largeImage = images.find((image) => image.fileSize > maxFileSize);
+        if (largeImage) {
+            this.onShowFileSizeWarning(largeImage.fileName);
+            return;
+        }
 
-        this.handleUploadFiles(filteredImages.slice(0, availableCount));
+        this.handleUploadFiles(images);
     }
 
     renderTextBox = () => {
