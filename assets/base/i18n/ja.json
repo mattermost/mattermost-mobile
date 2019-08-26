@@ -278,6 +278,7 @@
   "mobile.managed.jailbreak": "Jailbrokenデバイスは{vendor}から信頼されていません。アプリを終了してください。",
   "mobile.managed.not_secured.android": "このデバイスでMattermostを使うにはスクリーンロックを設定する必要があります。",
   "mobile.managed.not_secured.ios": "このデバイスでMattermostを使うにはパスコードを設定する必要があります。\n\n設定 > Face IDとパスコード　から設定してください。",
+  "mobile.managed.not_secured.ios.touchId": "このデバイスでMattermostを使うにはパスコードを設定する必要があります。\n\n設定 > Face IDとパスコード　から設定してください。",
   "mobile.managed.secured_by": "{vendor}により保護されました",
   "mobile.managed.settings": "設定へ移動する",
   "mobile.markdown.code.copy_code": "コードのコピー",
