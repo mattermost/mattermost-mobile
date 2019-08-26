@@ -105,7 +105,7 @@ export default class ChannelSidebar extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, deviceWidth, isLandscape, teamsCount} = this.props;
+        const {currentTeamId, deviceWidth, isLandscape, teamsCount, theme} = this.props;
         const {openDrawerOffset, isSplitView, permanentSidebar, show, searching} = this.state;
 
         if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching) {
@@ -115,6 +115,7 @@ export default class ChannelSidebar extends Component {
         return nextProps.currentTeamId !== currentTeamId ||
             nextProps.isLandscape !== isLandscape || nextProps.deviceWidth !== deviceWidth ||
             nextProps.teamsCount !== teamsCount ||
+            nextProps.theme !== theme ||
             nextState.isSplitView !== isSplitView ||
             nextState.permanentSidebar !== permanentSidebar;
     }
