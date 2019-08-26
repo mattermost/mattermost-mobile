@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import ImageCacheManager, {getCacheFile, hashCode} from 'app/utils/image_cache_manager';
+import ImageCacheManager from 'app/utils/image_cache_manager';
 import {Image} from 'react-native';
 import {shallow} from 'enzyme';
 import React from 'react';
@@ -53,6 +53,21 @@ describe('AttachmentImage', () => {
         expect(state.imageUri).toBe('https://images.com/image.png');
         expect(state.originalWidth).toBe(32);
         expect(cacheFn).toHaveBeenCalled();
+    });
+
+    test('it does not render image if no imageUrl is provided', () => {
+        const cacheFn = jest.fn((_, url, callback) => {
+            callback(url);
+        });
+        ImageCacheManager.cache = cacheFn;
+
+        const props = {...baseProps, imageUrl: null, imageMetadata: null};
+        const wrapper = shallow(<AttachmentImage {...props}/>);
+
+        const state = wrapper.state();
+        expect(state.hasImage).toBe(false);
+        expect(state.imageUri).toBe(null);
+        expect(cacheFn).not.toHaveBeenCalled();
     });
 
     test('it calls Image.getSize if metadata is not present', () => {
