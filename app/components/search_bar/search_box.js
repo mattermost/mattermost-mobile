@@ -18,6 +18,7 @@ import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import {emptyFunction} from 'app/utils/general';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const AnimatedIonIcon = Animated.createAnimatedComponent(IonIcon);
@@ -78,6 +79,7 @@ export default class Search extends Component {
         leftComponent: PropTypes.element,
         inputCollapsedMargin: PropTypes.number,
         keyboardAppearance: PropTypes.string,
+        onAnimationComplete: PropTypes.func,
     };
 
     static defaultProps = {
@@ -102,6 +104,7 @@ export default class Search extends Component {
         value: '',
         leftComponent: null,
         inputCollapsedMargin: 10,
+        onAnimationComplete: emptyFunction,
     };
 
     constructor(props) {
@@ -370,7 +373,7 @@ export default class Search extends Component {
                         useNativeDriver: true,
                     }
                 ),
-            ]).start();
+            ]).start(({finished}) => this.props.onAnimationComplete(finished));
             this.shadowHeight = this.props.shadowOffsetHeightCollapsed;
             resolve();
         });
