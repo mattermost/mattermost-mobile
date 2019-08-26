@@ -35,6 +35,10 @@ const SECTION_MARGIN = 15;
 const SECTION_HEADER_HEIGHT = 28;
 const EMOJIS_PER_PAGE = 200;
 
+export function filterEmojiSearchInput(searchText) {
+    return searchText.toLowerCase().replace(/^:|:$/g, '');
+}
+
 export default class EmojiPicker extends PureComponent {
     static propTypes = {
         customEmojisEnabled: PropTypes.bool.isRequired,
@@ -87,9 +91,9 @@ export default class EmojiPicker extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        let rebuildEmojis = false;
+        this.rebuildEmojis = false;
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
-            rebuildEmojis = true;
+            this.rebuildEmojis = true;
 
             if (this.refs.search_bar) {
                 this.refs.search_bar.blur();
@@ -97,14 +101,16 @@ export default class EmojiPicker extends PureComponent {
         }
 
         if (this.props.emojis !== nextProps.emojis) {
-            rebuildEmojis = true;
+            this.rebuildEmojis = true;
+            this.deviceWidth = nextProps.deviceWidth;
         }
+    }
 
-        if (rebuildEmojis) {
-            const emojis = this.renderableEmojis(this.props.emojisBySection, nextProps.deviceWidth);
-            this.setState({
-                emojis,
-            });
+    setRebuiltEmojis = (searchBarAnimationComplete) => {
+        if (this.rebuildEmojis && searchBarAnimationComplete) {
+            this.rebuildEmojis = false;
+            const emojis = this.renderableEmojis(this.props.emojisBySection, this.deviceWidth);
+            this.setState({emojis});
         }
     }
 
@@ -160,24 +166,25 @@ export default class EmojiPicker extends PureComponent {
         });
     };
 
-    changeSearchTerm = (text) => {
+    changeSearchTerm = (rawText) => {
+        const searchTerm = filterEmojiSearchInput(rawText);
         const nextState = {
-            searchTerm: text,
+            searchTerm: rawText,
         };
-
-        if (!text) {
-            nextState.currentSectionIndex = 0;
-        }
-
         this.setState(nextState);
 
+        if (!searchTerm) {
+            nextState.currentSectionIndex = 0;
+            return;
+        }
+
         clearTimeout(this.searchTermTimeout);
-        const timeout = text ? 100 : 0;
+        const timeout = searchTerm ? 100 : 0;
         this.searchTermTimeout = setTimeout(async () => {
             if (isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
-                await this.props.actions.searchCustomEmojis(text);
+                await this.props.actions.searchCustomEmojis(searchTerm);
             }
-            const filteredEmojis = this.searchEmojis(text);
+            const filteredEmojis = this.searchEmojis(searchTerm);
             this.setState({
                 filteredEmojis,
             });
@@ -476,6 +483,7 @@ export default class EmojiPicker extends PureComponent {
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
                             value={searchTerm}
+                            onAnimationComplete={this.setRebuiltEmojis}
                         />
                     </View>
                     <View style={styles.container}>
