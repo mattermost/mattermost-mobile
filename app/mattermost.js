@@ -9,7 +9,7 @@ import {loadMe as loadMeRedux} from 'mattermost-redux/actions/users';
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
 import {loadMe} from 'app/realm/actions/user';
-import {getAppCredentials, getCurrentServerUrl} from 'app/init/credentials';
+import {getAppCredentials} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/device';
 import 'app/init/fetch';
