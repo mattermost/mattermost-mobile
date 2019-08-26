@@ -25,7 +25,11 @@ import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import {DeviceTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {
+    makeStyleSheetFromTheme,
+    changeOpacity,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import EmojiPickerRow from './emoji_picker_row';
 
@@ -91,9 +95,9 @@ export default class EmojiPicker extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        let rebuildEmojis = false;
+        this.rebuildEmojis = false;
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
-            rebuildEmojis = true;
+            this.rebuildEmojis = true;
 
             if (this.refs.search_bar) {
                 this.refs.search_bar.blur();
@@ -101,14 +105,16 @@ export default class EmojiPicker extends PureComponent {
         }
 
         if (this.props.emojis !== nextProps.emojis) {
-            rebuildEmojis = true;
+            this.rebuildEmojis = true;
+            this.deviceWidth = nextProps.deviceWidth;
         }
+    }
 
-        if (rebuildEmojis) {
-            const emojis = this.renderableEmojis(this.props.emojisBySection, nextProps.deviceWidth);
-            this.setState({
-                emojis,
-            });
+    setRebuiltEmojis = (searchBarAnimationComplete) => {
+        if (this.rebuildEmojis && searchBarAnimationComplete) {
+            this.rebuildEmojis = false;
+            const emojis = this.renderableEmojis(this.props.emojisBySection, this.deviceWidth);
+            this.setState({emojis});
         }
     }
 
@@ -484,6 +490,8 @@ export default class EmojiPicker extends PureComponent {
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
                             value={searchTerm}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            onAnimationComplete={this.setRebuiltEmojis}
                         />
                     </View>
                     <View style={styles.container}>

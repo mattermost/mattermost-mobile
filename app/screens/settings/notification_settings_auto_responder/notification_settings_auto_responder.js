@@ -15,7 +15,11 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {getNotificationProps} from 'app/utils/notify_props';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
 import Section from 'app/screens/settings/section';
@@ -136,6 +140,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                                     textAlignVertical='top'
                                     underlineColorAndroid='transparent'
                                     returnKeyType='done'
+                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                 />
                             </View>
                         </Section>
