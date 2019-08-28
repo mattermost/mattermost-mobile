@@ -40,7 +40,7 @@
     "react-native-exception-handler": "2.10.7",
     "react-native-gesture-handler": "1.2.1",
     "react-native-image-gallery": "github:mattermost/react-native-image-gallery#c1a9f7118e90cc87d47620bc0584c9cac4b0cf38",
-    "react-native-image-picker": "1.0.2",
+    "react-native-image-picker": "0.28.0",
     "react-native-keyboard-aware-scroll-view": "0.8.0",
     "react-native-keyboard-tracking-view": "github:enahum/react-native-keyboard-tracking-view#66979a750e42fefe06366f0c924b29368bb586f2",
     "react-native-keychain": "3.1.3",
