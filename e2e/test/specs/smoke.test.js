@@ -8,7 +8,7 @@ const {CONNECT_TO_SERVER_SCREEN, LOGIN_SCREEN, APP_SCREEN} = require('../../scre
 describe('Smoke', () => {
     it('Select server URL', () => {
         const serverInstance = 'http://10.0.2.2:8065';
-        const testUser = {username: 'user-1', password: 'user-1'};
+        const testUser = {username: 'user-1', password: 'SampleUs@r-1'};
 
         $(CONNECT_TO_SERVER_SCREEN.serverUrlInput).waitForDisplayed();
         const fieldText = $(CONNECT_TO_SERVER_SCREEN.serverUrlInput).getText();

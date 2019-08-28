@@ -461,6 +461,7 @@ export default class SelectServer extends PureComponent {
                                 disableFullscreenUI={true}
                             />
                             <Button
+                                accessibilityLabel='Connect button'
                                 onPress={this.handleConnect}
                                 containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                             >

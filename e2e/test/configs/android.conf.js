@@ -21,7 +21,7 @@ config.capabilities = [
         platformVersion: '8.1',
         orientation: 'PORTRAIT',
         maxInstances: 1,
-        app: join(process.cwd(), '../Mattermost_Beta.apk'),
+        app: join(process.cwd(), '../Mattermost.apk'),
         fullReset: true,
         noReset: false,
         newCommandTimeout: 240,
