@@ -1,7 +1,7 @@
 package com.mattermost.rnbeta;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.reactnativenavigation.NavigationActivity;
 
