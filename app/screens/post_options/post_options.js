@@ -12,6 +12,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
 
+import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
 import PostOption from './post_option';
 
@@ -27,6 +28,7 @@ export default class PostOptions extends PureComponent {
             unpinPost: PropTypes.func.isRequired,
             dismissModal: PropTypes.func.isRequired,
             showModal: PropTypes.func.isRequired,
+            setUnreadPost: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
         canReply: PropTypes.bool,
@@ -38,6 +40,7 @@ export default class PostOptions extends PureComponent {
         canEdit: PropTypes.bool,
         canEditUntil: PropTypes.number.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
+        currentUserId: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         isFlagged: PropTypes.bool,
         isMyPost: PropTypes.bool,
@@ -243,10 +246,29 @@ export default class PostOptions extends PureComponent {
         );
     };
 
+    getMarkAsUnreadOption = () => {
+        const {post, isLandscape} = this.props;
+        const {formatMessage} = this.context.intl;
+
+        if (!isSystemMessage(post)) {
+            return (
+                <PostOption
+                    key='markUnread'
+                    icon='edit' // TODO: change for the appropiate icon
+                    text={formatMessage({id: 'mobile.post_info.mark_unread', defaultMessage: 'Mark post as unread'})}
+                    onPress={this.handleMarkUnread}
+                    isLandscape={isLandscape}
+                />
+            );
+        }
+        return null;
+    };
+
     getMyPostOptions = () => {
         const actions = [
             this.getEditOption(),
             this.getReplyOption(),
+            this.getMarkAsUnreadOption(),
             this.getFlagOption(),
             this.getPinOption(),
             this.getAddReactionOption(),
@@ -261,6 +283,7 @@ export default class PostOptions extends PureComponent {
     getOthersPostOptions = () => {
         const actions = [
             this.getReplyOption(),
+            this.getMarkAsUnreadOption(),
             this.getFlagOption(),
             this.getAddReactionOption(),
             this.getPinOption(),
@@ -342,6 +365,15 @@ export default class PostOptions extends PureComponent {
             actions.pinPost(post.id);
         });
     };
+
+    handleMarkUnread = () => {
+        const {actions, post, currentUserId} = this.props;
+
+        this.closeWithAnimation();
+        requestAnimationFrame(() => {
+            actions.setUnreadPost(currentUserId, post.id);
+        });
+    }
 
     handlePostDelete = () => {
         const {formatMessage} = this.context.intl;
