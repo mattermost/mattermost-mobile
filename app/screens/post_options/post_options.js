@@ -254,7 +254,7 @@ export default class PostOptions extends PureComponent {
             return (
                 <PostOption
                     key='markUnread'
-                    icon='edit' // TODO: change for the appropiate icon
+                    icon='bookmark'
                     text={formatMessage({id: 'mobile.post_info.mark_unread', defaultMessage: 'Mark post as unread'})}
                     onPress={this.handleMarkUnread}
                     isLandscape={isLandscape}
