@@ -266,14 +266,14 @@ export default class PostOptions extends PureComponent {
 
     getMyPostOptions = () => {
         const actions = [
-            this.getEditOption(),
             this.getReplyOption(),
-            this.getMarkAsUnreadOption(),
-            this.getFlagOption(),
-            this.getPinOption(),
             this.getAddReactionOption(),
+            this.getMarkAsUnreadOption(),
             this.getCopyPermalink(),
+            this.getFlagOption(),
             this.getCopyText(),
+            this.getPinOption(),
+            this.getEditOption(),
             this.getDeleteOption(),
         ];
 
@@ -283,12 +283,12 @@ export default class PostOptions extends PureComponent {
     getOthersPostOptions = () => {
         const actions = [
             this.getReplyOption(),
-            this.getMarkAsUnreadOption(),
-            this.getFlagOption(),
             this.getAddReactionOption(),
-            this.getPinOption(),
+            this.getMarkAsUnreadOption(),
             this.getCopyPermalink(),
+            this.getFlagOption(),
             this.getCopyText(),
+            this.getPinOption(),
             this.getEditOption(),
             this.getDeleteOption(),
         ];
