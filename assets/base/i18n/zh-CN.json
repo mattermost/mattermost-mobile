@@ -278,6 +278,7 @@
   "mobile.managed.jailbreak": "越狱的设备不被 {vendor} 信任，请退出应用。",
   "mobile.managed.not_secured.android": "此设备必须开启屏幕锁才能使用 Mattermost。",
   "mobile.managed.not_secured.ios": "此设备必须开启密码锁才能使用 Mattermost。\n\n前往设置 > 面容 ID 与密码。",
+  "mobile.managed.not_secured.ios.touchId": "此设备必须开启密码锁才能使用 Mattermost。\n\n前往设置 > 面容 ID 与密码。",
   "mobile.managed.secured_by": "被 {vendor} 安全保护",
   "mobile.managed.settings": "前往设置",
   "mobile.markdown.code.copy_code": "复制代码",

@@ -278,6 +278,7 @@
   "mobile.managed.jailbreak": "Dispositivi con jailbreak considerati non sicuri da {vendor}, per favore uscire dall'app.",
   "mobile.managed.not_secured.android": "Questo dispositivo deve essere protetto con un blocco schermo per utilizzare Mattermost.",
   "mobile.managed.not_secured.ios": "Questo dispositivo deve essere protetto da un codice per utilizzare Mattermost.\n\nAndare in Impostazioni > Face ID & Codice.",
+  "mobile.managed.not_secured.ios.touchId": "Questo dispositivo deve essere protetto da un codice per utilizzare Mattermost.\n\nAndare in Impostazioni > Touch ID & Codice.",
   "mobile.managed.secured_by": "Verificato da {vendor}",
   "mobile.managed.settings": "Vai alle impostazioni",
   "mobile.markdown.code.copy_code": "Copia codice",
