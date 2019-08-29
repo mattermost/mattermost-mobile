@@ -15,19 +15,19 @@ exports[`PostOptions should match snapshot, no option for system message to user
     onRequestClose={[Function]}
   >
     <PostOption
-      icon="edit"
-      isLandscape={false}
-      onPress={[Function]}
-      text="Edit"
-    />
-    <PostOption
       icon="reply"
       isLandscape={false}
       onPress={[Function]}
       text="Reply"
     />
     <PostOption
-      icon="edit"
+      icon="emoji"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Add Reaction"
+    />
+    <PostOption
+      icon="bookmark"
       isLandscape={false}
       onPress={[Function]}
       text="Mark post as unread"
@@ -39,10 +39,10 @@ exports[`PostOptions should match snapshot, no option for system message to user
       text="Pin to Channel"
     />
     <PostOption
-      icon="emoji"
+      icon="edit"
       isLandscape={false}
       onPress={[Function]}
-      text="Add Reaction"
+      text="Edit"
     />
   </ForwardRef(forwardConnectRef)>
 </View>
@@ -63,19 +63,19 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     onRequestClose={[Function]}
   >
     <PostOption
-      icon="edit"
-      isLandscape={false}
-      onPress={[Function]}
-      text="Edit"
-    />
-    <PostOption
       icon="reply"
       isLandscape={false}
       onPress={[Function]}
       text="Reply"
     />
     <PostOption
-      icon="edit"
+      icon="emoji"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Add Reaction"
+    />
+    <PostOption
+      icon="bookmark"
       isLandscape={false}
       onPress={[Function]}
       text="Mark post as unread"
@@ -87,10 +87,10 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       text="Pin to Channel"
     />
     <PostOption
-      icon="emoji"
+      icon="edit"
       isLandscape={false}
       onPress={[Function]}
-      text="Add Reaction"
+      text="Edit"
     />
     <PostOption
       destructive={true}
@@ -118,19 +118,19 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     onRequestClose={[Function]}
   >
     <PostOption
-      icon="edit"
-      isLandscape={false}
-      onPress={[Function]}
-      text="Edit"
-    />
-    <PostOption
       icon="reply"
       isLandscape={false}
       onPress={[Function]}
       text="Reply"
     />
     <PostOption
-      icon="edit"
+      icon="emoji"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Add Reaction"
+    />
+    <PostOption
+      icon="bookmark"
       isLandscape={false}
       onPress={[Function]}
       text="Mark post as unread"
@@ -142,10 +142,10 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       text="Pin to Channel"
     />
     <PostOption
-      icon="emoji"
+      icon="edit"
       isLandscape={false}
       onPress={[Function]}
-      text="Add Reaction"
+      text="Edit"
     />
     <PostOption
       destructive={true}
