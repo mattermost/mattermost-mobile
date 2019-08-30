@@ -278,7 +278,7 @@
   "mobile.managed.jailbreak": "Jailbreak uygulanmış aygıtlara {vendor} tarafından güvenilmiyor, lütfen uygulamadan çıkın.",
   "mobile.managed.not_secured.android": "Bu aygıtta Mattermost kullanılabilmesi için ekran kilidi güvenliğinin etkinleştirilmesi gerekir.",
   "mobile.managed.not_secured.ios": "Bu aygıtta Mattermost kullanılabilmesi için parola güvenliğinin etkinleştirilmesi gerekir.\n\nAyarlar > Yüz Tanıma ve Parola bölümünden ayarlayabilirsiniz.",
-  "mobile.managed.not_secured.ios.touchId": "Bu aygıtta Mattermost kullanılabilmesi için parola güvenliğinin etkinleştirilmesi gerekir.\n\nAyarlar > Yüz Tanıma ve Parola bölümünden ayarlayabilirsiniz.",
+  "mobile.managed.not_secured.ios.touchId": "Bu aygıtta Mattermost kullanılabilmesi için parola güvenliğinin etkinleştirilmesi gerekir.\n\nAyarlar > Touch ID ve Parola bölümünden ayarlayabilirsiniz.",
   "mobile.managed.secured_by": "{vendor} tarafından korunuyor",
   "mobile.managed.settings": "Ayarlara git",
   "mobile.markdown.code.copy_code": "Kodu Kopyala",
