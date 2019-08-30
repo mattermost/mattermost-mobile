@@ -798,6 +798,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingTop: 10,
             paddingBottom: 10,
             borderTopWidth: 1,
+            backgroundColor: theme.centerChannelBg,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
         },
         archivedText: {
