@@ -38,6 +38,7 @@
     "react-native-doc-viewer": "github:migbot/react-native-doc-viewer#c913e54ec8e4a60753bc7dd39256fa4be8229d19",
     "react-native-document-picker": "2.3.0",
     "react-native-exception-handler": "2.10.7",
+    "react-native-fast-image": "7.0.2",
     "react-native-gesture-handler": "1.2.1",
     "react-native-image-gallery": "github:mattermost/react-native-image-gallery#c1a9f7118e90cc87d47620bc0584c9cac4b0cf38",
     "react-native-image-picker": "0.28.1",
