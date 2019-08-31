@@ -32,6 +32,7 @@ import com.reactnativecommunity.asyncstorage.AsyncStorageModule;
 import com.reactnativecommunity.netinfo.NetInfoModule;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import io.sentry.RNSentryModule;
+import com.dylanvann.fastimage.FastImageViewPackage;
 
 import com.brentvatne.react.ReactVideoPackage;
 import com.BV.LinearGradient.LinearGradientPackage;
@@ -185,6 +186,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                 };
               }
             },
+            new FastImageViewPackage(),
             new RNCWebViewPackage(),
             new SvgPackage(),
             new LinearGradientPackage(),
