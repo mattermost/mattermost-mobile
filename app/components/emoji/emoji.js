@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import ImageCacheManager from 'app/utils/image_cache_manager';
+import FastImage from 'react-native-fast-image';
 
 export default class Emoji extends React.PureComponent {
     static propTypes = {
@@ -47,55 +47,13 @@ export default class Emoji extends React.PureComponent {
         isCustomEmoji: false,
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            imageUrl: null,
-        };
-    }
-
-    componentWillMount() {
-        const {displayTextOnly, emojiName, imageUrl} = this.props;
-        this.mounted = true;
-        if (!displayTextOnly && imageUrl) {
-            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl);
-        }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        const {displayTextOnly, emojiName, imageUrl} = nextProps;
-        if (emojiName !== this.props.emojiName && this.mounted) {
-            this.setState({
-                imageUrl: null,
-            });
-        }
-
-        if (!displayTextOnly && imageUrl &&
-                imageUrl !== this.props.imageUrl) {
-            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl);
-        }
-    }
-
-    componentWillUnmount() {
-        this.mounted = false;
-    }
-
-    setImageUrl = (imageUrl) => {
-        if (this.mounted) {
-            this.setState({
-                imageUrl,
-            });
-        }
-    };
-
     render() {
         const {
             literal,
             textStyle,
             displayTextOnly,
+            imageUrl,
         } = this.props;
-        const {imageUrl} = this.state;
 
         let size = this.props.size;
         let fontSize = size;
@@ -126,7 +84,7 @@ export default class Emoji extends React.PureComponent {
         }
 
         return (
-            <Image
+            <FastImage
                 key={key}
                 style={{width, height}}
                 source={{uri: imageUrl}}
