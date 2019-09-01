@@ -23,7 +23,7 @@ import {
     makeStyleSheetFromTheme,
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
-    getHighlightStyleFromTheme
+    getHighlightStyleFromTheme,
 } from 'app/utils/theme';
 
 export default class Code extends React.PureComponent {
