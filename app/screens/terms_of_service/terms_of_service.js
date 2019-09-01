@@ -63,6 +63,7 @@ export default class TermsOfService extends PureComponent {
         };
 
         this.rightButton.text = context.intl.formatMessage({id: 'terms_of_service.agreeButton', defaultMessage: 'I Agree'});
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.leftButton.icon = props.closeButton;
 
         this.setNavigatorButtons(false);

@@ -24,7 +24,12 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorIfInvalidPermissions} from 'app/utils/general';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 export default class ChannelMembers extends PureComponent {
     static propTypes = {
@@ -65,6 +70,7 @@ export default class ChannelMembers extends PureComponent {
         };
 
         this.removeButton = {
+            color: props.theme.sidebarHeaderTextColor,
             enabled: false,
             id: 'remove-members',
             showAsAction: 'always',
@@ -379,6 +385,7 @@ export default class ChannelMembers extends PureComponent {
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
                     />
                 </View>

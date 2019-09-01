@@ -4,6 +4,8 @@
 import {StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
+import tinyColor from 'tinycolor2';
+
 import * as ThemeUtils from 'mattermost-redux/utils/theme_utils';
 import * as HighlightStyles from 'react-syntax-highlighter/styles/hljs';
 
@@ -32,6 +34,9 @@ export function setNavigatorStyles(componentId, theme) {
             },
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,
+            backButton: {
+                color: theme.sidebarHeaderTextColor,
+            },
         },
         layout: {
             backgroundColor: theme.centerChannelBg,
@@ -50,4 +55,8 @@ const snakeCaseToCamelCase = (str) => str.replace(
 
 export function getHighlightStyleFromTheme(theme) {
     return HighlightStyles[snakeCaseToCamelCase(theme.codeTheme)] || HighlightStyles.github;
+}
+
+export function getKeyboardAppearanceFromTheme(theme) {
+    return tinyColor(theme.centerChannelBg).isLight() ? 'light' : 'dark';
 }

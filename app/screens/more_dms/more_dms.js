@@ -23,7 +23,12 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
 import SelectedUsers from './selected_users';
@@ -75,13 +80,12 @@ export default class MoreDirectMessages extends PureComponent {
             selectedIds: {},
             selectedCount: 0,
         };
-
-        this.updateNavigationButtons(false, context);
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
         this.mounted = true;
+        this.updateNavigationButtons(false);
 
         this.getProfiles();
     }
@@ -328,10 +332,11 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     updateNavigationButtons = (startEnabled, context = this.context) => {
-        const {actions, componentId} = this.props;
+        const {actions, componentId, theme} = this.props;
         const {formatMessage} = context.intl;
         actions.setButtons(componentId, {
             rightButtons: [{
+                color: theme.sidebarHeaderTextColor,
                 id: START_BUTTON,
                 text: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
@@ -470,6 +475,7 @@ export default class MoreDirectMessages extends PureComponent {
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
                     />
                     <SelectedUsers

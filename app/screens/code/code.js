@@ -17,7 +17,14 @@ import SyntaxHighlighter from 'react-native-syntax-highlighter';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {getCodeFont} from 'app/utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles, getHighlightStyleFromTheme} from 'app/utils/theme';
+
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+    getHighlightStyleFromTheme
+} from 'app/utils/theme';
 
 export default class Code extends React.PureComponent {
     static propTypes = {
@@ -80,7 +87,12 @@ export default class Code extends React.PureComponent {
                     style={getHighlightStyleFromTheme(this.props.theme)}
                     highlighter={'hljs'}
                     CodeTag={TextInput}
-                    codeTagProps={{editable: false, multiline: true, style: {...style.codeText, ...this.props.textStyle}}}
+                    codeTagProps={{
+                        editable: false,
+                        multiline: true,
+                        keyboardAppearance: getKeyboardAppearanceFromTheme(this.props.theme),
+                        style: {...style.codeText, ...this.props.textStyle},
+                    }}
                 >
                     {this.props.content}
                 </SyntaxHighlighter>

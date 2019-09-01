@@ -41,6 +41,8 @@ export default class ChannelInfoHeader extends React.PureComponent {
         isBot: PropTypes.bool.isRequired,
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
+        timeZone: PropTypes.string,
+        popToRoot: PropTypes.func,
     };
 
     static contextTypes = {
@@ -135,6 +137,8 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isArchived,
             isBot,
             isGroupConstrained,
+            timeZone,
+            popToRoot,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -145,7 +149,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             style.detail;
 
         return (
-            <SafeAreaView style={style.safeAreaView}>
+            <SafeAreaView>
                 <View style={style.container}>
                     <View style={[style.channelNameContainer, style.row]}>
                         <ChannelIcon
@@ -208,6 +212,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                         textStyles={textStyles}
                                         blockStyles={blockStyles}
                                         value={header}
+                                        onChannelLinkPress={popToRoot}
                                     />
                                 </View>
                             </TouchableHighlight>
@@ -231,10 +236,9 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                 }}
                             />
                             <FormattedDate
-                                value={new Date(createAt)}
-                                year='numeric'
-                                month='long'
-                                day='2-digit'
+                                format='LL'
+                                timeZone={timeZone}
+                                value={createAt}
                             />
                         </Text>
                     }
@@ -286,9 +290,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         row: {
             paddingHorizontal: 15,
-        },
-        safeAreaView: {
-            backgroundColor: 'white',
         },
     };
 });

@@ -74,6 +74,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         blurOnSubmit={false}
         disableFullscreenUI={true}
         editable={true}
+        keyboardAppearance="light"
         keyboardType="default"
         multiline={true}
         onChangeText={[Function]}
@@ -101,7 +102,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         visible={false}
       >
         <SendButton
-          disabled={false}
+          disabled={true}
           handleSendMessage={[Function]}
           theme={
             Object {
