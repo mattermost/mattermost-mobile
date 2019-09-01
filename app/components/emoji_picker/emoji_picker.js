@@ -102,14 +102,14 @@ export default class EmojiPicker extends PureComponent {
 
         if (this.props.emojis !== nextProps.emojis) {
             this.rebuildEmojis = true;
-            this.deviceWidth = nextProps.deviceWidth;
+            this.setRebuiltEmojis();
         }
     }
 
-    setRebuiltEmojis = (searchBarAnimationComplete) => {
+    setRebuiltEmojis = (searchBarAnimationComplete = true) => {
         if (this.rebuildEmojis && searchBarAnimationComplete) {
             this.rebuildEmojis = false;
-            const emojis = this.renderableEmojis(this.props.emojisBySection, this.deviceWidth);
+            const emojis = this.renderableEmojis(this.props.emojisBySection, this.props.deviceWidth);
             this.setState({emojis});
         }
     }
