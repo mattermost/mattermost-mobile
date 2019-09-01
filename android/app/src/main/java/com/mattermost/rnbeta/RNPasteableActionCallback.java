@@ -73,6 +73,9 @@ public class RNPasteableActionCallback implements ActionMode.Callback {
     private Uri getUriInClipboard() {
         ClipboardManager clipboardManager = (ClipboardManager) mEditText.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clipData = clipboardManager.getPrimaryClip();
+        if (clipData == null) {
+            return null;
+        }
 
         ClipData.Item item = clipData.getItemAt(0);
         if (item == null) {

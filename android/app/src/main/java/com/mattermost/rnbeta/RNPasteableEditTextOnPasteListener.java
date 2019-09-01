@@ -37,6 +37,9 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         if (uri.equals("content://com.google.android.apps.docs.editors.kix.editors.clipboard")) {
             ClipboardManager clipboardManager = (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clipData = clipboardManager.getPrimaryClip();
+            if (clipData == null) {
+                return;
+            }
 
             ClipData.Item item = clipData.getItemAt(0);
             String htmlText = item.getHtmlText();
