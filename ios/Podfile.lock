@@ -314,7 +314,7 @@ SPEC CHECKSUMS:
   ReactNativeExceptionHandler: 2ef25736761126fe199c412ed179e479661de794
   ReactNativeNavigation: 20522060de61b1c293ec50681a6aa11488596286
   ReactNativePermissions: 9f2d9c45c98800795e6c2ed330e25d11a66a8169
-  rn-fetch-blob: 23c8bcfa4140451a146073f0605f6c4af5cc0fcd
+  rn-fetch-blob: 206c04a36e0a5bb52ad64d070f9ab6d26612f6ec
   RNCAsyncStorage: 6ae5aba8a41bfe0a9f21885ec91faf23ca3fe7ee
   RNDeviceInfo: 5b5b42b12587207b6bd686441ac42d19d8e07933
   RNGestureHandler: 7ccf2f3f60458e084f9ada01fbaf610f6fef073c
@@ -327,6 +327,6 @@ SPEC CHECKSUMS:
   XCDYouTubeKit: c8567fd5cb388a3099fa26eee4b30df2a467847d
   yoga: 88c514f310aff89b94a14c5fbf44b95735af0cb7
 
-PODFILE CHECKSUM: 00e8c4056510f38eb40c33e49e69ff8a4ec3d6af
+PODFILE CHECKSUM: b57ffe748e4335d5327ce6e976198edf2a03ef4f
 
 COCOAPODS: 1.5.3
