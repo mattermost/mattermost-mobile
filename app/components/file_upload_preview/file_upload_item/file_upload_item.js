@@ -116,7 +116,6 @@ export default class FileUploadItem extends PureComponent {
         const newFile = {...file};
         if (newFile.localPath.startsWith('http')) {
             try {
-                console.log('download file');
                 this.tempDownloadFile = await this.downloadFile(newFile);
                 newFile.localPath = this.tempDownloadFile.path();
             } catch (e) {
