@@ -33,6 +33,9 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         ReactContext reactContext = (ReactContext)mEditText.getContext();
         String uri = itemUri.toString();
 
+        WritableArray images = null;
+        WritableMap error = null;
+
         // Special handle for Google docs
         if (uri.equals("content://com.google.android.apps.docs.editors.kix.editors.clipboard")) {
             ClipboardManager clipboardManager = (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -72,30 +75,36 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
             return;
         }
 
+        // Get fileName
+        String fileName = URLUtil.guessFileName(uri, null, mimeType);
+
         // Get fileSize
         long fileSize = 0;
         try {
             ContentResolver contentResolver = reactContext.getContentResolver();
             AssetFileDescriptor assetFileDescriptor = contentResolver.openAssetFileDescriptor(itemUri, "r");
+            if (assetFileDescriptor == null) {
+                return;
+            }
+
             fileSize = assetFileDescriptor.getLength();
+
+            WritableMap image = Arguments.createMap();
+            image.putString("type", mimeType);
+            image.putDouble("fileSize", fileSize);
+            image.putString("fileName", fileName);
+            image.putString("uri", "file://" + uri);
+
+            images = Arguments.createArray();
+            images.pushMap(image);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            error = Arguments.createMap();
+            error.putString("message", e.getMessage());
         }
-
-        // Get fileName
-        String fileName = URLUtil.guessFileName(uri, null, mimeType);
-
-        WritableMap image = Arguments.createMap();
-        image.putString("type", mimeType);
-        image.putDouble("fileSize", fileSize);
-        image.putString("fileName", fileName);
-        image.putString("uri", "file://" + uri);
-
-        WritableArray images = Arguments.createArray();
-        images.pushMap(image);
 
         WritableMap event = Arguments.createMap();
         event.putArray("data", images);
+        event.putMap("error", error);
 
         reactContext
                 .getJSModule(RCTEventEmitter.class)

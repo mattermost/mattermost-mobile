@@ -28,7 +28,7 @@ class PasteableTextInput extends React.Component {
 
     onPaste = (event) => {
         const {onPaste} = this.props;
-        return onPaste?.(event);
+        return onPaste?.(null, event);
     }
 
     render() {

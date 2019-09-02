@@ -677,21 +677,34 @@ export default class PostTextBoxBase extends PureComponent {
         });
     };
 
-    renderDeactivatedChannel = () => {
-        const {intl} = this.context;
-        const style = getStyleSheet(this.props.theme);
-
-        return (
-            <Text style={style.deactivatedMessage}>
-                {intl.formatMessage({
-                    id: 'create_post.deactivated',
-                    defaultMessage: 'You are viewing an archived channel with a deactivated user.',
-                })}
-            </Text>
+    showPasteImageErrorDialog = () => {
+        const {formatMessage} = this.context.intl;
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.image_paste.error_title',
+                defaultMessage: 'Paste Image failed',
+            }),
+            formatMessage({
+                id: 'mobile.image_paste.error_description',
+                defaultMessage: 'An error occurred while pasting the image. Please try again.',
+            }),
+            [
+                {
+                    text: formatMessage({
+                        id: 'mobile.image_paste.error_dismiss',
+                        defaultMessage: 'Dismiss',
+                    }),
+                },
+            ]
         );
     }
 
-    handlePasteImages = (images) => {
+    handlePasteImages = (error, images) => {
+        if (error) {
+            this.showPasteImageErrorDialog();
+            return;
+        }
+
         const {maxFileSize, files} = this.props;
         const availableCount = MAX_FILE_COUNT - files.length;
         if (images.length > availableCount) {
@@ -706,6 +719,20 @@ export default class PostTextBoxBase extends PureComponent {
         }
 
         this.handleUploadFiles(images);
+    }
+
+    renderDeactivatedChannel = () => {
+        const {intl} = this.context;
+        const style = getStyleSheet(this.props.theme);
+
+        return (
+            <Text style={style.deactivatedMessage}>
+                {intl.formatMessage({
+                    id: 'create_post.deactivated',
+                    defaultMessage: 'You are viewing an archived channel with a deactivated user.',
+                })}
+            </Text>
+        );
     }
 
     renderTextBox = () => {

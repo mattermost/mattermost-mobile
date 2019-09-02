@@ -1,9 +1,7 @@
 package com.mattermost.rnbeta;
 
-import android.os.Bundle;
 import android.support.v13.view.inputmethod.EditorInfoCompat;
 import android.support.v13.view.inputmethod.InputConnectionCompat;
-import android.support.v13.view.inputmethod.InputContentInfoCompat;
 import android.support.v4.os.BuildCompat;
 import android.text.InputType;
 import android.view.inputmethod.EditorInfo;
