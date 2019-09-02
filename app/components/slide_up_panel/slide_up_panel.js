@@ -120,6 +120,11 @@ export default class SlideUpPanel extends PureComponent {
             outputRange: [marginFromTop, containerHeight],
             extrapolate: 'clamp',
         });
+
+        this.backdropOpacity = this.translateY.interpolate({
+            inputRange: [marginFromTop, containerHeight],
+            outputRange: [0.7, 0],
+        });
     }
 
     componentDidMount() {
@@ -227,6 +232,9 @@ export default class SlideUpPanel extends PureComponent {
         const translateStyle = {
             transform: [{translateY: this.translateY}],
         };
+        const backdropStyle = {
+            opacity: this.backdropOpacity,
+        };
 
         const headerComponent = header(this.headerRef);
 
@@ -255,7 +263,7 @@ export default class SlideUpPanel extends PureComponent {
                             >
 
                                 <Animated.View
-                                    style={styles.backdrop}
+                                    style={[styles.backdrop, backdropStyle]}
                                     pointerEvents='box-only'
                                 />
                             </PanGestureHandler>
@@ -328,7 +336,7 @@ const styles = StyleSheet.create({
         }),
     },
     backdrop: {
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        backgroundColor: '#000',
         position: 'absolute',
         top: 0,
         bottom: 0,
