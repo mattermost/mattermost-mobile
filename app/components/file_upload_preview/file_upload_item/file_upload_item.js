@@ -35,8 +35,9 @@ export default class FileUploadItem extends PureComponent {
     };
 
     componentDidMount() {
-        if (this.props.file.loading) {
-            this.uploadFile();
+        const {file} = this.props;
+        if (file.loading) {
+            this.downloadAndUploadFile(file);
         }
     }
 
@@ -45,7 +46,7 @@ export default class FileUploadItem extends PureComponent {
         const {file: nextFile} = nextProps;
 
         if (file.failed !== nextFile.failed && nextFile.loading) {
-            this.uploadFile();
+            this.downloadAndUploadFile(file);
         }
     }
 
@@ -111,8 +112,24 @@ export default class FileUploadItem extends PureComponent {
         return false;
     };
 
-    uploadFile = async () => {
-        const {channelId, file} = this.props;
+    downloadAndUploadFile = async (file) => {
+        const newFile = {...file};
+        if (newFile.localPath.startsWith('http')) {
+            try {
+                console.log('download file');
+                this.tempDownloadFile = await this.downloadFile(newFile);
+                newFile.localPath = this.tempDownloadFile.path();
+            } catch (e) {
+                this.handleUploadError(e);
+                return;
+            }
+        }
+
+        this.uploadFile(newFile);
+    }
+
+    uploadFile = async (file) => {
+        const {channelId} = this.props;
         const fileData = buildFileUploadData(file);
 
         const headers = {
@@ -122,20 +139,10 @@ export default class FileUploadItem extends PureComponent {
             'X-CSRF-Token': Client4.csrf,
         };
 
-        let filePath = file.localPath;
-        if (file.localPath.startsWith('http')) {
-            try {
-                this.tempDownloadFile = await this.downloadFile(file);
-                filePath = this.tempDownloadFile.path();
-            } catch (e) {
-                this.handleUploadError(e);
-            }
-        }
-
         const fileInfo = {
             name: 'files',
             filename: encodeHeaderURIStringToUTF8(fileData.name),
-            data: RNFetchBlob.wrap(filePath.replace('file://', '')),
+            data: RNFetchBlob.wrap(file.localPath.replace('file://', '')),
             type: fileData.type,
         };
 
