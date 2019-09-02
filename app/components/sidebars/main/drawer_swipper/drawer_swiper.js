@@ -11,11 +11,12 @@ import Swiper from 'app/components/swiper';
 export default class DrawerSwiper extends Component {
     static propTypes = {
         children: PropTypes.node.isRequired,
+        drawerOpened: PropTypes.bool,
         drawerWidth: PropTypes.number.isRequired,
+        hasSafeAreaInsets: PropTypes.bool,
         onPageSelected: PropTypes.func,
         showTeams: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
-        drawerOpened: PropTypes.bool,
     };
 
     static defaultProps = {

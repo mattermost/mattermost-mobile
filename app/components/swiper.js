@@ -217,7 +217,7 @@ export default class Swiper extends PureComponent {
     paginationBottom = (width, height) => {
         if (DeviceTypes.IS_TABLET) {
             if (Platform.OS === 'ios' && mattermostManaged.hasSafeAreaInsets) {
-                return 14;
+                return 34;
             }
 
             return 24;
@@ -225,7 +225,7 @@ export default class Swiper extends PureComponent {
 
         const landscape = width > height;
         if (DeviceTypes.IS_IPHONE_X) {
-            return landscape ? 14 : 4;
+            return landscape ? 14 : 24;
         }
 
         return 24;

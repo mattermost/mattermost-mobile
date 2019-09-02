@@ -343,6 +343,7 @@ export default class ChannelSidebar extends Component {
             return null;
         }
 
+        const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_X || mattermostManaged.hasSafeAreaInsets;
         const multipleTeams = teamsCount > 1;
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {
@@ -389,6 +390,7 @@ export default class ChannelSidebar extends Component {
 
         return (
             <SafeAreaView
+                excludeFooter={true}
                 navBarBackgroundColor={theme.sidebarBg}
                 backgroundColor={theme.sidebarHeaderBg}
                 footerColor={theme.sidebarBg}
@@ -399,6 +401,7 @@ export default class ChannelSidebar extends Component {
                     showTeams={showTeams}
                     drawerOpened={this.state.drawerOpened}
                     drawerWidth={drawerWidth}
+                    hasSafeAreaInsets={hasSafeAreaInsets}
                 >
                     {lists}
                 </DrawerSwiper>
