@@ -11,7 +11,6 @@ import {
     ViewPropTypes,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
@@ -216,11 +215,6 @@ export default class Post extends PureComponent {
 
     showPostOptions = () => {
         if (this.postBodyRef?.current) {
-            ReactNativeHapticFeedback.trigger('impactLight', {
-                enableVibrateFallback: true,
-                ignoreAndroidSystemSettings: false
-            });
-
             this.postBodyRef.current.showPostOptions();
         }
     };
