@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 
 import TextSetting from 'app/components/widgets/settings/text_setting';
 import AutocompleteSelector from 'app/components/autocomplete_selector';
+import RadioSetting from 'app/components/widgets/settings/radio_setting';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -131,6 +132,21 @@ export default class DialogElement extends PureComponent {
                     showRequiredAsterisk={true}
                     selected={this.state.selected}
                     roundedBorders={false}
+                />
+            );
+        } else if (type === 'radio') {
+            return (
+                <RadioSetting
+                    id={name}
+                    label={displayName}
+                    helpText={helpText}
+                    errorText={errorText}
+                    values={options}
+                    theme={theme}
+                    value={value || options[0].value}
+                    showRequiredAsterisk={true}
+                    onChange={this.onChange}
+                    optional={optional}
                 />
             );
         }
