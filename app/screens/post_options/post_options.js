@@ -11,6 +11,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
+import {hapticFeedback} from 'app/utils/general';
 
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
 import PostOption from './post_option';
@@ -49,6 +50,10 @@ export default class PostOptions extends PureComponent {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
+
+    componentDidMount() {
+        hapticFeedback();
+    }
 
     close = async (cb) => {
         await this.props.actions.dismissModal();
