@@ -77,7 +77,7 @@ export function scheduleExpiredNotification(intl) {
         const {deviceToken} = state.entities.general;
         const message = intl.formatMessage({
             id: 'mobile.session_expired',
-            defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
+            defaultMessage: 'Session Expired: Please log in to continue receiving notifications. Sessions for site_name are configured to expire every number_of_days_set_in_config days.',
         });
 
         // Once the user logs in we are going to wait for 10 seconds
