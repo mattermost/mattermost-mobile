@@ -9,7 +9,7 @@ import CustomTextInput from './custom_text_input';
 const {OnPasteEventManager} = NativeModules;
 const OnPasteEventEmitter = new NativeEventEmitter(OnPasteEventManager);
 
-class PasteableTextInput extends React.Component {
+export class PasteableTextInput extends React.Component {
     static propTypes = {
         ...TextInput.PropTypes,
         onPaste: PropTypes.func,
