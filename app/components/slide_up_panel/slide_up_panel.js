@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated, Platform, StyleSheet, View} from 'react-native';
+import {Animated, Platform, StyleSheet, View, Easing} from 'react-native';
 import {
     PanGestureHandler,
     NativeViewGestureHandler,
@@ -129,17 +129,19 @@ export default class SlideUpPanel extends PureComponent {
 
     componentDidMount() {
         Animated.timing(this.translateYOffset, {
-            duration: 200,
             toValue: this.snapPoints[1],
             useNativeDriver: true,
+            easing: Easing.inOut(Easing.sin),
+            duration: 200,
         }).start();
     }
 
     closeWithAnimation = (cb) => {
         Animated.timing(this.translateYOffset, {
-            duration: 200,
             toValue: this.snapPoints[2],
             useNativeDriver: true,
+            easing: Easing.inOut(Easing.sin),
+            duration: 200,
         }).start(() => this.props.onRequestClose(cb));
     };
 
