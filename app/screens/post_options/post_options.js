@@ -264,42 +264,20 @@ export default class PostOptions extends PureComponent {
         return null;
     };
 
-    getMyPostOptions = () => {
-        const actions = [
-            this.getReplyOption(),
-            this.getAddReactionOption(),
-            this.getMarkAsUnreadOption(),
-            this.getCopyPermalink(),
-            this.getFlagOption(),
-            this.getCopyText(),
-            this.getPinOption(),
-            this.getEditOption(),
-            this.getDeleteOption(),
-        ];
-
-        return actions.filter((a) => a !== null);
-    };
-
-    getOthersPostOptions = () => {
-        const actions = [
-            this.getReplyOption(),
-            this.getAddReactionOption(),
-            this.getMarkAsUnreadOption(),
-            this.getCopyPermalink(),
-            this.getFlagOption(),
-            this.getCopyText(),
-            this.getPinOption(),
-            this.getEditOption(),
-            this.getDeleteOption(),
-        ];
-
-        return actions.filter((a) => a !== null);
-    };
-
     getPostOptions = () => {
-        const {isMyPost} = this.props;
+        const actions = [
+            this.getReplyOption(),
+            this.getAddReactionOption(),
+            this.getMarkAsUnreadOption(),
+            this.getCopyPermalink(),
+            this.getFlagOption(),
+            this.getCopyText(),
+            this.getPinOption(),
+            this.getEditOption(),
+            this.getDeleteOption(),
+        ];
 
-        return isMyPost ? this.getMyPostOptions() : this.getOthersPostOptions();
+        return actions.filter((a) => a !== null);
     };
 
     handleAddReaction = () => {
