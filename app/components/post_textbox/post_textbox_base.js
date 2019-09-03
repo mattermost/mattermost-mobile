@@ -717,7 +717,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onChangeText={this.handleTextChange}
                         onSelectionChange={this.handlePostDraftSelectionChanged}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
-                        placeholderTextColor={changeOpacity('#000', 0.5)}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         multiline={true}
                         blurOnSubmit={false}
                         underlineColorAndroid='transparent'
@@ -744,7 +744,7 @@ export default class PostTextBoxBase extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         input: {
-            color: '#000',
+            color: theme.centerChannelColor,
             flex: 1,
             fontSize: 14,
             maxHeight: MAX_CONTENT_HEIGHT,
@@ -764,7 +764,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         inputContainer: {
             flex: 1,
             flexDirection: 'row',
-            backgroundColor: '#fff',
+            backgroundColor: theme.centerChannelBg,
             alignItems: 'stretch',
             marginRight: 10,
         },

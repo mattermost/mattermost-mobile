@@ -249,7 +249,7 @@ export default class EditChannelInfo extends PureComponent {
                                             autoCapitalize='none'
                                             autoCorrect={false}
                                             placeholder={{id: t('channel_modal.nameEx'), defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'}}
-                                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
                                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -279,7 +279,7 @@ export default class EditChannelInfo extends PureComponent {
                                             autoCapitalize='none'
                                             autoCorrect={false}
                                             placeholder={{id: t('rename_channel.handleHolder'), defaultMessage: 'lowercase alphanumeric characters'}}
-                                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
                                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -310,7 +310,7 @@ export default class EditChannelInfo extends PureComponent {
                                             autoCapitalize='none'
                                             autoCorrect={false}
                                             placeholder={{id: t('channel_modal.purposeEx'), defaultMessage: 'E.g.: "A channel to file bugs and improvements"'}}
-                                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                             multiline={true}
                                             blurOnSubmit={false}
                                             textAlignVertical='top'
@@ -356,7 +356,7 @@ export default class EditChannelInfo extends PureComponent {
                                     autoCapitalize='none'
                                     autoCorrect={false}
                                     placeholder={{id: t('channel_modal.headerEx'), defaultMessage: 'E.g.: "[Link Title](http://example.com)"'}}
-                                    placeholderTextColor={changeOpacity('#000', 0.5)}
+                                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                     multiline={true}
                                     blurOnSubmit={false}
                                     onFocus={this.scrollToEnd}
@@ -401,10 +401,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         inputContainer: {
             marginTop: 10,
-            backgroundColor: '#fff',
+            backgroundColor: theme.centerChannelBg,
         },
         input: {
-            color: '#333',
+            color: theme.centerChannelColor,
             fontSize: 14,
             height: 40,
             paddingHorizontal: 15,
