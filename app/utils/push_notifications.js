@@ -43,9 +43,13 @@ class PushNotificationUtils {
     };
 
     loadFromNotification = async (notification) => {
+        // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
+        EphemeralStore.appStartedFromPushNotification = true;
         await this.store.dispatch(loadFromPushNotification(notification, true));
 
-        if (!EphemeralStore.appStartedFromPushNotification) {
+        // if we have a componentId means that the app is already initialized
+        const componentId = EphemeralStore.getNavigationTopComponentId();
+        if (componentId) {
             EventEmitter.emit('close_channel_drawer');
             EventEmitter.emit('close_settings_sidebar');
 
@@ -190,11 +194,11 @@ class PushNotificationUtils {
         };
 
         unsubscribeFromStore = this.store.subscribe(waitForHydration);
-    }
+    };
 
     getNotification = () => {
         return PushNotifications.getNotification();
-    }
+    };
 }
 
 export default new PushNotificationUtils();

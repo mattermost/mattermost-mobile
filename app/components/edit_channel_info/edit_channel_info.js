@@ -21,7 +21,12 @@ import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
+
 import {getShortenedURL} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
@@ -247,6 +252,7 @@ export default class EditChannelInfo extends PureComponent {
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
+                                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         />
                                     </View>
                                 </View>
@@ -276,6 +282,7 @@ export default class EditChannelInfo extends PureComponent {
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
+                                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         />
                                     </View>
                                 </View>
@@ -309,6 +316,7 @@ export default class EditChannelInfo extends PureComponent {
                                             textAlignVertical='top'
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
+                                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         />
                                     </View>
                                     <View>
@@ -355,6 +363,7 @@ export default class EditChannelInfo extends PureComponent {
                                     textAlignVertical='top'
                                     underlineColorAndroid='transparent'
                                     disableFullscreenUI={true}
+                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                 />
                             </View>
                             <View ref={this.lastText}>

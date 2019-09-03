@@ -66,5 +66,6 @@ export default {
 
         return JailMonkey.trustFall();
     },
+    supportsFaceId: async () => false,
     quitApp: MattermostManaged.quitApp,
 };
