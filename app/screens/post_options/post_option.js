@@ -82,8 +82,11 @@ export default class PostOption extends PureComponent {
                     style={[style.row, padding(isLandscape)]}
                 >
                     <View style={style.row}>
-                        <View style={style.icon}>
-                            <Image source={image}/>
+                        <View style={[style.icon]}>
+                            <Image
+                                source={image}
+                                style={[style.iconImage, destructive ? style.destructiveIconImage : null]}
+                            />
                         </View>
                         <View style={style.textContainer}>
                             <Text style={[style.text, destructive ? style.destructive : null]}>
@@ -107,6 +110,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         destructive: {
             color: '#D0021B',
         },
+        destructiveIconImage: {
+            tintColor: '#D0021B',
+        },
         row: {
             flex: 1,
             flexDirection: 'row',
@@ -116,6 +122,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 50,
             justifyContent: 'center',
             width: 60,
+        },
+        iconImage: {
+            tintColor: theme.centerChannelColor,
         },
         textContainer: {
             justifyContent: 'center',
