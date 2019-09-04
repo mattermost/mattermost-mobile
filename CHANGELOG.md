@@ -21,6 +21,7 @@
  
 ### Known Issues
   - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
+  - When users are deactivated, they are not immediately removed from the mention auto-complete. [MM-17953](https://mattermost.atlassian.net/browse/MM-17953)
 
 ## 1.22.1 Release
 - Release Date: August 23, 2019
