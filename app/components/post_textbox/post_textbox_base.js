@@ -106,6 +106,7 @@ export default class PostTextBoxBase extends PureComponent {
             top: 0,
             value: props.value,
             channelTimezoneCount: 0,
+            isMessageTooLong: false,
         };
     }
 
@@ -192,19 +193,25 @@ export default class PostTextBoxBase extends PureComponent {
         const valueLength = value.trim().length;
 
         if (valueLength > maxMessageLength) {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.message_length.title',
-                    defaultMessage: 'Message Length',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.message_length.message',
-                    defaultMessage: 'Your current message is too long. Current character count: {max}/{count}',
-                }, {
-                    max: maxMessageLength,
-                    count: valueLength,
-                })
-            );
+            // Check if component is already aware message is too long
+            if (!this.state.isMessageTooLong) {
+                Alert.alert(
+                    intl.formatMessage({
+                        id: 'mobile.message_length.title',
+                        defaultMessage: 'Message Length',
+                    }),
+                    intl.formatMessage({
+                        id: 'mobile.message_length.message',
+                        defaultMessage: 'Your current message is too long. Current character count: {max}/{count}',
+                    }, {
+                        max: maxMessageLength,
+                        count: valueLength,
+                    })
+                );
+                this.setState({isMessageTooLong: true});
+            }
+        } else if (this.state.isMessageTooLong) {
+            this.setState({isMessageTooLong: false});
         }
     };
 
