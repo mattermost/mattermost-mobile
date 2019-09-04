@@ -211,7 +211,9 @@ export default class RecentMentions extends PureComponent {
         } else if (postIds.length) {
             component = (
                 <FlatList
-                    ref='list'
+                    ref={(ref) => {
+                        this.listRef = ref;
+                    }}
                     contentContainerStyle={style.sectionList}
                     data={postIds}
                     keyExtractor={this.keyExtractor}

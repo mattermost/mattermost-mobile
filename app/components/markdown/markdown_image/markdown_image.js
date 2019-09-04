@@ -199,7 +199,7 @@ export default class MarkdownImage extends React.Component {
             },
         }];
 
-        previewImageAtIndex([this.refs.item], 0, files, actions.showModalOverCurrentContext);
+        previewImageAtIndex([this.itemRef], 0, files, actions.showModalOverCurrentContext);
     };
 
     loadImageSize = (source) => {
@@ -256,7 +256,9 @@ export default class MarkdownImage extends React.Component {
                         style={{width, height}}
                     >
                         <ProgressiveImage
-                            ref='image'
+                            ref={(ref) => {
+                                this.imageRef = ref;
+                            }}
                             defaultSource={source}
                             resizeMode='contain'
                             style={{width, height}}
@@ -286,7 +288,9 @@ export default class MarkdownImage extends React.Component {
 
         return (
             <View
-                ref='item'
+                ref={(ref) => {
+                    this.itemRef = ref;
+                }}
                 style={style.container}
             >
                 {image}

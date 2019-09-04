@@ -96,11 +96,9 @@ export default class LongPost extends PureComponent {
 
     handleClose = () => {
         const {actions} = this.props;
-        if (this.refs.view) {
-            this.refs.view.zoomOut().then(() => {
-                actions.dismissModal();
-            });
-        }
+        this.viewRef?.zoomOut().then(() => {
+            actions.dismissModal();
+        });
     };
 
     handlePress = (post) => {
@@ -185,7 +183,9 @@ export default class LongPost extends PureComponent {
             >
                 <View style={style.container}>
                     <Animatable.View
-                        ref='view'
+                        ref={(ref) => {
+                            this.viewRef = ref;
+                        }}
                         animation='zoomIn'
                         duration={200}
                         delay={0}

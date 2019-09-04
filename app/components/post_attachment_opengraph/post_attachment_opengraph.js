@@ -210,7 +210,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             },
         }];
 
-        previewImageAtIndex([this.refs.item], 0, files, actions.showModalOverCurrentContext);
+        previewImageAtIndex([this.itemRef], 0, files, actions.showModalOverCurrentContext);
     };
 
     renderDescription = () => {
@@ -252,7 +252,9 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         return (
             <View
-                ref='item'
+                ref={(ref) => {
+                    this.itemRef = ref;
+                }}
                 style={[style.imageContainer, {width, height}]}
             >
                 <TouchableWithoutFeedback

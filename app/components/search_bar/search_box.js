@@ -139,14 +139,14 @@ export default class Search extends Component {
     }
 
     blur = () => {
-        this.refs.input_keyword.getNode().blur();
+        this.inputKeywordRef.getNode().blur();
         this.setState({expanded: false});
         this.collapseAnimation();
     };
 
     focus = () => {
         InteractionManager.runAfterInteractions(() => {
-            const input = this.refs.input_keyword.getNode();
+            const input = this.inputKeywordRef.getNode();
             if (!input.isFocused()) {
                 input.focus();
             }
@@ -380,7 +380,9 @@ export default class Search extends Component {
 
         return (
             <Animated.View
-                ref='searchContainer'
+                ref={(ref) => {
+                    this.searchContainerRef = ref;
+                }}
                 style={[
                     styles.container,
                     this.props.backgroundColor && {backgroundColor: this.props.backgroundColor},
@@ -399,7 +401,9 @@ export default class Search extends Component {
                 )}
                 <Animated.View style={{backgroundColor, right: this.inputFocusAnimated, borderRadius: 2}}>
                     <AnimatedTextInput
-                        ref='input_keyword'
+                        ref={(ref) => {
+                            this.inputKeywordRef = ref;
+                        }}
                         style={[
                             styles.input,
                             this.props.placeholderTextColor && {color: this.props.placeholderTextColor},

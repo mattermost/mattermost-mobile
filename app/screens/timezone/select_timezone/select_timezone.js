@@ -104,7 +104,9 @@ export default class Timezone extends PureComponent {
                 <StatusBar/>
                 <View style={style.header}>
                     <SearchBar
-                        ref='searchBar'
+                        ref={(ref) => {
+                            this.searchBarRef = ref;
+                        }}
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

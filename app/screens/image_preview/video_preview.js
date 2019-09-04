@@ -210,7 +210,9 @@ export default class VideoPreview extends PureComponent {
                     onPress={() => this.refs.controls.fadeInControls()}
                 >
                     <Video
-                        ref='videoPlayer'
+                        ref={(ref) => {
+                            this.videoPlayerRef = ref;
+                        }}
                         style={[StyleSheet.absoluteFill, {position: 'absolute'}]}
                         resizeMode='contain'
                         source={{uri: path}}
@@ -224,7 +226,9 @@ export default class VideoPreview extends PureComponent {
                     />
                 </TouchableOpacity>
                 <VideoControls
-                    ref='controls'
+                    ref={(ref) => {
+                        this.controlsRef = ref;
+                    }}
                     mainColor={theme.linkColor}
                     playerState={playerState}
                     isFullScreen={isFullScreen}

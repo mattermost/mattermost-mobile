@@ -33,21 +33,21 @@ export default class ToolTip extends PureComponent {
     };
 
     hideMenu = () => {
-        if (this.refs.toolTip) {
-            this.refs.toolTip.hideMenu();
+        if (this.toolTipRef) {
+            this.toolTipRef.hideMenu();
         }
     };
 
     showMenu = () => {
-        if (this.refs.toolTip) {
-            this.refs.toolTip.showMenu();
+        if (this.toolTipRef) {
+            this.toolTipRef.showMenu();
         }
     };
 
     componentDidUpdate(prevProps) {
         if (prevProps.actions.length !== this.props.actions.length && getToolTipVisible()) {
-            this.refs.toolTip.hideMenu();
-            setTimeout(() => this.refs.toolTip.showMenu(), 1);
+            this.toolTipRef.hideMenu();
+            setTimeout(() => this.toolTipRef.showMenu(), 1);
         }
     }
 
@@ -57,7 +57,9 @@ export default class ToolTip extends PureComponent {
                 {...this.props}
                 onHide={this.handleHide}
                 onShow={this.handleShow}
-                ref='toolTip'
+                ref={(ref) => {
+                    this.toolTipRef = ref;
+                }}
             />
         );
     }

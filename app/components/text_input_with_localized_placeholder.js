@@ -19,11 +19,11 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
     };
 
     blur = () => {
-        this.refs.input.blur();
+        this.inputRef.blur();
     };
 
     focus = () => {
-        this.refs.input.focus();
+        this.inputRef.focus();
     };
 
     render() {
@@ -36,7 +36,9 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
 
         return (
             <TextInput
-                ref='input'
+                ref={(ref) => {
+                    this.inputRef = ref;
+                }}
                 {...otherProps}
                 placeholder={placeholderString}
                 placeholderTextColor={changeOpacity('#000', 0.5)}

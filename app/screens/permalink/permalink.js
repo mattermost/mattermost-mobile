@@ -192,9 +192,9 @@ export default class Permalink extends PureComponent {
 
     handleClose = () => {
         const {actions, onClose} = this.props;
-        if (this.refs.view) {
+        if (this.viewRef) {
             this.mounted = false;
-            this.refs.view.zoomOut().then(() => {
+            this.viewRef.zoomOut().then(() => {
                 actions.selectPost('');
                 actions.dismissModal();
 
@@ -216,11 +216,9 @@ export default class Permalink extends PureComponent {
     handlePress = () => {
         const {channelIdState, channelNameState} = this.state;
 
-        if (this.refs.view) {
-            this.refs.view.growOut().then(() => {
-                this.jumpToChannel(channelIdState, channelNameState);
-            });
-        }
+        this.viewRef?.growOut().then(() => {
+            this.jumpToChannel(channelIdState, channelNameState);
+        });
     };
 
     jumpToChannel = (channelId, channelDisplayName) => {
@@ -393,7 +391,9 @@ export default class Permalink extends PureComponent {
                     style={style.container}
                 >
                     <Animatable.View
-                        ref='view'
+                        ref={(ref) => {
+                            this.viewRef = ref;
+                        }}
                         animation='zoomIn'
                         duration={200}
                         delay={0}

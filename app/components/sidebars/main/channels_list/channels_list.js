@@ -51,8 +51,8 @@ export default class ChannelsList extends PureComponent {
     }
 
     cancelSearch = () => {
-        if (this.refs.search_bar) {
-            this.refs.search_bar.cancel();
+        if (this.searchBarRef) {
+            this.searchBarRef.cancel();
         }
     };
 
@@ -129,7 +129,9 @@ export default class ChannelsList extends PureComponent {
         const title = (
             <View style={styles.searchContainer}>
                 <SearchBar
-                    ref='search_bar'
+                    ref={(ref) => {
+                        this.searchBarRef = ref;
+                    }}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     inputCollapsedMargin={0}

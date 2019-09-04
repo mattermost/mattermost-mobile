@@ -336,7 +336,9 @@ export default class ChannelAddMembers extends PureComponent {
                 <StatusBar/>
                 <View style={style.searchBar}>
                     <SearchBar
-                        ref='search_bar'
+                        ref={(ref) => {
+                            this.searchBarRef = ref;
+                        }}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

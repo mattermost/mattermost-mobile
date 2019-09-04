@@ -270,7 +270,9 @@ export default class ImagePreview extends PureComponent {
 
         return (
             <Downloader
-                ref='downloader'
+                ref={(ref) => {
+                    this.downloaderRef = ref;
+                }}
                 show={this.state.showDownloader}
                 file={file}
                 deviceHeight={deviceHeight}
@@ -406,9 +408,9 @@ export default class ImagePreview extends PureComponent {
     saveVideoIOS = () => {
         const file = this.getCurrentFile();
 
-        if (this.refs.downloader) {
+        if (this.downloaderRef) {
             EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
-            this.refs.downloader.saveVideo(getLocalFilePathFromFile(VIDEOS_PATH, file));
+            this.downloaderRef.saveVideo(getLocalFilePathFromFile(VIDEOS_PATH, file));
         }
     };
 
