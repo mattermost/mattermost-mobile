@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SlideUpPanelIndicator should match snapshot 1`] = `
+<AnimatedComponent
+  style={
+    Object {
+      "alignItems": "center",
+      "justifyContent": "center",
+      "marginVertical": 10,
+    }
+  }
+>
+  <View
+    style={
+      Array [
+        Object {
+          "borderRadius": 25,
+          "height": 5,
+          "opacity": 0.9,
+          "width": 62.5,
+        },
+        Object {
+          "backgroundColor": "#fff",
+        },
+      ]
+    }
+  />
+</AnimatedComponent>
+`;

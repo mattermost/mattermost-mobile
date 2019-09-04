@@ -275,7 +275,7 @@ export default class SlideUpPanel extends PureComponent {
                             onHandlerStateChange={this.onHeaderHandlerStateChange}
                         >
                             <Animated.View>
-                                <SlideUpPanelIndicator/>
+                                <SlideUpPanelIndicator dragIndicatorColor={theme.centerChannelColor}/>
                                 {headerComponent}
                             </Animated.View>
                         </PanGestureHandler>
