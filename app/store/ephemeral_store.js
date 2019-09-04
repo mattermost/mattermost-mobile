@@ -6,19 +6,38 @@ class EphemeralStore {
         this.appStarted = false;
         this.appStartedFromPushNotification = false;
         this.deviceToken = null;
-        this.componentIdStack = [];
+        this.navigationComponentIdStack = [];
+        this.allNavigationComponentIds = [];
+        this.currentServerUrl = null;
     }
 
-    getTopComponentId = () => this.componentIdStack[0];
+    getNavigationTopComponentId = () => this.navigationComponentIdStack[0];
 
-    addComponentIdToStack = (componentId) => {
-        this.componentIdStack.unshift(componentId);
+    addNavigationComponentId = (componentId) => {
+        this.addToNavigationComponentIdStack(componentId);
+        this.addToAllNavigationComponentIds(componentId);
+    };
+
+    addToNavigationComponentIdStack = (componentId) => {
+        const index = this.navigationComponentIdStack.indexOf(componentId);
+        if (index > 0) {
+            this.navigationComponentIdStack.slice(index, 1);
+        }
+
+        this.navigationComponentIdStack.unshift(componentId);
     }
 
-    removeComponentIdFromStack = (componentId) => {
-        this.componentIdStack = this.componentIdStack.filter((id) => {
-            return id !== componentId;
-        });
+    addToAllNavigationComponentIds = (componentId) => {
+        if (!this.allNavigationComponentIds.includes(componentId)) {
+            this.allNavigationComponentIds.unshift(componentId);
+        }
+    }
+
+    removeNavigationComponentId = (componentId) => {
+        const index = this.navigationComponentIdStack.indexOf(componentId);
+        if (index >= 0) {
+            this.navigationComponentIdStack.splice(index, 1);
+        }
     }
 }
 

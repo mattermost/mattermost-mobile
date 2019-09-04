@@ -228,6 +228,11 @@ export default class ImagePreview extends PureComponent {
         const {canDownloadFiles} = this.props;
         const file = this.getCurrentFile();
 
+        if (file?.data?.localPath) {
+            // we already have the file locally we don't need to download it
+            return null;
+        }
+
         if (file) {
             let icon;
             let action = emptyFunction;

@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
-
+import {isLandscape} from 'app/selectors/device';
 import {General} from 'mattermost-redux/constants';
 import {getChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
 import {getChannelsInCurrentTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
@@ -43,6 +43,7 @@ function mapStateToProps(state) {
         currentTeamId,
         channels,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

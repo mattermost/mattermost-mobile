@@ -20,4 +20,5 @@ export default {
     IS_IPHONE_X: DeviceInfo.getModel().includes('iPhone X'),
     IS_TABLET: DeviceInfo.isTablet(),
     VIDEOS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Videos`,
+    PERMANENT_SIDEBAR_SETTINGS: '@PERMANENT_SIDEBAR_SETTINGS',
 };

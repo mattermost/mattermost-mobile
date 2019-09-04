@@ -16,19 +16,8 @@ import Loading from 'app/components/loading';
 import Markdown from 'app/components/markdown';
 import StatusBar from 'app/components/status_bar';
 
-import {t} from 'app/utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-
-const errorTitle = {
-    id: t('mobile.terms_of_service.get_terms_error_title'),
-    defaultMessage: 'Unable to load terms of service.',
-};
-
-const errorDescription = {
-    id: t('mobile.terms_of_service.get_terms_error_description'),
-    defaultMessage: 'Make sure you have an active internet connection and try again. If this issue persists, contact your System Administrator.',
-};
 
 export default class TermsOfService extends PureComponent {
     static propTypes = {
@@ -74,6 +63,7 @@ export default class TermsOfService extends PureComponent {
         };
 
         this.rightButton.text = context.intl.formatMessage({id: 'terms_of_service.agreeButton', defaultMessage: 'I Agree'});
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.leftButton.icon = props.closeButton;
 
         this.setNavigatorButtons(false);
@@ -252,8 +242,6 @@ export default class TermsOfService extends PureComponent {
                     <FailedNetworkAction
                         onRetry={this.getTerms}
                         theme={theme}
-                        errorTitle={errorTitle}
-                        errorDescription={errorDescription}
                     />
                 </View>
             );
@@ -291,9 +279,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
-        },
-        linkText: {
-            color: theme.linkColor,
         },
         scrollView: {
             flex: 1,

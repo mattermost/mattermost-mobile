@@ -12,6 +12,7 @@ import {
     markChannelAsRead,
     leaveChannel as serviceLeaveChannel, markChannelAsViewed,
     selectChannel,
+    getChannelStats,
 } from 'mattermost-redux/actions/channels';
 import {
     getPosts,
@@ -97,7 +98,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         const directChannels = Object.values(channels).filter((c) => (isDirectChannel(c) || isGroupChannel(c)));
         directChannels.forEach((channel) => {
             const member = myMembers[channel.id];
-            if (isDirectChannel(channel) && !isDirectChannelVisible(currentUserId, myPreferences, channel) && member.mention_count > 0) {
+            if (isDirectChannel(channel) && !isDirectChannelVisible(currentUserId, myPreferences, channel) && member && member.mention_count > 0) {
                 const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
                 let pref = dmPrefs.get(teammateId);
                 if (pref) {
@@ -107,7 +108,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
                 }
                 dmPrefs.set(teammateId, pref);
                 prefs.push(pref);
-            } else if (isGroupChannel(channel) && !isGroupChannelVisible(myPreferences, channel) && (member.mention_count > 0 || member.msg_count < channel.total_msg_count)) {
+            } else if (isGroupChannel(channel) && !isGroupChannelVisible(myPreferences, channel) && member && (member.mention_count > 0 || member.msg_count < channel.total_msg_count)) {
                 const id = channel.id;
                 let pref = gmPrefs.get(id);
                 if (pref) {
@@ -198,7 +199,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
                 });
             }
         } else {
-            const {lastConnectAt} = state.websocket;
+            const lastConnectAt = state.websocket?.lastConnectAt || 0;
             const lastGetPosts = state.views.channel.lastGetPosts[channelId];
 
             let since;
@@ -351,9 +352,8 @@ export function selectDefaultChannel(teamId) {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
             const channels = Object.values(channelsInTeam);
-            const firstChannel = channels.length ? channels[0].id : {id: ''};
-
-            channelId = firstChannel.id;
+            const firstChannel = channels.length ? channels[0].id : '';
+            channelId = firstChannel;
         }
 
         if (channelId) {
@@ -380,6 +380,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
 
         const actions = [
             selectChannel(channelId),
+            getChannelStats(channelId),
             setChannelDisplayName(channel.display_name),
             {
                 type: ViewTypes.SET_INITIAL_POST_VISIBILITY,

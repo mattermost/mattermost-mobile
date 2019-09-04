@@ -32,7 +32,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "horizontalRule": Object {
             "backgroundColor": "#3d3c40",
-            "flex": 1,
             "height": 0.5,
             "marginVertical": 10,
           },
@@ -167,7 +166,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "horizontalRule": Object {
             "backgroundColor": "#3d3c40",
-            "flex": 1,
             "height": 0.5,
             "marginVertical": 10,
           },
@@ -289,18 +287,10 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
 >
   <Connect(StatusBar) />
   <FailedNetworkAction
-    errorDescription={
-      Object {
-        "defaultMessage": "Make sure you have an active internet connection and try again. If this issue persists, contact your System Administrator.",
-        "id": "mobile.terms_of_service.get_terms_error_description",
-      }
-    }
-    errorTitle={
-      Object {
-        "defaultMessage": "Unable to load terms of service.",
-        "id": "mobile.terms_of_service.get_terms_error_title",
-      }
-    }
+    actionDefaultMessage="try again"
+    actionId="mobile.failed_network_action.retry"
+    errorDefaultMessage="Messages will load when you have an internet connection or {refresh}."
+    errorId="mobile.failed_network_action.shortDescription"
     onRetry={[Function]}
     theme={
       Object {
@@ -374,7 +364,6 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           },
           "horizontalRule": Object {
             "backgroundColor": "#3d3c40",
-            "flex": 1,
             "height": 0.5,
             "marginVertical": 10,
           },

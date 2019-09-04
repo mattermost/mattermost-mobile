@@ -27,6 +27,8 @@ export const NotificationLevels = {
     NONE: 'none',
 };
 
+export const NOTIFY_ALL_MEMBERS = 5;
+
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
     SERVER_URL_CHANGED: null,
@@ -105,13 +107,15 @@ export default {
     MAX_CHANNELNAME_LENGTH: 22,
     ANDROID_TOP_LANDSCAPE: 46,
     ANDROID_TOP_PORTRAIT: 56,
-    IOS_TOP_LANDSCAPE: 32,
+    IOS_TOP_LANDSCAPE: 40,
     IOS_TOP_PORTRAIT: 64,
     IOSX_TOP_PORTRAIT: 88,
     STATUS_BAR_HEIGHT: 20,
     PROFILE_PICTURE_SIZE: 32,
+    PROFILE_PICTURE_EMOJI_SIZE: 28,
     DATA_SOURCE_USERS: 'users',
     DATA_SOURCE_CHANNELS: 'channels',
     NotificationLevels,
     SidebarSectionTypes,
+    IOS_HORIZONTAL_LANDSCAPE: 44,
 };

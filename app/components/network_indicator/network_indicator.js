@@ -45,6 +45,7 @@ export default class NetworkIndicator extends PureComponent {
             initWebSocket: PropTypes.func.isRequired,
             markChannelViewedAndRead: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
+            setChannelRetryFailed: PropTypes.func.isRequired,
             setCurrentUserStatusOffline: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
             stopPeriodicStatusUpdates: PropTypes.func.isRequired,
@@ -77,6 +78,7 @@ export default class NetworkIndicator extends PureComponent {
 
         this.backgroundColor = new Animated.Value(0);
         this.firstRun = true;
+        this.statusUpdates = false;
 
         this.networkListener = networkConnectionListener(this.handleConnectionChange);
     }
@@ -137,7 +139,7 @@ export default class NetworkIndicator extends PureComponent {
     }
 
     connect = (displayBar = false) => {
-        const {connection} = this.props.actions;
+        const {connection, startPeriodicStatusUpdates} = this.props.actions;
         clearTimeout(this.connectionRetryTimeout);
 
         NetInfo.fetch().then(async ({isConnected}) => {
@@ -148,7 +150,9 @@ export default class NetworkIndicator extends PureComponent {
             this.serverReachable = serverReachable;
 
             if (serverReachable) {
+                this.statusUpdates = true;
                 this.initializeWebSocket();
+                startPeriodicStatusUpdates();
             } else {
                 if (displayBar) {
                     this.show();
@@ -165,6 +169,7 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     connected = () => {
+        this.props.actions.setChannelRetryFailed(false);
         Animated.sequence([
             Animated.timing(
                 this.backgroundColor, {
@@ -218,9 +223,11 @@ export default class NetworkIndicator extends PureComponent {
         } = actions;
 
         if (open) {
+            this.statusUpdates = true;
             this.initializeWebSocket();
             startPeriodicStatusUpdates();
-        } else {
+        } else if (this.statusUpdates) {
+            this.statusUpdates = false;
             closeWebSocket(true);
             stopPeriodicStatusUpdates();
         }
@@ -247,13 +254,12 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     handleConnectionChange = ({hasInternet, serverReachable}) => {
-        const {connection, startPeriodicStatusUpdates} = this.props.actions;
+        const {connection} = this.props.actions;
 
         // On first run always initialize the WebSocket
         // if we have internet connection
         if (hasInternet && this.firstRun) {
             this.initializeWebSocket();
-            startPeriodicStatusUpdates();
             this.firstRun = false;
 
             // if the state of the internet connection was previously known to be false,

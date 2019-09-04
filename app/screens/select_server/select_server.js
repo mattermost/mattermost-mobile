@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
+import SafeAreaView from 'app/components/safe_area_view';
 
 import merge from 'deepmerge';
 
@@ -107,15 +108,15 @@ export default class SelectServer extends PureComponent {
         if (this.state.connected && this.props.hasConfigAndLicense && !(prevState.connected && prevProps.hasConfigAndLicense)) {
             if (LocalConfig.EnableMobileClientUpgrade) {
                 this.props.actions.setLastUpgradeCheck();
-                const {currentVersion, minVersion, latestVersion} = prevProps;
+                const {currentVersion, minVersion, latestVersion} = this.props;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
                 if (isUpgradeAvailable(upgradeType)) {
                     this.handleShowClientUpgrade(upgradeType);
                 } else {
-                    this.handleLoginOptions(prevProps);
+                    this.handleLoginOptions(this.props);
                 }
             } else {
-                this.handleLoginOptions(prevProps);
+                this.handleLoginOptions(this.props);
             }
         }
     }
@@ -415,58 +416,63 @@ export default class SelectServer extends PureComponent {
         }
 
         return (
-            <KeyboardAvoidingView
-                behavior='padding'
-                style={style.container}
-                keyboardVerticalOffset={0}
-                enabled={Platform.OS === 'ios'}
+            <SafeAreaView
+                excludeHeader={true}
+                useLandscapeMargin={true}
             >
-                <StatusBar barStyle={statusStyle}/>
-                <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                        <Image
-                            source={require('assets/images/logo.png')}
-                        />
-
-                        <View>
-                            <FormattedText
-                                style={[GlobalStyles.header, GlobalStyles.label]}
-                                id='mobile.components.select_server_view.enterServerUrl'
-                                defaultMessage='Enter Server URL'
+                <KeyboardAvoidingView
+                    behavior='padding'
+                    style={style.container}
+                    keyboardVerticalOffset={0}
+                    enabled={Platform.OS === 'ios'}
+                >
+                    <StatusBar barStyle={statusStyle}/>
+                    <TouchableWithoutFeedback onPress={this.blur}>
+                        <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                            <Image
+                                source={require('assets/images/logo.png')}
                             />
+
+                            <View>
+                                <FormattedText
+                                    style={[GlobalStyles.header, GlobalStyles.label]}
+                                    id='mobile.components.select_server_view.enterServerUrl'
+                                    defaultMessage='Enter Server URL'
+                                />
+                            </View>
+                            <TextInput
+                                ref={this.inputRef}
+                                value={url}
+                                editable={!inputDisabled}
+                                onChangeText={this.handleTextChanged}
+                                onSubmitEditing={this.handleConnect}
+                                style={inputStyle}
+                                autoCapitalize='none'
+                                autoCorrect={false}
+                                keyboardType='url'
+                                placeholder={formatMessage({
+                                    id: 'mobile.components.select_server_view.siteUrlPlaceholder',
+                                    defaultMessage: 'https://mattermost.example.com',
+                                })}
+                                placeholderTextColor={changeOpacity('#000', 0.5)}
+                                returnKeyType='go'
+                                underlineColorAndroid='transparent'
+                                disableFullscreenUI={true}
+                            />
+                            <Button
+                                onPress={this.handleConnect}
+                                containerStyle={[GlobalStyles.signupButton, style.connectButton]}
+                            >
+                                {buttonIcon}
+                                <Text style={GlobalStyles.signupButtonText}>
+                                    {buttonText}
+                                </Text>
+                            </Button>
+                            <ErrorText error={error}/>
                         </View>
-                        <TextInput
-                            ref={this.inputRef}
-                            value={url}
-                            editable={!inputDisabled}
-                            onChangeText={this.handleTextChanged}
-                            onSubmitEditing={this.handleConnect}
-                            style={inputStyle}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            keyboardType='url'
-                            placeholder={formatMessage({
-                                id: 'mobile.components.select_server_view.siteUrlPlaceholder',
-                                defaultMessage: 'https://mattermost.example.com',
-                            })}
-                            placeholderTextColor={changeOpacity('#000', 0.5)}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
-                        />
-                        <Button
-                            onPress={this.handleConnect}
-                            containerStyle={[GlobalStyles.signupButton, style.connectButton]}
-                        >
-                            {buttonIcon}
-                            <Text style={GlobalStyles.signupButtonText}>
-                                {buttonText}
-                            </Text>
-                        </Button>
-                        <ErrorText error={error}/>
-                    </View>
-                </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
+                    </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
         );
     }
 }

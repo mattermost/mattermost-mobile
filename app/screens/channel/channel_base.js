@@ -41,6 +41,7 @@ export default class ChannelBase extends PureComponent {
             peek: PropTypes.func.isRequired,
             goToScreen: PropTypes.func.isRequired,
             showModalOverCurrentContext: PropTypes.func.isRequired,
+            getChannelStats: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -106,6 +107,8 @@ export default class ChannelBase extends PureComponent {
         if (!this.props.skipMetrics) {
             telemetry.end(['start:channel_screen']);
         }
+
+        this.props.actions.getChannelStats(this.props.currentChannelId);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -124,6 +127,10 @@ export default class ChannelBase extends PureComponent {
         if (nextProps.currentChannelId !== this.props.currentChannelId &&
             nextProps.currentTeamId === this.props.currentTeamId) {
             PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
+        }
+
+        if (nextProps.currentChannelId !== this.props.currentChannelId) {
+            this.props.actions.getChannelStats(nextProps.currentChannelId);
         }
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
@@ -169,15 +176,23 @@ export default class ChannelBase extends PureComponent {
     };
 
     showTermsOfServiceModal = async () => {
+        const {intl} = this.context;
         const {actions, theme} = this.props;
         const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
         const screen = 'TermsOfService';
-        const passProps = {
-            closeButton,
-        };
+        const passProps = {closeButton};
+        const title = intl.formatMessage({id: 'mobile.tos_link', defaultMessage: 'Terms of Service'});
         const options = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
+            },
+            topBar: {
+                visible: true,
+                height: null,
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                    text: title,
+                },
             },
         };
 
@@ -257,12 +272,21 @@ export default class ChannelBase extends PureComponent {
 
         if (!currentChannelId) {
             if (channelsRequestFailed) {
-                const PostListRetry = require('app/components/post_list_retry').default;
+                const FailedNetworkAction = require('app/components/failed_network_action').default;
+
                 return (
-                    <PostListRetry
-                        retry={this.retryLoadChannels}
-                        theme={theme}
-                    />
+                    <SafeAreaView>
+                        <View style={style.flex}>
+                            <EmptyToolbar
+                                theme={theme}
+                                isLandscape={isLandscape}
+                            />
+                            <FailedNetworkAction
+                                onRetry={this.retryLoadChannels}
+                                theme={theme}
+                            />
+                        </View>
+                    </SafeAreaView>
                 );
             }
 
@@ -310,6 +334,6 @@ export const style = StyleSheet.create({
         flex: 1,
     },
     iOSHomeIndicator: {
-        paddingBottom: 5,
+        paddingBottom: 50,
     },
 });

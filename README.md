@@ -29,6 +29,10 @@ To help with testing app updates before they're released, you can:
    - Expected behavior
 4. (Optional) [Sign up for our team site](https://pre-release.mattermost.com/signup_user_complete/?id=f1924a8db44ff3bb41c96424cdc20676)
    - Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) to see what's new and discuss feedback with other contributors and the core team
+   
+You can leave the Beta testing program at any time:
+- On Android, [click this link](https://play.google.com/apps/testing/com.mattermost.rnbeta) while logged in with your Google Play email address used to opt-in for the Beta program, then click **Leave the program**. 
+- On iOS, access the `Mattermost Beta` app page in TestFlight and click **Stop Testing**.
 
 ### Contribute Code 
 

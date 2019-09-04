@@ -36,9 +36,7 @@ export default class ChannelIOS extends ChannelBase {
 
     render() {
         const {height} = Dimensions.get('window');
-        const {
-            currentChannelId,
-        } = this.props;
+        const {currentChannelId} = this.props;
 
         const channelLoaderStyle = [style.channelLoader, {height}];
         if ((DeviceTypes.IS_IPHONE_X || DeviceTypes.IS_TABLET)) {

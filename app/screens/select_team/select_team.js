@@ -15,7 +15,6 @@ import {Navigation} from 'react-native-navigation';
 import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import FailedNetworkAction from 'app/components/failed_network_action';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
@@ -23,20 +22,10 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import CustomList from 'app/components/custom_list';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TeamIcon from 'app/components/team_icon';
 
 const TEAMS_PER_PAGE = 50;
-
-const errorTitle = {
-    id: t('error.team_not_found.title'),
-    defaultMessage: 'Team Not Found',
-};
-
-const errorDescription = {
-    id: t('mobile.failed_network_action.shortDescription'),
-    defaultMessage: 'Make sure you have an active connection and try again.',
-};
 
 export default class SelectTeam extends PureComponent {
     static propTypes = {
@@ -50,10 +39,12 @@ export default class SelectTeam extends PureComponent {
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
+        currentUserIsGuest: PropTypes.bool.isRequired,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object,
         teamsRequest: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -170,17 +161,17 @@ export default class SelectTeam extends PureComponent {
     }
 
     renderItem = ({item}) => {
-        const {currentUrl, theme} = this.props;
-        const styles = getStyleSheet(theme);
+        const {currentUrl, theme, isLandscape} = this.props;
+        const style = getStyleFromTheme(theme);
 
         if (item.id === 'mobile.select_team.no_teams') {
             return (
-                <View style={styles.teamWrapper}>
-                    <View style={styles.teamContainer}>
+                <View style={style.teamWrapper}>
+                    <View style={style.teamContainer}>
                         <FormattedText
                             id={item.id}
                             defaultMessage={item.defaultMessage}
-                            style={styles.noTeam}
+                            style={style.noTeam}
                         />
                     </View>
                 </View>
@@ -188,29 +179,29 @@ export default class SelectTeam extends PureComponent {
         }
 
         return (
-            <View style={styles.teamWrapper}>
+            <View style={[style.teamWrapper, padding(isLandscape)]}>
                 <TouchableOpacity
                     onPress={preventDoubleTap(() => this.onSelectTeam(item))}
                 >
-                    <View style={styles.teamContainer}>
+                    <View style={style.teamContainer}>
                         <TeamIcon
                             teamId={item.id}
-                            styleContainer={styles.teamIconContainer}
-                            styleText={styles.teamIconText}
-                            styleImage={styles.imageContainer}
+                            styleContainer={style.teamIconContainer}
+                            styleText={style.teamIconText}
+                            styleImage={style.imageContainer}
                         />
-                        <View style={styles.teamNameContainer}>
+                        <View style={style.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
                                 ellipsizeMode='tail'
-                                style={styles.teamName}
+                                style={style.teamName}
                             >
                                 {item.display_name}
                             </Text>
                             <Text
                                 numberOfLines={1}
                                 ellipsizeMode='tail'
-                                style={styles.teamUrl}
+                                style={style.teamUrl}
                             >
                                 {`${currentUrl}/${item.name}`}
                             </Text>
@@ -222,37 +213,52 @@ export default class SelectTeam extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {teams} = this.state;
-        const styles = getStyleSheet(theme);
+        const style = getStyleFromTheme(theme);
 
         if (this.state.joining) {
             return <Loading/>;
         }
 
         if (this.props.teamsRequest.status === RequestStatus.FAILURE) {
+            const FailedNetworkAction = require('app/components/failed_network_action').default;
+
             return (
                 <FailedNetworkAction
                     onRetry={this.getTeams}
                     theme={theme}
-                    errorTitle={errorTitle}
-                    errorDescription={errorDescription}
                 />
             );
         }
 
+        if (this.props.currentUserIsGuest) {
+            return (
+                <View style={style.container}>
+                    <StatusBar/>
+                    <View style={style.headingContainer}>
+                        <FormattedText
+                            id='mobile.select_team.guest_cant_join_team'
+                            defaultMessage='Your guest account has no teams or channels assigned. Please contact an administrator.'
+                            style={style.heading}
+                        />
+                    </View>
+                </View>
+            );
+        }
+
         return (
-            <View style={styles.container}>
+            <View style={style.container}>
                 <StatusBar/>
-                <View style={styles.headingContainer}>
-                    <View style={styles.headingWrapper}>
+                <View style={style.headingContainer}>
+                    <View style={[style.headingWrapper, padding(isLandscape)]}>
                         <FormattedText
                             id='mobile.select_team.join_open'
                             defaultMessage='Open teams you can join'
-                            style={styles.heading}
+                            style={style.heading}
                         />
                     </View>
-                    <View style={styles.line}/>
+                    <View style={style.line}/>
                 </View>
                 <CustomList
                     data={teams}
@@ -271,7 +277,7 @@ export default class SelectTeam extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,

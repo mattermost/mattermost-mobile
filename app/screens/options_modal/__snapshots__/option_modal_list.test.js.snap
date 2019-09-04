@@ -146,11 +146,14 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
 exports[`OptionModalList should match snapshot for iOS 1`] = `
 <View
   style={
-    Object {
-      "alignItems": "center",
-      "flex": 1,
-      "justifyContent": "flex-end",
-    }
+    Array [
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "justifyContent": "flex-end",
+      },
+      null,
+    ]
   }
 >
   <View

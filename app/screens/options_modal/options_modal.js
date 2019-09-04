@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
+    Platform,
     StyleSheet,
     TouchableWithoutFeedback,
     View,
@@ -33,6 +34,7 @@ export default class OptionsModal extends PureComponent {
             PropTypes.string,
             PropTypes.object,
         ]),
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -74,13 +76,18 @@ export default class OptionsModal extends PureComponent {
     };
 
     onItemPress = () => {
-        this.close();
+        if (Platform.OS === 'android') {
+            this.close();
+        } else {
+            this.props.actions.dismissModal();
+        }
     };
 
     render() {
         const {
             items,
             title,
+            isLandscape,
         } = this.props;
 
         return (
@@ -92,6 +99,7 @@ export default class OptionsModal extends PureComponent {
                             onCancelPress={this.handleCancel}
                             onItemPress={this.onItemPress}
                             title={title}
+                            isLandscape={isLandscape}
                         />
                     </AnimatedView>
                 </View>

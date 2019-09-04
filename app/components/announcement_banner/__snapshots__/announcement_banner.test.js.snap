@@ -22,11 +22,14 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
     activeOpacity={0.2}
     onPress={[Function]}
     style={
-      Object {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+        },
+        null,
+      ]
     }
   >
     <Text

@@ -1,9 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 configure({adapter: new Adapter()});
+
+const mockImpl = new MockAsyncStorage();
+jest.mock('@react-native-community/async-storage', () => mockImpl);
+global.window = {};
 
 /* eslint-disable no-console */
 
@@ -29,6 +34,15 @@ jest.mock('NativeModules', () => {
                 END: 'END',
             },
         },
+        RNKeychainManager: {
+            SECURITY_LEVEL_ANY: 'ANY',
+            SECURITY_LEVEL_SECURE_SOFTWARE: 'SOFTWARE',
+            SECURITY_LEVEL_SECURE_HARDWARE: 'HARDWARE',
+        },
+        RNCNetInfo: {
+            addEventListener: jest.fn(),
+            getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
+        },
     };
 });
 jest.mock('NativeEventEmitter');
@@ -40,6 +54,7 @@ jest.mock('react-native-device-info', () => {
         getModel: () => 'iPhone X',
         isTablet: () => false,
         getApplicationName: () => 'Mattermost',
+        getDeviceLocale: () => 'en-US',
     };
 });
 

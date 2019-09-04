@@ -43,9 +43,13 @@ class PushNotificationUtils {
     };
 
     loadFromNotification = async (notification) => {
+        // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
+        EphemeralStore.appStartedFromPushNotification = true;
         await this.store.dispatch(loadFromPushNotification(notification, true));
 
-        if (!EphemeralStore.appStartedFromPushNotification) {
+        // if we have a componentId means that the app is already initialized
+        const componentId = EphemeralStore.getNavigationTopComponentId();
+        if (componentId) {
             EventEmitter.emit('close_channel_drawer');
             EventEmitter.emit('close_settings_sidebar');
 
@@ -140,9 +144,9 @@ class PushNotificationUtils {
                     userInfo: {
                         localNotification: true,
                         localTest: true,
+                        channel_id: data.channel_id,
                     },
                 });
-                console.warn('Failed to send reply to push notification', result.error); // eslint-disable-line no-console
                 completed();
                 return;
             }
@@ -190,7 +194,11 @@ class PushNotificationUtils {
         };
 
         unsubscribeFromStore = this.store.subscribe(waitForHydration);
-    }
+    };
+
+    getNotification = () => {
+        return PushNotifications.getNotification();
+    };
 }
 
 export default new PushNotificationUtils();

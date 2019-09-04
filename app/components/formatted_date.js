@@ -3,35 +3,33 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import moment from 'moment-timezone';
 import {Text} from 'react-native';
 
-class FormattedDate extends React.PureComponent {
+export default class FormattedDate extends React.PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
-        value: PropTypes.any.isRequired,
         format: PropTypes.string,
-        children: PropTypes.func,
+        timeZone: PropTypes.string,
+        value: PropTypes.any.isRequired,
+    };
+
+    static defaultProps = {
+        format: 'ddd, MMM DD, YYYY',
     };
 
     render() {
         const {
-            intl,
+            format,
+            timeZone,
             value,
-            children,
             ...props
         } = this.props;
 
-        Reflect.deleteProperty(props, 'format');
-
-        const formattedDate = intl.formatDate(value, this.props);
-
-        if (typeof children === 'function') {
-            return children(formattedDate);
+        let formattedDate = moment(value).format(format);
+        if (timeZone) {
+            formattedDate = moment.tz(value, timeZone).format(format);
         }
 
         return <Text {...props}>{formattedDate}</Text>;
     }
 }
-
-export default injectIntl(FormattedDate);

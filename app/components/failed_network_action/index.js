@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {TouchableOpacity, View} from 'react-native';
+import {View} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -13,26 +13,29 @@ import Cloud from './cloud';
 
 export default class FailedNetworkAction extends PureComponent {
     static propTypes = {
-        onRetry: PropTypes.func,
+        action: PropTypes.func,
+        actionId: PropTypes.string,
+        actionDefaultMessage: PropTypes.string,
+        errorId: PropTypes.string,
+        errorDefaultMessage: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        errorTitle: PropTypes.object,
-        errorDescription: PropTypes.object,
     };
 
     static defaultProps = {
-        errorTitle: {
-            id: t('mobile.failed_network_action.title'),
-            defaultMessage: 'No internet connection',
-        },
-        errorDescription: {
-            id: t('mobile.failed_network_action.description'),
-            defaultMessage: 'There seems to be a problem with your internet connection. Make sure you have an active connection and try again.',
-        },
+        actionId: t('mobile.failed_network_action.retry'),
+        actionDefaultMessage: 'try again',
+        errorId: t('mobile.failed_network_action.shortDescription'),
+        errorDefaultMessage: 'Messages will load when you have an internet connection or {refresh}.',
     };
 
     render() {
-        const {theme, onRetry} = this.props;
+        const {action, actionId, actionDefaultMessage, errorId, errorDefaultMessage, theme} = this.props;
         const style = getStyleFromTheme(theme);
+
+        const errorTitle = {
+            id: t('mobile.failed_network_action.title'),
+            defaultMessage: 'No internet connection',
+        };
 
         return (
             <View style={style.container}>
@@ -42,27 +45,25 @@ export default class FailedNetworkAction extends PureComponent {
                     width={76}
                 />
                 <FormattedText
-                    id={this.props.errorTitle.id}
-                    defaultMessage={this.props.errorTitle.defaultMessage}
+                    id={errorTitle.id}
+                    defaultMessage={errorTitle.defaultMessage}
                     style={style.title}
                 />
                 <FormattedText
-                    id={this.props.errorDescription.id}
-                    defaultMessage={this.props.errorDescription.message}
+                    id={errorId}
+                    defaultMessage={errorDefaultMessage}
                     style={style.description}
+                    values={{
+                        refresh: (
+                            <FormattedText
+                                id={actionId}
+                                defaultMessage={actionDefaultMessage}
+                                style={style.link}
+                                onPress={action}
+                            />
+                        ),
+                    }}
                 />
-                {onRetry &&
-                <TouchableOpacity
-                    onPress={onRetry}
-                    style={style.retryContainer}
-                >
-                    <FormattedText
-                        id='mobile.failed_network_action.retry'
-                        defaultMessage='Try Again'
-                        style={style.retry}
-                    />
-                </TouchableOpacity>
-                }
             </View>
         );
     }
@@ -75,25 +76,23 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             justifyContent: 'center',
             paddingHorizontal: 15,
+            paddingBottom: 100,
         },
         title: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
             fontSize: 20,
             fontWeight: '600',
             marginBottom: 15,
+            marginTop: 10,
         },
         description: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
             fontSize: 17,
+            lineHeight: 25,
             textAlign: 'center',
         },
-        retryContainer: {
-            marginTop: 30,
-        },
-        retry: {
-            color: changeOpacity(theme.centerChannelColor, 0.7),
-            fontSize: 16,
-            fontWeight: '600',
+        link: {
+            color: theme.linkColor,
         },
     };
 });
