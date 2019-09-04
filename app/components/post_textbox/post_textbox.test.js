@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Alert} from 'react-native';
 import assert from 'assert';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
@@ -13,6 +14,12 @@ import SendButton from 'app/components/send_button';
 import PostTextbox from './post_textbox.ios';
 
 jest.mock('NativeEventEmitter');
+
+jest.mock('Alert', () => {
+    return {
+        alert: jest.fn(),
+    };
+});
 
 describe('PostTextBox', () => {
     const baseProps = {
@@ -89,6 +96,21 @@ describe('PostTextBox', () => {
         instance.handleAppStateChange('background');
         expect(baseProps.actions.handlePostDraftChanged).toHaveBeenCalledWith(baseProps.channelId, value);
         expect(baseProps.actions.handlePostDraftChanged).toHaveBeenCalledTimes(1);
+    });
+
+    test('should not send multiple alerts when message is too long', () => {
+        const wrapper = shallowWithIntl(
+            <PostTextbox {...baseProps}/>
+        );
+
+        const instance = wrapper.instance();
+        const longString = [...Array(baseProps.maxMessageLength + 2).keys()].map(() => Math.random().toString(36).slice(0, 1)).join('');
+
+        instance.handleTextChange(longString);
+        instance.handleTextChange(longString.slice(1));
+
+        expect(Alert.alert).toBeCalled();
+        expect(Alert.alert).toHaveBeenCalledTimes(1);
     });
 
     test('should return correct @all (same for @channel)', () => {
