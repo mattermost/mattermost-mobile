@@ -181,7 +181,8 @@ export default class ReactionList extends PureComponent {
     };
 
     render() {
-        const style = getStyleSheet(this.props.theme);
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
 
         return (
             <View style={style.flex}>
@@ -191,6 +192,7 @@ export default class ReactionList extends PureComponent {
                     initialPosition={0.55}
                     header={this.renderHeader}
                     headerHeight={37.5}
+                    theme={theme}
                 >
                     {this.renderReactionRows()}
                 </SlideUpPanel>
