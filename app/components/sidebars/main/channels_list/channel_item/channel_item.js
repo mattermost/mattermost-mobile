@@ -238,18 +238,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 11,
         },
         text: {
-            color: changeOpacity(theme.sidebarText, 0.4),
-            fontSize: 14,
-            fontWeight: '600',
+            color: changeOpacity(theme.sidebarText, 0.88),
+            fontSize: 16,
+            lineHeight: 24,
             paddingRight: 10,
             flex: 1,
             alignSelf: 'center',
+            fontFamily: 'Open Sans',
         },
         textActive: {
             color: theme.sidebarTextActiveColor,
         },
         textUnread: {
             color: theme.sidebarUnreadText,
+            fontWeight: '500',
         },
         badge: {
             backgroundColor: theme.mentionBg,

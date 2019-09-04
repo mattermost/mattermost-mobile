@@ -50,6 +50,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
             <Badge
                 style={styles.badge}
                 countStyle={styles.mention}
+                minWidth={22}
                 count={mentionCount}
             />
         );
@@ -66,11 +67,11 @@ export default class SwitchTeamsButton extends React.PureComponent {
                             size={12}
                             style={styles.switcherArrow}
                         />
-                        <View style={styles.switcherDivider}/>
                         <TeamIcon
                             teamId={currentTeamId}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}
+                            styleImage={styles.teamIcon}
                         />
                     </View>
                 </TouchableHighlight>
@@ -82,49 +83,49 @@ export default class SwitchTeamsButton extends React.PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        switcherContainer: {
-            backgroundColor: theme.sidebarHeaderTextColor,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: 32,
-            borderRadius: 2,
-            marginLeft: 6,
-            marginRight: 6,
-            paddingHorizontal: 3,
-        },
-        switcherArrow: {
-            color: theme.sidebarHeaderBg,
-            marginRight: 3,
-        },
-        switcherDivider: {
-            backgroundColor: theme.sidebarHeaderBg,
-            height: 15,
-            marginHorizontal: 6,
-            width: 1,
-        },
-        teamIconContainer: {
-            width: 26,
-            height: 26,
-            marginLeft: 3,
-        },
-        teamIconText: {
-            fontSize: 14,
-        },
         badge: {
             backgroundColor: theme.mentionBg,
             borderColor: theme.sidebarHeaderBg,
-            borderRadius: 10,
-            borderWidth: 1,
-            flexDirection: 'row',
+            borderRadius: 14,
+            borderWidth: 2,
+            height: 22,
             padding: 3,
             position: 'absolute',
-            left: -5,
-            top: -5,
+            right: 0,
+            top: -10,
         },
         mention: {
             color: theme.mentionColor,
             fontSize: 10,
+        },
+        switcherArrow: {
+            color: theme.sidebarHeaderBg,
+            marginRight: 8,
+            top: 1,
+        },
+        switcherContainer: {
+            alignItems: 'center',
+            backgroundColor: theme.sidebarHeaderTextColor,
+            borderRadius: 2,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            height: 32,
+            marginRight: 12,
+            width: 56,
+        },
+        teamIcon: {
+            width: 24,
+            height: 24,
+        },
+        teamIconContainer: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 24,
+            width: 24,
+        },
+        teamIconText: {
+            fontFamily: 'Open Sans',
+            fontSize: 14,
         },
     };
 });

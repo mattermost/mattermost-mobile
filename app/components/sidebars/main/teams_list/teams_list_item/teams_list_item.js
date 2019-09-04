@@ -46,6 +46,15 @@ export default class TeamsListItem extends React.PureComponent {
         } = this.props;
         const styles = getStyleSheet(theme);
 
+        const badge = (
+            <Badge
+                style={styles.badge}
+                countStyle={styles.mention}
+                count={mentionCount}
+                minWidth={22}
+            />
+        );
+
         let current;
         if (teamId === currentTeamId) {
             current = (
@@ -58,14 +67,6 @@ export default class TeamsListItem extends React.PureComponent {
             );
         }
 
-        const badge = (
-            <Badge
-                style={styles.badge}
-                countStyle={styles.mention}
-                count={mentionCount}
-            />
-        );
-
         return (
             <View style={styles.teamWrapper}>
                 <TouchableHighlight
@@ -73,11 +74,14 @@ export default class TeamsListItem extends React.PureComponent {
                     onPress={this.selectTeam}
                 >
                     <View style={[styles.teamContainer, padding(isLandscape)]}>
-                        <TeamIcon
-                            teamId={teamId}
-                            styleContainer={styles.teamIconContainer}
-                            styleText={styles.teamIconText}
-                        />
+                        <View>
+                            <TeamIcon
+                                teamId={teamId}
+                                styleContainer={styles.teamIconContainer}
+                                styleText={styles.teamIconText}
+                            />
+                            {badge}
+                        </View>
                         <View style={styles.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
@@ -97,7 +101,6 @@ export default class TeamsListItem extends React.PureComponent {
                         {current}
                     </View>
                 </TouchableHighlight>
-                {badge}
             </View>
         );
     }
@@ -146,13 +149,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         badge: {
             backgroundColor: theme.mentionBg,
             borderColor: theme.sidebarHeaderBg,
-            borderRadius: 10,
-            borderWidth: 1,
-            flexDirection: 'row',
+            borderRadius: 14,
+            borderWidth: 2,
+            height: 22,
             padding: 3,
             position: 'absolute',
-            left: 45,
-            top: -2,
+            right: -14,
+            top: -10,
         },
         mention: {
             color: theme.mentionColor,

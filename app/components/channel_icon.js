@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    Image,
     Text,
     View,
 } from 'react-native';
@@ -86,39 +85,39 @@ export default class ChannelIcon extends React.PureComponent {
                 <Icon
                     name='archive'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='fontawesome'
+                    type='mattermost'
                 />
             );
         } else if (isBot) {
             icon = (
                 <Icon
-                    name='robot'
-                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}, style.iconBot]}
-                    type='fontawesome5'
+                    name='bot'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size - 2}]}
+                    type='mattermost'
                 />
             );
         } else if (hasDraft) {
             icon = (
                 <Icon
-                    name='pencil'
+                    name='draft'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='fontawesome'
+                    type='mattermost'
                 />
             );
         } else if (type === General.OPEN_CHANNEL) {
             icon = (
                 <Icon
-                    name='globe'
+                    name='public'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='fontawesome'
+                    type='mattermost'
                 />
             );
         } else if (type === General.PRIVATE_CHANNEL) {
             icon = (
                 <Icon
-                    name='lock'
+                    name='private'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='fontawesome'
+                    type='mattermost'
                 />
             );
         } else if (type === General.GM_CHANNEL) {
@@ -133,33 +132,37 @@ export default class ChannelIcon extends React.PureComponent {
             switch (status) {
             case General.AWAY:
                 icon = (
-                    <Image
-                        source={require('assets/images/status/away_avatar.png')}
-                        style={{width: size, height: size, tintColor: theme.awayIndicator}}
+                    <Icon
+                        name='away'
+                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.awayIndicator}]}
+                        type='mattermost'
                     />
                 );
                 break;
             case General.DND:
                 icon = (
-                    <Image
-                        source={require('assets/images/status/dnd_avatar.png')}
-                        style={{width: size, height: size, tintColor: theme.dndIndicator}}
+                    <Icon
+                        name='dnd'
+                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.dndIndicator}]}
+                        type='mattermost'
                     />
                 );
                 break;
             case General.ONLINE:
                 icon = (
-                    <Image
-                        source={require('assets/images/status/online_avatar.png')}
-                        style={{width: size, height: size, tintColor: theme.onlineIndicator}}
+                    <Icon
+                        name='online'
+                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.onlineIndicator}]}
+                        type='mattermost'
                     />
                 );
                 break;
             default:
                 icon = (
-                    <Image
-                        source={require('assets/images/status/offline_avatar.png')}
-                        style={{width: size, height: size, tintColor: offlineColor}}
+                    <Icon
+                        name='offline'
+                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: offlineColor}]}
+                        type='mattermost'
                     />
                 );
                 break;
@@ -191,9 +194,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         iconInfo: {
             color: theme.centerChannelColor,
-        },
-        iconBot: {
-            marginLeft: -5,
         },
         groupBox: {
             alignSelf: 'flex-start',

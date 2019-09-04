@@ -110,13 +110,18 @@ export default class Badge extends PureComponent {
                 </View>
             );
         } else {
+            let mentionCount = count;
+            if (count > 99) {
+                mentionCount = '99+';
+            }
+
             unreadCount = (
                 <View style={styles.verticalAlign}>
                     <Text
                         style={[styles.text, this.props.countStyle]}
                         onLayout={this.onLayout}
                     >
-                        {count.toString()}
+                        {mentionCount.toString()}
                     </Text>
                 </View>
             );
@@ -173,10 +178,10 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     unreadIndicator: {
-        height: 4,
-        width: 4,
+        height: 5,
+        width: 5,
         backgroundColor: '#444',
-        borderRadius: 4,
+        borderRadius: 5,
     },
     verticalAlign: {
         flex: 1,

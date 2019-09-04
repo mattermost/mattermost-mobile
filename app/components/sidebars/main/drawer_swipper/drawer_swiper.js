@@ -79,8 +79,9 @@ export default class DrawerSwiper extends Component {
                 onIndexChanged={this.swiperPageSelected}
                 width={drawerWidth}
                 style={{backgroundColor: theme.sidebarBg}}
+                paginationBackgroundColor={changeOpacity(theme.sidebarText, 0.1)}
                 activeDotColor={theme.sidebarText}
-                dotColor={changeOpacity(theme.sidebarText, 0.5)}
+                dotColor={changeOpacity(theme.sidebarText, 0.3)}
                 scrollEnabled={showTeams}
                 showsPagination={showTeams}
                 keyboardShouldPersistTaps={'always'}

@@ -30,7 +30,6 @@ import TeamsList from './teams_list';
 import telemetry from 'app/telemetry';
 
 const DRAWER_INITIAL_OFFSET = 40;
-const DRAWER_LANDSCAPE_OFFSET = 150;
 
 export default class ChannelSidebar extends Component {
     static propTypes = {
@@ -46,7 +45,6 @@ export default class ChannelSidebar extends Component {
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
         previewChannel: PropTypes.func,
@@ -59,17 +57,12 @@ export default class ChannelSidebar extends Component {
     constructor(props) {
         super(props);
 
-        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-        if (props.isLandscape || DeviceTypes.IS_TABLET) {
-            openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
-        }
-
         this.swiperIndex = 1;
         this.drawerRef = React.createRef();
         this.channelListRef = React.createRef();
         this.state = {
             show: false,
-            openDrawerOffset,
+            openDrawerOffset: DRAWER_INITIAL_OFFSET,
             drawerOpened: false,
             searching: false,
             isSplitView: false,
@@ -79,7 +72,7 @@ export default class ChannelSidebar extends Component {
     componentDidMount() {
         this.mounted = true;
         this.props.actions.getTeams();
-        this.handleDimensions();
+        this.handleDimensions({window: Dimensions.get('window')});
         this.handlePermanentSidebar();
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.on('renderDrawer', this.handleShowDrawerContent);
@@ -89,23 +82,8 @@ export default class ChannelSidebar extends Component {
         Dimensions.addEventListener('change', this.handleDimensions);
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {isLandscape} = this.props;
-
-        if (nextProps.isLandscape !== isLandscape) {
-            if (this.state.openDrawerOffset !== 0) {
-                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-                if (nextProps.isLandscape || DeviceTypes.IS_TABLET) {
-                    openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
-                }
-
-                this.setState({openDrawerOffset});
-            }
-        }
-    }
-
     shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, deviceWidth, isLandscape, teamsCount, theme} = this.props;
+        const {currentTeamId, deviceWidth, teamsCount, theme} = this.props;
         const {openDrawerOffset, isSplitView, permanentSidebar, show, searching} = this.state;
 
         if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching) {
@@ -113,7 +91,7 @@ export default class ChannelSidebar extends Component {
         }
 
         return nextProps.currentTeamId !== currentTeamId ||
-            nextProps.isLandscape !== isLandscape || nextProps.deviceWidth !== deviceWidth ||
+            nextProps.deviceWidth !== deviceWidth ||
             nextProps.teamsCount !== teamsCount ||
             nextProps.theme !== theme ||
             nextState.isSplitView !== isSplitView ||
@@ -139,12 +117,23 @@ export default class ChannelSidebar extends Component {
         return false;
     };
 
-    handleDimensions = () => {
-        if (DeviceTypes.IS_TABLET && this.mounted) {
-            mattermostManaged.isRunningInSplitView().then((result) => {
-                const isSplitView = Boolean(result.isSplitView);
-                this.setState({isSplitView});
-            });
+    handleDimensions = ({window}) => {
+        if (this.mounted) {
+            if (DeviceTypes.IS_TABLET) {
+                mattermostManaged.isRunningInSplitView().then((result) => {
+                    const isSplitView = Boolean(result.isSplitView);
+                    this.setState({isSplitView});
+                });
+            }
+
+            if (this.state.openDrawerOffset !== 0) {
+                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+                if ((window.width > window.height) || DeviceTypes.IS_TABLET) {
+                    openDrawerOffset = window.width * 0.5;
+                }
+
+                this.setState({openDrawerOffset});
+            }
         }
     };
 

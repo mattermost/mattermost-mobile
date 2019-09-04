@@ -192,6 +192,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: theme.centerChannelBg,
+            padding: 1,
         },
         status: {
             color: theme.centerChannelBg,

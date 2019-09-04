@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Dimensions,
-    InteractionManager,
     Keyboard,
     Platform,
     SectionList,
@@ -15,17 +14,17 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import FontAwesomePro from 'react-native-vector-icons/Ionicons';
 
 import {General} from 'mattermost-redux/constants';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {DeviceTypes, ListTypes, ViewTypes} from 'app/constants';
+import {DeviceTypes, ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 
 import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity} from 'app/utils/theme';
 
 import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
@@ -74,6 +73,12 @@ export default class List extends PureComponent {
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
+    }
+
+    componentDidMount() {
+        if (!UnreadIndicator) {
+            UnreadIndicator = require('app/components/sidebars/main/channels_list/unread_indicator').default;
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -157,12 +162,10 @@ export default class List extends PureComponent {
             orderedChannelIds,
         } = props;
 
-        return orderedChannelIds.map((s, i) => {
+        return orderedChannelIds.map((s) => {
             return {
                 ...this.getSectionConfigByType(props, s.type),
                 data: s.items,
-                topSeparator: i !== 0,
-                bottomSeparator: s.items.length > 0,
             };
         });
     };
@@ -308,25 +311,18 @@ export default class List extends PureComponent {
     };
 
     renderSectionAction = (styles, action) => {
-        const {theme} = this.props;
         return (
             <TouchableHighlight
                 style={styles.actionContainer}
                 onPress={action}
-                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
+                underlayColor={'transparent'}
+                hitSlop={styles.hitSlop}
             >
-                <MaterialIcon
-                    name='add'
+                <FontAwesomePro
+                    name='ios-add-circle-outline'
                     style={styles.action}
                 />
             </TouchableHighlight>
-        );
-    };
-
-    renderSectionSeparator = () => {
-        const {styles} = this.props;
-        return (
-            <View style={[styles.divider]}/>
         );
     };
 
@@ -349,23 +345,22 @@ export default class List extends PureComponent {
         const {intl} = this.context;
         const {
             action,
-            bottomSeparator,
             defaultMessage,
             id,
-            topSeparator,
         } = section;
 
         return (
-            <View>
-                {topSeparator && this.renderSectionSeparator()}
+            <React.Fragment>
                 <View style={[styles.titleContainer, padding(isLandscape)]}>
                     <Text style={styles.title}>
                         {intl.formatMessage({id, defaultMessage}).toUpperCase()}
                     </Text>
+                    <View style={styles.separatorContainer}>
+                        <View style={styles.separator}/>
+                    </View>
                     {action && this.renderSectionAction(styles, action)}
                 </View>
-                {bottomSeparator && this.renderSectionSeparator()}
-            </View>
+            </React.Fragment>
         );
     };
 
@@ -380,24 +375,19 @@ export default class List extends PureComponent {
     };
 
     emitUnreadIndicatorChange = debounce((showIndicator) => {
-        if (showIndicator && !UnreadIndicator) {
-            UnreadIndicator = require('app/components/sidebars/main/channels_list/unread_indicator').default;
-        }
         this.setState({showIndicator});
-    }, 100);
+    }, 10);
 
     updateUnreadIndicators = ({viewableItems}) => {
-        InteractionManager.runAfterInteractions(() => {
-            const {unreadChannelIds} = this.props;
-            const firstUnread = unreadChannelIds.length && unreadChannelIds[0];
-            if (firstUnread && viewableItems.length) {
-                const isVisible = viewableItems.find((v) => v.item === firstUnread);
+        const {unreadChannelIds} = this.props;
+        const firstUnread = unreadChannelIds.length && unreadChannelIds[0];
+        if (firstUnread && viewableItems.length) {
+            const isVisible = viewableItems.find((v) => v.item === firstUnread);
 
-                return this.emitUnreadIndicatorChange(!isVisible);
-            }
+            return this.emitUnreadIndicatorChange(!isVisible);
+        }
 
-            return this.emitUnreadIndicatorChange(false);
-        });
+        return this.emitUnreadIndicatorChange(false);
     };
 
     scrollBeginDrag = () => {
@@ -421,14 +411,10 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const {styles, theme, isLandscape} = this.props;
-        const {sections, width, showIndicator} = this.state;
+        const {styles, theme} = this.props;
+        const {sections, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
-
-        const unreadBarStyles = DeviceTypes.IS_IPHONE_X && isLandscape ? {width: width - 32, marginLeft: ViewTypes.IOS_HORIZONTAL_LANDSCAPE + 16} : {width};
-
-        const unreadTextStyles = DeviceTypes.IS_IPHONE_X && isLandscape ? {marginLeft: -44} : null;
 
         return (
             <View
@@ -441,19 +427,18 @@ export default class List extends PureComponent {
                     contentContainerStyle={{paddingBottom}}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
+                    keyboardShouldPersistTaps={'always'}
                     keyExtractor={this.keyExtractor}
                     onViewableItemsChanged={this.updateUnreadIndicators}
                     maxToRenderPerBatch={10}
-                    stickySectionHeadersEnabled={false}
+                    stickySectionHeadersEnabled={true}
                     viewabilityConfig={VIEWABILITY_CONFIG}
-                    keyboardShouldPersistTaps={'always'}
                     {...this.keyboardDismissProp}
                 />
-                {showIndicator &&
+                {UnreadIndicator &&
                 <UnreadIndicator
                     show={showIndicator}
-                    style={[styles.above, unreadBarStyles]}
-                    textStyle={unreadTextStyles}
+                    style={styles.above}
                     onPress={this.scrollToTop}
                     theme={theme}
                 />
