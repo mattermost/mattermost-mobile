@@ -9,15 +9,15 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixed an issue on Android where cancelling a video download twice in a row showed an error.
- - Fixed an issue on iOS where a bot account icon style was broken.
- - Fixed an issue on Android where **Channel > Add Members > ADD** text changed to black.
- - Fixed an issue with an incorrect UI text for location of touch ID setting.
- - Fixed an issue where there was a delay in search box and emoji content width change when switching to/from portrait/landscape view.
- - Fixed an issue on iOS where the **Cancel** label text didn't fit in one line in German language.
- - Fixed an issue where changing display theme from webapp didn't work properly on mobile.
  - Fixed an issue where some Giphy actions were not working in ephemeral posts on mobile.
+ - Fixed an issue on Android where **Channel > Add Members > ADD** text changed to black.
+ - Fixed an issue on iOS where the **Cancel** label text didn't fit in one line in German language.
  - Fixed an issue where the download step was missing when previewing a video right after posting it. 
+ - Fixed an issue on Android where cancelling a video download twice in a row showed an error.
+ - Fixed an issue where there was a delay in search box and emoji content width change when switching to/from portrait/landscape view.
+ - Fixed an issue where changing display theme from webapp didn't work properly on mobile.
+ - Fixed an issue on iOS where a bot account icon style was broken.
+ - Fixed an issue with an incorrect UI text for location of touch ID setting.
  
 ### Known Issues
   - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
