@@ -106,4 +106,39 @@ describe('InteractiveDialog', () => {
         expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledTimes(1);
         expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledWith(dialog);
     });
+
+    test('should display introduction text if present', async () => {
+        baseProps.introductionText = '**Some** _introduction_ text';
+
+        const wrapper = shallow(
+            <InteractiveDialog
+                {...baseProps}
+                notifyOnCancel={false}
+            />,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('introduction text should not affect submission', async () => {
+        baseProps.introductionText = '**Some** _introduction_ text';
+
+        const wrapper = shallow(
+            <InteractiveDialog
+                {...baseProps}
+                notifyOnCancel={false}
+            />,
+        );
+
+        const dialog = {
+            url: baseProps.url,
+            callback_id: baseProps.callbackId,
+            state: baseProps.state,
+            submission: {},
+        };
+
+        wrapper.instance().handleSubmit();
+        expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.submitInteractiveDialog).toHaveBeenCalledWith(dialog);
+    });
 });

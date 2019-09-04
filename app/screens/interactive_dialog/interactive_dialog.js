@@ -9,9 +9,11 @@ import {Navigation} from 'react-native-navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 
 import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
+import Markdown from 'app/components/markdown';
 
 import DialogElement from './dialog_element.js';
 
@@ -19,6 +21,7 @@ export default class InteractiveDialog extends PureComponent {
     static propTypes = {
         url: PropTypes.string.isRequired,
         callbackId: PropTypes.string,
+        introductionText: PropTypes.string,
         elements: PropTypes.arrayOf(PropTypes.object),
         notifyOnCancel: PropTypes.bool,
         state: PropTypes.string,
@@ -150,13 +153,27 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     render() {
-        const {elements, theme} = this.props;
+        const {introductionText, elements, theme} = this.props;
         const style = getStyleFromTheme(theme);
+
+        const blockStyles = getMarkdownBlockStyles(theme);
+        const textStyles = getMarkdownTextStyles(theme);
 
         return (
             <View style={style.container}>
                 <ScrollView style={style.scrollView}>
                     <StatusBar/>
+                    {Boolean(introductionText) &&
+                        <Markdown
+                            baseTextStyle={style.baseText}
+                            textStyles={textStyles}
+                            blockStyles={blockStyles}
+                            value={introductionText}
+                            disableHashtags={true}
+                            disableAtMentions={true}
+                            disableChannelLink={true}
+                        />
+                    }
                     {elements && elements.map((e) => {
                         return (
                             <DialogElement
