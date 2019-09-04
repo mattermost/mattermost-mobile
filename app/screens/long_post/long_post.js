@@ -96,9 +96,11 @@ export default class LongPost extends PureComponent {
 
     handleClose = () => {
         const {actions} = this.props;
-        this.viewRef?.zoomOut().then(() => {
-            actions.dismissModal();
-        });
+        if (this.viewRef) {
+            this.viewRef.zoomOut().then(() => {
+                actions.dismissModal();
+            });
+        }
     };
 
     handlePress = (post) => {

@@ -216,9 +216,11 @@ export default class Permalink extends PureComponent {
     handlePress = () => {
         const {channelIdState, channelNameState} = this.state;
 
-        this.viewRef?.growOut().then(() => {
-            this.jumpToChannel(channelIdState, channelNameState);
-        });
+        if (this.viewRef) {
+            this.viewRef.growOut().then(() => {
+                this.jumpToChannel(channelIdState, channelNameState);
+            });
+        }
     };
 
     jumpToChannel = (channelId, channelDisplayName) => {
