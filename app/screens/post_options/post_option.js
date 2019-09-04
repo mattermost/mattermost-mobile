@@ -5,14 +5,16 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Image,
-    StyleSheet,
     Text,
     Platform,
     TouchableHighlight,
     TouchableNativeFeedback,
     View,
 } from 'react-native';
+
 import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
+
 import copy from 'assets/images/post_menu/copy.png';
 import edit from 'assets/images/post_menu/edit.png';
 import emoji from 'assets/images/post_menu/emoji.png';
@@ -40,6 +42,7 @@ export default class PostOption extends PureComponent {
         onPress: PropTypes.func.isRequired,
         text: PropTypes.string.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        theme: PropTypes.object.isRequired,
     };
 
     handleOnPress = () => {
@@ -50,7 +53,8 @@ export default class PostOption extends PureComponent {
     };
 
     render() {
-        const {destructive, icon, text, isLandscape} = this.props;
+        const {destructive, icon, text, isLandscape, theme} = this.props;
+        const style = getStyleSheet(theme);
         const image = icons[icon];
 
         const Touchable = Platform.select({
@@ -94,41 +98,43 @@ export default class PostOption extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
-    container: {
-        height: 51,
-        width: '100%',
-    },
-    destructive: {
-        color: '#D0021B',
-    },
-    row: {
-        flex: 1,
-        flexDirection: 'row',
-    },
-    icon: {
-        alignItems: 'center',
-        height: 50,
-        justifyContent: 'center',
-        width: 60,
-    },
-    textContainer: {
-        justifyContent: 'center',
-        flex: 1,
-        height: 50,
-        marginRight: 5,
-    },
-    text: {
-        color: '#000000',
-        fontSize: 16,
-        lineHeight: 19,
-        opacity: 0.9,
-        letterSpacing: -0.45,
-    },
-    footer: {
-        height: 1,
-        marginLeft: 60,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0, 0, 0 ,0.2)',
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            height: 51,
+            width: '100%',
+        },
+        destructive: {
+            color: '#D0021B',
+        },
+        row: {
+            flex: 1,
+            flexDirection: 'row',
+        },
+        icon: {
+            alignItems: 'center',
+            height: 50,
+            justifyContent: 'center',
+            width: 60,
+        },
+        textContainer: {
+            justifyContent: 'center',
+            flex: 1,
+            height: 50,
+            marginRight: 5,
+        },
+        text: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            lineHeight: 19,
+            opacity: 0.9,
+            letterSpacing: -0.45,
+        },
+        footer: {
+            height: 1,
+            marginLeft: 60,
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0 ,0.2)',
+        },
+    };
 });
