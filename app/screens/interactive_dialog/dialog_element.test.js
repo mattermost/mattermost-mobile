@@ -66,7 +66,7 @@ describe('DialogElement', () => {
                     options={radioOptions}
                 />
             );
-            expect(wrapper.find({values: radioOptions, value: radioOptions[0].value}).exists()).toBe(true);
+            expect(wrapper.find({options: radioOptions, value: radioOptions[0].value}).exists()).toBe(true);
         });
 
         test('The default value can be specified from the list', () => {
@@ -79,7 +79,7 @@ describe('DialogElement', () => {
                     value={radioOptions[1].value}
                 />
             );
-            expect(wrapper.find({values: radioOptions, value: radioOptions[1].value}).exists()).toBe(true);
+            expect(wrapper.find({options: radioOptions, value: radioOptions[1].value}).exists()).toBe(true);
         });
     });
 });

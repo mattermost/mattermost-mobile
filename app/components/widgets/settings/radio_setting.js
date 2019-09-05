@@ -6,40 +6,46 @@ import PropTypes from 'prop-types';
 import {Text, TouchableOpacity, View} from 'react-native';
 import CheckMark from 'app/components/checkmark';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 export default class RadioSetting extends PureComponent {
     static propTypes = {
         id: PropTypes.string.isRequired,
         label: PropTypes.node.isRequired,
-        values: PropTypes.array.isRequired,
-        value: PropTypes.string.isRequired,
+        options: PropTypes.array.isRequired,
+        value: PropTypes.string,
         onChange: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         helpText: PropTypes.node,
-        optional: PropTypes.bool,
-        showRequiredAsterisk: PropTypes.bool,
+        errorText: PropTypes.node,
     };
 
     static defaultProps = {
-        optional: false,
-        showRequiredAsterisk: false,
         isLandscape: false,
     };
 
-    handleChange = (item) => {
-        this.props.onChange(this.props.id, item);
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            value: props.value,
+        };
     }
 
-    renderCheckMark = (value) => {
-        if (value === this.props.value) {
+    handleChange = (item) => {
+        const {onChange, id} = this.props;
+        onChange(id, item);
+        this.setState({value: item});
+    }
+
+    renderCheckMark = (value, {width, height, color}) => {
+        if (value === this.state.value) {
             return (
                 <CheckMark
-                    width={12}
-                    height={12}
-                    color={this.props.theme.linkColor}
+                    width={width}
+                    height={height}
+                    color={color}
                 />
             );
         }
@@ -47,8 +53,8 @@ export default class RadioSetting extends PureComponent {
     }
 
     renderRowSeparator = (idx, separatorStyle) => {
-        const {values} = this.props;
-        if (idx === values.length - 1) {
+        const {options} = this.props;
+        if (idx === options.length - 1) {
             return null;
         }
         return <View style={separatorStyle}/>;
@@ -59,8 +65,7 @@ export default class RadioSetting extends PureComponent {
             theme,
             label,
             helpText,
-            showRequiredAsterisk,
-            optional,
+            errorText,
             isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
@@ -73,23 +78,17 @@ export default class RadioSetting extends PureComponent {
                 </Text>
             );
         }
-
-        let optionalContent;
-        let asterisk;
-        if (optional) {
-            optionalContent = (
-                <FormattedText
-                    style={style.optional}
-                    id='channel_modal.optional'
-                    defaultMessage='(optional)'
-                />
+        let errorTextContent;
+        if (errorText) {
+            errorTextContent = (
+                <Text style={style.errorText}>
+                    {errorText}
+                </Text>
             );
-        } else if (showRequiredAsterisk) {
-            asterisk = <Text style={style.asterisk}>{' *'}</Text>;
         }
 
         const options = [];
-        for (const [i, {value, text}] of this.props.values.entries()) {
+        for (const [i, {value, text}] of this.props.options.entries()) {
             options.push(
                 <TouchableOpacity
                     onPress={() => this.handleChange(value)}
@@ -99,7 +98,7 @@ export default class RadioSetting extends PureComponent {
                         <View style={style.rowContainer}>
                             <Text>{text}</Text>
                         </View>
-                        {this.renderCheckMark(value)}
+                        {this.renderCheckMark(value, style.checkMark)}
                     </View>
                     {this.renderRowSeparator(i, style.separator)}
                 </TouchableOpacity>
@@ -109,15 +108,17 @@ export default class RadioSetting extends PureComponent {
             <View>
                 <View style={style.titleContainer}>
                     <Text style={style.title}>{label}</Text>
-                    {asterisk}
-                    {optionalContent}
+                    <Text style={style.asterisk}>{' *'}</Text>
                 </View>
 
                 <View style={[style.items, padding(isLandscape)]}>
                     {options}
                 </View>
 
-                {helpTextContent}
+                <View style={padding(isLandscape)}>
+                    {helpTextContent}
+                    {errorTextContent}
+                </View>
             </View>
         );
     }
@@ -143,16 +144,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
-        optional: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 14,
-            marginLeft: 5,
-        },
         helpText: {
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginHorizontal: 15,
             marginVertical: 10,
+        },
+        errorText: {
+            fontSize: 12,
+            color: theme.errorTextColor,
+            marginHorizontal: 15,
+            marginTop: 10,
         },
         asterisk: {
             color: theme.errorTextColor,
@@ -173,6 +175,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             height: 1,
             marginLeft: 15,
+        },
+        checkMark: {
+            width: 12,
+            height: 12,
+            color: theme.linkColor,
         },
     };
 });

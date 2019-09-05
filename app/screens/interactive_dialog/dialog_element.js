@@ -141,12 +141,10 @@ export default class DialogElement extends PureComponent {
                     label={displayName}
                     helpText={helpText}
                     errorText={errorText}
-                    values={options}
+                    options={options}
                     theme={theme}
                     value={value || options[0].value}
-                    showRequiredAsterisk={true}
                     onChange={this.onChange}
-                    optional={optional}
                 />
             );
         }
