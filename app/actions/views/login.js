@@ -102,7 +102,7 @@ export function scheduleExpiredNotification(intl) {
 
             const message = intl.formatMessage({
                 id: 'mobile.session_expired',
-                defaultMessage: 'Session Expired: Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount} days.',
+                defaultMessage: 'Session Expired: Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
             }, {
                 siteName: config.SiteName,
                 daysCount: expiresInDays,
