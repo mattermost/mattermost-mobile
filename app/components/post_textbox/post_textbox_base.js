@@ -94,7 +94,6 @@ export default class PostTextBoxBase extends PureComponent {
             sendingMessage: false,
             top: 0,
             value: props.value,
-            channelTimezoneCount: 0,
             longMessageAlertShown: false,
         };
     }

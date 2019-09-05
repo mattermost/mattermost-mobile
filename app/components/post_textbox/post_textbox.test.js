@@ -2,9 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-
 import {Alert} from 'react-native';
-import assert from 'assert';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from 'mattermost-redux/constants/preferences';
