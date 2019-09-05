@@ -164,15 +164,17 @@ export default class InteractiveDialog extends PureComponent {
                 <ScrollView style={style.scrollView}>
                     <StatusBar/>
                     {Boolean(introductionText) &&
-                        <Markdown
-                            baseTextStyle={style.baseText}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
-                            value={introductionText}
-                            disableHashtags={true}
-                            disableAtMentions={true}
-                            disableChannelLink={true}
-                        />
+                        <View style={style.introductionText}>
+                            <Markdown
+                                baseTextStyle={style.baseStyle}
+                                textStyles={textStyles}
+                                blockStyles={blockStyles}
+                                value={introductionText}
+                                disableHashtags={true}
+                                disableAtMentions={true}
+                                disableChannelLink={true}
+                            />
+                        </View>
                     }
                     {elements && elements.map((e) => {
                         return (
@@ -210,6 +212,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         scrollView: {
             marginBottom: 20,
             marginTop: 10,
+        },
+        introductionText: {
+            marginHorizontal: 15,
         },
     };
 });
