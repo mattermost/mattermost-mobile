@@ -12,8 +12,12 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 import List from './list';
 import SwitchTeamsButton from './switch_teams_button';
@@ -31,6 +35,7 @@ export default class ChannelsList extends PureComponent {
         theme: PropTypes.object.isRequired,
         drawerOpened: PropTypes.bool,
         previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -90,6 +95,7 @@ export default class ChannelsList extends PureComponent {
             onShowTeams,
             theme,
             previewChannel,
+            isLandscape,
         } = this.props;
 
         const {searching, term} = this.state;
@@ -127,7 +133,7 @@ export default class ChannelsList extends PureComponent {
         };
 
         const title = (
-            <View style={styles.searchContainer}>
+            <View style={[styles.searchContainer, padding(isLandscape)]}>
                 <SearchBar
                     ref='search_bar'
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
@@ -147,12 +153,14 @@ export default class ChannelsList extends PureComponent {
                     onFocus={this.onSearchFocused}
                     searchIconCollapsedMargin={5}
                     searchIconExpandedMargin={5}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                     leftComponent={(
                         <SwitchTeamsButton
                             onShowTeams={onShowTeams}
                         />
                     )}
+                    positionRightDelete={5}
                 />
             </View>
         );
@@ -234,6 +242,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.sidebarText, 0.1),
             height: 1,
+            width: '100%',
         },
         actionContainer: {
             alignItems: 'center',

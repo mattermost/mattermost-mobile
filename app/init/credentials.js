@@ -27,6 +27,7 @@ export const setAppCredentials = (deviceToken, currentUserId, token, url) => {
             const username = `${deviceToken}, ${currentUserId}`;
 
             EphemeralStore.deviceToken = deviceToken;
+            EphemeralStore.currentServerUrl = url;
             AsyncStorage.setItem(CURRENT_SERVER, url);
             KeyChain.setInternetCredentials(url, username, token, {accessGroup: mattermostManaged.appGroupIdentifier});
         } catch (e) {
@@ -39,6 +40,7 @@ export const getAppCredentials = async () => {
     const serverUrl = await AsyncStorage.getItem(CURRENT_SERVER);
 
     if (serverUrl) {
+        EphemeralStore.currentServerUrl = serverUrl;
         return getInternetCredentials(serverUrl);
     }
 
@@ -59,6 +61,7 @@ export const removeAppCredentials = async () => {
     }
 
     KeyChain.resetGenericPassword();
+    EphemeralStore.currentServerUrl = null;
     AsyncStorage.removeItem(CURRENT_SERVER);
 };
 

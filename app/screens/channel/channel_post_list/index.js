@@ -13,6 +13,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {goToScreen} from 'app/actions/navigation';
 import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {recordLoadTime} from 'app/actions/views/root';
+import {isLandscape} from 'app/selectors/device';
 
 import ChannelPostList from './channel_post_list';
 
@@ -31,6 +32,7 @@ function mapStateToProps(state) {
         loadMorePostsVisible: state.views.channel.loadMorePostsVisible,
         refreshing: state.views.channel.refreshing,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

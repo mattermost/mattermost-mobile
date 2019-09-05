@@ -28,7 +28,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('ChannelMembers', () => wrapper(require('app/screens/channel_members').default), () => require('app/screens/channel_members').default);
     Navigation.registerComponent('ChannelPeek', () => wrapper(require('app/screens/channel_peek').default), () => require('app/screens/channel_peek').default);
     Navigation.registerComponent('ClientUpgrade', () => wrapper(require('app/screens/client_upgrade').default), () => require('app/screens/client_upgrade').default);
-    Navigation.registerComponent('ClockDisplay', () => wrapper(require('app/screens/clock_display').default), () => require('app/screens/clock_display').default);
+    Navigation.registerComponent('ClockDisplaySettings', () => wrapper(require('app/screens/settings/clock_display').default), () => require('app/screens/settings/clock_display').default);
     Navigation.registerComponent('Code', () => wrapper(require('app/screens/code').default), () => require('app/screens/code').default);
     Navigation.registerComponent('CreateChannel', () => wrapper(require('app/screens/create_channel').default), () => require('app/screens/create_channel').default);
     Navigation.registerComponent('DisplaySettings', () => wrapper(require('app/screens/settings/display_settings').default), () => require('app/screens/settings/display_settings').default);
@@ -64,16 +64,17 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('SelectorScreen', () => wrapper(require('app/screens/selector_screen').default), () => require('app/screens/selector_screen').default);
     Navigation.registerComponent('SelectServer', () => wrapper(SelectServer), () => SelectServer);
     Navigation.registerComponent('SelectTeam', () => wrapper(require('app/screens/select_team').default), () => require('app/screens/select_team').default);
-    Navigation.registerComponent('SelectTimezone', () => wrapper(require('app/screens/timezone/select_timezone').default), () => require('app/screens/timezone/select_timezone').default);
+    Navigation.registerComponent('SelectTimezone', () => wrapper(require('app/screens/settings/timezone/select_timezone').default), () => require('app/screens/settings/timezone/select_timezone').default);
     Navigation.registerComponent('Settings', () => wrapper(require('app/screens/settings/general').default), () => require('app/screens/settings/general').default);
+    Navigation.registerComponent('SidebarSettings', () => wrapper(require('app/screens/settings/sidebar').default), () => require('app/screens/settings/sidebar').default);
     Navigation.registerComponent('SSO', () => wrapper(require('app/screens/sso').default), () => require('app/screens/sso').default);
     Navigation.registerComponent('Table', () => wrapper(require('app/screens/table').default), () => require('app/screens/table').default);
     Navigation.registerComponent('TableImage', () => wrapper(require('app/screens/table_image').default), () => require('app/screens/table_image').default);
     Navigation.registerComponent('TermsOfService', () => wrapper(require('app/screens/terms_of_service').default), () => require('app/screens/terms_of_service').default);
     Navigation.registerComponent('TextPreview', () => wrapper(require('app/screens/text_preview').default), () => require('app/screens/text_preview').default);
-    Navigation.registerComponent('ThemeSettings', () => wrapper(require('app/screens/theme').default), () => require('app/screens/theme').default);
+    Navigation.registerComponent('ThemeSettings', () => wrapper(require('app/screens/settings/theme').default), () => require('app/screens/settings/theme').default);
     Navigation.registerComponent('Thread', () => wrapper(require('app/screens/thread').default), () => require('app/screens/thread').default);
-    Navigation.registerComponent('TimezoneSettings', () => wrapper(require('app/screens/timezone').default), () => require('app/screens/timezone').default);
+    Navigation.registerComponent('TimezoneSettings', () => wrapper(require('app/screens/settings/timezone').default), () => require('app/screens/settings/timezone').default);
     Navigation.registerComponent('ErrorTeamsList', () => wrapper(require('app/screens/error_teams_list').default), () => require('app/screens/error_teams_list').default);
     Navigation.registerComponent('UserProfile', () => wrapper(require('app/screens/user_profile').default), () => require('app/screens/user_profile').default);
 }

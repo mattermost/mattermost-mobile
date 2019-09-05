@@ -11,6 +11,7 @@ import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 import {resetToChannel, dismissModal} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
+import {isLandscape} from 'app/selectors/device';
 import {isGuest} from 'app/utils/users';
 
 import SelectTeam from './select_team.js';
@@ -21,6 +22,7 @@ function mapStateToProps(state) {
     return {
         teamsRequest: state.requests.teams.getTeams,
         teams: getJoinableTeams(state),
+        isLandscape: isLandscape(state),
         currentUserIsGuest,
     };
 }

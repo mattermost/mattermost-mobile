@@ -35,6 +35,7 @@ class NotificationSettings extends PureComponent {
         updateMeRequest: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
         enableAutoResponder: PropTypes.bool.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     componentWillReceiveProps(nextProps) {
@@ -175,7 +176,7 @@ class NotificationSettings extends PureComponent {
     };
 
     render() {
-        const {theme, enableAutoResponder} = this.props;
+        const {theme, enableAutoResponder, isLandscape} = this.props;
         const style = getStyleSheet(theme);
         const showArrow = Platform.OS === 'ios';
 
@@ -192,6 +193,7 @@ class NotificationSettings extends PureComponent {
                     separator={false}
                     showArrow={showArrow}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             );
         }
@@ -213,6 +215,7 @@ class NotificationSettings extends PureComponent {
                         separator={true}
                         showArrow={showArrow}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <SettingsItem
                         defaultMessage='Mobile'
@@ -223,6 +226,7 @@ class NotificationSettings extends PureComponent {
                         separator={true}
                         showArrow={showArrow}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <SettingsItem
                         defaultMessage='Email'
@@ -233,6 +237,7 @@ class NotificationSettings extends PureComponent {
                         separator={showEmailSeparator}
                         showArrow={showArrow}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     {autoResponder}
                     <View style={style.divider}/>

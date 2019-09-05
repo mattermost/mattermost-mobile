@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Alert,
-    Platform,
     ScrollView,
     View,
 } from 'react-native';
@@ -65,6 +64,7 @@ export default class ChannelInfo extends PureComponent {
         canEditChannel: PropTypes.bool.isRequired,
         ignoreChannelMentions: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -119,11 +119,8 @@ export default class ChannelInfo extends PureComponent {
         if (redirect) {
             actions.setChannelDisplayName('');
         }
-        if (Platform.OS === 'android') {
-            actions.dismissModal();
-        } else {
-            actions.popTopScreen();
-        }
+
+        actions.popTopScreen();
     };
 
     goToChannelAddMembers = preventDoubleTap(() => {
@@ -362,6 +359,7 @@ export default class ChannelInfo extends PureComponent {
             canEditChannel,
             theme,
             currentChannel,
+            isLandscape,
         } = this.props;
 
         if (channelIsArchived) {
@@ -374,6 +372,7 @@ export default class ChannelInfo extends PureComponent {
                         icon='users'
                         textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <View style={style.separator}/>
                 </View>);
@@ -389,6 +388,7 @@ export default class ChannelInfo extends PureComponent {
                     textId={t('mobile.routes.channelInfo.favorite')}
                     togglable={true}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <ChannelInfoRow
@@ -399,6 +399,7 @@ export default class ChannelInfo extends PureComponent {
                     textId={t('channel_notifications.muteChannel.settings')}
                     togglable={true}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <ChannelInfoRow
@@ -409,6 +410,7 @@ export default class ChannelInfo extends PureComponent {
                     textId={t('channel_notifications.ignoreChannelMentions.settings')}
                     togglable={true}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <ChannelInfoRow
@@ -417,6 +419,7 @@ export default class ChannelInfo extends PureComponent {
                     image={pinIcon}
                     textId={t('channel_header.pinnedPosts')}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 {
 
@@ -441,6 +444,7 @@ export default class ChannelInfo extends PureComponent {
                         icon='users'
                         textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                 </React.Fragment>
                 }
@@ -453,6 +457,7 @@ export default class ChannelInfo extends PureComponent {
                         icon='user-plus'
                         textId={t('channel_header.addMembers')}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                 </React.Fragment>
                 }
@@ -465,6 +470,7 @@ export default class ChannelInfo extends PureComponent {
                             icon='edit'
                             textId={t('mobile.channel_info.edit')}
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     </React.Fragment>
                 )}
@@ -482,6 +488,8 @@ export default class ChannelInfo extends PureComponent {
             status,
             theme,
             isBot,
+            isLandscape,
+            actions: {popToRoot},
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -522,6 +530,7 @@ export default class ChannelInfo extends PureComponent {
                         isBot={isBot}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
+                        popToRoot={popToRoot}
                     />
                     }
                     <View style={style.rowsContainer}>
@@ -535,12 +544,13 @@ export default class ChannelInfo extends PureComponent {
                                 icon='sign-out'
                                 textId={t('navbar.leave')}
                                 theme={theme}
+                                isLandscape={isLandscape}
                             />
                         </React.Fragment>
                         }
                     </View>
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel && !channelIsArchived &&
-                    <View style={style.footer}>
+                    <View style={[style.rowsContainer, style.footer]}>
                         <ChannelInfoRow
                             action={this.handleDelete}
                             defaultMessage='Archive Channel'
@@ -549,11 +559,12 @@ export default class ChannelInfo extends PureComponent {
                             textId={t('mobile.routes.channelInfo.delete_channel')}
                             textColor='#CA3B27'
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     </View>
                     }
                     {this.renderCloseDirect() &&
-                    <View style={style.footer}>
+                    <View style={[style.rowsContainer, style.footer]}>
                         <ChannelInfoRow
                             action={this.handleClose}
                             defaultMessage={defaultMessage}
@@ -562,6 +573,7 @@ export default class ChannelInfo extends PureComponent {
                             textId={i18nId}
                             textColor='#CA3B27'
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     </View>
                     }
