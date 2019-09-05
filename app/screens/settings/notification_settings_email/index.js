@@ -14,7 +14,7 @@ import {
     get as getPreference,
     getTheme,
 } from 'mattermost-redux/selectors/entities/preferences';
-
+import {isLandscape} from 'app/selectors/device';
 import NotificationSettingsEmail from './notification_settings_email';
 
 function mapStateToProps(state) {
@@ -34,6 +34,7 @@ function mapStateToProps(state) {
         sendEmailNotifications,
         siteName: config.siteName || '',
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

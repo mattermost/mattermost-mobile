@@ -7,6 +7,7 @@ import {connect} from 'react-redux';
 import {searchChannels, autocompleteChannelsForSearch} from 'mattermost-redux/actions/channels';
 import {getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {isLandscape} from 'app/selectors/device';
 
 import {
     filterMyChannels,
@@ -52,6 +53,7 @@ function mapStateToProps(state, ownProps) {
         requestStatus: state.requests.channels.getChannels.status,
         theme: getTheme(state),
         serverVersion: state.entities.general.serverVersion,
+        isLandscape: isLandscape(state),
     };
 }
 

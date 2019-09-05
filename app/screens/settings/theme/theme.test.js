@@ -5,12 +5,8 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {Navigation} from 'react-native-navigation';
 
-import configureMockStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
-
 import Preferences from 'mattermost-redux/constants/preferences';
 
-import {applyTheme} from 'app/actions/navigation';
 import EphemeralStore from 'app/store/ephemeral_store';
 
 import Theme from './theme';
@@ -23,8 +19,6 @@ jest.mock('react-native-navigation', () => ({
         mergeOptions: jest.fn(),
     },
 }));
-
-const mockStore = configureMockStore([thunk]);
 
 const allowedThemes = [
     {
@@ -141,7 +135,6 @@ describe('Theme', () => {
     const baseProps = {
         actions: {
             savePreferences: jest.fn(),
-            applyTheme: jest.fn(),
         },
         allowedThemes,
         isLandscape: false,
@@ -160,52 +153,38 @@ describe('Theme', () => {
         expect(wrapper.find(ThemeTile)).toHaveLength(4);
     });
 
-    test('should apply new theme to all navigation components that have appeared', () => {
+    test('should call Navigation.mergeOptions on all navigation components when theme changes', () => {
         const componentIds = ['component-1', 'component-2', 'component-3'];
         componentIds.forEach((componentId) => {
             EphemeralStore.addNavigationComponentId(componentId);
-        });
-
-        const store = mockStore({
-            entities: {
-                preferences: {
-                    myPreferences: {
-                        theme: {},
-                    },
-                },
-                teams: {
-                    currentTeamId: 'current-team-id',
-                },
-                general: {
-                    config: {},
-                },
-            },
-        });
-        baseProps.actions.applyTheme.mockImplementation(() => {
-            store.dispatch(applyTheme());
         });
 
         const wrapper = shallow(
             <Theme {...baseProps}/>,
         );
 
-        const theme = allowedThemes[0];
-        wrapper.instance().setTheme(theme.key);
-        expect(baseProps.actions.applyTheme).toHaveBeenCalledTimes(1);
+        const newTheme = allowedThemes[1];
+        wrapper.setProps({theme: newTheme});
 
         const options = {
             topBar: {
                 backButton: {
-                    color: theme.sidebarHeaderTextColor,
+                    color: newTheme.sidebarHeaderTextColor,
                 },
                 background: {
-                    color: theme.sidebarHeaderBg,
+                    color: newTheme.sidebarHeaderBg,
                 },
                 title: {
-                    color: theme.sidebarHeaderTextColor,
+                    color: newTheme.sidebarHeaderTextColor,
                 },
+                leftButtonColor: newTheme.sidebarHeaderTextColor,
+                rightButtonColor: newTheme.sidebarHeaderTextColor,
+            },
+            layout: {
+                backgroundColor: newTheme.centerChannelBg,
             },
         };
+
         expect(Navigation.mergeOptions.mock.calls).toEqual([
             [componentIds[2], options],
             [componentIds[1], options],

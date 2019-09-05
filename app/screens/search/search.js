@@ -31,7 +31,12 @@ import StatusBar from 'app/components/status_bar';
 import {DeviceTypes, ListTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import ChannelDisplayName from './channel_display_name';
 import Modifier, {MODIFIER_LABEL_HEIGHT} from './modifier';
@@ -343,19 +348,20 @@ export default class Search extends PureComponent {
     };
 
     renderModifiers = ({item}) => {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
 
         return (
             <Modifier
                 item={item}
                 setModifierValue={this.setModifierValue}
                 theme={theme}
+                isLandscape={isLandscape}
             />
         );
     };
 
     renderPost = ({item, index}) => {
-        const {postIds, theme} = this.props;
+        const {postIds, theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
 
         if (item.id) {
@@ -382,7 +388,7 @@ export default class Search extends PureComponent {
         }
 
         return (
-            <View style={style.postResult}>
+            <View style={[style.postResult, padding(isLandscape)]}>
                 <ChannelDisplayName postId={item}/>
                 {this.archivedIndicator(postIds[index], style)}
                 <SearchResultPost
@@ -411,7 +417,7 @@ export default class Search extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {title} = section;
         const style = getStyleFromTheme(theme);
 
@@ -419,7 +425,7 @@ export default class Search extends PureComponent {
             return (
                 <View style={style.sectionWrapper}>
                     <View style={style.sectionContainer}>
-                        <Text style={style.sectionLabel}>
+                        <Text style={[style.sectionLabel, padding(isLandscape, -16)]}>
                             {title}
                         </Text>
                     </View>
@@ -431,7 +437,7 @@ export default class Search extends PureComponent {
     };
 
     renderRecentItem = ({item}) => {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
 
         return (
             <RecentItem
@@ -439,6 +445,7 @@ export default class Search extends PureComponent {
                 removeSearchTerms={this.removeSearchTerms}
                 setRecentValue={this.setRecentValue}
                 theme={theme}
+                isLandscape={isLandscape}
             />
         );
     };
@@ -693,7 +700,7 @@ export default class Search extends PureComponent {
             >
                 <KeyboardLayout>
                     <StatusBar/>
-                    <View style={style.header}>
+                    <View style={[style.header, padding(isLandscape)]}>
                         <SearchBar
                             ref={this.setSearchBarRef}
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -714,6 +721,7 @@ export default class Search extends PureComponent {
                             value={value}
                             containerStyle={style.searchBarContainer}
                             backArrowSize={28}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         />
                     </View>
                     <SectionList

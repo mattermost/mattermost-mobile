@@ -10,7 +10,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import CustomList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import FormattedText from 'app/components/formatted_text';
@@ -19,7 +19,12 @@ import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 export default class MoreChannels extends PureComponent {
     static propTypes = {
@@ -40,6 +45,7 @@ export default class MoreChannels extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -66,6 +72,7 @@ export default class MoreChannels extends PureComponent {
         };
 
         this.rightButton = {
+            color: props.theme.sidebarHeaderTextColor,
             id: 'create-pub-channel',
             text: context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
             showAsAction: 'always',
@@ -75,21 +82,12 @@ export default class MoreChannels extends PureComponent {
             id: 'close-more-channels',
             icon: props.closeButton,
         };
-
-        const buttons = {
-            leftButtons: [this.leftButton],
-        };
-
-        if (props.canCreateChannels) {
-            buttons.rightButtons = [this.rightButton];
-        }
-
-        props.actions.setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
         this.mounted = true;
+        this.setHeaderButtons(this.props.canCreateChannels);
         this.doGetChannels();
     }
 
@@ -169,7 +167,7 @@ export default class MoreChannels extends PureComponent {
 
     getChannels = debounce(this.doGetChannels, 100);
 
-    headerButtons = (createEnabled) => {
+    setHeaderButtons = (createEnabled) => {
         const {actions, canCreateChannels, componentId} = this.props;
         const buttons = {
             leftButtons: [this.leftButton],
@@ -198,7 +196,7 @@ export default class MoreChannels extends PureComponent {
         const {actions, currentTeamId, currentUserId} = this.props;
         const {channels} = this.state;
 
-        this.headerButtons(false);
+        this.setHeaderButtons(false);
         this.setState({adding: true});
 
         const channel = channels.find((c) => c.id === id);
@@ -216,7 +214,7 @@ export default class MoreChannels extends PureComponent {
                     displayName: channel ? channel.display_name : '',
                 }
             );
-            this.headerButtons(true);
+            this.setHeaderButtons(true);
             this.setState({adding: false});
         } else {
             if (channel) {
@@ -324,7 +322,7 @@ export default class MoreChannels extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const {adding, channels, loading, term} = this.state;
         const more = term ? () => true : this.getChannels;
         const style = getStyleFromTheme(theme);
@@ -346,7 +344,7 @@ export default class MoreChannels extends PureComponent {
 
             content = (
                 <React.Fragment>
-                    <View style={style.searchBar}>
+                    <View style={[style.searchBar, padding(isLandscape)]}>
                         <SearchBar
                             ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -362,6 +360,7 @@ export default class MoreChannels extends PureComponent {
                             onSearchButtonPress={this.searchChannels}
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                             value={term}
                         />
                     </View>

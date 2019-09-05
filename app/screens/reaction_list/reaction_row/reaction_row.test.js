@@ -16,6 +16,7 @@ describe('ReactionRow', () => {
         teammateNameDisplay: 'username',
         theme: Preferences.THEMES.default,
         user: {id: 'user_id', username: 'username'},
+        isLandscape: false,
     };
 
     test('should match snapshot, renderContent', () => {

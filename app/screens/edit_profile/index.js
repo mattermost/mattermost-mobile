@@ -7,7 +7,7 @@ import {bindActionCreators} from 'redux';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
-
+import {isLandscape} from 'app/selectors/device';
 import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import {setProfileImageUri, removeProfileImage, updateUser} from 'app/actions/views/edit_profile';
 
@@ -41,6 +41,7 @@ function mapStateToProps(state, ownProps) {
         nicknameDisabled,
         positionDisabled,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

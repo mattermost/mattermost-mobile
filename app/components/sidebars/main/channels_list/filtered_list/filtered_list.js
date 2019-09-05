@@ -21,9 +21,9 @@ import {General} from 'mattermost-redux/constants';
 import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {t} from 'app/utils/i18n';
-
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -55,6 +55,7 @@ class FilteredList extends Component {
         term: PropTypes.string,
         theme: PropTypes.object.isRequired,
         previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -400,7 +401,7 @@ class FilteredList extends Component {
                 <View>
                     {topDivider && this.renderDivider(styles, 0)}
                     <View style={styles.titleContainer}>
-                        <Text style={styles.title}>
+                        <Text style={[styles.title, padding(this.props.isLandscape)]}>
                             {formatMessage({id, defaultMessage}).toUpperCase()}
                         </Text>
                         {action && this.renderSectionAction(styles, action)}

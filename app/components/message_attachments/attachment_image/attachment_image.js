@@ -48,6 +48,12 @@ export default class AttachmentImage extends PureComponent {
         }
     }
 
+    componentDidUpdate(prevProps) {
+        if (this.props.imageUrl && (prevProps.imageUrl !== this.props.imageUrl)) {
+            ImageCacheManager.cache(null, this.props.imageUrl, this.setImageUrl);
+        }
+    }
+
     setImageRef = (ref) => {
         this.imageRef = ref;
     }

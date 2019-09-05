@@ -45,6 +45,7 @@ export default class SearchBarAndroid extends PureComponent {
         value: PropTypes.string,
         containerStyle: CustomPropTypes.Style,
         leftComponent: PropTypes.element,
+        keyboardAppearance: PropTypes.string,
     };
 
     static defaultProps = {
@@ -154,6 +155,7 @@ export default class SearchBarAndroid extends PureComponent {
             containerStyle,
             value,
             showArrow,
+            keyboardAppearance,
         } = this.props;
         const {isFocused} = this.state;
 
@@ -227,6 +229,7 @@ export default class SearchBarAndroid extends PureComponent {
                         selectionColor={selectionColor}
                         underlineColorAndroid='transparent'
                         disableFullscreenUI={true}
+                        keyboardAppearance={keyboardAppearance}
                         style={[
                             styles.searchBarInput,
                             inputNoBackground,

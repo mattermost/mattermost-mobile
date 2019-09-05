@@ -14,6 +14,10 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
         placeholder: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        placeholderTextColor: changeOpacity('#000', 0.5),
+    };
+
     static contextTypes = {
         intl: intlShape.isRequired,
     };
@@ -43,7 +47,6 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
                 ref={this.setInputRef}
                 {...otherProps}
                 placeholder={placeholderString}
-                placeholderTextColor={changeOpacity('#000', 0.5)}
                 disableFullscreenUI={true}
             />
         );

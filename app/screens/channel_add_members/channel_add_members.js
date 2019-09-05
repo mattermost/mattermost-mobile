@@ -14,7 +14,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
@@ -24,7 +24,12 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorIfInvalidPermissions} from 'app/utils/general';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 export default class ChannelAddMembers extends PureComponent {
     static propTypes = {
@@ -43,6 +48,7 @@ export default class ChannelAddMembers extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         profilesNotInChannel: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -72,6 +78,7 @@ export default class ChannelAddMembers extends PureComponent {
             enalbed: false,
             id: 'add-members',
             text: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
+            color: props.theme.sidebarHeaderTextColor,
             showAsAction: 'always',
         };
 
@@ -282,7 +289,7 @@ export default class ChannelAddMembers extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {currentUserId, profilesNotInChannel, theme} = this.props;
+        const {currentUserId, profilesNotInChannel, theme, isLandscape} = this.props;
         const {
             adding,
             loading,
@@ -338,7 +345,7 @@ export default class ChannelAddMembers extends PureComponent {
         return (
             <KeyboardLayout>
                 <StatusBar/>
-                <View style={style.searchBar}>
+                <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
                         ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -354,6 +361,7 @@ export default class ChannelAddMembers extends PureComponent {
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
                     />
                 </View>
@@ -369,6 +377,7 @@ export default class ChannelAddMembers extends PureComponent {
                     onRowPress={this.handleSelectProfile}
                     renderItem={this.renderItem}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             </KeyboardLayout>
         );

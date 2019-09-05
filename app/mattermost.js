@@ -12,6 +12,7 @@ import {setDeepLinkURL} from 'app/actions/views/root';
 import initialState from 'app/initial_state';
 import {getAppCredentials} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
+import 'app/init/device';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
@@ -25,8 +26,9 @@ const sharedExtensionStarted = Platform.OS === 'android' && MattermostShare.isOp
 export const store = configureStore(initialState);
 
 const init = async () => {
+    const credentials = await getAppCredentials();
     if (EphemeralStore.appStarted) {
-        launchApp();
+        launchApp(credentials);
         return;
     }
 
@@ -43,17 +45,16 @@ const init = async () => {
     }
 
     if (!EphemeralStore.appStarted) {
-        launchAppAndAuthenticateIfNeeded();
+        launchAppAndAuthenticateIfNeeded(credentials);
     }
 };
 
-const launchApp = async () => {
+const launchApp = async (credentials) => {
     telemetry.start([
         'start:select_server_screen',
         'start:channel_screen',
     ]);
 
-    const credentials = await getAppCredentials();
     if (credentials) {
         store.dispatch(loadMe());
         store.dispatch(resetToChannel({skipMetrics: true}));
@@ -65,9 +66,9 @@ const launchApp = async () => {
     EphemeralStore.appStarted = true;
 };
 
-const launchAppAndAuthenticateIfNeeded = async () => {
+const launchAppAndAuthenticateIfNeeded = async (credentials) => {
     await emmProvider.handleManagedConfig(store);
-    await launchApp();
+    await launchApp(credentials);
 
     if (emmProvider.enabled) {
         if (emmProvider.jailbreakProtection) {
@@ -90,5 +91,9 @@ Navigation.events().registerAppLaunchedListener(() => {
     // Keep track of the latest componentId to appear
     Navigation.events().registerComponentDidAppearListener(({componentId}) => {
         EphemeralStore.addNavigationComponentId(componentId);
+    });
+
+    Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
+        EphemeralStore.removeNavigationComponentId(componentId);
     });
 });

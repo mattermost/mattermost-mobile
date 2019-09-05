@@ -60,9 +60,12 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   >
     <View
       style={
-        Object {
-          "marginRight": 15,
-        }
+        Array [
+          Object {
+            "marginRight": 15,
+          },
+          null,
+        ]
       }
     >
       <FormattedText
@@ -89,6 +92,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   <CustomList
     data={Array []}
     extraData={false}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={

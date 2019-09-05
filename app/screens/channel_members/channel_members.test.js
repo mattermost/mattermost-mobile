@@ -23,6 +23,7 @@ describe('ChannelMembers', () => {
             popTopScreen: jest.fn(),
         },
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot', () => {

@@ -39,6 +39,7 @@ class Settings extends PureComponent {
         intl: intlShape.isRequired,
         joinableTeams: PropTypes.array.isRequired,
         theme: PropTypes.object,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -163,7 +164,7 @@ class Settings extends PureComponent {
     });
 
     render() {
-        const {config, joinableTeams, theme} = this.props;
+        const {config, joinableTeams, theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
         const showTeams = joinableTeams.length > 0;
         const showHelp = isValidUrl(config.HelpLink);
@@ -185,6 +186,8 @@ class Settings extends PureComponent {
                         onPress={this.goToNotifications}
                         showArrow={showArrow}
                         theme={theme}
+                        separator={true}
+                        isLandscape={isLandscape}
                     />
                     <SettingsItem
                         defaultMessage='Display'
@@ -194,28 +197,38 @@ class Settings extends PureComponent {
                         onPress={this.goToDisplaySettings}
                         showArrow={showArrow}
                         theme={theme}
+                        separator={true}
+                        isLandscape={isLandscape}
                     />
                     {showTeams &&
-                    <SettingsItem
-                        defaultMessage='Open teams you can join'
-                        i18nId={t('mobile.select_team.join_open')}
-                        iconName='list'
-                        iconType='foundation'
-                        onPress={this.goToSelectTeam}
-                        showArrow={showArrow}
-                        theme={theme}
-                    />
+                    <React.Fragment>
+                        <SettingsItem
+                            defaultMessage='Open teams you can join'
+                            i18nId={t('mobile.select_team.join_open')}
+                            iconName='list'
+                            iconType='foundation'
+                            onPress={this.goToSelectTeam}
+                            showArrow={showArrow}
+                            theme={theme}
+                            separator={true}
+                            isLandscape={isLandscape}
+                        />
+                    </React.Fragment>
                     }
                     {showHelp &&
-                    <SettingsItem
-                        defaultMessage='Help'
-                        i18nId={t('mobile.help.title')}
-                        iconName='md-help'
-                        iconType='ion'
-                        onPress={this.openHelp}
-                        showArrow={showArrow}
-                        theme={theme}
-                    />
+                    <React.Fragment>
+                        <SettingsItem
+                            defaultMessage='Help'
+                            i18nId={t('mobile.help.title')}
+                            iconName='md-help'
+                            iconType='ion'
+                            onPress={this.openHelp}
+                            showArrow={showArrow}
+                            theme={theme}
+                            separator={true}
+                            isLandscape={isLandscape}
+                        />
+                    </React.Fragment>
                     }
                     <SettingsItem
                         defaultMessage='Report a Problem'
@@ -225,6 +238,8 @@ class Settings extends PureComponent {
                         onPress={this.openErrorEmail}
                         showArrow={showArrow}
                         theme={theme}
+                        separator={true}
+                        isLandscape={isLandscape}
                     />
                     <SettingsItem
                         defaultMessage='Advanced Settings'
@@ -234,17 +249,23 @@ class Settings extends PureComponent {
                         onPress={this.goToAdvancedSettings}
                         showArrow={showArrow}
                         theme={theme}
+                        separator={true}
+                        isLandscape={isLandscape}
                     />
                     {LocalConfig.EnableMobileClientUpgrade && LocalConfig.EnableMobileClientUpgradeUserSetting &&
-                    <SettingsItem
-                        defaultMessage='Check for Upgrade'
-                        i18nId={t('mobile.settings.modal.check_for_upgrade')}
-                        iconName='update'
-                        iconType='material'
-                        onPress={this.goToClientUpgrade}
-                        showArrow={showArrow}
-                        theme={theme}
-                    />
+                    <React.Fragment>
+                        <SettingsItem
+                            defaultMessage='Check for Upgrade'
+                            i18nId={t('mobile.settings.modal.check_for_upgrade')}
+                            iconName='update'
+                            iconType='material'
+                            onPress={this.goToClientUpgrade}
+                            showArrow={showArrow}
+                            theme={theme}
+                            separator={true}
+                            isLandscape={isLandscape}
+                        />
+                    </React.Fragment>
                     }
                     <SettingsItem
                         defaultMessage='About {appTitle}'
@@ -256,6 +277,7 @@ class Settings extends PureComponent {
                         separator={false}
                         showArrow={showArrow}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <View style={style.divider}/>
                 </ScrollView>

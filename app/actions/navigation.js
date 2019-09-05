@@ -166,11 +166,14 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
     };
 }
 
-export function popTopScreen() {
+export function popTopScreen(screenId) {
     return () => {
-        const componentId = EphemeralStore.getNavigationTopComponentId();
-
-        Navigation.pop(componentId);
+        if (screenId) {
+            Navigation.pop(screenId);
+        } else {
+            const componentId = EphemeralStore.getNavigationTopComponentId();
+            Navigation.pop(componentId);
+        }
     };
 }
 
@@ -288,7 +291,11 @@ export function dismissModal(options = {}) {
     return () => {
         const componentId = EphemeralStore.getNavigationTopComponentId();
 
-        Navigation.dismissModal(componentId, options);
+        Navigation.dismissModal(componentId, options).catch(() => {
+            // RNN returns a promise rejection if there is no modal to
+            // dismiss. We'll do nothing in this case but we will catch
+            // the rejection here so that the caller doesn't have to.
+        });
     };
 }
 
@@ -360,24 +367,28 @@ export function dismissOverlay(componentId) {
     };
 }
 
-export function applyTheme() {
+export function applyTheme(componentId, skipBackButtonStyle = false) {
     return (dispatch, getState) => {
         const theme = getTheme(getState());
 
-        EphemeralStore.getNavigationComponentIds().forEach((componentId) => {
-            Navigation.mergeOptions(componentId, {
-                topBar: {
-                    backButton: {
-                        color: theme.sidebarHeaderTextColor,
-                    },
-                    background: {
-                        color: theme.sidebarHeaderBg,
-                    },
-                    title: {
-                        color: theme.sidebarHeaderTextColor,
-                    },
+        let backButton = {
+            color: theme.sidebarHeaderTextColor,
+        };
+
+        if (skipBackButtonStyle && Platform.OS === 'android') {
+            backButton = null;
+        }
+
+        Navigation.mergeOptions(componentId, {
+            topBar: {
+                backButton,
+                background: {
+                    color: theme.sidebarHeaderBg,
                 },
-            });
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                },
+            },
         });
     };
 }

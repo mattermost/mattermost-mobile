@@ -100,6 +100,7 @@ export default class PostList extends PureComponent {
         if (this.props.channelId !== nextProps.channelId) {
             this.contentOffsetY = 0;
             this.hasDoneInitialScroll = false;
+            this.setState({contentHeight: 0});
         }
     }
 
@@ -115,11 +116,27 @@ export default class PostList extends PureComponent {
             this.scrollToBottom();
             this.shouldScrollToBottom = false;
         }
+
+        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && this.state.contentHeight) {
+            this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+        }
     }
 
     componentWillUnmount() {
         EventEmitter.off('scroll-to-bottom', this.handleSetScrollToBottom);
+
+        if (this.animationFrameIndexFailed) {
+            cancelAnimationFrame(this.animationFrameIndexFailed);
+        }
+
+        if (this.animationFrameInitialIndex) {
+            cancelAnimationFrame(this.animationFrameInitialIndex);
+        }
     }
+
+    getItemCount = () => {
+        return this.props.postIds.length;
+    };
 
     handleClosePermalink = () => {
         const {actions} = this.props;
@@ -128,12 +145,12 @@ export default class PostList extends PureComponent {
     };
 
     handleContentSizeChange = (contentWidth, contentHeight) => {
-        this.scrollToInitialIndexIfNeeded(contentWidth, contentHeight);
-
-        if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
-            // We still have less than 1 screen of posts loaded with more to get, so load more
-            this.props.onLoadMoreUp();
-        }
+        this.setState({contentHeight}, () => {
+            if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
+                // We still have less than 1 screen of posts loaded with more to get, so load more
+                this.props.onLoadMoreUp();
+            }
+        });
     };
 
     handleDeepLink = (url) => {
@@ -201,8 +218,12 @@ export default class PostList extends PureComponent {
     };
 
     handleScrollToIndexFailed = () => {
-        this.hasDoneInitialScroll = false;
-        this.scrollToInitialIndexIfNeeded(1, 1);
+        this.animationFrameIndexFailed = requestAnimationFrame(() => {
+            if (this.props.initialIndex > 0 && this.state.contentHeight > 0) {
+                this.hasDoneInitialScroll = false;
+                this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+            }
+        });
     };
 
     handleSetScrollToBottom = () => {
@@ -284,23 +305,30 @@ export default class PostList extends PureComponent {
         }, 250);
     };
 
-    scrollToInitialIndexIfNeeded = (width, height) => {
-        if (
-            width > 0 &&
-            height > 0 &&
-            !this.hasDoneInitialScroll
-        ) {
-            requestAnimationFrame(() => {
-                if (this.props.initialIndex > 0 && this.flatListRef?.current) {
-                    this.flatListRef.current.scrollToIndex({
-                        animated: false,
-                        index: this.props.initialIndex,
-                        viewOffset: 0,
-                        viewPosition: 1, // 0 is at bottom
-                    });
-                }
+    scrollToIndex = (index) => {
+        if (this.flatListRef?.current) {
+            this.animationFrameInitialIndex = requestAnimationFrame(() => {
+                this.flatListRef.current.scrollToIndex({
+                    animated: false,
+                    index,
+                    viewOffset: 0,
+                    viewPosition: 1, // 0 is at bottom
+                });
             });
+        }
+    };
+
+    scrollToInitialIndexIfNeeded = (index, count = 0) => {
+        if (!this.hasDoneInitialScroll && this.flatListRef?.current) {
             this.hasDoneInitialScroll = true;
+
+            if (index > 0 && index <= this.getItemCount()) {
+                this.scrollToIndex(index);
+            } else if (count < 3) {
+                setTimeout(() => {
+                    this.scrollToInitialIndexIfNeeded(index, count + 1);
+                }, 300);
+            }
         }
     };
 

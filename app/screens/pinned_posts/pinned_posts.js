@@ -8,7 +8,6 @@ import {
     Keyboard,
     FlatList,
     StyleSheet,
-    SafeAreaView,
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -228,12 +227,10 @@ export default class PinnedPosts extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.container}>
-                <View style={style.container}>
-                    <StatusBar/>
-                    {component}
-                </View>
-            </SafeAreaView>
+            <View style={style.container}>
+                <StatusBar/>
+                {component}
+            </View>
         );
     }
 }

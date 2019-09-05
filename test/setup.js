@@ -8,6 +8,7 @@ configure({adapter: new Adapter()});
 
 const mockImpl = new MockAsyncStorage();
 jest.mock('@react-native-community/async-storage', () => mockImpl);
+global.window = {};
 
 /* eslint-disable no-console */
 
@@ -35,9 +36,15 @@ jest.mock('NativeModules', () => {
         },
         KeyboardObserver: {},
         RNCNetInfo: {
-            getCurrentState: jest.fn(() => Promise.resolve()),
+            getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
             addListener: jest.fn(),
             removeListeners: jest.fn(),
+            addEventListener: jest.fn(),
+        },
+        RNKeychainManager: {
+            SECURITY_LEVEL_ANY: 'ANY',
+            SECURITY_LEVEL_SECURE_SOFTWARE: 'SOFTWARE',
+            SECURITY_LEVEL_SECURE_HARDWARE: 'HARDWARE',
         },
     };
 });
@@ -49,6 +56,7 @@ jest.mock('react-native-device-info', () => {
         getBuildNumber: () => '0',
         getModel: () => 'iPhone X',
         isTablet: () => false,
+        getDeviceLocale: () => 'en-US',
     };
 });
 
