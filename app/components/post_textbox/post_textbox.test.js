@@ -2,6 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+
+import {Alert} from 'react-native';
+import assert from 'assert';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from 'mattermost-redux/constants/preferences';
@@ -12,6 +15,12 @@ import SendButton from 'app/components/send_button';
 import PostTextbox from './post_textbox.ios';
 
 jest.mock('NativeEventEmitter');
+
+jest.mock('Alert', () => {
+    return {
+        alert: jest.fn(),
+    };
+});
 
 describe('PostTextBox', () => {
     const baseProps = {
@@ -86,6 +95,176 @@ describe('PostTextBox', () => {
         instance.handleAppStateChange('background');
         expect(baseProps.actions.handlePostDraftChanged).toHaveBeenCalledWith(baseProps.channelId, value);
         expect(baseProps.actions.handlePostDraftChanged).toHaveBeenCalledTimes(1);
+    });
+
+    test('should not send multiple alerts when message is too long', () => {
+        const wrapper = shallowWithIntl(
+            <PostTextbox {...baseProps}/>
+        );
+
+        const instance = wrapper.instance();
+        const longString = [...Array(baseProps.maxMessageLength + 2).keys()].map(() => Math.random().toString(36).slice(0, 1)).join('');
+
+        instance.handleTextChange(longString);
+        instance.handleTextChange(longString.slice(1));
+
+        expect(Alert.alert).toBeCalled();
+        expect(Alert.alert).toHaveBeenCalledTimes(1);
+    });
+
+    test('should return correct @all (same for @channel)', () => {
+        for (const data of [
+            {
+                text: '',
+                result: false,
+            },
+            {
+                text: 'all',
+                result: false,
+            },
+            {
+                text: '@allison',
+                result: false,
+            },
+            {
+                text: '@ALLISON',
+                result: false,
+            },
+            {
+                text: '@all123',
+                result: false,
+            },
+            {
+                text: '123@all',
+                result: false,
+            },
+            {
+                text: 'hey@all',
+                result: false,
+            },
+            {
+                text: 'hey@all.com',
+                result: false,
+            },
+            {
+                text: '@all',
+                result: true,
+            },
+            {
+                text: '@ALL',
+                result: true,
+            },
+            {
+                text: '@all hey',
+                result: true,
+            },
+            {
+                text: 'hey @all',
+                result: true,
+            },
+            {
+                text: 'HEY @ALL',
+                result: true,
+            },
+            {
+                text: 'hey @all!',
+                result: true,
+            },
+            {
+                text: 'hey @all:+1:',
+                result: true,
+            },
+            {
+                text: 'hey @ALL:+1:',
+                result: true,
+            },
+            {
+                text: '`@all`',
+                result: false,
+            },
+            {
+                text: '@someone `@all`',
+                result: false,
+            },
+            {
+                text: '``@all``',
+                result: false,
+            },
+            {
+                text: '```@all```',
+                result: false,
+            },
+            {
+                text: '```\n@all\n```',
+                result: false,
+            },
+            {
+                text: '```````\n@all\n```````',
+                result: false,
+            },
+            {
+                text: '```code\n@all\n```',
+                result: false,
+            },
+            {
+                text: '~~~@all~~~',
+                result: true,
+            },
+            {
+                text: '~~~\n@all\n~~~',
+                result: false,
+            },
+            {
+                text: ' /not_cmd @all',
+                result: true,
+            },
+            {
+                text: '@channel',
+                result: true,
+            },
+            {
+                text: '@channel.',
+                result: true,
+            },
+            {
+                text: '@channel/test',
+                result: true,
+            },
+            {
+                text: 'test/@channel',
+                result: true,
+            },
+            {
+                text: '@all/@channel',
+                result: true,
+            },
+            {
+                text: '@cha*nnel*',
+                result: false,
+            },
+            {
+                text: '@cha**nnel**',
+                result: false,
+            },
+            {
+                text: '*@cha*nnel',
+                result: false,
+            },
+            {
+                text: '[@chan](https://google.com)nel',
+                result: false,
+            },
+            {
+                text: '@cha![](https://myimage)nnel',
+                result: false,
+            },
+        ]) {
+            const wrapper = shallowWithIntl(
+                <PostTextbox {...baseProps}/>
+            );
+            const containsAtChannel = wrapper.instance().textContainsAtAllAtChannel(data.text);
+            assert.equal(containsAtChannel, data.result, data.text);
+        }
     });
 
     describe('send button', () => {
