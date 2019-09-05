@@ -48,6 +48,14 @@ export default class AttachmentImage extends PureComponent {
         }
     }
 
+    setImageRef = (ref) => {
+        this.imageRef = ref;
+    }
+
+    setItemRef = (ref) => {
+        this.itemRef = ref;
+    }
+
     handlePreviewImage = () => {
         const {actions, imageUrl} = this.props;
         const {
@@ -128,9 +136,7 @@ export default class AttachmentImage extends PureComponent {
         if (imageUri) {
             progressiveImage = (
                 <ProgressiveImage
-                    ref={(ref) => {
-                        this.imageRef = ref;
-                    }}
+                    ref={this.setImageRef}
                     style={{height, width}}
                     imageUri={imageUri}
                     resizeMode='contain'
@@ -146,9 +152,7 @@ export default class AttachmentImage extends PureComponent {
                 style={[style.container, {width: this.maxImageWidth + VIEWPORT_IMAGE_CONTAINER_OFFSET}]}
             >
                 <View
-                    ref={(ref) => {
-                        this.itemRef = ref;
-                    }}
+                    ref={this.setItemRef}
                     style={[style.imageContainer, {width, height}]}
                 >
                     {progressiveImage}

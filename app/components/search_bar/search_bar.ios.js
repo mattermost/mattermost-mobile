@@ -54,6 +54,10 @@ export default class SearchBarIos extends PureComponent {
         searchIconExpandedMargin: 10,
     };
 
+    setSearchRef = (ref) => {
+        this.searchRef = ref;
+    }
+
     cancel = () => {
         this.searchRef.onCancel();
     };
@@ -103,9 +107,7 @@ export default class SearchBarIos extends PureComponent {
         return (
             <Search
                 {...this.props}
-                ref={(ref) => {
-                    this.searchRef = ref;
-                }}
+                ref={this.setSearchRef}
                 placeholderCollapsedMargin={33}
                 placeholderExpandedMargin={33}
                 shadowVisible={false}

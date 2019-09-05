@@ -95,6 +95,14 @@ export default class MarkdownImage extends React.Component {
         this.mounted = false;
     }
 
+    setImageRef = (ref) => {
+        this.imageRef = ref;
+    }
+
+    setItemRef = (ref) => {
+        this.itemRef = ref;
+    }
+
     getSource = () => {
         let source = this.props.source;
 
@@ -256,9 +264,7 @@ export default class MarkdownImage extends React.Component {
                         style={{width, height}}
                     >
                         <ProgressiveImage
-                            ref={(ref) => {
-                                this.imageRef = ref;
-                            }}
+                            ref={this.setImageRef}
                             defaultSource={source}
                             resizeMode='contain'
                             style={{width, height}}
@@ -288,9 +294,7 @@ export default class MarkdownImage extends React.Component {
 
         return (
             <View
-                ref={(ref) => {
-                    this.itemRef = ref;
-                }}
+                ref={this.setItemRef}
                 style={style.container}
             >
                 {image}

@@ -97,6 +97,14 @@ export default class ImagePreview extends PureComponent {
         StatusBar.setHidden(false, 'fade');
     }
 
+    setDocumentRef = (ref) => {
+        this.documents[this.state.index] = ref;
+    }
+
+    setDownloaderRef = (ref) => {
+        this.downloaderRef = ref;
+    }
+
     animateOpenAnimToValue = (toValue, onComplete) => {
         Animated.timing(this.openAnim, {
             ...ANIM_CONFIG,
@@ -191,9 +199,7 @@ export default class ImagePreview extends PureComponent {
         return (
             <View style={[style.flex, style.center]}>
                 <FileAttachmentDocument
-                    ref={(ref) => {
-                        this.documents[this.state.index] = ref;
-                    }}
+                    ref={this.setDocumentRef}
                     backgroundColor='transparent'
                     canDownloadFiles={canDownloadFiles}
                     file={file}
@@ -270,9 +276,7 @@ export default class ImagePreview extends PureComponent {
 
         return (
             <Downloader
-                ref={(ref) => {
-                    this.downloaderRef = ref;
-                }}
+                ref={this.setDownloaderRef}
                 show={this.state.showDownloader}
                 file={file}
                 deviceHeight={deviceHeight}

@@ -173,6 +173,10 @@ export default class Permalink extends PureComponent {
         }
     }
 
+    setViewRef = (ref) => {
+        this.viewRef = ref;
+    }
+
     goToThread = preventDoubleTap((post) => {
         const {actions} = this.props;
         const channelId = post.channel_id;
@@ -393,9 +397,7 @@ export default class Permalink extends PureComponent {
                     style={style.container}
                 >
                     <Animatable.View
-                        ref={(ref) => {
-                            this.viewRef = ref;
-                        }}
+                        ref={this.setViewRef}
                         animation='zoomIn'
                         duration={200}
                         delay={0}

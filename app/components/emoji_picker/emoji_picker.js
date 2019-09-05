@@ -108,6 +108,10 @@ export default class EmojiPicker extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     renderableEmojis = (emojis, deviceWidth) => {
         const numberOfColumns = this.getNumberOfColumns(deviceWidth);
 
@@ -462,9 +466,7 @@ export default class EmojiPicker extends PureComponent {
                 >
                     <View style={styles.searchBar}>
                         <SearchBar
-                            ref={(ref) => {
-                                this.searchBarRef = ref;
-                            }}
+                            ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'

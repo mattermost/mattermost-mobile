@@ -154,6 +154,14 @@ export default class Search extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
+    setListRef = (ref) => {
+        this.listRef = ref;
+    }
+
     archivedIndicator = (postID, style) => {
         const channelIsArchived = this.props.archivedPostIds.includes(postID);
         let archivedIndicator = null;
@@ -687,9 +695,7 @@ export default class Search extends PureComponent {
                     <StatusBar/>
                     <View style={style.header}>
                         <SearchBar
-                            ref={(ref) => {
-                                this.searchBarRef = ref;
-                            }}
+                            ref={this.setSearchBarRef}
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'
@@ -711,9 +717,7 @@ export default class Search extends PureComponent {
                         />
                     </View>
                     <SectionList
-                        ref={(ref) => {
-                            this.listRef = ref;
-                        }}
+                        ref={this.setListRef}
                         style={style.sectionList}
                         renderSectionHeader={this.renderSectionHeader}
                         sections={sections}

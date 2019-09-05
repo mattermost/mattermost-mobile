@@ -88,6 +88,10 @@ export default class SelectorScreen extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     clearSearch = () => {
         this.setState({term: '', searchResults: []});
     };
@@ -319,9 +323,7 @@ export default class SelectorScreen extends PureComponent {
                 <StatusBar/>
                 <View style={style.searchBar}>
                     <SearchBar
-                        ref={(ref) => {
-                            this.searchBarRef = ref;
-                        }}
+                        ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

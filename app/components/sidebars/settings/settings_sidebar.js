@@ -77,6 +77,10 @@ export default class SettingsDrawer extends PureComponent {
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
+    setDrawerRef = (ref) => {
+        this.drawerRef = ref;
+    }
+
     handleAndroidBack = () => {
         if (this.drawerRef && this.drawerOpened) {
             this.drawerRef.closeDrawer();
@@ -353,9 +357,7 @@ export default class SettingsDrawer extends PureComponent {
 
         return (
             <DrawerLayout
-                ref={(ref) => {
-                    this.drawerRef = ref;
-                }}
+                ref={this.setDrawerRef}
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}

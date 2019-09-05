@@ -18,6 +18,10 @@ export default class ToolTip extends PureComponent {
         actions: [],
     }
 
+    setToolTipRef = (ref) => {
+        this.toolTipRef = ref;
+    }
+
     handleHide = () => {
         if (this.props.onHide) {
             this.props.onHide();
@@ -57,9 +61,7 @@ export default class ToolTip extends PureComponent {
                 {...this.props}
                 onHide={this.handleHide}
                 onShow={this.handleShow}
-                ref={(ref) => {
-                    this.toolTipRef = ref;
-                }}
+                ref={this.setToolTipRef}
             />
         );
     }

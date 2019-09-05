@@ -108,6 +108,10 @@ export default class MoreDirectMessages extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     close = () => {
         this.props.actions.dismissModal();
     };
@@ -454,9 +458,7 @@ export default class MoreDirectMessages extends PureComponent {
                 <StatusBar/>
                 <View style={style.searchBar}>
                     <SearchBar
-                        ref={(ref) => {
-                            this.searchBarRef = ref;
-                        }}
+                        ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

@@ -18,6 +18,10 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
         intl: intlShape.isRequired,
     };
 
+    setInputRef = (ref) => {
+        this.inputRef = ref;
+    }
+
     blur = () => {
         this.inputRef.blur();
     };
@@ -36,9 +40,7 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
 
         return (
             <TextInput
-                ref={(ref) => {
-                    this.inputRef = ref;
-                }}
+                ref={this.setInputRef}
                 {...otherProps}
                 placeholder={placeholderString}
                 placeholderTextColor={changeOpacity('#000', 0.5)}

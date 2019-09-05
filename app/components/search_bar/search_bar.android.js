@@ -75,6 +75,10 @@ export default class SearchBarAndroid extends PureComponent {
         };
     }
 
+    setInputRef = (ref) => {
+        this.inputRef = ref;
+    }
+
     cancel = () => {
         this.onCancelButtonPress();
     };
@@ -205,9 +209,7 @@ export default class SearchBarAndroid extends PureComponent {
                         />
                     }
                     <TextInput
-                        ref={(ref) => {
-                            this.inputRef = ref;
-                        }}
+                        ref={this.setInputRef}
                         blurOnSubmit={blurOnSubmit}
                         refocusInput={this.state.refocusInput}
                         value={this.props.value}

@@ -70,6 +70,10 @@ export default class FlaggedPosts extends PureComponent {
         }
     }
 
+    setListRef = (ref) => {
+        this.listRef = ref;
+    }
+
     goToThread = (post) => {
         const {actions} = this.props;
         const channelId = post.channel_id;
@@ -213,9 +217,7 @@ export default class FlaggedPosts extends PureComponent {
         } else if (postIds.length) {
             component = (
                 <FlatList
-                    ref={(ref) => {
-                        this.listRef = ref;
-                    }}
+                    ref={this.setListRef}
                     contentContainerStyle={style.sectionList}
                     data={postIds}
                     keyExtractor={this.keyExtractor}

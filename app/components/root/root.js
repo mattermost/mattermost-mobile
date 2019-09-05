@@ -46,6 +46,10 @@ export default class Root extends PureComponent {
         }
     }
 
+    setProviderRef = (ref) => {
+        this.providerRef = ref;
+    }
+
     handleNoTeams = () => {
         if (!this.providerRef) {
             setTimeout(this.handleNoTeams, 200);
@@ -101,9 +105,7 @@ export default class Root extends PureComponent {
 
         return (
             <IntlProvider
-                ref={(ref) => {
-                    this.providerRef = ref;
-                }}
+                ref={this.setProviderRef}
                 locale={locale}
                 messages={getTranslations(locale)}
             >

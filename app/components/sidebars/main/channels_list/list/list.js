@@ -96,6 +96,10 @@ export default class List extends PureComponent {
         }
     }
 
+    setListRef = (ref) => {
+        this.listRef = ref;
+    }
+
     getSectionConfigByType = (props, sectionType) => {
         const {canCreatePrivateChannels, canJoinPublicChannels} = props;
 
@@ -429,9 +433,7 @@ export default class List extends PureComponent {
                 onLayout={this.onLayout}
             >
                 <SectionList
-                    ref={(ref) => {
-                        this.listRef = ref;
-                    }}
+                    ref={this.setListRef}
                     sections={sections}
                     contentContainerStyle={{paddingBottom}}
                     renderItem={this.renderItem}
