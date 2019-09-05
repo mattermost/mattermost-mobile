@@ -13,7 +13,7 @@ import Cloud from './cloud';
 
 export default class FailedNetworkAction extends PureComponent {
     static propTypes = {
-        onRetry: PropTypes.func,
+        onRetry: PropTypes.func.isRequired,
         actionId: PropTypes.string,
         actionDefaultMessage: PropTypes.string,
         errorId: PropTypes.string,
