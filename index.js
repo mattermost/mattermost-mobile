@@ -11,7 +11,9 @@ import telemetry from 'app/telemetry';
 
 import 'app/mattermost';
 
-require('harmony-reflect');
+if (Platform.OS === 'android') {
+    require('harmony-reflect');
+}
 
 if (__DEV__) {
     YellowBox.ignoreWarnings([
