@@ -111,8 +111,8 @@ export default class Search extends PureComponent {
         }
 
         setTimeout(() => {
-            if (this.refs.searchBar) {
-                this.refs.searchBar.focus();
+            if (this.searchBarRef) {
+                this.searchBarRef.focus();
             }
         }, 150);
     }
@@ -126,7 +126,7 @@ export default class Search extends PureComponent {
             !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore && prevState.recent.length === recent.length;
 
         if (this.props.isLandscape !== prevProps.isLandscape) {
-            this.refs.searchBar.blur();
+            this.searchBarRef.blur();
         }
 
         if (shouldScroll) {
@@ -139,8 +139,8 @@ export default class Search extends PureComponent {
                 const offset = modifiersHeight + modifiersSeparatorHeight + SECTION_HEIGHT + recentLabelsHeight + recentSeparatorsHeight;
 
                 Keyboard.dismiss();
-                if (this.refs.list) {
-                    this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+                if (this.listRef?._wrapperListRef) {
+                    this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                         animated: true,
                         offset,
                     });
@@ -152,11 +152,19 @@ export default class Search extends PureComponent {
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'backPress') {
             if (this.state.preview) {
-                this.refs.preview.handleClose();
+                this.previewRef.handleClose();
             } else {
                 this.props.actions.dismissModal();
             }
         }
+    }
+
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
+    setListRef = (ref) => {
+        this.listRef = ref;
     }
 
     archivedIndicator = (postID, style) => {
@@ -469,8 +477,8 @@ export default class Search extends PureComponent {
     };
 
     scrollToTop = () => {
-        if (this.refs.list) {
-            this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+        if (this.listRef?._wrapperListRef) {
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                 animated: false,
                 offset: 0,
             });
@@ -525,8 +533,8 @@ export default class Search extends PureComponent {
 
         this.handleTextChanged(newValue, true);
 
-        if (this.refs.searchBar) {
-            this.refs.searchBar.focus();
+        if (this.searchBarRef) {
+            this.searchBarRef.focus();
         }
     });
 
@@ -694,7 +702,7 @@ export default class Search extends PureComponent {
                     <StatusBar/>
                     <View style={[style.header, padding(isLandscape)]}>
                         <SearchBar
-                            ref='searchBar'
+                            ref={this.setSearchBarRef}
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'
@@ -717,7 +725,7 @@ export default class Search extends PureComponent {
                         />
                     </View>
                     <SectionList
-                        ref='list'
+                        ref={this.setListRef}
                         style={style.sectionList}
                         renderSectionHeader={this.renderSectionHeader}
                         sections={sections}

@@ -99,8 +99,8 @@ export default class EmojiPicker extends PureComponent {
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
             this.rebuildEmojis = true;
 
-            if (this.refs.search_bar) {
-                this.refs.search_bar.blur();
+            if (this.searchBarRef) {
+                this.searchBarRef.blur();
             }
         }
 
@@ -116,6 +116,10 @@ export default class EmojiPicker extends PureComponent {
             const emojis = this.renderableEmojis(this.props.emojisBySection, this.props.deviceWidth);
             this.setState({emojis});
         }
+    }
+
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
     }
 
     renderableEmojis = (emojis, deviceWidth) => {
@@ -476,7 +480,7 @@ export default class EmojiPicker extends PureComponent {
                 >
                     <View style={[styles.searchBar, padding(isLandscape)]}>
                         <SearchBar
-                            ref='search_bar'
+                            ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'

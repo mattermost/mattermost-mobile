@@ -60,6 +60,10 @@ export default class Badge extends PureComponent {
         this.mounted = false;
     }
 
+    setBadgeContainerRef = (ref) => {
+        this.badgeContainerRef = ref;
+    }
+
     handlePress = () => {
         if (this.props.onPress) {
             this.props.onPress();
@@ -67,8 +71,8 @@ export default class Badge extends PureComponent {
     };
 
     setNativeProps = (props) => {
-        if (this.mounted && this.refs.badgeContainer) {
-            this.refs.badgeContainer.setNativeProps(props);
+        if (this.mounted && this.badgeContainerRef) {
+            this.badgeContainerRef.setNativeProps(props);
         }
     };
 
@@ -123,7 +127,7 @@ export default class Badge extends PureComponent {
         }
         return (
             <View
-                ref='badgeContainer'
+                ref={this.setBadgeContainerRef}
                 style={[styles.badge, this.props.style, {opacity: 0}]}
             >
                 <View style={styles.wrapper}>

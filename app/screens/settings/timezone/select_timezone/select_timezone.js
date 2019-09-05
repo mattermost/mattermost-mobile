@@ -52,6 +52,10 @@ export default class Timezone extends PureComponent {
         };
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     filteredTimezones = (timezonePrefix) => {
         if (timezonePrefix.length === 0) {
             return this.state.timezones;
@@ -111,7 +115,7 @@ export default class Timezone extends PureComponent {
                 <StatusBar/>
                 <View style={[style.header, padding(isLandscape)]}>
                     <SearchBar
-                        ref='searchBar'
+                        ref={this.setSearchBarRef}
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

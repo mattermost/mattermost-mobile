@@ -22,12 +22,16 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
         intl: intlShape.isRequired,
     };
 
+    setInputRef = (ref) => {
+        this.inputRef = ref;
+    }
+
     blur = () => {
-        this.refs.input.blur();
+        this.inputRef.blur();
     };
 
     focus = () => {
-        this.refs.input.focus();
+        this.inputRef.focus();
     };
 
     render() {
@@ -40,7 +44,7 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
 
         return (
             <TextInput
-                ref='input'
+                ref={this.setInputRef}
                 {...otherProps}
                 placeholder={placeholderString}
                 disableFullscreenUI={true}

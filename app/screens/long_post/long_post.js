@@ -79,6 +79,10 @@ export default class LongPost extends PureComponent {
         }
     }
 
+    setViewRef = (ref) => {
+        this.viewRef = ref;
+    }
+
     goToThread = preventDoubleTap((post) => {
         const {actions} = this.props;
         const channelId = post.channel_id;
@@ -98,8 +102,8 @@ export default class LongPost extends PureComponent {
 
     handleClose = () => {
         const {actions} = this.props;
-        if (this.refs.view) {
-            this.refs.view.zoomOut().then(() => {
+        if (this.viewRef) {
+            this.viewRef.zoomOut().then(() => {
                 actions.dismissModal();
             });
         }
@@ -188,7 +192,7 @@ export default class LongPost extends PureComponent {
             >
                 <View style={[style.container, margin(isLandscape)]}>
                     <Animatable.View
-                        ref='view'
+                        ref={this.setViewRef}
                         animation='zoomIn'
                         duration={200}
                         delay={0}
