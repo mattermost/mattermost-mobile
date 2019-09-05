@@ -133,7 +133,7 @@ export default class ChannelIcon extends React.PureComponent {
             case General.AWAY:
                 icon = (
                     <Icon
-                        name='away'
+                        name='away-avatar'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.awayIndicator}]}
                         type='mattermost'
                     />
@@ -142,7 +142,7 @@ export default class ChannelIcon extends React.PureComponent {
             case General.DND:
                 icon = (
                     <Icon
-                        name='dnd'
+                        name='dnd-avatar'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.dndIndicator}]}
                         type='mattermost'
                     />
@@ -151,7 +151,7 @@ export default class ChannelIcon extends React.PureComponent {
             case General.ONLINE:
                 icon = (
                     <Icon
-                        name='online'
+                        name='online-avatar'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.onlineIndicator}]}
                         type='mattermost'
                     />
@@ -160,7 +160,7 @@ export default class ChannelIcon extends React.PureComponent {
             default:
                 icon = (
                     <Icon
-                        name='offline'
+                        name='offline-avatar'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: offlineColor}]}
                         type='mattermost'
                     />

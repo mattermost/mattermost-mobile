@@ -20,6 +20,7 @@ const statusToIcon = {
 
 export default class UserStatus extends PureComponent {
     static propTypes = {
+        isAvatar: PropTypes.bool,
         size: PropTypes.number,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
