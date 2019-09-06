@@ -164,6 +164,7 @@ export default class ChannelItem extends PureComponent {
                     countStyle={style.mention}
                     count={mentions}
                     onPress={this.onPress}
+                    minWidth={23}
                 />
             );
         }
@@ -179,7 +180,7 @@ export default class ChannelItem extends PureComponent {
                 isUnread={isUnread}
                 hasDraft={hasDraft && channelId !== currentChannelId}
                 membersCount={displayName.split(',').length}
-                size={16}
+                size={14}
                 status={channel.status}
                 theme={theme}
                 type={channel.type}
@@ -257,14 +258,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.mentionBg,
             borderColor: theme.sidebarHeaderBg,
             borderRadius: 10,
-            borderWidth: 1,
+            borderWidth: 0,
             padding: 3,
             position: 'relative',
-            right: 16,
+            right: 0,
+            top: 0,
+            height: 23,
+            marginRight: 16,
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10,
+            fontSize: 11,
         },
         muted: {
             opacity: 0.5,
