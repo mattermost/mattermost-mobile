@@ -92,7 +92,7 @@ export default class ChannelIcon extends React.PureComponent {
             icon = (
                 <Icon
                     name='bot'
-                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size - 2}]}
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
                     type='mattermost'
                 />
             );
@@ -170,7 +170,7 @@ export default class ChannelIcon extends React.PureComponent {
         }
 
         return (
-            <View style={[style.container, {width: size, height: size}]}>
+            <View style={[style.container, {height: size}]}>
                 {icon}
             </View>
         );
