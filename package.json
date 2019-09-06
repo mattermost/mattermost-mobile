@@ -10,7 +10,7 @@
     "@babel/runtime": "7.5.5",
     "@react-native-community/async-storage": "1.4.0",
     "@react-native-community/netinfo": "3.1.3",
-    "@sentry/react-native": "1.0.0-beta.5",
+    "@sentry/react-native": "1.0.0",
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#52053271715afbb515d96c74e0d8a4292f4d9e4a",
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#3a2ac19cab725ad28b170fdc1d397dddedcf87eb",
