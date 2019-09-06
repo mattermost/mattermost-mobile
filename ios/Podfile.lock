@@ -122,7 +122,7 @@ PODS:
     - React
   - RNReactNativeDocViewer (1.0.0):
     - React
-  - RNSentry (1.0.0):
+  - RNSentry (1.0.4):
     - React
     - Sentry (~> 4.4.0)
   - RNSVG (9.4.0):
