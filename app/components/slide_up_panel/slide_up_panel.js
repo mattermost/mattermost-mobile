@@ -13,6 +13,7 @@ import {
 
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
+import {hapticFeedback} from 'app/utils/general';
 
 import SlideUpPanelIndicator from './slide_up_panel_indicator';
 
@@ -128,6 +129,8 @@ export default class SlideUpPanel extends PureComponent {
     }
 
     componentDidMount() {
+        hapticFeedback();
+
         Animated.timing(this.translateYOffset, {
             toValue: this.snapPoints[1],
             useNativeDriver: true,
