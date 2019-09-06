@@ -11,6 +11,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
+import {t} from 'app/utils/i18n';
 
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
 import PostOption from './post_option';
@@ -89,7 +90,7 @@ export default class PostOptions extends PureComponent {
         if (canAddReaction) {
             const key = 'reaction';
             const icon = 'emoji';
-            const message = {id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'};
+            const message = {id: t('mobile.post_info.add_reaction'), defaultMessage: 'Add Reaction'};
             const onPress = this.handleAddReaction;
 
             return this.getOption(key, icon, message, onPress);
@@ -104,7 +105,7 @@ export default class PostOptions extends PureComponent {
         if (canReply) {
             const key = 'reply';
             const icon = 'reply';
-            const message = {id: 'mobile.post_info.reply', defaultMessage: 'Reply'};
+            const message = {id: t('mobile.post_info.reply'), defaultMessage: 'Reply'};
             const onPress = this.handleReply;
 
             return this.getOption(key, icon, message, onPress);
@@ -119,7 +120,7 @@ export default class PostOptions extends PureComponent {
         if (canCopyPermalink) {
             const key = 'permalink';
             const icon = 'link';
-            const message = {id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'};
+            const message = {id: t('get_post_link_modal.title'), defaultMessage: 'Copy Permalink'};
             const onPress = this.handleCopyPermalink;
 
             return this.getOption(key, icon, message, onPress);
@@ -134,7 +135,7 @@ export default class PostOptions extends PureComponent {
         if (canCopyText) {
             const key = 'copy';
             const icon = 'copy';
-            const message = {id: 'mobile.post_info.copy_text', defaultMessage: 'Copy Text'};
+            const message = {id: t('mobile.post_info.copy_text'), defaultMessage: 'Copy Text'};
             const onPress = this.handleCopyText;
 
             return this.getOption(key, icon, message, onPress);
@@ -149,7 +150,7 @@ export default class PostOptions extends PureComponent {
         if (canDelete) {
             const key = 'delete';
             const icon = 'trash';
-            const message = {id: 'post_info.del', defaultMessage: 'Delete'};
+            const message = {id: t('post_info.del'), defaultMessage: 'Delete'};
             const onPress = this.handlePostDelete;
             const destructive = true;
 
@@ -165,7 +166,7 @@ export default class PostOptions extends PureComponent {
         if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
             const key = 'edit';
             const icon = 'edit';
-            const message = {id: 'post_info.edit', defaultMessage: 'Edit'};
+            const message = {id: t('post_info.edit'), defaultMessage: 'Edit'};
             const onPress = this.handlePostEdit;
 
             return this.getOption(key, icon, message, onPress);
@@ -188,11 +189,11 @@ export default class PostOptions extends PureComponent {
 
         if (isFlagged) {
             key = 'unflag';
-            message = {id: 'mobile.post_info.unflag', defaultMessage: 'Unflag'};
+            message = {id: t('mobile.post_info.unflag'), defaultMessage: 'Unflag'};
             onPress = this.handleUnflagPost;
         } else {
             key = 'flagged';
-            message = {id: 'mobile.post_info.flag', defaultMessage: 'Flag'};
+            message = {id: t('mobile.post_info.flag'), defaultMessage: 'Flag'};
             onPress = this.handleFlagPost;
         }
 
@@ -213,11 +214,11 @@ export default class PostOptions extends PureComponent {
 
         if (post.is_pinned) {
             key = 'unpin';
-            message = {id: 'mobile.post_info.unpin', defaultMessage: 'Unpin from Channel'};
+            message = {id: t('mobile.post_info.unpin'), defaultMessage: 'Unpin from Channel'};
             onPress = this.handleUnpinPost;
         } else {
             key = 'pin';
-            message = {id: 'mobile.post_info.pin', defaultMessage: 'Pin to Channel'};
+            message = {id: t('mobile.post_info.pin'), defaultMessage: 'Pin to Channel'};
             onPress = this.handlePinPost;
         }
 
