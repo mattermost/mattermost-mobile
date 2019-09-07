@@ -40,6 +40,7 @@ export default class Reaction extends PureComponent {
             <TouchableOpacity
                 onPress={this.handlePress}
                 onLongPress={onLongPress}
+                delayLongPress={350}
                 style={[styles.reaction, (highlight && styles.highlight)]}
             >
                 <Emoji
