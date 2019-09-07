@@ -95,9 +95,9 @@ export default class EmojiPicker extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        let rebuildEmojis = false;
+        this.rebuildEmojis = false;
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
-            rebuildEmojis = true;
+            this.rebuildEmojis = true;
 
             if (this.refs.search_bar) {
                 this.refs.search_bar.blur();
@@ -105,14 +105,16 @@ export default class EmojiPicker extends PureComponent {
         }
 
         if (this.props.emojis !== nextProps.emojis) {
-            rebuildEmojis = true;
+            this.rebuildEmojis = true;
+            this.setRebuiltEmojis();
         }
+    }
 
-        if (rebuildEmojis) {
-            const emojis = this.renderableEmojis(this.props.emojisBySection, nextProps.deviceWidth);
-            this.setState({
-                emojis,
-            });
+    setRebuiltEmojis = (searchBarAnimationComplete = true) => {
+        if (this.rebuildEmojis && searchBarAnimationComplete) {
+            this.rebuildEmojis = false;
+            const emojis = this.renderableEmojis(this.props.emojisBySection, this.props.deviceWidth);
+            this.setState({emojis});
         }
     }
 
@@ -489,6 +491,7 @@ export default class EmojiPicker extends PureComponent {
                             autoCapitalize='none'
                             value={searchTerm}
                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            onAnimationComplete={this.setRebuiltEmojis}
                         />
                     </View>
                     <View style={styles.container}>

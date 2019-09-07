@@ -18,6 +18,7 @@ import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import {emptyFunction} from 'app/utils/general';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const AnimatedIonIcon = Animated.createAnimatedComponent(IonIcon);
@@ -78,6 +79,7 @@ export default class Search extends Component {
         leftComponent: PropTypes.element,
         inputCollapsedMargin: PropTypes.number,
         keyboardAppearance: PropTypes.string,
+        onAnimationComplete: PropTypes.func,
     };
 
     static defaultProps = {
@@ -102,6 +104,7 @@ export default class Search extends Component {
         value: '',
         leftComponent: null,
         inputCollapsedMargin: 10,
+        onAnimationComplete: emptyFunction,
     };
 
     constructor(props) {
@@ -245,7 +248,7 @@ export default class Search extends Component {
                 Animated.timing(
                     this.inputFocusWidthAnimated,
                     {
-                        toValue: this.contentWidth - 70,
+                        toValue: this.contentWidth - 90,
                         duration: 200,
                     }
                 ),
@@ -266,7 +269,7 @@ export default class Search extends Component {
                 Animated.timing(
                     this.btnCancelAnimated,
                     {
-                        toValue: this.state.leftComponentWidth ? 15 - this.state.leftComponentWidth : 10,
+                        toValue: this.state.leftComponentWidth ? 15 - this.state.leftComponentWidth : 5,
                         duration: 200,
                     }
                 ),
@@ -370,7 +373,7 @@ export default class Search extends Component {
                         useNativeDriver: true,
                     }
                 ),
-            ]).start();
+            ]).start(({finished}) => this.props.onAnimationComplete(finished));
             this.shadowHeight = this.props.shadowOffsetHeightCollapsed;
             resolve();
         });
@@ -546,17 +549,18 @@ const styles = StyleSheet.create({
         position: 'absolute',
         paddingLeft: 1,
         paddingTop: 3,
-        right: 65,
+        right: 80,
         width: 25,
     },
     iconDeleteDefault: {
         color: 'grey',
     },
     cancelButton: {
+        flex: 1,
         justifyContent: 'center',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         backgroundColor: 'transparent',
-        width: 60,
+        minWidth: 75,
         height: 50,
     },
     cancelButtonText: {

@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AttachmentImage it matches snapshot 1`] = `
+<TouchableWithoutFeedback
+  onPress={[Function]}
+  style={
+    Array [
+      Object {
+        "marginTop": 5,
+      },
+      Object {
+        "width": 38,
+      },
+    ]
+  }
+>
+  <View
+    style={
+      Array [
+        Object {
+          "borderColor": "rgba(61,60,64,0.1)",
+          "borderRadius": 2,
+          "borderWidth": 1,
+          "flex": 1,
+          "padding": 5,
+        },
+        Object {
+          "height": 28,
+          "width": 28,
+        },
+      ]
+    }
+  >
+    <Connect(ProgressiveImage)
+      imageUri="https://images.com/image.png"
+      resizeMode="contain"
+      style={
+        Object {
+          "height": 28,
+          "width": 28,
+        }
+      }
+    />
+  </View>
+</TouchableWithoutFeedback>
+`;
