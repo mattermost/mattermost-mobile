@@ -221,7 +221,7 @@ export default class EditChannelInfo extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <React.Fragment>
                 <StatusBar/>
                 <KeyboardAwareScrollView
                     ref={this.scroll}
@@ -376,7 +376,7 @@ export default class EditChannelInfo extends PureComponent {
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAwareScrollView>
-            </View>
+            </React.Fragment>
         );
     }
 }
@@ -389,11 +389,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            paddingTop: 10,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
+            paddingTop: 35,
         },
         errorContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         errorWrapper: {
             justifyContent: 'center',

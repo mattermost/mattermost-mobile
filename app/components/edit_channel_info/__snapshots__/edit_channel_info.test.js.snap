@@ -1,14 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`EditChannelInfo should match snapshot 1`] = `
-<View
-  style={
-    Object {
-      "backgroundColor": "#ffffff",
-      "flex": 1,
-    }
-  }
->
+<React.Fragment>
   <Connect(StatusBar) />
   <KeyboardAwareScrollViewMock
     enableAutomaticScroll={true}
@@ -33,9 +26,9 @@ exports[`EditChannelInfo should match snapshot 1`] = `
         style={
           Array [
             Object {
-              "backgroundColor": "rgba(61,60,64,0.03)",
+              "backgroundColor": "rgba(61,60,64,0.06)",
               "flex": 1,
-              "paddingTop": 10,
+              "paddingTop": 35,
             },
             Object {
               "height": 600,
@@ -316,5 +309,5 @@ exports[`EditChannelInfo should match snapshot 1`] = `
       </View>
     </TouchableWithoutFeedback>
   </KeyboardAwareScrollViewMock>
-</View>
+</React.Fragment>
 `;

@@ -157,7 +157,10 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
         const style = getStyleSheet(theme);
 
         return (
-            <SafeAreaView>
+            <SafeAreaView
+                excludeHeader={true}
+                excludeFooter={true}
+            >
                 <View style={style.container}>
                     <StatusBar/>
                     <ScrollView
