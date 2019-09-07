@@ -9,13 +9,12 @@ import {Navigation} from 'react-native-navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 
 import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
-import Markdown from 'app/components/markdown';
 
 import DialogElement from './dialog_element.js';
+import DialogIntroductionText from './dialog_introduction_text.js';
 
 export default class InteractiveDialog extends PureComponent {
     static propTypes = {
@@ -156,25 +155,15 @@ export default class InteractiveDialog extends PureComponent {
         const {introductionText, elements, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
-        const blockStyles = getMarkdownBlockStyles(theme);
-        const textStyles = getMarkdownTextStyles(theme);
-
         return (
             <View style={style.container}>
                 <ScrollView style={style.scrollView}>
                     <StatusBar/>
                     {Boolean(introductionText) &&
-                        <View style={style.introductionText}>
-                            <Markdown
-                                baseTextStyle={style.baseStyle}
-                                textStyles={textStyles}
-                                blockStyles={blockStyles}
-                                value={introductionText}
-                                disableHashtags={true}
-                                disableAtMentions={true}
-                                disableChannelLink={true}
-                            />
-                        </View>
+                        <DialogIntroductionText
+                            value={introductionText}
+                            theme={theme}
+                        />
                     }
                     {elements && elements.map((e) => {
                         return (
@@ -212,9 +201,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         scrollView: {
             marginBottom: 20,
             marginTop: 10,
-        },
-        introductionText: {
-            marginHorizontal: 15,
         },
     };
 });
