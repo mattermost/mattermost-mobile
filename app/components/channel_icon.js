@@ -122,8 +122,8 @@ export default class ChannelIcon extends React.PureComponent {
             );
         } else if (type === General.GM_CHANNEL) {
             icon = (
-                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}>
-                    <Text style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 6)}]}>
+                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size + 1, height: size + 1}]}>
+                    <Text style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 4)}]}>
                         {membersCount}
                     </Text>
                 </View>
@@ -198,21 +198,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         groupBox: {
             alignSelf: 'flex-start',
             alignItems: 'center',
+            backgroundColor: changeOpacity(theme.sidebarText, 0.3),
+            borderColor: changeOpacity(theme.sidebarText, 0.3),
             borderWidth: 1,
-            borderColor: changeOpacity(theme.sidebarText, 0.4),
+            borderRadius: 2,
             justifyContent: 'center',
         },
         groupBoxActive: {
-            borderColor: theme.sidebarTextActiveColor,
+            backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.3),
         },
         groupBoxUnread: {
-            borderColor: theme.sidebarUnreadText,
+            backgroundColor: changeOpacity(theme.sidebarUnreadText, 0.3),
         },
         groupBoxInfo: {
-            borderColor: theme.centerChannelColor,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.3),
         },
         group: {
-            color: changeOpacity(theme.sidebarText, 0.4),
+            color: changeOpacity(theme.sidebarText, 0.6),
             fontSize: 10,
             fontWeight: '600',
         },
