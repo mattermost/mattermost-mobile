@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated, Platform, StyleSheet, View} from 'react-native';
+import {Animated, Platform, StyleSheet, View, Easing} from 'react-native';
 import {
     PanGestureHandler,
     NativeViewGestureHandler,
@@ -13,6 +13,7 @@ import {
 
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
+import {hapticFeedback} from 'app/utils/general';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import SlideUpPanelIndicator from './slide_up_panel_indicator';
@@ -122,21 +123,30 @@ export default class SlideUpPanel extends PureComponent {
             outputRange: [marginFromTop, containerHeight],
             extrapolate: 'clamp',
         });
+
+        this.backdropOpacity = this.translateY.interpolate({
+            inputRange: [marginFromTop, containerHeight],
+            outputRange: [0.7, 0],
+        });
     }
 
     componentDidMount() {
+        hapticFeedback();
+
         Animated.timing(this.translateYOffset, {
-            duration: 200,
             toValue: this.snapPoints[1],
             useNativeDriver: true,
+            easing: Easing.inOut(Easing.sin),
+            duration: 200,
         }).start();
     }
 
     closeWithAnimation = (cb) => {
         Animated.timing(this.translateYOffset, {
-            duration: 200,
             toValue: this.snapPoints[2],
             useNativeDriver: true,
+            easing: Easing.inOut(Easing.sin),
+            duration: 200,
         }).start(() => this.props.onRequestClose(cb));
     };
 
@@ -232,6 +242,9 @@ export default class SlideUpPanel extends PureComponent {
         const translateStyle = {
             transform: [{translateY: this.translateY}],
         };
+        const backdropStyle = {
+            opacity: this.backdropOpacity,
+        };
 
         const headerComponent = header(this.headerRef);
 
@@ -260,7 +273,7 @@ export default class SlideUpPanel extends PureComponent {
                             >
 
                                 <Animated.View
-                                    style={styles.backdrop}
+                                    style={[styles.backdrop, backdropStyle]}
                                     pointerEvents='box-only'
                                 />
                             </PanGestureHandler>
