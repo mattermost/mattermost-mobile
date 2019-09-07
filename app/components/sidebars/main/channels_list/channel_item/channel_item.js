@@ -160,6 +160,7 @@ export default class ChannelItem extends PureComponent {
         if (mentions) {
             badge = (
                 <Badge
+                    containerStyle={style.badgeContainer}
                     style={style.badge}
                     countStyle={style.mention}
                     count={mentions}
@@ -256,14 +257,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         badge: {
             backgroundColor: theme.mentionBg,
+            padding: 3,
+            position: 'relative',
+            height: 23,
+        },
+        badgeContainer: {
             borderColor: theme.sidebarHeaderBg,
             borderRadius: 10,
             borderWidth: 0,
-            padding: 3,
-            position: 'relative',
             right: 0,
             top: 0,
-            height: 23,
             marginRight: 16,
         },
         mention: {

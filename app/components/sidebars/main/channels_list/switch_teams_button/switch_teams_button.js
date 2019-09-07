@@ -48,9 +48,10 @@ export default class SwitchTeamsButton extends React.PureComponent {
 
         const badge = (
             <Badge
+                containerStyle={styles.badgeContainer}
                 style={styles.badge}
                 countStyle={styles.mention}
-                minWidth={22}
+                minWidth={20}
                 count={mentionCount}
             />
         );
@@ -85,14 +86,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         badge: {
             backgroundColor: theme.mentionBg,
-            borderColor: theme.sidebarHeaderBg,
+            height: 20,
+            padding: 3,
+        },
+        badgeContainer: {
+            borderColor: theme.sidebarBg,
             borderRadius: 14,
             borderWidth: 2,
-            height: 22,
-            padding: 3,
             position: 'absolute',
             right: 0,
-            top: -10,
+            top: -9,
         },
         mention: {
             color: theme.mentionColor,
