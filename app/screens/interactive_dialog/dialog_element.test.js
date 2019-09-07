@@ -44,31 +44,6 @@ describe('DialogElement', () => {
             {value: 'bar', text: 'bar-text'},
         ];
 
-        test('RadioSetting is rendered when type is radio', () => {
-            const wrapper = shallow(
-                <DialogElement
-                    {...baseDialogProps}
-                    theme={theme}
-                    type='radio'
-                    options={radioOptions}
-                />
-            );
-
-            expect(wrapper.find(RadioSetting).exists()).toBe(true);
-        });
-
-        test('The default value is the first element of the list', () => {
-            const wrapper = shallow(
-                <DialogElement
-                    {...baseDialogProps}
-                    theme={theme}
-                    type='radio'
-                    options={radioOptions}
-                />
-            );
-            expect(wrapper.find({options: radioOptions, value: radioOptions[0].value}).exists()).toBe(true);
-        });
-
         test('The default value can be specified from the list', () => {
             const wrapper = shallow(
                 <DialogElement
@@ -79,7 +54,7 @@ describe('DialogElement', () => {
                     value={radioOptions[1].value}
                 />
             );
-            expect(wrapper.find({options: radioOptions, value: radioOptions[1].value}).exists()).toBe(true);
+            expect(wrapper.find(RadioSetting).find({options: radioOptions, default: radioOptions[1].value}).exists()).toBe(true);
         });
     });
 });

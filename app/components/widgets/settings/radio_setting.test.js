@@ -23,7 +23,7 @@ describe('components/widgets/settings/RadioSetting', () => {
                 id='string.id'
                 label='some label'
                 options={options}
-                value={'Administration'}
+                default={'Administration'}
                 onChange={onChange}
                 theme={theme}
             />
@@ -42,7 +42,7 @@ describe('components/widgets/settings/RadioSetting', () => {
                 label='some label'
                 options={options}
                 errorText={'some error message'}
-                value={'Administration'}
+                default={'Administration'}
                 onChange={onChange}
                 theme={theme}
             />
@@ -58,7 +58,7 @@ describe('components/widgets/settings/RadioSetting', () => {
                 id='string.id'
                 label='some label'
                 options={options}
-                value={'invalid-option-value'}
+                default={'invalid-option-value'}
                 onChange={onChange}
                 theme={theme}
             />

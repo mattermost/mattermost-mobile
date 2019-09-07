@@ -13,7 +13,7 @@ export default class RadioSetting extends PureComponent {
         id: PropTypes.string.isRequired,
         label: PropTypes.node.isRequired,
         options: PropTypes.array.isRequired,
-        value: PropTypes.string,
+        default: PropTypes.string,
         onChange: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -29,7 +29,7 @@ export default class RadioSetting extends PureComponent {
         super(props);
 
         this.state = {
-            value: props.value,
+            value: typeof props.default === 'undefined' ? props.options[0] : props.default,
         };
     }
 
@@ -87,6 +87,16 @@ export default class RadioSetting extends PureComponent {
             );
         }
 
+        let additionalTextContent;
+        if (errorText || helpText) {
+            additionalTextContent = (
+                <View style={padding(isLandscape)}>
+                    {helpTextContent}
+                    {errorTextContent}
+                </View>
+            );
+        }
+
         const options = [];
         for (const [i, {value, text}] of this.props.options.entries()) {
             options.push(
@@ -114,11 +124,7 @@ export default class RadioSetting extends PureComponent {
                 <View style={[style.items, padding(isLandscape)]}>
                     {options}
                 </View>
-
-                <View style={padding(isLandscape)}>
-                    {helpTextContent}
-                    {errorTextContent}
-                </View>
+                {additionalTextContent}
             </View>
         );
     }

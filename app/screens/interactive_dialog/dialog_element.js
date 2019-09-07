@@ -143,7 +143,7 @@ export default class DialogElement extends PureComponent {
                     errorText={errorText}
                     options={options}
                     theme={theme}
-                    value={value || options[0].value}
+                    default={value}
                     onChange={this.onChange}
                 />
             );
