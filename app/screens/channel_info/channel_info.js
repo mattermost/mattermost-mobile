@@ -28,6 +28,7 @@ export default class ChannelInfo extends PureComponent {
             clearPinnedPosts: PropTypes.func.isRequired,
             closeDMChannel: PropTypes.func.isRequired,
             closeGMChannel: PropTypes.func.isRequired,
+            convertChannelToPrivate: PropTypes.func.isRequired,
             deleteChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
@@ -60,6 +61,7 @@ export default class ChannelInfo extends PureComponent {
         isChannelMuted: PropTypes.bool.isRequired,
         isCurrent: PropTypes.bool.isRequired,
         isFavorite: PropTypes.bool.isRequired,
+        isSystemAdmin: PropTypes.bool.isRequired,
         canManageUsers: PropTypes.bool.isRequired,
         canEditChannel: PropTypes.bool.isRequired,
         ignoreChannelMentions: PropTypes.bool.isRequired,
@@ -175,6 +177,33 @@ export default class ChannelInfo extends PureComponent {
     handleDelete = () => {
         this.handleDeleteOrLeave('delete');
     };
+
+    handleConvertToPrivate = preventDoubleTap(() => {
+        const {actions, currentChannel} = this.props;
+        const {formatMessage} = this.context.intl;
+        const displayName = {displayName: currentChannel.display_name};
+        const title = {id: t('mobile.channel_info.alertTitleConvertChannel'), defaultMessage: 'Convert {displayName} to Private?'};
+        const message = {
+            id: t('mobile.channel_info.alertMessageConvertChannel'),
+            defaultMessage: 'When you convert {displayName} to a private channel, history and membership are preserved.\n\nPublicly shared files remain accessible to anyone with the link. Membership in a private channel is by invitation only.\n\nThe change is permanent and cannot be undone.',
+        };
+        const onPressAction = () => {
+            actions.convertChannelToPrivate(currentChannel.id).then(() => {
+                this.close();
+            });
+        };
+
+        Alert.alert(
+            formatMessage(title, displayName),
+            formatMessage(message, displayName),
+            [{
+                text: formatMessage({id: 'mobile.channel_info.alertCancel', defaultMessage: 'Cancel'}),
+            }, {
+                text: formatMessage({id: 'mobile.channel_info.alertOk', defaultMessage: 'Ok'}),
+                onPress: onPressAction,
+            }],
+        );
+    });
 
     handleDeleteOrLeave = preventDoubleTap((eventType) => {
         const {formatMessage} = this.context.intl;
@@ -352,6 +381,13 @@ export default class ChannelInfo extends PureComponent {
         return isDirectMessage || isGroupMessage;
     };
 
+    renderConvertToPrivateRow = () => {
+        const {currentChannel, isSystemAdmin} = this.props;
+        const isDefaultChannel = currentChannel.name === General.DEFAULT_CHANNEL;
+        const isPublicChannel = currentChannel.type === General.OPEN_CHANNEL;
+        return !isDefaultChannel && isPublicChannel && isSystemAdmin;
+    }
+
     actionsRows = (style, channelIsArchived) => {
         const {
             currentChannelMemberCount,
@@ -461,6 +497,19 @@ export default class ChannelInfo extends PureComponent {
                     />
                 </React.Fragment>
                 }
+                {this.renderConvertToPrivateRow() && (
+                    <React.Fragment>
+                        <View style={style.separator}/>
+                        <ChannelInfoRow
+                            action={this.handleConvertToPrivate}
+                            defaultMessage='Convert to Private Channel'
+                            icon='lock'
+                            textId={t('mobile.channel_info.convert')}
+                            theme={theme}
+                            isLandscape={isLandscape}
+                        />
+                    </React.Fragment>
+                )}
                 {canEditChannel && (
                     <React.Fragment>
                         <View style={style.separator}/>

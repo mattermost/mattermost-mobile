@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {
+    convertChannelToPrivate,
     favoriteChannel,
     getChannelStats,
     getChannel,
@@ -117,6 +118,7 @@ function mapStateToProps(state) {
         ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember && currentChannelMember.notify_props, currentUser.notify_props),
         isCurrent,
         isFavorite,
+        isSystemAdmin,
         status,
         theme: getTheme(state),
         canManageUsers,
@@ -132,6 +134,7 @@ function mapDispatchToProps(dispatch) {
             clearPinnedPosts,
             closeDMChannel,
             closeGMChannel,
+            convertChannelToPrivate,
             deleteChannel,
             getChannelStats,
             getChannel,
