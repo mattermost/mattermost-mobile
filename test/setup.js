@@ -43,6 +43,9 @@ jest.mock('NativeModules', () => {
             addEventListener: jest.fn(),
             getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
         },
+        RNReactNativeHapticFeedback: {
+            trigger: jest.fn(),
+        },
     };
 });
 jest.mock('NativeEventEmitter');
