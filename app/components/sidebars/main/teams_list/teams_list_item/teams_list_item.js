@@ -153,7 +153,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             padding: 3,
         },
         badgeContainer: {
-            borderColor: theme.sidebarHeaderBg,
+            borderColor: theme.sidebarBg,
             borderRadius: 14,
             borderWidth: 2,
             position: 'absolute',
