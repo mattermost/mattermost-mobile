@@ -10,6 +10,7 @@
 
 ### Bug Fixes
  - Fixed an issue where some Giphy actions were not working in ephemeral posts on mobile.
+ - Fixed an issue where users were unable to create new channels when "Combine all channel types" was selected.
  - Fixed an issue where the download step was showing when previewing a video right after posting it. 
  - Fixed an issue on Android where cancelling a video download twice in a row showed an error.
  - Fixed an issue on Android where **Channel > Add Members > ADD** text changed to black.
