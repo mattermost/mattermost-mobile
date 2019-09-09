@@ -263,10 +263,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         badgeContainer: {
             borderColor: theme.sidebarHeaderBg,
-            borderRadius: 10,
+            borderRadius: 14,
             borderWidth: 0,
             right: 0,
-            top: 0,
+            top: 10,
             marginRight: 16,
         },
         mention: {
