@@ -15,6 +15,8 @@ import FileUploadRetry from 'app/components/file_upload_preview/file_upload_retr
 import FileUploadRemove from 'app/components/file_upload_preview/file_upload_remove';
 import mattermostBucket from 'app/mattermost_bucket';
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
+import {emptyFunction} from 'app/utils/general';
+import ImageCacheManager from 'app/utils/image_cache_manager';
 
 export default class FileUploadItem extends PureComponent {
     static propTypes = {
@@ -85,7 +87,6 @@ export default class FileUploadItem extends PureComponent {
             actions.uploadFailed([file.clientId], channelId, rootId, response.message);
         }
         this.uploadPromise = null;
-        this.cleanUpTempFile();
     };
 
     handleUploadError = (error) => {
@@ -94,7 +95,6 @@ export default class FileUploadItem extends PureComponent {
             actions.uploadFailed([file.clientId], channelId, rootId, error);
         }
         this.uploadPromise = null;
-        this.cleanUpTempFile();
     };
 
     handleUploadProgress = (loaded, total) => {
@@ -116,8 +116,7 @@ export default class FileUploadItem extends PureComponent {
         const newFile = {...file};
         if (newFile.localPath.startsWith('http')) {
             try {
-                this.tempDownloadFile = await this.downloadFile(newFile);
-                newFile.localPath = this.tempDownloadFile.path();
+                newFile.localPath = await ImageCacheManager.cache(newFile.name, newFile.localPath, emptyFunction);
             } catch (e) {
                 this.handleUploadError(e);
                 return;
@@ -162,21 +161,6 @@ export default class FileUploadItem extends PureComponent {
         this.uploadPromise.uploadProgress(this.handleUploadProgress);
         this.uploadPromise.then(this.handleUploadCompleted).catch(this.handleUploadError);
     };
-
-    downloadFile = async (file) => {
-        const options = {fileCache: true};
-        const tempDownloadFile = await RNFetchBlob.config(options).fetch('GET', file.localPath);
-        return tempDownloadFile;
-    }
-
-    cleanUpTempFile = () => {
-        if (!this.tempDownloadFile) {
-            return;
-        }
-
-        this.tempDownloadFile.flush();
-        this.tempDownloadFile = null;
-    }
 
     renderProgress = (fill) => {
         const realFill = Number(fill.toFixed(0));

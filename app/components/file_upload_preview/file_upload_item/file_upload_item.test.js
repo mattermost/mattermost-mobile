@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {shallow} from 'enzyme';
-import RNFetchBlob from 'rn-fetch-blob';
 
+import ImageCacheManager from 'app/utils/image_cache_manager';
 import FileUploadItem from './file_upload_item';
 
 describe('FileUploadItem', () => {
@@ -34,12 +34,7 @@ describe('FileUploadItem', () => {
         });
 
         test('should download file if file path is http', async () => {
-            const fetchMock = jest.fn(() => ({
-                path: () => 'path/to/downloaded/image',
-            }));
-            jest.spyOn(RNFetchBlob, 'config').mockReturnValue({
-                fetch: fetchMock,
-            });
+            jest.spyOn(ImageCacheManager, 'cache').mockReturnValue('path/to/downloaded/image');
             const component = shallow(<FileUploadItem {...props}/>);
             component.instance().uploadFile = jest.fn();
             await component.instance().downloadAndUploadFile({
