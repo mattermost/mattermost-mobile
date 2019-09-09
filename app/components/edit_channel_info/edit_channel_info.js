@@ -7,7 +7,6 @@ import {
     Platform,
     TouchableWithoutFeedback,
     View,
-    Text,
     findNodeHandle,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -27,7 +26,6 @@ import {
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 
-import {getShortenedURL} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
@@ -138,17 +136,6 @@ export default class EditChannelInfo extends PureComponent {
         this.props.enableRightButton(displayNameExists);
     };
 
-    onDisplayURLChangeText = (channelURL) => {
-        const {editing, onChannelURLChange} = this.props;
-        onChannelURLChange(channelURL);
-
-        if (editing) {
-            const {displayName, purpose, header} = this.props;
-            const canUpdate = this.canUpdate(displayName, channelURL, purpose, header);
-            this.enableRightButton(canUpdate);
-        }
-    };
-
     onPurposeChangeText = (purpose) => {
         const {editing, onPurposeChange} = this.props;
         onPurposeChange(purpose);
@@ -180,20 +167,15 @@ export default class EditChannelInfo extends PureComponent {
     render() {
         const {
             theme,
-            editing,
             channelType,
-            currentTeamUrl,
             deviceWidth,
             deviceHeight,
             displayName,
-            channelURL,
             header,
             purpose,
             isLandscape,
         } = this.props;
         const {error, saving} = this.props;
-        const fullUrl = currentTeamUrl + '/channels';
-        const shortUrl = getShortenedURL(fullUrl, 35);
 
         const style = getStyleSheet(theme);
 
@@ -249,36 +231,6 @@ export default class EditChannelInfo extends PureComponent {
                                             autoCapitalize='none'
                                             autoCorrect={false}
                                             placeholder={{id: t('channel_modal.nameEx'), defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'}}
-                                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                                            underlineColorAndroid='transparent'
-                                            disableFullscreenUI={true}
-                                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                                        />
-                                    </View>
-                                </View>
-                            )}
-                            {/*TODO: Hide channel url field until it's added to CreateChannel */}
-                            {false && editing && !displayHeaderOnly && (
-                                <View>
-                                    <View style={[style.titleContainer30, padding(isLandscape)]}>
-                                        <FormattedText
-                                            style={style.title}
-                                            id='rename_channel.url'
-                                            defaultMessage='URL'
-                                        />
-                                        <Text style={style.optional}>
-                                            {shortUrl}
-                                        </Text>
-                                    </View>
-                                    <View style={[style.inputContainer, padding(isLandscape)]}>
-                                        <TextInputWithLocalizedPlaceholder
-                                            ref={this.urlInput}
-                                            value={channelURL}
-                                            onChangeText={this.onDisplayURLChangeText}
-                                            style={style.input}
-                                            autoCapitalize='none'
-                                            autoCorrect={false}
-                                            placeholder={{id: t('rename_channel.handleHolder'), defaultMessage: 'lowercase alphanumeric characters'}}
                                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
@@ -390,7 +342,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         scrollView: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            paddingTop: 35,
+            paddingTop: 30,
         },
         errorContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),

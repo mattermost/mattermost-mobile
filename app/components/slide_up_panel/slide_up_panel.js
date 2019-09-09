@@ -288,7 +288,7 @@ export default class SlideUpPanel extends PureComponent {
                             onHandlerStateChange={this.onHeaderHandlerStateChange}
                         >
                             <Animated.View>
-                                <SlideUpPanelIndicator dragIndicatorColor={theme.centerChannelColor}/>
+                                <SlideUpPanelIndicator/>
                                 {headerComponent}
                             </Animated.View>
                         </PanGestureHandler>
@@ -347,7 +347,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             }),
         },
         backdrop: {
-            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            backgroundColor: '#000',
             position: 'absolute',
             top: 0,
             bottom: 0,

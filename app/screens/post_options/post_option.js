@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import copy from 'assets/images/post_menu/copy.png';
 import edit from 'assets/images/post_menu/edit.png';
@@ -143,7 +143,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 1,
             marginLeft: 60,
             borderBottomWidth: 1,
-            borderBottomColor: 'rgba(0, 0, 0 ,0.2)',
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
     };
 });

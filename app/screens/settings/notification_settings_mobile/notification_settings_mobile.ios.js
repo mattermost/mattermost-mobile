@@ -199,7 +199,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
-            paddingVertical: 35,
+            paddingVertical: 30,
         },
         disabled: {
             color: theme.centerChannelColor,

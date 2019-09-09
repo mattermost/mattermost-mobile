@@ -3,27 +3,20 @@
 
 import React from 'react';
 import {Animated, Platform, StyleSheet, View} from 'react-native';
-import PropTypes from 'prop-types';
 
-export default function slideUpPanelIndicator({dragIndicatorColor}) {
+export default function slideUpPanelIndicator() {
     if (Platform.OS === 'android') {
         return null;
     }
-
-    const dragIndicatorStyle = dragIndicatorColor ? {backgroundColor: dragIndicatorColor} : null;
 
     return (
         <Animated.View
             style={styles.dragIndicatorContainer}
         >
-            <View style={[styles.dragIndicator, dragIndicatorStyle]}/>
+            <View style={styles.dragIndicator}/>
         </Animated.View>
     );
 }
-
-slideUpPanelIndicator.propTypes = {
-    dragIndicatorColor: PropTypes.string,
-};
 
 const styles = StyleSheet.create({
     dragIndicatorContainer: {
@@ -32,6 +25,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     dragIndicator: {
+        backgroundColor: 'white',
         height: 5,
         width: 62.5,
         opacity: 0.9,
