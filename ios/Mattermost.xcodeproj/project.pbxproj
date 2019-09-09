@@ -36,6 +36,7 @@
 		3F876A0DC6314E27B16C8A96 /* libRNReactNativeDocViewer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6BAF8296411D4657B5A0E8F8 /* libRNReactNativeDocViewer.a */; };
 		420A7328E12C4B72AEF420CE /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EDC04CBCF81642219D199CBB /* Octicons.ttf */; };
 		460A48EA5C6C4D8B8D9A2C75 /* Roboto-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 031EF04FB2D14EEFAACBAA1A /* Roboto-Italic.ttf */; };
+		49DF9A7C231D0CE8008CC96D /* libRNReactNativeHapticFeedback.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49DF9A74231D0CB3008CC96D /* libRNReactNativeHapticFeedback.a */; };
 		4DF0AD7CE6DC47E48647D892 /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA7202ED47924EC7B0E01AB8 /* Feather.ttf */; };
 		552835DCC0C24FC691EE6CAB /* Roboto-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8F0B22D2C9924FAFA7FB681C /* Roboto-LightItalic.ttf */; };
 		55C6561DDBBA45929D88B6D1 /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */; };
@@ -99,8 +100,8 @@
 		7FF2AF8B2086483E00FFBDF4 /* KeyShareConsumer.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7FF2AF8A2086483E00FFBDF4 /* KeyShareConsumer.storyboard */; };
 		7FF31C1421330B7900680B75 /* libRNFetchBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FF31C1321330B4200680B75 /* libRNFetchBlob.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
-		84E3264B229834C30055068A /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E325FF229834C30055068A /* Config.swift */; };
 		84596ECE229D93FD00981086 /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84596EB1229D93B600981086 /* libReactNativeNavigation.a */; };
+		84E3264B229834C30055068A /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E325FF229834C30055068A /* Config.swift */; };
 		895C9A56B94A45C1BAF568FE /* Entypo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AC6EB561E1F64C17A69D2FAD /* Entypo.ttf */; };
 		8D26455C994F46C39B1392F2 /* libRNSafeArea.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9263CF9B16054263B13EA23B /* libRNSafeArea.a */; };
 		9358B95F95184EE0A4DCE629 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */; };
@@ -334,6 +335,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 3D3CD9321DE5FBEE00167DC4;
 			remoteInfo = "cxxreact-tvOS";
+		};
+		49DF9A73231D0CB3008CC96D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49DF9A2A231D0CB3008CC96D /* RNReactNativeHapticFeedback.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 134814201AA4EA6300B7C361;
+			remoteInfo = RNReactNativeHapticFeedback;
 		};
 		5E9157321DD0AC6500FF2AA8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -777,6 +785,7 @@
 		41F3AFE83AAF4B74878AB78A /* OpenSans-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Italic.ttf"; path = "../assets/fonts/OpenSans-Italic.ttf"; sourceTree = "<group>"; };
 		4246DC09024BB33A3E491E25 /* libPods-MattermostTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MattermostTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		476BA76E31644398A6012911 /* libRNGestureHandler.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNGestureHandler.a; sourceTree = "<group>"; };
+		49DF9A2A231D0CB3008CC96D /* RNReactNativeHapticFeedback.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNReactNativeHapticFeedback.xcodeproj; path = "../node_modules/react-native-haptic-feedback/ios/RNReactNativeHapticFeedback.xcodeproj"; sourceTree = "<group>"; };
 		4A22BC320BA04E18A7F2A4E6 /* libReactNativeExceptionHandler.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libReactNativeExceptionHandler.a; sourceTree = "<group>"; };
 		4B19E38FBCB94C57BB03B8E6 /* libRNFetchBlob.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNFetchBlob.a; sourceTree = "<group>"; };
 		51F5A483EA9F4A9A87ACFB59 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
@@ -911,6 +920,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49DF9A7C231D0CE8008CC96D /* libRNReactNativeHapticFeedback.a in Frameworks */,
 				7FABE04622137F5C00D0F595 /* libUploadAttachments.a in Frameworks */,
 				74D116AD208A8D5600CF8A79 /* libRNKeychain.a in Frameworks */,
 				7F1967FF228E379000D19270 /* libKeyboardTrackingView.a in Frameworks */,
@@ -1205,6 +1215,14 @@
 				476BA76E31644398A6012911 /* libRNGestureHandler.a */,
 			);
 			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		49DF9A2B231D0CB3008CC96D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				49DF9A74231D0CB3008CC96D /* libRNReactNativeHapticFeedback.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		4B992D7BAAEDF8759DB525B5 /* Frameworks */ = {
@@ -1513,6 +1531,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				49DF9A2A231D0CB3008CC96D /* RNReactNativeHapticFeedback.xcodeproj */,
 				84596E7B229D93B600981086 /* ReactNativeNavigation.xcodeproj */,
 				7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */,
 				7F11AA06228848D8001C9540 /* KeyboardTrackingView.xcodeproj */,
@@ -1905,6 +1924,10 @@
 					ProjectRef = 41898656FAE24E0BB390D0E4 /* RNReactNativeDocViewer.xcodeproj */;
 				},
 				{
+					ProductGroup = 49DF9A2B231D0CB3008CC96D /* Products */;
+					ProjectRef = 49DF9A2A231D0CB3008CC96D /* RNReactNativeHapticFeedback.xcodeproj */;
+				},
+				{
 					ProductGroup = 7FFE32911FD9CAF40038C7A0 /* Products */;
 					ProjectRef = 849D881A0372465294DE7315 /* RNSafeArea.xcodeproj */;
 				},
@@ -2137,6 +2160,13 @@
 			fileType = archive.ar;
 			path = libcxxreact.a;
 			remoteRef = 3DAD3EAA1DF850E9000B6D8A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		49DF9A74231D0CB3008CC96D /* libRNReactNativeHapticFeedback.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNReactNativeHapticFeedback.a;
+			remoteRef = 49DF9A73231D0CB3008CC96D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		5E9157331DD0AC6500FF2AA8 /* libRCTAnimation.a */ = {
@@ -2788,7 +2818,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 228;
+				CURRENT_PROJECT_VERSION = 229;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
@@ -2817,6 +2847,7 @@
 					"$(SRCROOT)/UploadAttachments/UploadAttachments/**",
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios/",
 					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios/",
+					"$(SRCROOT)/../node_modules/react-native-haptic-feedback/ios/**",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
@@ -2848,7 +2879,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 228;
+				CURRENT_PROJECT_VERSION = 229;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
@@ -2877,6 +2908,7 @@
 					"$(SRCROOT)/UploadAttachments/UploadAttachments/**",
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios/",
 					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios/",
+					"$(SRCROOT)/../node_modules/react-native-haptic-feedback/ios/**",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
