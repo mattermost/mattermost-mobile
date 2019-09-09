@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Dimensions,
+    findNodeHandle,
     InteractionManager,
     Keyboard,
     Platform,
@@ -23,6 +24,7 @@ import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item
 import {DeviceTypes, ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 
+import BottomSheet from 'app/utils/bottom_sheet';
 import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
@@ -39,7 +41,9 @@ export default class List extends PureComponent {
         actions: PropTypes.shape({
             showModal: PropTypes.func.isRequired,
         }).isRequired,
+        canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
+        canCreatePublicChannels: PropTypes.bool.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         unreadChannelIds: PropTypes.array.isRequired,
@@ -55,6 +59,8 @@ export default class List extends PureComponent {
 
     constructor(props) {
         super(props);
+
+        this.combinedActionsRef = React.createRef();
 
         this.state = {
             sections: this.buildSections(props),
@@ -164,72 +170,51 @@ export default class List extends PureComponent {
     };
 
     showCreateChannelOptions = () => {
+        const {formatMessage} = this.context.intl;
         const {
+            canJoinPublicChannels,
             canCreatePrivateChannels,
-            actions,
+            canCreatePublicChannels,
         } = this.props;
 
-        const items = [];
-        const moreChannels = {
-            action: this.goToMoreChannels,
-            text: {
-                id: 'more_channels.title',
-                defaultMessage: 'More Channels',
-            },
-        };
-        const createPublicChannel = {
-            action: this.goToCreatePublicChannel,
-            text: {
-                id: 'mobile.create_channel.public',
-                defaultMessage: 'New Public Channel',
-            },
-        };
-        const createPrivateChannel = {
-            action: this.goToCreatePrivateChannel,
-            text: {
-                id: 'mobile.create_channel.private',
-                defaultMessage: 'New Private Channel',
-            },
-        };
-        const newConversation = {
-            action: this.goToDirectMessages,
-            text: {
-                id: 'mobile.more_dms.title',
-                defaultMessage: 'New Conversation',
-            },
-        };
+        const moreChannelsText = formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
+        const newPublicChannelText = formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
+        const newPrivateChannelText = formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'});
+        const newDirectChannelText = formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'});
+        const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+        const options = [];
+        const actions = [];
 
-        items.push(moreChannels, createPublicChannel);
-        if (canCreatePrivateChannels) {
-            items.push(createPrivateChannel);
+        if (canJoinPublicChannels) {
+            actions.push(this.goToMoreChannels);
+            options.push(moreChannelsText);
         }
-        items.push(newConversation);
 
-        const screen = 'OptionsModal';
-        const title = '';
-        const passProps = {
-            items,
-        };
-        const options = {
-            modalPresentationStyle: 'overCurrentContext',
-            layout: {
-                backgroundColor: 'transparent',
-            },
-            topBar: {
-                visible: false,
-                height: 0,
-            },
-            animations: {
-                showModal: {
-                    enable: false,
-                },
-                dismissModal: {
-                    enable: false,
-                },
-            },
-        };
+        if (canCreatePublicChannels) {
+            actions.push(this.goToCreatePublicChannel);
+            options.push(newPublicChannelText);
+        }
 
-        actions.showModal(screen, title, passProps, options);
+        if (canCreatePrivateChannels) {
+            actions.push(this.goToCreatePrivateChannel);
+            options.push(newPrivateChannelText);
+        }
+
+        actions.push(this.goToDirectMessages);
+        options.push(newDirectChannelText);
+        options.push(cancelText);
+
+        const cancelButtonIndex = options.length - 1;
+
+        BottomSheet.showBottomSheetWithOptions({
+            anchor: this.combinedActionsRef?.current ? findNodeHandle(this.combinedActionsRef.current) : null,
+            options,
+            cancelButtonIndex,
+        }, (value) => {
+            if (value !== cancelButtonIndex) {
+                actions[value]();
+            }
+        });
     };
 
     goToCreatePublicChannel = preventDoubleTap(() => {
@@ -303,7 +288,7 @@ export default class List extends PureComponent {
         this.setState({width: width - 40});
     };
 
-    renderSectionAction = (styles, action) => {
+    renderSectionAction = (styles, action, anchor) => {
         const {theme} = this.props;
         return (
             <TouchableHighlight
@@ -313,6 +298,7 @@ export default class List extends PureComponent {
             >
                 <MaterialIcon
                     name='add'
+                    ref={anchor ? this.combinedActionsRef : null}
                     style={styles.action}
                 />
             </TouchableHighlight>
@@ -351,6 +337,8 @@ export default class List extends PureComponent {
             topSeparator,
         } = section;
 
+        const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
+
         return (
             <View>
                 {topSeparator && this.renderSectionSeparator()}
@@ -358,7 +346,7 @@ export default class List extends PureComponent {
                     <Text style={styles.title}>
                         {intl.formatMessage({id, defaultMessage}).toUpperCase()}
                     </Text>
-                    {action && this.renderSectionAction(styles, action)}
+                    {action && this.renderSectionAction(styles, action, anchor)}
                 </View>
                 {bottomSeparator && this.renderSectionSeparator()}
             </View>
