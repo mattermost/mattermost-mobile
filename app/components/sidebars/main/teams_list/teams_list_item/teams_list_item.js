@@ -48,10 +48,11 @@ export default class TeamsListItem extends React.PureComponent {
 
         const badge = (
             <Badge
-                style={styles.badge}
+                containerStyle={styles.badgeContainer}
                 countStyle={styles.mention}
                 count={mentionCount}
-                minWidth={22}
+                minWidth={20}
+                style={styles.badge}
             />
         );
 
@@ -148,13 +149,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         badge: {
             backgroundColor: theme.mentionBg,
+            height: 20,
+            padding: 3,
+        },
+        badgeContainer: {
             borderColor: theme.sidebarHeaderBg,
             borderRadius: 14,
             borderWidth: 2,
-            height: 22,
-            padding: 3,
             position: 'absolute',
-            right: -14,
+            right: -12,
             top: -10,
         },
         mention: {
