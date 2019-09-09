@@ -43,7 +43,7 @@ exports[`ChannelItem should match snapshot 1`] = `
           isInfo={false}
           isUnread={true}
           membersCount={1}
-          size={14}
+          size={16}
           status="online"
           theme={
             Object {
@@ -158,7 +158,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           isInfo={false}
           isUnread={true}
           membersCount={1}
-          size={14}
+          size={16}
           status="online"
           theme={
             Object {
@@ -272,7 +272,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           isInfo={false}
           isUnread={true}
           membersCount={1}
-          size={14}
+          size={16}
           status="online"
           theme={
             Object {
@@ -386,7 +386,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           isInfo={false}
           isUnread={true}
           membersCount={1}
-          size={14}
+          size={16}
           status="online"
           theme={
             Object {
@@ -489,7 +489,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           isInfo={false}
           isUnread={true}
           membersCount={1}
-          size={14}
+          size={16}
           status="online"
           theme={
             Object {
@@ -599,7 +599,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           isInfo={false}
           isUnread={true}
           membersCount={1}
-          size={14}
+          size={16}
           status="online"
           theme={
             Object {
@@ -705,7 +705,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           isInfo={false}
           isUnread={true}
           membersCount={1}
-          size={14}
+          size={16}
           status="online"
           theme={
             Object {
@@ -764,28 +764,28 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           containerStyle={
             Object {
               "borderColor": "#1153ab",
-              "borderRadius": 10,
+              "borderRadius": 14,
               "borderWidth": 0,
               "marginRight": 16,
               "right": 0,
-              "top": 0,
+              "top": 11,
             }
           }
           count={1}
           countStyle={
             Object {
               "color": "#145dbf",
-              "fontSize": 11,
+              "fontSize": 12,
             }
           }
           extraPaddingHorizontal={10}
           minHeight={20}
-          minWidth={23}
+          minWidth={21}
           onPress={[Function]}
           style={
             Object {
               "backgroundColor": undefined,
-              "height": 23,
+              "height": 21,
               "padding": 3,
               "position": "relative",
             }
