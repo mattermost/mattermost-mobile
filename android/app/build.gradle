@@ -123,7 +123,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative57_5"
-        versionCode 228
+        versionCode 229
         versionName "1.23.0"
         multiDexEnabled = true
         ndk {
@@ -243,6 +243,7 @@ dependencies {
     implementation project(':@react-native-community_async-storage')
     implementation project(':@react-native-community_netinfo')
     implementation project(':react-native-android-open-settings')
+    implementation project(':react-native-haptic-feedback')
 
     // For animated GIF support
     implementation 'com.facebook.fresco:fresco:1.10.0'

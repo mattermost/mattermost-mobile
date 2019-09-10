@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+
 import {Posts} from 'mattermost-redux/constants';
 
 export function fromAutoResponder(post) {
@@ -46,6 +48,13 @@ export function alertErrorIfInvalidPermissions(result) {
 
 export function emptyFunction() { // eslint-disable-line no-empty-function
 
+}
+
+export function hapticFeedback(method = 'impactLight') {
+    ReactNativeHapticFeedback.trigger(method, {
+        enableVibrateFallback: true,
+        ignoreAndroidSystemSettings: false,
+    });
 }
 
 export function throttle(fn, limit, ...args) {

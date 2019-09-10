@@ -31,9 +31,10 @@ import com.reactnativedocumentpicker.DocumentPicker;
 import com.oblador.keychain.KeychainModule;
 import com.reactnativecommunity.asyncstorage.AsyncStorageModule;
 import com.reactnativecommunity.netinfo.NetInfoModule;
-import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.levelasquez.androidopensettings.AndroidOpenSettings;
+import com.mkuczera.RNReactNativeHapticFeedbackModule;
 
+import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.brentvatne.react.ReactVideoPackage;
 import com.BV.LinearGradient.LinearGradientPackage;
 import com.horcrux.svg.SvgPackage;
@@ -152,6 +153,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return new NetInfoModule(reactContext);
                   case "RNAndroidOpenSettings":
                     return new AndroidOpenSettings(reactContext);
+                  case "RNReactNativeHapticFeedbackModule":
+                    return new RNReactNativeHapticFeedbackModule(reactContext);
                   default:
                     throw new IllegalArgumentException("Could not find module " + name);
                 }
@@ -186,6 +189,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put(AsyncStorageModule.NAME, new ReactModuleInfo(AsyncStorageModule.NAME, "com.reactnativecommunity.asyncstorage.AsyncStorageModule", false, false, false, false, false));
                     map.put(NetInfoModule.NAME, new ReactModuleInfo(NetInfoModule.NAME, "com.reactnativecommunity.netinfo.NetInfoModule", false, false, false, false, false));
                     map.put("RNAndroidOpenSettings", new ReactModuleInfo("RNAndroidOpenSettings", "com.levelasquez.androidopensettings.AndroidOpenSettings", false, false, false, false, false));
+                    map.put("RNReactNativeHapticFeedbackModule", new ReactModuleInfo("RNReactNativeHapticFeedback", "com.mkuczera.RNReactNativeHapticFeedbackModule", false, false, false, false, false));
                     return map;
                   }
                 };
@@ -196,6 +200,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new LinearGradientPackage(),
             new ReactVideoPackage(),
             new RNGestureHandlerPackage()
+//            new RNReactNativeHapticFeedbackPackage()
     );
   }
 
