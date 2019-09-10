@@ -108,10 +108,26 @@ function loadTranslation(locale) {
     }
 }
 
+let momentLocale = 'en';
+
+function setMomentLocale(locale) {
+    try {
+        if (momentLocale !== locale) {
+            moment.locale(locale);
+            momentLocale = locale;
+        }
+    } catch (e) {
+        console.error('No moment translation found', e); //eslint-disable-line no-console
+    }
+}
+
 export function getTranslations(locale) {
     if (!TRANSLATIONS[locale]) {
         loadTranslation(locale);
     }
+
+    setMomentLocale(locale.toLowerCase());
+
     return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];
 }
 
