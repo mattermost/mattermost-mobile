@@ -278,7 +278,7 @@
   "mobile.managed.jailbreak": "Urządzenia z Jailbreakiem nie są zaufane przez {vendor}, proszę wyjść z aplikacji.",
   "mobile.managed.not_secured.android": "To urządzenie musi zostać zabezpieczone blokadą ekranu, aby użyć Mattermost.",
   "mobile.managed.not_secured.ios": "To urządzenie musi zostać zabezpieczone hasłem, aby używać Mattermost.\n\nIdz do Ustawienia > Identyfikacja twarzy i hasło.",
-  "mobile.managed.not_secured.ios.touchId": "To urządzenie musi zostać zabezpieczone hasłem, aby używać Mattermost.\n\nIdz do Ustawienia > Identyfikacja twarzy i hasło.",
+  "mobile.managed.not_secured.ios.touchId": "To urządzenie musi zostać zabezpieczone hasłem, aby używać Mattermost.\n\nPrzejdź do Ustawienia > Touch ID i Hasło.",
   "mobile.managed.secured_by": "Zabezpieczony przez {vendor}",
   "mobile.managed.settings": "Idz do ustawień",
   "mobile.markdown.code.copy_code": "Skopiuj Kod",
