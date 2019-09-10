@@ -117,10 +117,9 @@ class SSO extends PureComponent {
     goToChannel = () => {
         tracker.initialLoad = Date.now();
 
-        setTimeout(() => {
-            this.scheduleSessionExpiredNotification();
-            this.props.actions.resetToChannel();
-        }, 1000);
+        this.scheduleSessionExpiredNotification();
+
+        this.props.actions.resetToChannel();
     };
 
     onMessage = (event) => {
@@ -196,9 +195,7 @@ class SSO extends PureComponent {
     };
 
     renderLoading = () => {
-        return (
-            <Loading/>
-        );
+        return <Loading/>;
     };
 
     webViewRef = (ref) => {
