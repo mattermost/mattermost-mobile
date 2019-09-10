@@ -117,9 +117,10 @@ class SSO extends PureComponent {
     goToChannel = () => {
         tracker.initialLoad = Date.now();
 
-        this.scheduleSessionExpiredNotification();
-
-        this.props.actions.resetToChannel();
+        setTimeout(() => {
+            this.scheduleSessionExpiredNotification();
+            this.props.actions.resetToChannel();
+        }, 1000);
     };
 
     onMessage = (event) => {
@@ -195,7 +196,9 @@ class SSO extends PureComponent {
     };
 
     renderLoading = () => {
-        return <Loading/>;
+        return (
+            <Loading/>
+        );
     };
 
     webViewRef = (ref) => {
@@ -226,11 +229,9 @@ class SSO extends PureComponent {
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
-                    renderLoading={this.renderLoading}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                     onMessage={messagingEnabled ? this.onMessage : null}
-                    useWebKit={this.useWebkit}
                     useSharedProcessPool={true}
                     cacheEnabled={true}
                 />
