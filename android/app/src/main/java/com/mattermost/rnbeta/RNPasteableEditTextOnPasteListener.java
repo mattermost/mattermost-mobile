@@ -36,6 +36,11 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         WritableArray images = null;
         WritableMap error = null;
 
+        String uriMimeType = reactContext.getContentResolver().getType(itemUri);
+        if (uriMimeType == null) {
+            return;
+        }
+
         // Special handle for Google docs
         if (uri.equals("content://com.google.android.apps.docs.editors.kix.editors.clipboard")) {
             ClipboardManager clipboardManager = (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -79,7 +84,7 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         String fileName = URLUtil.guessFileName(uri, null, mimeType);
 
         // Get fileSize
-        long fileSize = 0;
+        long fileSize;
         try {
             ContentResolver contentResolver = reactContext.getContentResolver();
             AssetFileDescriptor assetFileDescriptor = contentResolver.openAssetFileDescriptor(itemUri, "r");

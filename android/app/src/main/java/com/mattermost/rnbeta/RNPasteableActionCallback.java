@@ -82,6 +82,11 @@ public class RNPasteableActionCallback implements ActionMode.Callback {
             return null;
         }
 
+        String text = item.getText().toString();
+        if (text.length() > 0) {
+            return null;
+        }
+
         return item.getUri();
     }
 }

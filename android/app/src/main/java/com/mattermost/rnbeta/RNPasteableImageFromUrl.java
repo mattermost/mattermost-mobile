@@ -8,7 +8,6 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.react.views.textinput.ReactEditText;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
