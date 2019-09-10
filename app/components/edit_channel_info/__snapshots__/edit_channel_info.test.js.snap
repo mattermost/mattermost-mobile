@@ -28,7 +28,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             Object {
               "backgroundColor": "rgba(61,60,64,0.06)",
               "flex": 1,
-              "paddingTop": 35,
+              "paddingTop": 30,
             },
             Object {
               "height": 600,
