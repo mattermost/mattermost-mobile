@@ -258,7 +258,6 @@ export default class EditProfile extends PureComponent {
     handleRemoveProfileImage = () => {
         this.setState({profileImageRemove: true});
         this.emitCanUpdateAccount(true);
-        this.props.actions.dismissModal();
     }
 
     uploadProfileImage = async () => {
