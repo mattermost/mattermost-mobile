@@ -12,10 +12,12 @@ export default class Table extends React.PureComponent {
     static propTypes = {
         renderRows: PropTypes.func.isRequired,
         tableWidth: PropTypes.number.isRequired,
+        renderAsFlex: PropTypes.bool.isRequired,
     };
 
     render() {
-        const content = this.props.renderRows();
+        const content = this.props.renderRows(true);
+        const style = this.props.renderAsFlex ? {flex: 1} : {width: this.props.tableWidth};
 
         let container;
         if (Platform.OS === 'android') {
@@ -23,14 +25,17 @@ export default class Table extends React.PureComponent {
             // different directions. This prevents diagonal scrolling, so only do it on Android when totally necessary.
             container = (
                 <ScrollView>
-                    <ScrollView horizontal={true}>
+                    <ScrollView
+                        contentContainerStyle={style}
+                        horizontal={true}
+                    >
                         {content}
                     </ScrollView>
                 </ScrollView>
             );
         } else {
             container = (
-                <ScrollView contentContainerStyle={{width: this.props.tableWidth}}>
+                <ScrollView contentContainerStyle={style}>
                     {content}
                 </ScrollView>
             );

@@ -12,8 +12,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {CELL_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
-
+import {CELL_MAX_WIDTH, CELL_MIN_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -27,6 +26,8 @@ export default class MarkdownTable extends React.PureComponent {
         children: PropTypes.node.isRequired,
         numColumns: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
+        isTablet: PropTypes.bool.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -41,6 +42,7 @@ export default class MarkdownTable extends React.PureComponent {
             contentHeight: 0,
             contentWidth: 0,
             maxPreviewColumns: MAX_PREVIEW_COLUMNS,
+            cellWidth: 0,
         };
     }
 
@@ -53,12 +55,12 @@ export default class MarkdownTable extends React.PureComponent {
     }
 
     setMaxPreviewColumns = ({window}) => {
-        const maxPreviewColumns = Math.floor(window.width / CELL_WIDTH);
+        const maxPreviewColumns = Math.floor(window.width / CELL_MIN_WIDTH);
         this.setState({maxPreviewColumns});
     }
 
-    getTableWidth = () => {
-        return this.props.numColumns * CELL_WIDTH;
+    getTableWidth = (isFullView = false) => {
+        return isFullView || this.props.numColumns === 1 ? this.props.numColumns * CELL_MAX_WIDTH : this.props.numColumns * CELL_MIN_WIDTH;
     };
 
     handlePress = preventDoubleTap(() => {
@@ -70,7 +72,8 @@ export default class MarkdownTable extends React.PureComponent {
         });
         const passProps = {
             renderRows: this.renderRows,
-            tableWidth: this.getTableWidth(),
+            tableWidth: this.getTableWidth(true),
+            renderAsFlex: this.shouldRenderAsFlex(true),
         };
 
         goToScreen(screen, title, passProps);
@@ -82,21 +85,15 @@ export default class MarkdownTable extends React.PureComponent {
         });
     };
 
-    handleContentSizeChange = (contentWidth, contentHeight) => {
+    handleContentSizeChange = (_containerHeight, contentHeight) => {
         this.setState({
             contentHeight,
-            contentWidth,
         });
     };
 
-    renderPreviewRows = (drawExtraBorders = true) => {
+    renderPreviewRows = (isFullView = false) => {
         const {maxPreviewColumns} = this.state;
-        const style = getStyleSheet(this.props.theme);
-
-        const tableStyle = [style.table];
-        if (drawExtraBorders) {
-            tableStyle.push(style.tableExtraBorders);
-        }
+        const tableStyle = this.getTableStyle(isFullView);
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
         // since the container should be rendering that
@@ -121,13 +118,41 @@ export default class MarkdownTable extends React.PureComponent {
         );
     }
 
-    renderRows = (drawExtraBorders = true) => {
-        const style = getStyleSheet(this.props.theme);
+    shouldRenderAsFlex = (isFullView = false) => {
+        const {numColumns, isTablet, isLandscape} = this.props;
 
-        const tableStyle = [style.table];
-        if (drawExtraBorders) {
-            tableStyle.push(style.tableExtraBorders);
+        // render as flex in the channel screen, only for mobile phones on the portrait mode,
+        // and if tables have 2 ~ 4 columns
+        if (!isFullView && numColumns > 1 && numColumns <= 4 && !isTablet && !isLandscape) {
+            return true;
         }
+
+        // render as flex in full table screen, only for mobile phones on portrait mode,
+        // and if tables have 3 or 4 columns
+        if (isFullView && numColumns >= 3 && numColumns <= 4 && !isTablet && !isLandscape) {
+            return true;
+        }
+
+        return false;
+    }
+
+    getTableStyle = (isFullView) => {
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+        const tableStyle = [style.table];
+
+        const renderAsFlex = this.shouldRenderAsFlex(isFullView);
+        if (renderAsFlex) {
+            tableStyle.push({flex: 1});
+            return tableStyle;
+        }
+
+        tableStyle.push({width: this.getTableWidth(isFullView)});
+        return tableStyle;
+    }
+
+    renderRows = (isFullView = false) => {
+        const tableStyle = this.getTableStyle(isFullView);
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
         // since the container should be rendering that
@@ -145,9 +170,10 @@ export default class MarkdownTable extends React.PureComponent {
 
     render() {
         const style = getStyleSheet(this.props.theme);
-
         let moreRight = null;
-        if (this.state.containerWidth && this.state.contentWidth > this.state.containerWidth) {
+        const tableWidth = this.getTableWidth();
+        const renderAsFlex = this.shouldRenderAsFlex();
+        if (this.state.containerWidth && tableWidth > this.state.containerWidth) {
             moreRight = (
                 <LinearGradient
                     colors={[
@@ -169,7 +195,7 @@ export default class MarkdownTable extends React.PureComponent {
                         changeOpacity(this.props.theme.centerChannelColor, 0.0),
                         changeOpacity(this.props.theme.centerChannelColor, 0.1),
                     ]}
-                    style={[style.moreBelow, {width: this.getTableWidth()}]}
+                    style={[style.moreBelow, {width: renderAsFlex ? '100%' : tableWidth}]}
                 />
             );
         }
@@ -193,12 +219,12 @@ export default class MarkdownTable extends React.PureComponent {
                 type={'opacity'}
             >
                 <ScrollView
-                    contentContainerStyle={{width: this.getTableWidth()}}
+                    contentContainerStyle={{width: '100%'}}
                     onContentSizeChange={this.handleContentSizeChange}
                     onLayout={this.handleContainerLayout}
                     scrollEnabled={false}
                     showsVerticalScrollIndicator={false}
-                    style={[style.container, {maxWidth: this.getTableWidth()}]}
+                    style={style.container}
                 >
                     {this.renderPreviewRows(false)}
                 </ScrollView>
@@ -213,9 +239,6 @@ export default class MarkdownTable extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            borderBottomWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
             maxHeight: MAX_HEIGHT,
         },
         expandButton: {
@@ -235,22 +258,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         table: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderTopWidth: 1,
-        },
-        tablePadding: {
-            paddingRight: 10,
-        },
-        tableExtraBorders: {
-            borderBottomWidth: 1,
-            borderRightWidth: 1,
+            borderWidth: 1,
         },
         moreBelow: {
             bottom: 30,
             height: 20,
             position: 'absolute',
             left: 0,
-            width: '100%',
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderBottomWidth: 1,
         },
         moreRight: {
             maxHeight: MAX_HEIGHT,
@@ -258,6 +274,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             right: 10,
             top: 0,
             width: 20,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
         },
     };
 });

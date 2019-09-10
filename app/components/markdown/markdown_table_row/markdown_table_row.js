@@ -36,6 +36,7 @@ export default class MarkdownTableRow extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
+            flex: 1,
             flexDirection: 'row',
         },
         rowBottomBorder: {

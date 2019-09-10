@@ -5,11 +5,15 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {isTablet, isLandscape} from 'app/selectors/device';
+
 import MarkdownTable from './markdown_table';
 
 function mapStateToProps(state) {
     return {
         theme: getTheme(state),
+        isTablet: isTablet(state),
+        isLandscape: isLandscape(state),
     };
 }
 
