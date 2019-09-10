@@ -17,23 +17,32 @@ export default class DialogIntroductionText extends PureComponent {
     };
 
     render() {
-        const style = getStyleFromTheme(this.props.theme);
-        const blockStyles = getMarkdownBlockStyles(this.props.theme);
-        const textStyles = getMarkdownTextStyles(this.props.theme);
+        const {
+            value,
+            theme,
+        } = this.props;
 
-        return (
-            <View style={style.introductionTextView}>
-                <Markdown
-                    baseTextStyle={style.introductionText}
-                    textStyles={textStyles}
-                    blockStyles={blockStyles}
-                    value={this.props.value}
-                    disableHashtags={true}
-                    disableAtMentions={true}
-                    disableChannelLink={true}
-                />
-            </View>
-        );
+        if (value) {
+            const style = getStyleFromTheme(theme);
+            const blockStyles = getMarkdownBlockStyles(theme);
+            const textStyles = getMarkdownTextStyles(theme);
+
+            return (
+                <View style={style.introductionTextView}>
+                    <Markdown
+                        baseTextStyle={style.introductionText}
+                        textStyles={textStyles}
+                        blockStyles={blockStyles}
+                        value={value}
+                        disableHashtags={true}
+                        disableAtMentions={true}
+                        disableChannelLink={true}
+                    />
+                </View>
+            );
+        }
+
+        return null;
     }
 }
 

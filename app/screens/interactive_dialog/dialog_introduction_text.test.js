@@ -24,7 +24,7 @@ describe('DialogIntroductionText', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should not fail with empty value', () => {
+    test('should not render the component with an empty value', () => {
         baseProps.value = '';
 
         const wrapper = shallow(
