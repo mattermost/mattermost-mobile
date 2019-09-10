@@ -22,6 +22,7 @@ describe('InteractiveDialog', () => {
             dismissModal: jest.fn(),
         },
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should set default values', async () => {

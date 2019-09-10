@@ -20,6 +20,7 @@ export default class InteractiveDialog extends PureComponent {
         url: PropTypes.string.isRequired,
         callbackId: PropTypes.string,
         elements: PropTypes.arrayOf(PropTypes.object),
+        isLandscape: PropTypes.bool.isRequired,
         notifyOnCancel: PropTypes.bool,
         state: PropTypes.string,
         theme: PropTypes.object,
@@ -150,7 +151,7 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     render() {
-        const {elements, theme} = this.props;
+        const {elements, isLandscape, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -176,6 +177,7 @@ export default class InteractiveDialog extends PureComponent {
                                 value={this.state.values[e.name]}
                                 onChange={this.onChange}
                                 theme={theme}
+                                isLandscape={isLandscape}
                             />
                         );
                     })}
