@@ -13,6 +13,7 @@
  - Fixed an issue where users were unable to create new channels when "Combine all channel types" was selected.
  - Fixed an issue where the download step was showing when previewing a video right after posting it. 
  - Fixed an issue on Android where cancelling a video download twice in a row showed an error.
+ - Fixed an issue where file attachment thumbnail/preview could fail to load and not be able to be reloaded.
  - Fixed an issue on Android where **Channel > Add Members > ADD** text changed to black.
  - Fixed an issue on iOS where the **Cancel** label text didn't fit in one line in German language.
  - Fixed an issue where longer than allowed reply posts kept showing a warning with every backspace.
