@@ -108,7 +108,7 @@ function loadTranslation(locale) {
     }
 }
 
-let momentLocale = 'en';
+let momentLocale = DEFAULT_LOCALE;
 
 function setMomentLocale(locale) {
     try {
