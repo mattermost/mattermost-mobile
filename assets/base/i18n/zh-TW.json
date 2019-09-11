@@ -278,7 +278,7 @@
   "mobile.managed.jailbreak": "{vendor} 不信任越獄後的裝置，請關閉應用程式。",
   "mobile.managed.not_secured.android": "這裝置必須要設定螢幕鎖以使用 Mattermost",
   "mobile.managed.not_secured.ios": "這裝置必須要設定密碼以使用 Mattermost前往 設定 > Face ID 與密碼",
-  "mobile.managed.not_secured.ios.touchId": "這裝置必須要設定密碼以使用 Mattermost前往 設定 > Face ID 與密碼",
+  "mobile.managed.not_secured.ios.touchId": "這裝置必須要設定密碼以使用 Mattermost。前往 設定 > Touch ID 與密碼",
   "mobile.managed.secured_by": "受到 {vendor} 保護",
   "mobile.managed.settings": "前往設定",
   "mobile.markdown.code.copy_code": "複製代碼",

@@ -315,7 +315,7 @@
   "mobile.notification_settings_mobile.vibrate": "Vibrate",
   "mobile.notification_settings.auto_responder_short": "Automatic Replies",
   "mobile.notification_settings.auto_responder.default_message": "Hello, I am out of office and unable to respond to messages.",
-  "mobile.notification_settings.auto_responder.enabled": "Enabled",
+  "mobile.notification_settings.auto_responder.enabled": "활성화",
   "mobile.notification_settings.auto_responder.footer_message": "개인 메시지에 대한 응답을 자동으로 전송되는 사용자 지정 메시지를 설정합니다. 공개, 비공개 채널의 멘션은 자동 응답 기능이 실행되지 않습니다. 자동 응답을 사용하면 상태가 부재중으로 설정되고 이메일 알림, 푸쉬 알림은 해제됩니다.",
   "mobile.notification_settings.auto_responder.message_placeholder": "메시지",
   "mobile.notification_settings.auto_responder.message_title": "CUSTOM MESSAGE",
