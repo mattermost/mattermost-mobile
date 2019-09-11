@@ -108,16 +108,11 @@ function loadTranslation(locale) {
     }
 }
 
-let momentLocale = 'en';
+let momentLocale = DEFAULT_LOCALE;
 
 function setMomentLocale(locale) {
-    try {
-        if (momentLocale !== locale) {
-            moment.locale(locale);
-            momentLocale = locale;
-        }
-    } catch (e) {
-        console.error('No moment translation found', e); //eslint-disable-line no-console
+    if (momentLocale !== locale) {
+        momentLocale = moment.locale(locale);
     }
 }
 
