@@ -4,6 +4,7 @@
 import React from 'react';
 import {
     FlatList,
+    KeyboardAvoidingView,
     SectionList,
     View,
 } from 'react-native';
@@ -38,7 +39,6 @@ export default class EmojiPicker extends EmojiPickerBase {
                     keyExtractor={this.flatListKeyExtractor}
                     nativeID={SCROLLVIEW_NATIVE_ID}
                     pageSize={10}
-                    removeClippedSubviews={true}
                     renderItem={this.flatListRenderItem}
                     style={styles.flatList}
                 />
@@ -68,6 +68,11 @@ export default class EmojiPicker extends EmojiPickerBase {
             );
         }
 
+        let keyboardOffset = DeviceTypes.IS_IPHONE_X ? 50 : 30;
+        if (isLandscape) {
+            keyboardOffset = DeviceTypes.IS_IPHONE_X ? 0 : 10;
+        }
+
         const searchBarInput = {
             backgroundColor: theme.centerChannelBg,
             color: theme.centerChannelColor,
@@ -79,41 +84,49 @@ export default class EmojiPicker extends EmojiPickerBase {
                 excludeHeader={true}
                 excludeFooter={true}
             >
-                <View style={[styles.searchBar, padding(isLandscape)]}>
-                    <SearchBar
-                        ref={this.searchBarRef}
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={33}
-                        inputStyle={searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
-                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                        titleCancelColor={theme.centerChannelColor}
-                        onChangeText={this.changeSearchTerm}
-                        onCancelButtonPress={this.cancelSearch}
-                        autoCapitalize='none'
-                        value={searchTerm}
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                        onAnimationComplete={this.setRebuiltEmojis}
-                    />
-                </View>
-                <View style={[styles.container]}>
-                    {listComponent}
-                    {!searchTerm &&
-                    <KeyboardTrackingView
-                        scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
-                        normalList={true}
-                    >
-                        <View style={styles.bottomContentWrapper}>
-                            <View style={styles.bottomContent}>
-                                {this.renderSectionIcons()}
+                <KeyboardAvoidingView
+                    behavior='padding'
+                    enabled={Boolean(searchTerm)}
+                    keyboardVerticalOffset={keyboardOffset}
+                    style={styles.flex}
+                >
+                    <View style={[styles.searchBar, padding(isLandscape)]}>
+                        <SearchBar
+                            ref={this.searchBarRef}
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={33}
+                            inputStyle={searchBarInput}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
+                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                            titleCancelColor={theme.centerChannelColor}
+                            onChangeText={this.changeSearchTerm}
+                            onCancelButtonPress={this.cancelSearch}
+                            autoCapitalize='none'
+                            value={searchTerm}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            onAnimationComplete={this.setRebuiltEmojis}
+                        />
+                    </View>
+                    <View style={[styles.container]}>
+                        {listComponent}
+                        {!searchTerm &&
+                        <KeyboardTrackingView
+                            ref={this.keyboardTracker}
+                            scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
+                            normalList={true}
+                        >
+                            <View style={styles.bottomContentWrapper}>
+                                <View style={styles.bottomContent}>
+                                    {this.renderSectionIcons()}
+                                </View>
                             </View>
-                        </View>
-                    </KeyboardTrackingView>
-                    }
-                </View>
+                        </KeyboardTrackingView>
+                        }
+                    </View>
+                </KeyboardAvoidingView>
             </SafeAreaView>
         );
     }
