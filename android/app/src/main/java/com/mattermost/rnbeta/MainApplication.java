@@ -198,7 +198,6 @@ public class MainApplication extends NavigationApplication implements INotificat
             new LinearGradientPackage(),
             new ReactVideoPackage(),
             new RNGestureHandlerPackage(),
-//            new RNReactNativeHapticFeedbackPackage()
             new RNPasteableTextInputPackage()
     );
   }
