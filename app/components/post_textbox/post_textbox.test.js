@@ -394,16 +394,21 @@ describe('PostTextBox', () => {
 
         test('should show file size warning and not uploading', () => {
             jest.spyOn(EventEmitter, 'emit').mockReturnValue(null);
-            const wrapper = shallowWithIntl(<PostTextbox {...baseProps}/>);
+            const wrapper = shallowWithIntl(
+                <PostTextbox
+                    {...baseProps}
+                    maxFileSize={50 * 1024 * 1024}
+                />
+            );
             wrapper.find(PasteableTextInput).first().simulate('paste', null, [
                 {
-                    fileSize: 1500,
+                    fileSize: 51 * 1024 * 1024,
                     fileName: 'fileName.png',
                     type: 'images/png',
                     url: 'path/to/image',
                 },
             ]);
-            expect(EventEmitter.emit).toHaveBeenCalled();
+            expect(EventEmitter.emit).toHaveBeenCalledWith('fileSizeWarning', 'File above 50 MB cannot be uploaded: fileName.png');
             expect(baseProps.actions.initUploadFiles).not.toHaveBeenCalled();
         });
 
