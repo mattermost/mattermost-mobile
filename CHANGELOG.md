@@ -18,6 +18,7 @@
  - Fixed an issue on iOS where the **Cancel** label text didn't fit in one line in German language.
  - Fixed an issue where longer than allowed reply posts kept showing a warning with every backspace.
  - Fixed an issue where there was a delay in search box and emoji content width change when switching to/from portrait/landscape view.
+ - Fixed an issue where "@undefined has joined the channel" was shown instead of "Someone has joined the channel" when a user joined a channel that another user was viewing.
  - Fixed an issue on Android where the reply arrow was cut off in search results.
  - Fixed an issue where changing display theme from webapp didn't work properly on mobile.
  - Fixed an issue on iOS where a bot account icon style was broken.
