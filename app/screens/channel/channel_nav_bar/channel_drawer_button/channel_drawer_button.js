@@ -3,7 +3,6 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
 import {
     TouchableOpacity,
     View,
@@ -12,33 +11,39 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import PushNotifications from 'app/push_notifications';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import telemetry from 'app/telemetry';
 
-import {getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
-
-class ChannelDrawerButton extends PureComponent {
+export default class ChannelDrawerButton extends PureComponent {
     static propTypes = {
-        currentTeamId: PropTypes.string.isRequired,
         openDrawer: PropTypes.func.isRequired,
-        messageCount: PropTypes.number,
-        mentionCount: PropTypes.number,
-        myTeamMembers: PropTypes.object,
+        badgeCount: PropTypes.number,
         theme: PropTypes.object,
         visible: PropTypes.bool,
     };
 
     static defaultProps = {
+        badgeCount: 0,
         currentChannel: {},
         theme: {},
-        messageCount: 0,
-        mentionCount: 0,
         visible: true,
     };
+
+    componentDidMount() {
+        if (this.props.badgeCount > 0) {
+            PushNotifications.setApplicationIconBadgeNumber(this.props.badgeCount);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if ((this.props.badgeCount > -1 && prevProps.badgeCount !== this.props.badgeCount) ||
+            (this.props.badgeCount <= 0 && prevProps.badgeCount > 0)) {
+            PushNotifications.setApplicationIconBadgeNumber(this.props.badgeCount);
+        }
+    }
 
     handlePress = preventDoubleTap(() => {
         telemetry.start(['channel:open_drawer']);
@@ -47,31 +52,12 @@ class ChannelDrawerButton extends PureComponent {
 
     render() {
         const {
-            currentTeamId,
-            mentionCount,
-            messageCount,
-            myTeamMembers,
+            badgeCount,
             theme,
             visible,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
-
-        let mentions = mentionCount;
-        let messages = messageCount;
-
-        const members = Object.values(myTeamMembers).filter((m) => m.team_id !== currentTeamId);
-        members.forEach((m) => {
-            mentions += (m.mention_count || 0);
-            messages += (m.msg_count || 0);
-        });
-
-        let badgeCount = 0;
-        if (mentions) {
-            badgeCount = mentions;
-        } else if (messages) {
-            badgeCount = -1;
-        }
 
         let badge;
         if (badgeCount && visible) {
@@ -152,14 +138,3 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-function mapStateToProps(state) {
-    return {
-        currentTeamId: getCurrentTeamId(state),
-        myTeamMembers: getTeamMemberships(state),
-        theme: getTheme(state),
-        ...getUnreadsInCurrentTeam(state),
-    };
-}
-
-export default connect(mapStateToProps)(ChannelDrawerButton);
