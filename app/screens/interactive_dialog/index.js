@@ -8,7 +8,6 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {submitInteractiveDialog} from 'mattermost-redux/actions/integrations';
 
 import {dismissModal} from 'app/actions/navigation';
-import {isLandscape} from 'app/selectors/device';
 
 import InteractiveDialog from './interactive_dialog';
 
@@ -21,7 +20,6 @@ function mapStateToProps(state) {
         elements: data.dialog.elements,
         title: data.dialog.title,
         iconUrl: data.dialog.icon_url,
-        isLandscape: isLandscape(state),
         submitLabel: data.dialog.submit_label,
         notifyOnCancel: data.dialog.notify_on_cancel,
         state: data.dialog.state,
