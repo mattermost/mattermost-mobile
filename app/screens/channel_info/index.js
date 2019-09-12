@@ -106,6 +106,7 @@ function mapStateToProps(state) {
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
+        canConvertChannel: isAdmin,
         viewArchivedChannels,
         canEditChannel,
         currentChannel,
@@ -118,7 +119,6 @@ function mapStateToProps(state) {
         ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember && currentChannelMember.notify_props, currentUser.notify_props),
         isCurrent,
         isFavorite,
-        isSystemAdmin,
         status,
         theme: getTheme(state),
         canManageUsers,

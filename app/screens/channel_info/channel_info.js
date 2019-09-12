@@ -61,7 +61,7 @@ export default class ChannelInfo extends PureComponent {
         isChannelMuted: PropTypes.bool.isRequired,
         isCurrent: PropTypes.bool.isRequired,
         isFavorite: PropTypes.bool.isRequired,
-        isSystemAdmin: PropTypes.bool.isRequired,
+        canConvertChannel: PropTypes.bool.isRequired,
         canManageUsers: PropTypes.bool.isRequired,
         canEditChannel: PropTypes.bool.isRequired,
         ignoreChannelMentions: PropTypes.bool.isRequired,
@@ -178,29 +178,55 @@ export default class ChannelInfo extends PureComponent {
         this.handleDeleteOrLeave('delete');
     };
 
-    handleConvertToPrivate = preventDoubleTap(() => {
+    handleConfirmConvertToPrivate = preventDoubleTap(async () => {
         const {actions, currentChannel} = this.props;
+        const result = await actions.convertChannelToPrivate(currentChannel.id);
+        const displayName = {displayName: currentChannel.display_name};
+        const {formatMessage} = this.context.intl;
+        if (result.error) {
+            alertErrorWithFallback(
+                this.context.intl,
+                result.error,
+                {
+                    id: t('mobile.channel_info.convert_failed'),
+                    defaultMessage: 'We were unable to convert {displayName} to a private channel.',
+                },
+                {
+                    displayName,
+                },
+                [{
+                    text: formatMessage({id: 'mobile.share_extension.error_close', defaultMessage: 'Close'}),
+                }, {
+                    text: formatMessage({id: 'mobile.terms_of_service.alert_retry', defaultMessage: 'Try Again'}),
+                    onPress: this.handleConfirmConvertToPrivate,
+                }]
+            );
+        } else {
+            Alert.alert(
+                '',
+                formatMessage({id: t('mobile.channel_info.convert_success'), defaultMessage: '{displayName} is now a private channel.'}, displayName),
+            );
+        }
+    })
+
+    handleConvertToPrivate = preventDoubleTap(() => {
+        const {currentChannel} = this.props;
         const {formatMessage} = this.context.intl;
         const displayName = {displayName: currentChannel.display_name};
-        const title = {id: t('mobile.channel_info.alertTitleConvertChannel'), defaultMessage: 'Convert {displayName} to Private?'};
+        const title = {id: t('mobile.channel_info.alertTitleConvertChannel'), defaultMessage: 'Convert {displayName} to a private channel?'};
         const message = {
             id: t('mobile.channel_info.alertMessageConvertChannel'),
-            defaultMessage: 'When you convert {displayName} to a private channel, history and membership are preserved.\n\nPublicly shared files remain accessible to anyone with the link. Membership in a private channel is by invitation only.\n\nThe change is permanent and cannot be undone.',
-        };
-        const onPressAction = () => {
-            actions.convertChannelToPrivate(currentChannel.id).then(() => {
-                this.close();
-            });
+            defaultMessage: 'When you convert {displayName} to a private channel, history and membership are preserved. Publicly shared files remain accessible to anyone with the link. Membership in a private channel is by invitation only.\n\nThe change is permanent and cannot be undone.\n\nAre you sure you want to convert {displayName} to a private channel?',
         };
 
         Alert.alert(
             formatMessage(title, displayName),
             formatMessage(message, displayName),
             [{
-                text: formatMessage({id: 'mobile.channel_info.alertCancel', defaultMessage: 'Cancel'}),
+                text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
             }, {
-                text: formatMessage({id: 'mobile.channel_info.alertOk', defaultMessage: 'Ok'}),
-                onPress: onPressAction,
+                text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
+                onPress: this.handleConfirmConvertToPrivate,
             }],
         );
     });
@@ -382,10 +408,10 @@ export default class ChannelInfo extends PureComponent {
     };
 
     renderConvertToPrivateRow = () => {
-        const {currentChannel, isSystemAdmin} = this.props;
+        const {currentChannel, canConvertChannel} = this.props;
         const isDefaultChannel = currentChannel.name === General.DEFAULT_CHANNEL;
         const isPublicChannel = currentChannel.type === General.OPEN_CHANNEL;
-        return !isDefaultChannel && isPublicChannel && isSystemAdmin;
+        return !isDefaultChannel && isPublicChannel && canConvertChannel;
     }
 
     actionsRows = (style, channelIsArchived) => {
