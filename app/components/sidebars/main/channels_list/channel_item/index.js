@@ -39,6 +39,7 @@ function makeMapStateToProps() {
             } else {
                 const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
                 const teammate = getUser(state, teammateId);
+                channel.delete_at = teammate.delete_at;
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
                 displayName = displayUsername(teammate, teammateNameDisplay, false);
                 if (teammate && teammate.is_bot) {
