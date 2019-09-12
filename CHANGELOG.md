@@ -11,6 +11,8 @@
 ### Bug Fixes
  - Fixed an issue where some Giphy actions were not working in ephemeral posts on mobile.
  - Fixed an issue where users were unable to create new channels when "Combine all channel types" was selected.
+ - Fixed an issue on Android EMM where a crash occurred when tapping **Go to Settings**.
+ - Fixed an issue on iOS where the in-app "Date" localization persisted after server and user changed.
  - Fixed an issue where the download step was showing when previewing a video right after posting it. 
  - Fixed an issue on Android where cancelling a video download twice in a row showed an error.
  - Fixed an issue where file attachment thumbnail/preview could fail to load and not be able to be reloaded.
@@ -18,6 +20,7 @@
  - Fixed an issue on iOS where the **Cancel** label text didn't fit in one line in German language.
  - Fixed an issue where longer than allowed reply posts kept showing a warning with every backspace.
  - Fixed an issue where there was a delay in search box and emoji content width change when switching to/from portrait/landscape view.
+ - Fixed an issue where deactivated users did not appear in the "Jump to..." screen.
  - Fixed an issue where "@undefined has joined the channel" was shown instead of "Someone has joined the channel" when a user joined a channel that another user was viewing.
  - Fixed an issue on Android where the reply arrow was cut off in search results.
  - Fixed an issue where changing display theme from webapp didn't work properly on mobile.
