@@ -69,7 +69,5 @@ describe('edit_profile', () => {
         expect(wrapper.state('profileImageRemove')).toEqual(true);
         expect(instance.emitCanUpdateAccount).toHaveBeenCalledTimes(1);
         expect(instance.emitCanUpdateAccount).toBeCalledWith(true);
-
-        expect(baseProps.actions.dismissModal).toHaveBeenCalledTimes(1);
     });
 });
