@@ -67,6 +67,21 @@ describe('ImagePreview', () => {
         expect(wrapper.instance().renderDownloadButton()).toMatchSnapshot();
     });
 
+    test('should match snapshot and not renderDownloadButton for local files', () => {
+        const props = {
+            ...baseProps,
+            files: [{caption: 'Caption 1', source: 'source', data: {localPath: 'path'}}],
+        };
+
+        const wrapper = shallow(
+            <ImagePreview {...props}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper.instance().renderDownloadButton()).toMatchSnapshot();
+        expect(wrapper.instance().renderDownloadButton()).toBeNull();
+    });
+
     test('should match state on handleChangeImage', () => {
         const wrapper = shallow(
             <ImagePreview {...baseProps}/>,

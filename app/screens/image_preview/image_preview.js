@@ -21,6 +21,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
+import DeviceInfo from 'react-native-device-info';
 import {Navigation} from 'react-native-navigation';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -226,6 +227,11 @@ export default class ImagePreview extends PureComponent {
     renderDownloadButton = () => {
         const {canDownloadFiles} = this.props;
         const file = this.getCurrentFile();
+
+        if (file?.data?.localPath) {
+            // we already have the file locally we don't need to download it
+            return null;
+        }
 
         if (file) {
             let icon;
@@ -469,20 +475,24 @@ export default class ImagePreview extends PureComponent {
             let grantOption = null;
             if (canOpenSettings) {
                 grantOption = {
-                    text: formatMessage({id: 'mobile.android.permission_denied_retry', defaultMessage: 'Set permission'}),
+                    text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Settings'}),
                     onPress: () => Permissions.openSettings(),
                 };
             }
 
+            const applicationName = DeviceInfo.getApplicationName();
             Alert.alert(
-                formatMessage({id: 'mobile.android.photos_permission_denied_title', defaultMessage: 'Photo library access is required'}),
                 formatMessage({
-                    id: 'mobile.ios.photos_permission_denied_description',
+                    id: 'mobile.photo_library_permission_denied_title',
+                    defaultMessage: '{applicationName} would like to access your photo library',
+                }, {applicationName}),
+                formatMessage({
+                    id: 'mobile.photo_library_permission_denied_description',
                     defaultMessage: 'To save images and videos to your library, please change your permission settings.',
                 }),
                 [
                     grantOption,
-                    {text: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})},
+                    {text: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'})},
                 ]
             );
             return;

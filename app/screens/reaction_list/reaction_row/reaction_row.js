@@ -7,7 +7,6 @@ import {intlShape} from 'react-intl';
 import {
     Text,
     TouchableOpacity,
-    StyleSheet,
     View,
 } from 'react-native';
 
@@ -15,7 +14,7 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ProfilePicture from 'app/components/profile_picture';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import Emoji from 'app/components/emoji';
@@ -58,6 +57,7 @@ export default class ReactionRow extends React.PureComponent {
             teammateNameDisplay,
             user,
             isLandscape,
+            theme,
         } = this.props;
 
         if (!user.id) {
@@ -66,6 +66,8 @@ export default class ReactionRow extends React.PureComponent {
 
         const {id, username} = user;
         const usernameDisplay = '@' + username;
+
+        const style = getStyleSheet(theme);
 
         return (
             <View style={style.container}>
@@ -107,36 +109,39 @@ export default class ReactionRow extends React.PureComponent {
     }
 }
 
-const style = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        height: 44,
-        width: '100%',
-        alignItems: 'center',
-    },
-    profileContainer: {
-        alignItems: 'center',
-        width: '13%',
-    },
-    profile: {
-        paddingTop: 3,
-    },
-    textContainer: {
-        width: '74%',
-        flexDirection: 'row',
-    },
-    username: {
-        fontSize: 14,
-        paddingRight: 5,
-    },
-    displayName: {
-        fontSize: 14,
-        color: changeOpacity('#000', 0.5),
-    },
-    emoji: {
-        alignItems: 'center',
-        width: '13%',
-        justifyContent: 'center',
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            height: 44,
+            width: '100%',
+            alignItems: 'center',
+        },
+        profileContainer: {
+            alignItems: 'center',
+            width: '13%',
+        },
+        profile: {
+            paddingTop: 3,
+        },
+        textContainer: {
+            width: '74%',
+            flexDirection: 'row',
+        },
+        username: {
+            fontSize: 14,
+            paddingRight: 5,
+            color: theme.centerChannelColor,
+        },
+        displayName: {
+            fontSize: 14,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        emoji: {
+            alignItems: 'center',
+            width: '13%',
+            justifyContent: 'center',
+        },
+    };
 });

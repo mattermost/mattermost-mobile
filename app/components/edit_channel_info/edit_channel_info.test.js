@@ -39,6 +39,14 @@ describe('EditChannelInfo', () => {
         isLandscape: true,
     };
 
+    test('should match snapshot', () => {
+        const wrapper = shallow(
+            <EditChannelInfo {...baseProps}/>
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should have called onHeaderChangeText on text change from Autocomplete', () => {
         const wrapper = shallow(
             <EditChannelInfo {...baseProps}/>

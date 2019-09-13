@@ -62,18 +62,13 @@ function mapStateToProps(state) {
             permission: Permissions.JOIN_PUBLIC_CHANNELS,
         });
     }
+    const canCreatePublicChannels = showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin, isSystemAdmin);
+    const canCreatePrivateChannels = showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin, isSystemAdmin);
 
     return {
         canJoinPublicChannels,
-        canCreatePrivateChannels: showCreateOption(
-            state,
-            config,
-            license,
-            currentTeamId,
-            General.PRIVATE_CHANNEL,
-            isAdmin,
-            isSystemAdmin
-        ),
+        canCreatePrivateChannels,
+        canCreatePublicChannels,
         favoriteChannelIds,
         theme: getTheme(state),
         unreadChannelIds,
