@@ -62,7 +62,6 @@
 		7F240ADB220E089300637665 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F240ADA220E089300637665 /* Item.swift */; };
 		7F240ADD220E094A00637665 /* TeamsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F240ADC220E094A00637665 /* TeamsViewController.swift */; };
 		7F2691A11EE1DC6A007574FE /* libRNNotifications.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2691A01EE1DC51007574FE /* libRNNotifications.a */; };
-		7F26C1CC219C463D00FEB42D /* libRNCWebView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F26C1CB219C463300FEB42D /* libRNCWebView.a */; };
 		7F292A711E8AB73400A450A3 /* SplashScreenResource in Resources */ = {isa = PBXBuildFile; fileRef = 7F292A701E8AB73400A450A3 /* SplashScreenResource */; };
 		7F292AA61E8ABB1100A450A3 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7F292AA41E8ABB1100A450A3 /* LaunchScreen.xib */; };
 		7F292AA71E8ABB1100A450A3 /* splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F292AA51E8ABB1100A450A3 /* splash.png */; };
@@ -93,6 +92,7 @@
 		7FABE04622137F5C00D0F595 /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
 		7FABE0562213884700D0F595 /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
 		7FBB5E9B1E1F5A4B000DE18A /* libRNVectorIcons.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FDF290C1E1F4B4E00DBBE56 /* libRNVectorIcons.a */; };
+		7FD1DD0823273C6000E0D948 /* libRNCWebView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F26C1CB219C463300FEB42D /* libRNCWebView.a */; };
 		7FDB92B11F706F58006CDFD1 /* libRNImagePicker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FDB92A71F706F45006CDFD1 /* libRNImagePicker.a */; };
 		7FEB10981F6101710039A015 /* BlurAppScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB10971F6101710039A015 /* BlurAppScreen.m */; };
 		7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB109A1F61019C0039A015 /* MattermostManaged.m */; };
@@ -956,7 +956,7 @@
 				7FDB92B11F706F58006CDFD1 /* libRNImagePicker.a in Frameworks */,
 				7F5CA9A0208FE3B9004F91CE /* libRNDocumentPicker.a in Frameworks */,
 				7F43D5DE1F6BF96A001FC614 /* libRCTYouTube.a in Frameworks */,
-				7F26C1CC219C463D00FEB42D /* libRNCWebView.a in Frameworks */,
+				7FD1DD0823273C6000E0D948 /* libRNCWebView.a in Frameworks */,
 				7F88A04422270FD400DC5DE2 /* libRNSentry.a in Frameworks */,
 				7F43D6061F6BF9EB001FC614 /* libPods-Mattermost.a in Frameworks */,
 				A9B746D2CFA9CEBFB8AE2B5B /* libPods-Mattermost.a in Frameworks */,
@@ -2818,7 +2818,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 229;
+				CURRENT_PROJECT_VERSION = 230;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
@@ -2879,7 +2879,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 229;
+				CURRENT_PROJECT_VERSION = 230;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;

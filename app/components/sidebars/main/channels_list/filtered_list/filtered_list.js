@@ -98,7 +98,7 @@ class FilteredList extends Component {
                     return;
                 }
 
-                searchProfiles(term);
+                searchProfiles(term, {allow_inactive: true});
                 searchChannels(currentTeam.id, term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         }
