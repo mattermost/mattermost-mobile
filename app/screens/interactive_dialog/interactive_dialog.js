@@ -51,6 +51,8 @@ export default class InteractiveDialog extends PureComponent {
             errors: {},
             submitting: false,
         };
+
+        this.scrollView = React.createRef();
     }
 
     componentDidMount() {
@@ -122,6 +124,7 @@ export default class InteractiveDialog extends PureComponent {
             if (data.error) {
                 hasErrors = true;
                 this.setState({error: data.error});
+                this.scrollView.current.scrollTo({x: 0, y: 0});
             }
         }
 
@@ -166,7 +169,10 @@ export default class InteractiveDialog extends PureComponent {
 
         return (
             <View style={style.container}>
-                <ScrollView style={style.scrollView}>
+                <ScrollView
+                    ref={this.scrollView}
+                    style={style.scrollView}
+                >
                     <StatusBar/>
                     {this.state.error && (
                         <ErrorText error={this.state.error}/>
