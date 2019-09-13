@@ -34,13 +34,17 @@ export default class ChannelDrawerButton extends PureComponent {
 
     componentDidMount() {
         if (this.props.badgeCount > 0) {
+            // Only set the icon badge number if once the component mounts we have at least one mention
+            // reason is to prevent the notification in the notification center to get cleared
+            // while the app is retrieving unread mentions from the server
             PushNotifications.setApplicationIconBadgeNumber(this.props.badgeCount);
         }
     }
 
     componentDidUpdate(prevProps) {
-        if ((this.props.badgeCount > -1 && prevProps.badgeCount !== this.props.badgeCount) ||
-            (this.props.badgeCount <= 0 && prevProps.badgeCount > 0)) {
+        // Once the component updates we know for sure if there are or not mentions when it mounted
+        // a) the app had mentions
+        if (prevProps.badgeCount !== this.props.badgeCount) {
             PushNotifications.setApplicationIconBadgeNumber(this.props.badgeCount);
         }
     }
