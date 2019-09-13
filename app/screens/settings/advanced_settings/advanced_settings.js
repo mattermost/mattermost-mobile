@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
@@ -25,7 +25,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Config from 'assets/config';
 
-class AdvancedSettings extends PureComponent {
+class AdvancedSettings extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             dismissAllModals: PropTypes.func.isRequired,
@@ -43,6 +43,10 @@ class AdvancedSettings extends PureComponent {
 
     componentDidMount() {
         this.getDownloadCacheSize();
+    }
+
+    shouldComponentUpdate(nextProps) {
+        return this.props.theme === nextProps.theme;
     }
 
     clearOfflineCache = preventDoubleTap(() => {
