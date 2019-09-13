@@ -175,7 +175,10 @@ export default class InteractiveDialog extends PureComponent {
                 >
                     <StatusBar/>
                     {this.state.error && (
-                        <ErrorText error={this.state.error}/>
+                        <ErrorText
+                            textStyle={style.errorContainer}
+                            error={this.state.error}
+                        />
                     )}
                     {elements && elements.map((e) => {
                         return (
@@ -209,6 +212,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+        },
+        errorContainer: {
+            marginTop: 15,
+            marginLeft: 15,
+            fontSize: 14,
+            fontWeight: 'bold',
         },
         scrollView: {
             marginBottom: 20,
