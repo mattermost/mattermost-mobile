@@ -10,6 +10,7 @@ import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
 
@@ -46,6 +47,7 @@ export default class InteractiveDialog extends PureComponent {
 
         this.state = {
             values,
+            error: null,
             errors: {},
             submitting: false,
         };
@@ -106,17 +108,26 @@ export default class InteractiveDialog extends PureComponent {
 
         this.submitted = true;
 
-        if (!data || !data.errors || Object.keys(data.errors).length === 0) {
+        let hasErrors = false;
+
+        if (data) {
+            if (data.errors &&
+                Object.keys(data.errors).length >= 0 &&
+                checkIfErrorsMatchElements(data.errors, elements)
+            ) {
+                hasErrors = true;
+                this.setState({errors: data.errors});
+            }
+
+            if (data.error) {
+                hasErrors = true;
+                this.setState({error: data.error});
+            }
+        }
+
+        if (!hasErrors) {
             this.handleHide();
-            return;
         }
-
-        if (checkIfErrorsMatchElements(data.errors, elements)) {
-            this.setState({errors: data.errors});
-            return;
-        }
-
-        this.handleHide();
     }
 
     notifyOnCancelIfNeeded = () => {
@@ -157,6 +168,9 @@ export default class InteractiveDialog extends PureComponent {
             <View style={style.container}>
                 <ScrollView style={style.scrollView}>
                     <StatusBar/>
+                    {this.state.error && (
+                        <ErrorText error={this.state.error}/>
+                    )}
                     {elements && elements.map((e) => {
                         return (
                             <DialogElement
