@@ -99,16 +99,12 @@ export default class Code extends React.PureComponent {
             );
         } else {
             textComponent = (
-                <SyntaxHighlighter
-                    language={this.props.language}
-                    style={getHighlightStyleFromTheme(this.props.theme)}
-                    highlighter={'hljs'}
-                    fontFamily={style.codeText.fontFamily}
-                    fontSize={style.codeText.fontSize}
-                    customStyle={{...style.codeText, ...this.props.textStyle}}
+                <Text
+                    selectable={true}
+                    style={style.codeText}
                 >
                     {this.props.content}
-                </SyntaxHighlighter>
+                </Text>
             );
         }
 
