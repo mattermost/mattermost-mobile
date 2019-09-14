@@ -165,19 +165,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         code: {
             paddingHorizontal: 6,
-            ...Platform.select({	
-                android: {	
-                    paddingVertical: 4,	
-                }
+            ...Platform.select({
+                android: {
+                    paddingVertical: 4,
+                },
             }),
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             fontFamily: getCodeFont(),
+            fontSize: 12,
             lineHeight: 18,
             ...Platform.select({
                 ios: {
-                    fontSize: 12,
                     top: -10,
                 },
             }),
