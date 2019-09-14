@@ -171,10 +171,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontFamily: getCodeFont(),
             lineHeight: 18,
             ...Platform.select({
-                android: {
-                    fontSize: 13.25,
-                    top: -2,
-                },
                 ios: {
                     fontSize: 12,
                     top: -10,
