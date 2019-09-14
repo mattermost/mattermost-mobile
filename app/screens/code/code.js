@@ -165,6 +165,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         code: {
             paddingHorizontal: 6,
+            ...Platform.select({	
+                android: {	
+                    paddingVertical: 4,	
+                }
+            }),
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
