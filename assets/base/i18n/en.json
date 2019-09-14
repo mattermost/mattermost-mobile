@@ -74,6 +74,8 @@
   "create_comment.addComment": "Add a comment...",
   "create_post.deactivated": "You are viewing an archived channel with a deactivated user.",
   "create_post.write": "Write to {channelDisplayName}",
+  "date_separator.today": "Today",
+  "date_separator.yesterday": "Yesterday",
   "edit_post.editPost": "Edit the post...",
   "edit_post.save": "Save",
   "file_attachment.download": "Download",
