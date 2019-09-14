@@ -178,7 +178,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 18,
             ...Platform.select({
                 ios: {
-                    top: -10,
+                    top: -11,
                 },
             }),
         },
