@@ -160,6 +160,7 @@ export default class ChannelsList extends PureComponent {
                             onShowTeams={onShowTeams}
                         />
                     )}
+                    positionRightDelete={5}
                 />
             </View>
         );

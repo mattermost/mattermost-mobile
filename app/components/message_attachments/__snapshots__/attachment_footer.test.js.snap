@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AttachmentFooter it matches snapshot when both footer and footer_icon are provided 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+      "flexDirection": "row",
+      "marginTop": 5,
+    }
+  }
+>
+  <Image
+    key="footer_icon"
+    source={
+      Object {
+        "uri": "https://images.com/image.png",
+      }
+    }
+    style={
+      Object {
+        "height": 12,
+        "marginRight": 5,
+        "marginTop": 1,
+        "width": 12,
+      }
+    }
+  />
+  <Text
+    key="footer_text"
+    style={
+      Object {
+        "color": "rgba(61,60,64,0.5)",
+        "fontSize": 11,
+      }
+    }
+  >
+    This is the footer!
+  </Text>
+</View>
+`;
+
+exports[`AttachmentFooter it matches snapshot when footer text is provided 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+      "flexDirection": "row",
+      "marginTop": 5,
+    }
+  }
+>
+  <Text
+    key="footer_text"
+    style={
+      Object {
+        "color": "rgba(61,60,64,0.5)",
+        "fontSize": 11,
+      }
+    }
+  >
+    This is the footer!
+  </Text>
+</View>
+`;
+
+exports[`AttachmentFooter it matches snapshot when no footer is provided 1`] = `""`;
+
+exports[`AttachmentFooter it matches snapshot when only the footer icon is provided 1`] = `""`;
+
+exports[`AttachmentFooter it matches snapshot when the footer is longer than the maximum length 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+      "flexDirection": "row",
+      "marginTop": 5,
+    }
+  }
+>
+  <Image
+    key="footer_icon"
+    source={
+      Object {
+        "uri": "https://images.com/image.png",
+      }
+    }
+    style={
+      Object {
+        "height": 12,
+        "marginRight": 5,
+        "marginTop": 1,
+        "width": 12,
+      }
+    }
+  />
+  <Text
+    key="footer_text"
+    style={
+      Object {
+        "color": "rgba(61,60,64,0.5)",
+        "fontSize": 11,
+      }
+    }
+  >
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa…
+  </Text>
+</View>
+`;
