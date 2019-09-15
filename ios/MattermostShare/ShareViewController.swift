@@ -47,9 +47,16 @@ class ShareViewController: SLComposeServiceViewController {
     var error: NSError?
     if !context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
       if let error = error, error.code == kLAErrorPasscodeNotSet {
+        var message = "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Touch ID & Passcode."
+        if #available(iOS 11.0, *) {
+          if (context.biometryType == LABiometryType.faceID) {
+            message = "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode."
+          }
+        }
+
         self.showErrorMessage(
           title: "",
-          message: "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.",
+          message: message,
           VC: self
         )
       } else {

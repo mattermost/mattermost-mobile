@@ -573,6 +573,7 @@ export default class ChannelInfo extends PureComponent {
                             defaultMessage={defaultMessage}
                             icon='times'
                             iconColor='#CA3B27'
+                            rightArrow={false}
                             textId={i18nId}
                             textColor='#CA3B27'
                             theme={theme}

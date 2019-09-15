@@ -200,6 +200,7 @@ NotificationSettingsMentionsKeywords {
               autoCorrect={false}
               autoFocus={true}
               blurOnSubmit={true}
+              keyboardAppearance="light"
               multiline={true}
               numberOfLines={1}
               onChangeText={[Function]}

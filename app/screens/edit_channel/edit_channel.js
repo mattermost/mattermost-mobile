@@ -296,7 +296,10 @@ export default class EditChannel extends PureComponent {
         } = this.state;
 
         return (
-            <SafeAreaView>
+            <SafeAreaView
+                excludeHeader={true}
+                excludeFooter={true}
+            >
                 <EditChannelInfo
                     theme={theme}
                     enableRightButton={this.emitCanUpdateChannel}

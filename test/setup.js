@@ -43,6 +43,9 @@ jest.mock('NativeModules', () => {
             addEventListener: jest.fn(),
             getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
         },
+        RNReactNativeHapticFeedback: {
+            trigger: jest.fn(),
+        },
     };
 });
 jest.mock('NativeEventEmitter');
@@ -53,6 +56,7 @@ jest.mock('react-native-device-info', () => {
         getBuildNumber: () => '0',
         getModel: () => 'iPhone X',
         isTablet: () => false,
+        getApplicationName: () => 'Mattermost',
         getDeviceLocale: () => 'en-US',
     };
 });

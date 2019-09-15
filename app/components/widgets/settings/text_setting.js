@@ -11,7 +11,11 @@ import {
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class TextSetting extends PureComponent {
@@ -172,6 +176,7 @@ export default class TextSetting extends PureComponent {
                             multiline={multiline}
                             keyboardType={keyboardType}
                             secureTextEntry={secureTextEntry}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         />
                     </View>
                 </View>

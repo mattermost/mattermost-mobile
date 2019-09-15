@@ -39,6 +39,8 @@ export default class SearchBarIos extends PureComponent {
         leftComponent: PropTypes.element,
         searchIconCollapsedMargin: PropTypes.number,
         searchIconExpandedMargin: PropTypes.number,
+        keyboardAppearance: PropTypes.string,
+        onAnimationComplete: PropTypes.func,
     };
 
     static defaultProps = {
