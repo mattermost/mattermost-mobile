@@ -11,6 +11,8 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
+import DeviceInfo from 'react-native-device-info';
+import AndroidOpenSettings from 'react-native-android-open-settings';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import {DocumentPicker} from 'react-native-document-picker';
@@ -67,12 +69,93 @@ export default class AttachmentButton extends PureComponent {
         intl: intlShape.isRequired,
     };
 
+    getPermissionDeniedMessage = (source, mediaType = '') => {
+        const {formatMessage} = this.context.intl;
+        const applicationName = DeviceInfo.getApplicationName();
+        switch (source) {
+        case 'camera': {
+            if (mediaType === 'video') {
+                return {
+                    title: formatMessage({
+                        id: 'mobile.camera_video_permission_denied_title',
+                        defaultMessage: '{applicationName} would like to access your camera',
+                    }, {applicationName}),
+                    text: formatMessage({
+                        id: 'mobile.camera_video_permission_denied_description',
+                        defaultMessage: 'Take videos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
+                    }),
+                };
+            }
+
+            return {
+                title: formatMessage({
+                    id: 'mobile.camera_photo_permission_denied_title',
+                    defaultMessage: '{applicationName} would like to access your camera',
+                }, {applicationName}),
+                text: formatMessage({
+                    id: 'mobile.camera_photo_permission_denied_description',
+                    defaultMessage: 'Take photos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
+                }),
+            };
+        }
+        case 'storage':
+            return {
+                title: formatMessage({
+                    id: 'mobile.storage_permission_denied_title',
+                    defaultMessage: '{applicationName} would like to access your files',
+                }, {applicationName}),
+                text: formatMessage({
+                    id: 'mobile.storage_permission_denied_description',
+                    defaultMessage: 'Upload files to your Mattermost instance. Open Settings to grant Mattermost Read and Write access to files on this device.',
+                }),
+            };
+        case 'video':
+            return {
+                title: formatMessage({
+                    id: 'mobile.android.videos_permission_denied_title',
+                    defaultMessage: '{applicationName} would like to access your videos',
+                }, {applicationName}),
+                text: formatMessage({
+                    id: 'mobile.android.videos_permission_denied_description',
+                    defaultMessage: 'Upload videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your video library.',
+                }),
+            };
+        case 'photo':
+        default: {
+            if (Platform.OS === 'android') {
+                return {
+                    title: formatMessage({
+                        id: 'mobile.android.photos_permission_denied_title',
+                        defaultMessage: '{applicationName} would like to access your photos',
+                    }, {applicationName}),
+                    text: formatMessage({
+                        id: 'mobile.android.photos_permission_denied_description',
+                        defaultMessage: 'Upload photos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo library.',
+                    }),
+                };
+            }
+
+            return {
+                title: formatMessage({
+                    id: 'mobile.ios.photos_permission_denied_title',
+                    defaultMessage: '{applicationName} would like to access your photos',
+                }, {applicationName}),
+                text: formatMessage({
+                    id: 'mobile.ios.photos_permission_denied_description',
+                    defaultMessage: 'Upload photos and videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo and video library.',
+                }),
+            };
+        }
+        }
+    }
+
     attachPhotoFromCamera = () => {
-        return this.attachFileFromCamera('photo', 'camera');
+        return this.attachFileFromCamera('camera', 'photo');
     };
 
-    attachFileFromCamera = async (mediaType, source) => {
+    attachFileFromCamera = async (source, mediaType) => {
         const {formatMessage} = this.context.intl;
+        const {title, text} = this.getPermissionDeniedMessage('camera', mediaType);
         const options = {
             quality: 0.8,
             videoQuality: 'high',
@@ -83,25 +166,19 @@ export default class AttachmentButton extends PureComponent {
                 waitUntilSaved: true,
             },
             permissionDenied: {
-                title: formatMessage({
-                    id: 'mobile.android.camera_permission_denied_title',
-                    defaultMessage: 'Camera access is required',
-                }),
-                text: formatMessage({
-                    id: 'mobile.android.camera_permission_denied_description',
-                    defaultMessage: 'To take photos and videos with your camera, please change your permission settings.',
-                }),
+                title,
+                text,
                 reTryTitle: formatMessage({
-                    id: 'mobile.android.permission_denied_retry',
-                    defaultMessage: 'Set Permission',
+                    id: 'mobile.permission_denied_retry',
+                    defaultMessage: 'Settings',
                 }),
-                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
             },
         };
 
-        const hasPhotoPermission = await this.hasPhotoPermission(source);
+        const hasCameraPermission = await this.hasPhotoPermission(source, mediaType);
 
-        if (hasPhotoPermission) {
+        if (hasCameraPermission) {
             ImagePicker.launchCamera(options, (response) => {
                 if (response.error || response.didCancel) {
                     return;
@@ -112,25 +189,20 @@ export default class AttachmentButton extends PureComponent {
         }
     };
 
-    attachFileFromLibrary = () => {
+    attachFileFromLibrary = async () => {
         const {formatMessage} = this.context.intl;
+        const {title, text} = this.getPermissionDeniedMessage('photo');
         const options = {
             quality: 0.8,
             noData: true,
             permissionDenied: {
-                title: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_title',
-                    defaultMessage: 'Photo library access is required',
-                }),
-                text: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_description',
-                    defaultMessage: 'To upload images from your library, please change your permission settings.',
-                }),
+                title,
+                text,
                 reTryTitle: formatMessage({
-                    id: 'mobile.android.permission_denied_retry',
-                    defaultMessage: 'Set Permission',
+                    id: 'mobile.permission_denied_retry',
+                    defaultMessage: 'Settings',
                 }),
-                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
             },
         };
 
@@ -138,39 +210,38 @@ export default class AttachmentButton extends PureComponent {
             options.mediaType = 'mixed';
         }
 
-        ImagePicker.launchImageLibrary(options, (response) => {
-            if (response.error || response.didCancel) {
-                return;
-            }
+        const hasPhotoPermission = await this.hasPhotoPermission('photo');
 
-            this.uploadFiles([response]);
-        });
+        if (hasPhotoPermission) {
+            ImagePicker.launchImageLibrary(options, (response) => {
+                if (response.error || response.didCancel) {
+                    return;
+                }
+
+                this.uploadFiles([response]);
+            });
+        }
     };
 
     attachVideoFromCamera = () => {
-        return this.attachFileFromCamera('video', 'camera');
+        return this.attachFileFromCamera('camera', 'video');
     };
 
     attachVideoFromLibraryAndroid = () => {
         const {formatMessage} = this.context.intl;
+        const {title, text} = this.getPermissionDeniedMessage('video');
         const options = {
             videoQuality: 'high',
             mediaType: 'video',
             noData: true,
             permissionDenied: {
-                title: formatMessage({
-                    id: 'mobile.android.videos_permission_denied_title',
-                    defaultMessage: 'Video library access is required',
-                }),
-                text: formatMessage({
-                    id: 'mobile.android.videos_permission_denied_description',
-                    defaultMessage: 'To upload videos from your library, please change your permission settings.',
-                }),
+                title,
+                text,
                 reTryTitle: formatMessage({
-                    id: 'mobile.android.permission_denied_retry',
-                    defaultMessage: 'Set Permission',
+                    id: 'mobile.permission_denied_retry',
+                    defaultMessage: 'Settings',
                 }),
-                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
             },
         };
 
@@ -213,15 +284,16 @@ export default class AttachmentButton extends PureComponent {
         }
     };
 
-    hasPhotoPermission = async (source) => {
+    hasPhotoPermission = async (source, mediaType = '') => {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const hasPermissionToStorage = await Permissions.check(source || 'photo');
+            const targetSource = source || 'photo';
+            const hasPermissionToStorage = await Permissions.check(targetSource);
 
             switch (hasPermissionToStorage) {
             case PermissionTypes.UNDETERMINED:
-                permissionRequest = await Permissions.request('photo');
+                permissionRequest = await Permissions.request(targetSource);
                 if (permissionRequest !== PermissionTypes.AUTHORIZED) {
                     return false;
                 }
@@ -232,28 +304,24 @@ export default class AttachmentButton extends PureComponent {
                 if (canOpenSettings) {
                     grantOption = {
                         text: formatMessage({
-                            id: 'mobile.android.permission_denied_retry',
-                            defaultMessage: 'Set permission',
+                            id: 'mobile.permission_denied_retry',
+                            defaultMessage: 'Settings',
                         }),
                         onPress: () => Permissions.openSettings(),
                     };
                 }
 
+                const {title, text} = this.getPermissionDeniedMessage(source, mediaType);
+
                 Alert.alert(
-                    formatMessage({
-                        id: 'mobile.android.photos_permission_denied_title',
-                        defaultMessage: 'Photo library access is required',
-                    }),
-                    formatMessage({
-                        id: 'mobile.android.photos_permission_denied_description',
-                        defaultMessage: 'To upload images from your library, please change your permission settings.',
-                    }),
+                    title,
+                    text,
                     [
                         grantOption,
                         {
                             text: formatMessage({
-                                id: 'mobile.android.permission_denied_dismiss',
-                                defaultMessage: 'Dismiss',
+                                id: 'mobile.permission_denied_dismiss',
+                                defaultMessage: 'Don\'t Allow',
                             }),
                         },
                     ]
@@ -280,35 +348,25 @@ export default class AttachmentButton extends PureComponent {
                 }
                 break;
             case PermissionTypes.DENIED: {
-                const canOpenSettings = await Permissions.canOpenSettings();
-                let grantOption = null;
-                if (canOpenSettings) {
-                    grantOption = {
-                        text: formatMessage({
-                            id: 'mobile.android.permission_denied_retry',
-                            defaultMessage: 'Set permission',
-                        }),
-                        onPress: () => Permissions.openSettings(),
-                    };
-                }
+                const {title, text} = this.getPermissionDeniedMessage('storage');
 
                 Alert.alert(
-                    formatMessage({
-                        id: 'mobile.android.storage_permission_denied_title',
-                        defaultMessage: 'File Storage access is required',
-                    }),
-                    formatMessage({
-                        id: 'mobile.android.storage_permission_denied_description',
-                        defaultMessage: 'To upload images from your Android device, please change your permission settings.',
-                    }),
+                    title,
+                    text,
                     [
                         {
                             text: formatMessage({
-                                id: 'mobile.android.permission_denied_dismiss',
-                                defaultMessage: 'Dismiss',
+                                id: 'mobile.permission_denied_dismiss',
+                                defaultMessage: 'Don\'t Allow',
                             }),
                         },
-                        grantOption,
+                        {
+                            text: formatMessage({
+                                id: 'mobile.permission_denied_retry',
+                                defaultMessage: 'Settings',
+                            }),
+                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                        },
                     ]
                 );
                 return false;

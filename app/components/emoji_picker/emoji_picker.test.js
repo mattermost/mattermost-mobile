@@ -59,19 +59,17 @@ describe('components/emoji_picker/EmojiPicker', () => {
         expect(instance.rebuildEmojis).toBe(true);
     });
 
-    test('should set rebuildEmojis to true and new deviceWidth when emojis change', () => {
+    test('should rebuild emojis emojis when emojis change', () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
+        const renderableEmojis = jest.spyOn(instance, 'renderableEmojis');
 
         expect(instance.rebuildEmojis).toBe(undefined);
-        expect(instance.deviceWidth).toBe(undefined);
 
-        const newDeviceWidth = baseProps.deviceWidth * 2;
         const newEmojis = [{}];
-        wrapper.setProps({deviceWidth: newDeviceWidth, emojis: newEmojis});
+        wrapper.setProps({emojis: newEmojis});
 
-        expect(instance.rebuildEmojis).toBe(true);
-        expect(instance.deviceWidth).toBe(newDeviceWidth);
+        expect(renderableEmojis).toHaveBeenCalledWith(baseProps.emojisBySection, baseProps.deviceWidth);
     });
 
     test('should set rebuilt emojis when rebuildEmojis is true and searchBarAnimationComplete is true', () => {

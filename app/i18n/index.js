@@ -108,10 +108,21 @@ function loadTranslation(locale) {
     }
 }
 
+let momentLocale = DEFAULT_LOCALE;
+
+function setMomentLocale(locale) {
+    if (momentLocale !== locale) {
+        momentLocale = moment.locale(locale);
+    }
+}
+
 export function getTranslations(locale) {
     if (!TRANSLATIONS[locale]) {
         loadTranslation(locale);
     }
+
+    setMomentLocale(locale.toLowerCase());
+
     return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];
 }
 

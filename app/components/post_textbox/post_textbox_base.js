@@ -106,6 +106,7 @@ export default class PostTextBoxBase extends PureComponent {
             top: 0,
             value: props.value,
             channelTimezoneCount: 0,
+            longMessageAlertShown: false,
         };
     }
 
@@ -192,19 +193,25 @@ export default class PostTextBoxBase extends PureComponent {
         const valueLength = value.trim().length;
 
         if (valueLength > maxMessageLength) {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.message_length.title',
-                    defaultMessage: 'Message Length',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.message_length.message',
-                    defaultMessage: 'Your current message is too long. Current character count: {max}/{count}',
-                }, {
-                    max: maxMessageLength,
-                    count: valueLength,
-                })
-            );
+            // Check if component is already aware message is too long
+            if (!this.state.longMessageAlertShown) {
+                Alert.alert(
+                    intl.formatMessage({
+                        id: 'mobile.message_length.title',
+                        defaultMessage: 'Message Length',
+                    }),
+                    intl.formatMessage({
+                        id: 'mobile.message_length.message',
+                        defaultMessage: 'Your current message is too long. Current character count: {max}/{count}',
+                    }, {
+                        max: maxMessageLength,
+                        count: valueLength,
+                    })
+                );
+                this.setState({longMessageAlertShown: true});
+            }
+        } else if (this.state.longMessageAlertShown) {
+            this.setState({longMessageAlertShown: false});
         }
     };
 
@@ -717,7 +724,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onChangeText={this.handleTextChange}
                         onSelectionChange={this.handlePostDraftSelectionChanged}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
-                        placeholderTextColor={changeOpacity('#000', 0.5)}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         multiline={true}
                         blurOnSubmit={false}
                         underlineColorAndroid='transparent'
@@ -744,7 +751,7 @@ export default class PostTextBoxBase extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         input: {
-            color: '#000',
+            color: theme.centerChannelColor,
             flex: 1,
             fontSize: 14,
             maxHeight: MAX_CONTENT_HEIGHT,
@@ -764,7 +771,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         inputContainer: {
             flex: 1,
             flexDirection: 'row',
-            backgroundColor: '#fff',
+            backgroundColor: theme.centerChannelBg,
             alignItems: 'stretch',
             marginRight: 10,
         },
@@ -798,6 +805,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingTop: 10,
             paddingBottom: 10,
             borderTopWidth: 1,
+            backgroundColor: theme.centerChannelBg,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
         },
         archivedText: {

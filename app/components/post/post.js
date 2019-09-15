@@ -306,6 +306,7 @@ export default class Post extends PureComponent {
                 style={[style.postStyle, highlighted, padding(isLandscape)]}
                 onPress={this.handlePress}
                 onLongPress={this.showPostOptions}
+                delayLongPress={75}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
             >
                 <React.Fragment>
