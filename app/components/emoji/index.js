@@ -19,11 +19,12 @@ function mapStateToProps(state, ownProps) {
     const customEmojis = getCustomEmojisByName(state);
 
     let imageUrl = '';
+    let unicode;
     let isCustomEmoji = false;
     let displayTextOnly = false;
     if (EmojiIndicesByAlias.has(emojiName)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
-        imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
+        unicode = emoji.filename;
     } else if (customEmojis.has(emojiName)) {
         const emoji = customEmojis.get(emojiName);
         imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);
@@ -41,6 +42,7 @@ function mapStateToProps(state, ownProps) {
         imageUrl,
         isCustomEmoji,
         displayTextOnly,
+        unicode,
     };
 }
 

@@ -28,7 +28,7 @@ import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone
 import EmojiPickerRow from './emoji_picker_row';
 
 const EMOJI_SIZE = 30;
-const EMOJI_GUTTER = 7.5;
+const EMOJI_GUTTER = 7;
 const EMOJIS_PER_PAGE = 200;
 const SECTION_HEADER_HEIGHT = 28;
 export const SECTION_MARGIN = 15;

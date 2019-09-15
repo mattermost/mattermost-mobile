@@ -27,11 +27,12 @@ export default class EmojiPickerRow extends Component {
     renderEmojis = (emoji, index, emojis) => {
         const {emojiGutter, emojiSize} = this.props;
 
+        const size = emojiSize + 5;
         const style = [
             styles.emoji,
             {
-                width: emojiSize,
-                height: emojiSize,
+                width: size,
+                height: size,
                 marginHorizontal: emojiGutter,
             },
         ];
@@ -60,6 +61,7 @@ export default class EmojiPickerRow extends Component {
             >
                 <Emoji
                     emojiName={emoji.name}
+                    textStyle={{color: 'black', fontWeight: 'bold'}}
                     size={emojiSize}
                 />
             </TouchableOpacity>
@@ -79,7 +81,7 @@ export default class EmojiPickerRow extends Component {
 
 const styles = StyleSheet.create({
     columnStyle: {
-        alignSelf: 'stretch',
+        flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
