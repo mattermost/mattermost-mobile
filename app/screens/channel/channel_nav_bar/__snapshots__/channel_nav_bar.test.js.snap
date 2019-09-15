@@ -18,7 +18,7 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
     ]
   }
 >
-  <RealmConnect(ChannelDrawerButton)
+  <ForwardRef(forwardConnectRef)
     openDrawer={[MockFunction]}
     theme={
       Object {
@@ -50,7 +50,7 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
     }
     visible={true}
   />
-  <RealmConnect(ChannelTitle)
+  <ForwardRef(forwardConnectRef)
     canHaveSubtitle={true}
     onPress={[MockFunction]}
     theme={
