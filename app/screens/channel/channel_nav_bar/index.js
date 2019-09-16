@@ -55,18 +55,22 @@ export default class ChannelNavBar extends PureComponent {
     }
 
     handleDimensions = () => {
-        if (DeviceTypes.IS_TABLET && this.mounted) {
+        if (DeviceTypes.IS_TABLET) {
             mattermostManaged.isRunningInSplitView().then((result) => {
                 const isSplitView = Boolean(result.isSplitView);
-                this.setState({isSplitView});
+                if (this.mounted) {
+                    this.setState({isSplitView});
+                }
             });
         }
     };
 
     handlePermanentSidebar = () => {
-        if (DeviceTypes.IS_TABLET && this.mounted) {
+        if (DeviceTypes.IS_TABLET) {
             AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS).then((enabled) => {
-                this.setState({permanentSidebar: enabled === 'true'});
+                if (this.mounted) {
+                    this.setState({permanentSidebar: enabled === 'true'});
+                }
             });
         }
     };

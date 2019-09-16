@@ -130,7 +130,7 @@ export function selectInitialChannel(teamId) {
         const isMember = lastChannel?.members.filtered('user.id=$0', general.currentUserId);
 
         if (isMember?.length && (lastChannel?.team.id === teamId || isDMVisible || isGMVisible)) {
-            return dispatch(handleSelectChannel(lastChannelId, false, teamId));
+            return dispatch(handleSelectChannel(lastChannelId, teamId));
         }
 
         return dispatch(selectDefaultChannel(teamId));
@@ -161,7 +161,7 @@ export function selectDefaultChannel(teamId) {
             }
 
             if (channel) {
-                return dispatch(handleSelectChannel(channel.id, false, teamId));
+                return dispatch(handleSelectChannel(channel.id, teamId));
             }
 
             return {error: 'no default channel for this team'};
@@ -171,7 +171,7 @@ export function selectDefaultChannel(teamId) {
     };
 }
 
-export function handleSelectChannel(channelId, fromPushNotification = false, teamId) {
+export function handleSelectChannel(channelId, teamId, fromPushNotification = false) {
     return async (dispatch, getState) => {
         reduxStore.dispatch(handleSelectChannelRedux(channelId, fromPushNotification));
         const realm = getState();

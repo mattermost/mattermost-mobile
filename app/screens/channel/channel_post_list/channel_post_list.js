@@ -112,7 +112,7 @@ export default class ChannelPostList extends PureComponent {
     loadMorePostsTop = () => {
         const {channelId, loadMorePostsAbove, postIds} = this.props;
 
-        if (!this.isLoadingMoreTop && this.mounted) {
+        if (!this.isLoadingMoreTop) {
             this.isLoadingMoreTop = true;
             const postId = getLastValidPostId(postIds);
 
@@ -123,7 +123,9 @@ export default class ChannelPostList extends PureComponent {
                 ).then((hasMore) => {
                     setTimeout(() => {
                         this.isLoadingMoreTop = !hasMore;
-                        this.setState({loadMorePostsVisible: hasMore});
+                        if (this.mounted) {
+                            this.setState({loadMorePostsVisible: hasMore});
+                        }
                     });
                 });
             } else {

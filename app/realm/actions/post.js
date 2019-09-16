@@ -181,8 +181,6 @@ export function loadPostsBefore(channelId, beforePostId, page, perPage) {
             return {error};
         }
 
-        EphemeralStore.loadingPosts = false;
-
         if (posts.length) {
             dispatch({
                 type: PostTypes.RECEIVED_POSTS_BEFORE,
@@ -234,6 +232,8 @@ export function loadMorePostsAbove(channelId, postId) {
             const count = received.data.order.length;
             hasMorePost = count >= pageSize;
         }
+
+        EphemeralStore.loadingPosts = false;
 
         telemetry.end(['posts:loading']);
         telemetry.save();
