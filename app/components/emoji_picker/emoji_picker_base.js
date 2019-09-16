@@ -6,10 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
-    FlatList,
-    KeyboardAvoidingView,
     Platform,
-    SectionList,
     Text,
     TouchableOpacity,
     View,
@@ -21,23 +18,20 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
-import SafeAreaView from 'app/components/safe_area_view';
-import SearchBar from 'app/components/search_bar';
 import {DeviceTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
 import {
     makeStyleSheetFromTheme,
     changeOpacity,
-    getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import EmojiPickerRow from './emoji_picker_row';
 
 const EMOJI_SIZE = 30;
 const EMOJI_GUTTER = 7.5;
-const SECTION_MARGIN = 15;
-const SECTION_HEADER_HEIGHT = 28;
 const EMOJIS_PER_PAGE = 200;
+const SECTION_HEADER_HEIGHT = 28;
+export const SECTION_MARGIN = 15;
 
 export function filterEmojiSearchInput(searchText) {
     return searchText.toLowerCase().replace(/^:|:$/g, '');
@@ -83,6 +77,7 @@ export default class EmojiPicker extends PureComponent {
         const emojis = this.renderableEmojis(props.emojisBySection, props.deviceWidth);
         const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
+        this.searchBarRef = React.createRef();
         this.scrollToSectionTries = 0;
         this.state = {
             emojis,
@@ -99,8 +94,8 @@ export default class EmojiPicker extends PureComponent {
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
             this.rebuildEmojis = true;
 
-            if (this.refs.search_bar) {
-                this.refs.search_bar.blur();
+            if (this.searchBarRef?.current) {
+                this.searchBarRef.current.blur();
             }
         }
 
@@ -399,118 +394,9 @@ export default class EmojiPicker extends PureComponent {
             </View>
         );
     }
-
-    render() {
-        const {deviceWidth, isLandscape, theme} = this.props;
-        const {emojis, filteredEmojis, searchTerm} = this.state;
-        const {intl} = this.context;
-        const {formatMessage} = intl;
-        const styles = getStyleSheetFromTheme(theme);
-
-        const shorten = DeviceTypes.IS_IPHONE_X && isLandscape ? 6 : 2;
-
-        let listComponent;
-        if (searchTerm) {
-            listComponent = (
-                <FlatList
-                    keyboardShouldPersistTaps='always'
-                    style={styles.flatList}
-                    data={filteredEmojis}
-                    keyExtractor={this.flatListKeyExtractor}
-                    renderItem={this.flatListRenderItem}
-                    pageSize={10}
-                    initialListSize={10}
-                    removeClippedSubviews={true}
-                />
-            );
-        } else {
-            listComponent = (
-                <SectionList
-                    ref={this.attachSectionList}
-                    showsVerticalScrollIndicator={false}
-                    style={[styles.listView, {width: deviceWidth - (SECTION_MARGIN * shorten)}]}
-                    sections={emojis}
-                    renderSectionHeader={this.renderSectionHeader}
-                    renderItem={this.renderItem}
-                    keyboardShouldPersistTaps='always'
-                    getItemLayout={this.sectionListGetItemLayout}
-                    removeClippedSubviews={true}
-                    onScroll={this.onScroll}
-                    onScrollToIndexFailed={this.handleScrollToSectionFailed}
-                    onMomentumScrollEnd={this.onMomentumScrollEnd}
-                    pageSize={30}
-                    ListFooterComponent={this.renderFooter}
-                    onEndReached={this.loadMoreCustomEmojis}
-                    onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
-                />
-            );
-        }
-
-        let keyboardOffset = 64;
-        if (Platform.OS === 'android') {
-            keyboardOffset = -200;
-        } else if (DeviceTypes.IS_IPHONE_X) {
-            keyboardOffset = isLandscape ? 35 : 107;
-        } else if (isLandscape) {
-            keyboardOffset = 52;
-        }
-
-        const searchBarInput = {
-            backgroundColor: theme.centerChannelBg,
-            color: theme.centerChannelColor,
-            fontSize: 13,
-            ...Platform.select({
-                android: {
-                    marginBottom: -3,
-                },
-            }),
-        };
-
-        return (
-            <SafeAreaView excludeHeader={true}>
-                <KeyboardAvoidingView
-                    behavior='padding'
-                    style={styles.flex}
-                    keyboardVerticalOffset={keyboardOffset}
-                    enabled={Platform.OS === 'ios'}
-                >
-                    <View style={[styles.searchBar, padding(isLandscape)]}>
-                        <SearchBar
-                            ref='search_bar'
-                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                            backgroundColor='transparent'
-                            inputHeight={33}
-                            inputStyle={searchBarInput}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
-                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                            titleCancelColor={theme.centerChannelColor}
-                            onChangeText={this.changeSearchTerm}
-                            onCancelButtonPress={this.cancelSearch}
-                            autoCapitalize='none'
-                            value={searchTerm}
-                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                            onAnimationComplete={this.setRebuiltEmojis}
-                        />
-                    </View>
-                    <View style={styles.container}>
-                        {listComponent}
-                        {!searchTerm &&
-                        <View style={styles.bottomContentWrapper}>
-                            <View style={styles.bottomContent}>
-                                {this.renderSectionIcons()}
-                            </View>
-                        </View>
-                        }
-                    </View>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
-        );
-    }
 }
 
-const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
+export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
             flex: 1,
@@ -521,38 +407,28 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderTopWidth: 1,
             flexDirection: 'row',
             justifyContent: 'space-between',
-        },
-        bottomContentWrapper: {
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 35,
             width: '100%',
         },
-        columnStyle: {
-            alignSelf: 'stretch',
-            flexDirection: 'row',
-            marginVertical: EMOJI_GUTTER,
-            justifyContent: 'flex-start',
+        bottomContentWrapper: {
+            ...Platform.select({
+                android: {
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                },
+                ios: {
+                    width: '100%',
+                    flexDirection: 'row',
+                },
+            }),
+            backgroundColor: theme.centerChannelBg,
+            height: 35,
         },
         container: {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             flex: 1,
-        },
-        emoji: {
-            width: EMOJI_SIZE,
-            height: EMOJI_SIZE,
-            marginHorizontal: EMOJI_GUTTER,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        emojiLeft: {
-            marginLeft: 0,
-        },
-        emojiRight: {
-            marginRight: 0,
         },
         flatList: {
             flex: 1,
@@ -580,16 +456,16 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
             overflow: 'hidden',
         },
-        listView: {
-            backgroundColor: theme.centerChannelBg,
-            marginBottom: 35,
-        },
         searchBar: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             paddingVertical: 5,
         },
-        section: {
-            alignItems: 'center',
+        sectionList: {
+            ...Platform.select({
+                android: {
+                    marginBottom: 35,
+                },
+            }),
         },
         sectionIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.3),
@@ -612,9 +488,6 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             height: SECTION_HEADER_HEIGHT,
             justifyContent: 'center',
             backgroundColor: theme.centerChannelBg,
-        },
-        wrapper: {
-            flex: 1,
         },
         loading: {
             flex: 1,

@@ -30,7 +30,6 @@ import TeamsList from './teams_list';
 import telemetry from 'app/telemetry';
 
 const DRAWER_INITIAL_OFFSET = 40;
-const DRAWER_LANDSCAPE_OFFSET = 150;
 
 export default class ChannelSidebar extends PureComponent {
     static propTypes = {
@@ -46,7 +45,6 @@ export default class ChannelSidebar extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
         previewChannel: PropTypes.func,
@@ -59,17 +57,12 @@ export default class ChannelSidebar extends PureComponent {
     constructor(props) {
         super(props);
 
-        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-        if (props.isLandscape || DeviceTypes.IS_TABLET) {
-            openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
-        }
-
         this.swiperIndex = 1;
         this.drawerRef = React.createRef();
         this.channelListRef = React.createRef();
         this.state = {
             show: false,
-            openDrawerOffset,
+            openDrawerOffset: DRAWER_INITIAL_OFFSET,
             drawerOpened: false,
             searching: false,
             isSplitView: false,
@@ -79,7 +72,7 @@ export default class ChannelSidebar extends PureComponent {
     componentDidMount() {
         this.mounted = true;
         this.props.actions.getTeams();
-        this.handleDimensions();
+        this.handleDimensions({window: Dimensions.get('window')});
         this.handlePermanentSidebar();
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.on('renderDrawer', this.handleShowDrawerContent);
@@ -87,21 +80,6 @@ export default class ChannelSidebar extends PureComponent {
         EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         Dimensions.addEventListener('change', this.handleDimensions);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        const {isLandscape} = this.props;
-
-        if (nextProps.isLandscape !== isLandscape) {
-            if (this.state.openDrawerOffset !== 0) {
-                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-                if (nextProps.isLandscape || DeviceTypes.IS_TABLET) {
-                    openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
-                }
-
-                this.setState({openDrawerOffset});
-            }
-        }
     }
 
     componentWillUnmount() {
@@ -123,12 +101,23 @@ export default class ChannelSidebar extends PureComponent {
         return false;
     };
 
-    handleDimensions = () => {
-        if (DeviceTypes.IS_TABLET && this.mounted) {
-            mattermostManaged.isRunningInSplitView().then((result) => {
-                const isSplitView = Boolean(result.isSplitView);
-                this.setState({isSplitView});
-            });
+    handleDimensions = ({window}) => {
+        if (this.mounted) {
+            if (DeviceTypes.IS_TABLET) {
+                mattermostManaged.isRunningInSplitView().then((result) => {
+                    const isSplitView = Boolean(result.isSplitView);
+                    this.setState({isSplitView});
+                });
+            }
+
+            if (this.state.openDrawerOffset !== 0) {
+                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+                if ((window.width > window.height) || DeviceTypes.IS_TABLET) {
+                    openDrawerOffset = window.width * 0.5;
+                }
+
+                this.setState({openDrawerOffset});
+            }
         }
     };
 
@@ -328,6 +317,7 @@ export default class ChannelSidebar extends PureComponent {
             return null;
         }
 
+        const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_X || mattermostManaged.hasSafeAreaInsets;
         const multipleTeams = teamsCount > 1;
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {
@@ -376,6 +366,7 @@ export default class ChannelSidebar extends PureComponent {
 
         return (
             <SafeAreaView
+                excludeFooter={true}
                 navBarBackgroundColor={theme.sidebarBg}
                 backgroundColor={theme.sidebarHeaderBg}
                 footerColor={theme.sidebarBg}
@@ -386,6 +377,7 @@ export default class ChannelSidebar extends PureComponent {
                     showTeams={showTeams}
                     drawerOpened={this.state.drawerOpened}
                     drawerWidth={drawerWidth}
+                    hasSafeAreaInsets={hasSafeAreaInsets}
                 >
                     {lists}
                 </DrawerSwiper>

@@ -651,9 +651,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         scrollView: {
+            flex: 1,
             padding: 15,
         },
         input: {
+            flex: 1,
             color: theme.centerChannelColor,
             fontSize: 17,
             height: INPUT_HEIGHT,
