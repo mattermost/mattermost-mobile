@@ -160,10 +160,12 @@ export default class ChannelItem extends PureComponent {
         if (mentions) {
             badge = (
                 <Badge
+                    containerStyle={style.badgeContainer}
                     style={style.badge}
                     countStyle={style.mention}
                     count={mentions}
                     onPress={this.onPress}
+                    minWidth={21}
                 />
             );
         }
@@ -238,31 +240,38 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 11,
         },
         text: {
-            color: changeOpacity(theme.sidebarText, 0.4),
-            fontSize: 14,
-            fontWeight: '600',
+            color: changeOpacity(theme.sidebarText, 0.88),
+            fontSize: 16,
+            lineHeight: 24,
             paddingRight: 10,
             flex: 1,
             alignSelf: 'center',
+            fontFamily: 'Open Sans',
         },
         textActive: {
             color: theme.sidebarTextActiveColor,
         },
         textUnread: {
             color: theme.sidebarUnreadText,
+            fontWeight: '500',
         },
         badge: {
             backgroundColor: theme.mentionBg,
-            borderColor: theme.sidebarHeaderBg,
-            borderRadius: 10,
-            borderWidth: 1,
             padding: 3,
             position: 'relative',
-            right: 16,
+            height: 21,
+        },
+        badgeContainer: {
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 14,
+            borderWidth: 0,
+            right: 0,
+            top: 11,
+            marginRight: 16,
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10,
+            fontSize: 12,
         },
         muted: {
             opacity: 0.5,

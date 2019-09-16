@@ -82,14 +82,16 @@ exports[`ChannelItem should match snapshot 1`] = `
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.88)",
                 "flex": 1,
-                "fontSize": 14,
-                "fontWeight": "600",
+                "fontFamily": "Open Sans",
+                "fontSize": 16,
+                "lineHeight": 24,
                 "paddingRight": 10,
               },
               Object {
                 "color": "#ffffff",
+                "fontWeight": "500",
               },
             ]
           }
@@ -195,10 +197,11 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.88)",
                 "flex": 1,
-                "fontSize": 14,
-                "fontWeight": "600",
+                "fontFamily": "Open Sans",
+                "fontSize": 16,
+                "lineHeight": 24,
                 "paddingRight": 10,
               },
               Object {
@@ -308,10 +311,11 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.88)",
                 "flex": 1,
-                "fontSize": 14,
-                "fontWeight": "600",
+                "fontFamily": "Open Sans",
+                "fontSize": 16,
+                "lineHeight": 24,
                 "paddingRight": 10,
               },
               Object {
@@ -421,10 +425,11 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.88)",
                 "flex": 1,
-                "fontSize": 14,
-                "fontWeight": "600",
+                "fontFamily": "Open Sans",
+                "fontSize": 16,
+                "lineHeight": 24,
                 "paddingRight": 10,
               },
               Object {
@@ -523,14 +528,16 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.88)",
                 "flex": 1,
-                "fontSize": 14,
-                "fontWeight": "600",
+                "fontFamily": "Open Sans",
+                "fontSize": 16,
+                "lineHeight": 24,
                 "paddingRight": 10,
               },
               Object {
                 "color": "#ffffff",
+                "fontWeight": "500",
               },
             ]
           }
@@ -631,14 +638,16 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.88)",
                 "flex": 1,
-                "fontSize": 14,
-                "fontWeight": "600",
+                "fontFamily": "Open Sans",
+                "fontSize": 16,
+                "lineHeight": 24,
                 "paddingRight": 10,
               },
               Object {
                 "color": "#ffffff",
+                "fontWeight": "500",
               },
             ]
           }
@@ -735,14 +744,16 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.88)",
                 "flex": 1,
-                "fontSize": 14,
-                "fontWeight": "600",
+                "fontFamily": "Open Sans",
+                "fontSize": 16,
+                "lineHeight": 24,
                 "paddingRight": 10,
               },
               Object {
                 "color": "#ffffff",
+                "fontWeight": "500",
               },
             ]
           }
@@ -750,26 +761,33 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           display_name
         </Text>
         <Badge
+          containerStyle={
+            Object {
+              "borderColor": "#1153ab",
+              "borderRadius": 14,
+              "borderWidth": 0,
+              "marginRight": 16,
+              "right": 0,
+              "top": 11,
+            }
+          }
           count={1}
           countStyle={
             Object {
               "color": "#145dbf",
-              "fontSize": 10,
+              "fontSize": 12,
             }
           }
           extraPaddingHorizontal={10}
           minHeight={20}
-          minWidth={20}
+          minWidth={21}
           onPress={[Function]}
           style={
             Object {
               "backgroundColor": undefined,
-              "borderColor": "#1153ab",
-              "borderRadius": 10,
-              "borderWidth": 1,
+              "height": 21,
               "padding": 3,
               "position": "relative",
-              "right": 16,
             }
           }
         />
