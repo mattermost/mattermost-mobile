@@ -142,8 +142,6 @@ export default class EmojiSuggestion extends Component {
             let prefix = ':';
             if (Platform.OS === 'ios') {
                 prefix = '::';
-            } else {
-                completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `:${emoji}: `);
             }
 
             const emojiData = getEmojiByName(emoji);
