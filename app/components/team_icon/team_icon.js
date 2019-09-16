@@ -17,20 +17,21 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class TeamIcon extends React.PureComponent {
     static propTypes = {
+        displayName: PropTypes.string,
+        lastIconUpdate: PropTypes.number,
         teamId: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
         styleContainer: PropTypes.any,
         styleText: PropTypes.any,
         styleImage: PropTypes.any,
-        team: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
         super(props);
 
-        const {team} = props;
-        if (team.last_team_icon_update) {
-            ImageCacheManager.cache('', Client4.getTeamIconUrl(team.id, team.last_team_icon_update), this.setImageURL);
+        const {lastIconUpdate, teamId} = props;
+        if (lastIconUpdate) {
+            ImageCacheManager.cache('', Client4.getTeamIconUrl(teamId, lastIconUpdate), this.setImageURL);
         }
 
         this.state = {
@@ -40,12 +41,18 @@ export default class TeamIcon extends React.PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({imageError: false});
+        const newState = {imageError: false};
 
-        if (this.props.team.last_team_icon_update !== nextProps.team.last_team_icon_update) {
-            const {team} = nextProps;
-            ImageCacheManager.cache('', Client4.getTeamIconUrl(team.id, team.last_team_icon_update), this.setImageURL);
+        if (this.props.teamId !== nextProps.teamId) {
+            newState.teamIcon = null;
         }
+
+        if (nextProps.lastIconUpdate && this.props.lastIconUpdate !== nextProps.lastIconUpdate) {
+            const {lastIconUpdate, teamId} = nextProps;
+            ImageCacheManager.cache('', Client4.getTeamIconUrl(teamId, lastIconUpdate), this.setImageURL);
+        }
+
+        this.setState(newState);
     }
 
     setImageURL = (teamIcon) => {
@@ -54,7 +61,7 @@ export default class TeamIcon extends React.PureComponent {
 
     render() {
         const {
-            team,
+            displayName,
             theme,
             styleContainer,
             styleText,
@@ -75,7 +82,7 @@ export default class TeamIcon extends React.PureComponent {
         } else {
             teamIconContent = (
                 <Text style={[styles.text, styleText]}>
-                    {team.display_name.substr(0, 2).toUpperCase()}
+                    {displayName.substr(0, 2).toUpperCase()}
                 </Text>
             );
         }
