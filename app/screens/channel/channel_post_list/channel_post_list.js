@@ -6,7 +6,6 @@ import React, {PureComponent} from 'react';
 import {
     Keyboard,
     Platform,
-    StyleSheet,
     View,
 } from 'react-native';
 
@@ -18,6 +17,7 @@ import PostList from 'app/components/post_list';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import telemetry from 'app/telemetry';
 
 let ChannelIntro = null;
@@ -216,8 +216,11 @@ export default class ChannelPostList extends PureComponent {
             );
         }
 
+        const style = getStyleSheet(theme);
+
         return (
             <View style={style.container}>
+                <View style={style.separator}/>
                 {component}
                 <AnnouncementBanner/>
                 <RetryBarIndicator/>
@@ -226,8 +229,12 @@ export default class ChannelPostList extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
     },
-});
+    separator: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+        height: 1,
+    },
+}));
