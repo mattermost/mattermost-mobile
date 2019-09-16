@@ -8,6 +8,7 @@ import React, { Component } from 'react';
 import {
     Animated,
     Dimensions,
+    Easing,
     Keyboard,
     PanResponder,
     StyleSheet,
@@ -183,7 +184,7 @@ export default class DrawerLayout extends Component {
         /* Overlay styles */
         const overlayOpacity = this.openValue.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 0.7],
+            outputRange: [0, 0.5],
             extrapolate: 'clamp',
         });
         const animatedOverlayStyles = { opacity: overlayOpacity };
@@ -274,10 +275,10 @@ export default class DrawerLayout extends Component {
     openDrawer = (options: DrawerMovementOptionType = {}) => {
         if (!this.props.isTablet) {
             this._emitStateChanged(SETTLING);
-            Animated.spring(this.openValue, {
+            Animated.timing(this.openValue, {
                 toValue: 1,
-                bounciness: 0,
-                restSpeedThreshold: 0.1,
+                duration: 150,
+                easing: Easing.out(Easing.cubic),
                 useNativeDriver: this.props.useNativeAnimations,
                 ...options,
             }).start(() => {
@@ -295,10 +296,10 @@ export default class DrawerLayout extends Component {
 
     closeDrawer = (options: DrawerMovementOptionType = {}) => {
         this._emitStateChanged(SETTLING);
-        Animated.spring(this.openValue, {
+        Animated.timing(this.openValue, {
             toValue: 0,
-            bounciness: 0,
-            restSpeedThreshold: 1,
+            duration: 150,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: this.props.useNativeAnimations,
             ...options,
         }).start(() => {

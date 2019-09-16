@@ -18,6 +18,7 @@ export default class SafeAreaIos extends PureComponent {
         backgroundColor: PropTypes.string,
         children: PropTypes.node.isRequired,
         excludeHeader: PropTypes.bool,
+        excludeFooter: PropTypes.bool,
         footerColor: PropTypes.string,
         footerComponent: PropTypes.node,
         forceTop: PropTypes.number,
@@ -36,12 +37,17 @@ export default class SafeAreaIos extends PureComponent {
     constructor(props) {
         super(props);
 
+        let insetBottom = 0;
+        if ((DeviceTypes.IS_IPHONE_X || mattermostManaged.hasSafeAreaInsets) && props.excludeFooter) {
+            insetBottom = 20;
+        }
+
         this.state = {
             keyboard: false,
             safeAreaInsets: {
                 top: DeviceTypes.IS_IPHONE_X ? 44 : 20,
                 left: 0,
-                bottom: DeviceTypes.IS_IPHONE_X || mattermostManaged.hasSafeAreaInsets ? 20 : 0,
+                bottom: insetBottom,
                 right: 0,
             },
             statusBarHeight: 20,
@@ -152,7 +158,7 @@ export default class SafeAreaIos extends PureComponent {
     };
 
     render() {
-        const {backgroundColor, children, footerColor, footerComponent, keyboardOffset, theme, useLandscapeMargin} = this.props;
+        const {backgroundColor, children, excludeFooter, footerColor, footerComponent, keyboardOffset, theme, useLandscapeMargin} = this.props;
         const {keyboard, safeAreaInsets} = this.state;
 
         let bgColor = theme.centerChannelBg;
@@ -170,6 +176,11 @@ export default class SafeAreaIos extends PureComponent {
             offset = keyboardOffset;
         }
 
+        let bottomInset = safeAreaInsets.bottom;
+        if (excludeFooter) {
+            bottomInset = 0;
+        }
+
         return (
             <View
                 style={{
@@ -181,7 +192,7 @@ export default class SafeAreaIos extends PureComponent {
             >
                 {this.renderTopBar()}
                 {children}
-                <View style={{height: keyboard ? offset : safeAreaInsets.bottom, backgroundColor: bottomColor}}>
+                <View style={{height: keyboard ? offset : bottomInset, backgroundColor: bottomColor}}>
                     {footerComponent}
                 </View>
             </View>

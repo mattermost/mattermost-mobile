@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
+import Fade from 'app/components/fade';
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -28,45 +29,47 @@ export default class UnreadIndicator extends PureComponent {
 
     render() {
         const {onPress, show, theme} = this.props;
-
-        if (!show) {
-            return null;
-        }
-
         const style = getStyleSheet(theme);
-
         return (
-            <TouchableWithoutFeedback onPress={onPress}>
-                <View
-                    style={[style.container, this.props.style]}
-                >
-                    <FormattedText
-                        style={[style.indicatorText, this.props.textStyle]}
-                        id='sidebar.unreads'
-                        defaultMessage='More unreads'
-                    />
-                    <IonIcon
-                        size={14}
-                        name='md-arrow-round-up'
-                        color={theme.mentionColor}
-                        style={style.arrow}
-                    />
-                </View>
-            </TouchableWithoutFeedback>
+            <Fade
+                visible={show}
+                style={style.container}
+                duration={150}
+                disableScale={true}
+            >
+                <TouchableWithoutFeedback onPress={onPress}>
+                    <View style={[style.wrapper, this.props.style]}>
+                        <FormattedText
+                            style={[style.indicatorText, this.props.textStyle]}
+                            id='sidebar.unreads'
+                            defaultMessage='More unreads'
+                        />
+                        <IonIcon
+                            size={14}
+                            name='md-arrow-round-up'
+                            color={theme.mentionColor}
+                            style={style.arrow}
+                        />
+                    </View>
+                </TouchableWithoutFeedback>
+            </Fade>
         );
     }
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        arrow: {
+            position: 'relative',
+            bottom: -1,
+        },
         container: {
             justifyContent: 'center',
             alignItems: 'center',
             flexDirection: 'row',
             position: 'absolute',
-            borderRadius: 15,
-            marginHorizontal: 25,
-            height: 25,
+            right: 0,
+            left: 0,
         },
         indicatorText: {
             backgroundColor: 'transparent',
@@ -77,9 +80,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             textAlign: 'center',
             textAlignVertical: 'center',
         },
-        arrow: {
-            position: 'relative',
-            bottom: -1,
+        wrapper: {
+            borderRadius: 15,
+            height: 25,
+            flexDirection: 'row',
+            paddingLeft: 10,
+            paddingRight: 12,
+            justifyContent: 'center',
+            alignItems: 'center',
         },
     };
 });

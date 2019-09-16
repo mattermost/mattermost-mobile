@@ -81,7 +81,7 @@ class EMMProvider {
             return false;
         }
 
-        this.setPerformingAuthentication(false);
+        this.performingAuthentication = false;
         return true;
     };
 
