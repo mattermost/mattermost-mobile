@@ -67,6 +67,16 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
         size={25}
       />
       <Badge
+        containerStyle={
+          Object {
+            "borderColor": "#1153ab",
+            "borderRadius": 14,
+            "borderWidth": 2,
+            "position": "absolute",
+            "right": -14,
+            "top": -7,
+          }
+        }
         count={1}
         countStyle={
           Object {
@@ -76,19 +86,13 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
         }
         extraPaddingHorizontal={10}
         minHeight={20}
-        minWidth={20}
+        minWidth={19}
         onPress={[Function]}
         style={
           Object {
             "backgroundColor": undefined,
-            "borderColor": "#1153ab",
-            "borderRadius": 10,
-            "borderWidth": 1,
-            "left": -13,
+            "height": 19,
             "padding": 3,
-            "position": "absolute",
-            "right": 0,
-            "top": -4,
           }
         }
       />
