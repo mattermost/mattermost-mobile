@@ -4,12 +4,15 @@
 import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {TeamTypes} from 'app/realm/action_types';
+import {setChannelLoading} from 'app/actions/views/channel';
 import {NavigationTypes} from 'app/constants';
+import {TeamTypes} from 'app/realm/action_types';
 import {getConfig, getCurrentTeamId} from 'app/realm/selectors/general';
 import {selectFirstTeamAvailable} from 'app/utils/teams';
 import {teamDataToRealm} from 'app/realm/utils/team';
 import {forceLogoutIfNecessary} from './helpers';
+
+import {loadChannelsForTeam, loadSidebarDirectMessagesProfiles, selectInitialChannel} from './channel';
 
 // TODO: Remove redux compatibility
 import {reduxStore} from 'app/store';
@@ -46,11 +49,41 @@ export function getMyTeams() {
     };
 }
 
-export function handleTeamChange(nextTeamId, currentTeamId) {
+function handleTeamChange(nextTeamId) {
     return (dispatch) => {
+        //only select the team and unset the current channel id
+        dispatch({type: TeamTypes.SELECT_TEAM_AND_CLEAR_CHANNEL, data: nextTeamId});
+        reduxStore.dispatch(setChannelLoading(false));
+    };
+}
+
+export function handleTeamChangeAndSwitchToInitialChannel(nextTeamId, currentTeamId) {
+    return async (dispatch, getState) => {
         if (nextTeamId !== currentTeamId) {
-            dispatch({type: TeamTypes.SELECT_TEAM, data: nextTeamId});
-            reduxStore.dispatch(handleTeamChangeRedux(nextTeamId));
+            try {
+                reduxStore.dispatch(setChannelLoading(true));
+                const realm = getState();
+                const teamHasChannels = realm.objects('Channel').filtered('team.id=$0', nextTeamId);
+                if (teamHasChannels.isEmpty()) {
+                    // we need to wait to load the channels for the team as we don't have any yet
+                    await dispatch(loadChannelsForTeam(nextTeamId));
+                } else {
+                    dispatch(loadChannelsForTeam(nextTeamId));
+                }
+
+                dispatch(loadSidebarDirectMessagesProfiles(nextTeamId));
+                requestAnimationFrame(async () => {
+                    const initialChannel = await dispatch(selectInitialChannel(nextTeamId));
+                    if (initialChannel.error) {
+                        dispatch(handleTeamChange(nextTeamId));
+                    }
+                });
+            } catch {
+                dispatch(handleTeamChange(nextTeamId));
+            } finally {
+                // TODO: Remove redux
+                reduxStore.dispatch(handleTeamChangeRedux(nextTeamId));
+            }
         }
     };
 }
@@ -68,7 +101,7 @@ export function selectDefaultTeam() {
         let defaultTeam = selectFirstTeamAvailable(teams, ExperimentalPrimaryTeam);
 
         if (defaultTeam) {
-            dispatch(handleTeamChange(defaultTeam.id, getCurrentTeamId(general)));
+            dispatch(handleTeamChangeAndSwitchToInitialChannel(defaultTeam.id, getCurrentTeamId(general)));
         } else {
             // If for some reason we reached this point cause of a failure in rehydration or something
             // lets fetch the teams one more time to make sure the user does not belong to any team
@@ -84,7 +117,7 @@ export function selectDefaultTeam() {
             }
 
             if (defaultTeam) {
-                dispatch(handleTeamChange(defaultTeam.id));
+                dispatch(handleTeamChangeAndSwitchToInitialChannel(defaultTeam.id));
             } else {
                 EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
             }

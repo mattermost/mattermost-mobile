@@ -35,8 +35,9 @@ export default class ChannelIOS extends ChannelBase {
     optionalProps = {previewChannel: this.previewChannel};
 
     render() {
-        const {height} = Dimensions.get('window');
+        const {height, width} = Dimensions.get('window');
         const {
+            currentTeamId,
             currentChannelId,
             currentUserId,
             theme,
@@ -47,15 +48,27 @@ export default class ChannelIOS extends ChannelBase {
             channelLoaderStyle.push(style.iOSHomeIndicator);
         }
 
+        if (!currentTeamId) {
+            return (
+                <ChannelLoader
+                    height={height}
+                    style={channelLoaderStyle}
+                />
+            );
+        }
+
         const drawerContent = (
             <React.Fragment>
                 <SafeAreaView>
                     <StatusBar/>
                     <NetworkIndicator/>
                     <ChannelNavBar
+                        channelId={currentChannelId}
+                        isLandscape={width > height}
                         openChannelDrawer={this.openChannelSidebar}
                         openSettingsDrawer={this.openSettingsSidebar}
                         onPress={this.goToChannelInfo}
+                        theme={theme}
                     />
                     <ChannelPostList
                         channelId={currentChannelId}

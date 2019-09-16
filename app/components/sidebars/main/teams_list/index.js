@@ -5,7 +5,7 @@ import {realmConnect} from 'realm-react-redux';
 
 import {General} from 'app/constants';
 import {showModal} from 'app/actions/navigation';
-import {handleTeamChange} from 'app/realm/actions/team';
+import {handleTeamChangeAndSwitchToInitialChannel} from 'app/realm/actions/team';
 
 import TeamsList from './teams_list';
 
@@ -16,18 +16,19 @@ function mapPropsToQueries(realm) {
     const user = realm.objectForPrimaryKey('User', general.currentUserId);
     const openTeams = realm.objects('Team').filtered('allowOpenInvites=true AND deleteAt=0 AND members.user.id != $0', user.id);
     const myTeams = realm.objects('Team').filtered('members.user.id=$0 AND deleteAt=0', user.id).sorted('displayName');
-    return [myTeams, openTeams];
+    return [general, myTeams, openTeams];
 }
 
-function mapQueriesToProps([myTeams, openTeams]) {
+function mapQueriesToProps([general, myTeams, openTeams]) {
     return {
+        currentTeamId: general?.currentTeamId,
         hasOtherJoinableTeams: !openTeams.isEmpty(),
         teams: myTeams,
     };
 }
 
 const mapRealmDispatchToProps = {
-    handleTeamChange,
+    handleTeamChangeAndSwitchToInitialChannel,
     showModal,
 };
 

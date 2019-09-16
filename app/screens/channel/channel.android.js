@@ -19,18 +19,30 @@ import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
 
 export default class ChannelAndroid extends ChannelBase {
     render() {
-        const {currentChannelId, currentUserId, theme} = this.props;
-        const {height} = Dimensions.get('window');
-
+        const {currentChannelId, currentTeamId, currentUserId, theme} = this.props;
+        const {height, width} = Dimensions.get('window');
         const channelLoaderStyle = [style.channelLoader, {height}];
+
+        if (!currentTeamId) {
+            return (
+                <ChannelLoader
+                    height={height}
+                    style={channelLoaderStyle}
+                />
+            );
+        }
+
         const drawerContent = (
             <SafeAreaView>
                 <StatusBar/>
                 <NetworkIndicator/>
                 <ChannelNavBar
+                    channelId={currentChannelId}
+                    isLandscape={width > height}
                     openChannelDrawer={this.openChannelSidebar}
                     openSettingsDrawer={this.openSettingsSidebar}
                     onPress={this.goToChannelInfo}
+                    theme={theme}
                 />
                 <KeyboardLayout>
                     <View style={style.flex}>

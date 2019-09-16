@@ -8,7 +8,7 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import {DeviceTypes} from 'app/constants';
 
-import ChannelNavBar from './channel_nav_bar';
+import ChannelNavBar from './index';
 
 jest.mock('react-intl');
 

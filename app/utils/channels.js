@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Preferences} from 'mattermost-redux/constants';
+import {General, Preferences} from 'app/constants';
+import {displayUserName} from 'app/utils/users';
 
 export function isDirectChannelVisible(userId, myPreferences, channel) {
     const channelId = getUserIdFromChannelName(userId, channel.name);
@@ -33,4 +34,47 @@ export function sortChannelsByDisplayName(locale, a, b) {
     }
 
     return a.name.toLowerCase().localeCompare(b.name.toLowerCase(), locale, {numeric: true});
+}
+
+export function isChannelMuted(member) {
+    return member?.notifyPropsAsJSON?.mark_unread === General.MENTION || false; //eslint-disable-line camelcase
+}
+
+export function getChannelDisplayName(channel, currentUserId, teammateNameDisplaySetting) {
+    if (channel?.type === General.OPEN_CHANNEL || channel?.type === General.PRIVATE_CHANNEL) {
+        return channel.displayName;
+    }
+
+    const names = [];
+    if (channel?.members?.length) {
+        channel.members.forEach((m) => {
+            if (m.user.id !== currentUserId) {
+                names.push(displayUserName(m.user, teammateNameDisplaySetting));
+            }
+        });
+    }
+
+    return names.join(', ').trim().replace(/,\s*$/, '');
+}
+
+export function getDirectChannelName(id, otherId) {
+    let handle;
+
+    if (otherId > id) {
+        handle = id + '__' + otherId;
+    } else {
+        handle = otherId + '__' + id;
+    }
+
+    return handle;
+}
+
+export function isOwnDirectMessage(channel, currentUserId) {
+    if (channel?.type === General.DM_CHANNEL) {
+        const otherUserId = getUserIdFromChannelName(currentUserId, channel.name);
+
+        return otherUserId === currentUserId;
+    }
+
+    return false;
 }

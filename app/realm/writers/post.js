@@ -32,13 +32,24 @@ function postsWriter(realm, action) {
             storePosts(realm, data.posts);
 
             if (firstPost && lastPost) {
-                const newPostsTimesInChannel = {
-                    channelId,
-                    start: firstPost.create_at,
-                    end: lastPost.create_at,
-                };
+                const postsTimesInChannel = realm.objects('PostsTimesInChannel').filtered('channelId = $0 AND (start >= $1 OR end <= $2)', channelId, firstPost.create_at, lastPost.create_at);
+                if (postsTimesInChannel.isEmpty()) {
+                    const newPostsTimesInChannel = {
+                        channelId,
+                        start: firstPost.create_at,
+                        end: lastPost.create_at,
+                    };
+                    realm.create('PostsTimesInChannel', newPostsTimesInChannel);
+                } else {
+                    const postTimesInChannelRealm = postsTimesInChannel[0];
+                    if (firstPost.create_at < postTimesInChannelRealm.start) {
+                        postTimesInChannelRealm.start = firstPost.create_at;
+                    }
 
-                realm.create('PostsTimesInChannel', newPostsTimesInChannel);
+                    if (lastPost.create_at > postTimesInChannelRealm.end) {
+                        postTimesInChannelRealm.end = lastPost.create_at;
+                    }
+                }
             }
         }
         break;
@@ -52,10 +63,38 @@ function postsWriter(realm, action) {
 
             const postsTimesInChannel = realm.objects('PostsTimesInChannel').filtered('channelId=$0', channelId).sorted('start', true)[0];
             const lastPost = data.posts.find((p) => p.id === order[0]);
-            postsTimesInChannel.end = lastPost.create_at;
+            if (lastPost.create_at > postsTimesInChannel.end) {
+                postsTimesInChannel.end = lastPost.create_at;
+            }
         }
         break;
     }
+
+    case PostTypes.RECEIVED_POSTS_BEFORE: {
+        const data = action.data || action.payload;
+        const {beforePostId, channelId, order} = data;
+
+        if (data.posts?.length) {
+            storePosts(realm, data.posts);
+
+            const beforePost = realm.objectForPrimaryKey('Post', beforePostId);
+            const postsTimesInChannel = realm.objects('PostsTimesInChannel').filtered('channelId=$0 AND end >= $1 AND start <= $1', channelId, beforePost.createAt);
+            const firstPost = data.posts.find((p) => p.id === order[order.length - 1]);
+
+            postsTimesInChannel[0].start = firstPost.create_at;
+        }
+        break;
+    }
+
+    case PostTypes.RECEIVED_POSTS_IN_THREAD: {
+        const data = action.data || action.payload;
+
+        if (data.posts?.length) {
+            storePosts(realm, data.posts);
+        }
+        break;
+    }
+
     default:
         break;
     }

@@ -34,7 +34,7 @@ const VIEWABILITY_CONFIG = {
 
 export default class TeamsList extends PureComponent {
     static propTypes = {
-        handleTeamChange: PropTypes.func.isRequired,
+        handleTeamChangeAndSwitchToInitialChannel: PropTypes.func.isRequired,
         showModal: PropTypes.func.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -64,7 +64,7 @@ export default class TeamsList extends PureComponent {
     }
 
     selectTeam = (teamId) => {
-        const {closeChannelDrawer, currentTeamId, handleTeamChange} = this.props;
+        const {closeChannelDrawer, currentTeamId, handleTeamChangeAndSwitchToInitialChannel} = this.props;
 
         if (teamId !== currentTeamId) {
             telemetry.reset();
@@ -75,7 +75,7 @@ export default class TeamsList extends PureComponent {
         requestAnimationFrame(() => {
             if (teamId !== currentTeamId) {
                 tracker.teamSwitch = Date.now();
-                handleTeamChange(teamId);
+                handleTeamChangeAndSwitchToInitialChannel(teamId);
             }
 
             closeChannelDrawer();

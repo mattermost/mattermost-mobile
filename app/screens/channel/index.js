@@ -15,19 +15,19 @@ import options from 'app/store/realm_options';
 import Channel from './channel';
 
 function mapPropsToQueries(realm) {
-    const general = realm.objects('General').filtered(`id="${General.REALM_SCHEMA_ID}"`);
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
     const themePreference = realm.objects('Preference').filtered(`category="${Preferences.CATEGORY_THEME}"`);
-    const currentUser = realm.objectForPrimaryKey('User', general[0].currentUserId);
+    const currentUser = realm.objectForPrimaryKey('User', general.currentUserId);
     return [currentUser, general, themePreference];
 }
 
 function mapQueriesToProps([currentUser, general, themePreference]) {
     return {
-        currentChannelId: general[0]?.currentChannelId,
-        currentTeamId: general[0]?.currentTeamId,
+        currentChannelId: general?.currentChannelId,
+        currentTeamId: general?.currentTeamId,
         currentUserId: currentUser?.id,
-        theme: getTheme(general, themePreference),
-        showTermsOfService: shouldShowTermsOfService(currentUser, general[0]),
+        theme: getTheme([general], themePreference),
+        showTermsOfService: shouldShowTermsOfService(currentUser, general),
     };
 }
 

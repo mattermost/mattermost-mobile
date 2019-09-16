@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     BackHandler,
@@ -32,7 +32,7 @@ import telemetry from 'app/telemetry';
 const DRAWER_INITIAL_OFFSET = 40;
 const DRAWER_LANDSCAPE_OFFSET = 150;
 
-export default class ChannelSidebar extends Component {
+export default class ChannelSidebar extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
@@ -102,22 +102,6 @@ export default class ChannelSidebar extends Component {
                 this.setState({openDrawerOffset});
             }
         }
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, deviceWidth, isLandscape, teamsCount, theme} = this.props;
-        const {openDrawerOffset, isSplitView, permanentSidebar, show, searching} = this.state;
-
-        if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching) {
-            return true;
-        }
-
-        return nextProps.currentTeamId !== currentTeamId ||
-            nextProps.isLandscape !== isLandscape || nextProps.deviceWidth !== deviceWidth ||
-            nextProps.teamsCount !== teamsCount ||
-            nextProps.theme !== theme ||
-            nextState.isSplitView !== isSplitView ||
-            nextState.permanentSidebar !== permanentSidebar;
     }
 
     componentWillUnmount() {

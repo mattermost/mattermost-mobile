@@ -20,6 +20,8 @@ import {
     loadChannelsIfNecessary,
     selectInitialChannel as selectInitialChannelRedux,
     handleSelectChannel as handleSelectChannelRedux,
+    loadProfilesAndTeamMembersForDMSidebar as loadProfilesAndTeamMembersForDMSidebarRedux,
+    setChannelLoading as setChannelLoadingRedux,
 } from 'app/actions/views/channel';
 
 export function loadChannelsForTeam(teamId) {
@@ -59,7 +61,7 @@ export function loadChannelsForTeam(teamId) {
     };
 }
 
-export function loadSidebarDirectMessagesProfiles() {
+export function loadSidebarDirectMessagesProfiles(teamId) {
     function buildPref(name, category, userId) {
         return {
             user_id: userId,
@@ -74,7 +76,7 @@ export function loadSidebarDirectMessagesProfiles() {
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         const directChannels = realm.objects('Channel').filtered('type=$0 OR type=$1', General.DM_CHANNEL, General.GM_CHANNEL);
         const prefs = [];
-
+        reduxStore.dispatch(loadProfilesAndTeamMembersForDMSidebarRedux(teamId || general.currentTeamId));
         const currentUserId = general.currentUserId;
 
         directChannels.forEach((c) => {
@@ -126,8 +128,9 @@ export function selectInitialChannel(teamId) {
         const isGMVisible = lastChannel?.type === General.DM_CHANNEL && isGroupMessageVisible(realm, lastChannelId);
 
         const isMember = lastChannel?.members.filtered('user.id=$0', general.currentUserId);
+
         if (isMember?.length && (lastChannel?.team.id === teamId || isDMVisible || isGMVisible)) {
-            return dispatch(handleSelectChannel(lastChannelId));
+            return dispatch(handleSelectChannel(lastChannelId, teamId));
         }
 
         return dispatch(selectDefaultChannel(teamId));
@@ -158,7 +161,7 @@ export function selectDefaultChannel(teamId) {
             }
 
             if (channel) {
-                return dispatch(handleSelectChannel(channel.id));
+                return dispatch(handleSelectChannel(channel.id, teamId));
             }
 
             return {error: 'no default channel for this team'};
@@ -168,27 +171,35 @@ export function selectDefaultChannel(teamId) {
     };
 }
 
-export function handleSelectChannel(channelId, fromPushNotification = false) {
+export function handleSelectChannel(channelId, teamId, fromPushNotification = false) {
     return async (dispatch, getState) => {
         reduxStore.dispatch(handleSelectChannelRedux(channelId, fromPushNotification));
         const realm = getState();
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         const currentChannelId = general.currentChannelId;
+        let currentChannel = null;
+        if (currentChannelId) {
+            currentChannel = realm.objectForPrimaryKey('Channel', currentChannelId);
+        }
+
+        const lastTeamId = currentChannel?.team?.id || general.currentTeamId || teamId;
 
         // If the app is open from push notification, we already fetched the posts.
         if (!fromPushNotification) {
             dispatch(loadPostsWithRetry(channelId));
         }
 
+        // TODO: Fix the team based on the channel
         reduxStore.dispatch({
             type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-            teamId: general.currentTeamId,
+            teamId: lastTeamId,
             channelId,
         });
 
-        dispatch({
+        await dispatch({
             type: ChannelTypes.SELECT_CHANNEL,
             data: {
+                teamId,
                 nextChannel: {
                     id: channelId,
                     setLastViewed: !fromPushNotification,
@@ -199,7 +210,9 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             },
         });
 
-        Client4.viewMyChannel(channelId, currentChannelId).then().catch((error) => {
+        reduxStore.dispatch(setChannelLoadingRedux(false));
+
+        Client4.viewMyChannel(channelId, channelId === currentChannelId ? null : currentChannelId).then().catch((error) => {
             forceLogoutIfNecessary(error);
         });
 

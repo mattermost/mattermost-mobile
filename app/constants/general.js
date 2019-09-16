@@ -16,4 +16,6 @@ export default {
         'channel',
         'here',
     ],
+
+    MENTION: 'mention',
 };

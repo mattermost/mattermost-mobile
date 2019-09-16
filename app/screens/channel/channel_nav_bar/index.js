@@ -1,18 +1,145 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {connect} from 'react-redux';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
+import {Dimensions, Platform, View} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
-import {isLandscape} from 'app/selectors/device';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import ChannelNavBar from './channel_nav_bar';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ViewTypes} from 'app/constants';
+import mattermostManaged from 'app/mattermost_managed';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-function mapStateToProps(state) {
-    return {
-        isLandscape: isLandscape(state),
-        theme: getTheme(state),
+import ChannelDrawerButton from './channel_drawer_button';
+import ChannelSearchButton from './channel_search_button';
+import ChannelTitle from './channel_title';
+import SettingDrawerButton from './settings_drawer_button';
+
+const {
+    ANDROID_TOP_LANDSCAPE,
+    ANDROID_TOP_PORTRAIT,
+    IOS_TOP_LANDSCAPE,
+    IOS_TOP_PORTRAIT,
+    STATUS_BAR_HEIGHT,
+} = ViewTypes;
+
+export default class ChannelNavBar extends PureComponent {
+    static propTypes = {
+        channelId: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
+        openChannelDrawer: PropTypes.func.isRequired,
+        openSettingsDrawer: PropTypes.func.isRequired,
+        onPress: PropTypes.func.isRequired,
+        theme: PropTypes.object.isRequired,
     };
+
+    state = {
+        isSplitView: false,
+    };
+
+    componentDidMount() {
+        this.mounted = true;
+        this.handleDimensions();
+        this.handlePermanentSidebar();
+        Dimensions.addEventListener('change', this.handleDimensions);
+        EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+        Dimensions.removeEventListener('change', this.handleDimensions);
+        EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
+    }
+
+    handleDimensions = () => {
+        if (DeviceTypes.IS_TABLET) {
+            mattermostManaged.isRunningInSplitView().then((result) => {
+                const isSplitView = Boolean(result.isSplitView);
+                if (this.mounted) {
+                    this.setState({isSplitView});
+                }
+            });
+        }
+    };
+
+    handlePermanentSidebar = () => {
+        if (DeviceTypes.IS_TABLET) {
+            AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS).then((enabled) => {
+                if (this.mounted) {
+                    this.setState({permanentSidebar: enabled === 'true'});
+                }
+            });
+        }
+    };
+
+    render() {
+        const {channelId, isLandscape, onPress, theme} = this.props;
+        const {openChannelDrawer, openSettingsDrawer} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        let height;
+        let canHaveSubtitle = true;
+        switch (Platform.OS) {
+        case 'android':
+            height = ANDROID_TOP_PORTRAIT;
+            if (DeviceTypes.IS_TABLET) {
+                height = ANDROID_TOP_LANDSCAPE;
+            }
+            break;
+        case 'ios':
+            height = IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT;
+            if (DeviceTypes.IS_TABLET && isLandscape) {
+                height -= 1;
+            } else if (isLandscape) {
+                height = IOS_TOP_LANDSCAPE;
+                canHaveSubtitle = false;
+            }
+
+            if (DeviceTypes.IS_IPHONE_X && isLandscape) {
+                padding.paddingHorizontal = 10;
+                canHaveSubtitle = false;
+            }
+            break;
+        }
+
+        let drawerButtonVisible = false;
+        if (!DeviceTypes.IS_TABLET || this.state.isSplitView || !this.state.permanentSidebar) {
+            drawerButtonVisible = true;
+        }
+
+        return (
+            <View style={[style.header, padding(isLandscape), {height}]}>
+                <ChannelDrawerButton
+                    openDrawer={openChannelDrawer}
+                    visible={drawerButtonVisible}
+                />
+                <ChannelTitle
+                    canHaveSubtitle={canHaveSubtitle}
+                    channelId={channelId}
+                    onPress={onPress}
+                    theme={theme}
+                />
+                <ChannelSearchButton theme={theme}/>
+                <SettingDrawerButton
+                    openDrawer={openSettingsDrawer}
+                    theme={theme}
+                />
+            </View>
+        );
+    }
 }
 
-export default connect(mapStateToProps)(ChannelNavBar);
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        header: {
+            backgroundColor: theme.sidebarHeaderBg,
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            width: '100%',
+            zIndex: 10,
+        },
+    };
+});

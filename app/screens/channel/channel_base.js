@@ -5,20 +5,16 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
-    Dimensions,
     Keyboard,
     StyleSheet,
-    View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import EmptyToolbar from 'app/components/start/empty_toolbar';
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import MainSidebar from 'app/components/sidebars/main';
-import SafeAreaView from 'app/components/safe_area_view';
 import SettingsSidebar from 'app/components/sidebars/settings';
 
 import {preventDoubleTap} from 'app/utils/tap';
@@ -124,8 +120,6 @@ export default class ChannelBase extends PureComponent {
 
         if (!nextProps.currentTeamId) {
             this.props.selectDefaultTeam();
-        } else if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
-            this.loadChannels(nextProps.currentTeamId);
         }
 
         if (nextProps.currentChannelId !== this.props.currentChannelId &&
@@ -238,7 +232,7 @@ export default class ChannelBase extends PureComponent {
                 this.setState({channelsRequestFailed: true});
             }
 
-            loadSidebarDirectMessagesProfiles();
+            loadSidebarDirectMessagesProfiles(teamId);
 
             if (EphemeralStore.appStartedFromPushNotification) {
                 EphemeralStore.appStartedFromPushNotification = false;
@@ -272,52 +266,15 @@ export default class ChannelBase extends PureComponent {
     };
 
     renderChannel(drawerContent, optionalProps = {}) {
-        const {
-            currentChannelId,
-            theme,
-        } = this.props;
-        const {channelsRequestFailed} = this.state;
-
-        if (!currentChannelId) {
-            const dimensions = Dimensions.get('window');
-            if (channelsRequestFailed) {
-                const FailedNetworkAction = require('app/components/failed_network_action').default;
-
-                return (
-                    <SafeAreaView>
-                        <View style={style.flex}>
-                            <EmptyToolbar
-                                theme={theme}
-                                isLandscape={dimensions.width > dimensions.height}
-                            />
-                            <FailedNetworkAction
-                                onRetry={this.retryLoadChannels}
-                                theme={theme}
-                            />
-                        </View>
-                    </SafeAreaView>
-                );
-            }
-
-            const ChannelLoader = require('app/components/channel_loader').default;
-            return (
-                <SafeAreaView>
-                    <View style={style.flex}>
-                        <EmptyToolbar theme={theme}/>
-                        <ChannelLoader
-                            isLandscape={dimensions.width > dimensions.height}
-                            channelIsLoading={true}
-                            theme={theme}
-                        />
-                    </View>
-                </SafeAreaView>
-            );
-        }
+        const {currentUserId, currentTeamId, theme} = this.props;
 
         return (
             <MainSidebar
+                currentTeamId={currentTeamId}
+                currentUserId={currentUserId}
                 ref={this.channelSidebarRef}
                 blurPostTextBox={this.blurPostTextBox}
+                theme={theme}
                 {...optionalProps}
             >
                 <SettingsSidebar

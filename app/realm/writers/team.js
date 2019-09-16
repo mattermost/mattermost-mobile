@@ -76,10 +76,11 @@ function myTeamsWriter(realm, action) {
         break;
     }
 
-    case TeamTypes.SELECT_TEAM: {
+    case TeamTypes.SELECT_TEAM_AND_CLEAR_CHANNEL: {
         const {data} = action;
         const generalRealm = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         generalRealm.currentTeamId = data;
+        generalRealm.currentChannelId = null;
         break;
     }
 

@@ -71,6 +71,9 @@ function channels(realm, action) {
         const {nextChannel, previousChannel} = data;
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         general.currentChannelId = nextChannel.id;
+        if (data.teamId) {
+            general.currentTeamId = data.teamId;
+        }
 
         const nextRealmChannel = realm.objectForPrimaryKey('Channel', nextChannel.id);
         const nextChannelMember = realm.objectForPrimaryKey('ChannelMember', `${nextChannel.id}-${general.currentUserId}`);
