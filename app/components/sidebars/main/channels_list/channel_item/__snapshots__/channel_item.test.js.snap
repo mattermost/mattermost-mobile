@@ -632,14 +632,16 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.88)",
                 "flex": 1,
-                "fontSize": 14,
-                "fontWeight": "600",
+                "fontFamily": "Open Sans",
+                "fontSize": 16,
+                "lineHeight": 24,
                 "paddingRight": 10,
               },
               Object {
                 "color": "#ffffff",
+                "fontWeight": "500",
               },
             ]
           }
