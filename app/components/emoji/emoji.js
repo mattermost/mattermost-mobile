@@ -117,7 +117,7 @@ export default class Emoji extends React.PureComponent {
         // force a new image to be rendered when the size changes
         const key = Platform.OS === 'android' ? (height + '-' + width) : null;
 
-        if (this.props.unicode) {
+        if (this.props.unicode && !imageUrl) {
             try {
                 const codeArray = this.props.unicode.split('-');
                 const code = codeArray.reduce((acc, c) => {

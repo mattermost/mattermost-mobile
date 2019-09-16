@@ -9,7 +9,7 @@ import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {Client4} from 'mattermost-redux/client';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
-import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
+import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
 
 import Emoji from './emoji';
 
@@ -22,9 +22,12 @@ function mapStateToProps(state, ownProps) {
     let unicode;
     let isCustomEmoji = false;
     let displayTextOnly = false;
-    if (EmojiIndicesByAlias.has(emojiName)) {
+    if (EmojiIndicesByAlias.has(emojiName) || BuiltInEmojis.includes(emojiName)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
         unicode = emoji.filename;
+        if (BuiltInEmojis.includes(emojiName)) {
+            imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
+        }
     } else if (customEmojis.has(emojiName)) {
         const emoji = customEmojis.get(emojiName);
         imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);

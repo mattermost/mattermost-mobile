@@ -15,6 +15,7 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import Emoji from 'app/components/emoji';
+import {BuiltInEmojis} from 'app/utils/emojis';
 import {getEmojiByName} from 'app/utils/emoji_utils';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -145,7 +146,7 @@ export default class EmojiSuggestion extends Component {
             }
 
             const emojiData = getEmojiByName(emoji);
-            if (emojiData?.filename) {
+            if (emojiData?.filename && !BuiltInEmojis.includes(emojiData.filename)) {
                 completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, String.fromCodePoint(parseInt(emojiData.filename, 16)));
             } else {
                 completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `${prefix}${emoji}: `);
@@ -157,7 +158,7 @@ export default class EmojiSuggestion extends Component {
 
             onChangeText(completedDraft);
 
-            if (Platform.OS === 'ios' && !emojiData?.filename) {
+            if (Platform.OS === 'ios' && (!emojiData?.filename || BuiltInEmojis.includes(emojiData?.filename))) {
                 // This is the second part of the hack were we replace the double : with just one
                 // after the auto correct vanished
                 setTimeout(() => {
