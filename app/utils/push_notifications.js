@@ -66,15 +66,11 @@ class PushNotificationUtils {
         let unsubscribeFromStore = null;
         let stopLoadingNotification = false;
 
-        const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
+        const {data, foreground, message, userInteraction} = deviceNotification;
         const notification = {
             data,
             message,
         };
-
-        if (userInfo) {
-            notification.localNotification = userInfo.localNotification;
-        }
 
         if (data.type === 'clear') {
             dispatch(markChannelViewedAndRead(data.channel_id, null, false));
@@ -84,7 +80,7 @@ class PushNotificationUtils {
 
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
-            } else if (userInteraction && !notification.localNotification) {
+            } else if (userInteraction && !notification?.data?.localNotification) {
                 EventEmitter.emit('close_channel_drawer');
                 if (getState().views.root.hydrationComplete) { //TODO: Replace when realm is ready
                     setTimeout(() => {

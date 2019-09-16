@@ -11,11 +11,12 @@ import Swiper from 'app/components/swiper';
 export default class DrawerSwiper extends Component {
     static propTypes = {
         children: PropTypes.node.isRequired,
+        drawerOpened: PropTypes.bool,
         drawerWidth: PropTypes.number.isRequired,
+        hasSafeAreaInsets: PropTypes.bool,
         onPageSelected: PropTypes.func,
         showTeams: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
-        drawerOpened: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -78,8 +79,9 @@ export default class DrawerSwiper extends Component {
                 onIndexChanged={this.swiperPageSelected}
                 width={drawerWidth}
                 style={{backgroundColor: theme.sidebarBg}}
+                paginationBackgroundColor={changeOpacity(theme.sidebarText, 0.1)}
                 activeDotColor={theme.sidebarText}
-                dotColor={changeOpacity(theme.sidebarText, 0.5)}
+                dotColor={changeOpacity(theme.sidebarText, 0.3)}
                 scrollEnabled={showTeams}
                 showsPagination={showTeams}
                 keyboardShouldPersistTaps={'always'}
