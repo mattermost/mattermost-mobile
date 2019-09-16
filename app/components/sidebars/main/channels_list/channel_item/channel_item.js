@@ -27,6 +27,7 @@ export default class ChannelItem extends PureComponent {
         channel: PropTypes.object,
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
+        isArchived: PropTypes.bool,
         isChannelMuted: PropTypes.bool,
         currentUserId: PropTypes.string.isRequired,
         isUnread: PropTypes.bool,
@@ -44,6 +45,7 @@ export default class ChannelItem extends PureComponent {
     };
 
     static defaultProps = {
+        isArchived: false,
         mentions: 0,
     };
 
@@ -89,6 +91,7 @@ export default class ChannelItem extends PureComponent {
             channelId,
             currentChannelId,
             displayName,
+            isArchived,
             isChannelMuted,
             currentUserId,
             isUnread,
@@ -101,8 +104,6 @@ export default class ChannelItem extends PureComponent {
             isBot,
             isLandscape,
         } = this.props;
-
-        const isArchived = channel.delete_at > 0;
 
         // Only ever show an archived channel if it's the currently viewed channel.
         // It should disappear as soon as one navigates to another channel.
