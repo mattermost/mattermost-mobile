@@ -13,6 +13,7 @@ describe('DialogElement', () => {
         displayName: 'Testing',
         name: 'testing',
         type: 'text',
+        isLandscape: false,
     };
     const theme = Preferences.THEMES.default;
     test('secureTextEntry is true and multiline is false when subtype is password', () => {
