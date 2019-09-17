@@ -7,6 +7,8 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import InteractiveDialog from './interactive_dialog';
 
+import ErrorText from 'app/components/error_text';
+
 describe('InteractiveDialog', () => {
     const baseProps = {
         url: 'http://mattermost.com',
@@ -126,6 +128,7 @@ describe('InteractiveDialog', () => {
 
             await wrapper.instance().handleSubmit();
             expect(wrapper.state().error).toEqual('This is an error message.');
+            expect(wrapper.find(ErrorText)).toExist();
             expect(wrapper.instance().scrollView.current.scrollTo).toHaveBeenCalledWith({x: 0, y: 0});
         });
 
@@ -137,6 +140,7 @@ describe('InteractiveDialog', () => {
 
             await wrapper.instance().handleSubmit();
             expect(wrapper.state().error).toBeNull();
+            expect(wrapper.find(ErrorText)).not.toExist();
             expect(wrapper.instance().scrollView.current.scrollTo).not.toHaveBeenCalled();
         });
     });
