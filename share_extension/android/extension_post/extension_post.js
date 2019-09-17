@@ -583,6 +583,29 @@ export default class ExtensionPost extends PureComponent {
         );
     };
 
+    lengthCounterColor = (count) => {
+        if (count < 0) {
+            return styles.textTooLong;
+        }
+        return styles.textLengthOk;
+    }
+
+    renderMessageLengthRemaining = () => {
+        const {value} = this.state;
+        const messageLengthRemaining = MAX_MESSAGE_LENGTH - value.length;
+
+        if (value.length === 0) {
+            return null;
+        }
+
+        const renderStyle = [styles.messageLengthRemaining, this.lengthCounterColor(messageLengthRemaining)];
+        return (
+            <Text style={renderStyle}>
+                {messageLengthRemaining}
+            </Text>
+        );
+    };
+
     render() {
         const {formatMessage} = this.context.intl;
         const {maxFileSize} = this.props;
@@ -627,6 +650,7 @@ export default class ExtensionPost extends PureComponent {
                     <View style={styles.wrapper}>
                         {this.renderBody()}
                         <View style={styles.flex}>
+                            {this.renderMessageLengthRemaining()}
                             {this.renderTeamButton()}
                             {this.renderChannelButton()}
                         </View>
@@ -670,6 +694,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         scrollView: {
             flex: 1,
             padding: 15,
+        },
+        messageLengthRemaining: {
+            paddingTop: 5,
+            paddingBottom: 5,
+            paddingLeft: 15,
+            paddingRight: 15,
+            opacity: 0.5,
+        },
+        textLengthOk: {
+            color: theme.centerChannelColor,
+        },
+        textTooLong: {
+            color: theme.errorTextColor,
         },
         input: {
             flex: 1,
