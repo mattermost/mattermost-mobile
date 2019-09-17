@@ -46,6 +46,9 @@ jest.mock('NativeModules', () => {
         RNReactNativeHapticFeedback: {
             trigger: jest.fn(),
         },
+        StatusBarManager: {
+            getHeight: jest.fn(),
+        },
     };
 });
 jest.mock('NativeEventEmitter');
