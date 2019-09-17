@@ -125,10 +125,11 @@ describe('channel_info', () => {
     });
 
     test('should not render convert to private button currentChannel is already private', async () => {
-        baseProps.currentChannel.type = General.PRIVATE_CHANNEL;
+        const props = Object.assign({}, baseProps);
+        props.currentChannel.type = General.PRIVATE_CHANNEL;
         const wrapper = shallow(
             <ChannelInfo
-                {...baseProps}
+                {...props}
             />,
             {context: {intl: intlMock}},
         );
@@ -139,10 +140,11 @@ describe('channel_info', () => {
     });
 
     test('should not render convert to private button when currentChannel is a default channel', async () => {
-        baseProps.currentChannel.name = General.DEFAULT_CHANNEL;
+        const props = Object.assign({}, baseProps);
+        props.currentChannel.name = General.DEFAULT_CHANNEL;
         const wrapper = shallow(
             <ChannelInfo
-                {...baseProps}
+                {...props}
             />,
             {context: {intl: intlMock}},
         );
