@@ -40,7 +40,6 @@ class GlobalEventHandler {
         EventEmitter.on(General.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         EventEmitter.on(General.CONFIG_CHANGED, this.onServerConfigChanged);
         EventEmitter.on(General.SWITCH_TO_DEFAULT_CHANNEL, this.onSwitchToDefaultChannel);
-        this.turnOnInAppNotificationHandling();
         Dimensions.addEventListener('change', this.onOrientationChange);
         AppState.addEventListener('change', this.onAppStateChange);
         Linking.addEventListener('url', this.onDeepLink);
@@ -76,6 +75,10 @@ class GlobalEventHandler {
     configure = (opts) => {
         this.store = opts.store;
         this.launchApp = opts.launchApp;
+
+        // onAppStateChange may be called by the AppState listener before we
+        // configure the global event handler so we manually call it here
+        this.onAppStateChange('active');
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
@@ -113,12 +116,12 @@ class GlobalEventHandler {
 
         if (this.store) {
             this.store.dispatch(setAppState(isActive));
-        }
 
-        if (isActive && emmProvider.previousAppState === 'background') {
-            this.appActive();
-        } else if (isBackground) {
-            this.appInactive();
+            if (isActive && (!emmProvider.enabled || emmProvider.previousAppState === 'background')) {
+                this.appActive();
+            } else if (isBackground) {
+                this.appInactive();
+            }
         }
 
         emmProvider.previousAppState = appState;
