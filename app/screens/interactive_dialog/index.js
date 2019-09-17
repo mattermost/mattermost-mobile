@@ -19,6 +19,7 @@ function mapStateToProps(state) {
         callbackId: data.dialog.callback_id,
         elements: data.dialog.elements,
         title: data.dialog.title,
+        introductionText: data.dialog.introduction_text,
         iconUrl: data.dialog.icon_url,
         submitLabel: data.dialog.submit_label,
         notifyOnCancel: data.dialog.notify_on_cancel,

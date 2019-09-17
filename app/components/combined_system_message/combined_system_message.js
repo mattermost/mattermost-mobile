@@ -241,12 +241,16 @@ export default class CombinedSystemMessage extends React.PureComponent {
     getUsernamesByIds = (userIds = []) => {
         const {currentUserId, currentUsername} = this.props;
         const allUsernames = this.getAllUsernames();
+
+        const {formatMessage} = this.context.intl;
+        const someone = formatMessage({id: t('channel_loader.someone'), defaultMessage: 'Someone'});
+
         const usernames = userIds.
             filter((userId) => {
                 return userId !== currentUserId && userId !== currentUsername;
             }).
             map((userId) => {
-                return `@${allUsernames[userId]}`;
+                return allUsernames[userId] ? `@${allUsernames[userId]}` : someone;
             }).filter((username) => {
                 return username && username !== '';
             });

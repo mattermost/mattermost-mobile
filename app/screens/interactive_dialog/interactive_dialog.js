@@ -14,11 +14,13 @@ import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
 
 import DialogElement from './dialog_element.js';
+import DialogIntroductionText from './dialog_introduction_text.js';
 
 export default class InteractiveDialog extends PureComponent {
     static propTypes = {
         url: PropTypes.string.isRequired,
         callbackId: PropTypes.string,
+        introductionText: PropTypes.string,
         elements: PropTypes.arrayOf(PropTypes.object),
         notifyOnCancel: PropTypes.bool,
         state: PropTypes.string,
@@ -165,7 +167,7 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     render() {
-        const {elements, theme} = this.props;
+        const {introductionText, elements, theme} = this.props;
         const {errors, isLandscape, values} = this.state;
         const style = getStyleFromTheme(theme);
 
@@ -173,6 +175,12 @@ export default class InteractiveDialog extends PureComponent {
             <View style={style.container}>
                 <ScrollView style={style.scrollView}>
                     <StatusBar/>
+                    {Boolean(introductionText) &&
+                        <DialogIntroductionText
+                            value={introductionText}
+                            theme={theme}
+                        />
+                    }
                     {elements && elements.map((e) => {
                         return (
                             <DialogElement
