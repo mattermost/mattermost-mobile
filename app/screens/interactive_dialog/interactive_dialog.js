@@ -141,7 +141,9 @@ export default class InteractiveDialog extends PureComponent {
             if (data.error) {
                 hasErrors = true;
                 this.setState({error: data.error});
-                this.scrollView.current?.scrollTo({x: 0, y: 0});
+                if (this.scrollView?.current) {
+                    this.scrollView.current.scrollTo({x: 0, y: 0});
+                }
             }
         }
 
