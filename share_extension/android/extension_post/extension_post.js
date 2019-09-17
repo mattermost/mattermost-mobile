@@ -406,17 +406,34 @@ export default class ExtensionPost extends PureComponent {
     onPost = () => {
         const {channelId, files, value} = this.state;
         const {currentUserId} = this.props;
+        const {formatMessage} = this.context.intl;
 
-        const data = {
-            channelId,
-            currentUserId,
-            files,
-            token: this.token,
-            url: this.url,
-            value,
-        };
+        if (value.length > MAX_MESSAGE_LENGTH) {
+            Alert.alert(
+                formatMessage({
+                    id: 'mobile.share_extension.too_long_title',
+                    defaultMessage: 'Message is too long',
+                }),
+                formatMessage({
+                    id: 'mobile.share_extension.too_long_message',
+                    defaultMessage: 'Character count: {count}/{max}',
+                }, {
+                    count: value.length,
+                    max: MAX_MESSAGE_LENGTH,
+                })
+            );
+        } else {
+            const data = {
+                channelId,
+                currentUserId,
+                files,
+                token: this.token,
+                url: this.url,
+                value,
+            };
 
-        this.onClose(data);
+            this.onClose(data);
+        }
     };
 
     renderBody = () => {
