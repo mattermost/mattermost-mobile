@@ -43,6 +43,9 @@ jest.mock('NativeModules', () => {
             addEventListener: jest.fn(),
             getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
         },
+        StatusBarManager: {
+            getHeight: jest.fn(),
+        },
     };
 });
 jest.mock('NativeEventEmitter');
