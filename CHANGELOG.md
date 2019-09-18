@@ -33,6 +33,7 @@
  - Fixed an issue where the notification badge could get out of sync when reading messages in another client.
  - Fixed an issue where duplicate pinned posts displayed after editing pinned post from Pinned Posts screen.
  - Fixed an issue on iOS where user was unable to select an emoji from two rows on the bottom of the emoji picker.
+ - Fixed an issue on iOS where the channel list panel was missing for a user when they were added to a new team by another user.
  - Fixed an issue where post textbox did not clear after using a slash command.
  - Fixed an issue where users were are not immediately removed from the mention auto-complete when those users were deactivated.
  - Fixed an issue where once in a thread, pressing a channel link appeared to do nothing.
