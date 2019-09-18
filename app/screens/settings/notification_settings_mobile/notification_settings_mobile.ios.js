@@ -157,7 +157,10 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
         const style = getStyleSheet(theme);
 
         return (
-            <SafeAreaView>
+            <SafeAreaView
+                excludeHeader={true}
+                excludeFooter={true}
+            >
                 <View style={style.container}>
                     <StatusBar/>
                     <ScrollView
@@ -196,7 +199,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
-            paddingVertical: 35,
+            paddingVertical: 30,
         },
         disabled: {
             color: theme.centerChannelColor,

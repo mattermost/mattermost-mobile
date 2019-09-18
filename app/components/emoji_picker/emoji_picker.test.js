@@ -6,7 +6,8 @@ import React from 'react';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
-import EmojiPicker, {filterEmojiSearchInput} from './emoji_picker.js';
+import {filterEmojiSearchInput} from './emoji_picker_base';
+import EmojiPicker from './emoji_picker.ios';
 
 describe('components/emoji_picker/EmojiPicker', () => {
     const baseProps = {

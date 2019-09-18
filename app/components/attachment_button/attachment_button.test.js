@@ -3,15 +3,25 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
+import Permissions from 'react-native-permissions';
+import {Alert} from 'react-native';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import {VALID_MIME_TYPES} from 'app/screens/edit_profile/edit_profile';
 import AttachmentButton from './attachment_button';
+import {PermissionTypes} from 'app/constants';
 
 jest.mock('react-intl');
 
+jest.mock('Platform', () => {
+    const Platform = require.requireActual('Platform');
+    Platform.OS = 'ios';
+    return Platform;
+});
+
 describe('AttachmentButton', () => {
+    const formatMessage = jest.fn();
     const baseProps = {
         actions: {
             showModalOverCurrentContext: jest.fn(),
@@ -72,5 +82,21 @@ describe('AttachmentButton', () => {
             expect(props.onShowUnsupportedMimeTypeWarning).not.toHaveBeenCalled();
             expect(props.uploadFiles).toHaveBeenCalled();
         });
+    });
+
+    test('should show permission denied alert if permission is denied in iOS', async () => {
+        expect.assertions(1);
+
+        jest.spyOn(Permissions, 'check').mockReturnValue(PermissionTypes.DENIED);
+        jest.spyOn(Permissions, 'canOpenSettings').mockReturnValue(true);
+        jest.spyOn(Alert, 'alert').mockReturnValue(true);
+
+        const wrapper = shallow(
+            <AttachmentButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        await wrapper.instance().hasPhotoPermission('camera');
+        expect(Alert.alert).toBeCalled();
     });
 });

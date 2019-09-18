@@ -61,7 +61,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         Array [
           Object {
             "alignItems": "stretch",
-            "backgroundColor": "#fff",
+            "backgroundColor": "#ffffff",
             "flex": 1,
             "flexDirection": "row",
             "marginRight": 10,
@@ -69,8 +69,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         ]
       }
     >
-      <TextInput
-        allowFontScaling={true}
+      <ForwardRef(WrappedPasteableTextInput)
         blurOnSubmit={false}
         disableFullscreenUI={true}
         editable={true}
@@ -79,13 +78,13 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         multiline={true}
         onChangeText={[Function]}
         onEndEditing={[Function]}
+        onPaste={[Function]}
         onSelectionChange={[Function]}
         placeholder="Write to Test Channel"
-        placeholderTextColor="rgba(0,0,0,0.5)"
-        rejectResponderTermination={true}
+        placeholderTextColor="rgba(61,60,64,0.5)"
         style={
           Object {
-            "color": "#000",
+            "color": "#3d3c40",
             "flex": 1,
             "fontSize": 14,
             "maxHeight": 100,

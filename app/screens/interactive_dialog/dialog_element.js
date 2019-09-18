@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
+import BoolSetting from 'app/components/widgets/settings/bool_setting';
 import TextSetting from 'app/components/widgets/settings/text_setting';
 import AutocompleteSelector from 'app/components/autocomplete_selector';
 import RadioSetting from 'app/components/widgets/settings/radio_setting';
@@ -27,6 +28,7 @@ export default class DialogElement extends PureComponent {
         value: PropTypes.any,
         onChange: PropTypes.func,
         theme: PropTypes.object,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
@@ -71,6 +73,7 @@ export default class DialogElement extends PureComponent {
             theme,
             dataSource,
             options,
+            isLandscape,
         } = this.props;
 
         let {maxLength} = this.props;
@@ -145,6 +148,21 @@ export default class DialogElement extends PureComponent {
                     theme={theme}
                     default={value}
                     onChange={this.onChange}
+                />
+            );
+        } else if (type === 'bool') {
+            return (
+                <BoolSetting
+                    id={name}
+                    label={displayName}
+                    value={value === 'true'}
+                    placeholder={placeholder}
+                    helpText={helpText}
+                    errorText={errorText}
+                    optional={optional}
+                    theme={theme}
+                    onChange={this.onChange}
+                    isLandscape={isLandscape}
                 />
             );
         }
