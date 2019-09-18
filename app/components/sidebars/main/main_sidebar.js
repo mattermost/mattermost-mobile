@@ -338,6 +338,7 @@ export default class ChannelSidebar extends Component {
         if (this.drawerSwiper) {
             if (multipleTeams) {
                 this.drawerSwiper.runOnLayout();
+                this.drawerSwiper.scrollToInitial();
             } else if (!openDrawerOffset) {
                 this.drawerSwiper.scrollToStart();
             }
