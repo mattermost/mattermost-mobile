@@ -299,30 +299,33 @@ export default class PostList extends PureComponent {
 
     scrollToBottom = () => {
         setTimeout(() => {
-            if (this.flatListRef && this.flatListRef.current) {
+            if (this.flatListRef?.current) {
                 this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
             }
         }, 250);
     };
 
+    flatListScrollToIndex = (index) => {
+        this.flatListRef.current.scrollToIndex({
+            animated: false,
+            index,
+            viewOffset: 0,
+            viewPosition: 1, // 0 is at bottom
+        });
+    }
+
     scrollToIndex = (index) => {
-        if (this.flatListRef?.current) {
-            this.animationFrameInitialIndex = requestAnimationFrame(() => {
-                this.flatListRef.current.scrollToIndex({
-                    animated: false,
-                    index,
-                    viewOffset: 0,
-                    viewPosition: 1, // 0 is at bottom
-                });
-            });
-        }
+        this.animationFrameInitialIndex = requestAnimationFrame(() => {
+            if (this.flatListRef?.current && index > 0 && index <= this.getItemCount()) {
+                this.flatListScrollToIndex(index);
+            }
+        });
     };
 
     scrollToInitialIndexIfNeeded = (index, count = 0) => {
-        if (!this.hasDoneInitialScroll && this.flatListRef?.current) {
-            this.hasDoneInitialScroll = true;
-
+        if (!this.hasDoneInitialScroll) {
             if (index > 0 && index <= this.getItemCount()) {
+                this.hasDoneInitialScroll = true;
                 this.scrollToIndex(index);
             } else if (count < 3) {
                 setTimeout(() => {
