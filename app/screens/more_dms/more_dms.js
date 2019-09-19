@@ -157,7 +157,9 @@ export default class MoreDirectMessages extends PureComponent {
                 }
 
                 const newSelectedIds = Object.assign({}, selectedIds);
-                if (!wasSelected) {
+                if (wasSelected) {
+                    Reflect.deleteProperty(newSelectedIds, id);
+                } else {
                     newSelectedIds[id] = true;
                 }
 
