@@ -181,7 +181,7 @@ export default class ChannelInfo extends PureComponent {
     handleConfirmConvertToPrivate = preventDoubleTap(async () => {
         const {actions, currentChannel} = this.props;
         const result = await actions.convertChannelToPrivate(currentChannel.id);
-        const displayName = {displayName: currentChannel.display_name};
+        const displayName = {displayName: currentChannel.display_name.trim()};
         const {formatMessage} = this.context.intl;
         if (result.error) {
             alertErrorWithFallback(
@@ -212,7 +212,7 @@ export default class ChannelInfo extends PureComponent {
     handleConvertToPrivate = preventDoubleTap(() => {
         const {currentChannel} = this.props;
         const {formatMessage} = this.context.intl;
-        const displayName = {displayName: currentChannel.display_name};
+        const displayName = {displayName: currentChannel.display_name.trim()};
         const title = {id: t('mobile.channel_info.alertTitleConvertChannel'), defaultMessage: 'Convert {displayName} to a private channel?'};
         const message = {
             id: t('mobile.channel_info.alertMessageConvertChannel'),
