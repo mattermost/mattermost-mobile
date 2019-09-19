@@ -162,8 +162,7 @@ describe('InteractiveDialog', () => {
             wrapper.instance().scrollView = {current: {scrollTo: jest.fn()}};
 
             await wrapper.instance().handleSubmit();
-            expect(wrapper.state().error).toEqual('This is an error message.');
-            expect(wrapper.find(ErrorText)).toExist();
+            expect(wrapper.find(ErrorText).find({error: 'This is an error message.'})).toHaveLength(1);
             expect(wrapper.instance().scrollView.current.scrollTo).toHaveBeenCalledWith({x: 0, y: 0});
         });
 
@@ -174,7 +173,6 @@ describe('InteractiveDialog', () => {
             wrapper.instance().scrollView = {current: {scrollTo: jest.fn()}};
 
             await wrapper.instance().handleSubmit();
-            expect(wrapper.state().error).toBeNull();
             expect(wrapper.find(ErrorText)).not.toExist();
             expect(wrapper.instance().scrollView.current.scrollTo).not.toHaveBeenCalled();
         });
