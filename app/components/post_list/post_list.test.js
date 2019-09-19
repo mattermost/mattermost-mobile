@@ -55,30 +55,4 @@ describe('PostList', () => {
         expect(baseProps.actions.handleSelectChannelByName).toHaveBeenCalled();
         expect(wrapper.getElement()).toMatchSnapshot();
     });
-
-    test('should call flatListScrollToIndex only when ref is set and index is in range', () => {
-        jest.spyOn(global, 'requestAnimationFrame').mockImplementation((cb) => cb());
-
-        const instance = wrapper.instance();
-        const flatListScrollToIndex = jest.spyOn(instance, 'flatListScrollToIndex');
-        const indexInRange = baseProps.postIds.length;
-        const indexOutOfRange = [-1, indexInRange + 1];
-
-        instance.flatListRef = {};
-        instance.scrollToIndex(indexInRange);
-        expect(flatListScrollToIndex).not.toHaveBeenCalled();
-
-        instance.flatListRef = {
-            current: {
-                scrollToIndex: jest.fn(),
-            },
-        };
-        for (const index of indexOutOfRange) {
-            instance.scrollToIndex(index);
-            expect(flatListScrollToIndex).not.toHaveBeenCalled();
-        }
-
-        instance.scrollToIndex(indexInRange);
-        expect(flatListScrollToIndex).toHaveBeenCalled();
-    });
 });
