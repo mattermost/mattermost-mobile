@@ -30,6 +30,7 @@
  - https://github.com/mattermost/mattermost-mobile/pull/3084
 
 ### Bug Fixes
+ - Fixed an issue where the app crashed when it was brought to the foreground.
  - Fixed an issue where the notification badge could get out of sync when reading messages in another client.
  - Fixed an issue where duplicate pinned posts displayed after editing pinned post from Pinned Posts screen.
  - Fixed an issue on iOS where user was unable to select an emoji from two rows on the bottom of the emoji picker.
