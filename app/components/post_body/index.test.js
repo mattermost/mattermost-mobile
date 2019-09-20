@@ -100,16 +100,7 @@ describe('makeMapStateToProps', () => {
         const mapStateToProps = makeMapStateToProps();
 
         getChannel.mockReturnValueOnce({delete_at: 1}); //eslint-disable-line camelcase
-        let props = mapStateToProps(defaultState, defaultOwnProps);
-        expect(props.canDelete).toBe(false);
-        expect(canDeletePost).not.toHaveBeenCalled();
-
-        getChannel.mockReturnValueOnce({delete_at: 0}); //eslint-disable-line camelcase
-        const ownProps = {
-            ...defaultOwnProps,
-            channelIsArchived: true,
-        };
-        props = mapStateToProps(defaultState, ownProps);
+        const props = mapStateToProps(defaultState, defaultOwnProps);
         expect(props.canDelete).toBe(false);
         expect(canDeletePost).not.toHaveBeenCalled();
     });
@@ -121,12 +112,5 @@ describe('makeMapStateToProps', () => {
         getChannel.mockReturnValue({delete_at: 0}); //eslint-disable-line camelcase
         mapStateToProps(defaultState, defaultOwnProps);
         expect(canDeletePost).toHaveBeenCalledTimes(1);
-
-        const ownProps = {
-            ...defaultOwnProps,
-            channelIsArchived: false,
-        };
-        mapStateToProps(defaultState, ownProps);
-        expect(canDeletePost).toHaveBeenCalledTimes(2);
     });
 });

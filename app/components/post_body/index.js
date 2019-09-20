@@ -61,7 +61,7 @@ export function makeMapStateToProps() {
         const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
         const isAdmin = checkIsAdmin(roles);
         const isSystemAdmin = checkIsSystemAdmin(roles);
-        const channelIsArchived = ownProps.hasOwnProperty('channelIsArchived') ? ownProps.channelIsArchived : channel?.delete_at !== 0; //eslint-disable-line camelcase
+        const channelIsArchived = channel?.delete_at !== 0; //eslint-disable-line camelcase
         let canDelete = false;
 
         if (post && !channelIsArchived) {
