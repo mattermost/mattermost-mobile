@@ -213,7 +213,7 @@ export default class ChannelInfo extends PureComponent {
                             defaultMessage: "We couldn't archive the channel {displayName}. Please check your connection and try again.",
                         },
                         {
-                            displayName: channel.display_name,
+                            displayName: channel.display_name.trim(),
                         }
                     );
                     if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
@@ -235,7 +235,7 @@ export default class ChannelInfo extends PureComponent {
                 message,
                 {
                     term: term.toLowerCase(),
-                    name: channel.display_name,
+                    name: channel.display_name.trim(),
                 }
             ),
             [{
