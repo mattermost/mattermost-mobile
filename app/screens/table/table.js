@@ -7,6 +7,7 @@ import {
     Platform,
     ScrollView,
 } from 'react-native';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class Table extends React.PureComponent {
     static propTypes = {
@@ -16,8 +17,9 @@ export default class Table extends React.PureComponent {
     };
 
     render() {
+        const style = getStyleSheet();
         const content = this.props.renderRows(true);
-        const style = this.props.renderAsFlex ? {flex: 1} : {width: this.props.tableWidth};
+        const viewStyle = this.props.renderAsFlex ? style.displayFlex : {width: this.props.tableWidth};
 
         let container;
         if (Platform.OS === 'android') {
@@ -26,7 +28,7 @@ export default class Table extends React.PureComponent {
             container = (
                 <ScrollView>
                     <ScrollView
-                        contentContainerStyle={style}
+                        contentContainerStyle={viewStyle}
                         horizontal={true}
                     >
                         {content}
@@ -35,7 +37,7 @@ export default class Table extends React.PureComponent {
             );
         } else {
             container = (
-                <ScrollView contentContainerStyle={style}>
+                <ScrollView contentContainerStyle={viewStyle}>
                     {content}
                 </ScrollView>
             );
@@ -44,3 +46,11 @@ export default class Table extends React.PureComponent {
         return container;
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme(() => {
+    return {
+        displayFlex: {
+            flex: 1,
+        },
+    };
+});
