@@ -30,8 +30,10 @@ describe('ChannelLink', () => {
         textStyle: {color: '#3d3c40', fontSize: 15, lineHeight: 20},
         channelsByName,
         actions: {
+            dismissAllModals: jest.fn(),
             handleSelectChannel: jest.fn(),
             joinChannel: jest.fn(),
+            popToRoot: jest.fn(),
         },
     };
 

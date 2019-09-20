@@ -20,6 +20,7 @@ export default class Swiper extends PureComponent {
         activeDotColor: PropTypes.string,
         children: PropTypes.node.isRequired,
         dotColor: PropTypes.string,
+        paginationBackgroundColor: PropTypes.string,
         initialPage: PropTypes.number,
         keyboardShouldPersistTaps: PropTypes.string,
         onIndexChanged: PropTypes.func,
@@ -106,6 +107,14 @@ export default class Swiper extends PureComponent {
         });
     };
 
+    scrollToInitial = () => {
+        setTimeout(() => {
+            if (this.scrollView) {
+                this.scrollView.scrollTo({x: this.props.width * this.props.initialPage, animated: false});
+            }
+        }, 0);
+    };
+
     refScrollView = (view) => {
         this.scrollView = view;
     };
@@ -138,7 +147,7 @@ export default class Swiper extends PureComponent {
     };
 
     renderPagination = () => {
-        if (this.state.total <= 1 || !this.props.showsPagination) {
+        if (this.state.total <= 1 || !this.props.showsPagination || Platform.OS === 'android') {
             return null;
         }
 
@@ -171,10 +180,10 @@ export default class Swiper extends PureComponent {
         const bottom = this.paginationBottom(width, height);
         const drawerWidth = (width > height) ? width - ViewTypes.IOS_HORIZONTAL_LANDSCAPE : width;
         let style;
-        if (DeviceTypes.IS_IPHONE_X) {
+        if (DeviceTypes.IS_IPHONE_X && (width < height)) {
             style = {
                 bottom,
-                drawerWidth,
+                width: drawerWidth,
             };
         } else {
             style = {
@@ -188,7 +197,9 @@ export default class Swiper extends PureComponent {
                 pointerEvents='none'
                 style={[styles.pagination, style]}
             >
-                {dots}
+                <View style={[styles.paginationWrapper, {backgroundColor: this.props.paginationBackgroundColor}]}>
+                    {dots}
+                </View>
             </View>
         );
     };
@@ -217,7 +228,7 @@ export default class Swiper extends PureComponent {
     paginationBottom = (width, height) => {
         if (DeviceTypes.IS_TABLET) {
             if (Platform.OS === 'ios' && mattermostManaged.hasSafeAreaInsets) {
-                return 14;
+                return 34;
             }
 
             return 24;
@@ -225,7 +236,7 @@ export default class Swiper extends PureComponent {
 
         const landscape = width > height;
         if (DeviceTypes.IS_IPHONE_X) {
-            return landscape ? 14 : 4;
+            return landscape ? 14 : 34;
         }
 
         return 24;
@@ -278,9 +289,17 @@ const styles = StyleSheet.create({
         position: 'absolute',
         left: 0,
         right: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+    },
+    paginationWrapper: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
+        height: 24,
+        borderRadius: 15,
+        width: 44,
     },
     dotStyle: {
         width: 8,

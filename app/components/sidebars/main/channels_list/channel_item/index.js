@@ -32,6 +32,7 @@ function makeMapStateToProps() {
         let displayName = channel.display_name;
         let isBot = false;
         let isGuest = false;
+        let isArchived = channel.delete_at > 0;
 
         if (channel.type === General.DM_CHANNEL) {
             if (ownProps.isSearchResult) {
@@ -41,8 +42,9 @@ function makeMapStateToProps() {
                 const teammate = getUser(state, teammateId);
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
                 displayName = displayUsername(teammate, teammateNameDisplay, false);
-                if (teammate && teammate.is_bot) {
-                    isBot = true;
+                if (teammate) {
+                    isArchived = teammate.delete_at > 0;
+                    isBot = teammate.is_bot || false;
                 }
                 isGuest = isGuestUser(teammate);
             }
@@ -75,6 +77,7 @@ function makeMapStateToProps() {
             channel,
             currentChannelId,
             displayName,
+            isArchived,
             isChannelMuted: isChannelMuted(member),
             currentUserId,
             hasDraft: Boolean(channelDraft.draft.trim() || channelDraft.files.length),

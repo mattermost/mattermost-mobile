@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View} from 'react-native';
+import {Dimensions, ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
@@ -14,11 +14,13 @@ import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
 
 import DialogElement from './dialog_element.js';
+import DialogIntroductionText from './dialog_introduction_text.js';
 
 export default class InteractiveDialog extends PureComponent {
     static propTypes = {
         url: PropTypes.string.isRequired,
         callbackId: PropTypes.string,
+        introductionText: PropTypes.string,
         elements: PropTypes.arrayOf(PropTypes.object),
         notifyOnCancel: PropTypes.bool,
         state: PropTypes.string,
@@ -47,12 +49,27 @@ export default class InteractiveDialog extends PureComponent {
         this.state = {
             values,
             errors: {},
+            isLandscape: this.isLandscape(),
             submitting: false,
         };
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
+        Dimensions.addEventListener('change', this.orientationDidChange);
+    }
+
+    componentWillUnmount() {
+        Dimensions.removeEventListener('change', this.orientationDidChange);
+    }
+
+    orientationDidChange = () => {
+        this.setState({isLandscape: this.isLandscape()});
+    }
+
+    isLandscape = () => {
+        const {height, width} = Dimensions.get('window');
+        return width > height;
     }
 
     navigationButtonPressed({buttonId}) {
@@ -150,13 +167,20 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     render() {
-        const {elements, theme} = this.props;
+        const {introductionText, elements, theme} = this.props;
+        const {errors, isLandscape, values} = this.state;
         const style = getStyleFromTheme(theme);
 
         return (
             <View style={style.container}>
                 <ScrollView style={style.scrollView}>
                     <StatusBar/>
+                    {Boolean(introductionText) &&
+                        <DialogIntroductionText
+                            value={introductionText}
+                            theme={theme}
+                        />
+                    }
                     {elements && elements.map((e) => {
                         return (
                             <DialogElement
@@ -166,16 +190,17 @@ export default class InteractiveDialog extends PureComponent {
                                 type={e.type}
                                 subtype={e.subtype}
                                 helpText={e.help_text}
-                                errorText={this.state.errors[e.name]}
+                                errorText={errors[e.name]}
                                 placeholder={e.placeholder}
                                 minLength={e.min_length}
                                 maxLength={e.max_length}
                                 dataSource={e.data_source}
                                 optional={e.optional}
                                 options={e.options}
-                                value={this.state.values[e.name]}
+                                value={values[e.name]}
                                 onChange={this.onChange}
                                 theme={theme}
+                                isLandscape={isLandscape}
                             />
                         );
                     })}

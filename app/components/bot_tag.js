@@ -41,8 +41,6 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
             borderRadius: 2,
-            color: theme.centerChannelColor,
-            fontWeight: '600',
             marginRight: 2,
             marginBottom: 1,
             ...Platform.select({
@@ -55,7 +53,9 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 4,
         },
         botText: {
+            color: theme.centerChannelColor,
             fontSize: 10,
+            fontWeight: '600',
         },
     };
 });

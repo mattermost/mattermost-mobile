@@ -10,6 +10,8 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import Fade from 'app/components/fade';
 import SendButton from 'app/components/send_button';
+import PasteableTextInput from 'app/components/pasteable_text_input';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import PostTextbox from './post_textbox.ios';
 
@@ -336,4 +338,92 @@ describe('PostTextBox', () => {
             expect(wrapper.find(SendButton).prop('disabled')).toBe(true);
         });
     });
+
+    describe('Paste images', () => {
+        test('should show error dialog if error occured', () => {
+            jest.spyOn(Alert, 'alert').mockReturnValue(null);
+            const wrapper = shallowWithIntl(<PostTextbox {...baseProps}/>);
+            wrapper.find(PasteableTextInput).first().simulate('paste', {error: 'some error'}, []);
+            expect(Alert.alert).toHaveBeenCalled();
+        });
+
+        test('should show file max warning and not uploading', () => {
+            jest.spyOn(EventEmitter, 'emit').mockReturnValue(null);
+            const wrapper = shallowWithIntl(<PostTextbox {...baseProps}/>);
+            wrapper.find(PasteableTextInput).first().simulate('paste', null, [
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+            ]);
+            expect(EventEmitter.emit).toHaveBeenCalledWith('fileMaxWarning');
+            expect(baseProps.actions.initUploadFiles).not.toHaveBeenCalled();
+        });
+
+        test('should show file size warning and not uploading', () => {
+            jest.spyOn(EventEmitter, 'emit').mockReturnValue(null);
+            const wrapper = shallowWithIntl(
+                <PostTextbox
+                    {...baseProps}
+                    maxFileSize={50 * 1024 * 1024}
+                />
+            );
+            wrapper.find(PasteableTextInput).first().simulate('paste', null, [
+                {
+                    fileSize: 51 * 1024 * 1024,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+            ]);
+            expect(EventEmitter.emit).toHaveBeenCalledWith('fileSizeWarning', 'File above 50 MB cannot be uploaded: fileName.png');
+            expect(baseProps.actions.initUploadFiles).not.toHaveBeenCalled();
+        });
+
+        test('should upload images', () => {
+            const wrapper = shallowWithIntl(<PostTextbox {...baseProps}/>);
+            wrapper.find(PasteableTextInput).first().simulate('paste', null, [
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+            ]);
+            expect(baseProps.actions.initUploadFiles).toHaveBeenCalled();
+        });
+    });
 });
+
