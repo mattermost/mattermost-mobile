@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -28,12 +29,18 @@ export default class ChannelTitle extends PureComponent {
         isGuest: PropTypes.bool.isRequired,
         hasGuests: PropTypes.bool.isRequired,
         canHaveSubtitle: PropTypes.bool.isRequired,
+        isSelfDMChannel: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         currentChannel: {},
         displayName: null,
         theme: {},
+        isSelfDMChannel: false,
+    };
+
+    static contextTypes = {
+        intl: intlShape,
     };
 
     archiveIcon(style) {
@@ -86,14 +93,30 @@ export default class ChannelTitle extends PureComponent {
     }
 
     render() {
-        const {currentChannelName, displayName, isChannelMuted, onPress, theme} = this.props;
+        const {
+            isSelfDMChannel,
+            currentChannelName,
+            displayName,
+            isChannelMuted,
+            onPress,
+            theme,
+        } = this.props;
+
+        const {intl} = this.context;
 
         const style = getStyle(theme);
-
-        const channelName = displayName || currentChannelName;
         const hasGuestsText = this.renderHasGuestsText(style);
+
+        let channelDisplayName = displayName || currentChannelName;
+        if (isSelfDMChannel) {
+            channelDisplayName = intl.formatMessage({
+                id: 'channel_header.directchannel.you',
+                defaultMessage: '{displayName} (you)',
+            }, {displayname: channelDisplayName});
+        }
+
         let icon;
-        if (channelName) {
+        if (channelDisplayName) {
             icon = (
                 <Icon
                     style={style.icon}
@@ -126,7 +149,7 @@ export default class ChannelTitle extends PureComponent {
                         numberOfLines={1}
                         style={style.text}
                     >
-                        {channelName}
+                        {channelDisplayName}
                     </Text>
                     {icon}
                     {mutedIcon}
