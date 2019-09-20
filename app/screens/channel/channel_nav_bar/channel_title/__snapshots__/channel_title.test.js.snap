@@ -1,0 +1,90 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelTitle should match snapshot 1`] = `
+<TouchableOpacity
+  activeOpacity={0.2}
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "justifyContent": "flex-start",
+        "position": "relative",
+        "top": -1,
+        "width": "90%",
+      }
+    }
+  >
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        Object {
+          "color": undefined,
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    />
+  </View>
+</TouchableOpacity>
+`;
+
+exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
+<TouchableOpacity
+  activeOpacity={0.2}
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "justifyContent": "flex-start",
+        "position": "relative",
+        "top": -1,
+        "width": "90%",
+      }
+    }
+  >
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        Object {
+          "color": undefined,
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      {displayName} (you)
+    </Text>
+    <Icon
+      allowFontScaling={false}
+      name="chevron-down"
+      size={12}
+      style={
+        Object {
+          "color": undefined,
+          "marginHorizontal": 5,
+        }
+      }
+    />
+  </View>
+</TouchableOpacity>
+`;
