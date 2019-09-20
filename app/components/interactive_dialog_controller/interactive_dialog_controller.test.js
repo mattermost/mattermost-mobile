@@ -55,7 +55,7 @@ describe('InteractiveDialogController', () => {
     });
 });
 
-function getBaseProps(triggerId, elements) {
+function getBaseProps(triggerId, elements, introductionText) {
     const dialogData = {
         dialog: {
             callback_id: 'somecallbackid',
@@ -65,6 +65,7 @@ function getBaseProps(triggerId, elements) {
             state: 'somestate',
             submit_label: 'Submit Test',
             title: 'Dialog Test',
+            introductionText,
         },
         trigger_id: triggerId,
         url: 'https://localhost:8065/dialog_submit',
