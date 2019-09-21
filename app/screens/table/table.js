@@ -6,6 +6,7 @@ import React from 'react';
 import {
     Platform,
     ScrollView,
+    SafeAreaView,
 } from 'react-native';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -37,9 +38,11 @@ export default class Table extends React.PureComponent {
             );
         } else {
             container = (
-                <ScrollView contentContainerStyle={viewStyle}>
-                    {content}
-                </ScrollView>
+                <SafeAreaView>
+                    <ScrollView contentContainerStyle={viewStyle}>
+                        {content}
+                    </ScrollView>
+                </SafeAreaView>
             );
         }
 
@@ -50,7 +53,7 @@ export default class Table extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         displayFlex: {
-            flex: 1,
+            flex: 0,
         },
     };
 });

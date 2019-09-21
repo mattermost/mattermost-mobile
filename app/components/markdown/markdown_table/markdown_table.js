@@ -163,6 +163,11 @@ export default class MarkdownTable extends React.PureComponent {
             isLastRow: true,
         });
 
+        // Add an extra prop to the first row of the table so that it can have a different background color
+        rows[0] = React.cloneElement(rows[0], {
+            isFirstRow: true,
+        });
+
         return (
             <View style={tableStyle}>
                 {rows}
@@ -175,7 +180,7 @@ export default class MarkdownTable extends React.PureComponent {
         let moreRight = null;
         const tableWidth = this.getTableWidth();
         const renderAsFlex = this.shouldRenderAsFlex();
-        if (this.state.containerWidth && tableWidth > this.state.containerWidth) {
+        if (this.state.containerWidth && tableWidth > this.state.containerWidth && !renderAsFlex) {
             moreRight = (
                 <LinearGradient
                     colors={[
