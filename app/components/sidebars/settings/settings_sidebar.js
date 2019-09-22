@@ -24,6 +24,7 @@ import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {showModal, showModalOverCurrentContext, dismissModal} from 'app/actions/navigation';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
@@ -37,9 +38,6 @@ export default class SettingsDrawer extends PureComponent {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
@@ -111,7 +109,6 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     handleSetStatus = preventDoubleTap(() => {
-        const {actions} = this.props;
         const items = [{
             action: () => this.setStatus(General.ONLINE),
             text: {
@@ -138,7 +135,7 @@ export default class SettingsDrawer extends PureComponent {
             },
         }];
 
-        actions.showModalOverCurrentContext('OptionsModal', {items});
+        showModalOverCurrentContext('OptionsModal', {items});
     });
 
     goToEditProfile = preventDoubleTap(() => {
@@ -200,7 +197,6 @@ export default class SettingsDrawer extends PureComponent {
     openModal = (screen, title, passProps) => {
         this.closeSettingsSidebar();
 
-        const {actions} = this.props;
         const options = {
             topBar: {
                 leftButtons: [{
@@ -211,7 +207,7 @@ export default class SettingsDrawer extends PureComponent {
         };
 
         InteractionManager.runAfterInteractions(() => {
-            actions.showModal(screen, title, passProps, options);
+            showModal(screen, title, passProps, options);
         });
     };
 
@@ -335,10 +331,10 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     setStatus = (status) => {
-        const {status: currentUserStatus, actions} = this.props;
+        const {status: currentUserStatus} = this.props;
 
         if (currentUserStatus === General.OUT_OF_OFFICE) {
-            actions.dismissModal();
+            dismissModal();
             this.closeSettingsSidebar();
             this.confirmReset(status);
             return;

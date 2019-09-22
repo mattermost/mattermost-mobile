@@ -11,12 +11,10 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
+import {goToScreen} from 'app/actions/navigation';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         isSearchResult: PropTypes.bool,
         mentionName: PropTypes.string.isRequired,
         mentionStyle: CustomPropTypes.Style,
@@ -50,7 +48,6 @@ export default class AtMention extends React.PureComponent {
     }
 
     goToUserProfile = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
@@ -58,7 +55,7 @@ export default class AtMention extends React.PureComponent {
             userId: this.state.user.id,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     getUserDetailsFromMentionName(props) {

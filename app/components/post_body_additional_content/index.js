@@ -10,7 +10,6 @@ import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getOpenGraphMetadataForUrl} from 'mattermost-redux/selectors/entities/posts';
 import {getBool, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {showModalOverCurrentContext} from 'app/actions/navigation';
 import {ViewTypes} from 'app/constants';
 import {getDimensions} from 'app/selectors/device';
 import {extractFirstLink} from 'app/utils/url';
@@ -76,7 +75,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getRedirectLocation,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

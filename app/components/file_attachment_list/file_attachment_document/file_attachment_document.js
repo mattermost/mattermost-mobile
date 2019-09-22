@@ -24,6 +24,7 @@ import {getFileUrl} from 'mattermost-redux/utils/file_utils.js';
 import {DeviceTypes} from 'app/constants/';
 import mattermostBucket from 'app/mattermost_bucket';
 import {changeOpacity} from 'app/utils/theme';
+import {goToScreen} from 'app/actions/navigation';
 
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 
@@ -38,9 +39,6 @@ const circularProgressWidth = 4;
 
 export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         backgroundColor: PropTypes.string,
         canDownloadFiles: PropTypes.bool.isRequired,
         iconHeight: PropTypes.number,
@@ -194,13 +192,14 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     previewTextFile = (file, delay = 2000) => {
-        const {actions} = this.props;
         const {data} = file;
         const prefix = Platform.OS === 'android' ? 'file:/' : '';
         const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
         const readFile = RNFetchBlob.fs.readFile(`${prefix}${path}`, 'utf8');
         setTimeout(async () => {
             try {
+                this.setState({downloading: false, progress: 0});
+
                 const content = await readFile;
                 const screen = 'TextPreview';
                 const title = file.caption;
@@ -208,8 +207,7 @@ export default class FileAttachmentDocument extends PureComponent {
                     content,
                 };
 
-                actions.goToScreen(screen, title, passProps);
-                this.setState({downloading: false, progress: 0});
+                goToScreen(screen, title, passProps);
             } catch (error) {
                 RNFetchBlob.fs.unlink(path);
             }

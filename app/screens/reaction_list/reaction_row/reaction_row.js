@@ -13,17 +13,15 @@ import {
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ProfilePicture from 'app/components/profile_picture';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {goToScreen} from 'app/actions/navigation';
 
 import Emoji from 'app/components/emoji';
 
 export default class ReactionRow extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         emojiName: PropTypes.string.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -40,7 +38,7 @@ export default class ReactionRow extends React.PureComponent {
     };
 
     goToUserProfile = () => {
-        const {actions, user} = this.props;
+        const {user} = this.props;
         const {formatMessage} = this.context.intl;
         const screen = 'UserProfile';
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
@@ -48,7 +46,7 @@ export default class ReactionRow extends React.PureComponent {
             userId: user.id,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     render() {

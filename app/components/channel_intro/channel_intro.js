@@ -8,9 +8,11 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
+
 import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {General} from 'mattermost-redux/constants';
-import {injectIntl, intlShape} from 'react-intl';
+
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
@@ -19,12 +21,10 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {isGuest} from 'app/utils/users';
+import {goToScreen} from 'app/actions/navigation';
 
 class ChannelIntro extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         creator: PropTypes.object,
         currentChannel: PropTypes.object.isRequired,
         currentChannelMembers: PropTypes.array.isRequired,
@@ -38,14 +38,14 @@ class ChannelIntro extends PureComponent {
     };
 
     goToUserProfile = (userId) => {
-        const {actions, intl} = this.props;
+        const {intl} = this.props;
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
             userId,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     getDisplayName = (member) => {

@@ -24,6 +24,7 @@ import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 import telemetry from 'app/telemetry';
 
@@ -36,9 +37,6 @@ const SHOW_MORE_HEIGHT = 60;
 
 export default class PostBody extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-        }).isRequired,
         canDelete: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -135,7 +133,6 @@ export default class PostBody extends PureComponent {
             onHashtagPress,
             onPermalinkPress,
             post,
-            actions,
         } = this.props;
         const screen = 'LongPost';
         const passProps = {
@@ -150,7 +147,7 @@ export default class PostBody extends PureComponent {
             },
         };
 
-        actions.showModalOverCurrentContext(screen, passProps, options);
+        showModalOverCurrentContext(screen, passProps, options);
     });
 
     showPostOptions = () => {
@@ -167,7 +164,6 @@ export default class PostBody extends PureComponent {
             post,
             showAddReaction,
             location,
-            actions,
         } = this.props;
 
         if (isSystemMessage && (!canDelete || hasBeenDeleted)) {
@@ -193,7 +189,7 @@ export default class PostBody extends PureComponent {
 
         Keyboard.dismiss();
         requestAnimationFrame(() => {
-            actions.showModalOverCurrentContext(screen, passProps);
+            showModalOverCurrentContext(screen, passProps);
         });
     };
 

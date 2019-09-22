@@ -72,6 +72,27 @@ jest.mock('react-native-cookies', () => ({
     getInitialURL: jest.fn(),
 }));
 
+jest.mock('react-native-navigation', () => {
+    const RNN = require.requireActual('react-native-navigation');
+    return {
+        ...RNN,
+        Navigation: {
+            ...RNN.Navigation,
+            events: () => ({
+                registerAppLaunchedListener: jest.fn(),
+                bindComponent: jest.fn(),
+            }),
+            setRoot: jest.fn(),
+            pop: jest.fn(),
+            push: jest.fn(),
+            showModal: jest.fn(),
+            dismissAllModals: jest.fn(),
+            popToRoot: jest.fn(),
+            mergeOptions: jest.fn(),
+        },
+    };
+});
+
 let logs;
 let warns;
 let errors;

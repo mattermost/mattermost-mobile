@@ -20,12 +20,10 @@ import {
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
+import {popTopScreen} from 'app/actions/navigation';
 
 export default class Code extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            popTopScreen: PropTypes.func.isRequired,
-        }).isRequired,
         componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,
@@ -46,7 +44,7 @@ export default class Code extends React.PureComponent {
     }
 
     handleAndroidBack = () => {
-        this.props.actions.popTopScreen();
+        popTopScreen();
         return true;
     };
 

@@ -38,7 +38,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getRedirectLocation: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
@@ -410,7 +409,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
     handlePreviewImage = (imageRef) => {
         const {shortenedLink} = this.state;
         let {link} = this.props;
-        const {actions} = this.props;
         if (shortenedLink) {
             link = shortenedLink;
         }
@@ -432,7 +430,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             },
         }];
 
-        previewImageAtIndex([imageRef], 0, files, actions.showModalOverCurrentContext);
+        previewImageAtIndex([imageRef], 0, files);
     };
 
     playYouTubeVideo = () => {

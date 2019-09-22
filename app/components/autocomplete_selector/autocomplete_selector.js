@@ -13,12 +13,12 @@ import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {ViewTypes} from 'app/constants';
+import {goToScreen} from 'app/actions/navigation';
 
 export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             setAutocompleteSelector: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         label: PropTypes.string,
         placeholder: PropTypes.string.isRequired,
@@ -101,7 +101,7 @@ export default class AutocompleteSelector extends PureComponent {
         const title = placeholder || formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
 
         actions.setAutocompleteSelector(dataSource, this.handleSelect, options);
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     render() {

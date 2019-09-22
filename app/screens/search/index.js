@@ -15,7 +15,6 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
-import {dismissModal, goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
 import {handleSearchDraftChanged} from 'app/actions/views/search';
 import {isLandscape} from 'app/selectors/device';
@@ -85,9 +84,6 @@ function mapDispatchToProps(dispatch) {
             searchPostsWithParams,
             getMorePostsForSearch,
             selectPost,
-            dismissModal,
-            goToScreen,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

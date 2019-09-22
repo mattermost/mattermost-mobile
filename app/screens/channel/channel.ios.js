@@ -13,6 +13,7 @@ import PostTextbox from 'app/components/post_textbox';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
 import {DeviceTypes} from 'app/constants';
+import {peek} from 'app/actions/navigation';
 
 import LocalConfig from 'assets/config';
 
@@ -26,10 +27,9 @@ const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
 
 export default class ChannelIOS extends ChannelBase {
     previewChannel = (passProps, options) => {
-        const {actions} = this.props;
         const screen = 'ChannelPeek';
 
-        actions.peek(screen, passProps, options);
+        peek(screen, passProps, options);
     };
 
     optionalProps = {previewChannel: this.previewChannel};

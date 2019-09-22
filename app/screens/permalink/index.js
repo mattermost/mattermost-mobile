@@ -18,12 +18,6 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {isLandscape} from 'app/selectors/device';
 
 import {
-    goToScreen,
-    dismissModal,
-    dismissAllModals,
-    resetToChannel,
-} from 'app/actions/navigation';
-import {
     handleSelectChannel,
     loadThreadIfNecessary,
     setChannelDisplayName,
@@ -81,10 +75,6 @@ function mapDispatchToProps(dispatch) {
             selectPost,
             setChannelDisplayName,
             setChannelLoading,
-            goToScreen,
-            dismissModal,
-            dismissAllModals,
-            resetToChannel,
         }, dispatch),
     };
 }

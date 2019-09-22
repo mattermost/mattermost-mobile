@@ -24,6 +24,7 @@ import BottomSheet from 'app/utils/bottom_sheet';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {popToRoot} from 'app/actions/navigation';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
@@ -42,7 +43,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
         timeZone: PropTypes.string,
-        popToRoot: PropTypes.func,
     };
 
     static contextTypes = {
@@ -138,7 +138,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isBot,
             isGroupConstrained,
             timeZone,
-            popToRoot,
         } = this.props;
 
         const style = getStyleSheet(theme);

@@ -17,6 +17,7 @@ import FormattedText from 'app/components/formatted_text';
 import {DeviceTypes} from 'app/constants';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {showModal, dismissModal} from 'app/actions/navigation';
 
 const {View: AnimatedView} = Animated;
 
@@ -27,8 +28,6 @@ export default class ClientUpgradeListener extends PureComponent {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         currentVersion: PropTypes.string,
         downloadLink: PropTypes.string,
@@ -141,10 +140,9 @@ export default class ClientUpgradeListener extends PureComponent {
     };
 
     handleLearnMore = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
 
-        actions.dismissModal();
+        dismissModal();
 
         const screen = 'ClientUpgrade';
         const title = intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'});
@@ -160,7 +158,7 @@ export default class ClientUpgradeListener extends PureComponent {
             },
         };
 
-        actions.showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps, options);
 
         this.toggleUpgradeMessage(false);
     };
