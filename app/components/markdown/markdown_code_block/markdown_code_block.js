@@ -5,6 +5,7 @@ import {PropTypes} from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {
+    Platform,
     Clipboard,
     StyleSheet,
     Text,
@@ -156,6 +157,26 @@ export default class MarkdownCodeBlock extends React.PureComponent {
             );
         }
 
+        let textComponent = null;
+        if (Platform.OS === 'ios') {
+            textComponent = (
+                <SyntaxHighlighter
+                    language={this.props.language}
+                    style={getHighlightStyleFromTheme(this.props.theme)}
+                    highlighter={'hljs'}
+                    customStyle={{...style.codeText, ...this.props.textStyle}}
+                >
+                    {content}
+                </SyntaxHighlighter>
+            );
+        } else {
+            textComponent = (
+                <Text style={[style.codeText, this.props.textStyle]}>
+                    {content}
+                </Text>
+            );
+        }
+
         return (
             <TouchableOpacity
                 onPress={this.handlePress}
@@ -169,14 +190,7 @@ export default class MarkdownCodeBlock extends React.PureComponent {
                     </View>
                     <View style={style.rightColumn}>
                         <View style={style.code}>
-                            <SyntaxHighlighter
-                                language={this.props.language}
-                                style={getHighlightStyleFromTheme(this.props.theme)}
-                                highlighter={'hljs'}
-                                customStyle={{...style.codeText, ...this.props.textStyle}}
-                            >
-                                {content}
-                            </SyntaxHighlighter>
+                            {textComponent}
                         </View>
                         {plusMoreLines}
                     </View>
@@ -214,8 +228,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'column',
             flex: 1,
             paddingHorizontal: 6,
-            paddingVertical: 0,
-            backgroundColor: getHighlightStyleFromTheme(theme).hljs.background,
+            ...Platform.select({
+                ios: {
+                    paddingVertical: 0,
+                    backgroundColor: getHighlightStyleFromTheme(theme).hljs.background,
+                },
+                android: {
+                    paddingVertical: 4,
+                },
+            }),
         },
         code: {
             flexDirection: 'row',
@@ -223,10 +244,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
-            fontFamily: getCodeFont(),
             fontSize: 12,
             lineHeight: 18,
-            paddingVertical: 6,
+            ...Platform.select({
+                ios: {
+                    fontFamily: getCodeFont(),
+                    paddingVertical: 6,
+                },
+            }),
         },
         plusMoreLinesText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
