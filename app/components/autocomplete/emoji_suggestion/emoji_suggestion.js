@@ -186,7 +186,7 @@ export default class EmojiSuggestion extends Component {
                 <View style={style.emoji}>
                     <Emoji
                         emojiName={item}
-                        textStyle={{color: 'black', fontWeight: 'bold'}}
+                        textStyle={style.emojiText}
                         size={20}
                     />
                 </View>
@@ -233,6 +233,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         emojiName: {
             fontSize: 13,
             color: theme.centerChannelColor,
+        },
+        emojiText: {
+            color: '#000',
+            fontWeight: 'bold',
         },
         listView: {
             flex: 1,

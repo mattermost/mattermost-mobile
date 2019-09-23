@@ -61,7 +61,7 @@ export default class EmojiPickerRow extends Component {
             >
                 <Emoji
                     emojiName={emoji.name}
-                    textStyle={{color: 'black', fontWeight: 'bold'}}
+                    textStyle={styles.emojiText}
                     size={emojiSize}
                 />
             </TouchableOpacity>
@@ -89,6 +89,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
+    },
+    emojiText: {
+        color: '#000',
+        fontWeight: 'bold',
     },
     emojiLeft: {
         marginLeft: 0,
