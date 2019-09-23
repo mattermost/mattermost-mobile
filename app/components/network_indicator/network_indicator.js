@@ -201,11 +201,11 @@ export default class NetworkIndicator extends PureComponent {
             return ANDROID_TOP_PORTRAIT;
         }
 
-        const isX = DeviceTypes.IS_IPHONE_X;
+        const iPhoneWithInsets = DeviceTypes.IS_IPHONE_WITH_INSETS;
 
-        if (isX && isLandscape) {
+        if (iPhoneWithInsets && isLandscape) {
             return IOS_TOP_LANDSCAPE;
-        } else if (isX) {
+        } else if (iPhoneWithInsets) {
             return IOSX_TOP_PORTRAIT;
         } else if (isLandscape && !DeviceTypes.IS_TABLET) {
             return IOS_TOP_LANDSCAPE;

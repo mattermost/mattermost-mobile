@@ -332,7 +332,7 @@ export default class ChannelSidebar extends Component {
             return null;
         }
 
-        const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_X || mattermostManaged.hasSafeAreaInsets;
+        const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets;
         const multipleTeams = teamsCount > 1;
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {

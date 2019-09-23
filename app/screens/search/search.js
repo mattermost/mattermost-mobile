@@ -687,7 +687,7 @@ export default class Search extends PureComponent {
 
         return (
             <SafeAreaView
-                excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_X}
+                excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_WITH_INSETS}
                 forceTop={44}
             >
                 <KeyboardLayout>
