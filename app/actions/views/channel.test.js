@@ -26,7 +26,7 @@ jest.mock('mattermost-redux/actions/channels', () => {
         ...channelActions,
         markChannelAsRead: jest.fn(),
         markChannelAsViewed: jest.fn(),
-    }
+    };
 });
 
 jest.mock('mattermost-redux/selectors/entities/teams', () => {
@@ -34,7 +34,7 @@ jest.mock('mattermost-redux/selectors/entities/teams', () => {
     return {
         ...teamSelectors,
         getTeamByName: jest.fn(() => ({name: 'current-team-name'})),
-    }
+    };
 });
 
 const mockStore = configureStore([thunk]);
