@@ -390,7 +390,7 @@ export default class List extends PureComponent {
 
         const {width, height} = Dimensions.get('window');
         const landscape = width > height;
-        if (DeviceTypes.IS_IPHONE_X) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
             return landscape ? 54 : 44;
         }
 
