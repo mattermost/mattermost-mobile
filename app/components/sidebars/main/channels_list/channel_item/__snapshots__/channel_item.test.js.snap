@@ -44,7 +44,7 @@ exports[`ChannelItem should match snapshot 1`] = `
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status={null}
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -96,7 +96,7 @@ exports[`ChannelItem should match snapshot 1`] = `
             ]
           }
         >
-          display_name
+          Test Channel
         </Text>
       </View>
     </View>
@@ -159,7 +159,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status="offline"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -210,7 +210,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             ]
           }
         >
-          {displayName} (you)
+          {displayname} (you)
         </Text>
       </View>
     </View>
@@ -273,7 +273,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status="offline"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -324,7 +324,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             ]
           }
         >
-          {displayName} (you)
+          {displayname} (you)
         </Text>
       </View>
     </View>
@@ -387,7 +387,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status="offline"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -438,8 +438,39 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
             ]
           }
         >
-          display_name
+          Another Account
         </Text>
+        <Badge
+          containerStyle={
+            Object {
+              "borderColor": "#1153ab",
+              "borderRadius": 14,
+              "borderWidth": 0,
+              "marginRight": 16,
+              "right": 0,
+              "top": 11,
+            }
+          }
+          count={1}
+          countStyle={
+            Object {
+              "color": "#145dbf",
+              "fontSize": 12,
+            }
+          }
+          extraPaddingHorizontal={10}
+          minHeight={20}
+          minWidth={21}
+          onPress={[Function]}
+          style={
+            Object {
+              "backgroundColor": undefined,
+              "height": 21,
+              "padding": 3,
+              "position": "relative",
+            }
+          }
+        />
       </View>
     </View>
   </TouchablePreview>
@@ -484,13 +515,13 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           channelId="channel_id"
           hasDraft={false}
           isActive={false}
-          isArchived={false}
+          isArchived={true}
           isBot={false}
           isInfo={false}
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status="offline"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -542,121 +573,46 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
             ]
           }
         >
-          display_name
+          Another Account
         </Text>
-      </View>
-    </View>
-  </TouchablePreview>
-</AnimatedComponent>
-`;
-
-exports[`ChannelItem should match snapshot for deactivated user and not searchResults or currentChannel 1`] = `
-<AnimatedComponent>
-  <TouchablePreview
-    onPress={[Function]}
-    onPressIn={[Function]}
-    touchableComponent={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "flex": 1,
-            "flexDirection": "row",
-            "height": 44,
-          },
-          undefined,
-          null,
-        ]
-      }
-    >
-      <View
-        style={
-          Array [
+        <Badge
+          containerStyle={
             Object {
-              "alignItems": "center",
-              "flex": 1,
-              "flexDirection": "row",
-              "paddingLeft": 16,
-            },
-            undefined,
-          ]
-        }
-      >
-        <ChannelIcon
-          channelId="channel_id"
-          hasDraft={false}
-          isActive={false}
-          isArchived={false}
-          isBot={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
+              "borderColor": "#1153ab",
+              "borderRadius": 14,
+              "borderWidth": 0,
+              "marginRight": 16,
+              "right": 0,
+              "top": 11,
             }
           }
-          type="D"
-        />
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "alignSelf": "center",
-                "color": "rgba(255,255,255,0.88)",
-                "flex": 1,
-                "fontFamily": "Open Sans",
-                "fontSize": 16,
-                "lineHeight": 24,
-                "paddingRight": 10,
-              },
-              Object {
-                "color": "#ffffff",
-                "fontWeight": "500",
-              },
-            ]
+          count={1}
+          countStyle={
+            Object {
+              "color": "#145dbf",
+              "fontSize": 12,
+            }
           }
-        >
-          display_name
-        </Text>
+          extraPaddingHorizontal={10}
+          minHeight={20}
+          minWidth={21}
+          onPress={[Function]}
+          style={
+            Object {
+              "backgroundColor": undefined,
+              "height": 21,
+              "padding": 3,
+              "position": "relative",
+            }
+          }
+        />
       </View>
     </View>
   </TouchablePreview>
 </AnimatedComponent>
 `;
 
-exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
-
-exports[`ChannelItem should match snapshot for showUnreadForMsgs 1`] = `null`;
+exports[`ChannelItem should match snapshot for deactivated user and not searchResults or currentChannel 1`] = `null`;
 
 exports[`ChannelItem should match snapshot with draft 1`] = `
 <AnimatedComponent>
@@ -702,7 +658,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status={null}
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -754,7 +710,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
             ]
           }
         >
-          display_name
+          Test Channel
         </Text>
       </View>
     </View>
@@ -778,9 +734,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             "flexDirection": "row",
             "height": 44,
           },
-          Object {
-            "opacity": 0.5,
-          },
+          undefined,
           null,
         ]
       }
@@ -808,7 +762,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           isUnread={true}
           membersCount={1}
           size={16}
-          status="online"
+          status={null}
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -860,7 +814,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             ]
           }
         >
-          display_name
+          Test Channel
         </Text>
         <Badge
           containerStyle={

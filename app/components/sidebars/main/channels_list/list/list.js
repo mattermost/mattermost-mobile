@@ -43,16 +43,15 @@ export default class List extends PureComponent {
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         canCreatePublicChannels: PropTypes.bool.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
-        unreadChannelIds: PropTypes.array.isRequired,
-        styles: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
         previewChannel: PropTypes.func,
-        isLandscape: PropTypes.bool.isRequired,
-        actions: PropTypes.shape({
-            showModal: PropTypes.func.isRequired,
-        }).isRequired,
+        showModal: PropTypes.func.isRequired,
+        styles: PropTypes.object.isRequired,
+        teammateDisplayNameSettings: PropTypes.string,
+        theme: PropTypes.object.isRequired,
+        unreadChannelIds: PropTypes.array.isRequired,
     };
 
     static contextTypes = {
@@ -63,9 +62,9 @@ export default class List extends PureComponent {
         super(props);
 
         this.combinedActionsRef = React.createRef();
+        this.listRef = React.createRef();
 
         this.state = {
-            sections: this.buildSections(props),
             showIndicator: false,
             width: 0,
         };
@@ -86,31 +85,17 @@ export default class List extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {
-            canCreatePrivateChannels,
-            orderedChannelIds,
-            unreadChannelIds,
-        } = this.props;
-
-        if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
-            nextProps.unreadChannelIds !== unreadChannelIds ||
-            nextProps.orderedChannelIds !== orderedChannelIds) {
-            this.setState({sections: this.buildSections(nextProps)});
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (prevState.sections !== this.state.sections && this.refs.list._wrapperListRef.getListRef()._viewabilityHelper) { //eslint-disable-line
-            this.refs.list.recordInteraction();
+    componentDidUpdate(prevProps) {
+        if (prevProps.orderedChannelIds !== this.props.orderedChannelIds && this.listRef?.current?._wrapperListRef.getListRef()._viewabilityHelper) { //eslint-disable-line
+            this.listRef.current.list.recordInteraction();
             this.updateUnreadIndicators({
-                viewableItems: Array.from(this.refs.list._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
+                viewableItems: Array.from(this.listRef.current._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
             });
         }
     }
 
-    getSectionConfigByType = (props, sectionType) => {
-        const {canCreatePrivateChannels, canJoinPublicChannels} = props;
+    getSectionConfigByType = (sectionType) => {
+        const {canCreatePrivateChannels, canJoinPublicChannels} = this.props;
 
         switch (sectionType) {
         case SidebarSectionTypes.UNREADS:
@@ -162,14 +147,10 @@ export default class List extends PureComponent {
         }
     };
 
-    buildSections = (props) => {
-        const {
-            orderedChannelIds,
-        } = props;
-
+    buildSections = (orderedChannelIds) => {
         return orderedChannelIds.map((s) => {
             return {
-                ...this.getSectionConfigByType(props, s.type),
+                ...this.getSectionConfigByType(s.type),
                 data: s.items,
             };
         });
@@ -224,7 +205,7 @@ export default class List extends PureComponent {
     };
 
     goToCreatePublicChannel = preventDoubleTap(() => {
-        const {actions} = this.props;
+        const {showModal} = this.props;
         const {intl} = this.context;
         const screen = 'CreateChannel';
         const title = intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
@@ -233,11 +214,11 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        actions.showModal(screen, title, passProps);
+        showModal(screen, title, passProps);
     });
 
     goToCreatePrivateChannel = preventDoubleTap(() => {
-        const {actions} = this.props;
+        const {showModal} = this.props;
         const {intl} = this.context;
         const screen = 'CreateChannel';
         const title = intl.formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'});
@@ -246,11 +227,11 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        actions.showModal(screen, title, passProps);
+        showModal(screen, title, passProps);
     });
 
     goToDirectMessages = preventDoubleTap(() => {
-        const {actions} = this.props;
+        const {showModal} = this.props;
         const {intl} = this.context;
         const screen = 'MoreDirectMessages';
         const title = intl.formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'});
@@ -264,11 +245,11 @@ export default class List extends PureComponent {
             },
         };
 
-        actions.showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps, options);
     });
 
     goToMoreChannels = preventDoubleTap(() => {
-        const {actions} = this.props;
+        const {showModal} = this.props;
         const {intl} = this.context;
         const screen = 'MoreChannels';
         const title = intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
@@ -276,7 +257,7 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        actions.showModal(screen, title, passProps);
+        showModal(screen, title, passProps);
     });
 
     keyExtractor = (item) => item.id || item;
@@ -312,15 +293,18 @@ export default class List extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {favoriteChannelIds, unreadChannelIds, previewChannel} = this.props;
+        const {favoriteChannelIds, isLandscape, unreadChannelIds, previewChannel, teammateDisplayNameSettings, theme} = this.props;
 
         return (
             <ChannelItem
                 channelId={item}
-                isUnread={unreadChannelIds.includes(item)}
                 isFavorite={favoriteChannelIds.includes(item)}
+                isLandscape={isLandscape}
+                isUnread={unreadChannelIds.includes(item)}
                 onSelectChannel={this.onSelectChannel}
                 previewChannel={previewChannel}
+                teammateDisplayNameSettings={teammateDisplayNameSettings}
+                theme={theme}
             />
         );
     };
@@ -352,8 +336,8 @@ export default class List extends PureComponent {
     };
 
     scrollToTop = () => {
-        if (this.refs.list) {
-            this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+        if (this.listRef?.current) {
+            this.listRef.current._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                 x: 0,
                 y: 0,
                 animated: true,
@@ -398,8 +382,8 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const {styles, theme} = this.props;
-        const {sections, showIndicator} = this.state;
+        const {styles, theme, orderedChannelIds} = this.props;
+        const {showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
 
@@ -409,8 +393,8 @@ export default class List extends PureComponent {
                 onLayout={this.onLayout}
             >
                 <SectionList
-                    ref='list'
-                    sections={sections}
+                    ref={this.listRef}
+                    sections={this.buildSections(orderedChannelIds)}
                     contentContainerStyle={{paddingBottom}}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}

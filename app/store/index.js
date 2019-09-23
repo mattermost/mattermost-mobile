@@ -17,7 +17,6 @@ import {NavigationTypes, ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import initialState from 'app/initial_state';
 import appReducer from 'app/reducers';
-import {throttle} from 'app/utils/general';
 import {getSiteUrl, setSiteUrl} from 'app/utils/image_cache_manager';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
@@ -159,40 +158,6 @@ export function configureAppStore() {
             });
 
             let purging = false;
-
-            // for iOS write the entities to a shared file
-            if (Platform.OS === 'ios') {
-                store.subscribe(throttle(() => {
-                    const state = store.getState();
-                    if (state.entities) {
-                        const channelsInTeam = {...state.entities.channels.channelsInTeam};
-                        Object.keys(channelsInTeam).forEach((teamId) => {
-                            channelsInTeam[teamId] = Array.from(channelsInTeam[teamId]);
-                        });
-
-                        const profilesInChannel = {...state.entities.users.profilesInChannel};
-                        Object.keys(profilesInChannel).forEach((channelId) => {
-                            profilesInChannel[channelId] = Array.from(profilesInChannel[channelId]);
-                        });
-
-                        const entities = {
-                            ...state.entities,
-                            channels: {
-                                ...state.entities.channels,
-                                channelsInTeam,
-                            },
-                            users: {
-                                ...state.entities.users,
-                                profilesInChannel,
-                                profilesNotInTeam: [],
-                                profilesWithoutTeam: [],
-                                profilesNotInChannel: [],
-                            },
-                        };
-                        mattermostBucket.writeToFile('entities', JSON.stringify(entities));
-                    }
-                }, 1000));
-            }
 
             // check to see if the logout request was successful
             store.subscribe(async () => {

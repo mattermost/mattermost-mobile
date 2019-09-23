@@ -43,6 +43,11 @@ export default {
     ADVANCED_SEND_ON_CTRL_ENTER: 'send_on_ctrl_enter',
 
     CATEGORY_THEME: 'theme',
+    TEAMMATE_NAME_DISPLAY: {
+        SHOW_USERNAME: 'username',
+        SHOW_NICKNAME_FULLNAME: 'nickname_full_name',
+        SHOW_FULLNAME: 'full_name',
+    },
     THEMES: {
         default: {
             type: 'Mattermost',

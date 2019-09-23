@@ -35,11 +35,12 @@ const VIEWABILITY_CONFIG = {
 export default class TeamsList extends PureComponent {
     static propTypes = {
         handleTeamChangeAndSwitchToInitialChannel: PropTypes.func.isRequired,
+        isLandscape: PropTypes.bool,
         showModal: PropTypes.func.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         hasOtherJoinableTeams: PropTypes.bool,
-        teams: PropTypes.object.isRequired,
+        teams: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -137,11 +138,12 @@ export default class TeamsList extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {currentTeamId, theme} = this.props;
+        const {currentTeamId, isLandscape, theme} = this.props;
         return (
             <TeamsListItem
                 currentTeamId={currentTeamId}
                 currentUrl={this.state.serverUrl}
+                isLandscape={isLandscape}
                 selectTeam={this.selectTeam}
                 teamId={item.id}
                 displayName={item.displayName}

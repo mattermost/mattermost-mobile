@@ -31,13 +31,12 @@ jest.mock('react-native-notifications', () => ({
 
 const mockStore = configureMockStore([thunk]);
 const store = mockStore(intitialState);
-GlobalEventHandler.reduxStore = store;
 
 // TODO: Add Android test as part of https://mattermost.atlassian.net/browse/MM-17110
 describe('GlobalEventHandler', () => {
     it('should clear notifications on logout', async () => {
         const clearNotifications = jest.spyOn(PushNotification, 'clearNotifications');
-
+        GlobalEventHandler.reduxStore = store;
         await GlobalEventHandler.onLogout();
         expect(clearNotifications).toHaveBeenCalled();
     });
@@ -45,16 +44,16 @@ describe('GlobalEventHandler', () => {
     it('should call onAppStateChange after configuration', () => {
         const onAppStateChange = jest.spyOn(GlobalEventHandler, 'onAppStateChange');
 
-        GlobalEventHandler.configure({store});
-        expect(GlobalEventHandler.store).not.toBeNull();
+        GlobalEventHandler.reduxStore = null;
+        GlobalEventHandler.configure({reduxStore: store});
         expect(onAppStateChange).toHaveBeenCalledWith('active');
     });
 
     it('should handle onAppStateChange to active if the store set', () => {
         const appActive = jest.spyOn(GlobalEventHandler, 'appActive');
         const appInactive = jest.spyOn(GlobalEventHandler, 'appInactive');
-        expect(GlobalEventHandler.store).not.toBeNull();
 
+        GlobalEventHandler.reduxStore = store;
         GlobalEventHandler.onAppStateChange('active');
         expect(appActive).toHaveBeenCalled();
         expect(appInactive).not.toHaveBeenCalled();
@@ -63,8 +62,8 @@ describe('GlobalEventHandler', () => {
     it('should handle onAppStateChange to background if the store set', () => {
         const appActive = jest.spyOn(GlobalEventHandler, 'appActive');
         const appInactive = jest.spyOn(GlobalEventHandler, 'appInactive');
-        expect(GlobalEventHandler.store).not.toBeNull();
 
+        GlobalEventHandler.reduxStore = store;
         GlobalEventHandler.onAppStateChange('background');
         expect(appActive).not.toHaveBeenCalled();
         expect(appInactive).toHaveBeenCalled();
@@ -73,7 +72,7 @@ describe('GlobalEventHandler', () => {
     it('should not handle onAppStateChange if the store is not set', () => {
         const appActive = jest.spyOn(GlobalEventHandler, 'appActive');
         const appInactive = jest.spyOn(GlobalEventHandler, 'appInactive');
-        GlobalEventHandler.store = null;
+        GlobalEventHandler.reduxStore = null;
 
         GlobalEventHandler.onAppStateChange('active');
         expect(appActive).not.toHaveBeenCalled();

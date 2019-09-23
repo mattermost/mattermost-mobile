@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import keyMirror from 'mattermost-redux/utils/key_mirror';
+import keyMirror from 'app/utils/key_mirror';
 
 export const UpgradeTypes = {
     CAN_UPGRADE: 'can_upgrade',
@@ -18,6 +18,9 @@ export const SidebarSectionTypes = {
     DIRECT: 'direct',
     RECENT_ACTIVITY: 'recent',
     ALPHA: 'alpha',
+    OTHER: 'other',
+    ARCHIVED: 'archived',
+    MEMBERS: 'members',
 };
 
 export const NotificationLevels = {

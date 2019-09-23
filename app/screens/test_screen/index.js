@@ -13,7 +13,7 @@ import {handleServerUrlChanged} from 'app/actions/views/select_server';
 
 import {General, Preferences} from 'app/constants';
 import {getCurrentUser} from 'app/realm/selectors/general';
-import {getTheme} from 'app/realm/selectors/theme';
+import {getTheme} from 'app/realm/selectors/preference';
 
 function mapPropsToQueries(realm) {
     //Extend Realm.Object function if returning a objectForPrimaryKey in mapPropsToQueries

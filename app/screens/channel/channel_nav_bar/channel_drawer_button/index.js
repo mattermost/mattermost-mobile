@@ -1,48 +1,35 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {connect} from 'react-redux';
-import {createSelector} from 'reselect';
+import {realmConnect} from 'realm-react-redux';
 
-import {getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {General} from 'app/constants';
+import {getDrawerUnreadCount} from 'app/realm/selectors/channel';
+import options from 'app/store/realm_options';
 
 import ChannelDrawerButton from './channel_drawer_button';
 
-const getBadgeCount = createSelector(
-    getCurrentTeamId,
-    getTeamMemberships,
-    (state, mentionCount) => mentionCount,
-    (state, _, messageCount) => messageCount,
-    (currentTeamId, myTeamMembers, mentionCount, messageCount) => {
-        let mentions = mentionCount;
-        let messages = messageCount;
+function mapPropsToQueries(realm) {
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+    const teamMembers = realm.objects('TeamMember').filtered('id CONTAINS $0', general.currentUserId);
+    const directChannels = realm.objects('Channel').filtered('type = $0 OR type = $1', General.DM_CHANNEL, General.GM_CHANNEL);
 
-        const members = Object.values(myTeamMembers).filter((m) => m.team_id !== currentTeamId);
-        members.forEach((m) => {
-            mentions += (m.mention_count || 0);
-            messages += (m.msg_count || 0);
-        });
+    return [general, teamMembers, directChannels];
+}
 
-        let badgeCount = 0;
-        if (mentions) {
-            badgeCount = mentions;
-        } else if (messages) {
-            badgeCount = -1;
-        }
+function mapQueriesToProps([general, teamMembers, directChannels]) {
+    const unread = getDrawerUnreadCount(general.currentUserId, teamMembers, directChannels);
 
-        return badgeCount;
+    let badgeCount = 0;
+    if (unread.mentions) {
+        badgeCount = unread.mentions;
+    } else if (unread.messages) {
+        badgeCount = -1;
     }
-);
-
-function mapStateToProps(state) {
-    const {mentionCount, messageCount} = getUnreadsInCurrentTeam(state);
 
     return {
-        badgeCount: getBadgeCount(state, mentionCount, messageCount),
-        theme: getTheme(state),
+        badgeCount,
     };
 }
 
-export default connect(mapStateToProps)(ChannelDrawerButton);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, null, null, options)(ChannelDrawerButton);

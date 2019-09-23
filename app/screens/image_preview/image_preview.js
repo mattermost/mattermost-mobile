@@ -19,7 +19,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
-import Permissions from 'react-native-permissions';
+import RNPermissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
 import DeviceInfo from 'react-native-device-info';
 import {Navigation} from 'react-native-navigation';
@@ -28,7 +28,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import FileAttachmentDocument from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import {DeviceTypes, NavigationTypes, PermissionTypes} from 'app/constants';
+import {DeviceTypes, NavigationTypes, Permissions} from 'app/constants';
 import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
@@ -461,22 +461,22 @@ export default class ImagePreview extends PureComponent {
         const items = [];
         let permissionRequest;
 
-        const hasPermissionToStorage = await Permissions.check('photo');
+        const hasPermissionToStorage = await RNPermissions.check('photo');
 
         switch (hasPermissionToStorage) {
-        case PermissionTypes.UNDETERMINED:
-            permissionRequest = await Permissions.request('photo');
-            if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+        case Permissions.UNDETERMINED:
+            permissionRequest = await RNPermissions.request('photo');
+            if (permissionRequest !== Permissions.AUTHORIZED) {
                 return;
             }
             break;
-        case PermissionTypes.DENIED: {
-            const canOpenSettings = await Permissions.canOpenSettings();
+        case Permissions.DENIED: {
+            const canOpenSettings = await RNPermissions.canOpenSettings();
             let grantOption = null;
             if (canOpenSettings) {
                 grantOption = {
                     text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Settings'}),
-                    onPress: () => Permissions.openSettings(),
+                    onPress: () => RNPermissions.openSettings(),
                 };
             }
 

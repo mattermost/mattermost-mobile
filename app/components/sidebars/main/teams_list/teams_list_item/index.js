@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Text,
     TouchableHighlight,
     View,
@@ -22,37 +21,12 @@ export default class TeamsListItem extends React.PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
+        isLandscape: PropTypes.bool,
         mentionCount: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         selectTeam: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-    };
-
-    constructor(props) {
-        super(props);
-
-        const {width, height} = Dimensions.get('window');
-        const isLandscape = width > height;
-
-        this.state = {
-            isLandscape,
-        };
-    }
-
-    componentDidMount() {
-        Dimensions.addEventListener('change', this.handleDimensions);
-    }
-
-    componentWillUnmount() {
-        Dimensions.removeEventListener('change', this.handleDimensions);
-    }
-
-    handleDimensions = ({window}) => {
-        const {width, height} = window;
-        const isLandscape = width > height;
-
-        this.setState({isLandscape});
     };
 
     selectTeam = preventDoubleTap(() => {
@@ -64,6 +38,7 @@ export default class TeamsListItem extends React.PureComponent {
             currentTeamId,
             currentUrl,
             displayName,
+            isLandscape,
             mentionCount,
             name,
             teamId,
@@ -99,7 +74,7 @@ export default class TeamsListItem extends React.PureComponent {
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                     onPress={this.selectTeam}
                 >
-                    <View style={[styles.teamContainer, padding(this.state.isLandscape)]}>
+                    <View style={[styles.teamContainer, padding(isLandscape)]}>
                         <View>
                             <TeamIcon
                                 teamId={teamId}

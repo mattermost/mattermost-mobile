@@ -3,11 +3,20 @@
 
 import {Client4} from 'mattermost-redux/client';
 
-import {General, PermissionTypes, Preferences, ViewTypes} from 'app/constants';
+import {General, Permissions, Preferences, Roles, ViewTypes} from 'app/constants';
 import {ChannelTypes, UserTypes} from 'app/realm/action_types';
-import {isDirectMessageVisible, isGroupMessageVisible} from 'app/realm/utils/channel';
+import {getProfilesByIds} from 'app/realm/actions/user';
+import telemetry from 'app/telemetry';
+import {
+    isDirectMessageVisible,
+    isGroupMessageVisible,
+    getDirectChannelName,
+    getUserIdFromChannelName,
+    isOwnDirectMessage,
+    sortChannelsByDisplayName,
+} from 'app/realm/utils/channel';
 import {reducePermissionsToSet} from 'app/realm/utils/role';
-import {getUserIdFromChannelName, sortChannelsByDisplayName} from 'app/utils/channels';
+import {buildPreference} from 'app/realm/utils/preference';
 
 import {forceLogoutIfNecessary} from './helpers';
 import {loadPostsWithRetry} from './post';
@@ -23,6 +32,8 @@ import {
     loadProfilesAndTeamMembersForDMSidebar as loadProfilesAndTeamMembersForDMSidebarRedux,
     setChannelLoading as setChannelLoadingRedux,
 } from 'app/actions/views/channel';
+
+const MAX_PROFILE_TRIES = 3;
 
 export function loadChannelsForTeam(teamId) {
     return async (dispatch) => {
@@ -62,27 +73,20 @@ export function loadChannelsForTeam(teamId) {
 }
 
 export function loadSidebarDirectMessagesProfiles(teamId) {
-    function buildPref(name, category, userId) {
-        return {
-            user_id: userId,
-            category,
-            name,
-            value: 'true',
-        };
-    }
-
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const realm = getState();
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const preferences = realm.objects('Preference');
         const directChannels = realm.objects('Channel').filtered('type=$0 OR type=$1', General.DM_CHANNEL, General.GM_CHANNEL);
-        const prefs = [];
-        reduxStore.dispatch(loadProfilesAndTeamMembersForDMSidebarRedux(teamId || general.currentTeamId));
         const currentUserId = general.currentUserId;
+        const prefs = [];
+        let promises = [];
+        reduxStore.dispatch(loadProfilesAndTeamMembersForDMSidebarRedux(teamId || general.currentTeamId));
 
         directChannels.forEach((c) => {
             // we only have the current user, so we need to load the other channel members
-            if (!c.members.length || (c.members.length === 1 && c.members[0].user.id === currentUserId)) {
-                dispatch(getProfilesInChannel(c.id));
+            if (!c.members.length || (c.members.length === 1 && c.members[0].user.id === currentUserId && !isOwnDirectMessage(c, currentUserId))) {
+                promises.push(dispatch(getProfilesInChannel(c.id, true)));
             }
 
             const myChannelMember = c.members.filtered('user.id=$0', currentUserId)[0];
@@ -91,20 +95,46 @@ export function loadSidebarDirectMessagesProfiles(teamId) {
                 const teammateId = getUserIdFromChannelName(currentUserId, c.name);
 
                 // when then DM is hidden but has new messages
-                if (!isDirectMessageVisible(realm, general.currentUserId, c.name) && myChannelMember?.mentionCount) {
-                    prefs.push(buildPref(teammateId, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId));
+                if (!isDirectMessageVisible(preferences, general.currentUserId, c.name) && myChannelMember?.mentionCount) {
+                    prefs.push(buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, teammateId));
+                    prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
                 }
                 break;
             }
             case General.GM_CHANNEL:
                 // when then GM is hidden but has new messages
-                if (!isGroupMessageVisible(realm, c.id) && (myChannelMember.mentionCount > 0 || myChannelMember.msgCount < myChannelMember.channels[0].totalMsgCount)) {
-                    prefs.push(buildPref(c.id, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId));
+                if (!isGroupMessageVisible(preferences, c.id) && (myChannelMember.mentionCount > 0 || myChannelMember.msgCount < myChannelMember.channels[0].totalMsgCount)) {
+                    prefs.push(buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, c.id));
+                    prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
                 }
 
                 break;
             }
         });
+
+        if (promises.length) {
+            for (let i = 0; i < MAX_PROFILE_TRIES; i++) {
+                const result = await Promise.all(promises); // eslint-disable-line no-await-in-loop
+                const failed = [];
+                result.forEach((p, index) => {
+                    if (p.error) {
+                        failed.push(directChannels[index].id);
+                    }
+                });
+
+                dispatch({
+                    type: UserTypes.RECEIVED_BATCH_PROFILES_IN_CHANNEL,
+                    data: result,
+                });
+
+                if (failed.length) {
+                    promises = failed.map((id) => dispatch(getProfilesInChannel(id, true)));
+                    continue;
+                }
+
+                break;
+            }
+        }
 
         if (prefs.length) {
             dispatch(savePreferences(currentUserId, prefs));
@@ -124,12 +154,10 @@ export function selectInitialChannel(teamId) {
         const lastChannel = realm.objectForPrimaryKey('Channel', lastChannelId);
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
 
-        const isDMVisible = lastChannel?.type === General.DM_CHANNEL && isDirectMessageVisible(realm, general.currentUserId, lastChannel.name);
-        const isGMVisible = lastChannel?.type === General.DM_CHANNEL && isGroupMessageVisible(realm, lastChannelId);
-
+        const isDirectChannel = lastChannel?.type === General.DM_CHANNEL || lastChannel?.type === General.GM_CHANNEL;
         const isMember = lastChannel?.members.filtered('user.id=$0', general.currentUserId);
 
-        if (isMember?.length && (lastChannel?.team.id === teamId || isDMVisible || isGMVisible)) {
+        if (isMember?.length && (lastChannel?.team?.id === teamId || isDirectChannel)) {
             return dispatch(handleSelectChannel(lastChannelId, teamId));
         }
 
@@ -149,7 +177,7 @@ export function selectDefaultChannel(teamId) {
             const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel.filtered('members.user.id=$0', currentUser.id).length);
 
             const permissions = realm.objects('Role').reduce(reducePermissionsToSet.bind(`${teamMember.roles} ${currentUser.roles}`), new Set());
-            const canIJoinPublicChannelsInTeam = permissions.has(PermissionTypes.JOIN_PUBLIC_CHANNELS);
+            const canIJoinPublicChannelsInTeam = permissions.has(Permissions.JOIN_PUBLIC_CHANNELS);
 
             let channel;
             if (iAmMemberOfTheTeamDefaultChannel || canIJoinPublicChannelsInTeam) {
@@ -177,19 +205,19 @@ export function handleSelectChannel(channelId, teamId, fromPushNotification = fa
         const realm = getState();
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         const currentChannelId = general.currentChannelId;
+
         let currentChannel = null;
         if (currentChannelId) {
             currentChannel = realm.objectForPrimaryKey('Channel', currentChannelId);
         }
 
-        const lastTeamId = currentChannel?.team?.id || general.currentTeamId || teamId;
+        const lastTeamId = teamId || currentChannel?.team?.id || general.currentTeamId;
 
         // If the app is open from push notification, we already fetched the posts.
         if (!fromPushNotification) {
             dispatch(loadPostsWithRetry(channelId));
         }
 
-        // TODO: Fix the team based on the channel
         reduxStore.dispatch({
             type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
             teamId: lastTeamId,
@@ -220,7 +248,7 @@ export function handleSelectChannel(channelId, teamId, fromPushNotification = fa
     };
 }
 
-export function getProfilesInChannel(channelId) {
+export function getProfilesInChannel(channelId, batch = false) {
     return async (dispatch) => {
         try {
             const profiles = await Client4.getProfilesInChannel(channelId);
@@ -232,10 +260,12 @@ export function getProfilesInChannel(channelId) {
                 statuses,
             };
 
-            dispatch({
-                type: UserTypes.RECEIVED_PROFILES_IN_CHANNEL,
-                data,
-            });
+            if (!batch) {
+                dispatch({
+                    type: UserTypes.RECEIVED_PROFILES_IN_CHANNEL,
+                    data,
+                });
+            }
 
             return {data};
         } catch (error) {
@@ -261,5 +291,178 @@ export function getChannelStats(channelId) {
         });
 
         return {data};
+    };
+}
+
+export function logChannelSwitch(channelId, currentChannelId) {
+    return (dispatch, getState) => {
+        if (channelId === currentChannelId) {
+            return;
+        }
+
+        const metrics = [];
+        const realm = getState();
+        const postsInChannel = realm.objects('Post').filtered('channelId = $0', channelId);
+        if (postsInChannel.isEmpty()) {
+            metrics.push('channel:switch_initial');
+        } else {
+            metrics.push('channel:switch_loaded');
+        }
+
+        telemetry.reset();
+        telemetry.start(metrics);
+    };
+}
+
+export function joinChannel(userId, teamId, channelId, channelName) {
+    return async (dispatch) => {
+        let member;
+        let channel;
+
+        try {
+            if (channelId) {
+                member = await Client4.addToChannel(userId, channelId);
+                channel = await Client4.getChannel(channelId);
+            } else if (channelName) {
+                channel = await Client4.getChannelByName(teamId, channelName, true);
+                if ((channel.type === General.GM_CHANNEL) || (channel.type === General.DM_CHANNEL)) {
+                    member = await Client4.getChannelMember(channel.id, userId);
+                } else {
+                    member = await Client4.addToChannel(userId, channel.id);
+                }
+            }
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        Client4.trackEvent('action', 'action_channels_join', {channel_id: channelId});
+
+        dispatch({
+            type: ChannelTypes.RECEIVED_CHANNEL_AND_MEMBER,
+            data: {
+                channel,
+                member,
+            },
+        });
+
+        if (member) {
+            dispatch(loadRolesIfNeeded(member.roles.split(' ')));
+        }
+
+        return {data: {channel, member}};
+    };
+}
+
+export function makeDirectChannel(otherUserId, switchToChannel = true) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const channelName = getDirectChannelName(general.currentUserId, otherUserId);
+
+        dispatch(getProfilesByIds([otherUserId]));
+
+        let result;
+        let channel = realm.objects('Channel').filtered('name = $0', channelName)[0];
+        if (channel?.members?.length) {
+            result = {data: channel};
+
+            dispatch(showDirectChannelIfNecessary(channel.id, otherUserId));
+        } else {
+            result = await dispatch(createDirectChannel(otherUserId));
+            channel = result.data;
+        }
+
+        if (channel && switchToChannel) {
+            dispatch(handleSelectChannel(channel.id));
+        }
+
+        return result;
+    };
+}
+
+export function showDirectChannelIfNecessary(channelId, otherUserId) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const preferences = realm.objects('Preference');
+        const currentUserId = general.currentUserId;
+        const channelName = getDirectChannelName(currentUserId, otherUserId);
+        if (!isDirectMessageVisible(preferences, currentUserId, channelName)) {
+            const prefs = [
+                buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId),
+                buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channelId, Date.now().toString()),
+            ];
+            dispatch(savePreferences(currentUserId, prefs));
+        }
+
+        return {data: true};
+    };
+}
+
+export function createDirectChannel(otherUserId) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const currentUserId = general.currentUserId;
+
+        let channel;
+        try {
+            channel = await Client4.createDirectChannel([currentUserId, otherUserId]);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        const prefs = [
+            buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId),
+            buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channel.id, Date.now().toString()),
+        ];
+
+        const myMember = {
+            channel_id: channel.id,
+            user_id: currentUserId,
+            roles: `${Roles.CHANNEL_USER_ROLE}`,
+            last_viewed_at: 0,
+            last_update_at: channel.create_at,
+            msg_count: 0,
+            mention_count: 0,
+            notify_props: {desktop: 'default', mark_unread: 'all'},
+        };
+
+        const members = [myMember, {...myMember, user_id: otherUserId}];
+        await dispatch({
+            type: ChannelTypes.CREATE_DIRECT_CHANNEL,
+            data: {
+                channel,
+                members,
+            },
+        });
+        dispatch(savePreferences(currentUserId, prefs));
+
+        return {data: channel};
+    };
+}
+
+export function searchChannels(teamId, term) {
+    return async (dispatch) => {
+        try {
+            const channels = await Client4.searchChannels(teamId, term);
+
+            const data = {
+                channels,
+                teamId,
+            };
+
+            dispatch({
+                type: ChannelTypes.RECEIVED_CHANNELS,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
     };
 }

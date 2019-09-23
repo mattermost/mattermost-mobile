@@ -5,7 +5,7 @@ import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {setChannelLoading} from 'app/actions/views/channel';
-import {NavigationTypes} from 'app/constants';
+import {General, NavigationTypes} from 'app/constants';
 import {TeamTypes} from 'app/realm/action_types';
 import {getConfig, getCurrentTeamId} from 'app/realm/selectors/general';
 import {selectFirstTeamAvailable} from 'app/utils/teams';
@@ -122,5 +122,24 @@ export function selectDefaultTeam() {
                 EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
             }
         }
+    };
+}
+
+export function getTeams(page = 0, perPage = General.TEAMS_CHUNK_SIZE) {
+    return async (dispatch) => {
+        let data;
+        try {
+            data = await Client4.getTeams(page, perPage, false);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        dispatch({
+            type: TeamTypes.RECEIVED_TEAMS_LIST,
+            data,
+        });
+
+        return {data};
     };
 }

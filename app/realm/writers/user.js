@@ -8,7 +8,14 @@ import {PreferenceTypes, UserTypes} from 'app/realm/action_types';
 import ephemeralStore from 'app/store/ephemeral_store';
 import {userDataToRealm} from 'app/realm/utils/user';
 
-import {mapTeamMembers, removeTeamMemberships, createOrUpdateTeams} from './team';
+import {
+    addMembersToTeam,
+    createOrUpdateTeams,
+    mapTeamMemberships,
+    mapUserToTeamMembers,
+    removeTeamMembershipsIfNeeded,
+    removeUserTeamMembershipsIfNeeded,
+} from './team';
 
 function resetPreferences(realm, data) {
     if (data.preferences?.length) {
@@ -27,6 +34,30 @@ function storeProfile(realm, profile) {
     }
 
     return user;
+}
+
+function storeProfilesAndMembers(realm, general, data) {
+    const {channelId, profiles, statuses} = data;
+    const channel = realm.objectForPrimaryKey('Channel', channelId);
+
+    if (channel) {
+        profiles.forEach((profile) => {
+            if (profile.id !== general.currentUserId) {
+                const status = statuses.find((s) => s.user_id === profile.id);
+                const user = storeProfile(realm, {...profile, ...status});
+
+                const channelMember = realm.objectForPrimaryKey('ChannelMember', `${channelId}-${profile.id}`);
+                if (!channelMember) {
+                    const member = {
+                        id: `${channelId}-${profile.id}`,
+                        user,
+                    };
+
+                    channel.members.push(member);
+                }
+            }
+        });
+    }
 }
 
 function currentUserWriter(realm, action) {
@@ -49,10 +80,10 @@ function currentUserWriter(realm, action) {
 
         resetPreferences(realm, data);
 
-        const teamMembersMap = mapTeamMembers(data, user);
+        const teamMembersMap = mapUserToTeamMembers(data, user);
 
         // Remove membership from teams
-        removeTeamMemberships(realm, realmGeneral, user, teamMembersMap);
+        removeUserTeamMembershipsIfNeeded(realm, realmGeneral, user, teamMembersMap);
 
         createOrUpdateTeams(realm, data, teamMembersMap);
         break;
@@ -87,41 +118,82 @@ function profilesWriter(realm, action) {
     switch (action.type) {
     case UserTypes.RECEIVED_PROFILES: {
         const data = action.data || action.payload;
-        data.users.forEach((u) => {
-            const status = data.statuses?.find((s) => s.user_id === u.id);
-            if (status) {
-                u.status = status.status;
-            }
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
 
-            storeProfile(realm, u);
+        data.profiles.forEach((profile) => {
+            if (profile !== general.currentUserId) {
+                const status = data.statuses?.find((s) => s.user_id === profile.id);
+                if (status) {
+                    profile.status = status.status;
+                }
+
+                storeProfile(realm, profile);
+            }
         });
         break;
     }
 
     case UserTypes.RECEIVED_PROFILES_IN_CHANNEL: {
         const data = action.data || action.payload;
-        const {channelId, profiles, statuses} = data;
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
-        const channel = realm.objectForPrimaryKey('Channel', channelId);
+        storeProfilesAndMembers(realm, general, data);
+        break;
+    }
 
-        if (channel) {
-            profiles.forEach((profile) => {
+    case UserTypes.RECEIVED_BATCH_PROFILES_IN_CHANNEL: {
+        const batch = action.data || action.payload;
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+
+        batch.forEach((item) => {
+            if (item?.data) {
+                storeProfilesAndMembers(realm, general, item.data);
+            }
+        });
+        break;
+    }
+
+    case UserTypes.RECEIVE_PROFILES_IN_TEAM: {
+        const data = action.data || action.payload;
+        const {profiles, teamId} = data;
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+
+        if (profiles?.length) {
+            const teamMembers = profiles.reduce((result, profile) => {
+                // Skip the current user
                 if (profile.id !== general.currentUserId) {
-                    const status = statuses.find((s) => s.user_id === profile.id);
-                    const user = storeProfile(realm, {...profile, ...status});
-
-                    const channelMember = realm.objectForPrimaryKey('ChannelMember', `${channelId}-${profile.id}`);
-                    if (!channelMember) {
-                        const member = {
-                            id: `${channelId}-${profile.id}`,
-                            user,
-                        };
-
-                        channel.members.push(member);
+                    const status = data.statuses?.find((s) => s.user_id === profile.id);
+                    if (status) {
+                        profile.status = status.status;
                     }
+
+                    storeProfile(realm, profile);
+
+                    return {
+                        user_id: profile.id,
+                        team_id: teamId,
+                        delete_at: profile.delete_at,
+                    };
                 }
-            });
+                return result;
+            }, []);
+
+            const allUsers = realm.objects('User');
+            const teamMembersMap = mapTeamMemberships({teamMembers}, allUsers);
+
+            removeTeamMembershipsIfNeeded(realm, general, teamMembersMap);
+            addMembersToTeam(realm, teamId, teamMembersMap);
         }
+        break;
+    }
+
+    case UserTypes.RECEIVED_STATUS: {
+        const data = action.data || action.payload;
+        const user = realm.objectForPrimaryKey('User', data?.user_id); //eslint-disable-line camelcase
+
+        if (user && data?.status) {
+            user.status = data.status;
+        }
+
         break;
     }
 

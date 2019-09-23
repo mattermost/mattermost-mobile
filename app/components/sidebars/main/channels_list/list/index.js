@@ -1,99 +1,74 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-
-import {General} from 'mattermost-redux/constants';
-import {
-    getSortedFavoriteChannelIds,
-    getSortedUnreadChannelIds,
-    getOrderedChannelIds,
-} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {getTheme, getFavoritesPreferences, getSidebarPreferences} from 'mattermost-redux/selectors/entities/preferences';
-import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
-import {memoizeResult} from 'mattermost-redux/utils/helpers';
-import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
-import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
-import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
-import Permissions from 'mattermost-redux/constants/permissions';
+import {realmConnect} from 'realm-react-redux';
 
 import {showModal} from 'app/actions/navigation';
-import {isLandscape} from 'app/selectors/device';
-import {DeviceTypes, ViewTypes} from 'app/constants';
+import {General, DeviceTypes, Permissions, Preferences} from 'app/constants';
+
+import {getSortedChannelIds, getSortedUnreadChannelIds, getSortedFavoriteChannelIds} from 'app/realm/selectors/channel';
+import {getSidebarPreferences} from 'app/realm/selectors/preference';
+import {havePermission, mergeRoles} from 'app/realm/utils/role';
+import {getDisplayNameSettings} from 'app/realm/utils/user';
+import options from 'app/store/realm_options';
 
 import List from './list';
 
-const filterZeroUnreads = memoizeResult((sections) => {
-    return sections.filter((s) => {
-        if (s.type === ViewTypes.SidebarSectionTypes.UNREADS) {
-            return s.items.length > 0;
-        }
-        return true;
-    });
-});
+function mapPropsToQueries(realm, ownProps) {
+    const {currentTeamId} = ownProps;
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+    const currentUser = realm.objectForPrimaryKey('User', general.currentUserId);
+    const preferences = realm.objects('Preference');
+    const teamChannels = realm.objects('Channel').filtered('(team = null OR team.id = $0) AND members.user.id=$1', currentTeamId, currentUser.id);
+    const teamMember = realm.objectForPrimaryKey('TeamMember', `${currentTeamId}-${currentUser.id}`);
+    const roles = realm.objects('Role');
 
-function mapStateToProps(state) {
-    const config = getConfig(state);
-    const license = getLicense(state);
-    const currentUserId = getCurrentUserId(state);
-    const roles = currentUserId ? getCurrentUserRoles(state) : '';
-    const currentTeamId = getCurrentTeamId(state);
-    const isAdmin = checkIsAdmin(roles);
-    const isSystemAdmin = checkIsSystemAdmin(roles);
-    const sidebarPrefs = getSidebarPreferences(state);
-    const lastUnreadChannel = DeviceTypes.IS_TABLET ? state.views.channel.keepChannelIdAsUnread : null;
-    const unreadChannelIds = currentUserId ? getSortedUnreadChannelIds(state, lastUnreadChannel) : [];
-    const favoriteChannelIds = currentUserId ? getSortedFavoriteChannelIds(state) : [];
-    const orderedChannelIds = currentUserId ? filterZeroUnreads(getOrderedChannelIds(
-        state,
-        lastUnreadChannel,
-        sidebarPrefs.grouping,
-        sidebarPrefs.sorting,
-        true, // The mobile app should always display the Unreads section regardless of user settings (MM-13420)
-        sidebarPrefs.favorite_at_top === 'true' && favoriteChannelIds.length,
-    )) : [];
+    return [general, currentUser, preferences, teamChannels, teamMember, roles];
+}
 
-    let canJoinPublicChannels = true;
-    if (hasNewPermissions(state)) {
-        canJoinPublicChannels = haveITeamPermission(state, {
-            team: currentTeamId,
-            permission: Permissions.JOIN_PUBLIC_CHANNELS,
-        });
-    }
-    const canCreatePublicChannels = showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin, isSystemAdmin);
-    const canCreatePrivateChannels = showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin, isSystemAdmin);
+function mapQueriesToProps([general, currentUser, preferences, teamChannels, teamMember, roles]) {
+    const config = general.config;
+    const sidebarPrefs = getSidebarPreferences(config, preferences);
+    const teammateDisplayNamePref = preferences.filtered('category = $0 AND name = $1', Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT)[0];
+    const teammateDisplayNameSettings = getDisplayNameSettings(config?.TeammateNameDisplay, teammateDisplayNamePref);
+
+    const opts = {
+        closeUnusedDirectMessages: config?.CloseUnusedDirectMessages,
+        teammateDisplayNameSettings,
+        currentChannelId: general.currentChannelId,
+        currentUserId: currentUser.id,
+        teamChannels,
+        favoritesAtTop: sidebarPrefs.favorite_at_top === 'true',
+        grouping: sidebarPrefs.grouping,
+        lastUnreadChannelId: DeviceTypes.IS_TABLET ? '' : null, // TODO: Keep track of this value in redux or the general table
+        locale: currentUser.locale,
+        preferences,
+        sortingType: sidebarPrefs.sorting,
+        sortMentionsFirst: true,
+        unreadsAtTop: true,
+    };
+
+    const unreadChannelIds = getSortedUnreadChannelIds(opts);
+    const favoriteChannelIds = getSortedFavoriteChannelIds(opts);
+    const orderedChannelIds = getSortedChannelIds(opts);
+    const myRoles = mergeRoles(currentUser, teamMember);
+    const canJoinPublicChannels = havePermission(roles, myRoles, Permissions.JOIN_PUBLIC_CHANNELS);
+    const canCreatePublicChannels = havePermission(roles, myRoles, Permissions.CREATE_PUBLIC_CHANNEL);
+    const canCreatePrivateChannels = havePermission(roles, myRoles, Permissions.CREATE_PRIVATE_CHANNEL);
 
     return {
         canJoinPublicChannels,
         canCreatePrivateChannels,
         canCreatePublicChannels,
         favoriteChannelIds,
-        theme: getTheme(state),
         unreadChannelIds,
         orderedChannelIds,
-        isLandscape: isLandscape(state),
+        teammateDisplayNameSettings,
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            showModal,
-        }, dispatch),
-    };
-}
+const mapRealmDispatchToProps = {
+    showModal,
+};
 
-function areStatesEqual(next, prev) {
-    const equalRoles = getCurrentUserRoles(prev) === getCurrentUserRoles(next);
-    const equalChannels = next.entities.channels === prev.entities.channels;
-    const equalConfig = next.entities.general.config === prev.entities.general.config;
-    const equalUsers = next.entities.users.profiles === prev.entities.users.profiles;
-    const equalFav = getFavoritesPreferences(next) === getFavoritesPreferences(prev);
-
-    return equalChannels && equalConfig && equalRoles && equalUsers && equalFav;
-}
-
-export default connect(mapStateToProps, mapDispatchToProps, null, {pure: true, areStatesEqual})(List);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(List);

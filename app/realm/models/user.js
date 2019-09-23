@@ -54,6 +54,7 @@ export default class User extends Realm.Object {
             status: {type: 'string', default: 'offline', indexed: true},
             termsOfServiceId: 'string?',
             termsOfServiceCreateAt: {type: 'int', default: 0},
+            isBot: {type: 'bool', default: false},
         },
     };
 }

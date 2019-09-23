@@ -30,12 +30,12 @@ import SafeAreaView from 'app/components/safe_area_view';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
-import {getDefaultThemeFromConfig} from 'app/selectors/theme';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
+import {getDefaultThemeFromConfig} from 'app/realm/selectors/preference';
 import {getClientUpgrade} from 'app/realm/utils/general';
 import {changeOpacity} from 'app/utils/theme';
 
