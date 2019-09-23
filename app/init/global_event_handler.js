@@ -7,11 +7,14 @@ import semver from 'semver';
 
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
 import {loadMe, logout} from 'mattermost-redux/actions/users';
+import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {selectDefaultChannel} from 'app/actions/views/channel';
@@ -24,6 +27,7 @@ import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {t} from 'app/utils/i18n';
 import {deleteFileCache} from 'app/utils/file';
+import {getDeviceTimezoneAsync} from 'app/utils/timezone';
 
 import LocalConfig from 'assets/config';
 
@@ -47,6 +51,7 @@ class GlobalEventHandler {
 
     appActive = async () => {
         this.turnOnInAppNotificationHandling();
+        this.setUserTimezone();
 
         // if the app is being controlled by an EMM provider
         if (emmProvider.enabled && emmProvider.inAppPinCode) {
@@ -259,6 +264,18 @@ class GlobalEventHandler {
 
             EventEmitter.emit(NavigationTypes.NAVIGATION_SHOW_OVERLAY);
             showOverlay(screen, passProps);
+        }
+    };
+
+    setUserTimezone = async () => {
+        const {dispatch, getState} = this.store;
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
+
+        const enableTimezone = isTimezoneEnabled(state);
+        if (enableTimezone && currentUserId) {
+            const timezone = await getDeviceTimezoneAsync();
+            dispatch(autoUpdateTimezone(timezone));
         }
     };
 }
