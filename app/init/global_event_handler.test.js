@@ -15,6 +15,12 @@ jest.mock('app/init/credentials', () => ({
     removeAppCredentials: jest.fn(),
 }));
 
+jest.mock('app/utils/error_handling', () => ({
+    default: {
+        initializeErrorHandling: jest.fn(),
+    },
+}));
+
 jest.mock('react-native-notifications', () => ({
     addEventListener: jest.fn(),
     cancelAllLocalNotifications: jest.fn(),
@@ -34,5 +40,47 @@ describe('GlobalEventHandler', () => {
 
         await GlobalEventHandler.onLogout();
         expect(clearNotifications).toHaveBeenCalled();
+    });
+
+    it('should call onAppStateChange after configuration', () => {
+        const onAppStateChange = jest.spyOn(GlobalEventHandler, 'onAppStateChange');
+
+        GlobalEventHandler.configure({store});
+        expect(GlobalEventHandler.store).not.toBeNull();
+        expect(onAppStateChange).toHaveBeenCalledWith('active');
+    });
+
+    it('should handle onAppStateChange to active if the store set', () => {
+        const appActive = jest.spyOn(GlobalEventHandler, 'appActive');
+        const appInactive = jest.spyOn(GlobalEventHandler, 'appInactive');
+        expect(GlobalEventHandler.store).not.toBeNull();
+
+        GlobalEventHandler.onAppStateChange('active');
+        expect(appActive).toHaveBeenCalled();
+        expect(appInactive).not.toHaveBeenCalled();
+    });
+
+    it('should handle onAppStateChange to background if the store set', () => {
+        const appActive = jest.spyOn(GlobalEventHandler, 'appActive');
+        const appInactive = jest.spyOn(GlobalEventHandler, 'appInactive');
+        expect(GlobalEventHandler.store).not.toBeNull();
+
+        GlobalEventHandler.onAppStateChange('background');
+        expect(appActive).not.toHaveBeenCalled();
+        expect(appInactive).toHaveBeenCalled();
+    });
+
+    it('should not handle onAppStateChange if the store is not set', () => {
+        const appActive = jest.spyOn(GlobalEventHandler, 'appActive');
+        const appInactive = jest.spyOn(GlobalEventHandler, 'appInactive');
+        GlobalEventHandler.store = null;
+
+        GlobalEventHandler.onAppStateChange('active');
+        expect(appActive).not.toHaveBeenCalled();
+        expect(appInactive).not.toHaveBeenCalled();
+
+        GlobalEventHandler.onAppStateChange('background');
+        expect(appActive).not.toHaveBeenCalled();
+        expect(appInactive).not.toHaveBeenCalled();
     });
 });

@@ -107,6 +107,14 @@ export default class Swiper extends PureComponent {
         });
     };
 
+    scrollToInitial = () => {
+        setTimeout(() => {
+            if (this.scrollView) {
+                this.scrollView.scrollTo({x: this.props.width * this.props.initialPage, animated: false});
+            }
+        }, 0);
+    };
+
     refScrollView = (view) => {
         this.scrollView = view;
     };
