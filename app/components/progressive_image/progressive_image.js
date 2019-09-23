@@ -37,23 +37,19 @@ export default class ProgressiveImage extends PureComponent {
         this.subscribedToCache = true;
 
         this.state = {
-            intensity: null,
+            intensity: new Animated.Value(80),
             thumb: null,
             uri: null,
         };
     }
 
-    componentWillMount() {
-        const intensity = new Animated.Value(80);
-        this.setState({intensity});
+    componentDidMount() {
         this.load(this.props);
     }
 
-    componentWillReceiveProps(props) {
-        this.load(props);
-    }
-
     componentDidUpdate(prevProps, prevState) {
+        this.load(this.props);
+
         const {intensity, thumb, uri} = this.state;
         if (uri && thumb && uri !== thumb && prevState.uri !== uri) {
             Animated.timing(intensity, {

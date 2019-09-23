@@ -88,19 +88,20 @@ export default class PostBodyAdditionalContent extends PureComponent {
         this.mounted = false;
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.mounted = true;
+
         this.load(this.props);
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.link !== this.props.link) {
+            this.load(this.props);
+        }
     }
 
     componentWillUnmount() {
         this.mounted = false;
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.link !== nextProps.link) {
-            this.load(nextProps);
-        }
     }
 
     isImage = (specificLink) => {

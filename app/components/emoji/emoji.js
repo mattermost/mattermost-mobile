@@ -55,7 +55,7 @@ export default class Emoji extends React.PureComponent {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         const {displayTextOnly, emojiName, imageUrl} = this.props;
         this.mounted = true;
         if (!displayTextOnly && imageUrl) {

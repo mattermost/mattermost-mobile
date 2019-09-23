@@ -52,7 +52,7 @@ export default class Timezone extends PureComponent {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         const {actions: {getSupportedTimezones}, timezones} = this.props;
 
         if (timezones.length === 0) {

@@ -52,10 +52,10 @@ export default class Mfa extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentDidUpdate(prevProps) {
         // In case the login is successful the previous scene (login) will take care of the transition
-        if (this.props.loginRequest.status === RequestStatus.STARTED &&
-            nextProps.loginRequest.status === RequestStatus.FAILURE) {
+        if (prevProps.loginRequest.status === RequestStatus.STARTED &&
+            this.props.loginRequest.status === RequestStatus.FAILURE) {
             this.props.actions.popTopScreen();
         }
     }

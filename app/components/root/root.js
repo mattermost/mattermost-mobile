@@ -24,7 +24,7 @@ export default class Root extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    componentWillMount() {
+    componentDidMount() {
         Client4.setAcceptLanguage(this.props.locale);
 
         if (!this.props.excludeEvents) {
