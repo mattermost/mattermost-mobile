@@ -9,6 +9,7 @@ configure({adapter: new Adapter()});
 const mockImpl = new MockAsyncStorage();
 jest.mock('@react-native-community/async-storage', () => mockImpl);
 global.window = {};
+global.fetch = jest.fn(() => Promise.resolve());
 
 /* eslint-disable no-console */
 
@@ -86,9 +87,12 @@ jest.mock('react-native-navigation', () => {
             pop: jest.fn(),
             push: jest.fn(),
             showModal: jest.fn(),
+            dismissModal: jest.fn(),
             dismissAllModals: jest.fn(),
             popToRoot: jest.fn(),
             mergeOptions: jest.fn(),
+            showOverlay: jest.fn(),
+            dismissOverlay: jest.fn(),
         },
     };
 });

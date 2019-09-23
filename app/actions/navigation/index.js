@@ -313,11 +313,17 @@ export function peek(name, passProps = {}, options = {}) {
 }
 
 export function setButtons(componentId, buttons = {leftButtons: [], rightButtons: []}) {
-    Navigation.mergeOptions(componentId, {
+    const options = {
         topBar: {
             ...buttons,
         },
-    });
+    };
+
+    mergeNavigationOptions(componentId, options);
+}
+
+export function mergeNavigationOptions(componentId, options) {
+    Navigation.mergeOptions(componentId, options);
 }
 
 export function showOverlay(name, passProps, options = {}) {
@@ -343,8 +349,4 @@ export async function dismissOverlay(componentId) {
         // RNN returns a promise rejection if there is no modal with
         // this componentId to dismiss. We'll do nothing in this case.
     }
-}
-
-export function mergeNavigationOptions(componentId, options) {
-    Navigation.mergeOptions(componentId, options);
 }
