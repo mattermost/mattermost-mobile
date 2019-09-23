@@ -146,21 +146,6 @@ describe('user_profile', () => {
         expect(goToScreen).toHaveBeenCalledTimes(1);
     });
 
-    test('should call close', () => {
-        const wrapper = shallow(
-            <UserProfile
-                {...baseProps}
-                user={user}
-            />,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-
-        const close = jest.spyOn(wrapper.instance(), 'close');
-        const event = {buttonId: 'close-settings'};
-        wrapper.instance().navigationButtonPressed(event);
-        expect(close).toHaveBeenCalledTimes(1);
-    });
-
     test('close should dismiss modal when fromSettings is true', async () => {
         const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
         const dismissAllModals = jest.spyOn(NavigationActions, 'dismissAllModals');
@@ -201,5 +186,20 @@ describe('user_profile', () => {
         expect(dismissModal).toHaveBeenCalledTimes(0);
         expect(dismissAllModals).toHaveBeenCalledTimes(1);
         expect(popToRoot).toHaveBeenCalledTimes(1);
+    });
+
+    test('should call close', () => {
+        const wrapper = shallow(
+            <UserProfile
+                {...baseProps}
+                user={user}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        const close = jest.spyOn(wrapper.instance(), 'close');
+        const event = {buttonId: 'close-settings'};
+        wrapper.instance().navigationButtonPressed(event);
+        expect(close).toHaveBeenCalledTimes(1);
     });
 });

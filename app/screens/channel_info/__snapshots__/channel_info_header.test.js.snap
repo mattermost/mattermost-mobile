@@ -283,7 +283,7 @@ exports[`channel_info_header should match snapshot 1`] = `
                 },
               }
             }
-            onChannelLinkPress={[Function]}
+            onChannelLinkPress={[MockFunction]}
             onPermalinkPress={[MockFunction]}
             textStyles={
               Object {
@@ -719,7 +719,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests 1`] = `
                 },
               }
             }
-            onChannelLinkPress={[Function]}
+            onChannelLinkPress={[MockFunction]}
             onPermalinkPress={[MockFunction]}
             textStyles={
               Object {
@@ -1155,7 +1155,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
                 },
               }
             }
-            onChannelLinkPress={[Function]}
+            onChannelLinkPress={[MockFunction]}
             onPermalinkPress={[MockFunction]}
             textStyles={
               Object {
@@ -1563,7 +1563,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
                 },
               }
             }
-            onChannelLinkPress={[Function]}
+            onChannelLinkPress={[MockFunction]}
             onPermalinkPress={[MockFunction]}
             textStyles={
               Object {
@@ -2020,7 +2020,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
                 },
               }
             }
-            onChannelLinkPress={[Function]}
+            onChannelLinkPress={[MockFunction]}
             onPermalinkPress={[MockFunction]}
             textStyles={
               Object {

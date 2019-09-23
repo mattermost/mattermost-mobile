@@ -93,6 +93,25 @@ jest.mock('react-native-navigation', () => {
     };
 });
 
+jest.mock('app/actions/navigation', () => ({
+    resetToChannel: jest.fn(),
+    resetToSelectServer: jest.fn(),
+    resetToTeams: jest.fn(),
+    goToScreen: jest.fn(),
+    popTopScreen: jest.fn(),
+    showModal: jest.fn(),
+    showModalOverCurrentContext: jest.fn(),
+    showSearchModal: jest.fn(),
+    peek: jest.fn(),
+    setButtons: jest.fn(),
+    showOverlay: jest.fn(),
+    mergeNavigationOptions: jest.fn(),
+    popToRoot: jest.fn(() => Promise.resolve()),
+    dismissModal: jest.fn(() => Promise.resolve()),
+    dismissAllModals: jest.fn(() => Promise.resolve()),
+    dismissOverlay: jest.fn(() => Promise.resolve()),
+}));
+
 let logs;
 let warns;
 let errors;
