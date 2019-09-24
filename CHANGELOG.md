@@ -31,6 +31,8 @@
 ### Bug Fixes
  - Fixed an issue where the app crashed when it was brought to the foreground.
  - Fixed an issue where the notification badge could get out of sync when reading messages in another client.
+ - Fixed an issue where SafeArea insets were not working properly on new iPhone 11 models.
+ - Fixed an issue on iOS where long press on a system message in an archived channel locked up the app.
  - Fixed an issue where duplicate pinned posts displayed after editing pinned post from Pinned Posts screen.
  - Fixed an issue on iOS where user was unable to select an emoji from two rows on the bottom of the emoji picker.
  - Fixed an issue on iOS where the channel list panel was missing for a user when they were added to a new team by another user.
