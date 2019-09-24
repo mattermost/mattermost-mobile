@@ -57,7 +57,7 @@
 	<key>NSAppleMusicUsageDescription</key>
 	<string>Let Mattermost access your Media files</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Share post data accross devices with Mattermost</string>
+	<string>Share post data <span class="x x-first x-last">across</span> devices with Mattermost</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Share post data accross devices with Mattermost</string>
 	<key>NSCalendarsUsageDescription</key>
