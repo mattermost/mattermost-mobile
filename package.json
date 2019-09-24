@@ -115,7 +115,7 @@
     "start": "node ./node_modules/react-native/local-cli/cli.js start",
     "check": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
     "fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . --fix",
-    "postinstall": "make post-install && patch-package",
+    "postinstall": "make post-install",
     "test": "jest --forceExit --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
