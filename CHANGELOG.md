@@ -10,7 +10,6 @@
 
 ### Highlights
 
-#### Upgraded to RN 0.60
 
 ### Improvements
  - Added sidebar and theming UI/UX improvements.
