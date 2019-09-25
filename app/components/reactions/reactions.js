@@ -6,11 +6,11 @@ import PropTypes from 'prop-types';
 import {
     Image,
     ScrollView,
-    TouchableOpacity,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import addReactionIcon from 'assets/images/icons/reaction.png';
@@ -72,12 +72,17 @@ export default class Reactions extends PureComponent {
     };
 
     handleReactionPress = (emoji, remove) => {
+        this.onPressDetected = true;
         const {actions, postId} = this.props;
         if (remove && this.props.canRemoveReaction) {
             actions.removeReaction(postId, emoji);
         } else if (!remove && this.props.canAddReaction) {
             actions.addReaction(postId, emoji);
         }
+
+        setTimeout(() => {
+            this.onPressDetected = false;
+        }, 300);
     };
 
     showReactionList = () => {
@@ -88,8 +93,10 @@ export default class Reactions extends PureComponent {
             postId,
         };
 
-        actions.showModalOverCurrentContext(screen, passProps);
-    }
+        if (!this.onPressDetected) {
+            actions.showModalOverCurrentContext(screen, passProps);
+        }
+    };
 
     renderReactions = () => {
         const {currentUserId, reactions, theme, postId} = this.props;
@@ -135,16 +142,17 @@ export default class Reactions extends PureComponent {
         let addMoreReactions = null;
         if (canAddReaction) {
             addMoreReactions = (
-                <TouchableOpacity
+                <TouchableWithFeedback
                     key='addReaction'
                     onPress={this.handleAddReaction}
                     style={[styles.reaction]}
+                    type={'opacity'}
                 >
                     <Image
                         source={addReactionIcon}
                         style={styles.addReaction}
                     />
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         }
 
