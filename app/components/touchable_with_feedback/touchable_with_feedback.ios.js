@@ -10,7 +10,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 export default class TouchableWithFeedbackIOS extends PureComponent {
     static propTypes = {
         children: CustomPropTypes.Children,
-        avoidPanning: PropTypes.bool,
+        cancelTouchOnPanning: PropTypes.bool,
         type: PropTypes.oneOf(['native', 'opacity', 'none']),
     };
 
