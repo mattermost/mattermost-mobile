@@ -25,8 +25,6 @@ export default class FileAttachmentList extends Component {
             showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         canDownloadFiles: PropTypes.bool.isRequired,
-        deviceHeight: PropTypes.number.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
         fileIds: PropTypes.array.isRequired,
         files: PropTypes.array,
         isFailed: PropTypes.bool,
@@ -129,14 +127,13 @@ export default class FileAttachmentList extends Component {
     });
 
     renderItems = () => {
-        const {canDownloadFiles, deviceWidth, fileIds, files} = this.props;
+        const {canDownloadFiles, fileIds, files} = this.props;
 
         if (!files.length && fileIds.length > 0) {
             return fileIds.map((id, idx) => (
                 <FileAttachment
                     key={id}
                     canDownloadFiles={canDownloadFiles}
-                    deviceWidth={deviceWidth}
                     file={{loading: true}}
                     id={id}
                     index={idx}
@@ -155,7 +152,6 @@ export default class FileAttachmentList extends Component {
                 <FileAttachment
                     key={file.id}
                     canDownloadFiles={canDownloadFiles}
-                    deviceWidth={deviceWidth}
                     file={f}
                     id={file.id}
                     index={idx}
