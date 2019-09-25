@@ -51,8 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             maxWidth: CELL_MAX_WIDTH,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             justifyContent: 'flex-start',
-            paddingHorizontal: 13,
-            paddingVertical: 6,
+            padding: 8,
         },
         cellRightBorder: {
             borderRightWidth: 1,
