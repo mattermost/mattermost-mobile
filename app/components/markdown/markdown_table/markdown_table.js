@@ -127,7 +127,7 @@ export default class MarkdownTable extends React.PureComponent {
         }
 
         const expandButton = (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={this.handlePress}
                 style={{...style.expandButton, left: this.state.containerWidth - 20}}
             >
@@ -135,12 +135,12 @@ export default class MarkdownTable extends React.PureComponent {
                     name={'expand'}
                     style={style.icon}
                 />
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
 
         return (
             <TouchableWithFeedback
-                style={{paddingRight: 10}}
+                style={style.tablePadding}
                 onPress={this.handlePress}
                 type={'opacity'}
             >
@@ -189,6 +189,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderLeftWidth: 1,
             borderTopWidth: 1,
+        },
+        tablePadding: {
+            paddingRight: 10,
         },
         tableExtraBorders: {
             borderBottomWidth: 1,
