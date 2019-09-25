@@ -80,6 +80,7 @@ export default class ChannelIOS extends ChannelBase {
                         cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                         valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                         ref={this.postTextbox}
+                        screenId={this.props.componentId}
                     />
                 </KeyboardTrackingView>
             </React.Fragment>

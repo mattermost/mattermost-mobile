@@ -38,6 +38,7 @@ export default class Emoji extends React.PureComponent {
         literal: PropTypes.string,
         size: PropTypes.number,
         textStyle: CustomPropTypes.Style,
+        unicode: PropTypes.string,
     };
 
     static defaultProps = {
@@ -115,6 +116,19 @@ export default class Emoji extends React.PureComponent {
         // Android can't change the size of an image after its first render, so
         // force a new image to be rendered when the size changes
         const key = Platform.OS === 'android' ? (height + '-' + width) : null;
+
+        if (this.props.unicode && !this.props.imageUrl) {
+            const codeArray = this.props.unicode.split('-');
+            const code = codeArray.reduce((acc, c) => {
+                return acc + String.fromCodePoint(parseInt(c, 16));
+            }, '');
+
+            return (
+                <Text style={[this.props.textStyle, {fontSize: size}]}>
+                    {code}
+                </Text>
+            );
+        }
 
         if (!imageUrl) {
             return (
