@@ -44,14 +44,14 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       }
     }
   >
-    <TouchableOpacity
-      activeOpacity={0.2}
+    <TouchableWithFeedbackIOS
       onPress={[Function]}
       style={
         Object {
           "flex": 1,
         }
       }
+      type="opacity"
     >
       <Text
         ellipsizeMode="tail"
@@ -71,7 +71,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       >
         Title
       </Text>
-    </TouchableOpacity>
+    </TouchableWithFeedbackIOS>
   </View>
   <View
     style={
@@ -90,8 +90,9 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       ]
     }
   >
-    <TouchableWithoutFeedback
+    <TouchableWithFeedbackIOS
       onPress={[Function]}
+      type="none"
     >
       <Image
         resizeMode="contain"
@@ -107,7 +108,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
           ]
         }
       />
-    </TouchableWithoutFeedback>
+    </TouchableWithFeedbackIOS>
   </View>
 </View>
 `;
@@ -133,14 +134,14 @@ exports[`PostAttachmentOpenGraph should match snapshot, without site_name 1`] = 
       }
     }
   >
-    <TouchableOpacity
-      activeOpacity={0.2}
+    <TouchableWithFeedbackIOS
       onPress={[Function]}
       style={
         Object {
           "flex": 1,
         }
       }
+      type="opacity"
     >
       <Text
         ellipsizeMode="tail"
@@ -160,7 +161,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without site_name 1`] = 
       >
         Title
       </Text>
-    </TouchableOpacity>
+    </TouchableWithFeedbackIOS>
   </View>
 </View>
 `;
@@ -186,14 +187,14 @@ exports[`PostAttachmentOpenGraph should match snapshot, without title and url 1`
       }
     }
   >
-    <TouchableOpacity
-      activeOpacity={0.2}
+    <TouchableWithFeedbackIOS
       onPress={[Function]}
       style={
         Object {
           "flex": 1,
         }
       }
+      type="opacity"
     >
       <Text
         ellipsizeMode="tail"
@@ -213,7 +214,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without title and url 1`
       >
         https://mattermost.com/
       </Text>
-    </TouchableOpacity>
+    </TouchableWithFeedbackIOS>
   </View>
 </View>
 `;
@@ -264,8 +265,9 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
     ]
   }
 >
-  <TouchableWithoutFeedback
+  <TouchableWithFeedbackIOS
     onPress={[Function]}
+    type="none"
   >
     <Image
       resizeMode="contain"
@@ -281,6 +283,6 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
         ]
       }
     />
-  </TouchableWithoutFeedback>
+  </TouchableWithFeedbackIOS>
 </View>
 `;

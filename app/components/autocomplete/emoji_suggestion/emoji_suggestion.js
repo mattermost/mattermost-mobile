@@ -7,7 +7,6 @@ import {
     FlatList,
     Platform,
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
@@ -15,6 +14,7 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import Emoji from 'app/components/emoji';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {BuiltInEmojis} from 'app/utils/emojis';
 import {getEmojiByName} from 'app/utils/emoji_utils';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -179,9 +179,10 @@ export default class EmojiSuggestion extends Component {
         const style = getStyleFromTheme(this.props.theme);
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={() => this.completeSuggestion(item)}
                 style={style.row}
+                type={'opacity'}
             >
                 <View style={style.emoji}>
                     <Emoji
@@ -191,7 +192,7 @@ export default class EmojiSuggestion extends Component {
                     />
                 </View>
                 <Text style={style.emojiName}>{`:${item}:`}</Text>
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     };
 
