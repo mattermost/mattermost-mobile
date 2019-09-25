@@ -313,7 +313,7 @@ export default class Post extends PureComponent {
                 onLongPress={this.showPostOptions}
                 delayLongPress={100}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                cancelTouchOnPanning ={true}
+                cancelTouchOnPanning={true}
             >
                 <React.Fragment>
                     <PostPreHeader
