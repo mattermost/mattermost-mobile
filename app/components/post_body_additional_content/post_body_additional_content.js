@@ -9,7 +9,6 @@ import {
     Linking,
     Platform,
     StyleSheet,
-    TouchableOpacity,
     StatusBar,
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
@@ -20,6 +19,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import PostAttachmentImage from 'app/components/post_attachment_image';
 import ProgressiveImage from 'app/components/progressive_image';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
 import {DeviceTypes} from 'app/constants';
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -230,9 +230,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 const thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
 
                 return (
-                    <TouchableOpacity
+                    <TouchableWithFeedback
                         style={[styles.imageContainer, {height: height || MAX_YOUTUBE_IMAGE_HEIGHT}]}
                         onPress={this.playYouTubeVideo}
+                        type={'opacity'}
                     >
                         <ProgressiveImage
                             isBackgroundImage={true}
@@ -242,17 +243,18 @@ export default class PostBodyAdditionalContent extends PureComponent {
                             resizeMode='cover'
                             onError={this.handleLinkLoadError}
                         >
-                            <TouchableOpacity
+                            <TouchableWithFeedback
                                 style={styles.playButton}
                                 onPress={this.playYouTubeVideo}
+                                type={'opacity'}
                             >
                                 <Image
                                     source={require('assets/images/icons/youtube-play-icon.png')}
                                     onPress={this.playYouTubeVideo}
                                 />
-                            </TouchableOpacity>
+                            </TouchableWithFeedback>
                         </ProgressiveImage>
-                    </TouchableOpacity>
+                    </TouchableWithFeedback>
                 );
             }
 

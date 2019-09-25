@@ -6,13 +6,13 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     ScrollView,
-    TouchableOpacity,
     View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {CELL_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
 
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {goToScreen} from 'app/actions/navigation';
@@ -126,7 +126,10 @@ export default class MarkdownTable extends React.PureComponent {
         }
 
         return (
-            <TouchableOpacity onPress={this.handlePress}>
+            <TouchableWithFeedback
+                onPress={this.handlePress}
+                type={'opacity'}
+            >
                 <ScrollView
                     contentContainerStyle={{width: this.getTableWidth()}}
                     onContentSizeChange={this.handleContentSizeChange}
@@ -139,7 +142,7 @@ export default class MarkdownTable extends React.PureComponent {
                 </ScrollView>
                 {moreRight}
                 {moreBelow}
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

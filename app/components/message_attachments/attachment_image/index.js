@@ -3,9 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, TouchableWithoutFeedback, View} from 'react-native';
+import {Image, View} from 'react-native';
 
 import ProgressiveImage from 'app/components/progressive_image';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {isGifTooLarge, previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -142,9 +143,10 @@ export default class AttachmentImage extends PureComponent {
         }
 
         return (
-            <TouchableWithoutFeedback
+            <TouchableWithFeedback
                 onPress={this.handlePreviewImage}
                 style={[style.container, {width: this.maxImageWidth + VIEWPORT_IMAGE_CONTAINER_OFFSET}]}
+                type={'none'}
             >
                 <View
                     ref='item'
@@ -152,7 +154,7 @@ export default class AttachmentImage extends PureComponent {
                 >
                     {progressiveImage}
                 </View>
-            </TouchableWithoutFeedback>
+            </TouchableWithFeedback>
         );
     }
 }

@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Keyboard,
     Platform,
-    TouchableHighlight,
     View,
     ViewPropTypes,
 } from 'react-native';
@@ -20,6 +19,7 @@ import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostPreHeader from 'app/components/post_header/post_pre_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {NavigationTypes} from 'app/constants';
 import {fromAutoResponder} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -144,6 +144,7 @@ export default class Post extends PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
+        this.onPressDetected = true;
         const {
             onPress,
             post,
@@ -156,6 +157,10 @@ export default class Post extends PureComponent {
         } else if ((isPostEphemeral(post) || post.state === Posts.POST_DELETED) && !showLongPost) {
             this.onRemovePost(post);
         }
+
+        setTimeout(() => {
+            this.onPressDetected = false;
+        }, 300);
     });
 
     handleReply = preventDoubleTap(() => {
@@ -213,7 +218,7 @@ export default class Post extends PureComponent {
     });
 
     showPostOptions = () => {
-        if (this.postBodyRef?.current) {
+        if (this.postBodyRef?.current && !this.onPressDetected) {
             this.postBodyRef.current.showPostOptions();
         }
     };
@@ -301,12 +306,13 @@ export default class Post extends PureComponent {
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
 
         return (
-            <TouchableHighlight
+            <TouchableWithFeedback
                 style={[style.postStyle, highlighted, padding(isLandscape)]}
                 onPress={this.handlePress}
                 onLongPress={this.showPostOptions}
-                delayLongPress={75}
+                delayLongPress={100}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                cancelTouchOnPanning={true}
             >
                 <React.Fragment>
                     <PostPreHeader
@@ -344,7 +350,7 @@ export default class Post extends PureComponent {
                         </View>
                     </View>
                 </React.Fragment>
-            </TouchableHighlight>
+            </TouchableWithFeedback>
         );
     }
 }

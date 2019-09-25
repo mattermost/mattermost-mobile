@@ -10,7 +10,6 @@ import {
     Platform,
     StatusBar,
     StyleSheet,
-    TouchableOpacity,
     View,
 } from 'react-native';
 import OpenFile from 'react-native-doc-viewer';
@@ -21,12 +20,12 @@ import tinyColor from 'tinycolor2';
 
 import {getFileUrl} from 'mattermost-redux/utils/file_utils.js';
 
+import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {DeviceTypes} from 'app/constants/';
 import mattermostBucket from 'app/mattermost_bucket';
 import {changeOpacity} from 'app/utils/theme';
 import {goToScreen} from 'app/actions/navigation';
-
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 
 const {DOCUMENTS_PATH} = DeviceTypes;
 const DOWNLOADING_OFFSET = 28;
@@ -384,12 +383,13 @@ export default class FileAttachmentDocument extends PureComponent {
         }
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={this.handlePreviewPress}
                 onLongPress={onLongPress}
+                type={'opacity'}
             >
                 {fileAttachmentComponent}
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

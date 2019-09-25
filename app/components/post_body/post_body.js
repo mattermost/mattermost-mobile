@@ -5,13 +5,10 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Keyboard,
-    ScrollView,
-    TouchableOpacity,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
-
 import {Posts} from 'mattermost-redux/constants';
 
 import CombinedSystemMessage from 'app/components/combined_system_message';
@@ -19,6 +16,7 @@ import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import MarkdownEmoji from 'app/components/markdown/markdown_emoji';
 import ShowMoreButton from 'app/components/show_more_button';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
 import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
@@ -410,15 +408,11 @@ export default class PostBody extends PureComponent {
         if (!hasBeenDeleted) {
             body = (
                 <View style={style.messageBody}>
-                    <ScrollView
+                    <View
                         style={{maxHeight: (showLongPost ? null : maxHeight), overflow: 'hidden'}}
-                        scrollEnabled={false}
-                        showsVerticalScrollIndicator={false}
-                        showsHorizontalScrollIndicator={false}
-                        keyboardShouldPersistTaps={'always'}
                     >
                         {messageComponent}
-                    </ScrollView>
+                    </View>
                     {isLongPost &&
                     <ShowMoreButton
                         highlight={highlight}
@@ -437,16 +431,17 @@ export default class PostBody extends PureComponent {
                 <View style={replyBarStyle}/>
                 {body}
                 {isFailed &&
-                <TouchableOpacity
+                <TouchableWithFeedback
                     onPress={onFailedPostPress}
                     style={style.retry}
+                    type={'opacity'}
                 >
                     <Icon
                         name='ios-information-circle-outline'
                         size={26}
                         color={theme.errorTextColor}
                     />
-                </TouchableOpacity>
+                </TouchableWithFeedback>
                 }
             </View>
         );

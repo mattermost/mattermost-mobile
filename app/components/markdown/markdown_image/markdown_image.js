@@ -11,12 +11,12 @@ import {
     Platform,
     StyleSheet,
     Text,
-    TouchableHighlight,
     View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import ProgressiveImage from 'app/components/progressive_image';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import EphemeralStore from 'app/store/ephemeral_store';
 import mattermostManaged from 'app/mattermost_managed';
@@ -246,7 +246,7 @@ export default class MarkdownImage extends React.Component {
                 }
 
                 image = (
-                    <TouchableHighlight
+                    <TouchableWithFeedback
                         onLongPress={this.handleLinkLongPress}
                         onPress={this.handlePreviewImage}
                         style={{width, height}}
@@ -257,7 +257,7 @@ export default class MarkdownImage extends React.Component {
                             resizeMode='contain'
                             style={{width, height}}
                         />
-                    </TouchableHighlight>
+                    </TouchableWithFeedback>
                 );
             }
         } else if (this.state.failed) {
@@ -271,12 +271,12 @@ export default class MarkdownImage extends React.Component {
 
         if (image && this.props.linkDestination) {
             image = (
-                <TouchableHighlight
+                <TouchableWithFeedback
                     onPress={this.handleLinkPress}
                     onLongPress={this.handleLinkLongPress}
                 >
                     {image}
-                </TouchableHighlight>
+                </TouchableWithFeedback>
             );
         }
 

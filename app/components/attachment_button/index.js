@@ -8,7 +8,6 @@ import {
     NativeModules,
     Platform,
     StyleSheet,
-    TouchableOpacity,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import DeviceInfo from 'react-native-device-info';
@@ -21,6 +20,7 @@ import Permissions from 'react-native-permissions';
 
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {PermissionTypes} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -490,18 +490,20 @@ export default class AttachmentButton extends PureComponent {
 
         if (wrapper) {
             return (
-                <TouchableOpacity
+                <TouchableWithFeedback
                     onPress={this.showFileAttachmentOptions}
+                    type={'opacity'}
                 >
                     {children}
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         }
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={this.showFileAttachmentOptions}
                 style={style.buttonContainer}
+                type={'opacity'}
             >
                 <Icon
                     size={30}
@@ -509,7 +511,7 @@ export default class AttachmentButton extends PureComponent {
                     color={changeOpacity(theme.centerChannelColor, 0.9)}
                     name='md-add'
                 />
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }
