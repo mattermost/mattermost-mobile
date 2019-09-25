@@ -13,6 +13,8 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {showModal, showModalOverCurrentContext} from 'app/actions/navigation';
+
 import addReactionIcon from 'assets/images/icons/reaction.png';
 
 import Reaction from './reaction';
@@ -23,8 +25,6 @@ export default class Reactions extends PureComponent {
             addReaction: PropTypes.func.isRequired,
             getReactionsForPost: PropTypes.func.isRequired,
             removeReaction: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         currentUserId: PropTypes.string.isRequired,
         position: PropTypes.oneOf(['right', 'left']),
@@ -51,7 +51,7 @@ export default class Reactions extends PureComponent {
     }
 
     handleAddReaction = preventDoubleTap(() => {
-        const {actions, theme} = this.props;
+        const {theme} = this.props;
         const {formatMessage} = this.context.intl;
         const screen = 'AddReaction';
         const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
@@ -62,7 +62,7 @@ export default class Reactions extends PureComponent {
                 onEmojiPress: this.handleAddReactionToPost,
             };
 
-            actions.showModal(screen, title, passProps);
+            showModal(screen, title, passProps);
         });
     });
 
@@ -86,7 +86,7 @@ export default class Reactions extends PureComponent {
     };
 
     showReactionList = () => {
-        const {actions, postId} = this.props;
+        const {postId} = this.props;
 
         const screen = 'ReactionList';
         const passProps = {
@@ -94,7 +94,7 @@ export default class Reactions extends PureComponent {
         };
 
         if (!this.onPressDetected) {
-            actions.showModalOverCurrentContext(screen, passProps);
+            showModalOverCurrentContext(screen, passProps);
         }
     };
 

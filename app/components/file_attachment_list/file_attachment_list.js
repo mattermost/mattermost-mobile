@@ -22,7 +22,6 @@ export default class FileAttachmentList extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             loadFilesForPostIfNecessary: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         canDownloadFiles: PropTypes.bool.isRequired,
         fileIds: PropTypes.array.isRequired,
@@ -122,8 +121,7 @@ export default class FileAttachmentList extends Component {
     };
 
     handlePreviewPress = preventDoubleTap((idx) => {
-        const {actions} = this.props;
-        previewImageAtIndex(this.items, idx, this.galleryFiles, actions.showModalOverCurrentContext);
+        previewImageAtIndex(this.items, idx, this.galleryFiles);
     });
 
     renderItems = () => {

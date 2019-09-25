@@ -7,7 +7,7 @@ import {IntlProvider} from 'react-intl';
 
 import {getTranslations} from 'app/i18n';
 import {getCurrentLocale} from 'app/selectors/i18n';
-import {store} from 'app/mattermost';
+import store from 'app/store';
 
 import {extensionSelectTeamId} from './actions';
 import Extension from './extension';

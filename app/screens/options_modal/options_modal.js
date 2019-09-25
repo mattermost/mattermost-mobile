@@ -15,6 +15,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
+import {dismissModal} from 'app/actions/navigation';
 
 import OptionsModalList from './options_modal_list';
 
@@ -23,9 +24,6 @@ const DURATION = 200;
 
 export default class OptionsModal extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            dismissModal: PropTypes.func.isRequired,
-        }).isRequired,
         items: PropTypes.array.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -71,7 +69,7 @@ export default class OptionsModal extends PureComponent {
             toValue: this.props.deviceHeight,
             duration: DURATION,
         }).start(() => {
-            this.props.actions.dismissModal();
+            dismissModal();
         });
     };
 
@@ -79,7 +77,7 @@ export default class OptionsModal extends PureComponent {
         if (Platform.OS === 'android') {
             this.close();
         } else {
-            this.props.actions.dismissModal();
+            dismissModal();
         }
     };
 

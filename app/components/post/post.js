@@ -11,6 +11,10 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
+import {Posts} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+
 import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostPreHeader from 'app/components/post_header/post_pre_header';
@@ -22,10 +26,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-
-import {Posts} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 
 import Config from 'assets/config';
 
@@ -35,8 +36,6 @@ export default class Post extends PureComponent {
             createPost: PropTypes.func.isRequired,
             insertToDraft: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         channelIsReadOnly: PropTypes.bool,
         currentUserId: PropTypes.string.isRequired,
@@ -91,7 +90,7 @@ export default class Post extends PureComponent {
 
     goToUserProfile = () => {
         const {intl} = this.context;
-        const {actions, post} = this.props;
+        const {post} = this.props;
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
@@ -100,7 +99,7 @@ export default class Post extends PureComponent {
 
         Keyboard.dismiss();
         requestAnimationFrame(() => {
-            actions.goToScreen(screen, title, passProps);
+            goToScreen(screen, title, passProps);
         });
     };
 
@@ -141,7 +140,7 @@ export default class Post extends PureComponent {
             }],
         };
 
-        this.props.actions.showModalOverCurrentContext(screen, passProps);
+        showModalOverCurrentContext(screen, passProps);
     };
 
     handlePress = preventDoubleTap(() => {
