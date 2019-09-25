@@ -14,8 +14,6 @@ import {
     dismissModal,
 } from 'app/actions/navigation';
 
-import {isLandscape, getDimensions} from 'app/selectors/device';
-
 import SettingsSidebar from './settings_sidebar';
 
 function mapStateToProps(state) {
@@ -23,8 +21,6 @@ function mapStateToProps(state) {
     const status = getStatusForUserId(state, currentUser.id);
 
     return {
-        ...getDimensions(state),
-        isLandscape: isLandscape(state),
         currentUser,
         status,
         theme: getTheme(state),
