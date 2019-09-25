@@ -18,7 +18,7 @@ import {selectDefaultChannel} from 'app/actions/views/channel';
 import {showOverlay} from 'app/actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
 import {NavigationTypes, ViewTypes} from 'app/constants';
-import {getTranslations} from 'app/i18n';
+import {getTranslations, resetMomentLocale} from 'app/i18n';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from 'app/selectors/i18n';
@@ -145,6 +145,7 @@ class GlobalEventHandler {
         this.store.dispatch(setServerVersion(''));
         deleteFileCache();
         removeAppCredentials();
+        resetMomentLocale();
 
         PushNotifications.clearNotifications();
 

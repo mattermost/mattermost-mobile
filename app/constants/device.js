@@ -17,7 +17,7 @@ export default {
     ...deviceTypes,
     DOCUMENTS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Documents`,
     IMAGES_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Images`,
-    IS_IPHONE_X: DeviceInfo.getModel().includes('iPhone X'),
+    IS_IPHONE_WITH_INSETS: DeviceInfo.getModel().includes('iPhone X') || DeviceInfo.getModel().includes('iPhone 11'),
     IS_TABLET: DeviceInfo.isTablet(),
     VIDEOS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Videos`,
     PERMANENT_SIDEBAR_SETTINGS: '@PERMANENT_SIDEBAR_SETTINGS',
