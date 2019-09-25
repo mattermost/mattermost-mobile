@@ -3,7 +3,7 @@
 
 import emojiRegex from 'emoji-regex';
 
-import {EmojiIndicesByAlias} from './emojis';
+import {Emojis, EmojiIndicesByAlias} from './emojis';
 
 const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_-]+):)/g;
 
@@ -104,4 +104,12 @@ export function doesMatchNamedEmoji(emojiName) {
     }
 
     return false;
+}
+
+export function getEmojiByName(emojiName) {
+    if (EmojiIndicesByAlias.has(emojiName)) {
+        return Emojis[EmojiIndicesByAlias.get(emojiName)];
+    }
+
+    return null;
 }
