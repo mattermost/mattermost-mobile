@@ -9,7 +9,6 @@ import {logout} from 'mattermost-redux/actions/users';
 import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
-import {resetToChannel, dismissModal} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
 import {isLandscape} from 'app/selectors/device';
 import {isGuest} from 'app/utils/users';
@@ -34,8 +33,6 @@ function mapDispatchToProps(dispatch) {
             handleTeamChange,
             joinTeam,
             logout,
-            resetToChannel,
-            dismissModal,
         }, dispatch),
     };
 }

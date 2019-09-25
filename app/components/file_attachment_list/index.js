@@ -8,7 +8,6 @@ import {canDownloadFilesOnMobile} from 'mattermost-redux/selectors/entities/gene
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {showModalOverCurrentContext} from 'app/actions/navigation';
 import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
 
 import FileAttachmentList from './file_attachment_list';
@@ -28,7 +27,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadFilesForPostIfNecessary,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }
