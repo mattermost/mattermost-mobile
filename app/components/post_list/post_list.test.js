@@ -67,7 +67,9 @@ describe('PostList', () => {
         const indexInRange = baseProps.postIds.length;
         const indexOutOfRange = [-1, indexInRange + 1];
 
-        instance.flatListRef = {};
+        instance.flatListRef = {
+            current: null,
+        };
         instance.scrollToIndex(indexInRange);
         expect(flatListScrollToIndex).not.toHaveBeenCalled();
 

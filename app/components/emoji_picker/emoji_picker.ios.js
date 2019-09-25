@@ -27,7 +27,7 @@ export default class EmojiPicker extends EmojiPickerBase {
         const {emojis, filteredEmojis, searchTerm} = this.state;
         const styles = getStyleSheetFromTheme(theme);
 
-        const shorten = DeviceTypes.IS_IPHONE_X && isLandscape ? 6 : 2;
+        const shorten = DeviceTypes.IS_IPHONE_WITH_INSETS && isLandscape ? 6 : 2;
 
         let listComponent;
         if (searchTerm) {
@@ -68,9 +68,9 @@ export default class EmojiPicker extends EmojiPickerBase {
             );
         }
 
-        let keyboardOffset = DeviceTypes.IS_IPHONE_X ? 50 : 30;
+        let keyboardOffset = DeviceTypes.IS_IPHONE_WITH_INSETS ? 50 : 30;
         if (isLandscape) {
-            keyboardOffset = DeviceTypes.IS_IPHONE_X ? 0 : 10;
+            keyboardOffset = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 10;
         }
 
         const searchBarInput = {

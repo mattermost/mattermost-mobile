@@ -29,7 +29,7 @@ import PostBody from './post_body';
 
 const POST_TIMEOUT = 20000;
 
-function makeMapStateToProps() {
+export function makeMapStateToProps() {
     const memoizeHasEmojisOnly = memoizeResult((message, customEmojis) => hasEmojisOnly(message, customEmojis));
     const getReactionsForPost = makeGetReactionsForPost();
 
@@ -58,9 +58,10 @@ function makeMapStateToProps() {
         const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
         const isAdmin = checkIsAdmin(roles);
         const isSystemAdmin = checkIsSystemAdmin(roles);
+        const channelIsArchived = channel?.delete_at !== 0; //eslint-disable-line camelcase
         let canDelete = false;
 
-        if (post && !ownProps.channelIsArchived) {
+        if (post && !channelIsArchived) {
             canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
         }
 

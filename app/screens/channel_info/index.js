@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {
+    convertChannelToPrivate,
     favoriteChannel,
     getChannelStats,
     getChannel,
@@ -98,6 +99,7 @@ function mapStateToProps(state) {
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
+        canConvertChannel: isAdmin,
         viewArchivedChannels,
         canEditChannel,
         currentChannel,
@@ -125,6 +127,7 @@ function mapDispatchToProps(dispatch) {
             clearPinnedPosts,
             closeDMChannel,
             closeGMChannel,
+            convertChannelToPrivate,
             deleteChannel,
             getChannelStats,
             getChannel,

@@ -299,7 +299,7 @@ export default class PostList extends PureComponent {
 
     scrollToBottom = () => {
         setTimeout(() => {
-            if (this.flatListRef?.current) {
+            if (this.flatListRef.current) {
                 this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
             }
         }, 250);
@@ -316,7 +316,7 @@ export default class PostList extends PureComponent {
 
     scrollToIndex = (index) => {
         this.animationFrameInitialIndex = requestAnimationFrame(() => {
-            if (this.flatListRef?.current && index > 0 && index <= this.getItemCount()) {
+            if (this.flatListRef.current && index > 0 && index <= this.getItemCount()) {
                 this.flatListScrollToIndex(index);
             }
         });

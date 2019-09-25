@@ -39,7 +39,7 @@ export default class ChannelIOS extends ChannelBase {
         const {currentChannelId} = this.props;
 
         const channelLoaderStyle = [style.channelLoader, {height}];
-        if ((DeviceTypes.IS_IPHONE_X || DeviceTypes.IS_TABLET)) {
+        if ((DeviceTypes.IS_IPHONE_WITH_INSETS || DeviceTypes.IS_TABLET)) {
             channelLoaderStyle.push(style.iOSHomeIndicator);
         }
 
