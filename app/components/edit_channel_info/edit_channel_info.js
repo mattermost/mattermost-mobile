@@ -234,6 +234,7 @@ export default class EditChannelInfo extends PureComponent {
                                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
+                                            maxLength={64}
                                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         />
                                     </View>

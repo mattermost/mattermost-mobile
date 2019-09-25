@@ -21,7 +21,6 @@ import FileAttachmentImage from './file_attachment_image';
 export default class FileAttachment extends PureComponent {
     static propTypes = {
         canDownloadFiles: PropTypes.bool.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
         file: PropTypes.object.isRequired,
         id: PropTypes.string.isRequired,
         index: PropTypes.number.isRequired,
@@ -89,7 +88,6 @@ export default class FileAttachment extends PureComponent {
     render() {
         const {
             canDownloadFiles,
-            deviceWidth,
             file,
             theme,
             onLongPress,
@@ -139,10 +137,8 @@ export default class FileAttachment extends PureComponent {
             );
         }
 
-        const width = deviceWidth * 0.72;
-
         return (
-            <View style={[style.fileWrapper, {width}]}>
+            <View style={[style.fileWrapper]}>
                 {fileAttachmentComponent}
                 <View style={style.fileInfoContainer}>
                     <TouchableWithFeedback
@@ -199,7 +195,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderRadius: 2,
-            maxWidth: 350,
+            width: 300,
         },
         circularProgress: {
             width: '100%',
