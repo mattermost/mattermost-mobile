@@ -23,7 +23,7 @@ export default class TouchableWithFeedbackIOS extends PureComponent {
 
         this.panResponder = PanResponder.create({
             onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-                return this.props.avoidPanning && (gestureState.dx >= 5 || gestureState.dy >= 5 || gestureState.vx > 5);
+                return this.props. cancelTouchOnPanning && (gestureState.dx >= 5 || gestureState.dy >= 5 || gestureState.vx > 5);
             },
         });
     }
