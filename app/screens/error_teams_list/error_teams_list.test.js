@@ -22,7 +22,6 @@ describe('ErrorTeamsList', () => {
             connection: () => {}, // eslint-disable-line no-empty-function
             logout: () => {}, // eslint-disable-line no-empty-function
             selectDefaultTeam: () => {}, // eslint-disable-line no-empty-function
-            resetToChannel: jest.fn(),
         },
         componentId: 'component-id',
         theme: Preferences.THEMES.default,

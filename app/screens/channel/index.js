@@ -20,7 +20,6 @@ import {
 import {connection} from 'app/actions/device';
 import {recordLoadTime} from 'app/actions/views/root';
 import {selectDefaultTeam} from 'app/actions/views/select_team';
-import {peek, goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 import {isLandscape} from 'app/selectors/device';
 
 import Channel from './channel';
@@ -51,9 +50,6 @@ function mapDispatchToProps(dispatch) {
             recordLoadTime,
             startPeriodicStatusUpdates,
             stopPeriodicStatusUpdates,
-            peek,
-            goToScreen,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

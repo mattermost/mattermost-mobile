@@ -12,8 +12,6 @@ import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selector
 import {getUser} from 'mattermost-redux/selectors/entities/users';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
-import {dismissOverlay, dismissAllModals, popToRoot} from 'app/actions/navigation';
-
 import Notification from './notification';
 
 function mapStateToProps(state, ownProps) {
@@ -44,9 +42,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadFromPushNotification,
-            dismissOverlay,
-            dismissAllModals,
-            popToRoot,
         }, dispatch),
     };
 }

@@ -9,7 +9,6 @@ import {getConfig, getCurrentUrl} from 'mattermost-redux/selectors/entities/gene
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from 'mattermost-redux/utils/post_list';
 
-import {showModalOverCurrentContext} from 'app/actions/navigation';
 import {handleSelectChannelByName, loadChannelsByTeamName, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {setDeepLinkURL} from 'app/actions/views/root';
 
@@ -43,7 +42,6 @@ function mapDispatchToProps(dispatch) {
             refreshChannelWithRetry,
             selectFocusedPostId,
             setDeepLinkURL,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }
