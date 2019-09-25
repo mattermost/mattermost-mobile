@@ -5,12 +5,12 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
 import * as Utils from 'mattermost-redux/utils/file_utils.js';
 
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {isDocument, isGif} from 'app/utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -100,17 +100,18 @@ export default class FileAttachment extends PureComponent {
         let fileAttachmentComponent;
         if ((data && data.has_preview_image) || file.loading || isGif(data)) {
             fileAttachmentComponent = (
-                <TouchableOpacity
+                <TouchableWithFeedback
                     key={`${this.props.id}${file.loading}`}
                     onPress={this.handlePreviewPress}
                     onLongPress={onLongPress}
+                    type={'opacity'}
                 >
                     <FileAttachmentImage
                         file={data || {}}
                         onCaptureRef={this.handleCaptureRef}
                         theme={theme}
                     />
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         } else if (isDocument(data)) {
             fileAttachmentComponent = (
@@ -124,16 +125,17 @@ export default class FileAttachment extends PureComponent {
             );
         } else {
             fileAttachmentComponent = (
-                <TouchableOpacity
+                <TouchableWithFeedback
                     onPress={this.handlePreviewPress}
                     onLongPress={onLongPress}
+                    type={'opacity'}
                 >
                     <FileAttachmentIcon
                         file={data}
                         onCaptureRef={this.handleCaptureRef}
                         theme={theme}
                     />
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         }
 
@@ -142,13 +144,15 @@ export default class FileAttachment extends PureComponent {
         return (
             <View style={[style.fileWrapper, {width}]}>
                 {fileAttachmentComponent}
-                <TouchableOpacity
-                    onLongPress={onLongPress}
-                    onPress={this.handlePreviewPress}
-                    style={style.fileInfoContainer}
-                >
-                    {this.renderFileInfo()}
-                </TouchableOpacity>
+                <View style={style.fileInfoContainer}>
+                    <TouchableWithFeedback
+                        onLongPress={onLongPress}
+                        onPress={this.handlePreviewPress}
+                        type={'opacity'}
+                    >
+                        {this.renderFileInfo()}
+                    </TouchableWithFeedback>
+                </View>
             </View>
         );
     }

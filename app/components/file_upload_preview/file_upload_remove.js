@@ -3,8 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform, StyleSheet, TouchableOpacity} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
 export default class FileUploadRemove extends PureComponent {
     static propTypes = {
@@ -22,9 +24,10 @@ export default class FileUploadRemove extends PureComponent {
 
     render() {
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 style={style.removeButtonWrapper}
                 onPress={this.handleOnPress}
+                type={'opacity'}
             >
                 <Icon
                     name='md-close'
@@ -32,7 +35,7 @@ export default class FileUploadRemove extends PureComponent {
                     size={18}
                     style={style.removeButtonIcon}
                 />
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

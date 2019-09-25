@@ -5,13 +5,13 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
 import ProfilePicture from 'app/components/profile_picture';
 import BotTag from 'app/components/bot_tag';
 import GuestTag from 'app/components/guest_tag';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
@@ -54,10 +54,11 @@ export default class AtMentionItem extends PureComponent {
         const hasFullName = firstName.length > 0 && lastName.length > 0;
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 key={userId}
                 onPress={this.completeMention}
                 style={[style.row, padding(isLandscape)]}
+                type={'opacity'}
             >
                 <View style={style.rowPicture}>
                     <ProfilePicture
@@ -78,7 +79,7 @@ export default class AtMentionItem extends PureComponent {
                 />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
                 {hasFullName && <Text style={style.rowFullname}>{`${firstName} ${lastName}`}</Text>}
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

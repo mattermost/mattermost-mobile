@@ -3,12 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Text,
-    TouchableOpacity,
-} from 'react-native';
+import {Text} from 'react-native';
 
 import Emoji from 'app/components/emoji';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class Reaction extends PureComponent {
@@ -37,11 +35,12 @@ export default class Reaction extends PureComponent {
         const styles = getStyleSheet(theme);
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={this.handlePress}
                 onLongPress={onLongPress}
                 delayLongPress={350}
                 style={[styles.reaction, (highlight && styles.highlight)]}
+                type={'opacity'}
             >
                 <Emoji
                     emojiName={emojiName}
@@ -49,7 +48,7 @@ export default class Reaction extends PureComponent {
                     padding={5}
                 />
                 <Text style={styles.count}>{count}</Text>
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }
