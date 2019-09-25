@@ -1,0 +1,23 @@
+version: 2.1
+
+
+jobs:
+  test:
+    working_directory: ~/mattermost-mobile
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - run: |
+          echo assets/base/config.json
+          cat assets/base/config.json
+          # Avoid installing pods
+          touch .podinstall
+          # Run tests
+          make test || exit 1
+
+workflows:
+  version: 2
+  pr-test:
+    jobs:
+      - test
