@@ -23,8 +23,10 @@ export default class ChannelLink extends React.PureComponent {
         textStyle: CustomPropTypes.Style,
         channelsByName: PropTypes.object.isRequired,
         actions: PropTypes.shape({
+            dismissAllModals: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
+            popToRoot: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -73,7 +75,10 @@ export default class ChannelLink extends React.PureComponent {
         }
 
         if (channel.id) {
-            this.props.actions.handleSelectChannel(channel.id);
+            const {dismissAllModals, handleSelectChannel, popToRoot} = this.props.actions;
+            handleSelectChannel(channel.id);
+            dismissAllModals();
+            popToRoot();
 
             if (this.props.onChannelLinkPress) {
                 this.props.onChannelLinkPress(channel);

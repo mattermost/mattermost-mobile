@@ -215,7 +215,7 @@ export default class EmojiPicker extends PureComponent {
     };
 
     getNumberOfColumns = (deviceWidth) => {
-        const shorten = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? 4 : 2;
+        const shorten = DeviceTypes.IS_IPHONE_WITH_INSETS && this.props.isLandscape ? 4 : 2;
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / (EMOJI_SIZE + (EMOJI_GUTTER * shorten)))));
     };
 

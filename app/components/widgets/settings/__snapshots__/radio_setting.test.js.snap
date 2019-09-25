@@ -1,0 +1,189 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/widgets/settings/RadioSetting should match snapshot when error is present 1`] = `
+<View>
+  <View
+    style={
+      Object {
+        "flexDirection": "row",
+        "marginBottom": 10,
+        "marginTop": 15,
+      }
+    }
+  >
+    <Text
+      style={
+        Object {
+          "color": "#3d3c40",
+          "fontSize": 14,
+          "marginLeft": 15,
+        }
+      }
+    >
+      some label
+    </Text>
+    <Text
+      style={
+        Object {
+          "color": "#fd5960",
+          "fontSize": 14,
+        }
+      }
+    >
+       *
+    </Text>
+  </View>
+  <View
+    style={
+      Array [
+        Object {
+          "backgroundColor": "#ffffff",
+          "borderBottomColor": "rgba(61,60,64,0.1)",
+          "borderBottomWidth": 1,
+          "borderTopColor": "rgba(61,60,64,0.1)",
+          "borderTopWidth": 1,
+        },
+        null,
+      ]
+    }
+  >
+    <TouchableOpacity
+      activeOpacity={0.2}
+      onPress={[Function]}
+    >
+      <View
+        style={
+          Array [
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingHorizontal": 15,
+            },
+            null,
+          ]
+        }
+      >
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+              "height": 45,
+            }
+          }
+        >
+          <Text>
+            this is engineering
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.1)",
+            "flex": 1,
+            "height": 1,
+            "marginLeft": 15,
+          }
+        }
+      />
+    </TouchableOpacity>
+    <TouchableOpacity
+      activeOpacity={0.2}
+      onPress={[Function]}
+    >
+      <View
+        style={
+          Array [
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingHorizontal": 15,
+            },
+            null,
+          ]
+        }
+      >
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+              "height": 45,
+            }
+          }
+        >
+          <Text>
+            this is sales
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.1)",
+            "flex": 1,
+            "height": 1,
+            "marginLeft": 15,
+          }
+        }
+      />
+    </TouchableOpacity>
+    <TouchableOpacity
+      activeOpacity={0.2}
+      onPress={[Function]}
+    >
+      <View
+        style={
+          Array [
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingHorizontal": 15,
+            },
+            null,
+          ]
+        }
+      >
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+              "height": 45,
+            }
+          }
+        >
+          <Text>
+            this is administration
+          </Text>
+        </View>
+        <CheckMark
+          color="#2389d7"
+          height={12}
+          width={12}
+        />
+      </View>
+    </TouchableOpacity>
+  </View>
+  <View
+    style={null}
+  >
+    <Text
+      style={
+        Object {
+          "color": "#fd5960",
+          "fontSize": 12,
+          "marginHorizontal": 15,
+          "marginTop": 10,
+        }
+      }
+    >
+      some error message
+    </Text>
+  </View>
+</View>
+`;

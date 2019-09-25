@@ -12,7 +12,6 @@ import {
     NativeModules,
     Platform,
     Text,
-    TextInput,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
@@ -25,10 +24,12 @@ import AttachmentButton from 'app/components/attachment_button';
 import Fade from 'app/components/fade';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
+import PasteableTextInput from 'app/components/pasteable_text_input';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import SendButton from 'app/components/send_button';
-
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {NOTIFY_ALL_MEMBERS} from 'app/constants/view';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {
@@ -36,7 +37,6 @@ import {
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {RNTextInputReset} = NativeModules;
 
@@ -83,6 +83,7 @@ export default class PostTextBoxBase extends PureComponent {
         isTimezoneEnabled: PropTypes.bool,
         currentChannel: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
+        screenId: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
@@ -412,19 +413,19 @@ export default class PostTextBoxBase extends PureComponent {
         this.props.actions.initUploadFiles(images, this.props.rootId);
     };
 
-    isFileLoading() {
+    isFileLoading = () => {
         const {files} = this.props;
 
         return files.some((file) => file.loading);
-    }
+    };
 
-    isSendButtonVisible() {
+    isSendButtonVisible = () => {
         return this.canSend() || this.isFileLoading();
-    }
+    };
 
-    isSendButtonEnabled() {
+    isSendButtonEnabled = () => {
         return this.canSend() && !this.isFileLoading() && !this.state.sendingMessage;
-    }
+    };
 
     sendMessage = () => {
         const {value} = this.state;
@@ -445,7 +446,7 @@ export default class PostTextBoxBase extends PureComponent {
     textContainsAtAllAtChannel = (text) => {
         const textWithoutCode = text.replace(/(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)| *(`{3,}|~{3,})[ .]*(\S+)? *\n([\s\S]*?\s*)\3 *(?:\n+|$)/g, '');
         return (/\B@(all|channel)\b/i).test(textWithoutCode);
-    }
+    };
 
     showSendToAllOrChannelAlert = (currentMembersCount) => {
         const {intl} = this.context;
@@ -505,7 +506,7 @@ export default class PostTextBoxBase extends PureComponent {
                 },
             ],
         );
-    }
+    };
 
     doSubmitMessage = () => {
         const {actions, currentUserId, channelId, files, rootId} = this.props;
@@ -562,7 +563,7 @@ export default class PostTextBoxBase extends PureComponent {
         }
 
         EventEmitter.emit('scroll-to-bottom');
-    }
+    };
 
     getStatusFromSlashCommand = (message) => {
         const tokens = message.split(' ');
@@ -635,7 +636,7 @@ export default class PostTextBoxBase extends PureComponent {
         const {formatMessage} = this.context.intl;
         const fileSizeWarning = formatMessage({
             id: 'file_upload.fileAbove',
-            defaultMessage: 'File above {max}MB cannot be uploaded: {filename}',
+            defaultMessage: 'File above {max} cannot be uploaded: {filename}',
         }, {
             max: getFormattedFileSize({size: this.props.maxFileSize}),
             filename,
@@ -684,6 +685,52 @@ export default class PostTextBoxBase extends PureComponent {
         });
     };
 
+    showPasteImageErrorDialog = () => {
+        const {formatMessage} = this.context.intl;
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.image_paste.error_title',
+                defaultMessage: 'Paste Image failed',
+            }),
+            formatMessage({
+                id: 'mobile.image_paste.error_description',
+                defaultMessage: 'An error occurred while pasting the image. Please try again.',
+            }),
+            [
+                {
+                    text: formatMessage({
+                        id: 'mobile.image_paste.error_dismiss',
+                        defaultMessage: 'Dismiss',
+                    }),
+                },
+            ]
+        );
+    };
+
+    handlePasteImages = (error, images) => {
+        if (this.props.screenId === EphemeralStore.getNavigationTopComponentId()) {
+            if (error) {
+                this.showPasteImageErrorDialog();
+                return;
+            }
+
+            const {maxFileSize, files} = this.props;
+            const availableCount = MAX_FILE_COUNT - files.length;
+            if (images.length > availableCount) {
+                this.onShowFileMaxWarning();
+                return;
+            }
+
+            const largeImage = images.find((image) => image.fileSize > maxFileSize);
+            if (largeImage) {
+                this.onShowFileSizeWarning(largeImage.fileName);
+                return;
+            }
+
+            this.handleUploadFiles(images);
+        }
+    };
+
     renderDeactivatedChannel = () => {
         const {intl} = this.context;
         const style = getStyleSheet(this.props.theme);
@@ -696,7 +743,7 @@ export default class PostTextBoxBase extends PureComponent {
                 })}
             </Text>
         );
-    }
+    };
 
     renderTextBox = () => {
         const {intl} = this.context;
@@ -718,7 +765,7 @@ export default class PostTextBoxBase extends PureComponent {
             >
                 {this.getAttachmentButton()}
                 <View style={this.getInputContainerStyle()}>
-                    <TextInput
+                    <PasteableTextInput
                         ref={this.input}
                         value={textValue}
                         onChangeText={this.handleTextChange}
@@ -733,6 +780,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
                         editable={!channelIsReadOnly}
+                        onPaste={this.handlePasteImages}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     />
                     <Fade visible={this.isSendButtonVisible()}>
