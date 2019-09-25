@@ -34,6 +34,7 @@ class PushNotificationUtils {
         this.store = store;
 
         PushNotifications.configure({
+            reduxStore: store,
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
             onReply: this.onPushNotificationReply,
