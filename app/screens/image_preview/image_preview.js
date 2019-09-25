@@ -359,7 +359,7 @@ export default class ImagePreview extends PureComponent {
             const {deviceHeight, deviceWidth} = this.props;
             const {height, width} = imageDimensions;
             const {style, ...otherProps} = imageProps;
-            const statusBar = DeviceTypes.IS_IPHONE_X ? 0 : 20;
+            const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
             const flattenStyle = StyleSheet.flatten(style);
             const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
             const imageStyle = {...flattenStyle, ...calculatedDimensions};
@@ -396,7 +396,7 @@ export default class ImagePreview extends PureComponent {
 
     renderVideoPreview = (file) => {
         const {deviceHeight, deviceWidth, theme} = this.props;
-        const statusBar = DeviceTypes.IS_IPHONE_X ? 0 : 20;
+        const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
 
         return (
             <VideoPreview

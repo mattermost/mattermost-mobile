@@ -28,6 +28,7 @@ export default class ChannelInfo extends PureComponent {
             clearPinnedPosts: PropTypes.func.isRequired,
             closeDMChannel: PropTypes.func.isRequired,
             closeGMChannel: PropTypes.func.isRequired,
+            convertChannelToPrivate: PropTypes.func.isRequired,
             deleteChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
@@ -60,6 +61,7 @@ export default class ChannelInfo extends PureComponent {
         isChannelMuted: PropTypes.bool.isRequired,
         isCurrent: PropTypes.bool.isRequired,
         isFavorite: PropTypes.bool.isRequired,
+        canConvertChannel: PropTypes.bool.isRequired,
         canManageUsers: PropTypes.bool.isRequired,
         canEditChannel: PropTypes.bool.isRequired,
         ignoreChannelMentions: PropTypes.bool.isRequired,
@@ -176,6 +178,59 @@ export default class ChannelInfo extends PureComponent {
         this.handleDeleteOrLeave('delete');
     };
 
+    handleConfirmConvertToPrivate = preventDoubleTap(async () => {
+        const {actions, currentChannel} = this.props;
+        const result = await actions.convertChannelToPrivate(currentChannel.id);
+        const displayName = {displayName: currentChannel.display_name.trim()};
+        const {formatMessage} = this.context.intl;
+        if (result.error) {
+            alertErrorWithFallback(
+                this.context.intl,
+                result.error,
+                {
+                    id: t('mobile.channel_info.convert_failed'),
+                    defaultMessage: 'We were unable to convert {displayName} to a private channel.',
+                },
+                {
+                    displayName,
+                },
+                [{
+                    text: formatMessage({id: 'mobile.share_extension.error_close', defaultMessage: 'Close'}),
+                }, {
+                    text: formatMessage({id: 'mobile.terms_of_service.alert_retry', defaultMessage: 'Try Again'}),
+                    onPress: this.handleConfirmConvertToPrivate,
+                }]
+            );
+        } else {
+            Alert.alert(
+                '',
+                formatMessage({id: t('mobile.channel_info.convert_success'), defaultMessage: '{displayName} is now a private channel.'}, displayName),
+            );
+        }
+    })
+
+    handleConvertToPrivate = preventDoubleTap(() => {
+        const {currentChannel} = this.props;
+        const {formatMessage} = this.context.intl;
+        const displayName = {displayName: currentChannel.display_name.trim()};
+        const title = {id: t('mobile.channel_info.alertTitleConvertChannel'), defaultMessage: 'Convert {displayName} to a private channel?'};
+        const message = {
+            id: t('mobile.channel_info.alertMessageConvertChannel'),
+            defaultMessage: 'When you convert {displayName} to a private channel, history and membership are preserved. Publicly shared files remain accessible to anyone with the link. Membership in a private channel is by invitation only.\n\nThe change is permanent and cannot be undone.\n\nAre you sure you want to convert {displayName} to a private channel?',
+        };
+
+        Alert.alert(
+            formatMessage(title, displayName),
+            formatMessage(message, displayName),
+            [{
+                text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
+            }, {
+                text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
+                onPress: this.handleConfirmConvertToPrivate,
+            }],
+        );
+    });
+
     handleDeleteOrLeave = preventDoubleTap((eventType) => {
         const {formatMessage} = this.context.intl;
         const channel = this.props.currentChannel;
@@ -213,7 +268,7 @@ export default class ChannelInfo extends PureComponent {
                             defaultMessage: "We couldn't archive the channel {displayName}. Please check your connection and try again.",
                         },
                         {
-                            displayName: channel.display_name,
+                            displayName: channel.display_name.trim(),
                         }
                     );
                     if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
@@ -235,7 +290,7 @@ export default class ChannelInfo extends PureComponent {
                 message,
                 {
                     term: term.toLowerCase(),
-                    name: channel.display_name,
+                    name: channel.display_name.trim(),
                 }
             ),
             [{
@@ -352,6 +407,13 @@ export default class ChannelInfo extends PureComponent {
         return isDirectMessage || isGroupMessage;
     };
 
+    renderConvertToPrivateRow = () => {
+        const {currentChannel, canConvertChannel} = this.props;
+        const isDefaultChannel = currentChannel.name === General.DEFAULT_CHANNEL;
+        const isPublicChannel = currentChannel.type === General.OPEN_CHANNEL;
+        return !isDefaultChannel && isPublicChannel && canConvertChannel;
+    }
+
     actionsRows = (style, channelIsArchived) => {
         const {
             currentChannelMemberCount,
@@ -461,6 +523,19 @@ export default class ChannelInfo extends PureComponent {
                     />
                 </React.Fragment>
                 }
+                {this.renderConvertToPrivateRow() && (
+                    <React.Fragment>
+                        <View style={style.separator}/>
+                        <ChannelInfoRow
+                            action={this.handleConvertToPrivate}
+                            defaultMessage='Convert to Private Channel'
+                            icon='lock'
+                            textId={t('mobile.channel_info.convert')}
+                            theme={theme}
+                            isLandscape={isLandscape}
+                        />
+                    </React.Fragment>
+                )}
                 {canEditChannel && (
                     <React.Fragment>
                         <View style={style.separator}/>

@@ -93,7 +93,7 @@ export default class ChannelNavBar extends PureComponent {
                 canHaveSubtitle = false;
             }
 
-            if (DeviceTypes.IS_IPHONE_X && isLandscape) {
+            if (DeviceTypes.IS_IPHONE_WITH_INSETS && isLandscape) {
                 canHaveSubtitle = false;
             }
             break;
