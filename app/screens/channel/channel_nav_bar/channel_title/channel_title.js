@@ -9,7 +9,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -37,10 +36,6 @@ export default class ChannelTitle extends PureComponent {
         displayName: null,
         theme: {},
         isSelfDMChannel: false,
-    };
-
-    static contextTypes = {
-        intl: intlShape,
     };
 
     archiveIcon(style) {
@@ -92,28 +87,42 @@ export default class ChannelTitle extends PureComponent {
         );
     }
 
+    renderChannelDisplayName = () => {
+        const {
+            displayName,
+            currentChannelName,
+            isSelfDMChannel,
+        } = this.props;
+
+        const channelDisplayName = displayName || currentChannelName;
+
+        if (isSelfDMChannel) {
+            const messageId = t('channel_header.directchannel.you');
+            const defaultMessage = '{displayName} (you)';
+            const values = {displayname: channelDisplayName};
+
+            return (
+                <FormattedText
+                    id={messageId}
+                    defaultMessage={defaultMessage}
+                    values={values}
+                />
+            );
+        }
+
+        return channelDisplayName;
+    }
+
     render() {
         const {
-            isSelfDMChannel,
-            currentChannelName,
-            displayName,
             isChannelMuted,
             onPress,
             theme,
         } = this.props;
 
-        const {intl} = this.context;
-
         const style = getStyle(theme);
         const hasGuestsText = this.renderHasGuestsText(style);
-
-        let channelDisplayName = displayName || currentChannelName;
-        if (isSelfDMChannel) {
-            channelDisplayName = intl.formatMessage({
-                id: 'channel_header.directchannel.you',
-                defaultMessage: '{displayName} (you)',
-            }, {displayname: channelDisplayName});
-        }
+        const channelDisplayName = this.renderChannelDisplayName();
 
         let icon;
         if (channelDisplayName) {

@@ -72,7 +72,15 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
         }
       }
     >
-      {displayName} (you)
+      <FormattedText
+        defaultMessage="{displayName} (you)"
+        id="channel_header.directchannel.you"
+        values={
+          Object {
+            "displayname": undefined,
+          }
+        }
+      />
     </Text>
     <Icon
       allowFontScaling={false}
