@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Keyboard,
+    ScrollView,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
@@ -408,11 +409,15 @@ export default class PostBody extends PureComponent {
         if (!hasBeenDeleted) {
             body = (
                 <View style={style.messageBody}>
-                    <View
+                    <ScrollView
                         style={{maxHeight: (showLongPost ? null : maxHeight), overflow: 'hidden'}}
+                        scrollEnabled={false}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                        keyboardShouldPersistTaps={'always'}
                     >
                         {messageComponent}
-                    </View>
+                    </ScrollView>
                     {isLongPost &&
                     <ShowMoreButton
                         highlight={highlight}
