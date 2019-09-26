@@ -10,9 +10,8 @@ import {
 
 import ProfilePicture from 'app/components/profile_picture';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import Tag from 'app/components/tag';
+import {BotTag, GuestTag} from 'app/components/tag';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {t} from 'app/utils/i18n';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AtMentionItem extends PureComponent {
@@ -69,15 +68,11 @@ export default class AtMentionItem extends PureComponent {
                     />
                 </View>
                 <Text style={style.rowUsername}>{`@${username}`}</Text>
-                <Tag
-                    id={t('post_info.bot')}
-                    defaultMessage={'BOT'}
+                <BotTag
                     show={isBot}
                     theme={theme}
                 />
-                <Tag
-                    id={t('post_info.guest')}
-                    defaultMessage={'GUEST'}
+                <GuestTag
                     show={isGuest}
                     theme={theme}
                 />

@@ -15,7 +15,7 @@ import {General} from 'mattermost-redux/constants';
 import {goToScreen} from 'app/actions/navigation';
 import ProfilePicture from 'app/components/profile_picture';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import Tag from 'app/components/tag';
+import {BotTag, GuestTag} from 'app/components/tag';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -97,15 +97,11 @@ class ChannelIntro extends PureComponent {
                         <Text style={style.displayName}>
                             {this.getDisplayName(member)}
                         </Text>
-                        <Tag
-                            id={t('post_info.bot')}
-                            defaultMessage={'BOT'}
+                        <BotTag
                             show={Boolean(member.is_bot)}
                             theme={theme}
                         />
-                        <Tag
-                            id={t('post_info.guest')}
-                            defaultMessage={'GUEST'}
+                        <GuestTag
                             show={isGuest(member)}
                             theme={theme}
                         />

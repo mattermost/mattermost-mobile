@@ -7,6 +7,33 @@ import PropTypes from 'prop-types';
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
+
+export function BotTag(props) {
+    const id = t('post_info.bot');
+    const defaultMessage = 'BOT';
+
+    return (
+        <Tag
+            id={id}
+            defaultMessage={defaultMessage}
+            {...props}
+        />
+    );
+}
+
+export function GuestTag(props) {
+    const id = t('post_info.guest');
+    const defaultMessage = 'GUEST';
+
+    return (
+        <Tag
+            id={id}
+            defaultMessage={defaultMessage}
+            {...props}
+        />
+    );
+}
 
 export default class Tag extends PureComponent {
     static propTypes = {

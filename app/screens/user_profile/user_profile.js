@@ -20,7 +20,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import StatusBar from 'app/components/status_bar';
-import Tag from 'app/components/tag';
+import {BotTag, GuestTag} from 'app/components/tag';
 
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
@@ -132,15 +132,11 @@ export default class UserProfile extends PureComponent {
                     <Text style={style.displayName}>
                         {displayName}
                     </Text>
-                    <Tag
-                        id={t('post_info.bot')}
-                        defaultMessage={'BOT'}
+                    <BotTag
                         show={Boolean(user.is_bot)}
                         theme={theme}
                     />
-                    <Tag
-                        id={t('post_info.guest')}
-                        defaultMessage={'GUEST'}
+                    <GuestTag
                         show={isGuest(user)}
                         theme={theme}
                     />

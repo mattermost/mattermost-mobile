@@ -51,9 +51,7 @@ exports[`user_profile should match snapshot 1`] = `
         >
           fred
         </Text>
-        <Tag
-          defaultMessage="BOT"
-          id="post_info.bot"
+        <BotTag
           show={false}
           theme={
             Object {
@@ -84,9 +82,7 @@ exports[`user_profile should match snapshot 1`] = `
             }
           }
         />
-        <Tag
-          defaultMessage="GUEST"
-          id="post_info.guest"
+        <GuestTag
           show={false}
           theme={
             Object {

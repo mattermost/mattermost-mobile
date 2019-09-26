@@ -61,9 +61,7 @@ exports[`UserListRow should match snapshot 1`] = `
           >
             @user
           </Text>
-          <Tag
-            defaultMessage="BOT"
-            id="post_info.bot"
+          <BotTag
             show={false}
             theme={
               Object {
@@ -94,9 +92,7 @@ exports[`UserListRow should match snapshot 1`] = `
               }
             }
           />
-          <Tag
-            defaultMessage="GUEST"
-            id="post_info.guest"
+          <GuestTag
             show={false}
             theme={
               Object {
@@ -193,9 +189,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
               }
             }
           />
-          <Tag
-            defaultMessage="BOT"
-            id="post_info.bot"
+          <BotTag
             show={false}
             theme={
               Object {
@@ -226,9 +220,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
               }
             }
           />
-          <Tag
-            defaultMessage="GUEST"
-            id="post_info.guest"
+          <GuestTag
             show={false}
             theme={
               Object {
@@ -327,9 +319,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
           >
             @user
           </Text>
-          <Tag
-            defaultMessage="BOT"
-            id="post_info.bot"
+          <BotTag
             show={false}
             theme={
               Object {
@@ -360,9 +350,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
               }
             }
           />
-          <Tag
-            defaultMessage="GUEST"
-            id="post_info.guest"
+          <GuestTag
             show={false}
             theme={
               Object {
@@ -472,9 +460,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
           >
             @user
           </Text>
-          <Tag
-            defaultMessage="BOT"
-            id="post_info.bot"
+          <BotTag
             show={false}
             theme={
               Object {
@@ -505,9 +491,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
               }
             }
           />
-          <Tag
-            defaultMessage="GUEST"
-            id="post_info.guest"
+          <GuestTag
             show={true}
             theme={
               Object {
