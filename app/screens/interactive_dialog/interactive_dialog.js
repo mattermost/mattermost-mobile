@@ -8,11 +8,12 @@ import {Navigation} from 'react-native-navigation';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
+
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {dismissModal} from 'app/actions/navigation';
 
 import DialogElement from './dialog_element.js';
 import DialogIntroductionText from './dialog_introduction_text.js';
@@ -28,7 +29,6 @@ export default class InteractiveDialog extends PureComponent {
         theme: PropTypes.object,
         actions: PropTypes.shape({
             submitInteractiveDialog: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -174,7 +174,7 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     handleHide = () => {
-        this.props.actions.dismissModal();
+        dismissModal();
     }
 
     onChange = (name, value) => {

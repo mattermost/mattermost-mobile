@@ -4,6 +4,7 @@
 import {AppState} from 'react-native';
 import NotificationsIOS, {NotificationAction, NotificationCategory} from 'react-native-notifications';
 
+import {getBadgeCount} from 'app/selectors/views';
 import ephemeralStore from 'app/store/ephemeral_store';
 
 const CATEGORY = 'CAN_REPLY';
@@ -18,6 +19,7 @@ class PushNotification {
         this.onRegister = null;
         this.onNotification = null;
         this.onReply = null;
+        this.reduxStore = null;
 
         NotificationsIOS.addEventListener('remoteNotificationsRegistered', this.onRemoteNotificationsRegistered);
         NotificationsIOS.addEventListener('notificationReceivedForeground', this.onNotificationReceivedForeground);
@@ -69,6 +71,7 @@ class PushNotification {
     };
 
     configure(options) {
+        this.reduxStore = options.reduxStore;
         this.onRegister = options.onRegister;
         this.onNotification = options.onNotification;
         this.onReply = options.onReply;
@@ -165,6 +168,15 @@ class PushNotification {
     clearChannelNotifications(channelId) {
         NotificationsIOS.getDeliveredNotifications((notifications) => {
             const ids = [];
+            let badgeCount = notifications.length;
+
+            if (this.reduxStore) {
+                const totalMentions = getBadgeCount(this.reduxStore.getState());
+                if (totalMentions > -1) {
+                    badgeCount = totalMentions;
+                }
+            }
+
             for (let i = 0; i < notifications.length; i++) {
                 const notification = notifications[i];
 
@@ -174,8 +186,11 @@ class PushNotification {
             }
 
             if (ids.length) {
+                badgeCount -= ids.length;
                 NotificationsIOS.removeDeliveredNotifications(ids);
             }
+
+            this.setApplicationIconBadgeNumber(badgeCount);
         });
     }
 

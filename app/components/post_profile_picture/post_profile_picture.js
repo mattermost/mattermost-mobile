@@ -3,10 +3,11 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, TouchableOpacity, View} from 'react-native';
+import {Image, View} from 'react-native';
 
 import AppIcon from 'app/components/app_icon';
 import ProfilePicture from 'app/components/profile_picture';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {emptyFunction} from 'app/utils/general';
 import webhookIcon from 'assets/images/icons/webhook.jpg';
 import {ViewTypes} from 'app/constants';
@@ -94,9 +95,12 @@ export default class PostProfilePicture extends PureComponent {
 
         if (!fromWebHook) {
             component = (
-                <TouchableOpacity onPress={onViewUserProfile}>
+                <TouchableWithFeedback
+                    onPress={onViewUserProfile}
+                    type={'opacity'}
+                >
                     {component}
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         }
 

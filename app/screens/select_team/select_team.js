@@ -18,12 +18,13 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
 import CustomList from 'app/components/custom_list';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TeamIcon from 'app/components/team_icon';
+import {resetToChannel, dismissModal} from 'app/actions/navigation';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
 
 const TEAMS_PER_PAGE = 50;
 
@@ -34,8 +35,6 @@ export default class SelectTeam extends PureComponent {
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
@@ -116,7 +115,7 @@ export default class SelectTeam extends PureComponent {
     };
 
     close = () => {
-        this.props.actions.dismissModal();
+        dismissModal();
     };
 
     goToChannelView = () => {
@@ -124,7 +123,7 @@ export default class SelectTeam extends PureComponent {
             disableTermsModal: true,
         };
 
-        this.props.actions.resetToChannel(passProps);
+        resetToChannel(passProps);
     };
 
     onSelectTeam = async (team) => {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -10,15 +10,16 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import FormattedText from 'app/components/formatted_text';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {ViewTypes} from 'app/constants';
+import {goToScreen} from 'app/actions/navigation';
 
 export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             setAutocompleteSelector: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         label: PropTypes.string,
         placeholder: PropTypes.string.isRequired,
@@ -101,7 +102,7 @@ export default class AutocompleteSelector extends PureComponent {
         const title = placeholder || formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
 
         actions.setAutocompleteSelector(dataSource, this.handleSelect, options);
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     render() {
@@ -181,9 +182,10 @@ export default class AutocompleteSelector extends PureComponent {
         return (
             <View style={style.container}>
                 {labelContent}
-                <TouchableOpacity
+                <TouchableWithFeedback
                     style={style.flex}
                     onPress={this.goToSelectorScreen}
+                    type={'opacity'}
                 >
                     <View style={inputStyle}>
                         <Text
@@ -198,7 +200,7 @@ export default class AutocompleteSelector extends PureComponent {
                             style={style.icon}
                         />
                     </View>
-                </TouchableOpacity>
+                </TouchableWithFeedback>
                 {helpTextContent}
                 {errorTextContent}
             </View>

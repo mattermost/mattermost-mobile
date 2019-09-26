@@ -31,6 +31,7 @@ import {
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {popTopScreen} from 'app/actions/navigation';
 
 export default class SelectorScreen extends PureComponent {
     static propTypes = {
@@ -39,7 +40,6 @@ export default class SelectorScreen extends PureComponent {
             getChannels: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
@@ -98,7 +98,7 @@ export default class SelectorScreen extends PureComponent {
     };
 
     close = () => {
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     handleSelectItem = (id, item) => {
