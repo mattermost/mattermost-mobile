@@ -11,9 +11,6 @@ import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMentionsBase extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,

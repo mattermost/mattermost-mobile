@@ -11,16 +11,15 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import RemoveMarkdown from 'app/components/remove_markdown';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {goToScreen} from 'app/actions/navigation';
 
 const {View: AnimatedView} = Animated;
 
 export default class AnnouncementBanner extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         bannerColor: PropTypes.string,
         bannerDismissed: PropTypes.bool,
         bannerEnabled: PropTypes.bool,
@@ -55,7 +54,6 @@ export default class AnnouncementBanner extends PureComponent {
     }
 
     handlePress = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
 
         const screen = 'ExpandedAnnouncementBanner';
@@ -64,7 +62,7 @@ export default class AnnouncementBanner extends PureComponent {
             defaultMessage: 'Announcement',
         });
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     };
 
     toggleBanner = (show = true) => {

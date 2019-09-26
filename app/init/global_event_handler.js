@@ -247,7 +247,7 @@ class GlobalEventHandler {
 
     handleInAppNotification = (notification) => {
         const {data} = notification;
-        const {dispatch, getState} = this.store;
+        const {getState} = this.store;
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
@@ -258,7 +258,7 @@ class GlobalEventHandler {
             };
 
             EventEmitter.emit(NavigationTypes.NAVIGATION_SHOW_OVERLAY);
-            dispatch(showOverlay(screen, passProps));
+            showOverlay(screen, passProps);
         }
     };
 }

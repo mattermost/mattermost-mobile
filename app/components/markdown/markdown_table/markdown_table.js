@@ -6,22 +6,21 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     ScrollView,
-    TouchableOpacity,
     View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
+import {CELL_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
+
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {CELL_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
+import {goToScreen} from 'app/actions/navigation';
 
 const MAX_HEIGHT = 300;
 
 export default class MarkdownTable extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         children: PropTypes.node.isRequired,
         numColumns: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
@@ -46,7 +45,6 @@ export default class MarkdownTable extends React.PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'Table';
         const title = intl.formatMessage({
@@ -58,7 +56,7 @@ export default class MarkdownTable extends React.PureComponent {
             tableWidth: this.getTableWidth(),
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     handleContainerLayout = (e) => {
@@ -128,7 +126,10 @@ export default class MarkdownTable extends React.PureComponent {
         }
 
         return (
-            <TouchableOpacity onPress={this.handlePress}>
+            <TouchableWithFeedback
+                onPress={this.handlePress}
+                type={'opacity'}
+            >
                 <ScrollView
                     contentContainerStyle={{width: this.getTableWidth()}}
                     onContentSizeChange={this.handleContentSizeChange}
@@ -141,7 +142,7 @@ export default class MarkdownTable extends React.PureComponent {
                 </ScrollView>
                 {moreRight}
                 {moreBelow}
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

@@ -9,8 +9,6 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getProfiles, searchProfiles} from 'mattermost-redux/actions/users';
 import {getChannels, searchChannels} from 'mattermost-redux/actions/channels';
 
-import {popTopScreen} from 'app/actions/navigation';
-
 import SelectorScreen from './selector_screen';
 
 function mapStateToProps(state) {
@@ -34,7 +32,6 @@ function mapDispatchToProps(dispatch) {
             getChannels,
             searchProfiles,
             searchChannels,
-            popTopScreen,
         }, dispatch),
     };
 }
