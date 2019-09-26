@@ -40,11 +40,11 @@ function makeMapStateToProps() {
             } else {
                 const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
                 const teammate = getUser(state, teammateId);
-                isArchived = teammate.delete_at > 0;
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
                 displayName = displayUsername(teammate, teammateNameDisplay, false);
-                if (teammate && teammate.is_bot) {
-                    isBot = true;
+                if (teammate) {
+                    isArchived = teammate.delete_at > 0;
+                    isBot = teammate.is_bot || false;
                 }
                 isGuest = isGuestUser(teammate);
             }

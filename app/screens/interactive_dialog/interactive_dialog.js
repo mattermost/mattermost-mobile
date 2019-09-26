@@ -3,15 +3,16 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View} from 'react-native';
+import {Dimensions, ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
 import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
+
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {dismissModal} from 'app/actions/navigation';
 
 import DialogElement from './dialog_element.js';
 import DialogIntroductionText from './dialog_introduction_text.js';
@@ -27,7 +28,6 @@ export default class InteractiveDialog extends PureComponent {
         theme: PropTypes.object,
         actions: PropTypes.shape({
             submitInteractiveDialog: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -49,12 +49,27 @@ export default class InteractiveDialog extends PureComponent {
         this.state = {
             values,
             errors: {},
+            isLandscape: this.isLandscape(),
             submitting: false,
         };
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
+        Dimensions.addEventListener('change', this.orientationDidChange);
+    }
+
+    componentWillUnmount() {
+        Dimensions.removeEventListener('change', this.orientationDidChange);
+    }
+
+    orientationDidChange = () => {
+        this.setState({isLandscape: this.isLandscape()});
+    }
+
+    isLandscape = () => {
+        const {height, width} = Dimensions.get('window');
+        return width > height;
     }
 
     navigationButtonPressed({buttonId}) {
@@ -143,7 +158,7 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     handleHide = () => {
-        this.props.actions.dismissModal();
+        dismissModal();
     }
 
     onChange = (name, value) => {
@@ -153,6 +168,7 @@ export default class InteractiveDialog extends PureComponent {
 
     render() {
         const {introductionText, elements, theme} = this.props;
+        const {errors, isLandscape, values} = this.state;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -174,16 +190,17 @@ export default class InteractiveDialog extends PureComponent {
                                 type={e.type}
                                 subtype={e.subtype}
                                 helpText={e.help_text}
-                                errorText={this.state.errors[e.name]}
+                                errorText={errors[e.name]}
                                 placeholder={e.placeholder}
                                 minLength={e.min_length}
                                 maxLength={e.max_length}
                                 dataSource={e.data_source}
                                 optional={e.optional}
                                 options={e.options}
-                                value={this.state.values[e.name]}
+                                value={values[e.name]}
                                 onChange={this.onChange}
                                 theme={theme}
+                                isLandscape={isLandscape}
                             />
                         );
                     })}

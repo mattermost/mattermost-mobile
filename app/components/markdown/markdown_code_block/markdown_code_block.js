@@ -9,7 +9,6 @@ import {
     Clipboard,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
@@ -17,19 +16,18 @@ import SyntaxHighlighter from 'react-native-syntax-highlighter';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import BottomSheet from 'app/utils/bottom_sheet';
 import {getDisplayNameForLanguage, getCodeFont} from 'app/utils/markdown';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, getHighlightStyleFromTheme} from 'app/utils/theme';
 import mattermostManaged from 'app/mattermost_managed';
+import {goToScreen} from 'app/actions/navigation';
 
 const MAX_LINES = 4;
 
 export default class MarkdownCodeBlock extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         theme: PropTypes.object.isRequired,
         language: PropTypes.string,
         content: PropTypes.string.isRequired,
@@ -45,7 +43,7 @@ export default class MarkdownCodeBlock extends React.PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {actions, language, content, textStyle} = this.props;
+        const {language, content, textStyle} = this.props;
         const {intl} = this.context;
         const screen = 'Code';
         const passProps = {
@@ -73,7 +71,7 @@ export default class MarkdownCodeBlock extends React.PureComponent {
             });
         }
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     handleLongPress = async () => {
@@ -178,9 +176,10 @@ export default class MarkdownCodeBlock extends React.PureComponent {
         }
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={this.handlePress}
                 onLongPress={this.handleLongPress}
+                type={'opacity'}
             >
                 <View style={style.container}>
                     <View style={style.lineNumbers}>
@@ -196,7 +195,7 @@ export default class MarkdownCodeBlock extends React.PureComponent {
                     </View>
                     {language}
                 </View>
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

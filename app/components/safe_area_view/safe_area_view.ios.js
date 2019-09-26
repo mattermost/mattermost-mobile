@@ -38,14 +38,14 @@ export default class SafeAreaIos extends PureComponent {
         super(props);
 
         let insetBottom = 0;
-        if ((DeviceTypes.IS_IPHONE_X || mattermostManaged.hasSafeAreaInsets) && props.excludeFooter) {
+        if ((DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets) && props.excludeFooter) {
             insetBottom = 20;
         }
 
         this.state = {
             keyboard: false,
             safeAreaInsets: {
-                top: DeviceTypes.IS_IPHONE_X ? 44 : 20,
+                top: DeviceTypes.IS_IPHONE_WITH_INSETS ? 44 : 20,
                 left: 0,
                 bottom: insetBottom,
                 right: 0,
@@ -94,7 +94,7 @@ export default class SafeAreaIos extends PureComponent {
     getSafeAreaInsets = () => {
         this.getStatusBarHeight();
 
-        if (DeviceTypes.IS_IPHONE_X || mattermostManaged.hasSafeAreaInsets) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets) {
             SafeArea.getSafeAreaInsetsForRootView().then((result) => {
                 const {safeAreaInsets} = result;
 
@@ -128,7 +128,7 @@ export default class SafeAreaIos extends PureComponent {
         }
 
         let top = safeAreaInsets.top;
-        if (forceTop && DeviceTypes.IS_IPHONE_X && !hideTopBar) {
+        if (forceTop && DeviceTypes.IS_IPHONE_WITH_INSETS && !hideTopBar) {
             top = forceTop;
         }
 

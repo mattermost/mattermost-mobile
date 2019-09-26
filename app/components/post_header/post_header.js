@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Platform,
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
@@ -16,6 +15,7 @@ import FormattedDate from 'app/components/formatted_date';
 import ReplyIcon from 'app/components/reply_icon';
 import BotTag from 'app/components/bot_tag';
 import GuestTag from 'app/components/guest_tag';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -87,7 +87,10 @@ export default class PostHeader extends PureComponent {
             );
         } else if (isBot) {
             return (
-                <TouchableOpacity onPress={this.handleUsernamePress}>
+                <TouchableWithFeedback
+                    onPress={this.handleUsernamePress}
+                    type={'opacity'}
+                >
                     <View style={style.indicatorContainer}>
                         <Text style={style.displayName}>
                             {this.props.displayName}
@@ -96,11 +99,14 @@ export default class PostHeader extends PureComponent {
                             theme={this.props.theme}
                         />
                     </View>
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         } else if (isGuest) {
             return (
-                <TouchableOpacity onPress={this.handleUsernamePress}>
+                <TouchableWithFeedback
+                    onPress={this.handleUsernamePress}
+                    type={'opacity'}
+                >
                     <View style={style.indicatorContainer}>
                         <Text style={style.displayName}>
                             {this.props.displayName}
@@ -109,7 +115,7 @@ export default class PostHeader extends PureComponent {
                             theme={this.props.theme}
                         />
                     </View>
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         } else if (fromAutoResponder) {
             let name = this.props.displayName;
@@ -139,11 +145,14 @@ export default class PostHeader extends PureComponent {
             );
         } else if (this.props.displayName) {
             return (
-                <TouchableOpacity onPress={this.handleUsernamePress}>
+                <TouchableWithFeedback
+                    onPress={this.handleUsernamePress}
+                    type={'opacity'}
+                >
                     <Text style={style.displayName}>
                         {this.props.displayName}
                     </Text>
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         }
 
@@ -254,9 +263,10 @@ export default class PostHeader extends PureComponent {
                         </View>
                     </View>
                     {showReply &&
-                    <TouchableOpacity
+                    <TouchableWithFeedback
                         onPress={onPress}
                         style={style.replyIconContainer}
+                        type={'opacity'}
                     >
                         <ReplyIcon
                             height={16}
@@ -266,7 +276,7 @@ export default class PostHeader extends PureComponent {
                         {!isSearchResult &&
                         <Text style={style.replyText}>{commentCount}</Text>
                         }
-                    </TouchableOpacity>
+                    </TouchableWithFeedback>
                     }
                 </View>
                 {commentedOnDisplayName !== '' &&

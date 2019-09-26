@@ -7,9 +7,12 @@ import assert from 'assert';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from 'mattermost-redux/constants/preferences';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import Fade from 'app/components/fade';
 import SendButton from 'app/components/send_button';
+import PasteableTextInput from 'app/components/pasteable_text_input';
+import EphemeralStore from 'app/store/ephemeral_store';
 
 import PostTextbox from './post_textbox.ios';
 
@@ -60,6 +63,7 @@ describe('PostTextBox', () => {
         cursorPositionEvent: '',
         valueEvent: '',
         isLandscape: false,
+        screenId: 'NavigationScreen1',
     };
 
     test('should match, full snapshot', () => {
@@ -336,4 +340,109 @@ describe('PostTextBox', () => {
             expect(wrapper.find(SendButton).prop('disabled')).toBe(true);
         });
     });
+
+    describe('Paste images', () => {
+        test('should show error dialog if error occured', () => {
+            jest.spyOn(Alert, 'alert').mockReturnValue(null);
+            const wrapper = shallowWithIntl(<PostTextbox {...baseProps}/>);
+            EphemeralStore.addNavigationComponentId('NavigationScreen1');
+            wrapper.find(PasteableTextInput).first().simulate('paste', {error: 'some error'}, []);
+            expect(Alert.alert).toHaveBeenCalled();
+        });
+
+        test('should show file max warning and not uploading', () => {
+            jest.spyOn(EventEmitter, 'emit').mockReturnValue(null);
+            const wrapper = shallowWithIntl(<PostTextbox {...baseProps}/>);
+            EphemeralStore.addNavigationComponentId('NavigationScreen1');
+            wrapper.find(PasteableTextInput).first().simulate('paste', null, [
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+            ]);
+            expect(EventEmitter.emit).toHaveBeenCalledWith('fileMaxWarning');
+            expect(baseProps.actions.initUploadFiles).not.toHaveBeenCalled();
+        });
+
+        test('should show file size warning and not uploading', () => {
+            jest.spyOn(EventEmitter, 'emit').mockReturnValue(null);
+            const wrapper = shallowWithIntl(
+                <PostTextbox
+                    {...baseProps}
+                    maxFileSize={50 * 1024 * 1024}
+                />
+            );
+            wrapper.find(PasteableTextInput).first().simulate('paste', null, [
+                {
+                    fileSize: 51 * 1024 * 1024,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+            ]);
+            expect(EventEmitter.emit).toHaveBeenCalledWith('fileSizeWarning', 'File above 50 MB cannot be uploaded: fileName.png');
+            expect(baseProps.actions.initUploadFiles).not.toHaveBeenCalled();
+        });
+
+        test('should upload images', () => {
+            const wrapper = shallowWithIntl(<PostTextbox {...baseProps}/>);
+            EphemeralStore.addNavigationComponentId('NavigationScreen1');
+            wrapper.find(PasteableTextInput).first().simulate('paste', null, [
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+            ]);
+            expect(baseProps.actions.initUploadFiles).toHaveBeenCalled();
+        });
+
+        test('should NOT upload images when not the top most screen', () => {
+            const wrapper = shallowWithIntl(<PostTextbox {...baseProps}/>);
+            EphemeralStore.addNavigationComponentId('NavigationScreen2');
+            wrapper.find(PasteableTextInput).first().simulate('paste', null, [
+                {
+                    fileSize: 1000,
+                    fileName: 'fileName.png',
+                    type: 'images/png',
+                    url: 'path/to/image',
+                },
+            ]);
+            expect(baseProps.actions.initUploadFiles).not.toHaveBeenCalled();
+        });
+    });
 });
+

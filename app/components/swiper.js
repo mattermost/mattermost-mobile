@@ -107,6 +107,14 @@ export default class Swiper extends PureComponent {
         });
     };
 
+    scrollToInitial = () => {
+        setTimeout(() => {
+            if (this.scrollView) {
+                this.scrollView.scrollTo({x: this.props.width * this.props.initialPage, animated: false});
+            }
+        }, 0);
+    };
+
     refScrollView = (view) => {
         this.scrollView = view;
     };
@@ -172,7 +180,7 @@ export default class Swiper extends PureComponent {
         const bottom = this.paginationBottom(width, height);
         const drawerWidth = (width > height) ? width - ViewTypes.IOS_HORIZONTAL_LANDSCAPE : width;
         let style;
-        if (DeviceTypes.IS_IPHONE_X && (width < height)) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS && (width < height)) {
             style = {
                 bottom,
                 width: drawerWidth,
@@ -227,7 +235,7 @@ export default class Swiper extends PureComponent {
         }
 
         const landscape = width > height;
-        if (DeviceTypes.IS_IPHONE_X) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
             return landscape ? 14 : 34;
         }
 

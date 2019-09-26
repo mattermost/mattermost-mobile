@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {
+    convertChannelToPrivate,
     favoriteChannel,
     getChannelStats,
     getChannel,
@@ -32,13 +33,6 @@ import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 
-import {
-    popTopScreen,
-    goToScreen,
-    popToRoot,
-    dismissModal,
-    showModalOverCurrentContext,
-} from 'app/actions/navigation';
 import {
     closeDMChannel,
     closeGMChannel,
@@ -105,6 +99,7 @@ function mapStateToProps(state) {
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
+        canConvertChannel: isAdmin,
         viewArchivedChannels,
         canEditChannel,
         currentChannel,
@@ -132,6 +127,7 @@ function mapDispatchToProps(dispatch) {
             clearPinnedPosts,
             closeDMChannel,
             closeGMChannel,
+            convertChannelToPrivate,
             deleteChannel,
             getChannelStats,
             getChannel,
@@ -145,11 +141,6 @@ function mapDispatchToProps(dispatch) {
             selectPenultimateChannel,
             setChannelDisplayName,
             handleSelectChannel,
-            popTopScreen,
-            goToScreen,
-            popToRoot,
-            dismissModal,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

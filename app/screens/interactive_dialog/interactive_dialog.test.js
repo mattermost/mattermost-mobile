@@ -19,7 +19,6 @@ describe('InteractiveDialog', () => {
         theme: Preferences.THEMES.default,
         actions: {
             submitInteractiveDialog: jest.fn(),
-            dismissModal: jest.fn(),
         },
         componentId: 'component-id',
     };
