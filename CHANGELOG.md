@@ -14,40 +14,39 @@
 ### Improvements
  - Added sidebar and theming UI/UX improvements.
  - Improved post menu animation and timing.
- - Changed recent date separators to read Today/Yesterday.
  - Added a confirmation dialog when posting a message with `at-channel`.
  - Added support for safe area in landscape view on iOS.
+ - Changed recent date separators to read Today/Yesterday.
  - Added an autocomplete to the edit channel screen.
+ - Added support for pasting images on input text box.
  - Emoji picker search now ignores the leading colon.
- - Added support to RN for emoji not requiring a whitespace to render.
- - Removed the full screen "Refresh" button when opening a team or channel with no cached data when offline.
+ - Added support for emoji not requiring a whitespace to render.
  - Added support for footer and footer_icon in attachments.
  - Added a password type for interactive dialogs.
  - Added support for introductory markdown paragraph in interactive dialogs.
  - Added support for boolean elements in interactive dialogs.
+ - Removed the full screen "Refresh" button when opening a team or channel with no cached data when offline.
  - If Mattermost doesn't have permission to the photo library because the user denied the first prompt, the app now prompts to give permission to send the user to the settings to manually change the permission.
- - https://github.com/mattermost/mattermost-mobile/pull/3084
 
 ### Bug Fixes
- - Fixed an issue where the app crashed when it was brought to the foreground.
  - Fixed an issue where the notification badge could get out of sync when reading messages in another client.
  - Fixed an issue where the notification badge number did not reset when opening a push notification.
  - Fixed an issue where SafeArea insets were not working properly on new iPhone 11 models.
  - Fixed an issue on iOS where long press on a system message in an archived channel locked up the app.
- - Fixed an issue where file previews could scroll to the left until all files were out of view.
- - Fixed an issue where duplicate pinned posts displayed after editing pinned post from Pinned Posts screen.
- - Fixed an issue on iOS where user was unable to select an emoji from two rows on the bottom of the emoji picker.
  - Fixed an issue on iOS where the channel list panel was missing for a user when they were added to a new team by another user.
+ - Fixed an issue where once in a thread, pressing a channel link appeared to do nothing.
+ - Fixed an issue where file previews could scroll to the left until all files were out of view.
+ - Fixed an issue on iOS where user was unable to select an emoji from two rows on the bottom of the emoji picker.
+ - Fixed an issue where duplicate pinned posts displayed after editing pinned post from Pinned Posts screen.
  - Fixed an issue where post textbox did not clear after using a slash command.
  - Fixed an issue where users were are not immediately removed from the mention auto-complete when those users were deactivated.
- - Fixed an issue where once in a thread, pressing a channel link appeared to do nothing.
  - Fixed an issue where the text input area in Android Share extension did not use available space.
  - Fixed an issue on iOS where Windows dark theme was not consistent when viewing an archived channel.
- - Fixed an issue where themed "Delete Documents & Data" action flashed a white screen.
+ - Fixed an issue where a themed "Delete Documents & Data" action flashed a white screen.
  - Fixed an issue where "Close group message" button implied a confirmation.
 
 ### Known Issues
-
+ - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
 
 ## 1.23.0 Release
 - Release Date: September 16, 2019
