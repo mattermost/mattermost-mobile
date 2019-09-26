@@ -8,7 +8,7 @@ import Preferences from 'mattermost-redux/constants/preferences';
 import * as NavigationActions from 'app/actions/navigation';
 
 import UserProfile from './user_profile.js';
-import Tag from 'app/components/tag';
+import {BotTag, GuestTag} from 'app/components/tag';
 
 jest.mock('react-intl');
 jest.mock('app/utils/theme', () => {
@@ -80,9 +80,7 @@ describe('user_profile', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.containsMatchingElement(
-            <Tag
-                id={'post_info.bot'}
-                defaultMessage={'BOT'}
+            <BotTag
                 show={true}
                 theme={baseProps.theme}
             />
@@ -108,9 +106,7 @@ describe('user_profile', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.containsMatchingElement(
-            <Tag
-                id={'post_info.guest'}
-                defaultMessage={'GUEST'}
+            <GuestTag
                 show={true}
                 theme={baseProps.theme}
             />

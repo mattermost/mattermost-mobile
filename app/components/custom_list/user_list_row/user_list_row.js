@@ -13,8 +13,7 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import CustomListRow from 'app/components/custom_list/custom_list_row';
 import ProfilePicture from 'app/components/profile_picture';
-import Tag from 'app/components/tag';
-import {t} from 'app/utils/i18n';
+import {BotTag, GuestTag} from 'app/components/tag';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {isGuest} from 'app/utils/users';
 
@@ -91,15 +90,11 @@ export default class UserListRow extends React.PureComponent {
                                 >
                                     {usernameDisplay}
                                 </Text>
-                                <Tag
-                                    id={t('post_info.bot')}
-                                    defaultMessage={'BOT'}
+                                <BotTag
                                     show={Boolean(user.is_bot)}
                                     theme={theme}
                                 />
-                                <Tag
-                                    id={t('post_info.guest')}
-                                    defaultMessage={'GUEST'}
+                                <GuestTag
                                     show={isGuest(user)}
                                     theme={theme}
                                 />

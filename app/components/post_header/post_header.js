@@ -12,7 +12,7 @@ import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import FormattedDate from 'app/components/formatted_date';
 import ReplyIcon from 'app/components/reply_icon';
-import Tag from 'app/components/tag';
+import Tag, {BotTag, GuestTag} from 'app/components/tag';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {emptyFunction} from 'app/utils/general';
 import {t} from 'app/utils/i18n';
@@ -208,29 +208,16 @@ export default class PostHeader extends PureComponent {
         const {fromAutoResponder, fromWebHook, isBot, isGuest, theme} = this.props;
         const style = getStyleSheet(theme);
 
-        if (fromWebHook) {
+        if (fromWebHook || isBot) {
             return (
-                <Tag
-                    id={t('post_info.bot')}
-                    defaultMessage={'BOT'}
-                    style={style.tag}
-                    theme={theme}
-                />
-            );
-        } else if (isBot) {
-            return (
-                <Tag
-                    id={t('post_info.bot')}
-                    defaultMessage={'BOT'}
+                <BotTag
                     style={style.tag}
                     theme={theme}
                 />
             );
         } else if (isGuest) {
             return (
-                <Tag
-                    id={t('post_info.guest')}
-                    defaultMessage={'GUEST'}
+                <GuestTag
                     style={style.tag}
                     theme={theme}
                 />
