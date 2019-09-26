@@ -2,19 +2,24 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
+import {View, ViewPropTypes} from 'react-native';
 import PropTypes from 'prop-types';
-import {Platform, View} from 'react-native';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import FormattedText from 'app/components/formatted_text';
 
-export default class BotTag extends PureComponent {
-    static defaultProps = {
-        show: true,
+import FormattedText from 'app/components/formatted_text';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+export default class Tag extends PureComponent {
+    static propTypes = {
+        id: PropTypes.string.isRequired,
+        defaultMessage: PropTypes.string.isRequired,
+        inTitle: PropTypes.bool,
+        show: PropTypes.bool,
+        style: ViewPropTypes.style,
+        theme: PropTypes.object.isRequired,
     };
 
-    static propTypes = {
-        show: PropTypes.bool,
-        theme: PropTypes.object.isRequired,
+    static defaultProps = {
+        show: true,
     };
 
     render() {
@@ -24,11 +29,11 @@ export default class BotTag extends PureComponent {
         const style = createStyleSheet(this.props.theme);
 
         return (
-            <View style={style.bot}>
+            <View style={[style.container, this.props.style]}>
                 <FormattedText
-                    id='post_info.bot'
-                    defaultMessage='BOT'
-                    style={style.botText}
+                    id={this.props.id}
+                    defaultMessage={this.props.defaultMessage}
+                    style={[style.text, this.props.inTitle ? style.title : null]}
                 />
             </View>
         );
@@ -37,25 +42,24 @@ export default class BotTag extends PureComponent {
 
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        bot: {
+        container: {
             alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
             borderRadius: 2,
             marginRight: 2,
             marginBottom: 1,
-            ...Platform.select({
-                android: {
-                    marginBottom: 0,
-                },
-            }),
             marginLeft: 2,
             paddingVertical: 2,
             paddingHorizontal: 4,
         },
-        botText: {
+        text: {
             color: theme.centerChannelColor,
             fontSize: 10,
             fontWeight: '600',
+        },
+        title: {
+            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.15),
+            color: changeOpacity(theme.sidebarHeaderTextColor, 0.6),
         },
     };
 });

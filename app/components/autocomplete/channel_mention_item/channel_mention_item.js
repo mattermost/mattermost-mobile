@@ -8,10 +8,10 @@ import {
 } from 'react-native';
 
 import {General} from 'mattermost-redux/constants';
-import BotTag from 'app/components/bot_tag';
-import GuestTag from 'app/components/guest_tag';
+import Tag from 'app/components/tag';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
+import {t} from 'app/utils/i18n';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelMentionItem extends PureComponent {
@@ -62,11 +62,15 @@ export default class ChannelMentionItem extends PureComponent {
                     type={'opacity'}
                 >
                     <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
-                    <BotTag
+                    <Tag
+                        id={t('post_info.bot')}
+                        defaultMessage={'BOT'}
                         show={isBot}
                         theme={theme}
                     />
-                    <GuestTag
+                    <Tag
+                        id={t('post_info.guest')}
+                        defaultMessage={'GUEST'}
                         show={isGuest}
                         theme={theme}
                     />

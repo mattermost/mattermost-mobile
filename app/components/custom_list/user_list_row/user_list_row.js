@@ -10,12 +10,13 @@ import {
 } from 'react-native';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
+
+import CustomListRow from 'app/components/custom_list/custom_list_row';
 import ProfilePicture from 'app/components/profile_picture';
-import BotTag from 'app/components/bot_tag';
-import GuestTag from 'app/components/guest_tag';
+import Tag from 'app/components/tag';
+import {t} from 'app/utils/i18n';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {isGuest} from 'app/utils/users';
-import CustomListRow from 'app/components/custom_list/custom_list_row';
 
 export default class UserListRow extends React.PureComponent {
     static propTypes = {
@@ -90,11 +91,15 @@ export default class UserListRow extends React.PureComponent {
                                 >
                                     {usernameDisplay}
                                 </Text>
-                                <BotTag
+                                <Tag
+                                    id={t('post_info.bot')}
+                                    defaultMessage={'BOT'}
                                     show={Boolean(user.is_bot)}
                                     theme={theme}
                                 />
-                                <GuestTag
+                                <Tag
+                                    id={t('post_info.guest')}
+                                    defaultMessage={'GUEST'}
                                     show={isGuest(user)}
                                     theme={theme}
                                 />
