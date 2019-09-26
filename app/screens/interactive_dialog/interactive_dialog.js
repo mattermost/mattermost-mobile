@@ -184,7 +184,7 @@ export default class InteractiveDialog extends PureComponent {
 
     render() {
         const {introductionText, elements, theme} = this.props;
-        const {errors, isLandscape, values} = this.state;
+        const {error, errors, isLandscape, values} = this.state;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -194,10 +194,10 @@ export default class InteractiveDialog extends PureComponent {
                     style={style.scrollView}
                 >
                     <StatusBar/>
-                    {this.state.error && (
+                    {error && (
                         <ErrorText
                             textStyle={style.errorContainer}
-                            error={this.state.error}
+                            error={error}
                         />
                     )}
                     {Boolean(introductionText) &&
