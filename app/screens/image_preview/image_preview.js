@@ -22,7 +22,6 @@ import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
 import DeviceInfo from 'react-native-device-info';
-import {Navigation} from 'react-native-navigation';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -33,6 +32,11 @@ import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
 import {t} from 'app/utils/i18n';
+import {
+    showModalOverCurrentContext,
+    dismissModal,
+    mergeNavigationOptions,
+} from 'app/actions/navigation';
 
 import Downloader from './downloader';
 import VideoPreview from './video_preview';
@@ -45,10 +49,6 @@ const ANIM_CONFIG = {duration: 300};
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            dismissModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-        }).isRequired,
         componentId: PropTypes.string.isRequired,
         canDownloadFiles: PropTypes.bool.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -72,11 +72,12 @@ export default class ImagePreview extends PureComponent {
     constructor(props) {
         super(props);
 
-        Navigation.mergeOptions(props.componentId, {
+        const options = {
             layout: {
                 backgroundColor: '#000',
             },
-        });
+        };
+        mergeNavigationOptions(props.componentId, options);
 
         this.openAnim = new Animated.Value(0);
         this.headerFooterAnim = new Animated.Value(1);
@@ -111,15 +112,16 @@ export default class ImagePreview extends PureComponent {
     };
 
     close = () => {
-        const {actions, getItemMeasures, componentId} = this.props;
+        const {getItemMeasures, componentId} = this.props;
         const {index} = this.state;
 
         this.setState({animating: true});
-        Navigation.mergeOptions(componentId, {
+        const options = {
             layout: {
                 backgroundColor: 'transparent',
             },
-        });
+        };
+        mergeNavigationOptions(componentId, options);
 
         getItemMeasures(index, (origin) => {
             if (origin) {
@@ -127,7 +129,7 @@ export default class ImagePreview extends PureComponent {
             }
 
             this.animateOpenAnimToValue(0, () => {
-                actions.dismissModal();
+                dismissModal();
             });
         });
     };
@@ -359,7 +361,7 @@ export default class ImagePreview extends PureComponent {
             const {deviceHeight, deviceWidth} = this.props;
             const {height, width} = imageDimensions;
             const {style, ...otherProps} = imageProps;
-            const statusBar = DeviceTypes.IS_IPHONE_X ? 0 : 20;
+            const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
             const flattenStyle = StyleSheet.flatten(style);
             const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
             const imageStyle = {...flattenStyle, ...calculatedDimensions};
@@ -396,7 +398,7 @@ export default class ImagePreview extends PureComponent {
 
     renderVideoPreview = (file) => {
         const {deviceHeight, deviceWidth, theme} = this.props;
-        const statusBar = DeviceTypes.IS_IPHONE_X ? 0 : 20;
+        const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
 
         return (
             <VideoPreview
@@ -455,7 +457,6 @@ export default class ImagePreview extends PureComponent {
     };
 
     showDownloadOptionsIOS = async () => {
-        const {actions} = this.props;
         const {formatMessage} = this.context.intl;
         const file = this.getCurrentFile();
         const items = [];
@@ -533,7 +534,7 @@ export default class ImagePreview extends PureComponent {
                 onCancelPress: () => this.setHeaderAndFooterVisible(true),
             };
 
-            actions.showModalOverCurrentContext(screen, passProps);
+            showModalOverCurrentContext(screen, passProps);
         }
     };
 

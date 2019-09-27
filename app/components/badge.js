@@ -35,9 +35,7 @@ export default class Badge extends PureComponent {
 
         this.mounted = false;
         this.layoutReady = false;
-    }
 
-    componentWillMount() {
         this.panResponder = PanResponder.create({
             onStartShouldSetPanResponder: () => true,
             onMoveShouldSetPanResponder: () => true,

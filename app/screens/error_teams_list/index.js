@@ -8,8 +8,6 @@ import {logout, loadMe} from 'mattermost-redux/actions/users';
 import {connection} from 'app/actions/device';
 import {selectDefaultTeam} from 'app/actions/views/select_team';
 
-import {resetToChannel} from 'app/actions/navigation';
-
 import ErrorTeamsList from './error_teams_list.js';
 
 function mapDispatchToProps(dispatch) {
@@ -19,7 +17,6 @@ function mapDispatchToProps(dispatch) {
             selectDefaultTeam,
             connection,
             loadMe,
-            resetToChannel,
         }, dispatch),
     };
 }

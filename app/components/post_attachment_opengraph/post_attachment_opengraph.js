@@ -7,12 +7,11 @@ import {
     Image,
     Linking,
     Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
 import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {DeviceTypes} from 'app/constants';
 
 import ImageCacheManager from 'app/utils/image_cache_manager';
@@ -28,7 +27,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getOpenGraphMetadata: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -47,9 +45,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
-    }
 
-    componentWillMount() {
         this.fetchData(this.props.link, this.props.openGraphData);
     }
 
@@ -195,7 +191,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             originalWidth,
             originalHeight,
         } = this.state;
-        const {actions} = this.props;
         const filename = this.getFilename(link);
 
         const files = [{
@@ -210,7 +205,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             },
         }];
 
-        previewImageAtIndex([this.refs.item], 0, files, actions.showModalOverCurrentContext);
+        previewImageAtIndex([this.refs.item], 0, files);
     };
 
     renderDescription = () => {
@@ -255,15 +250,16 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                 ref='item'
                 style={[style.imageContainer, {width, height}]}
             >
-                <TouchableWithoutFeedback
+                <TouchableWithFeedback
                     onPress={this.handlePreviewImage}
+                    type={'none'}
                 >
                     <Image
                         style={[style.image, {width, height}]}
                         source={source}
                         resizeMode='contain'
                     />
-                </TouchableWithoutFeedback>
+                </TouchableWithFeedback>
             </View>
         );
     };
@@ -302,9 +298,10 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         if (title) {
             siteTitle = (
                 <View style={style.wrapper}>
-                    <TouchableOpacity
+                    <TouchableWithFeedback
                         style={style.flex}
                         onPress={this.goToLink}
+                        type={'opacity'}
                     >
                         <Text
                             style={[style.siteSubtitle, {marginRight: isReplyPost ? 10 : 0}]}
@@ -313,7 +310,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         >
                             {title}
                         </Text>
-                    </TouchableOpacity>
+                    </TouchableWithFeedback>
                 </View>
             );
         }

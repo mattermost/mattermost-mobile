@@ -5,14 +5,9 @@ NotificationSettingsMentionsKeywords {
   "context": Object {},
   "handleSubmit": [Function],
   "keywordsRef": [Function],
-  "navigationEventListener": Object {
-    "remove": [Function],
-  },
+  "navigationEventListener": undefined,
   "onKeywordsChangeText": [Function],
   "props": Object {
-    "actions": Object {
-      "popTopScreen": [MockFunction],
-    },
     "componentId": "component-id",
     "intl": Object {
       "defaultFormats": Object {},
@@ -93,11 +88,6 @@ NotificationSettingsMentionsKeywords {
         "useState": [Function],
       },
       "_element": <NotificationSettingsMentionsKeywords
-        actions={
-          Object {
-            "popTopScreen": [MockFunction],
-          }
-        }
         componentId="component-id"
         intl={
           Object {
