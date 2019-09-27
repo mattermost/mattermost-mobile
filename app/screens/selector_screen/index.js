@@ -8,7 +8,7 @@ import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getProfiles, searchProfiles} from 'mattermost-redux/actions/users';
 import {getChannels, searchChannels} from 'mattermost-redux/actions/channels';
-
+import {isLandscape} from 'app/selectors/device';
 import SelectorScreen from './selector_screen';
 
 function mapStateToProps(state) {
@@ -22,6 +22,7 @@ function mapStateToProps(state) {
         dataSource: menuAction.dataSource,
         onSelect: menuAction.onSelect,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

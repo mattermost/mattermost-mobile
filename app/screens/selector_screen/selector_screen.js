@@ -33,6 +33,8 @@ import {
 import {t} from 'app/utils/i18n';
 import {popTopScreen} from 'app/actions/navigation';
 
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+
 export default class SelectorScreen extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -47,6 +49,7 @@ export default class SelectorScreen extends PureComponent {
         dataSource: PropTypes.string,
         onSelect: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -293,7 +296,7 @@ export default class SelectorScreen extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme, dataSource} = this.props;
+        const {theme, dataSource, isLandscape} = this.props;
         const {loading, term} = this.state;
         const style = getStyleFromTheme(theme);
 
@@ -322,7 +325,7 @@ export default class SelectorScreen extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={style.searchBar}>
+                <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
                         ref='search_bar'
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -353,6 +356,7 @@ export default class SelectorScreen extends PureComponent {
                     onRowPress={this.handleSelectItem}
                     renderItem={rowComponent}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             </View>
         );
