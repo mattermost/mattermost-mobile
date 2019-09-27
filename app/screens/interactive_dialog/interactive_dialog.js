@@ -179,6 +179,7 @@ export default class InteractiveDialog extends PureComponent {
                         <DialogIntroductionText
                             value={introductionText}
                             theme={theme}
+                            isLandscape={isLandscape}
                         />
                     }
                     {elements && elements.map((e) => {
