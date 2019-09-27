@@ -26,7 +26,9 @@
 
 @implementation AppDelegate
 
+NSString* const NotificationMessageAction = @"message";
 NSString* const NotificationClearAction = @"clear";
+NSString* const NotificationUpdateBadgeAction = @"update_badge";
 
 -(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
   os_log(OS_LOG_DEFAULT, "Mattermost will attach session from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
