@@ -113,7 +113,7 @@ export default class NetworkIndicator extends PureComponent {
         }
 
         if (this.props.isOnline) {
-            if (previousWebsocketStatus === RequestStatus.STARTED && websocketStatus === RequestStatus.SUCCESS) {
+            if (previousWebsocketStatus !== RequestStatus.SUCCESS && websocketStatus === RequestStatus.SUCCESS) {
                 // Show the connected animation only if we had a previous network status
                 this.connected();
                 clearTimeout(this.connectionRetryTimeout);
