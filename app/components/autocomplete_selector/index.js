@@ -9,11 +9,13 @@ import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selector
 import {setAutocompleteSelector} from 'app/actions/views/post';
 
 import AutocompleteSelector from './autocomplete_selector';
+import {isLandscape} from 'app/selectors/device';
 
 function mapStateToProps(state) {
     return {
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

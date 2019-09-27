@@ -15,6 +15,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {ViewTypes} from 'app/constants';
 import {goToScreen} from 'app/actions/navigation';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
@@ -34,6 +35,7 @@ export default class AutocompleteSelector extends PureComponent {
         helpText: PropTypes.node,
         errorText: PropTypes.node,
         roundedBorders: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -116,6 +118,7 @@ export default class AutocompleteSelector extends PureComponent {
             optional,
             showRequiredAsterisk,
             roundedBorders,
+            isLandscape,
         } = this.props;
         const {selectedText} = this.state;
         const style = getStyleSheet(theme);
@@ -181,7 +184,9 @@ export default class AutocompleteSelector extends PureComponent {
 
         return (
             <View style={style.container}>
-                {labelContent}
+                <View style={padding(isLandscape)}>
+                    {labelContent}
+                </View>
                 <TouchableWithFeedback
                     style={style.flex}
                     onPress={this.goToSelectorScreen}
@@ -189,7 +194,7 @@ export default class AutocompleteSelector extends PureComponent {
                 >
                     <View style={inputStyle}>
                         <Text
-                            style={selectedStyle}
+                            style={[selectedStyle, padding(isLandscape)]}
                             numberOfLines={1}
                         >
                             {text}
@@ -197,12 +202,14 @@ export default class AutocompleteSelector extends PureComponent {
                         <Icon
                             name='chevron-down'
                             color={changeOpacity(theme.centerChannelColor, 0.5)}
-                            style={style.icon}
+                            style={[style.icon, padding(isLandscape)]}
                         />
                     </View>
                 </TouchableWithFeedback>
-                {helpTextContent}
-                {errorTextContent}
+                <View style={padding(isLandscape)}>
+                    {helpTextContent}
+                    {errorTextContent}
+                </View>
             </View>
         );
     }

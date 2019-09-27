@@ -12,9 +12,14 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        Object {
+          "paddingHorizontal": 44,
+        },
+      ]
     }
   >
     <SearchBarIos
@@ -50,7 +55,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={false}
+    isLandscape={true}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -104,9 +109,14 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        Object {
+          "paddingHorizontal": 44,
+        },
+      ]
     }
   >
     <SearchBarIos
@@ -142,7 +152,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={false}
+    isLandscape={true}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -196,9 +206,14 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        Object {
+          "paddingHorizontal": 44,
+        },
+      ]
     }
   >
     <SearchBarIos
@@ -241,7 +256,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
         },
       ]
     }
-    isLandscape={false}
+    isLandscape={true}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -295,9 +310,14 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        Object {
+          "paddingHorizontal": 44,
+        },
+      ]
     }
   >
     <SearchBarIos
@@ -333,7 +353,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={false}
+    isLandscape={true}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -387,9 +407,14 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        Object {
+          "paddingHorizontal": 44,
+        },
+      ]
     }
   >
     <SearchBarIos
@@ -425,7 +450,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={false}
+    isLandscape={true}
     listType="section"
     loading={false}
     loadingComponent={null}
@@ -479,9 +504,14 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        Object {
+          "paddingHorizontal": 44,
+        },
+      ]
     }
   >
     <SearchBarIos
@@ -517,7 +547,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={false}
+    isLandscape={true}
     listType="section"
     loading={false}
     loadingComponent={null}
