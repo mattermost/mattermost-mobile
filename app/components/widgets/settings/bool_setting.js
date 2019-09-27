@@ -104,7 +104,7 @@ export default class BoolSetting extends PureComponent {
         }
 
         return (
-            <View>
+            <React.Fragment>
                 <View style={padding(isLandscape)}>
                     {labelContent}
                 </View>
@@ -124,7 +124,7 @@ export default class BoolSetting extends PureComponent {
                     {helpTextContent}
                     {errorTextContent}
                 </View>
-            </View>
+            </React.Fragment>
         );
     }
 }

@@ -41,7 +41,7 @@ export default class OptionListRow extends React.PureComponent {
             selected,
             theme,
             item,
-            isLandscape
+            isLandscape,
         } = this.props;
 
         const {text, value} = item;
