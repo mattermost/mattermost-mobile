@@ -99,7 +99,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             height: 15,
-            marginLeft: 12,
+            marginLeft: 10,
             marginRight: 10,
             marginTop: 10,
         },

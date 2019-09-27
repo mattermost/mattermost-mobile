@@ -8,8 +8,7 @@ import Preferences from 'mattermost-redux/constants/preferences';
 import * as NavigationActions from 'app/actions/navigation';
 
 import UserProfile from './user_profile.js';
-import BotTag from 'app/components/bot_tag';
-import GuestTag from 'app/components/guest_tag';
+import {BotTag, GuestTag} from 'app/components/tag';
 
 jest.mock('react-intl');
 jest.mock('app/utils/theme', () => {

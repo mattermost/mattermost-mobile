@@ -306,51 +306,52 @@ export default class Post extends PureComponent {
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
 
         return (
-            <TouchableWithFeedback
-                style={[style.postStyle, highlighted, padding(isLandscape)]}
-                onPress={this.handlePress}
-                onLongPress={this.showPostOptions}
-                delayLongPress={100}
-                underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                cancelTouchOnPanning={true}
-            >
-                <React.Fragment>
-                    <PostPreHeader
-                        isConsecutive={mergeMessage}
-                        isFlagged={isFlagged}
-                        isPinned={post.is_pinned}
-                        rightColumnStyle={style.rightColumn}
-                        skipFlaggedHeader={skipFlaggedHeader}
-                        skipPinnedHeader={skipPinnedHeader}
-                        theme={theme}
-                    />
-                    <View style={[style.container, this.props.style, consecutiveStyle]}>
-                        {userProfile}
-                        <View style={rightColumnStyle}>
-                            {postHeader}
-                            <PostBody
-                                ref={this.postBodyRef}
-                                highlight={highlight}
-                                channelIsReadOnly={channelIsReadOnly}
-                                isLastPost={isLastPost}
-                                isSearchResult={isSearchResult}
-                                onFailedPostPress={this.handleFailedPostPress}
-                                onHashtagPress={onHashtagPress}
-                                onPermalinkPress={onPermalinkPress}
-                                onPress={this.handlePress}
-                                post={post}
-                                replyBarStyle={replyBarStyle}
-                                managedConfig={managedConfig}
-                                isFlagged={isFlagged}
-                                isReplyPost={isReplyPost}
-                                showAddReaction={showAddReaction}
-                                showLongPost={showLongPost}
-                                location={location}
-                            />
+            <View style={[style.postStyle, highlighted, padding(isLandscape)]}>
+                <TouchableWithFeedback
+                    onPress={this.handlePress}
+                    onLongPress={this.showPostOptions}
+                    delayLongPress={100}
+                    underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                    cancelTouchOnPanning={true}
+                >
+                    <React.Fragment>
+                        <PostPreHeader
+                            isConsecutive={mergeMessage}
+                            isFlagged={isFlagged}
+                            isPinned={post.is_pinned}
+                            rightColumnStyle={style.preHeaderRightColumn}
+                            skipFlaggedHeader={skipFlaggedHeader}
+                            skipPinnedHeader={skipPinnedHeader}
+                            theme={theme}
+                        />
+                        <View style={[style.container, this.props.style, consecutiveStyle]}>
+                            {userProfile}
+                            <View style={rightColumnStyle}>
+                                {postHeader}
+                                <PostBody
+                                    ref={this.postBodyRef}
+                                    highlight={highlight}
+                                    channelIsReadOnly={channelIsReadOnly}
+                                    isLastPost={isLastPost}
+                                    isSearchResult={isSearchResult}
+                                    onFailedPostPress={this.handleFailedPostPress}
+                                    onHashtagPress={onHashtagPress}
+                                    onPermalinkPress={onPermalinkPress}
+                                    onPress={this.handlePress}
+                                    post={post}
+                                    replyBarStyle={replyBarStyle}
+                                    managedConfig={managedConfig}
+                                    isFlagged={isFlagged}
+                                    isReplyPost={isReplyPost}
+                                    showAddReaction={showAddReaction}
+                                    showLongPost={showLongPost}
+                                    location={location}
+                                />
+                            </View>
                         </View>
-                    </View>
-                </React.Fragment>
-            </TouchableWithFeedback>
+                    </React.Fragment>
+                </TouchableWithFeedback>
+            </View>
         );
     }
 }
@@ -359,12 +360,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         postStyle: {
             overflow: 'hidden',
+            flex: 1,
         },
         container: {
             flexDirection: 'row',
         },
         pendingPost: {
             opacity: 0.5,
+        },
+        preHeaderRightColumn: {
+            flex: 1,
+            flexDirection: 'column',
+            marginLeft: 2,
         },
         rightColumn: {
             flex: 1,
@@ -398,6 +405,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         replyBar: {
             backgroundColor: theme.centerChannelColor,
             opacity: 0.1,
+            marginLeft: 1,
             marginRight: 7,
             width: 3,
             flexBasis: 3,
