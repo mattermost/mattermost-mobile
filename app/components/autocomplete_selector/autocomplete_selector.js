@@ -10,12 +10,12 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import FormattedText from 'app/components/formatted_text';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {ViewTypes} from 'app/constants';
 import {goToScreen} from 'app/actions/navigation';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
