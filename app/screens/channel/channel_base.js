@@ -81,7 +81,7 @@ export default class ChannelBase extends PureComponent {
         }
     }
 
-    componentWillMount() {
+    componentDidMount() {
         EventEmitter.on('leave_team', this.handleLeaveTeam);
 
         if (this.props.currentTeamId) {
@@ -93,9 +93,7 @@ export default class ChannelBase extends PureComponent {
         if (this.props.currentChannelId) {
             PushNotifications.clearChannelNotifications(this.props.currentChannelId);
         }
-    }
 
-    componentDidMount() {
         if (tracker.initialLoad && !this.props.skipMetrics) {
             this.props.actions.recordLoadTime('Start time', 'initialLoad');
         }

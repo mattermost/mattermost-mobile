@@ -45,9 +45,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
-    }
 
-    componentWillMount() {
         this.fetchData(this.props.link, this.props.openGraphData);
     }
 

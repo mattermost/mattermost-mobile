@@ -37,18 +37,18 @@ export default class AnnouncementBanner extends PureComponent {
         bannerHeight: new Animated.Value(0),
     };
 
-    componentWillMount() {
+    componentDidMount() {
         const {bannerDismissed, bannerEnabled, bannerText} = this.props;
         const showBanner = bannerEnabled && !bannerDismissed && Boolean(bannerText);
         this.toggleBanner(showBanner);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.bannerText !== nextProps.bannerText ||
-            this.props.bannerEnabled !== nextProps.bannerEnabled ||
-            this.props.bannerDismissed !== nextProps.bannerDismissed
+    componentDidUpdate(prevProps) {
+        if (this.props.bannerText !== prevProps.bannerText ||
+            this.props.bannerEnabled !== prevProps.bannerEnabled ||
+            this.props.bannerDismissed !== prevProps.bannerDismissed
         ) {
-            const showBanner = nextProps.bannerEnabled && !nextProps.bannerDismissed && Boolean(nextProps.bannerText);
+            const showBanner = this.props.bannerEnabled && !this.props.bannerDismissed && Boolean(this.props.bannerText);
             this.toggleBanner(showBanner);
         }
     }
