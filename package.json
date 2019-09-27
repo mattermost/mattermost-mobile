@@ -102,6 +102,7 @@
     "mmjstool": "github:mattermost/mattermost-utilities",
     "mock-async-storage": "2.2.0",
     "nyc": "14.1.1",
+    "patch-package": "6.1.2",
     "react-dom": "16.8.6",
     "react-test-renderer": "16.8.6",
     "redux-mock-store": "1.5.3",

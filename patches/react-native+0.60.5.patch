@@ -1,0 +1,12 @@
+diff --git a/node_modules/react-native/Libraries/StyleSheet/splitLayoutProps.js b/node_modules/react-native/Libraries/StyleSheet/splitLayoutProps.js
+index 700fbea..ab4197c 100644
+--- a/node_modules/react-native/Libraries/StyleSheet/splitLayoutProps.js
++++ b/node_modules/react-native/Libraries/StyleSheet/splitLayoutProps.js
+@@ -36,6 +36,7 @@ const OUTER_PROPS = Object.assign(Object.create(null), {
+   right: true,
+   bottom: true,
+   top: true,
++  transform: true,
+ });
+ 
+ function splitLayoutProps(
