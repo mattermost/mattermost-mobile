@@ -43,6 +43,7 @@
  - Fixed an issue where users were are not immediately removed from the mention auto-complete when those users were deactivated.
  - Fixed an issue where returning to a channel from a thread view could trigger a long-press menu that couldn't be dismissed.
  - Fixed an issue with a missing "(you)" suffix in the channel header.
+ - Fixed an issue where the Connected banner got stuck when connecting to the Web socket.
  - Fixed an issue where the text input area in Android Share extension did not use available space.
  - Fixed an issue on iOS where Windows dark theme was not consistent when viewing an archived channel.
  - Fixed an issue where a themed "Delete Documents & Data" action flashed a white screen.
