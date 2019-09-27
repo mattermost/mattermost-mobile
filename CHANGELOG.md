@@ -9,7 +9,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixed a few mobile app crash / fatal error issues.
+ - Fixed issues causing the app to crash on some devices
 
 ## 1.23.0 Release
 - Release Date: September 16, 2019
