@@ -16,9 +16,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
         Object {
           "marginVertical": 5,
         },
-        Object {
-          "paddingHorizontal": 44,
-        },
+        null,
       ]
     }
   >
@@ -55,7 +53,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={true}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -113,9 +111,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
         Object {
           "marginVertical": 5,
         },
-        Object {
-          "paddingHorizontal": 44,
-        },
+        null,
       ]
     }
   >
@@ -152,7 +148,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={true}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -210,9 +206,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
         Object {
           "marginVertical": 5,
         },
-        Object {
-          "paddingHorizontal": 44,
-        },
+        null,
       ]
     }
   >
@@ -256,7 +250,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
         },
       ]
     }
-    isLandscape={true}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -314,9 +308,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
         Object {
           "marginVertical": 5,
         },
-        Object {
-          "paddingHorizontal": 44,
-        },
+        null,
       ]
     }
   >
@@ -353,7 +345,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={true}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -411,9 +403,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
         Object {
           "marginVertical": 5,
         },
-        Object {
-          "paddingHorizontal": 44,
-        },
+        null,
       ]
     }
   >
@@ -450,7 +440,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={true}
+    isLandscape={false}
     listType="section"
     loading={false}
     loadingComponent={null}
@@ -508,9 +498,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
         Object {
           "marginVertical": 5,
         },
-        Object {
-          "paddingHorizontal": 44,
-        },
+        null,
       ]
     }
   >
@@ -547,7 +535,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   </View>
   <CustomList
     data={Array []}
-    isLandscape={true}
+    isLandscape={false}
     listType="section"
     loading={false}
     loadingComponent={null}
