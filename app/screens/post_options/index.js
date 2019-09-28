@@ -13,6 +13,7 @@ import {
     removePost,
 } from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
+import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
@@ -92,6 +93,13 @@ export function mapStateToProps(state, ownProps) {
 
     if (!ownProps.isSystemMessage && ownProps.managedConfig?.copyAndPasteProtection !== 'true' && post.message) {
         canCopyText = true;
+    }
+
+    const getReactionsForPostSelector = makeGetReactionsForPost();
+    const reactions = getReactionsForPostSelector(state, post.id);
+
+    if (Object.values(reactions).length >= 40) {
+        canAddReaction = false;
     }
 
     return {
