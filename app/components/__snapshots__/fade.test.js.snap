@@ -2,6 +2,7 @@
 
 exports[`Fade should render {opacity: 0} 1`] = `
 <AnimatedComponent
+  pointerEvents="box-none"
   style={
     Object {
       "opacity": 0,
@@ -21,6 +22,7 @@ exports[`Fade should render {opacity: 0} 1`] = `
 
 exports[`Fade should render {opacity: 1} 1`] = `
 <AnimatedComponent
+  pointerEvents="box-none"
   style={
     Object {
       "opacity": 1,
