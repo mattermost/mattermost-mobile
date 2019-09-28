@@ -8,7 +8,6 @@ import {
     Keyboard,
     StyleSheet,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -22,6 +21,11 @@ import PushNotifications from 'app/push_notifications';
 import EphemeralStore from 'app/store/ephemeral_store';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
+import {
+    goToScreen,
+    showModalOverCurrentContext,
+    mergeNavigationOptions,
+} from 'app/actions/navigation';
 
 import LocalConfig from 'assets/config';
 
@@ -35,14 +39,11 @@ export default class ChannelBase extends PureComponent {
         currentUserId: PropTypes.string,
         disableTermsModal: PropTypes.bool,
         getChannelStats: PropTypes.func.isRequired,
-        goToScreen: PropTypes.func.isRequired,
         loadChannelsForTeam: PropTypes.func.isRequired,
         loadSidebarDirectMessagesProfiles: PropTypes.func.isRequired,
-        peek: PropTypes.func.isRequired,
         recordLoadTime: PropTypes.func.isRequired,
         selectDefaultTeam: PropTypes.func.isRequired,
         selectInitialChannel: PropTypes.func.isRequired,
-        showModalOverCurrentContext: PropTypes.func.isRequired,
         showTermsOfService: PropTypes.bool,
         skipMetrics: PropTypes.bool,
         theme: PropTypes.object.isRequired,
@@ -66,18 +67,19 @@ export default class ChannelBase extends PureComponent {
             channelsRequestFailed: false,
         };
 
-        Navigation.mergeOptions(props.componentId, {
+        const options = {
             layout: {
                 backgroundColor: props.theme.centerChannelBg,
             },
-        });
+        };
+        mergeNavigationOptions(props.componentId, options);
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
     }
 
-    componentWillMount() {
+    componentDidMount() {
         EventEmitter.on('leave_team', this.handleLeaveTeam);
 
         if (this.props.currentTeamId) {
@@ -89,9 +91,7 @@ export default class ChannelBase extends PureComponent {
         if (this.props.currentChannelId) {
             PushNotifications.clearChannelNotifications(this.props.currentChannelId);
         }
-    }
 
-    componentDidMount() {
         if (tracker.initialLoad && !this.props.skipMetrics) {
             this.props.recordLoadTime('Start time', 'initialLoad');
         }
@@ -111,11 +111,12 @@ export default class ChannelBase extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            Navigation.mergeOptions(this.props.componentId, {
+            const options = {
                 layout: {
                     backgroundColor: nextProps.theme.centerChannelBg,
                 },
-            });
+            };
+            mergeNavigationOptions(this.props.componentId, options);
         }
 
         if (!nextProps.currentTeamId) {
@@ -175,7 +176,7 @@ export default class ChannelBase extends PureComponent {
 
     showTermsOfServiceModal = async () => {
         const {intl} = this.context;
-        const {showModalOverCurrentContext, theme} = this.props;
+        const {theme} = this.props;
         const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
         const screen = 'TermsOfService';
         const passProps = {closeButton};
@@ -198,7 +199,6 @@ export default class ChannelBase extends PureComponent {
     };
 
     goToChannelInfo = preventDoubleTap(() => {
-        const {goToScreen} = this.props;
         const {intl} = this.context;
         const screen = 'ChannelInfo';
         const title = intl.formatMessage({id: 'mobile.routes.channelInfo', defaultMessage: 'Info'});

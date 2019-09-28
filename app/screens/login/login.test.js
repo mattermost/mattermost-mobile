@@ -7,6 +7,8 @@ import FormattedText from 'app/components/formatted_text';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 
+import * as NavigationActions from 'app/actions/navigation';
+
 import {mfaExpectedErrors} from 'app/screens/login/login';
 import Login from './login';
 
@@ -16,13 +18,12 @@ describe('Login', () => {
             EnableSignInWithEmail: 'true',
             EnableSignInWithUsername: 'true',
         },
-        goToScreen: jest.fn(),
         license: {
             IsLicensed: 'false',
         },
         loginId: '',
         login: jest.fn(),
-        resetToChannel: jest.fn(),
+        password: '',
         scheduleExpiredNotification: jest.fn(),
         sendPasswordResetEmail: jest.fn(),
     };
@@ -71,22 +72,24 @@ describe('Login', () => {
     });
 
     test('should send the user to the login screen after login', (done) => {
+        const resetToChannel = jest.spyOn(NavigationActions, 'resetToChannel').mockImplementation(() => done());
+
         const props = {
             ...baseProps,
         };
 
         props.login.mockImplementation(() => Promise.resolve({}));
-        props.resetToChannel.mockImplementation(() => {
-            done();
-        });
 
         const wrapper = shallowWithIntl(<Login {...props}/>);
         wrapper.instance().signIn();
+        expect(resetToChannel).not.toHaveBeenCalled();
 
         // This test times out if resetToChannel hasn't been called
     });
 
     test('should go to MFA screen when login response returns MFA error', () => {
+        const goToScreen = jest.spyOn(NavigationActions, 'goToScreen');
+
         const mfaError = {
             error: {
                 server_error_id: mfaExpectedErrors[0],
@@ -110,7 +113,7 @@ describe('Login', () => {
             password: null,
         };
 
-        expect(baseProps.goToScreen).
+        expect(goToScreen).
             toHaveBeenCalledWith(
                 'MFA',
                 'Multi-factor Authentication',
@@ -119,10 +122,12 @@ describe('Login', () => {
     });
 
     test('should go to ForgotPassword screen when forgotPassword is called', () => {
+        const goToScreen = jest.spyOn(NavigationActions, 'goToScreen');
+
         const wrapper = shallowWithIntl(<Login {...baseProps}/>);
         wrapper.instance().forgotPassword();
 
-        expect(baseProps.goToScreen).
+        expect(goToScreen).
             toHaveBeenCalledWith(
                 'ForgotPassword',
                 'Password Reset',

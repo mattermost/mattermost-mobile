@@ -10,7 +10,8 @@ import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     markChannelAsRead,
-    leaveChannel as serviceLeaveChannel, markChannelAsViewed,
+    markChannelAsViewed,
+    leaveChannel as serviceLeaveChannel,
     selectChannel,
     getChannelStats,
 } from 'mattermost-redux/actions/channels';

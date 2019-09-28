@@ -5,7 +5,7 @@ import {combineWriters} from 'realm-react-redux';
 
 import {General} from 'app/constants';
 import {PreferenceTypes, UserTypes} from 'app/realm/action_types';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {userDataToRealm} from 'app/realm/utils/user';
 
 import {mapTeamMembers, removeTeamMemberships, createOrUpdateTeams} from './team';
@@ -38,12 +38,12 @@ function currentUserWriter(realm, action) {
         let realmGeneral = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         if (realmGeneral) {
             realmGeneral.currentUserId = user.id;
-            realmGeneral.deviceToken = ephemeralStore.deviceToken;
+            realmGeneral.deviceToken = EphemeralStore.deviceToken;
         } else {
             realmGeneral = realm.create('General', {
                 id: General.REALM_SCHEMA_ID,
                 currentUserId: user.id,
-                deviceToken: ephemeralStore.deviceToken,
+                deviceToken: EphemeralStore.deviceToken,
             }, true);
         }
 

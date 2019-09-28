@@ -1,0 +1,113 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelTitle should match snapshot 1`] = `
+<TouchableOpacity
+  activeOpacity={0.2}
+  onPress={[MockFunction]}
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "justifyContent": "flex-start",
+        "position": "relative",
+        "top": -1,
+        "width": "90%",
+      }
+    }
+  >
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        Object {
+          "color": "#ffffff",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      My Channel
+    </Text>
+    <Icon
+      allowFontScaling={false}
+      name="chevron-down"
+      size={12}
+      style={
+        Object {
+          "color": "#ffffff",
+          "marginHorizontal": 5,
+        }
+      }
+    />
+  </View>
+</TouchableOpacity>
+`;
+
+exports[`ChannelTitle should match snapshot when isOwnDM is true 1`] = `
+<TouchableOpacity
+  activeOpacity={0.2}
+  onPress={[MockFunction]}
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "justifyContent": "flex-start",
+        "position": "relative",
+        "top": -1,
+        "width": "90%",
+      }
+    }
+  >
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        Object {
+          "color": "#ffffff",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      <FormattedText
+        defaultMessage="{displayName} (you)"
+        id="channel_header.directchannel.you"
+        values={
+          Object {
+            "displayName": "My User",
+          }
+        }
+      />
+    </Text>
+    <Icon
+      allowFontScaling={false}
+      name="chevron-down"
+      size={12}
+      style={
+        Object {
+          "color": "#ffffff",
+          "marginHorizontal": 5,
+        }
+      }
+    />
+  </View>
+</TouchableOpacity>
+`;

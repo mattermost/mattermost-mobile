@@ -11,7 +11,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import Root from 'app/components/root';
 import {NavigationTypes} from 'app/constants';
 import {configureRealmStore} from 'app/store';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 
 export default class ScreenWrapper extends PureComponent {
     static propTypes = {
@@ -41,17 +41,17 @@ export default class ScreenWrapper extends PureComponent {
     }
 
     getRealmStoreForCurrentServer = () => {
-        let realm = ephemeralStore.getRealmStoreByServer(ephemeralStore.currentServerUrl);
+        let realm = EphemeralStore.getRealmStoreByServer(EphemeralStore.currentServerUrl);
         if (!realm) {
-            realm = configureRealmStore(ephemeralStore.currentServerUrl);
-            ephemeralStore.setRealmStoreByServer(ephemeralStore.currentServerUrl, realm);
+            realm = configureRealmStore(EphemeralStore.currentServerUrl);
+            EphemeralStore.setRealmStoreByServer(EphemeralStore.currentServerUrl, realm);
         }
 
         return realm;
     };
 
     switchServer = (url) => {
-        ephemeralStore.currentServerUrl = url;
+        EphemeralStore.currentServerUrl = url;
         this.setState({
             realm: this.getRealmStoreForCurrentServer(),
         });

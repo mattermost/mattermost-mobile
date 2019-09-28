@@ -3,12 +3,11 @@
 
 import {realmConnect} from 'realm-react-redux';
 
-import {goToScreen} from 'app/actions/navigation';
 import {General, Preferences} from 'app/constants';
 import {recordLoadTime} from 'app/realm/actions/general';
 import {loadMorePostsAbove, loadPostsWithRetry, loadThreadIfNeeded, refreshChannelWithRetry} from 'app/realm/actions/post';
 import {getPostListIdsWithSeparators} from 'app/realm/selectors/post';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import options from 'app/store/realm_options';
 
 import ChannelPostList from './channel_post_list';
@@ -44,13 +43,12 @@ function mapQueriesToProps([general, currentUser, member, posts, postsInTime, jo
 
     return {
         lastViewedAt: member.lastViewAt,
-        loadMorePostsVisible: ephemeralStore.loadingPosts,
+        loadMorePostsVisible: EphemeralStore.loadingPosts,
         postIds,
     };
 }
 
 const mapRealmDispatchToProps = {
-    goToScreen,
     loadPostsWithRetry,
     loadThreadIfNeeded,
     loadMorePostsAbove,

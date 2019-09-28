@@ -3,7 +3,6 @@
 
 import {realmConnect} from 'realm-react-redux';
 
-import {peek, goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 import {General, Preferences} from 'app/constants';
 import {getChannelStats, loadChannelsForTeam, loadSidebarDirectMessagesProfiles, selectInitialChannel} from 'app/realm/actions/channel';
 import {recordLoadTime} from 'app/realm/actions/general';
@@ -33,13 +32,10 @@ function mapQueriesToProps([currentUser, general, themePreference]) {
 
 const mapRealmDispatchToProps = {
     getChannelStats,
-    goToScreen,
     loadChannelsForTeam,
     loadSidebarDirectMessagesProfiles,
-    peek,
     selectDefaultTeam,
     selectInitialChannel,
-    showModalOverCurrentContext,
     recordLoadTime,
 };
 

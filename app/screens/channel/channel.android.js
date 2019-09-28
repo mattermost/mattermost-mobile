@@ -54,6 +54,7 @@ export default class ChannelAndroid extends ChannelBase {
                     </View>
                     <PostTextbox
                         ref={this.postTextbox}
+                        screenId={this.props.componentId}
                     />
                 </KeyboardLayout>
                 <ChannelLoader

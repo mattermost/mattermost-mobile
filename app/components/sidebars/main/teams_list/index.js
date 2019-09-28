@@ -4,7 +4,6 @@
 import {realmConnect} from 'realm-react-redux';
 
 import {General} from 'app/constants';
-import {showModal} from 'app/actions/navigation';
 import {handleTeamChangeAndSwitchToInitialChannel} from 'app/realm/actions/team';
 
 import TeamsList from './teams_list';
@@ -29,7 +28,6 @@ function mapQueriesToProps([general, myTeams, openTeams]) {
 
 const mapRealmDispatchToProps = {
     handleTeamChangeAndSwitchToInitialChannel,
-    showModal,
 };
 
 export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(TeamsList);
