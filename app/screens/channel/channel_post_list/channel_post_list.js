@@ -20,6 +20,7 @@ import tracker from 'app/utils/time_tracker';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import ephemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
+import {goToScreen} from 'app/actions/navigation';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -28,7 +29,6 @@ export default class ChannelPostList extends PureComponent {
     static propTypes = {
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
-        goToScreen: PropTypes.func.isRequired,
         lastViewedAt: PropTypes.number,
         loadMorePostsAbove: PropTypes.func.isRequired,
         loadMorePostsVisible: PropTypes.bool.isRequired,
@@ -101,7 +101,7 @@ export default class ChannelPostList extends PureComponent {
 
     goToThread = (post) => {
         telemetry.start(['post_list:thread']);
-        const {channelId, goToScreen, loadThreadIfNeeded} = this.props;
+        const {channelId, loadThreadIfNeeded} = this.props;
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();

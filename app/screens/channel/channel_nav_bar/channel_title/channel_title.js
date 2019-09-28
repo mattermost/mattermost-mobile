@@ -3,7 +3,6 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
 
 import {
     Text,
@@ -33,10 +32,6 @@ export default class ChannelTitle extends PureComponent {
 
     static defaultProps = {
         displayName: null,
-    };
-
-    static contextTypes = {
-        intl: intlShape,
     };
 
     archiveIcon(style) {
@@ -88,22 +83,39 @@ export default class ChannelTitle extends PureComponent {
         );
     }
 
-    render() {
-        const {formatMessage} = this.context.intl;
-        const {displayName, isChannelMuted, isOwnDM, onPress, theme} = this.props;
-        const style = getStyle(theme);
-        const hasGuestsText = this.renderHasGuestsText(style);
+    renderChannelDisplayName = () => {
+        const {
+            displayName,
+            isOwnDM,
+        } = this.props;
 
-        let channelName = displayName;
+        const channelDisplayName = displayName;
+
         if (isOwnDM) {
-            channelName = formatMessage({
-                id: 'channel_header.directchannel.you',
-                defaultMessage: '{displayname} (you)',
-            }, {displayname: channelName});
+            const messageId = t('channel_header.directchannel.you');
+            const defaultMessage = '{displayName} (you)';
+            const values = {displayName: channelDisplayName};
+
+            return (
+                <FormattedText
+                    id={messageId}
+                    defaultMessage={defaultMessage}
+                    values={values}
+                />
+            );
         }
 
+        return channelDisplayName;
+    };
+
+    render() {
+        const {isChannelMuted, onPress, theme} = this.props;
+        const style = getStyle(theme);
+        const hasGuestsText = this.renderHasGuestsText(style);
+        const channelDisplayName = this.renderChannelDisplayName();
+
         let icon;
-        if (channelName) {
+        if (channelDisplayName) {
             icon = (
                 <Icon
                     style={style.icon}
@@ -136,7 +148,7 @@ export default class ChannelTitle extends PureComponent {
                         numberOfLines={1}
                         style={style.text}
                     >
-                        {channelName}
+                        {channelDisplayName}
                     </Text>
                     {icon}
                     {mutedIcon}

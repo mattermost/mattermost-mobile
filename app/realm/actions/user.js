@@ -9,7 +9,7 @@ import {General, NavigationTypes} from 'app/constants';
 import {GeneralTypes, UserTypes} from 'app/realm/action_types';
 import {setAppCredentials} from 'app/init/credentials';
 import {configureRealmStore} from 'app/store/';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {setCSRFFromCookie} from 'app/utils/security';
 import {getDeviceTimezone} from 'app/utils/timezone';
 
@@ -28,7 +28,7 @@ export function login(options) {
         const {config, ldapOnly, license, loginId, mfaToken, password} = options;
         let data = null;
         try {
-            data = await Client4.login(loginId, password, mfaToken, ephemeralStore.deviceToken, ldapOnly);
+            data = await Client4.login(loginId, password, mfaToken, EphemeralStore.deviceToken, ldapOnly);
         } catch (error) {
             return {error};
         }
@@ -37,8 +37,8 @@ export function login(options) {
         const url = Client4.getUrl();
         const realm = configureRealmStore(url);
 
-        ephemeralStore.currentServerUrl = url;
-        setAppCredentials(ephemeralStore.deviceToken, data.id, token, url);
+        EphemeralStore.currentServerUrl = url;
+        setAppCredentials(EphemeralStore.deviceToken, data.id, token, url);
         await setCSRFFromCookie(url);
         await realm.dispatch(saveConfigAndLicense(config, license));
         await realm.dispatch(loadMe(data));
@@ -66,8 +66,8 @@ export function ssoLogin(options) {
             return data;
         }
 
-        ephemeralStore.currentServerUrl = url;
-        setAppCredentials(ephemeralStore.deviceToken, data.user.id, token, url);
+        EphemeralStore.currentServerUrl = url;
+        setAppCredentials(EphemeralStore.deviceToken, data.user.id, token, url);
         realm.dispatch(handleSuccessfulLogin(config, license));
 
         // TODO: Remove redux compatibility
@@ -115,8 +115,8 @@ export function loadMe(loginUser) {
             if (!user) {
                 try {
                     user = await Client4.getMe();
-                    if (ephemeralStore.deviceToken) {
-                        Client4.attachDevice(ephemeralStore.deviceToken);
+                    if (EphemeralStore.deviceToken) {
+                        Client4.attachDevice(EphemeralStore.deviceToken);
                     }
                 } catch (e) {
                     forceLogoutIfNecessary(e);

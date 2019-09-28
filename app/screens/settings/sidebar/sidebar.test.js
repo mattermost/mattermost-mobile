@@ -13,6 +13,7 @@ import SidebarSettings from './index';
 jest.mock('react-intl');
 jest.mock('app/mattermost_managed', () => ({
     isRunningInSplitView: jest.fn().mockResolvedValue(false),
+    addEventListener: jest.fn(),
 }));
 
 describe('SidebarSettings', () => {

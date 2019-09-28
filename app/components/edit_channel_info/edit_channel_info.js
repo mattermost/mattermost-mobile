@@ -19,6 +19,7 @@ import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import {
     changeOpacity,
@@ -27,14 +28,10 @@ import {
 } from 'app/utils/theme';
 
 import {t} from 'app/utils/i18n';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {popTopScreen, dismissModal} from 'app/actions/navigation';
 
 export default class EditChannelInfo extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            dismissModal: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
-        }),
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -97,11 +94,10 @@ export default class EditChannelInfo extends PureComponent {
     };
 
     close = (goBack = false) => {
-        const {actions} = this.props;
         if (goBack) {
-            actions.popTopScreen();
+            popTopScreen();
         } else {
-            actions.dismissModal();
+            dismissModal();
         }
     };
 
@@ -234,6 +230,7 @@ export default class EditChannelInfo extends PureComponent {
                                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
+                                            maxLength={64}
                                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         />
                                     </View>

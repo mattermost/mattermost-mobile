@@ -5,15 +5,14 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     ActivityIndicator,
-    TouchableOpacity,
     View,
     ViewPropTypes,
 } from 'react-native';
 
+import FormattedText from 'app/components/formatted_text';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-
-import FormattedText from 'app/components/formatted_text';
 
 export default class LoadMorePosts extends PureComponent {
     static propTypes = {
@@ -56,9 +55,12 @@ export default class LoadMorePosts extends PureComponent {
         const style = getStyleSheet(this.props.theme);
         return (
             <View style={[style.container, this.props.style]}>
-                <TouchableOpacity onPress={this.loadMore}>
+                <TouchableWithFeedback
+                    onPress={this.loadMore}
+                    type={'opacity'}
+                >
                     {this.renderText(style)}
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             </View>
         );
     }

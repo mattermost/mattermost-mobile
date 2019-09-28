@@ -17,12 +17,12 @@ import {selectDefaultChannel} from 'app/actions/views/channel';
 import {showOverlay} from 'app/actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
 import {NavigationTypes, ViewTypes} from 'app/constants';
-import {getTranslations} from 'app/i18n';
+import {getTranslations, resetMomentLocale} from 'app/i18n';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {deleteRealmStore} from 'app/store';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {deleteFileCache} from 'app/utils/file';
 
@@ -143,7 +143,7 @@ class GlobalEventHandler {
 
     onLogout = async () => {
         const serverUrl = await getCurrentServerUrl();
-        const realm = ephemeralStore.getRealmStoreByServer(serverUrl);
+        const realm = EphemeralStore.getRealmStoreByServer(serverUrl);
 
         if (realm) {
             realm.getState().close();
@@ -154,6 +154,7 @@ class GlobalEventHandler {
         this.reduxStore.dispatch(setServerVersion(''));
         deleteFileCache(); //TODO: The cache of files should be for each individual server
         removeAppCredentials(serverUrl);
+        resetMomentLocale();
 
         PushNotifications.clearNotifications();
 
@@ -255,7 +256,7 @@ class GlobalEventHandler {
 
     handleInAppNotification = (notification) => {
         const {data} = notification;
-        const {dispatch, getState} = this.store;
+        const {getState} = this.store;
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
@@ -266,7 +267,7 @@ class GlobalEventHandler {
             };
 
             EventEmitter.emit(NavigationTypes.NAVIGATION_SHOW_OVERLAY);
-            dispatch(showOverlay(screen, passProps));
+            showOverlay(screen, passProps);
         }
     };
 }

@@ -8,7 +8,7 @@ import {FlatList, SafeAreaView, StatusBar, View, Text, Button} from 'react-nativ
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes} from 'app/constants';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 
 import TestItem from './test_item';
 
@@ -28,11 +28,11 @@ export default class TestScreen extends PureComponent {
 
     constructor(props) {
         super(props);
-        this.originalServerUrl = ephemeralStore.currentServerUrl;
+        this.originalServerUrl = EphemeralStore.currentServerUrl;
     }
 
     toggle = () => {
-        if (ephemeralStore.currentServerUrl.includes('8065')) {
+        if (EphemeralStore.currentServerUrl.includes('8065')) {
             EventEmitter.emit(NavigationTypes.SWITCH_SERVER, 'http://something');
         } else {
             EventEmitter.emit(NavigationTypes.SWITCH_SERVER, this.originalServerUrl);
@@ -52,7 +52,7 @@ export default class TestScreen extends PureComponent {
                 currentUserId={this.props.user.id}
             />
         );
-    }
+    };
 
     render() {
         const {user, reduxServerUrl, theme} = this.props;

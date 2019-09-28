@@ -13,9 +13,10 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
+import {goToScreen} from 'app/actions/navigation';
 import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {paddingHorizontal as padding} from 'app/components/safe_area_vi ew/iphone_x_spacing';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -28,7 +29,6 @@ class LoginOptions extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
         config: PropTypes.object.isRequired,
-        goToScreen: PropTypes.func.isRequired,
         license: PropTypes.object.isRequired,
         serverUrl: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -43,7 +43,7 @@ class LoginOptions extends PureComponent {
     }
 
     goToLogin = preventDoubleTap(() => {
-        const {config, goToScreen, intl, license, theme} = this.props;
+        const {config, intl, license, theme} = this.props;
         const screen = 'Login';
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
         const passProps = {
@@ -56,7 +56,7 @@ class LoginOptions extends PureComponent {
     });
 
     goToSSO = (ssoType) => {
-        const {config, intl, goToScreen, license, serverUrl, theme} = this.props;
+        const {config, intl, license, serverUrl, theme} = this.props;
         const screen = 'SSO';
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
         const passProps = {

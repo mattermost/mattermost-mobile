@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
+import {goToChannel} from 'app/actions/navigation';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -30,8 +31,6 @@ export default class Mfa extends PureComponent {
         license: PropTypes.object.isRequired,
         login: PropTypes.func.isRequired,
         loginId: PropTypes.string.isRequired,
-        goToChannel: PropTypes.func.isRequired,
-        navigator: PropTypes.object,
         password: PropTypes.string.isRequired,
     };
 
@@ -76,7 +75,7 @@ export default class Mfa extends PureComponent {
     };
 
     submit = preventDoubleTap(() => {
-        const {config, license, goToChannel, login, loginId, password} = this.props;
+        const {config, license, login, loginId, password} = this.props;
         const {token} = this.state;
 
         Keyboard.dismiss();

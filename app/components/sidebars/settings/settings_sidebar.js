@@ -18,31 +18,26 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import DrawerLayout from 'app/components/sidebars/drawer_layout';
+import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import UserStatus from 'app/components/user_status';
 import {DeviceTypes, NavigationTypes} from 'app/constants';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {showModal, showModalOverCurrentContext, dismissModal} from 'app/actions/navigation';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
 import StatusLabel from './status_label';
-
-const DRAWER_INITIAL_OFFSET = 80;
-const DRAWER_TABLET_WIDTH = 300;
 
 export default class SettingsDrawer extends PureComponent {
     static propTypes = {
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
         currentUser: PropTypes.object,
-        dismissModal: PropTypes.func.isRequired,
         logout: PropTypes.func.isRequired,
         setStatus: PropTypes.func.isRequired,
-        showModal: PropTypes.func.isRequired,
-        showModalOverCurrentContext: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -58,17 +53,38 @@ export default class SettingsDrawer extends PureComponent {
         MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
+
+        this.state = {
+            deviceWidth: Dimensions.get('window').width,
+            openDrawerOffset: DRAWER_INITIAL_OFFSET,
+        };
     }
 
     componentDidMount() {
+        this.mounted = true;
+        this.handleDimensions({window: Dimensions.get('window')});
         EventEmitter.on('close_settings_sidebar', this.closeSettingsSidebar);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
+        Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     componentWillUnmount() {
+        this.mounted = false;
         EventEmitter.off('close_settings_sidebar', this.closeSettingsSidebar);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+        Dimensions.removeEventListener('change', this.handleDimensions);
     }
+
+    confirmReset = (status) => {
+        const {intl} = this.context;
+        confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
+    };
+
+    closeSettingsSidebar = () => {
+        if (this.drawer?.current && this.drawerOpened) {
+            this.drawer.current.closeDrawer();
+        }
+    };
 
     handleAndroidBack = () => {
         if (this.drawer?.current && this.drawerOpened) {
@@ -77,20 +93,6 @@ export default class SettingsDrawer extends PureComponent {
         }
 
         return false;
-    };
-
-    openSettingsSidebar = () => {
-        this.props.blurPostTextBox();
-
-        if (this.drawer?.current && !this.drawerOpened) {
-            this.drawer.current.openDrawer();
-        }
-    };
-
-    closeSettingsSidebar = () => {
-        if (this.drawer?.current && this.drawerOpened) {
-            this.drawer.current.closeDrawer();
-        }
     };
 
     handleDrawerClose = () => {
@@ -103,8 +105,20 @@ export default class SettingsDrawer extends PureComponent {
         Keyboard.dismiss();
     };
 
+    handleDimensions = ({window}) => {
+        if (this.mounted) {
+            if (this.state.openDrawerOffset !== 0) {
+                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+                if ((window.width > window.height) || DeviceTypes.IS_TABLET) {
+                    openDrawerOffset = window.width * 0.5;
+                }
+
+                this.setState({openDrawerOffset, deviceWidth: window.width});
+            }
+        }
+    };
+
     handleSetStatus = preventDoubleTap(() => {
-        const {showModalOverCurrentContext} = this.props;
         const items = [{
             action: () => this.setStatus(General.ONLINE),
             text: {
@@ -193,7 +207,6 @@ export default class SettingsDrawer extends PureComponent {
     openModal = (screen, title, passProps) => {
         this.closeSettingsSidebar();
 
-        const {showModal} = this.props;
         const options = {
             topBar: {
                 leftButtons: [{
@@ -206,6 +219,14 @@ export default class SettingsDrawer extends PureComponent {
         InteractionManager.runAfterInteractions(() => {
             showModal(screen, title, passProps, options);
         });
+    };
+
+    openSettingsSidebar = () => {
+        this.props.blurPostTextBox();
+
+        if (this.drawer?.current && !this.drawerOpened) {
+            this.drawer.current.openDrawer();
+        }
     };
 
     renderUserStatusIcon = (userId) => {
@@ -320,11 +341,6 @@ export default class SettingsDrawer extends PureComponent {
         );
     };
 
-    confirmReset = (status) => {
-        const {intl} = this.context;
-        confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
-    };
-
     updateStatus = (status) => {
         const {currentUser} = this.props;
         this.props.setStatus({
@@ -334,7 +350,7 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     setStatus = (status) => {
-        const {currentUser, dismissModal} = this.props;
+        const {currentUser} = this.props;
 
         if (currentUser.status === General.OUT_OF_OFFICE) {
             dismissModal();
@@ -348,8 +364,8 @@ export default class SettingsDrawer extends PureComponent {
 
     render() {
         const {children} = this.props;
-        const {width} = Dimensions.get('window');
-        const drawerWidth = DeviceTypes.IS_TABLET ? DRAWER_TABLET_WIDTH : (width - DRAWER_INITIAL_OFFSET);
+        const {deviceWidth, openDrawerOffset} = this.state;
+        const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
 
         return (
             <DrawerLayout

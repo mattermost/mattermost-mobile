@@ -3,11 +3,6 @@
 
 import {realmConnect} from 'realm-react-redux';
 
-import {
-    showModal,
-    showModalOverCurrentContext,
-    dismissModal,
-} from 'app/actions/navigation';
 import {General} from 'app/constants';
 import {logout, setStatus} from 'app/realm/actions/user';
 import options from 'app/store/realm_options';
@@ -28,11 +23,8 @@ function mapQueriesToProps([currentUser]) {
 }
 
 const mapRealmDispatchToProps = {
-    dismissModal,
     logout,
     setStatus,
-    showModal,
-    showModalOverCurrentContext,
 };
 
 export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(SettingsSidebar);

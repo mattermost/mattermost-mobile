@@ -38,6 +38,7 @@ import {t} from 'app/utils/i18n';
 import {getDefaultThemeFromConfig} from 'app/realm/selectors/preference';
 import {getClientUpgrade} from 'app/realm/utils/general';
 import {changeOpacity} from 'app/utils/theme';
+import {resetToChannel, goToScreen} from 'app/actions/navigation';
 
 import telemetry from 'app/telemetry';
 
@@ -46,7 +47,6 @@ import LocalConfig from 'assets/config';
 export default class SelectServer extends PureComponent {
     static propTypes = {
         allowOtherServers: PropTypes.bool,
-        goToScreen: PropTypes.func.isRequired,
         loadConfigAndLicense: PropTypes.func.isRequired,
         login: PropTypes.func.isRequired,
         pingServer: PropTypes.func.isRequired,
@@ -54,7 +54,6 @@ export default class SelectServer extends PureComponent {
             handleServerUrlChanged: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
         }).isRequired,
-        resetToChannel: PropTypes.func.isRequired,
         scheduleExpiredNotification: PropTypes.func.isRequired,
         serverUrl: PropTypes.string.isRequired,
     };
@@ -159,7 +158,6 @@ export default class SelectServer extends PureComponent {
     };
 
     goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
-        const {goToScreen} = this.props;
         const defaultOptions = {
             popGesture: !LocalConfig.AutoSelectServerUrl,
             topBar: {
@@ -218,7 +216,6 @@ export default class SelectServer extends PureComponent {
 
     handleLoginOptions = () => {
         const {formatMessage} = this.context.intl;
-        const {goToScreen} = this.props;
         const {config, license, url} = this.state;
         const samlEnabled = config?.EnableSaml === 'true' && license?.IsLicensed === 'true' && license?.SAML === 'true';
         const gitlabEnabled = config?.EnableSignUpWithGitLab === 'true';
@@ -284,7 +281,7 @@ export default class SelectServer extends PureComponent {
     };
 
     loginWithCertificate = async () => {
-        const {login, resetToChannel} = this.props;
+        const {login} = this.props;
         const {config, license} = this.state;
 
         tracker.initialLoad = Date.now();

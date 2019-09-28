@@ -23,12 +23,13 @@ import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import StatusBar from 'app/components/status_bar';
-import {GlobalStyles} from 'app/styles';
+import {resetToChannel, goToScreen} from 'app/actions/navigation';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
 import {changeOpacity} from 'app/utils/theme';
+import {GlobalStyles} from 'app/styles';
 
 import telemetry from 'app/telemetry';
 
@@ -37,11 +38,9 @@ export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', '
 export default class Login extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
-        goToScreen: PropTypes.func.isRequired,
         license: PropTypes.object.isRequired,
         login: PropTypes.func.isRequired,
         loginId: PropTypes.string.isRequired,
-        resetToChannel: PropTypes.func.isRequired,
         scheduleExpiredNotification: PropTypes.func.isRequired,
         sendPasswordResetEmail: PropTypes.func.isRequired,
         theme: PropTypes.object,
@@ -135,7 +134,7 @@ export default class Login extends PureComponent {
 
     forgotPassword = () => {
         const {intl} = this.context;
-        const {goToScreen, sendPasswordResetEmail} = this.props;
+        const {sendPasswordResetEmail} = this.props;
         const screen = 'ForgotPassword';
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
         const passProps = {
@@ -195,12 +194,12 @@ export default class Login extends PureComponent {
 
         this.scheduleSessionExpiredNotification();
 
-        this.props.resetToChannel();
+        resetToChannel();
     };
 
     goToMfa = () => {
         const {intl} = this.context;
-        const {config, goToScreen, license, login} = this.props;
+        const {config, license, login} = this.props;
         const {loginId, password} = this.state;
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});

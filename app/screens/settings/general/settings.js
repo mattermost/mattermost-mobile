@@ -19,6 +19,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {isValidUrl} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
+import {goToScreen, dismissModal} from 'app/actions/navigation';
 
 import LocalConfig from 'assets/config';
 
@@ -27,8 +28,6 @@ class Settings extends PureComponent {
         actions: PropTypes.shape({
             clearErrors: PropTypes.func.isRequired,
             purgeOfflineStore: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
@@ -53,7 +52,7 @@ class Settings extends PureComponent {
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-settings') {
-            this.props.actions.dismissModal();
+            dismissModal();
         }
     }
 
@@ -84,39 +83,39 @@ class Settings extends PureComponent {
     };
 
     goToAbout = preventDoubleTap(() => {
-        const {actions, intl, config} = this.props;
+        const {intl, config} = this.props;
         const screen = 'About';
         const title = intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: config.SiteName || 'Mattermost'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     goToNotifications = preventDoubleTap(() => {
-        const {actions, intl} = this.props;
+        const {intl} = this.props;
         const screen = 'NotificationSettings';
         const title = intl.formatMessage({id: 'user.settings.modal.notifications', defaultMessage: 'Notifications'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     goToDisplaySettings = preventDoubleTap(() => {
-        const {actions, intl} = this.props;
+        const {intl} = this.props;
         const screen = 'DisplaySettings';
         const title = intl.formatMessage({id: 'user.settings.modal.display', defaultMessage: 'Display'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     goToAdvancedSettings = preventDoubleTap(() => {
-        const {actions, intl} = this.props;
+        const {intl} = this.props;
         const screen = 'AdvancedSettings';
         const title = intl.formatMessage({id: 'mobile.advanced_settings.title', defaultMessage: 'Advanced Settings'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     goToSelectTeam = preventDoubleTap(() => {
-        const {actions, currentUrl, intl, theme} = this.props;
+        const {currentUrl, intl, theme} = this.props;
         const screen = 'SelectTeam';
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
         const passProps = {
@@ -124,18 +123,18 @@ class Settings extends PureComponent {
             theme,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     goToClientUpgrade = preventDoubleTap(() => {
-        const {actions, intl} = this.props;
+        const {intl} = this.props;
         const screen = 'ClientUpgrade';
         const title = intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'});
         const passProps = {
             userCheckedForUpgrade: true,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     openErrorEmail = preventDoubleTap(() => {

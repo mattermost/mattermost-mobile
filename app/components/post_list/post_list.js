@@ -16,6 +16,7 @@ import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
 import telemetry from 'app/telemetry';
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
@@ -41,7 +42,6 @@ export default class PostList extends PureComponent {
             refreshChannelWithRetry: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             setDeepLinkURL: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         deepLinkURL: PropTypes.string,
@@ -299,7 +299,7 @@ export default class PostList extends PureComponent {
 
     scrollToBottom = () => {
         setTimeout(() => {
-            if (this.flatListRef?.current) {
+            if (this.flatListRef.current) {
                 this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
             }
         }, 250);
@@ -316,7 +316,7 @@ export default class PostList extends PureComponent {
 
     scrollToIndex = (index) => {
         this.animationFrameInitialIndex = requestAnimationFrame(() => {
-            if (this.flatListRef?.current && index > 0 && index <= this.getItemCount()) {
+            if (this.flatListRef.current && index > 0 && index <= this.getItemCount()) {
                 this.flatListScrollToIndex(index);
             }
         });
@@ -353,7 +353,7 @@ export default class PostList extends PureComponent {
             };
 
             this.showingPermalink = true;
-            actions.showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options);
         }
     };
 

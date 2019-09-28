@@ -17,7 +17,7 @@ import globalEventHandler from 'app/init/global_event_handler';
 import pushNotificationsHandler from 'app/init/push_notifications_handler';
 import {registerScreens} from 'app/screens';
 import {configureRealmStore, configureAppStore} from 'app/store';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 
 const {MattermostShare} = NativeModules;
@@ -27,14 +27,14 @@ let realmStore;
 
 const init = async () => {
     const credentials = await getAppCredentials();
-    if (ephemeralStore.currentServerUrl) {
-        realmStore = configureRealmStore(ephemeralStore.currentServerUrl);
-        ephemeralStore.setRealmStoreByServer(ephemeralStore.currentServerUrl, realmStore);
+    if (EphemeralStore.currentServerUrl) {
+        realmStore = configureRealmStore(EphemeralStore.currentServerUrl);
+        EphemeralStore.setRealmStoreByServer(EphemeralStore.currentServerUrl, realmStore);
     } else {
         realmStore = configureRealmStore();
     }
 
-    if (ephemeralStore.appStarted) {
+    if (EphemeralStore.appStarted) {
         launchApp(credentials);
         return;
     }
@@ -48,10 +48,10 @@ const init = async () => {
     registerScreens(reduxStore);
 
     if (sharedExtensionStarted) {
-        ephemeralStore.appStarted = true;
+        EphemeralStore.appStarted = true;
     }
 
-    if (!ephemeralStore.appStarted) {
+    if (!EphemeralStore.appStarted) {
         launchAppAndAuthenticateIfNeeded(credentials);
     }
 };
@@ -69,13 +69,13 @@ const launchApp = async (credentials) => {
             realmStore.dispatch(loadMe());
         }
 
-        realmStore.dispatch(resetToChannel({skipMetrics: true}));
+        resetToChannel({skipMetrics: true});
     } else {
-        realmStore.dispatch(resetToSelectServer(emmProvider.allowOtherServers));
+        resetToSelectServer(emmProvider.allowOtherServers);
     }
 
     telemetry.startSinceLaunch(['start:splash_screen']);
-    ephemeralStore.appStarted = true;
+    EphemeralStore.appStarted = true;
 };
 
 const launchAppAndAuthenticateIfNeeded = async (credentials) => {
@@ -102,10 +102,10 @@ Navigation.events().registerAppLaunchedListener(() => {
 
     // Keep track of the latest componentId to appear
     Navigation.events().registerComponentDidAppearListener(({componentId}) => {
-        ephemeralStore.addNavigationComponentId(componentId);
+        EphemeralStore.addNavigationComponentId(componentId);
     });
 
     Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
-        ephemeralStore.removeNavigationComponentId(componentId);
+        EphemeralStore.removeNavigationComponentId(componentId);
     });
 });

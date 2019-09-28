@@ -18,6 +18,7 @@ import {
     getUniqueUserIds,
     sortReactions,
 } from 'app/utils/reaction';
+import {dismissModal} from 'app/actions/navigation';
 
 import ReactionHeader from './reaction_header';
 import ReactionRow from './reaction_row';
@@ -28,7 +29,6 @@ export default class ReactionList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getMissingProfilesByIds: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         reactions: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
@@ -108,7 +108,7 @@ export default class ReactionList extends PureComponent {
     }
 
     close = () => {
-        this.props.actions.dismissModal();
+        dismissModal();
     };
 
     getMissingProfiles = () => {

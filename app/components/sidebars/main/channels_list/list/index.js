@@ -3,7 +3,6 @@
 
 import {realmConnect} from 'realm-react-redux';
 
-import {showModal} from 'app/actions/navigation';
 import {General, DeviceTypes, Permissions, Preferences} from 'app/constants';
 
 import {getSortedChannelIds, getSortedUnreadChannelIds, getSortedFavoriteChannelIds} from 'app/realm/selectors/channel';
@@ -67,8 +66,4 @@ function mapQueriesToProps([general, currentUser, preferences, teamChannels, tea
     };
 }
 
-const mapRealmDispatchToProps = {
-    showModal,
-};
-
-export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(List);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, null, null, options)(List);

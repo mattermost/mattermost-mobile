@@ -6,7 +6,7 @@ import {Client4} from 'mattermost-redux/client';
 import {GeneralTypes} from 'app/realm/action_types';
 import {General} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {recordTime} from 'app/utils/segment';
 
@@ -67,7 +67,7 @@ export function loadConfigAndLicense(save = true) {
                 license,
                 dataRetentionPolicy,
                 serverVersion: Client4.getServerVersion(),
-                deviceToken: ephemeralStore.deviceToken,
+                deviceToken: EphemeralStore.deviceToken,
             };
 
             if (save) {
@@ -92,7 +92,7 @@ export function saveConfigAndLicense(config, license) {
                 config,
                 license,
                 serverVersion: Client4.getServerVersion(),
-                deviceToken: ephemeralStore.deviceToken,
+                deviceToken: EphemeralStore.deviceToken,
             },
         });
     };
@@ -100,7 +100,7 @@ export function saveConfigAndLicense(config, license) {
 
 export function scheduleExpiredNotification(intl) {
     return () => {
-        if (ephemeralStore.deviceToken) {
+        if (EphemeralStore.deviceToken) {
             // Once the user logs in we are going to wait for 10 seconds
             // before retrieving the session that belongs to this device
             // to ensure that we get the actual session without issues
@@ -118,7 +118,7 @@ export function scheduleExpiredNotification(intl) {
                     return;
                 }
 
-                const session = sessions.data.find((s) => s.device_id === ephemeralStore.deviceToken);
+                const session = sessions.data.find((s) => s.device_id === EphemeralStore.deviceToken);
                 const expiresAt = session?.expires_at || 0; //eslint-disable-line camelcase
 
                 if (expiresAt) {

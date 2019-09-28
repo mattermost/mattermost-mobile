@@ -17,7 +17,7 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import DrawerLayout, {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
+import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes, Events} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
@@ -28,8 +28,6 @@ import DrawerSwiper from './drawer_swipper';
 import TeamsList from './teams_list';
 
 import telemetry from 'app/telemetry';
-
-const DRAWER_INITIAL_OFFSET = 40;
 
 export default class MainSidebar extends PureComponent {
     static propTypes = {
@@ -93,7 +91,7 @@ export default class MainSidebar extends PureComponent {
         EventEmitter.off('renderDrawer', this.handleShowDrawerContent);
         EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
-        Dimensions.addEventListener('change', this.handleDimensions);
+        Dimensions.removeEventListener('change', this.handleDimensions);
     }
 
     handleAndroidBack = () => {
@@ -323,7 +321,7 @@ export default class MainSidebar extends PureComponent {
             return null;
         }
 
-        const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_X || mattermostManaged.hasSafeAreaInsets;
+        const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets;
         const multipleTeams = teamsCount > 1;
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {
@@ -399,7 +397,7 @@ export default class MainSidebar extends PureComponent {
 
     render() {
         const {children} = this.props;
-        const {openDrawerOffset, deviceWidth} = this.state;
+        const {deviceWidth, openDrawerOffset} = this.state;
         const isTablet = DeviceTypes.IS_TABLET && !this.state.isSplitView && this.state.permanentSidebar;
         const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
 

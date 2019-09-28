@@ -21,14 +21,14 @@ import {General} from 'mattermost-redux/constants';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes, ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 
 import BottomSheet from 'app/utils/bottom_sheet';
 import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
-
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {showModal} from 'app/actions/navigation';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -47,7 +47,6 @@ export default class List extends PureComponent {
         onSelectChannel: PropTypes.func.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
         previewChannel: PropTypes.func,
-        showModal: PropTypes.func.isRequired,
         styles: PropTypes.object.isRequired,
         teammateDisplayNameSettings: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -205,7 +204,6 @@ export default class List extends PureComponent {
     };
 
     goToCreatePublicChannel = preventDoubleTap(() => {
-        const {showModal} = this.props;
         const {intl} = this.context;
         const screen = 'CreateChannel';
         const title = intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
@@ -218,7 +216,6 @@ export default class List extends PureComponent {
     });
 
     goToCreatePrivateChannel = preventDoubleTap(() => {
-        const {showModal} = this.props;
         const {intl} = this.context;
         const screen = 'CreateChannel';
         const title = intl.formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'});
@@ -231,7 +228,6 @@ export default class List extends PureComponent {
     });
 
     goToDirectMessages = preventDoubleTap(() => {
-        const {showModal} = this.props;
         const {intl} = this.context;
         const screen = 'MoreDirectMessages';
         const title = intl.formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'});
@@ -249,7 +245,6 @@ export default class List extends PureComponent {
     });
 
     goToMoreChannels = preventDoubleTap(() => {
-        const {showModal} = this.props;
         const {intl} = this.context;
         const screen = 'MoreChannels';
         const title = intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
@@ -374,7 +369,7 @@ export default class List extends PureComponent {
 
         const {width, height} = Dimensions.get('window');
         const landscape = width > height;
-        if (DeviceTypes.IS_IPHONE_X) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
             return landscape ? 54 : 44;
         }
 
