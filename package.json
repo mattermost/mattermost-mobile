@@ -21,7 +21,7 @@
     "intl": "1.2.5",
     "jail-monkey": "2.2.0",
     "jsc-android": "241213.2.0",
-    "mattermost-redux": "github:mattermost/mattermost-redux#d3429317c230c61afda5a01c798cd0332b3db0a5",
+    "mattermost-redux": "github:mattermost/mattermost-redux#c312e5865f32e9a210a2f783fb0e1b4824548ac1",
     "memoize-one": "5.0.5",
     "mime-db": "1.40.0",
     "moment-timezone": "0.5.25",
