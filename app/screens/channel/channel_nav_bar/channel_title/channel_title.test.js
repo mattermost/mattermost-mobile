@@ -10,6 +10,7 @@ jest.mock('react-intl');
 
 describe('ChannelTitle', () => {
     const baseProps = {
+        displayName: 'My Channel',
         isGuest: false,
         hasGuests: false,
         canHaveSubtitle: false,
@@ -27,6 +28,7 @@ describe('ChannelTitle', () => {
     test('should match snapshot when isSelfDMChannel is true', () => {
         const props = {
             ...baseProps,
+            displayName: 'My User',
             isSelfDMChannel: true,
         };
         const wrapper = shallow(
