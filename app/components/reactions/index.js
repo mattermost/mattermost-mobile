@@ -26,6 +26,9 @@ function makeMapStateToProps() {
         const teamId = channel.team_id;
         const channelIsArchived = channel.delete_at !== 0;
 
+        const currentUserId = getCurrentUserId(state);
+        const reactions = getReactionsForPostSelector(state, ownProps.postId);
+
         let canAddReaction = true;
         let canRemoveReaction = true;
         if (channelIsArchived) {
@@ -36,16 +39,13 @@ function makeMapStateToProps() {
                 team: teamId,
                 channel: channelId,
                 permission: Permissions.ADD_REACTION,
-            });
+            }) && Object.values(reactions).length < 40;
             canRemoveReaction = haveIChannelPermission(state, {
                 team: teamId,
                 channel: channelId,
                 permission: Permissions.REMOVE_REACTION,
             });
         }
-
-        const currentUserId = getCurrentUserId(state);
-        const reactions = getReactionsForPostSelector(state, ownProps.postId);
 
         return {
             currentUserId,
