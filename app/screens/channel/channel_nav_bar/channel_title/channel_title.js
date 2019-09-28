@@ -99,7 +99,7 @@ export default class ChannelTitle extends PureComponent {
         if (isSelfDMChannel) {
             const messageId = t('channel_header.directchannel.you');
             const defaultMessage = '{displayName} (you)';
-            const values = {displayname: channelDisplayName};
+            const values = {displayName: channelDisplayName};
 
             return (
                 <FormattedText
