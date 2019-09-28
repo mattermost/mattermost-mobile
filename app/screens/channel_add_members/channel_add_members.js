@@ -14,6 +14,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
@@ -24,7 +25,13 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorIfInvalidPermissions} from 'app/utils/general';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
+import {popTopScreen, setButtons} from 'app/actions/navigation';
 
 export default class ChannelAddMembers extends PureComponent {
     static propTypes = {
@@ -33,8 +40,6 @@ export default class ChannelAddMembers extends PureComponent {
             getProfilesNotInChannel: PropTypes.func.isRequired,
             handleAddChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         currentChannelId: PropTypes.string.isRequired,
@@ -73,10 +78,11 @@ export default class ChannelAddMembers extends PureComponent {
             enalbed: false,
             id: 'add-members',
             text: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
+            color: props.theme.sidebarHeaderTextColor,
             showAsAction: 'always',
         };
 
-        props.actions.setButtons(props.componentId, {
+        setButtons(props.componentId, {
             rightButtons: [this.addButton],
         });
     }
@@ -115,12 +121,12 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     close = () => {
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     enableAddOption = (enabled) => {
-        const {actions, componentId} = this.props;
-        actions.setButtons(componentId, {
+        const {componentId} = this.props;
+        setButtons(componentId, {
             rightButtons: [{...this.addButton, enabled}],
         });
     };
@@ -351,6 +357,7 @@ export default class ChannelAddMembers extends PureComponent {
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
                     />
                 </View>

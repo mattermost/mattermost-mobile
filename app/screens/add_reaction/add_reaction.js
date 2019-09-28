@@ -12,13 +12,10 @@ import {Navigation} from 'react-native-navigation';
 import EmojiPicker from 'app/components/emoji_picker';
 import {emptyFunction} from 'app/utils/general';
 import {setNavigatorStyles} from 'app/utils/theme';
+import {dismissModal, setButtons} from 'app/actions/navigation';
 
 export default class AddReaction extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            dismissModal: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-        }).isRequired,
         componentId: PropTypes.string,
         closeButton: PropTypes.object,
         onEmojiPress: PropTypes.func,
@@ -36,7 +33,7 @@ export default class AddReaction extends PureComponent {
     constructor(props) {
         super(props);
 
-        props.actions.setButtons(props.componentId, {
+        setButtons(props.componentId, {
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
         });
     }
@@ -45,9 +42,9 @@ export default class AddReaction extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 
@@ -58,7 +55,7 @@ export default class AddReaction extends PureComponent {
     }
 
     close = () => {
-        this.props.actions.dismissModal();
+        dismissModal();
     };
 
     handleEmojiPress = (emoji) => {

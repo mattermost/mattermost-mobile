@@ -12,8 +12,8 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getGroupDisplayNameFromUserIds} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
 import FormattedText from 'app/components/formatted_text';
@@ -23,8 +23,14 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {dismissModal, setButtons} from 'app/actions/navigation';
 
 import SelectedUsers from './selected_users';
 
@@ -40,8 +46,6 @@ export default class MoreDirectMessages extends PureComponent {
             getProfilesInTeam: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         allProfiles: PropTypes.object.isRequired,
@@ -110,7 +114,7 @@ export default class MoreDirectMessages extends PureComponent {
     }
 
     close = () => {
-        this.props.actions.dismissModal();
+        dismissModal();
     };
 
     clearSearch = () => {
@@ -327,10 +331,11 @@ export default class MoreDirectMessages extends PureComponent {
     };
 
     updateNavigationButtons = (startEnabled, context = this.context) => {
-        const {actions, componentId} = this.props;
+        const {componentId, theme} = this.props;
         const {formatMessage} = context.intl;
-        actions.setButtons(componentId, {
+        setButtons(componentId, {
             rightButtons: [{
+                color: theme.sidebarHeaderTextColor,
                 id: START_BUTTON,
                 text: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
@@ -469,6 +474,7 @@ export default class MoreDirectMessages extends PureComponent {
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
                     />
                     <SelectedUsers

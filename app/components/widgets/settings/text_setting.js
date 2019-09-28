@@ -11,7 +11,11 @@ import {
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class TextSetting extends PureComponent {
@@ -35,7 +39,6 @@ export default class TextSetting extends PureComponent {
         onChange: PropTypes.func.isRequired,
         value: PropTypes.string.isRequired,
         multiline: PropTypes.bool,
-        showRequiredAsterisk: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
         keyboardType: PropTypes.oneOf([
             'default',
@@ -53,7 +56,6 @@ export default class TextSetting extends PureComponent {
         optional: false,
         disabled: false,
         multiline: false,
-        showRequiredAsterisk: false,
         keyboardType: 'default',
         isLandscape: false,
         secureTextEntry: false,
@@ -76,7 +78,6 @@ export default class TextSetting extends PureComponent {
             errorText,
             value,
             multiline,
-            showRequiredAsterisk,
             isLandscape,
             secureTextEntry,
         } = this.props;
@@ -105,7 +106,7 @@ export default class TextSetting extends PureComponent {
                     defaultMessage='(optional)'
                 />
             );
-        } else if (showRequiredAsterisk) {
+        } else {
             asterisk = <Text style={style.asterisk}>{' *'}</Text>;
         }
 
@@ -172,6 +173,7 @@ export default class TextSetting extends PureComponent {
                             multiline={multiline}
                             keyboardType={keyboardType}
                             secureTextEntry={secureTextEntry}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         />
                     </View>
                 </View>

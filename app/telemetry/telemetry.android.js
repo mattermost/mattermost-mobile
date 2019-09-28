@@ -3,7 +3,7 @@
 
 import LocalConfig from 'assets/config'; // eslint-disable-line
 
-import {store} from 'app/mattermost';
+import store from 'app/store';
 
 import {
     saveToTelemetryServer,

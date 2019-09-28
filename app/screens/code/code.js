@@ -14,13 +14,16 @@ import {
 } from 'react-native';
 
 import {getCodeFont} from 'app/utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
+import {popTopScreen} from 'app/actions/navigation';
 
 export default class Code extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            popTopScreen: PropTypes.func.isRequired,
-        }).isRequired,
         componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,
@@ -30,9 +33,9 @@ export default class Code extends React.PureComponent {
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 
@@ -41,7 +44,7 @@ export default class Code extends React.PureComponent {
     }
 
     handleAndroidBack = () => {
-        this.props.actions.popTopScreen();
+        popTopScreen();
         return true;
     };
 
@@ -75,6 +78,7 @@ export default class Code extends React.PureComponent {
                     multiline={true}
                     value={this.props.content}
                     style={[style.codeText]}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(this.props.theme)}
                 />
             );
         } else {

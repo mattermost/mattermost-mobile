@@ -101,17 +101,22 @@ function loadTranslation(locale) {
         }
 
         if (momentData) {
-            moment.updateLocale(locale, momentData);
+            moment.updateLocale(locale.toLowerCase(), momentData);
         }
     } catch (e) {
         console.error('NO Translation found', e); //eslint-disable-line no-console
     }
 }
 
+export function resetMomentLocale() {
+    moment.locale(DEFAULT_LOCALE);
+}
+
 export function getTranslations(locale) {
     if (!TRANSLATIONS[locale]) {
         loadTranslation(locale);
     }
+
     return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];
 }
 

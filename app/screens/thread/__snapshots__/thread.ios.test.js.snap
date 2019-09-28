@@ -5,6 +5,14 @@ exports[`thread should match snapshot, has root post 1`] = `
   <Connect(SafeAreaIos)
     excludeHeader={true}
   >
+    <View
+      style={
+        Object {
+          "backgroundColor": "rgba(61,60,64,0.2)",
+          "height": 1,
+        }
+      }
+    />
     <Connect(StatusBar) />
     <React.Fragment>
       <Connect(PostList)
@@ -67,6 +75,14 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
   <Connect(SafeAreaIos)
     excludeHeader={true}
   >
+    <View
+      style={
+        Object {
+          "backgroundColor": "rgba(61,60,64,0.2)",
+          "height": 1,
+        }
+      }
+    />
     <Connect(StatusBar) />
     <Loading
       color="grey"
@@ -128,6 +144,14 @@ exports[`thread should match snapshot, render footer 3`] = `
   <Connect(SafeAreaIos)
     excludeHeader={true}
   >
+    <View
+      style={
+        Object {
+          "backgroundColor": "rgba(61,60,64,0.2)",
+          "height": 1,
+        }
+      }
+    />
     <Connect(StatusBar) />
     <Loading
       color="grey"

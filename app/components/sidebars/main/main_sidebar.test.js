@@ -57,5 +57,28 @@ describe('MainSidebar', () => {
         await wrapper.instance().handlePermanentSidebar();
 
         expect(wrapper.state('permanentSidebar')).toBeDefined();
+
+        // Reset to false for subsequent tests
+        DeviceTypes.IS_TABLET = false;
+    });
+
+    test('should re-render when the theme changes', () => {
+        const theme = Preferences.THEMES.default;
+        const newTheme = Preferences.THEMES.organization;
+        const props = {
+            ...baseProps,
+            theme,
+        };
+
+        const wrapper = shallow(
+            <MainSidebar {...props}/>
+        );
+
+        const instance = wrapper.instance();
+        instance.render = jest.fn();
+
+        expect(instance.render).toHaveBeenCalledTimes(0);
+        wrapper.setProps({theme: newTheme});
+        expect(instance.render).toHaveBeenCalledTimes(1);
     });
 });

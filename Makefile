@@ -95,6 +95,8 @@ post-install:
 	fi
 	@sed -i'' -e 's|transform: \[{scaleY: -1}\],|...Platform.select({android: {transform: \[{perspective: 1}, {scaleY: -1}\]}, ios: {transform: \[{scaleY: -1}\]}}),|g' node_modules/react-native/Libraries/Lists/VirtualizedList.js
 
+	@./node_modules/.bin/patch-package
+
 start: | pre-run ## Starts the React Native packager server
 	$(call start_packager)
 
