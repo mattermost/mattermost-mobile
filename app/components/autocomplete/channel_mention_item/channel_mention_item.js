@@ -8,8 +8,7 @@ import {
 } from 'react-native';
 
 import {General} from 'mattermost-redux/constants';
-import BotTag from 'app/components/bot_tag';
-import GuestTag from 'app/components/guest_tag';
+import {BotTag, GuestTag} from 'app/components/tag';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';

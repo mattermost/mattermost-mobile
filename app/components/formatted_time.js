@@ -6,12 +6,15 @@ import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 import moment from 'moment-timezone';
 
+import CustomPropTypes from 'app/constants/custom_prop_types';
+
 export default class FormattedTime extends React.PureComponent {
     static propTypes = {
         value: PropTypes.any.isRequired,
         timeZone: PropTypes.string,
         children: PropTypes.func,
         hour12: PropTypes.bool,
+        style: CustomPropTypes.Style,
     };
 
     getFormattedTime = () => {
@@ -30,13 +33,13 @@ export default class FormattedTime extends React.PureComponent {
     };
 
     render() {
-        const {children} = this.props;
+        const {children, style} = this.props;
         const formattedTime = this.getFormattedTime();
 
         if (typeof children === 'function') {
             return children(formattedTime);
         }
 
-        return <Text>{formattedTime}</Text>;
+        return <Text style={style}>{formattedTime}</Text>;
     }
 }
