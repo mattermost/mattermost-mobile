@@ -33,6 +33,19 @@ exports[`ChannelTitle should match snapshot 1`] = `
           "textAlign": "center",
         }
       }
+    >
+      My Channel
+    </Text>
+    <Icon
+      allowFontScaling={false}
+      name="chevron-down"
+      size={12}
+      style={
+        Object {
+          "color": undefined,
+          "marginHorizontal": 5,
+        }
+      }
     />
   </View>
 </TouchableOpacity>
@@ -77,7 +90,7 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
         id="channel_header.directchannel.you"
         values={
           Object {
-            "displayname": undefined,
+            "displayName": "My User",
           }
         }
       />
