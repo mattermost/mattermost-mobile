@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {isLandscape} from 'app/selectors/device';
 
 import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
 
@@ -15,6 +16,7 @@ function mapStateToProps(state) {
     return {
         ...state.views.selectServer,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 
