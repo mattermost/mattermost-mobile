@@ -3,6 +3,8 @@
 
 export default {
     REALM_SCHEMA_ID: 'general',
+    REALM_EMPTY_OBJECT: {addListener: () => true, removeListener: () => true},
+
     DEFAULT_CHANNEL: 'town-square',
     DM_CHANNEL: 'D',
     OPEN_CHANNEL: 'O',
