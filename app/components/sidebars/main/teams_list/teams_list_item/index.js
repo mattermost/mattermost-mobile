@@ -77,9 +77,10 @@ export default class TeamsListItem extends React.PureComponent {
                     <View style={[styles.teamContainer, padding(isLandscape)]}>
                         <View>
                             <TeamIcon
-                                teamId={teamId}
                                 styleContainer={styles.teamIconContainer}
                                 styleText={styles.teamIconText}
+                                teamId={teamId}
+                                theme={theme}
                             />
                             {badge}
                         </View>

@@ -69,10 +69,11 @@ export default class SwitchTeamsButton extends React.PureComponent {
                             style={styles.switcherArrow}
                         />
                         <TeamIcon
-                            teamId={currentTeamId}
                             styleContainer={styles.teamIconContainer}
-                            styleText={styles.teamIconText}
                             styleImage={styles.teamIcon}
+                            styleText={styles.teamIconText}
+                            teamId={currentTeamId}
+                            theme={theme}
                         />
                     </View>
                 </TouchableHighlight>

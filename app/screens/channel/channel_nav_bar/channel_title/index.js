@@ -13,7 +13,7 @@ import ChannelTitle from './channel_title';
 function mapPropsToQueries(realm, ownProps) {
     const {channelId} = ownProps;
     const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
-    const channel = realm.objectForPrimaryKey('Channel', channelId || '') || {addListener: () => null, removeListener: () => null};
+    const channel = realm.objectForPrimaryKey('Channel', channelId || '') || General.REALM_EMPTY_OBJECT;
     const displaySettings = realm.objects('Preference').filtered('category = $0 AND name = $1', Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
     const currentUser = realm.objectForPrimaryKey('User', general.currentUserId);
 
