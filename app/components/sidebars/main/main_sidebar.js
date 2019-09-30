@@ -210,7 +210,9 @@ export default class MainSidebar extends PureComponent {
             return;
         }
 
-        handleSelectChannel(channel.id);
+        requestAnimationFrame(() => {
+            handleSelectChannel(channel.id);
+        });
     };
 
     joinChannel = (channel, currentChannelId) => {
