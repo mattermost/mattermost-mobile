@@ -65,7 +65,7 @@
     "react-navigation": "3.9.1",
     "react-redux": "7.1.0",
     "realm": "2.29.1",
-    "realm-react-redux": "github:enahum/realm-react-redux#8b33e046e48509cab5c67e0e6d2350d82e0c1d60",
+    "realm-react-redux": "0.0.9",
     "redux": "4.0.4",
     "redux-batched-actions": "0.4.1",
     "redux-persist": "4.10.2",
