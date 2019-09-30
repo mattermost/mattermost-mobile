@@ -84,6 +84,7 @@ function makeMapStateToProps() {
             isFlagged: isPostFlagged(post.id, myPreferences),
             isCommentMention,
             isLandscape: isLandscape(state),
+            previousPostExists: (previousPost ? true : false),
         };
     };
 }

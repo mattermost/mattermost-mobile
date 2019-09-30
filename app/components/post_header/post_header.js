@@ -43,6 +43,7 @@ export default class PostHeader extends PureComponent {
         isGuest: PropTypes.bool,
         userTimezone: PropTypes.string,
         enableTimezone: PropTypes.bool,
+        previousPostExists: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -58,7 +59,7 @@ export default class PostHeader extends PureComponent {
     };
 
     renderCommentedOnMessage = () => {
-        if (!this.props.renderReplies || !this.props.commentedOnDisplayName) {
+        if (!this.props.renderReplies || !this.props.commentedOnDisplayName || !this.props.previousPostExists) {
             return null;
         }
 
