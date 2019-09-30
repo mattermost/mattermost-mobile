@@ -79,11 +79,6 @@ describe('channel_info', () => {
             selectPenultimateChannel: jest.fn(),
             setChannelDisplayName: jest.fn(),
             handleSelectChannel: jest.fn(),
-            popTopScreen: jest.fn(),
-            goToScreen: jest.fn(),
-            popToRoot: jest.fn(),
-            dismissModal: jest.fn(),
-            showModalOverCurrentContext: jest.fn(),
         },
     };
 

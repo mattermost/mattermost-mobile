@@ -54,26 +54,24 @@ export default class SafeAreaIos extends PureComponent {
         };
     }
 
-    componentWillMount() {
-        this.mounted = true;
-        this.getSafeAreaInsets();
-        this.mounted = true;
-    }
-
     componentDidMount() {
+        this.mounted = true;
+
         Dimensions.addEventListener('change', this.getSafeAreaInsets);
         EventEmitter.on('update_safe_area_view', this.getSafeAreaInsets);
         this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
+
+        this.getSafeAreaInsets();
         this.getStatusBarHeight();
     }
 
     componentWillUnmount() {
-        this.mounted = false;
         Dimensions.removeEventListener('change', this.getSafeAreaInsets);
         EventEmitter.off('update_safe_area_view', this.getSafeAreaInsets);
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
+
         this.mounted = false;
     }
 

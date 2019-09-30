@@ -19,6 +19,7 @@ import {Client4} from 'mattermost-redux/client';
 import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
+import {resetToChannel} from 'app/actions/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
 
@@ -68,7 +69,6 @@ class SSO extends PureComponent {
             scheduleExpiredNotification: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             setStoreFromLocalData: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -119,7 +119,7 @@ class SSO extends PureComponent {
 
         this.scheduleSessionExpiredNotification();
 
-        this.props.actions.resetToChannel();
+        resetToChannel();
     };
 
     onMessage = (event) => {
