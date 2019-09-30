@@ -39,6 +39,7 @@
  - Fixed an issue where file previews could scroll to the left until all files were out of view.
  - Fixed an issue on iOS where user was unable to select an emoji from two rows on the bottom of the emoji picker.
  - Fixed an issue where duplicate pinned posts displayed after editing pinned post from Pinned Posts screen.
+ - Fixed an issue where the reply arrow overlapped a posts's timestamp in some cases.
  - Fixed an issue where post textbox did not clear after using a slash command.
  - Fixed an issue where users were are not immediately removed from the mention auto-complete when those users were deactivated.
  - Fixed an issue where returning to a channel from a thread view could trigger a long-press menu that couldn't be dismissed.
@@ -46,6 +47,7 @@
  - Fixed an issue where the Connected banner got stuck when connecting to the Web socket.
  - Fixed an issue where the text input area in Android Share extension did not use available space.
  - Fixed an issue on iOS where Windows dark theme was not consistent when viewing an archived channel.
+ - Fixed an issue where interactive dialogs rendered out of safe area view on landscape orientation.
  - Fixed an issue where a themed "Delete Documents & Data" action flashed a white screen.
  - Fixed an issue where "Close group message" button implied a confirmation.
 
