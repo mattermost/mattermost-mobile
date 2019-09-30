@@ -52,16 +52,14 @@ export default class Swiper extends PureComponent {
         this.state = this.initialState(props);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.width !== nextProps.width) {
-            this.scrollByWidth(nextProps.width);
-        }
-    }
-
     componentDidUpdate(prevProps, prevState) {
         // If the index has changed, we notify the parent via the onIndexChanged callback
         if (this.state.index !== prevState.index) {
             this.props.onIndexChanged(this.state.index);
+        }
+
+        if (this.props.width !== prevProps.width) {
+            this.scrollByWidth(this.props.width);
         }
     }
 

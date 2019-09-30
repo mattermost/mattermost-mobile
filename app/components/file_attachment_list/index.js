@@ -8,9 +8,7 @@ import {canDownloadFilesOnMobile} from 'mattermost-redux/selectors/entities/gene
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {showModalOverCurrentContext} from 'app/actions/navigation';
 import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
-import {getDimensions} from 'app/selectors/device';
 
 import FileAttachmentList from './file_attachment_list';
 
@@ -18,7 +16,6 @@ function makeMapStateToProps() {
     const getFilesForPost = makeGetFilesForPost();
     return function mapStateToProps(state, ownProps) {
         return {
-            ...getDimensions(state),
             canDownloadFiles: canDownloadFilesOnMobile(state),
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),
@@ -30,7 +27,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadFilesForPostIfNecessary,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

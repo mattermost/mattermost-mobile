@@ -21,23 +21,30 @@ export default class TableImage extends React.PureComponent {
         super(props);
 
         this.state = {
+            imageSource: '',
             width: -1,
             height: -1,
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.getImageSize(this.props.imageSource);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.imageSource !== nextProps.imageSource) {
-            this.setState({
+    static getDerivedStateFromProps(nextProps, state) {
+        if (nextProps.imageSource !== state.imageSource) {
+            return {
                 width: -1,
                 height: -1,
-            });
+            };
+        }
 
-            this.getImageSize(nextProps.imageSource);
+        return null;
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.imageSource !== this.props.imageSource) {
+            this.getImageSize(this.props.imageSource);
         }
     }
 

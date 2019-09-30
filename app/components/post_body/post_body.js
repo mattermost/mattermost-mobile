@@ -6,12 +6,10 @@ import PropTypes from 'prop-types';
 import {
     Keyboard,
     ScrollView,
-    TouchableOpacity,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
-
 import {Posts} from 'mattermost-redux/constants';
 
 import CombinedSystemMessage from 'app/components/combined_system_message';
@@ -19,11 +17,13 @@ import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import MarkdownEmoji from 'app/components/markdown/markdown_emoji';
 import ShowMoreButton from 'app/components/show_more_button';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
 import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 import telemetry from 'app/telemetry';
 
@@ -36,9 +36,6 @@ const SHOW_MORE_HEIGHT = 60;
 
 export default class PostBody extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-        }).isRequired,
         canDelete: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -135,7 +132,6 @@ export default class PostBody extends PureComponent {
             onHashtagPress,
             onPermalinkPress,
             post,
-            actions,
         } = this.props;
         const screen = 'LongPost';
         const passProps = {
@@ -150,7 +146,7 @@ export default class PostBody extends PureComponent {
             },
         };
 
-        actions.showModalOverCurrentContext(screen, passProps, options);
+        showModalOverCurrentContext(screen, passProps, options);
     });
 
     showPostOptions = () => {
@@ -167,7 +163,6 @@ export default class PostBody extends PureComponent {
             post,
             showAddReaction,
             location,
-            actions,
         } = this.props;
 
         if (isSystemMessage && (!canDelete || hasBeenDeleted)) {
@@ -193,7 +188,7 @@ export default class PostBody extends PureComponent {
 
         Keyboard.dismiss();
         requestAnimationFrame(() => {
-            actions.showModalOverCurrentContext(screen, passProps);
+            showModalOverCurrentContext(screen, passProps);
         });
     };
 
@@ -441,16 +436,17 @@ export default class PostBody extends PureComponent {
                 <View style={replyBarStyle}/>
                 {body}
                 {isFailed &&
-                <TouchableOpacity
+                <TouchableWithFeedback
                     onPress={onFailedPostPress}
                     style={style.retry}
+                    type={'opacity'}
                 >
                     <Icon
                         name='ios-information-circle-outline'
                         size={26}
                         color={theme.errorTextColor}
                     />
-                </TouchableOpacity>
+                </TouchableWithFeedback>
                 }
             </View>
         );

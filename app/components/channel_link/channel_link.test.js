@@ -11,9 +11,13 @@ import ChannelLink from './channel_link';
 
 jest.mock('react-intl');
 
-jest.mock('app/utils/general', () => ({
-    alertErrorWithFallback: jest.fn(),
-}));
+jest.mock('app/utils/general', () => {
+    const general = require.requireActual('app/utils/general');
+    return {
+        ...general,
+        alertErrorWithFallback: jest.fn(),
+    };
+});
 
 describe('ChannelLink', () => {
     const formatMessage = jest.fn();
@@ -30,10 +34,8 @@ describe('ChannelLink', () => {
         textStyle: {color: '#3d3c40', fontSize: 15, lineHeight: 20},
         channelsByName,
         actions: {
-            dismissAllModals: jest.fn(),
             handleSelectChannel: jest.fn(),
             joinChannel: jest.fn(),
-            popToRoot: jest.fn(),
         },
     };
 
@@ -71,14 +73,14 @@ describe('ChannelLink', () => {
         expect(innerText.props().onPress).not.toBeDefined();
     });
 
-    test('should call props.actions and onChannelLinkPress on handlePress', () => {
+    test('should call props.actions and onChannelLinkPress on handlePress', async () => {
         const wrapper = shallow(
             <ChannelLink {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 
         const channel = channelsByName.firstChannel;
-        wrapper.instance().handlePress();
+        await wrapper.instance().handlePress();
         expect(baseProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
         expect(baseProps.actions.handleSelectChannel).toBeCalledWith(channel.id);
         expect(baseProps.onChannelLinkPress).toHaveBeenCalledTimes(1);

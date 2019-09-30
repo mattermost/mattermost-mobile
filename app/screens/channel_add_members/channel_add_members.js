@@ -14,6 +14,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
@@ -30,6 +31,7 @@ import {
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
+import {popTopScreen, setButtons} from 'app/actions/navigation';
 
 export default class ChannelAddMembers extends PureComponent {
     static propTypes = {
@@ -38,8 +40,6 @@ export default class ChannelAddMembers extends PureComponent {
             getProfilesNotInChannel: PropTypes.func.isRequired,
             handleAddChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         currentChannelId: PropTypes.string.isRequired,
@@ -82,7 +82,7 @@ export default class ChannelAddMembers extends PureComponent {
             showAsAction: 'always',
         };
 
-        props.actions.setButtons(props.componentId, {
+        setButtons(props.componentId, {
             rightButtons: [this.addButton],
         });
     }
@@ -121,12 +121,12 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     close = () => {
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     enableAddOption = (enabled) => {
-        const {actions, componentId} = this.props;
-        actions.setButtons(componentId, {
+        const {componentId} = this.props;
+        setButtons(componentId, {
             rightButtons: [{...this.addButton, enabled}],
         });
     };

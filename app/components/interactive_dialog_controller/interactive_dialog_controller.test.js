@@ -73,7 +73,6 @@ function getBaseProps(triggerId, elements, introductionText) {
 
     return {
         actions: {
-            showModal: jest.fn(),
             submitInteractiveDialog: jest.fn(),
         },
         triggerId,

@@ -12,6 +12,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
 import {t} from 'app/utils/i18n';
+import {showModal, dismissModal} from 'app/actions/navigation';
 
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
@@ -27,8 +28,6 @@ export default class PostOptions extends PureComponent {
             removePost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired,
             unpinPost: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
             setUnreadPost: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
@@ -55,7 +54,7 @@ export default class PostOptions extends PureComponent {
     };
 
     close = async (cb) => {
-        await this.props.actions.dismissModal();
+        dismissModal();
 
         if (typeof cb === 'function') {
             setTimeout(cb, 300);
@@ -264,7 +263,7 @@ export default class PostOptions extends PureComponent {
     };
 
     handleAddReaction = () => {
-        const {actions, theme} = this.props;
+        const {theme} = this.props;
         const {formatMessage} = this.context.intl;
 
         this.close(() => {
@@ -276,7 +275,7 @@ export default class PostOptions extends PureComponent {
                     onEmojiPress: this.handleAddReactionToPost,
                 };
 
-                actions.showModal(screen, title, passProps);
+                showModal(screen, title, passProps);
             });
         });
     };
@@ -363,7 +362,7 @@ export default class PostOptions extends PureComponent {
     };
 
     handlePostEdit = () => {
-        const {actions, theme, post} = this.props;
+        const {theme, post} = this.props;
         const {intl} = this.context;
 
         this.close(() => {
@@ -375,7 +374,7 @@ export default class PostOptions extends PureComponent {
                     closeButton: source,
                 };
 
-                actions.showModal(screen, title, passProps);
+                showModal(screen, title, passProps);
             });
         });
     };
