@@ -16,7 +16,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class UnreadIndicator extends PureComponent {
     static propTypes = {
-        show: PropTypes.bool,
+        visible: PropTypes.bool,
         style: ViewPropTypes.style,
         onPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
@@ -27,31 +27,52 @@ export default class UnreadIndicator extends PureComponent {
         onPress: () => true,
     };
 
-    render() {
-        const {onPress, show, theme} = this.props;
+    renderContent = () => {
+        const {onPress, visible, theme} = this.props;
         const style = getStyleSheet(theme);
+
+        const content = (
+            <View
+                style={[style.wrapper, this.props.style]}
+                pointerEvents={visible ? 'auto' : 'none'}
+            >
+                <FormattedText
+                    style={[style.indicatorText, this.props.textStyle]}
+                    id='sidebar.unreads'
+                    defaultMessage='More unreads'
+                />
+                <IonIcon
+                    size={14}
+                    name='md-arrow-round-up'
+                    color={theme.mentionColor}
+                    style={style.arrow}
+                />
+            </View>
+        );
+
+        if (visible) {
+            return (
+                <TouchableWithoutFeedback onPress={onPress}>
+                    {content}
+                </TouchableWithoutFeedback>
+            );
+        }
+
+        return content;
+    };
+
+    render() {
+        const {visible, theme} = this.props;
+        const style = getStyleSheet(theme);
+
         return (
             <Fade
-                visible={show}
+                visible={visible}
                 style={style.container}
                 duration={150}
                 disableScale={true}
             >
-                <TouchableWithoutFeedback onPress={onPress}>
-                    <View style={[style.wrapper, this.props.style]}>
-                        <FormattedText
-                            style={[style.indicatorText, this.props.textStyle]}
-                            id='sidebar.unreads'
-                            defaultMessage='More unreads'
-                        />
-                        <IonIcon
-                            size={14}
-                            name='md-arrow-round-up'
-                            color={theme.mentionColor}
-                            style={style.arrow}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
+                {this.renderContent()}
             </Fade>
         );
     }
