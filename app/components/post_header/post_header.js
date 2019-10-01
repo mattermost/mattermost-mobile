@@ -69,10 +69,10 @@ export default class PostHeader extends PureComponent {
             renderReplies,
             theme,
         } = this.props;
-        if (!renderReplies || !commentedOnDisplayName || (!previousPostExists && post.user_id === beforePrevPostUser) ) {
+        if (!renderReplies || !commentedOnDisplayName || (!previousPostExists && post.user_id === beforePrevPostUser)) {
             return null;
         }
-       
+
         const style = getStyleSheet(theme);
         const displayName = commentedOnDisplayName;
 
