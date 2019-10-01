@@ -9,15 +9,22 @@ import {Preferences} from 'mattermost-redux/constants';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {updateMe} from 'mattermost-redux/actions/users';
 
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {
     get as getPreference,
     getTheme,
 } from 'mattermost-redux/selectors/entities/preferences';
+
 import {isLandscape} from 'app/selectors/device';
+import {getNotificationProps} from 'app/utils/notify_props';
+
 import NotificationSettingsEmail from './notification_settings_email';
 
 function mapStateToProps(state) {
+    const currentUser = getCurrentUser(state) || {};
+    const notifyProps = getNotificationProps(currentUser);
+
     const config = getConfig(state);
     const sendEmailNotifications = config.SendEmailNotifications === 'true';
     const enableEmailBatching = config.EnableEmailBatching === 'true';
@@ -29,6 +36,8 @@ function mapStateToProps(state) {
     );
 
     return {
+        currentUser,
+        notifyProps,
         enableEmailBatching,
         emailInterval,
         sendEmailNotifications,
