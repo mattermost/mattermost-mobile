@@ -252,6 +252,7 @@ export default class Post extends PureComponent {
             location,
             isLandscape,
             previousPostExists,
+            beforePrevPostUser,
         } = this.props;
 
         if (!post) {
@@ -302,6 +303,7 @@ export default class Post extends PureComponent {
                     renderReplies={renderReplies}
                     theme={theme}
                     previousPostExists={previousPostExists}
+                    beforePrevPostUser={beforePrevPostUser}
                 />
             );
         }
