@@ -78,17 +78,14 @@ class NotificationSettings extends PureComponent {
     };
 
     goToNotificationSettingsEmail = () => {
-        const {currentUser, intl} = this.props;
+        const {intl} = this.props;
         const screen = 'NotificationSettingsEmail';
         const title = intl.formatMessage({
             id: 'mobile.notification_settings.email_title',
             defaultMessage: 'Email Notifications',
         });
-        const passProps = {
-            currentUser,
-        };
 
-        goToScreen(screen, title, passProps);
+        goToScreen(screen, title);
     };
 
     goToNotificationSettingsMentions = () => {

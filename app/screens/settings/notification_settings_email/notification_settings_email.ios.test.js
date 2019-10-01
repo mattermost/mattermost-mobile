@@ -27,6 +27,9 @@ jest.mock('app/utils/theme', () => {
 describe('NotificationSettingsEmailIos', () => {
     const baseProps = {
         currentUser: {id: 'current_user_id'},
+        notifyProps: {
+            email: 'true',
+        },
         emailInterval: '30',
         enableEmailBatching: false,
         actions: {
