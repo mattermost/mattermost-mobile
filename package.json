@@ -61,7 +61,7 @@
     "react-native-vector-icons": "6.4.2",
     "react-native-video": "4.4.1",
     "react-native-webview": "github:mattermost/react-native-webview#b5e22940a613869d3999feac9451ee65352f4fbe",
-    "react-native-youtube": "github:mattermost/react-native-youtube#3f395b620ae4e05a3f1c6bdeef3a1158e78daadc",
+    "react-native-youtube": "github:mattermost/react-native-youtube#22954c394146ec9a09ce5510056c17714a7155b2",
     "react-navigation": "3.9.1",
     "react-redux": "7.0.3",
     "redux": "4.0.1",
