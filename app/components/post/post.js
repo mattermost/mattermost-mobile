@@ -69,6 +69,7 @@ export default class Post extends PureComponent {
         isBot: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
         previousPostExists: PropTypes.bool,
+        beforePrevPostUser: PropTypes.string,
     };
 
     static defaultProps = {
