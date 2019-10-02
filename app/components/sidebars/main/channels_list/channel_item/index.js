@@ -35,18 +35,16 @@ function makeMapStateToProps() {
         let isArchived = channel.delete_at > 0;
 
         if (channel.type === General.DM_CHANNEL) {
-            if (ownProps.isSearchResult) {
-                isBot = Boolean(channel.isBot);
-            } else {
-                const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
-                const teammate = getUser(state, teammateId);
+            const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+            const teammate = getUser(state, teammateId);
+
+            isBot = Boolean(ownProps.isSearchResult ? channel.isBot : teammate?.is_bot); //eslint-disable-line camelcase
+
+            if (teammate) {
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
                 displayName = displayUsername(teammate, teammateNameDisplay, false);
-                if (teammate) {
-                    isArchived = teammate.delete_at > 0;
-                    isBot = teammate.is_bot || false;
-                }
-                isGuest = isGuestUser(teammate);
+                isArchived = teammate.delete_at > 0;
+                isGuest = isGuestUser(teammate) || false;
             }
         }
 
