@@ -38,7 +38,7 @@ function makeMapStateToProps() {
             const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
             const teammate = getUser(state, teammateId);
 
-            isBot = Boolean(ownProps.isSearchResult ? channel.isBot : teammate?.is_bot);
+            isBot = Boolean(ownProps.isSearchResult ? channel.isBot : teammate?.is_bot); //eslint-disable-line no-camelcase
 
             if (teammate) {
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
