@@ -29,7 +29,6 @@ exports[`channel_info should match snapshot 1`] = `
       isGroupConstrained={false}
       memberCount={2}
       onPermalinkPress={[Function]}
-      popToRoot={[MockFunction]}
       purpose="Purpose"
       status="status"
       theme={

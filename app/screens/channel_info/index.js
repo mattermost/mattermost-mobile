@@ -34,13 +34,6 @@ import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 
 import {
-    popTopScreen,
-    goToScreen,
-    popToRoot,
-    dismissModal,
-    showModalOverCurrentContext,
-} from 'app/actions/navigation';
-import {
     closeDMChannel,
     closeGMChannel,
     handleSelectChannel,
@@ -148,11 +141,6 @@ function mapDispatchToProps(dispatch) {
             selectPenultimateChannel,
             setChannelDisplayName,
             handleSelectChannel,
-            popTopScreen,
-            goToScreen,
-            popToRoot,
-            dismissModal,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

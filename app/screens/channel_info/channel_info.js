@@ -17,6 +17,8 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {goToScreen, popTopScreen, showModalOverCurrentContext} from 'app/actions/navigation';
+
 import pinIcon from 'assets/images/channel_info/pin.png';
 
 import ChannelInfoHeader from './channel_info_header';
@@ -42,10 +44,6 @@ export default class ChannelInfo extends PureComponent {
             selectPenultimateChannel: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         viewArchivedChannels: PropTypes.bool.isRequired,
@@ -122,31 +120,30 @@ export default class ChannelInfo extends PureComponent {
             actions.setChannelDisplayName('');
         }
 
-        actions.popTopScreen();
+        popTopScreen();
     };
 
     goToChannelAddMembers = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'ChannelAddMembers';
         const title = intl.formatMessage({id: 'channel_header.addMembers', defaultMessage: 'Add Members'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     goToChannelMembers = preventDoubleTap(() => {
-        const {actions, canManageUsers} = this.props;
+        const {canManageUsers} = this.props;
         const {intl} = this.context;
         const id = canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers');
         const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
         const screen = 'ChannelMembers';
         const title = intl.formatMessage({id, defaultMessage});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     goToPinnedPosts = preventDoubleTap(() => {
-        const {actions, currentChannel} = this.props;
+        const {currentChannel} = this.props;
         const {formatMessage} = this.context.intl;
         const id = t('channel_header.pinnedPosts');
         const defaultMessage = 'Pinned Posts';
@@ -156,18 +153,17 @@ export default class ChannelInfo extends PureComponent {
             currentChannelId: currentChannel.id,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     handleChannelEdit = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const id = t('mobile.channel_info.edit');
         const defaultMessage = 'Edit Channel';
         const screen = 'EditChannel';
         const title = intl.formatMessage({id, defaultMessage});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     handleLeave = () => {
@@ -268,7 +264,7 @@ export default class ChannelInfo extends PureComponent {
                             defaultMessage: "We couldn't archive the channel {displayName}. Please check your connection and try again.",
                         },
                         {
-                            displayName: channel.display_name,
+                            displayName: channel.display_name.trim(),
                         }
                     );
                     if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
@@ -290,7 +286,7 @@ export default class ChannelInfo extends PureComponent {
                 message,
                 {
                     term: term.toLowerCase(),
-                    name: channel.display_name,
+                    name: channel.display_name.trim(),
                 }
             ),
             [{
@@ -379,7 +375,7 @@ export default class ChannelInfo extends PureComponent {
         actions.selectFocusedPostId(postId);
 
         this.showingPermalink = true;
-        actions.showModalOverCurrentContext(screen, passProps, options);
+        showModalOverCurrentContext(screen, passProps, options);
     };
 
     renderViewOrManageMembersRow = () => {
@@ -564,7 +560,6 @@ export default class ChannelInfo extends PureComponent {
             theme,
             isBot,
             isLandscape,
-            actions: {popToRoot},
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -605,7 +600,6 @@ export default class ChannelInfo extends PureComponent {
                         isBot={isBot}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
-                        popToRoot={popToRoot}
                     />
                     }
                     <View style={style.rowsContainer}>
