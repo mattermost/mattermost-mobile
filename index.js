@@ -11,6 +11,10 @@ import telemetry from 'app/telemetry';
 
 import 'app/mattermost';
 
+if (Platform.OS === 'android') {
+    require('harmony-reflect');
+}
+
 if (__DEV__) {
     YellowBox.ignoreWarnings([
         'Warning: componentWillMount is deprecated',

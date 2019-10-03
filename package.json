@@ -93,6 +93,7 @@
     "eslint-plugin-header": "3.0.0",
     "eslint-plugin-jest": "22.5.1",
     "eslint-plugin-react": "7.13.0",
+    "harmony-reflect": "1.6.1",
     "jest": "24.9.0",
     "jest-cli": "24.9.0",
     "jest-enzyme": "7.1.0",
