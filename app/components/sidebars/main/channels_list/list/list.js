@@ -417,10 +417,10 @@ export default class List extends PureComponent {
                 />
                 {UnreadIndicator &&
                 <UnreadIndicator
-                    show={showIndicator}
-                    style={styles.above}
                     onPress={this.scrollToTop}
                     theme={theme}
+                    style={styles.above}
+                    visible={showIndicator}
                 />
                 }
             </View>

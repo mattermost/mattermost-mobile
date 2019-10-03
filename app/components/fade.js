@@ -47,6 +47,7 @@ export default class Fade extends PureComponent {
                     opacity: fadeAnim,
                     transform: disableScale ? [] : [{scale: fadeAnim}],
                 }}
+                pointerEvents={'box-none'}
             >
                 {this.props.children}
             </Animated.View>
