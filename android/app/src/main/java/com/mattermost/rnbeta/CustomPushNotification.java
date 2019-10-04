@@ -115,7 +115,9 @@ public class CustomPushNotification extends PushNotification {
                     count = 0;
                 }
 
-                channelIdToNotificationCount.put(channelId, count + 1);
+                count += 1;
+
+                channelIdToNotificationCount.put(channelId, count);
             }
 
             synchronized (channelIdToNotification) {
