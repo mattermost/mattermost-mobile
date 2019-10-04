@@ -115,7 +115,7 @@ export default class ChannelItem extends PureComponent {
             return null;
         }
 
-        if (!this.props.displayName) {
+        if (!displayName) {
             return null;
         }
 
@@ -134,7 +134,7 @@ export default class ChannelItem extends PureComponent {
         if (isCurrenUser) {
             channelDisplayName = intl.formatMessage({
                 id: 'channel_header.directchannel.you',
-                defaultMessage: '{displayName} (you)',
+                defaultMessage: '{displayname} (you)',
             }, {displayname: displayName});
         }
 
