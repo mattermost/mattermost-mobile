@@ -260,7 +260,7 @@ export default class PostList extends PureComponent {
         // Remember that the list is rendered with item 0 at the bottom so the "previous" post
         // comes after this one in the list
         const previousPostId = index < this.props.postIds.length - 1 ? this.props.postIds[index + 1] : null;
-        const beforePrevPostId = index < this.props.postIds.length - 1 ? this.props.postIds[index + 2] : null;
+        const beforePrevPostId = index < this.props.postIds.length - 2 ? this.props.postIds[index + 2] : null;
         const nextPostId = index > 0 ? this.props.postIds[index - 1] : null;
 
         const postProps = {
