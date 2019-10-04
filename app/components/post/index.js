@@ -86,7 +86,7 @@ function makeMapStateToProps() {
             isCommentMention,
             isLandscape: isLandscape(state),
             previousPostExists: Boolean(previousPost),
-            beforePrevPostUser: (beforePrevPost ? beforePrevPost.user_id : null),
+            beforePrevPostUserId: (beforePrevPost ? beforePrevPost.user_id : null),
         };
     };
 }
