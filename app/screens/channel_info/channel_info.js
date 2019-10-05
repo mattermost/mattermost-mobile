@@ -600,6 +600,7 @@ export default class ChannelInfo extends PureComponent {
                         isBot={isBot}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
+                        isLandscape={isLandscape}
                     />
                     }
                     <View style={style.rowsContainer}>

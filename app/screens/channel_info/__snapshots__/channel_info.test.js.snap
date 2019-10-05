@@ -27,6 +27,7 @@ exports[`channel_info should match snapshot 1`] = `
       isArchived={false}
       isBot={false}
       isGroupConstrained={false}
+      isLandscape={false}
       memberCount={2}
       onPermalinkPress={[Function]}
       purpose="Purpose"
