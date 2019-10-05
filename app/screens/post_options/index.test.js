@@ -25,9 +25,23 @@ deviceSelectors.isLandscape = jest.fn();
 preferencesSelectors.getTheme = jest.fn();
 
 describe('mapStateToProps', () => {
-    const baseState = {};
+    const baseState = {
+        entities: {
+            posts: {
+                posts: {
+                    post_id: {},
+                },
+                reactions: {
+                    post_id: {},
+                },
+            },
+        },
+    };
+
     const baseOwnProps = {
-        post: {},
+        post: {
+            id: 'post_id',
+        },
     };
 
     test('canFlag is false for system messages', () => {
