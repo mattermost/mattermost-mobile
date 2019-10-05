@@ -81,7 +81,7 @@ class PushNotification {
     localNotificationSchedule(notification) {
         if (notification.date) {
             notification.fireDate = notification.date.getTime();
-            Reflect.deleteProperty(notification, 'date');
+            delete notification['date'];
             NotificationsAndroid.scheduleLocalNotification(notification);
         }
     }
@@ -94,9 +94,8 @@ class PushNotification {
         NotificationsAndroid.cancelAllLocalNotifications();
     }
 
-    setApplicationIconBadgeNumber(number) {
-        const count = number < 0 ? 0 : number;
-        NotificationsAndroid.setBadgesCount(count);
+    setApplicationIconBadgeNumber() {
+        // Not supported for Android
     }
 
     getNotification() {
@@ -116,7 +115,6 @@ class PushNotification {
     }
 
     clearNotifications = () => {
-        this.setApplicationIconBadgeNumber(0);
         this.cancelAllLocalNotifications(); // TODO: Only cancel the local notifications that belong to this server
     }
 }
