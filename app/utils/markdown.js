@@ -81,7 +81,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
             fontFamily: codeFont,
         },
         mention: {
-            color: theme.linkColor,
+            color: theme.mentionHighlightLink,
         },
         error: {
             color: theme.errorTextColor,
