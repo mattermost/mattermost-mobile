@@ -113,7 +113,7 @@ export default class ChannelInfo extends PureComponent {
                 isFavorite,
                 isMuted,
                 ignoreChannelMentions,
-            }
+            };
         }
         return null;
     }

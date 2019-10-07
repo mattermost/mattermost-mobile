@@ -127,6 +127,7 @@ export default class EditChannel extends PureComponent {
             switch (updateChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitUpdating(true);
+                break;
             case RequestStatus.SUCCESS:
                 EventEmitter.emit('close_channel_drawer');
                 InteractionManager.runAfterInteractions(() => {
@@ -134,10 +135,12 @@ export default class EditChannel extends PureComponent {
                     this.close();
                 });
                 newState.updating = false;
+                break;
             case RequestStatus.FAILURE:
                 this.emitUpdating(false);
                 newState.error = updateChannelRequest.error;
                 newState.updating = false;
+                break;
             }
 
             return newState;
