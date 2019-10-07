@@ -32,7 +32,6 @@ jest.mock('react-native-notifications', () => {
         addEventListener: jest.fn(),
         NotificationAction: jest.fn(),
         NotificationCategory: jest.fn(),
-        consumeBackgroundQueue: jest.fn(),
         localNotification: jest.fn(),
     };
 });
