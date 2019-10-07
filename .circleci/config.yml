@@ -253,6 +253,7 @@ jobs:
     environment:
       APP_NAME: "Mattermost Beta"
       BUILD_PR: true
+      BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
       REPLACE_ASSETS: false
       MAIN_APP_IDENTIFIER: "com.mattermost.rnbeta"
       SENTRY_ENABLED: false
@@ -316,6 +317,7 @@ jobs:
     environment:
       APP_NAME: "Mattermost Beta"
       BUILD_PR: true
+      BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
       REPLACE_ASSETS: false
       MAIN_APP_IDENTIFIER: "com.mattermost.rnbeta"
       SENTRY_ENABLED: false
