@@ -1254,7 +1254,7 @@ Open Android settings from your React Native app
 * HOMEPAGE:
   * https://github.com/levelasquez/react-native-android-open-settings
 
-* LICENSE: 
+* LICENSE: ISC
 
 ---
 
