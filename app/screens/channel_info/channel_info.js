@@ -92,17 +92,17 @@ export default class ChannelInfo extends PureComponent {
     }
 
     getDerivedStateFromProps(nextProps, state) {
-        let isFavorite = this.state.isFavorite;
+        let isFavorite = state.isFavorite;
         if (isFavorite !== nextProps.isFavorite) {
             isFavorite = nextProps.isFavorite;
         }
 
-        let isMuted = this.state.isMuted;
+        let isMuted = state.isMuted;
         if (isMuted !== nextProps.isChannelMuted) {
             isMuted = nextProps.isChannelMuted;
         }
 
-        let ignoreChannelMentions = this.state.ignoreChannelMentions;
+        let ignoreChannelMentions = state.ignoreChannelMentions;
         if (ignoreChannelMentions !== nextProps.ignoreChannelMentions) {
             ignoreChannelMentions = nextProps.ignoreChannelMentions;
         }

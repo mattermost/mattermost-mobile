@@ -92,6 +92,7 @@ export default class EditChannel extends PureComponent {
         this.state = {
             error: null,
             updating: false,
+            updateChannelRequest: this.props.updateChannelRequest,
             displayName,
             channelURL,
             purpose,
@@ -114,35 +115,34 @@ export default class EditChannel extends PureComponent {
         this.emitCanUpdateChannel(false);
     }
 
-    getDerivedStateFromProps(nextProps) {
+    getDerivedStateFromProps(nextProps, state) {
         const {updateChannelRequest} = nextProps;
 
-        if (this.props.updateChannelRequest !== updateChannelRequest) {
+        if (state.updateChannelRequest !== updateChannelRequest) {
+            const newState = {
+                error: null,
+                updating: true,
+            };
+
             switch (updateChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitUpdating(true);
-                return {
-                    error: null,
-                    updating: true,
-                };
             case RequestStatus.SUCCESS:
                 EventEmitter.emit('close_channel_drawer');
                 InteractionManager.runAfterInteractions(() => {
                     this.emitUpdating(false);
                     this.close();
                 });
-                return {
-                    error: null,
-                    updating: false,
-                }
+                newState.updating = false;
             case RequestStatus.FAILURE:
                 this.emitUpdating(false);
-                return {
-                    error: updateChannelRequest.error,
-                    updating: false,
-                }
+                newState.error = updateChannelRequest.error;
+                newState.updating = false;
             }
+
+            return newState;
         }
+        return null;
     }
 
     componentDidUpdate(prevProps) {
