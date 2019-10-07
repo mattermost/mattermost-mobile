@@ -114,32 +114,40 @@ export default class EditChannel extends PureComponent {
         this.emitCanUpdateChannel(false);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
-
+    getDerivedStateFromProps(nextProps) {
         const {updateChannelRequest} = nextProps;
 
         if (this.props.updateChannelRequest !== updateChannelRequest) {
             switch (updateChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitUpdating(true);
-                this.setState({error: null, updating: true});
-                break;
+                return {
+                    error: null,
+                    updating: true,
+                };
             case RequestStatus.SUCCESS:
                 EventEmitter.emit('close_channel_drawer');
                 InteractionManager.runAfterInteractions(() => {
                     this.emitUpdating(false);
-                    this.setState({error: null, updating: false});
                     this.close();
                 });
-                break;
+                return {
+                    error: null,
+                    updating: false,
+                }
             case RequestStatus.FAILURE:
                 this.emitUpdating(false);
-                this.setState({error: updateChannelRequest.error, updating: false});
-                break;
+                return {
+                    error: updateChannelRequest.error,
+                    updating: false,
+                }
             }
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.theme !== this.props.theme) {
+            setNavigatorStyles(prevProps.componentId, this.props.theme);
         }
     }
 

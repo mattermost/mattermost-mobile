@@ -82,6 +82,7 @@ export default class ChannelInfo extends PureComponent {
             isFavorite: props.isFavorite,
             isMuted: props.isChannelMuted,
             ignoreChannelMentions: props.ignoreChannelMentions,
+            prevPropsUserId: props.currentUserId,
         };
     }
 
@@ -90,11 +91,7 @@ export default class ChannelInfo extends PureComponent {
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
-
+    getDerivedStateFromProps(nextProps, state) {
         let isFavorite = this.state.isFavorite;
         if (isFavorite !== nextProps.isFavorite) {
             isFavorite = nextProps.isFavorite;
@@ -110,7 +107,21 @@ export default class ChannelInfo extends PureComponent {
             ignoreChannelMentions = nextProps.ignoreChannelMentions;
         }
 
-        this.setState({isFavorite, isMuted, ignoreChannelMentions});
+        if (nextProps.currentUserId !== state.prevPropsUserId) {
+            return {
+                prevPropsUserId: nextProps.currentUserId,
+                isFavorite,
+                isMuted,
+                ignoreChannelMentions,
+            }
+        }
+        return null;
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.theme !== this.props.theme) {
+            setNavigatorStyles(prevProps.componentId, this.props.theme);
+        }
     }
 
     close = (redirect = true) => {
