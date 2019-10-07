@@ -55,7 +55,6 @@ clean: ## Cleans dependencies, previous builds and temp files
 	@rm -rf node_modules
 	@rm -rf dist
 	@rm -rf ios/build
-	@rm -rf ios/Pods
 	@rm -rf android/app/build
 
 	@echo Cleanup finished

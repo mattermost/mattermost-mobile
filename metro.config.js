@@ -40,6 +40,7 @@ const config = {
             };
         },
     },
+    maxWorkers: 4,
 };
 
 module.exports = config;
