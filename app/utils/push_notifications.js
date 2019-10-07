@@ -102,7 +102,7 @@ class PushNotificationUtils {
         }
     };
 
-    onPushNotificationReply = async (data, text, badge, completed) => {
+    onPushNotificationReply = async (data, text, badgeCount, completion) => {
         const {dispatch, getState} = this.store;
         const state = getState();
         const credentials = await getAppCredentials(); // TODO Change to handle multiple servers
@@ -144,23 +144,24 @@ class PushNotificationUtils {
                         channel_id: data.channel_id,
                     },
                 });
-                completed();
+                completion();
                 return;
             }
 
-            if (badge >= 0) {
-                PushNotifications.setApplicationIconBadgeNumber(badge);
+            if (badgeCount >= 0) {
+                const newBadgeCount = badgeCount - 1;
+                PushNotifications.setApplicationIconBadgeNumber(newBadgeCount);
             }
 
             dispatch(markChannelViewedAndRead(data.channel_id));
             this.replyNotificationData = null;
-            completed();
+            completion();
         } else {
             this.replyNotificationData = {
                 data,
                 text,
-                badge,
-                completed,
+                badgeCount,
+                completion,
             };
         }
     };
