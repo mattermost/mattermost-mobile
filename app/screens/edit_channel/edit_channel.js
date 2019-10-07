@@ -115,7 +115,7 @@ export default class EditChannel extends PureComponent {
         this.emitCanUpdateChannel(false);
     }
 
-    getDerivedStateFromProps(nextProps, state) {
+    static getDerivedStateFromProps(nextProps, state) {
         const {updateChannelRequest} = nextProps;
 
         if (state.updateChannelRequest !== updateChannelRequest) {

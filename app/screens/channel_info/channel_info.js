@@ -91,7 +91,7 @@ export default class ChannelInfo extends PureComponent {
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
     }
 
-    getDerivedStateFromProps(nextProps, state) {
+    static getDerivedStateFromProps(nextProps, state) {
         let isFavorite = state.isFavorite;
         if (isFavorite !== nextProps.isFavorite) {
             isFavorite = nextProps.isFavorite;
