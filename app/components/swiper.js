@@ -52,6 +52,14 @@ export default class Swiper extends PureComponent {
         this.state = this.initialState(props);
     }
 
+    static getDerivedStateFromProps(props, state) {
+        const total = React.Children.count(props.children);
+        if (total !== state.total) {
+            return {total};
+        }
+        return null;
+    }
+
     componentDidUpdate(prevProps, prevState) {
         // If the index has changed, we notify the parent via the onIndexChanged callback
         if (this.state.index !== prevState.index) {
