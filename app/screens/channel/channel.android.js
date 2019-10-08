@@ -13,7 +13,7 @@ import PostTextbox from 'app/components/post_textbox';
 import LocalConfig from 'assets/config';
 
 import ChannelNavBar from './channel_nav_bar';
-import ChannelPostList from './channel_post_list';
+import PostListWrapper from './post_list_wrapper';
 
 import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
 
@@ -33,7 +33,7 @@ export default class ChannelAndroid extends ChannelBase {
                 />
                 <KeyboardLayout>
                     <View style={style.flex}>
-                        <ChannelPostList/>
+                        <PostListWrapper/>
                     </View>
                     <PostTextbox
                         ref={this.postTextbox}

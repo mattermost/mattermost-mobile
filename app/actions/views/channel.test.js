@@ -77,7 +77,7 @@ describe('Actions.Views.Channel', () => {
         };
     });
 
-    postActions.getPosts = jest.fn((channelId) => {
+    postActions.getPostsUnread = jest.fn((channelId) => {
         const order = [];
         const posts = {};
 
@@ -163,12 +163,12 @@ describe('Actions.Views.Channel', () => {
         store = mockStore(storeObj);
 
         await store.dispatch(loadPostsIfNecessaryWithRetry(currentChannelId));
-        expect(postActions.getPosts).toBeCalled();
+        expect(postActions.getPostsUnread).toBeCalled();
 
         const storeActions = store.getActions();
-        const storeBatchActions = storeActions.filter(({type}) => type === 'BATCHING_REDUCER.BATCH');
+        // const storeBatchActions = storeActions.filter(({type}) => type === 'BATCHING_REDUCER.BATCH');
         const receivedPosts = storeActions.find(({type}) => type === MOCK_RECEIVED_POSTS);
-        const receivedPostsAtAction = storeBatchActions[0].payload.some((action) => action.type === 'RECEIVED_POSTS_FOR_CHANNEL_AT_TIME');
+        const receivedPostsAtAction = storeActions.some((action) => action.type === 'RECEIVED_POSTS_FOR_CHANNEL_AT_TIME');
 
         nextPostState = postReducer(store.getState().entities.posts, receivedPosts);
         nextPostState = postReducer(nextPostState, {

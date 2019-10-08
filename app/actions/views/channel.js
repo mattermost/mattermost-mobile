@@ -3,7 +3,7 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {ViewTypes} from 'app/constants';
+import {ViewTypes, PostRequestTypes} from 'app/constants';
 
 import {UserTypes} from 'mattermost-redux/action_types';
 import {
@@ -16,10 +16,12 @@ import {
     getChannelStats,
 } from 'mattermost-redux/actions/channels';
 import {
-    getPosts,
+    getPostsUnread,
     getPostsBefore,
     getPostsSince,
     getPostThread,
+    getPostsAfter,
+    getPostsUnreadAndCleanOldPosts,
 } from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
@@ -178,28 +180,13 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
         const state = getState();
         const {posts} = state.entities.posts;
         const postsIds = getPostIdsInChannel(state, channelId);
-        const actions = [];
 
         const time = Date.now();
 
-        let loadMorePostsVisible = true;
         let received;
-        if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
-            // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-            received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
-
-            if (received?.order) {
-                const count = received.order.length;
-                loadMorePostsVisible = count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-                actions.push({
-                    type: ViewTypes.SET_INITIAL_POST_COUNT,
-                    data: {
-                        channelId,
-                        count,
-                    },
-                });
-            }
-        } else {
+        if (state.views.channel.urneadAPIcall?.[channelId]) {
+            received = await retryGetPostsAction(getPostsUnreadAndCleanOldPosts(channelId), dispatch, getState);
+        } else if (postsIds) {
             const lastConnectAt = state.websocket?.lastConnectAt || 0;
             const lastGetPosts = state.views.channel.lastGetPosts[channelId];
 
@@ -215,30 +202,18 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             }
 
             received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
-
-            if (received?.order) {
-                const count = received.order.length;
-                loadMorePostsVisible = postsIds.length + count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-                actions.push({
-                    type: ViewTypes.SET_INITIAL_POST_COUNT,
-                    data: {
-                        channelId,
-                        count: postsIds.length + count,
-                    },
-                });
-            }
+        } else {
+            // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+            received = await retryGetPostsAction(getPostsUnread(channelId), dispatch, getState);
         }
 
         if (received) {
-            actions.push({
+            dispatch({
                 type: ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME,
                 channelId,
                 time,
             });
         }
-
-        actions.push(setLoadMorePostsVisible(loadMorePostsVisible));
-        dispatch(batchActions(actions));
     };
 }
 
@@ -372,8 +347,6 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
         const sameChannel = channelId === currentChannelId;
         const member = getMyChannelMember(state, channelId);
 
-        dispatch(setLoadMorePostsVisible(true));
-
         // If the app is open from push notification, we already fetched the posts.
         if (!fromPushNotification) {
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
@@ -383,10 +356,6 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             selectChannel(channelId),
             getChannelStats(channelId),
             setChannelDisplayName(channel.display_name),
-            {
-                type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
-                data: channelId,
-            },
             setChannelLoading(false),
             {
                 type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
@@ -533,7 +502,7 @@ export function closeGMChannel(channel) {
 export function refreshChannelWithRetry(channelId) {
     return async (dispatch, getState) => {
         dispatch(setChannelRefreshing(true));
-        const posts = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
+        const posts = await retryGetPostsAction(getPostsUnread(channelId), dispatch, getState);
         dispatch(setChannelRefreshing(false));
         return posts;
     };
@@ -596,11 +565,10 @@ export function setChannelDisplayName(displayName) {
 }
 
 // Returns true if there are more posts to load
-export function increasePostVisibility(channelId, postId) {
+export function loadPosts({channelId, postId, type}) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {loadingPosts, postVisibility} = state.views.channel;
-        const currentPostVisibility = postVisibility[channelId] || 0;
+        const {loadingPosts} = state.views.channel;
 
         if (loadingPosts[channelId]) {
             return true;
@@ -611,19 +579,7 @@ export function increasePostVisibility(channelId, postId) {
             return true;
         }
 
-        // Check if we already have the posts that we want to show
-        const loadedPostCount = state.views.channel.postCountInChannel[channelId] || 0;
-        const desiredPostVisibility = currentPostVisibility + ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-
-        if (loadedPostCount >= desiredPostVisibility) {
-            // We already have the posts, so we just need to show them
-            dispatch(batchActions([
-                doIncreasePostVisibility(channelId),
-                setLoadMorePostsVisible(true),
-            ]));
-
-            return true;
-        }
+        let result;
 
         telemetry.reset();
         telemetry.start(['posts:loading']);
@@ -635,8 +591,11 @@ export function increasePostVisibility(channelId, postId) {
         });
 
         const pageSize = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-
-        const result = await retryGetPostsAction(getPostsBefore(channelId, postId, 0, pageSize), dispatch, getState);
+        if (type === PostRequestTypes.BEFORE_ID) {
+            result = await retryGetPostsAction(getPostsBefore(channelId, postId, 0, pageSize), dispatch, getState);
+        } else {
+            result = await retryGetPostsAction(getPostsAfter(channelId, postId, 0, pageSize), dispatch, getState);
+        }
 
         const actions = [{
             type: ViewTypes.LOADING_POSTS,
@@ -648,20 +607,6 @@ export function increasePostVisibility(channelId, postId) {
         if (result?.order) {
             const count = result.order.length;
             hasMorePost = count >= pageSize;
-
-            actions.push({
-                type: ViewTypes.INCREASE_POST_COUNT,
-                data: {
-                    channelId,
-                    count,
-                },
-            });
-
-            // make sure to increment the posts visibility
-            // only if we got results
-            actions.push(doIncreasePostVisibility(channelId));
-
-            actions.push(setLoadMorePostsVisible(hasMorePost));
         }
 
         dispatch(batchActions(actions));
@@ -669,20 +614,5 @@ export function increasePostVisibility(channelId, postId) {
         telemetry.save();
 
         return hasMorePost;
-    };
-}
-
-function doIncreasePostVisibility(channelId) {
-    return {
-        type: ViewTypes.INCREASE_POST_VISIBILITY,
-        data: channelId,
-        amount: ViewTypes.POST_VISIBILITY_CHUNK_SIZE,
-    };
-}
-
-function setLoadMorePostsVisible(visible) {
-    return {
-        type: ViewTypes.SET_LOAD_MORE_POSTS_VISIBLE,
-        data: visible,
     };
 }

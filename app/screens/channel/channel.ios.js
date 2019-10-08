@@ -19,7 +19,7 @@ import LocalConfig from 'assets/config';
 
 import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
-import ChannelPostList from './channel_post_list';
+import PostListWrapper from 'app/screens/channel/post_list_wrapper';
 
 const ACCESSORIES_CONTAINER_NATIVE_ID = 'channelAccessoriesContainer';
 const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
@@ -53,7 +53,7 @@ export default class ChannelIOS extends ChannelBase {
                         openSettingsDrawer={this.openSettingsSidebar}
                         onPress={this.goToChannelInfo}
                     />
-                    <ChannelPostList
+                    <PostListWrapper
                         updateNativeScrollView={this.updateNativeScrollView}
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>

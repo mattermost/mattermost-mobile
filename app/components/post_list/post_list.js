@@ -21,7 +21,6 @@ import {showModalOverCurrentContext} from 'app/actions/navigation';
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
 
-const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_UP_MULTIPLIER = 3.5;
 const SCROLL_POSITION_CONFIG = {
 
@@ -53,6 +52,7 @@ export default class PostList extends PureComponent {
         lastPostIndex: PropTypes.number.isRequired,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
         onLoadMoreUp: PropTypes.func,
+        onLoadMoreDown: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
@@ -60,6 +60,7 @@ export default class PostList extends PureComponent {
         postIds: PropTypes.array.isRequired,
         refreshing: PropTypes.bool,
         renderFooter: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+        renderHeader: PropTypes.func,
         renderReplies: PropTypes.bool,
         serverURL: PropTypes.string.isRequired,
         shouldRenderReplyButton: PropTypes.bool,
@@ -86,7 +87,6 @@ export default class PostList extends PureComponent {
         this.shouldScrollToBottom = false;
         this.makeExtraData = makeExtraData();
         this.flatListRef = React.createRef();
-
         this.state = {
             postListHeight: 0,
         };
@@ -96,15 +96,19 @@ export default class PostList extends PureComponent {
         EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.channelId !== nextProps.channelId) {
-            this.contentOffsetY = 0;
-            this.hasDoneInitialScroll = false;
-            this.setState({contentHeight: 0});
+    static getDerivedStateFromProps(props, state) {
+        if (props.channelId !== state.channelId || (props.initialIndex !== state.initialIndex && state.initialIndex < 0)) {
+            return {
+                initialBatchToRender: props.initialIndex > 10 ? props.initialIndex + 2 : 10,
+                channelId: props.channelId,
+                initialIndex: props.initialIndex,
+            };
         }
+
+        return null;
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
         const {actions, channelId, deepLinkURL, postIds} = this.props;
 
         if (deepLinkURL && deepLinkURL !== prevProps.deepLinkURL) {
@@ -117,8 +121,12 @@ export default class PostList extends PureComponent {
             this.shouldScrollToBottom = false;
         }
 
-        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && this.state.contentHeight) {
-            this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+        if (channelId !== prevProps.channelId) {
+            this.hasDoneInitialScroll = false;
+        }
+
+        if (prevState.initialIndex !== this.state.initialIndex && this.state.initialIndex > 0) {
+            this.scrollToInitialIndexIfNeeded(this.state.initialIndex);
         }
     }
 
@@ -169,6 +177,9 @@ export default class PostList extends PureComponent {
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
         this.setState({postListHeight: height});
+        if (this.props.initialIndex > 0) {
+            this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+        }
     };
 
     handlePermalinkPress = (postId, teamName) => {
@@ -213,6 +224,10 @@ export default class PostList extends PureComponent {
                 (contentHeight - pageOffsetY) < (this.state.postListHeight * SCROLL_UP_MULTIPLIER)
             ) {
                 this.props.onLoadMoreUp();
+            }
+
+            if (direction === ListTypes.VISIBILITY_SCROLL_DOWN && (pageOffsetY < 1000)) {
+                this.props.onLoadMoreDown();
             }
         }
     };
@@ -305,33 +320,15 @@ export default class PostList extends PureComponent {
         }, 250);
     };
 
-    flatListScrollToIndex = (index) => {
-        this.flatListRef.current.scrollToIndex({
-            animated: false,
-            index,
-            viewOffset: 0,
-            viewPosition: 1, // 0 is at bottom
-        });
-    }
-
-    scrollToIndex = (index) => {
-        this.animationFrameInitialIndex = requestAnimationFrame(() => {
-            if (this.flatListRef.current && index > 0 && index <= this.getItemCount()) {
-                this.flatListScrollToIndex(index);
-            }
-        });
-    };
-
-    scrollToInitialIndexIfNeeded = (index, count = 0) => {
-        if (!this.hasDoneInitialScroll) {
-            if (index > 0 && index <= this.getItemCount()) {
-                this.hasDoneInitialScroll = true;
-                this.scrollToIndex(index);
-            } else if (count < 3) {
-                setTimeout(() => {
-                    this.scrollToInitialIndexIfNeeded(index, count + 1);
-                }, 300);
-            }
+    scrollToInitialIndexIfNeeded = (index) => {
+        if (!this.hasDoneInitialScroll && this.flatListRef?.current) {
+            this.hasDoneInitialScroll = true;
+            this.flatListRef.current.scrollToIndex({
+                animated: false,
+                index,
+                viewOffset: 0,
+                viewPosition: 1, // 0 is at bottom
+            });
         }
     };
 
@@ -381,14 +378,15 @@ export default class PostList extends PureComponent {
                 contentContainerStyle={styles.postListContent}
                 data={postIds}
                 extraData={this.makeExtraData(channelId, highlightPostId, this.props.extraData)}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                initialNumToRender={this.state.initialBatchToRender}
                 inverted={true}
                 keyboardDismissMode={'interactive'}
                 keyboardShouldPersistTaps={'handled'}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.props.renderFooter}
+                ListHeaderComponent={this.props.renderHeader}
                 maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
+                maxToRenderPerBatch={this.state.initialBatchToRender}
                 onContentSizeChange={this.handleContentSizeChange}
                 onLayout={this.handleLayout}
                 onScroll={this.handleScroll}
@@ -398,6 +396,7 @@ export default class PostList extends PureComponent {
                 scrollEventThrottle={60}
                 {...refreshControl}
                 nativeID={scrollViewNativeID}
+                windowSize={this.state.initialBatchToRender}
             />
         );
     }

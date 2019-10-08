@@ -15,7 +15,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
-import {ViewTypes} from 'app/constants';
+import {PostRequestTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import telemetry from 'app/telemetry';
@@ -29,7 +29,7 @@ export default class ChannelPostList extends PureComponent {
         actions: PropTypes.shape({
             loadPostsIfNecessaryWithRetry: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
-            increasePostVisibility: PropTypes.func.isRequired,
+            loadPosts: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
@@ -38,9 +38,9 @@ export default class ChannelPostList extends PureComponent {
         channelRefreshingFailed: PropTypes.bool,
         currentUserId: PropTypes.string,
         lastViewedAt: PropTypes.number,
-        loadMorePostsVisible: PropTypes.bool.isRequired,
+        atOldestPost: PropTypes.bool.isRequired,
+        atLatestPost: PropTypes.bool.isRequired,
         postIds: PropTypes.array,
-        postVisibility: PropTypes.number,
         refreshing: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         updateNativeScrollView: PropTypes.func,
@@ -48,19 +48,13 @@ export default class ChannelPostList extends PureComponent {
 
     static defaultProps = {
         postIds: [],
-        postVisibility: ViewTypes.POST_VISIBILITY_CHUNK_SIZE,
     };
 
     constructor(props) {
         super(props);
-
-        this.state = {
-            visiblePostIds: this.getVisiblePostIds(props),
-        };
-
         this.contentHeight = 0;
 
-        this.isLoadingMoreBottom = false;
+        this.isLoadingMoreDown = false;
         this.isLoadingMoreTop = false;
     }
 
@@ -69,18 +63,9 @@ export default class ChannelPostList extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {postIds: nextPostIds} = nextProps;
-
-        let visiblePostIds = this.state.visiblePostIds;
-        if (nextPostIds !== this.props.postIds || nextProps.postVisibility !== this.props.postVisibility) {
-            visiblePostIds = this.getVisiblePostIds(nextProps);
-        }
-
         if (this.props.channelId !== nextProps.channelId) {
             this.isLoadingMoreTop = false;
         }
-
-        this.setState({visiblePostIds});
     }
 
     componentDidUpdate(prevProps) {
@@ -97,10 +82,6 @@ export default class ChannelPostList extends PureComponent {
     componentWillUnmount() {
         EventEmitter.off('goToThread', this.goToThread);
     }
-
-    getVisiblePostIds = (props) => {
-        return props.postIds ? props.postIds.slice(0, props.postVisibility) : [];
-    };
 
     goToThread = (post) => {
         telemetry.start(['post_list:thread']);
@@ -123,18 +104,31 @@ export default class ChannelPostList extends PureComponent {
         });
     };
 
-    loadMorePostsTop = () => {
-        const {actions, channelId} = this.props;
-        if (!this.isLoadingMoreTop) {
+    loadMorePostsTop = async () => {
+        const {actions, channelId, postIds} = this.props;
+        if (!this.isLoadingMoreTop && !this.props.atOldestPost) {
             this.isLoadingMoreTop = true;
-            actions.increasePostVisibility(
+            await actions.loadPosts({
                 channelId,
-                this.state.visiblePostIds[this.state.visiblePostIds.length - 1]
-            ).then((hasMore) => {
-                this.isLoadingMoreTop = !hasMore;
+                postId: postIds[postIds.length - 1],
+                type: PostRequestTypes.BEFORE_ID,
             });
+            this.isLoadingMoreTop = false;
         }
     };
+
+    loadMorePostsDown = async () => {
+        const {actions, channelId, postIds} = this.props;
+        if (!this.isLoadingMoreDown && !this.props.atLatestPost) {
+            this.isLoadingMoreDown = true;
+            await actions.loadPosts({
+                channelId,
+                postId: postIds[0],
+                type: PostRequestTypes.AFTER_ID,
+            });
+            this.isLoadingMoreDown = false;
+        }
+    }
 
     loadPostsRetry = () => {
         const {actions, channelId} = this.props;
@@ -146,9 +140,9 @@ export default class ChannelPostList extends PureComponent {
             return null;
         }
 
-        if (this.props.loadMorePostsVisible) {
+        if (!this.props.atOldestPost) {
             if (!LoadMorePosts) {
-                LoadMorePosts = require('app/components/load_more_posts').default;
+                LoadMorePosts = require('app/components/load_more_posts.js').default;
             }
 
             return (
@@ -156,6 +150,7 @@ export default class ChannelPostList extends PureComponent {
                     channelId={this.props.channelId}
                     loadMore={this.loadMorePostsTop}
                     theme={this.props.theme}
+                    loading={this.isLoadingMoreTop}
                 />
             );
         }
@@ -171,6 +166,29 @@ export default class ChannelPostList extends PureComponent {
         );
     };
 
+    renderHeader = () => {
+        if (!this.props.channelId || this.props.postIds.length === 0) {
+            return null;
+        }
+
+        if (!this.props.atLatestPost) {
+            if (!LoadMorePosts) {
+                LoadMorePosts = require('app/components/load_more_posts.js').default;
+            }
+
+            return (
+                <LoadMorePosts
+                    channelId={this.props.channelId}
+                    loadMore={this.loadMorePostsDown}
+                    theme={this.props.theme}
+                    loading={this.isLoadingMoreDown}
+                />
+            );
+        }
+
+        return null;
+    }
+
     render() {
         const {
             actions,
@@ -178,15 +196,15 @@ export default class ChannelPostList extends PureComponent {
             channelRefreshingFailed,
             currentUserId,
             lastViewedAt,
-            loadMorePostsVisible,
+            atOldestPost,
             refreshing,
             theme,
+            postIds,
         } = this.props;
 
-        const {visiblePostIds} = this.state;
         let component;
 
-        if (visiblePostIds.length === 0 && channelRefreshingFailed) {
+        if ((!postIds || postIds.length === 0) && channelRefreshingFailed) {
             const FailedNetworkAction = require('app/components/failed_network_action').default;
 
             component = (
@@ -198,10 +216,11 @@ export default class ChannelPostList extends PureComponent {
         } else {
             component = (
                 <PostList
-                    postIds={visiblePostIds}
-                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(visiblePostIds) : -1}
-                    extraData={loadMorePostsVisible}
+                    postIds={this.props.postIds}
+                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
+                    extraData={atOldestPost}
                     onLoadMoreUp={this.loadMorePostsTop}
+                    onLoadMoreDown={this.loadMorePostsDown}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}
                     renderReplies={true}
@@ -210,6 +229,7 @@ export default class ChannelPostList extends PureComponent {
                     lastViewedAt={lastViewedAt}
                     channelId={channelId}
                     renderFooter={this.renderFooter}
+                    renderHeader={this.renderHeader}
                     refreshing={refreshing}
                     scrollViewNativeID={channelId}
                 />

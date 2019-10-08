@@ -307,6 +307,11 @@ export function cleanUpState(action, keepCurrent = false) {
         nextEntities.posts.pendingPostIds = nextPendingPostIds;
     }
 
+    const urneadAPIcall = Object.keys(payload.entities.channels.myMembers).reduce((unreadAPICallChannelObj, memberId) => ({
+        ...unreadAPICallChannelObj,
+        [memberId]: action.type === 'persist/REHYDRATE' || currentChannelId !== memberId,
+    }), {});
+
     const nextState = {
         app: resetPayload.app,
         entities: {
@@ -330,6 +335,7 @@ export function cleanUpState(action, keepCurrent = false) {
             channel: {
                 ...resetPayload.views.channel,
                 ...payload.views.channel,
+                urneadAPIcall,
             },
         },
         websocket: {
@@ -341,7 +347,7 @@ export function cleanUpState(action, keepCurrent = false) {
     nextState.errors = payload.errors;
 
     return {
-        type: action.type,
+        type: 'persist/REHYDRATE',
         payload: nextState,
         error: action.error,
     };

@@ -14,7 +14,7 @@ import {
 } from 'app/store/middleware';
 
 describe('messageRetention', () => {
-    describe('should chain the same incoming action type', () => {
+    describe('should chain the same action type persist/REHYDRATE', () => {
         const actions = [
             {
                 type: 'persist/REHYDRATE',
@@ -30,6 +30,7 @@ describe('messageRetention', () => {
                 payload: {
                     entities: {
                         channels: {
+                            myMembers: {},
                         },
                         posts: {
                         },
@@ -40,9 +41,6 @@ describe('messageRetention', () => {
                     },
                 },
             },
-            {
-                type: 'other',
-            },
         ];
 
         actions.forEach((action) => {
@@ -51,7 +49,7 @@ describe('messageRetention', () => {
                 const next = (a) => a;
 
                 const nextAction = messageRetention(store)(next)(action);
-                assert.equal(action.type, nextAction.type);
+                assert.equal('persist/REHYDRATE', nextAction.type);
             });
         });
     });
@@ -63,6 +61,7 @@ describe('cleanUpState', () => {
             entities: {
                 channels: {
                     currentChannelId: 'channel1',
+                    myMembers: {},
                 },
                 files: {
                     fileIdsByPostId: {},
@@ -114,6 +113,7 @@ describe('cleanUpState', () => {
             entities: {
                 channels: {
                     currentChannelId: 'channel1',
+                    myMembers: {},
                 },
                 files: {
                     fileIdsByPostId: {},
@@ -155,6 +155,7 @@ describe('cleanUpState', () => {
             entities: {
                 channels: {
                     currentChannelId: 'channel1',
+                    myMembers: {},
                 },
                 files: {
                     fileIdsByPostId: {},
@@ -196,6 +197,7 @@ describe('cleanUpState', () => {
             entities: {
                 channels: {
                     currentChannelId: 'channel1',
+                    myMembers: {},
                 },
                 files: {
                     fileIdsByPostId: {},

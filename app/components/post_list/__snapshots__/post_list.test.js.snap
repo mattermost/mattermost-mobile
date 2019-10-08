@@ -23,7 +23,7 @@ exports[`PostList setting channel deep link 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={15}
+  initialNumToRender={10}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
@@ -34,7 +34,7 @@ exports[`PostList setting channel deep link 1`] = `
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={16}
+  maxToRenderPerBatch={10}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -73,7 +73,7 @@ exports[`PostList setting permalink deep link 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={15}
+  initialNumToRender={10}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
@@ -84,7 +84,7 @@ exports[`PostList setting permalink deep link 1`] = `
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={16}
+  maxToRenderPerBatch={10}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -123,7 +123,7 @@ exports[`PostList should match snapshot 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={15}
+  initialNumToRender={10}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
@@ -134,7 +134,7 @@ exports[`PostList should match snapshot 1`] = `
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={16}
+  maxToRenderPerBatch={10}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}

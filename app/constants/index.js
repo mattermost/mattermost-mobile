@@ -7,6 +7,7 @@ import ListTypes from './list';
 import NavigationTypes from './navigation';
 import PermissionTypes from './permissions';
 import ViewTypes, {UpgradeTypes} from './view';
+import {PostRequestTypes} from './posts';
 
 export {
     DeepLinkTypes,
@@ -16,4 +17,5 @@ export {
     PermissionTypes,
     UpgradeTypes,
     ViewTypes,
+    PostRequestTypes,
 };

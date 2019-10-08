@@ -24,10 +24,6 @@ export default class ChannelPeek extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    static defaultProps = {
-        postVisibility: 15,
-    };
-
     constructor(props) {
         super(props);
 

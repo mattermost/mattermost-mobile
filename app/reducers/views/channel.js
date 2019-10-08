@@ -257,51 +257,6 @@ function retryFailed(state = false, action) {
     }
 }
 
-function postVisibility(state = {}, action) {
-    switch (action.type) {
-    case ViewTypes.SET_INITIAL_POST_VISIBILITY: {
-        const nextState = {...state};
-        nextState[action.data] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-        return nextState;
-    }
-    case ViewTypes.INCREASE_POST_VISIBILITY: {
-        const nextState = {...state};
-        if (nextState[action.data]) {
-            nextState[action.data] += action.amount;
-        } else {
-            nextState[action.data] = action.amount;
-        }
-        return nextState;
-    }
-    case ViewTypes.RECEIVED_FOCUSED_POST: {
-        const nextState = {...state};
-        nextState[action.channelId] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-        return nextState;
-    }
-    default:
-        return state;
-    }
-}
-
-function postCountInChannel(state = {}, action) {
-    switch (action.type) {
-    case ViewTypes.SET_INITIAL_POST_COUNT: {
-        const {channelId, count} = action.data;
-        const nextState = {...state};
-        nextState[channelId] = count;
-        return nextState;
-    }
-    case ViewTypes.INCREASE_POST_COUNT: {
-        const {channelId, count} = action.data;
-        const nextState = {...state};
-        nextState[channelId] += count;
-        return nextState;
-    }
-    default:
-        return state;
-    }
-}
-
 function loadingPosts(state = {}, action) {
     switch (action.type) {
     case ViewTypes.LOADING_POSTS: {
@@ -321,16 +276,6 @@ function lastGetPosts(state = {}, action) {
             ...state,
             [action.channelId]: action.time,
         };
-
-    default:
-        return state;
-    }
-}
-
-function loadMorePostsVisible(state = true, action) {
-    switch (action.type) {
-    case ViewTypes.SET_LOAD_MORE_POSTS_VISIBLE:
-        return action.data;
 
     default:
         return state;
@@ -396,17 +341,27 @@ function keepChannelIdAsUnread(state = null, action) {
     }
 }
 
+function urneadAPIcall(state = {}, action) {
+    switch (action.type) {
+    case ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME:
+        return {
+            ...state,
+            [action.channelId]: false,
+        };
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     displayName,
     drafts,
     loading,
     refreshing,
-    postCountInChannel,
-    postVisibility,
     loadingPosts,
     lastGetPosts,
     retryFailed,
-    loadMorePostsVisible,
     lastChannelViewTime,
     keepChannelIdAsUnread,
+    urneadAPIcall,
 });

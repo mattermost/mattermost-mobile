@@ -69,14 +69,10 @@ const ViewTypes = keyMirror({
     OFFICE365: null,
     SAML: null,
 
-    SET_INITIAL_POST_VISIBILITY: null,
-    INCREASE_POST_VISIBILITY: null,
     RECEIVED_FOCUSED_POST: null,
     LOADING_POSTS: null,
-    SET_LOAD_MORE_POSTS_VISIBLE: null,
 
     SET_INITIAL_POST_COUNT: null,
-    INCREASE_POST_COUNT: null,
 
     RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
 
