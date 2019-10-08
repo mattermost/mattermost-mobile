@@ -216,15 +216,6 @@ jobs:
 
   build-android-beta:
     executor: android
-    environment:
-      APP_NAME: "Mattermost Beta"
-      REPLACE_ASSETS: false
-      MAIN_APP_IDENTIFIER: "com.mattermost.rnbeta"
-      SENTRY_ENABLED: true
-      SEGMENT_API_KEY: ${SEGMENT_API_KEY_BETA}
-      TELEMETRY_ENABLED: true
-      AWS_FOLDER_NAME: 'mattermost-mobile-beta'
-      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_BUILD}
     steps:
       - build-android
       - persist
@@ -233,15 +224,6 @@ jobs:
 
   build-android-release:
     executor: android
-    environment:
-      APP_NAME: "Mattermost"
-      REPLACE_ASSETS: true
-      MAIN_APP_IDENTIFIER: "com.mattermost.rn"
-      SENTRY_ENABLED: true
-      SEGMENT_API_KEY: ${SEGMENT_API_KEY_PROD}
-      TELEMETRY_ENABLED: false
-      AWS_FOLDER_NAME: 'mattermost-mobile'
-      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_BUILD}
     steps:
       - build-android
       - persist
@@ -251,15 +233,7 @@ jobs:
   build-android-pr:
     executor: android
     environment:
-      APP_NAME: "Mattermost Beta"
-      BUILD_PR: true
       BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
-      REPLACE_ASSETS: false
-      MAIN_APP_IDENTIFIER: "com.mattermost.rnbeta"
-      SENTRY_ENABLED: false
-      TELEMETRY_ENABLED: false
-      AWS_FOLDER_NAME: 'mattermost-mobile-pr'
-      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_PR}
     steps:
       - build-android
       - persist
@@ -268,21 +242,6 @@ jobs:
 
   build-ios-beta:
     executor: ios
-    environment:
-      APP_NAME: "Mattermost Beta"
-      REPLACE_ASSETS: false
-      MAIN_APP_IDENTIFIER: "com.mattermost.rnbeta"
-      SENTRY_ENABLED: true
-      SEGMENT_API_KEY: ${SEGMENT_API_KEY_BETA}
-      MATCH_TYPE: appstore
-      MATCH_APP_IDENTIFIER: 'com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta'
-      EXTENSION_APP_IDENTIFIER: 'com.mattermost.rnbeta.MattermostShare'
-      NOTIFICATION_SERVICE_IDENTIFIER: 'com.mattermost.rnbeta.NotificationService'
-      IOS_APP_GROUP: 'group.com.mattermost.rnbeta'
-      IOS_ICLOUD_CONTAINER: 'iCloud.com.mattermost.rnbeta'
-      IOS_BUILD_EXPORT_METHOD: 'app-store'
-      AWS_FOLDER_NAME: 'mattermost-mobile-beta'
-      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_BUILD}
     steps:
       - build-ios
       - persist
@@ -291,21 +250,6 @@ jobs:
 
   build-ios-release:
     executor: ios
-    environment:
-      APP_NAME: "Mattermost"
-      REPLACE_ASSETS: true
-      MAIN_APP_IDENTIFIER: "com.mattermost.rn"
-      SENTRY_ENABLED: true
-      SEGMENT_API_KEY: ${SEGMENT_API_KEY_PROD}
-      MATCH_TYPE: appstore
-      MATCH_APP_IDENTIFIER: 'com.mattermost.rn.NotificationService,com.mattermost.rn.MattermostShare,com.mattermost.rn'
-      EXTENSION_APP_IDENTIFIER: 'com.mattermost.rn.MattermostShare'
-      NOTIFICATION_SERVICE_IDENTIFIER: 'com.mattermost.rn.NotificationService'
-      IOS_APP_GROUP: 'group.com.mattermost'
-      IOS_ICLOUD_CONTAINER: 'iCloud.com.mattermost.rn'
-      IOS_BUILD_EXPORT_METHOD: 'app-store'
-      AWS_FOLDER_NAME: 'mattermost-mobile'
-      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_BUILD}
     steps:
       - build-ios
       - persist
@@ -315,21 +259,7 @@ jobs:
   build-ios-pr:
     executor: ios
     environment:
-      APP_NAME: "Mattermost Beta"
-      BUILD_PR: true
       BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
-      REPLACE_ASSETS: false
-      MAIN_APP_IDENTIFIER: "com.mattermost.rnbeta"
-      SENTRY_ENABLED: false
-      MATCH_TYPE: adhoc
-      MATCH_APP_IDENTIFIER: 'com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta'
-      EXTENSION_APP_IDENTIFIER: 'com.mattermost.rnbeta.MattermostShare'
-      NOTIFICATION_SERVICE_IDENTIFIER: 'com.mattermost.rnbeta.NotificationService'
-      IOS_APP_GROUP: 'group.com.mattermost.rnbeta'
-      IOS_ICLOUD_CONTAINER: 'iCloud.com.mattermost.rnbeta'
-      IOS_BUILD_EXPORT_METHOD: 'ad-hoc'
-      AWS_FOLDER_NAME: 'mattermost-mobile-pr'
-      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_PR}
     steps:
       - build-ios
       - persist
@@ -340,9 +270,6 @@ jobs:
     executor:
       name: android
       resource_class: medium
-    environment:
-      APP_NAME: "Mattermost"
-      BETA_BUILD: false
     steps:
       - deploy-android:
           apk_path: Mattermost.apk
@@ -351,27 +278,18 @@ jobs:
     executor:
       name: android
       resource_class: medium
-    environment:
-      APP_NAME: "Mattermost Beta"
-      BETA_BUILD: true
     steps:
       - deploy-android:
           apk_path: Mattermost_Beta.apk
 
   deploy-ios-release:
     executor: ios
-    environment:
-      APP_NAME: "Mattermost"
-      BETA_BUILD: false
     steps:
       - deploy-ios:
           ipa_path: Mattermost.ipa
 
   deploy-ios-beta:
     executor: ios
-    environment:
-      APP_NAME: "Mattermost Beta"
-      BETA_BUILD: true
     steps:
       - deploy-ios:
           ipa_path: Mattermost_Beta.ipa
@@ -383,74 +301,98 @@ workflows:
       - test
 
       - build-android-release:
-          context: mattermost-mobile
+          context: mattermost-mobile-android-release
           requires:
             - test
           filters:
             branches:
-              only: /^build-(?!ios|pr|number).*/
+              only:
+                - /^build-\d+$/
+                - /^build-android-\d+$/
+                - /^build-android-release-\d+$/
       - deploy-android-release:
-          context: mattermost-mobile
+          context: mattermost-mobile-android-release
           requires:
             - build-android-release
           filters:
             branches:
-              only: /^build-(?!ios|pr|number).*/
+              only:
+                - /^build--\d+$/
+                - /^build-android-\d+$/
+                - /^build-android-release-\d+$/
 
       - build-android-beta:
-          context: mattermost-mobile
+          context: mattermost-mobile-android-beta
           requires:
             - test
           filters:
             branches:
-              only: /^build-(?!ios|pr|number).*/
+              only:
+                - /^build--\d+$/
+                - /^build-android-\d+$/
+                - /^build-android-beta-\d+$/
       - deploy-android-beta:
-          context: mattermost-mobile
+          context: mattermost-mobile-android-beta
           requires:
             - build-android-beta
           filters:
             branches:
-              only: /^build-(?!ios|pr|number).*/
+              only:
+                - /^build-\d+$/
+                - /^build-android-\d+$/
+                - /^build-android-beta-\d+$/
 
       - build-ios-release:
-          context: mattermost-mobile
+          context: mattermost-mobile-ios-release
           requires:
             - test
           filters:
             branches:
-              only: /^build-(?!android|pr|number).*/
+              only:
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-release-\d+$/
       - deploy-ios-release:
-          context: mattermost-mobile
+          context: mattermost-mobile-ios-release
           requires:
             - build-ios-release
           filters:
             branches:
-              only: /^build-(?!android|pr|number).*/
+              only:
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-release-\d+$/
 
       - build-ios-beta:
-          context: mattermost-mobile
+          context: mattermost-mobile-ios-beta
           requires:
             - test
           filters:
             branches:
-              only: /^build-(?!android|pr|number).*/
+              only:
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-beta-\d+$/
       - deploy-ios-beta:
-          context: mattermost-mobile
+          context: mattermost-mobile-ios-beta
           requires:
             - build-ios-beta
           filters:
             branches:
-              only: /^build-(?!android|pr|number).*/
+              only:
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-beta-\d+$/
 
       - build-android-pr:
-          context: mattermost-mobile
+          context: mattermost-mobile-android-pr
           requires:
             - test
           filters:
             branches:
               only: /^build-pr-.*/
       - build-ios-pr:
-          context: mattermost-mobile
+          context: mattermost-mobile-ios-pr
           requires:
             - test
           filters:
