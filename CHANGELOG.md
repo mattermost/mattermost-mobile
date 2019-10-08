@@ -10,22 +10,24 @@
 
 ### Highlights
 
+#### Sidebar and theming UI/UX improvements
+
+#### Ability to paste images on input text box
+
+#### Copy and paste protection managed configuration for Android
+
 
 ### Improvements
- - Added sidebar and theming UI/UX improvements.
- - Improved post menu animation and timing.
  - Added a confirmation dialog when posting a message with `at-channel`.
  - Added support for safe area in landscape view on iOS.
  - Changed recent date separators to read Today/Yesterday.
  - Added an autocomplete to the edit channel screen.
- - Added support for pasting images on input text box.
  - Emoji picker search now ignores the leading colon.
  - Added support for emoji not requiring a whitespace to render.
  - Added support for footer and footer_icon in message attachments.
  - Added a password type for interactive dialogs.
  - Added support for introductory markdown paragraph in interactive dialogs.
  - Added support for boolean elements in interactive dialogs.
- - Removed the full screen "Refresh" button when opening a team or channel with no cached data when offline.
  - If Mattermost doesn't have permission to the photo library because the user denied the first prompt, the app now prompts to give permission to send the user to the settings to manually change the permission.
 
 ### Bug Fixes
