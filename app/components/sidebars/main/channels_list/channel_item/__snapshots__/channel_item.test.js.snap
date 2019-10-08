@@ -210,7 +210,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             ]
           }
         >
-          {displayName} (you)
+          {displayname} (you)
         </Text>
       </View>
     </View>
@@ -324,7 +324,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             ]
           }
         >
-          {displayName} (you)
+          {displayname} (you)
         </Text>
       </View>
     </View>
