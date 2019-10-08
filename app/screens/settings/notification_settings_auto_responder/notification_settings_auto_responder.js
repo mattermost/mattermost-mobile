@@ -65,6 +65,22 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
         this.saveUserNotifyProps();
     }
 
+    componentDidMount() {
+        setTimeout(() => {
+            requestAnimationFrame(() => {
+                this.focus();
+            });
+        }, 500);
+    }
+
+    focus = () => {
+        this.autoresponderInput.focus();
+    };
+
+    autoresponderRef = (ref) => {
+        this.autoresponderInput = ref;
+    };
+
     saveUserNotifyProps = () => {
         this.props.onBack({
             ...this.state,
@@ -126,8 +142,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                         >
                             <View style={style.inputContainer}>
                                 <TextInputWithLocalizedPlaceholder
-                                    autoFocus={true}
-                                    ref={this.keywordsRef}
+                                    ref={this.autoresponderRef}
                                     value={autoResponderMessage}
                                     blurOnSubmit={false}
                                     onChangeText={this.onAutoResponseChangeText}
