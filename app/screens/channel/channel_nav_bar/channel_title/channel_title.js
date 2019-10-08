@@ -59,6 +59,9 @@ export default class ChannelTitle extends PureComponent {
         if (!isGuest && !hasGuests) {
             return null;
         }
+        if (channelType === General.DM_CHANNEL && !isGuest) {
+            return null;
+        }
 
         let messageId;
         let defaultMessage;
