@@ -317,7 +317,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^build--\d+$/
+                - /^build-\d+$/
                 - /^build-android-\d+$/
                 - /^build-android-release-\d+$/
 
@@ -328,7 +328,7 @@ workflows:
           filters:
             branches:
               only:
-                - /^build--\d+$/
+                - /^build-\d+$/
                 - /^build-android-\d+$/
                 - /^build-android-beta-\d+$/
       - deploy-android-beta:
