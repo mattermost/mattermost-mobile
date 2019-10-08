@@ -34,7 +34,7 @@
  - Fixed an issue where SafeArea insets were not working properly on new iPhone 11 models.
  - Fixed an issue on iOS where long press on a system message in an archived channel locked up the app.
  - Fixed an issue where tapping on a hashtag while replying to search results didn't open search correctly.
- - Fixed an issue on iOS where the channel list panel was missing for a user when they were added to a new team by another user.
+ - Fixed an issue where the channel list panel was missing for a user when they were added to a new team by another user.
  - Fixed an issue where once in a thread, pressing a channel link appeared to do nothing.
  - Fixed an issue where file previews could scroll to the left until all files were out of view.
  - Fixed an issue on iOS where user was unable to select an emoji from two rows on the bottom of the emoji picker.
