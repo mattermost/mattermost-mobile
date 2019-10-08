@@ -79,8 +79,8 @@ function mapStateToProps(state) {
         if (teammate && teammate.is_bot) {
             isBot = true;
         }
-        isTeammateGuest = isGuest(teammate);
         if (isGuest(teammate)) {
+            isTeammateGuest = true;
             currentChannelGuestCount = 1;
         }
     }
