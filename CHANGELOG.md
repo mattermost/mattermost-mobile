@@ -46,7 +46,7 @@
  - Fixed an issue with a missing "(you)" suffix in the channel header.
  - Fixed an issue where the Connected banner got stuck after the WebSocket was connected.
  - Fixed an issue where the text input area in Android Share extension did not use available space.
- - Fixed an issue on iOS where Windows dark theme was not consistent when viewing an archived channel.
+ - Fixed an issue where Windows dark theme was not consistent when viewing an archived channel.
  - Fixed an issue where interactive dialogs rendered out of safe area view on landscape orientation.
  - Fixed an issue where a themed "Delete Documents & Data" action flashed a white screen.
  - Fixed an issue where "Close group message" button implied a confirmation.
