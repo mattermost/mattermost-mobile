@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import BoolSetting from 'app/components/widgets/settings/bool_setting';
 import TextSetting from 'app/components/widgets/settings/text_setting';
 import AutocompleteSelector from 'app/components/autocomplete_selector';
+import RadioSetting from 'app/components/widgets/settings/radio_setting';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -117,6 +118,7 @@ export default class DialogElement extends PureComponent {
                     multiline={multiline}
                     keyboardType={keyboardType}
                     secureTextEntry={secureTextEntry}
+                    isLandscape={isLandscape}
                 />
             );
         } else if (type === 'select') {
@@ -134,6 +136,21 @@ export default class DialogElement extends PureComponent {
                     showRequiredAsterisk={true}
                     selected={this.state.selected}
                     roundedBorders={false}
+                    isLandscape={isLandscape}
+                />
+            );
+        } else if (type === 'radio') {
+            return (
+                <RadioSetting
+                    id={name}
+                    label={displayName}
+                    helpText={helpText}
+                    errorText={errorText}
+                    options={options}
+                    theme={theme}
+                    default={value}
+                    onChange={this.onChange}
+                    isLandscape={isLandscape}
                 />
             );
         } else if (type === 'bool') {

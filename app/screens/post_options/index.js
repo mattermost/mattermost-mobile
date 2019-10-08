@@ -11,6 +11,7 @@ import {
     unflagPost,
     unpinPost,
     removePost,
+    setUnreadPost,
 } from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
 import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
@@ -22,7 +23,6 @@ import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/en
 import {canEditPost} from 'mattermost-redux/utils/post_utils';
 
 import {THREAD} from 'app/constants/screen';
-import {dismissModal, showModal} from 'app/actions/navigation';
 import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions, isLandscape} from 'app/selectors/device';
 
@@ -107,6 +107,7 @@ export function mapStateToProps(state, ownProps) {
         canFlag,
         canPin,
         currentTeamUrl: getCurrentTeamUrl(state),
+        currentUserId: getCurrentUserId(state),
         isMyPost: currentUserId === post.user_id,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
@@ -123,8 +124,7 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
-            dismissModal,
-            showModal,
+            setUnreadPost,
         }, dispatch),
     };
 }

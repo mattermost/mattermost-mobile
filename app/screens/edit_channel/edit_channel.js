@@ -18,6 +18,7 @@ import {ViewTypes} from 'app/constants';
 import {setNavigatorStyles} from 'app/utils/theme';
 import {cleanUpUrlable} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
+import {popTopScreen, setButtons} from 'app/actions/navigation';
 
 const messages = {
     display_name_required: {
@@ -56,8 +57,6 @@ export default class EditChannel extends PureComponent {
             patchChannel: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -106,7 +105,7 @@ export default class EditChannel extends PureComponent {
             rightButtons: [this.rightButton],
         };
 
-        props.actions.setButtons(props.componentId, buttons);
+        setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
@@ -163,25 +162,25 @@ export default class EditChannel extends PureComponent {
             this.props.actions.setChannelDisplayName(this.state.displayName);
         }
 
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     emitCanUpdateChannel = (enabled) => {
-        const {actions, componentId} = this.props;
+        const {componentId} = this.props;
         const buttons = {
             rightButtons: [{...this.rightButton, enabled}],
         };
 
-        actions.setButtons(componentId, buttons);
+        setButtons(componentId, buttons);
     };
 
     emitUpdating = (loading) => {
-        const {actions, componentId} = this.props;
+        const {componentId} = this.props;
         const buttons = {
             rightButtons: [{...this.rightButton, enabled: !loading}],
         };
 
-        actions.setButtons(componentId, buttons);
+        setButtons(componentId, buttons);
     };
 
     validateDisplayName = (displayName) => {

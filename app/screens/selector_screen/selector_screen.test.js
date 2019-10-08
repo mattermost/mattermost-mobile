@@ -67,7 +67,6 @@ describe('SelectorScreen', () => {
         getChannels,
         searchProfiles,
         searchChannels,
-        popTopScreen: jest.fn(),
     };
 
     const baseProps = {
@@ -77,6 +76,7 @@ describe('SelectorScreen', () => {
         data: [{text: 'text', value: 'value'}],
         dataSource: null,
         theme: Preferences.THEMES.default,
+        isLandscape: false,
     };
 
     test('should match snapshot for explicit options', async () => {

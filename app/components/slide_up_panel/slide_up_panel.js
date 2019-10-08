@@ -19,7 +19,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import SlideUpPanelIndicator from './slide_up_panel_indicator';
 
 export const BOTTOM_MARGIN = mattermostManaged.hasSafeAreaInsets ? 24 : 0;
-const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_X ? 84 : 64;
+const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_WITH_INSETS ? 84 : 64;
 const TOP_ANDROID_MARGIN = 44;
 const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;
 

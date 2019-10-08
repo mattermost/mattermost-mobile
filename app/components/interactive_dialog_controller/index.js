@@ -6,8 +6,6 @@ import {connect} from 'react-redux';
 
 import {submitInteractiveDialog} from 'mattermost-redux/actions/integrations';
 
-import {showModal} from 'app/actions/navigation';
-
 import InteractiveDialogController from './interactive_dialog_controller';
 
 function mapStateToProps(state) {
@@ -20,7 +18,6 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            showModal,
             submitInteractiveDialog,
         }, dispatch),
     };
