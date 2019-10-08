@@ -21,7 +21,7 @@
  - Added support for pasting images on input text box.
  - Emoji picker search now ignores the leading colon.
  - Added support for emoji not requiring a whitespace to render.
- - Added support for footer and footer_icon in attachments.
+ - Added support for footer and footer_icon in message attachments.
  - Added a password type for interactive dialogs.
  - Added support for introductory markdown paragraph in interactive dialogs.
  - Added support for boolean elements in interactive dialogs.
