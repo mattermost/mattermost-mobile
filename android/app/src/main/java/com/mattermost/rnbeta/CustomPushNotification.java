@@ -55,7 +55,7 @@ public class CustomPushNotification extends PushNotification {
 
     public static void clearNotification(Context mContext, int notificationId, String channelId) {
         if (notificationId != -1) {
-           Object objCount = channelIdToNotificationCount.get(channelId);
+            Object objCount = channelIdToNotificationCount.get(channelId);
             Integer count = -1;
 
             if (objCount != null) {
@@ -167,10 +167,8 @@ public class CustomPushNotification extends PushNotification {
 
         addNotificationExtras(notification, bundle);
         setNotificationIcons(notification, bundle);
-        setNotificationNumber(notification, bundle);
         setNotificationMessagingStyle(notification, bundle);
         setNotificationBadgeIconType(notification);
-        setNotificationGroup(notification);
         setNotificationChannel(notification);
 
         NotificationPreferences notificationPreferences = NotificationPreferences.getInstance(mContext);
@@ -180,12 +178,12 @@ public class CustomPushNotification extends PushNotification {
 
         String channelId = bundle.getString("channel_id");
         int notificationId = channelId != null ? channelId.hashCode() : MESSAGE_NOTIFICATION_ID;
+        setNotificationNumber(notification, channelId);
         setNotificationDeleteIntent(notification, notificationId);
         addNotificationReplyAction(notification, notificationId, bundle);
 
         notification
             .setContentIntent(intent)
-            .setGroupSummary(true)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .setPriority(Notification.PRIORITY_HIGH)
             .setAutoCancel(true);
@@ -255,13 +253,13 @@ public class CustomPushNotification extends PushNotification {
         return res.getIdentifier(iconName, defType, packageName);
     }
 
-    private void setNotificationNumber(Notification.Builder notification, Bundle bundle) {
-        String badge = bundle.getString("badge");
-        if (badge != null) {
-            int badgeCount = Integer.parseInt(badge);
-            CustomPushNotification.badgeCount = badgeCount;
-            notification.setNumber(badgeCount);
+    private void setNotificationNumber(Notification.Builder notification, String channelId) {
+        Integer number = 1;
+        Object objCount = channelIdToNotificationCount.get(channelId);
+        if (objCount != null) {
+            number = (Integer)objCount;
         }
+        notification.setNumber(number);
     }
 
     private void setNotificationMessagingStyle(Notification.Builder notification, Bundle bundle) {
@@ -364,7 +362,9 @@ public class CustomPushNotification extends PushNotification {
 
     private void setNotificationGroup(Notification.Builder notification) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            notification.setGroup(GROUP_KEY_MESSAGES);
+            notification
+                .setGroup(GROUP_KEY_MESSAGES)
+                .setGroupSummary(true);
         }
     }
 
@@ -462,9 +462,9 @@ public class CustomPushNotification extends PushNotification {
 
     private void cancelNotification(Bundle data, int notificationId) {
         final String channelId = data.getString("channel_id");
-        final String numberString = data.getString("badge");
+        final String badge = data.getString("badge");
 
-        CustomPushNotification.badgeCount = Integer.parseInt(numberString);
+        CustomPushNotification.badgeCount = Integer.parseInt(badge);
         CustomPushNotification.clearNotification(mContext.getApplicationContext(), notificationId, channelId);
     }
 
