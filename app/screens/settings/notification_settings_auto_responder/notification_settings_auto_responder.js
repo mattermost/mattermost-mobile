@@ -44,6 +44,8 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
         const {intl} = this.context;
         const notifyProps = getNotificationProps(currentUser);
 
+        this.autoresponderRef = React.createRef();
+
         const autoResponderDefault = intl.formatMessage({
             id: 'mobile.notification_settings.auto_responder.default_message',
             defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
@@ -68,18 +70,10 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
     componentDidMount() {
         setTimeout(() => {
             requestAnimationFrame(() => {
-                this.focus();
+                this.autoresponderRef.current.focus();
             });
         }, 500);
     }
-
-    focus = () => {
-        this.autoresponderInput.focus();
-    };
-
-    autoresponderRef = (ref) => {
-        this.autoresponderInput = ref;
-    };
 
     saveUserNotifyProps = () => {
         this.props.onBack({
