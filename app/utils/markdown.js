@@ -91,6 +91,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         },
         mention_highlight: {
             backgroundColor: theme.mentionHighlightBg,
+            color: theme.mentionHighlightLink,
         },
     };
 });

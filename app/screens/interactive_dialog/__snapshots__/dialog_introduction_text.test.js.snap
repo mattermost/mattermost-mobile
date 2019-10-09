@@ -113,6 +113,7 @@ exports[`DialogIntroductionText should render the introduction text correctly 1`
         },
         "mention_highlight": Object {
           "backgroundColor": "#ffe577",
+          "color": "#166de0",
         },
         "strong": Object {
           "fontWeight": "bold",
