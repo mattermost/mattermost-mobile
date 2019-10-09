@@ -26,7 +26,7 @@
 
 @implementation AppDelegate
 
-NSString* const NotificationClearAction = @"clear";
+NSString* const NOTIFICATION_CLEAR_ACTION = @"clear";
 
 -(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
   os_log(OS_LOG_DEFAULT, "Mattermost will attach session from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
@@ -73,6 +73,55 @@ NSString* const NotificationClearAction = @"clear";
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
   [RNNotifications didFailToRegisterForRemoteNotificationsWithError:error];
+}
+
+// Required for the notification event.
+
+-(void)application:(UIApplication *)application didReceiveRemoteNotification:(nonnull NSDictionary *)userInfo fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHandler {
+  UIApplicationState state = [UIApplication sharedApplication].applicationState;
+  NSString* action = [userInfo objectForKey:@"type"];
+  NSString* channelId = [userInfo objectForKey:@"channel_id"];
+  NSString* ackId = [userInfo objectForKey:@"ack_id"];
+
+  if (action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]) {
+    // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
+    [self cleanNotificationsFromChannel:channelId];
+    RuntimeUtils *utils = [[RuntimeUtils alloc] init];
+    [[UploadSession shared] notificationReceiptWithNotificationId:ackId receivedAt:round([[NSDate date] timeIntervalSince1970] * 1000.0) type:action];
+    [utils delayWithSeconds:0.2 closure:^(void) {
+      // This is to notify the NotificationCenter that something has changed.
+      completionHandler(UIBackgroundFetchResultNewData);
+    }];
+
+    return;
+  } else if (state == UIApplicationStateInactive) {
+    // When the notification is opened
+    [self cleanNotificationsFromChannel:channelId];
+  }
+
+  completionHandler(UIBackgroundFetchResultNoData);
+}
+
+-(void)cleanNotificationsFromChannel:(NSString *)channelId {
+  if ([UNUserNotificationCenter class]) {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
+      NSMutableArray<NSString *> *notificationIds = [NSMutableArray new];
+
+      for (UNNotification *prevNotification in notifications) {
+        UNNotificationRequest *notificationRequest = [prevNotification request];
+        UNNotificationContent *notificationContent = [notificationRequest content];
+        NSString *identifier = [notificationRequest identifier];
+        NSString* cId = [[notificationContent userInfo] objectForKey:@"channel_id"];
+
+        if ([cId isEqualToString: channelId]) {
+          [notificationIds addObject:identifier];
+        }
+      }
+
+      [center removeDeliveredNotificationsWithIdentifiers:notificationIds];
+    }];
+  }
 }
 
 // Required for deeplinking
