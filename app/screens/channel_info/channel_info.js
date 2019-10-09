@@ -62,6 +62,7 @@ export default class ChannelInfo extends PureComponent {
         canEditChannel: PropTypes.bool.isRequired,
         ignoreChannelMentions: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
+        isTeammateGuest: PropTypes.bool.isRequired,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -484,6 +485,7 @@ export default class ChannelInfo extends PureComponent {
             status,
             theme,
             isBot,
+            isTeammateGuest,
             isLandscape,
         } = this.props;
 
@@ -523,6 +525,7 @@ export default class ChannelInfo extends PureComponent {
                         type={currentChannel.type}
                         isArchived={currentChannel.delete_at !== 0}
                         isBot={isBot}
+                        isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
                     />
