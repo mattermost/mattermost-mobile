@@ -70,7 +70,9 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
     componentDidMount() {
         setTimeout(() => {
             requestAnimationFrame(() => {
-                this.autoresponderRef.current.focus();
+                if (this.autoresponderRef?.current) {
+                    this.autoresponderRef.current.focus();
+                }
             });
         }, 500);
     }
