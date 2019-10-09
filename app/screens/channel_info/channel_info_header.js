@@ -40,6 +40,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
+        isTeammateGuest: PropTypes.bool.isRequired,
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
         timeZone: PropTypes.string,
@@ -50,8 +51,11 @@ export default class ChannelInfoHeader extends React.PureComponent {
     };
 
     renderHasGuestText = (style) => {
-        const {type, hasGuests} = this.props;
+        const {type, hasGuests, isTeammateGuest} = this.props;
         if (!hasGuests) {
+            return null;
+        }
+        if (type === General.DM_CHANNEL && !isTeammateGuest) {
             return null;
         }
 
