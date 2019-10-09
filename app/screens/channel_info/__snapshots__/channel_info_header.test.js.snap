@@ -209,10 +209,11 @@ exports[`channel_info_header should match snapshot 1`] = `
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -356,10 +357,11 @@ exports[`channel_info_header should match snapshot 1`] = `
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -645,10 +647,11 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -792,10 +795,11 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -1053,10 +1057,11 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -1200,10 +1205,11 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -1489,10 +1495,11 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -1636,10 +1643,11 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -1897,10 +1905,11 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -2044,10 +2053,11 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -2354,10 +2364,11 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
@@ -2501,10 +2512,11 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
                   "color": "#2389d7",
                 },
                 "mention": Object {
-                  "color": "#2389d7",
+                  "color": "#166de0",
                 },
                 "mention_highlight": Object {
                   "backgroundColor": "#ffe577",
+                  "color": "#166de0",
                 },
                 "strong": Object {
                   "fontWeight": "bold",
