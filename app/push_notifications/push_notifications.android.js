@@ -81,7 +81,7 @@ class PushNotification {
     localNotificationSchedule(notification) {
         if (notification.date) {
             notification.fireDate = notification.date.getTime();
-            delete notification.date;
+            Reflect.deleteProperty(notification, 'date');
             NotificationsAndroid.scheduleLocalNotification(notification);
         }
     }
