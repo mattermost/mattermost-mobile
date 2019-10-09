@@ -210,7 +210,7 @@ export default class MarkdownTable extends React.PureComponent {
         const expandButton = (
             <TouchableWithFeedback
                 onPress={this.handlePress}
-                style={{...style.expandButton, left: this.state.containerWidth - 20}}
+                style={{...style.expandButton, left: renderAsFlex ? this.state.containerWidth - 20 : tableWidth - 20}}
             >
                 <Icon
                     name={'expand'}
@@ -271,6 +271,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         table: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderWidth: 1,
+        },
+        tablePadding: {
+            paddingRight: 10,
         },
         moreBelow: {
             bottom: 30,
