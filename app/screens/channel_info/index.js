@@ -70,6 +70,7 @@ function mapStateToProps(state) {
 
     let status;
     let isBot = false;
+    let isTeammateGuest = false;
     if (currentChannel.type === General.DM_CHANNEL) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
@@ -78,6 +79,7 @@ function mapStateToProps(state) {
             isBot = true;
         }
         if (isGuest(teammate)) {
+            isTeammateGuest = true;
             currentChannelGuestCount = 1;
         }
     }
@@ -114,6 +116,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         canManageUsers,
         isBot,
+        isTeammateGuest,
         isLandscape: isLandscape(state),
         timeZone,
     };
