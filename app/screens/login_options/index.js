@@ -16,7 +16,7 @@ import Button from 'react-native-button';
 import {goToScreen} from 'app/actions/navigation';
 import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
-import {paddingHorizontal as padding} from 'app/components/safe_area_vi ew/iphone_x_spacing';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';

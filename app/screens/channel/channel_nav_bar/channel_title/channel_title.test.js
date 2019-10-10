@@ -46,4 +46,38 @@ describe('ChannelTitle', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('should match snapshot when is DM and has guests but the teammate is not the guest (when can show subtitles)', () => {
+        const props = {
+            ...baseProps,
+            displayName: 'Other user',
+            channelType: General.DM_CHANNEL,
+            isGuest: false,
+            hasGuests: true,
+            canHaveSubtitle: true,
+        };
+        const wrapper = shallow(
+            <ChannelTitle {...props}/>,
+            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when is DM and has guests and the teammate is the guest (when can show subtitles)', () => {
+        const props = {
+            ...baseProps,
+            displayName: 'Other user',
+            channelType: General.DM_CHANNEL,
+            isGuest: true,
+            hasGuests: true,
+            canHaveSubtitle: true,
+        };
+        const wrapper = shallow(
+            <ChannelTitle {...props}/>,
+            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
 });

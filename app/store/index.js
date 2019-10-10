@@ -175,8 +175,18 @@ export function configureAppStore() {
                             profilesInChannel[channelId] = Array.from(profilesInChannel[channelId]);
                         });
 
+                        let url;
+                        if (state.entities.users.currentUserId) {
+                            url = state.entities.general.credentials.url || state.views.selectServer.serverUrl;
+                        }
+
                         const entities = {
                             ...state.entities,
+                            general: {
+                                credentials: {
+                                    url,
+                                },
+                            },
                             channels: {
                                 ...state.entities.channels,
                                 channelsInTeam,

@@ -55,6 +55,9 @@ export default class ChannelTitle extends PureComponent {
         if (!isGuest && !hasGuests) {
             return null;
         }
+        if (channelType === General.DM_CHANNEL && !isGuest) {
+            return null;
+        }
 
         let messageId;
         let defaultMessage;
@@ -93,8 +96,8 @@ export default class ChannelTitle extends PureComponent {
 
         if (isOwnDM) {
             const messageId = t('channel_header.directchannel.you');
-            const defaultMessage = '{displayName} (you)';
-            const values = {displayName: channelDisplayName};
+            const defaultMessage = '{displayname} (you)';
+            const values = {displayname: channelDisplayName};
 
             return (
                 <FormattedText
