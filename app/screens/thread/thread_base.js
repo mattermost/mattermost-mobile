@@ -64,22 +64,26 @@ export default class ThreadBase extends PureComponent {
 
         this.state = {
             lastViewedAt: props.myMember && props.myMember.last_viewed_at,
+            theme: props.theme,
+            postIds: props.postIds,
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    static getDerivedStateFromProps(props, state) {
+        if (props.theme !== state.theme) {
+            setNavigatorStyles(state.componentId, props.theme);
         }
 
-        if (this.props.postIds !== nextProps.postIds && !nextProps.postIds.length) {
+        if (state.postIds !== props.postIds && !props.postIds.length) {
             this.close();
-            return;
+            return null;
         }
 
-        if (!this.state.lastViewedAt) {
-            this.setState({lastViewedAt: nextProps.myMember && nextProps.myMember.last_viewed_at});
+        if (!state.lastViewedAt) {
+            return {lastViewedAt: props.myMember && props.myMember.last_viewed_at};
         }
+
+        return null;
     }
 
     componentWillUnmount() {

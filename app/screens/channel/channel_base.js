@@ -79,6 +79,14 @@ export default class ChannelBase extends PureComponent {
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
+
+        this.state = {
+            theme: null,
+            componentId: null,
+            currentTeamId: null,
+            currentChannelId: null,
+            actions: {},
+        };
     }
 
     componentDidMount() {
@@ -111,27 +119,26 @@ export default class ChannelBase extends PureComponent {
         this.props.actions.getChannelStats(this.props.currentChannelId);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
+    static getDerivedStateFromProps(props, state) {
+        if (state.theme !== props.theme) {
             const options = {
                 layout: {
-                    backgroundColor: nextProps.theme.centerChannelBg,
-                },
+                    backgroundColor: props.theme.centerChannelBg,
+                }
             };
-            mergeNavigationOptions(this.props.componentId, options);
+            mergeNavigationOptions(state.componentId, options);
         }
 
-        if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
-            this.loadChannels(nextProps.currentTeamId);
+        if (props.currentTeamId && state.currentTeamId !== props.currentTeamId) {
+            this.loadChannels(props.currentTeamId);
         }
 
-        if (nextProps.currentChannelId !== this.props.currentChannelId &&
-            nextProps.currentTeamId === this.props.currentTeamId) {
-            PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
+        if (props.currentChannelId !== state.currentChannelId && props.currentTeamId === state.currentTeamId) {
+            PushNotifications.clearChannelNotifications(props.currentChannelId);
         }
 
-        if (nextProps.currentChannelId !== this.props.currentChannelId) {
-            this.props.actions.getChannelStats(nextProps.currentChannelId);
+        if (props.currentChannelId !== state.currentChannelId) {
+            state.actions.getChannelStats(props.currentChannelId);
         }
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {

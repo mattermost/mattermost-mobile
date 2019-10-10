@@ -34,7 +34,6 @@ export default class Badge extends PureComponent {
         super(props);
 
         this.mounted = false;
-        this.layoutReady = false;
 
         this.panResponder = PanResponder.create({
             onStartShouldSetPanResponder: () => true,
@@ -43,16 +42,22 @@ export default class Badge extends PureComponent {
             onMoveShouldSetResponderCapture: () => true,
             onResponderMove: () => false,
         });
+
+        this.state = {
+            layoutReady: false,
+        };
     }
 
     componentDidMount() {
         this.mounted = true;
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.count !== this.props.count) {
-            this.layoutReady = false;
+    static getDerivedStateFromProps(props, state) {
+        if (props.count !== state.count) {
+            return {layoutReady: false};
         }
+
+        return null;
     }
 
     componentWillUnmount() {

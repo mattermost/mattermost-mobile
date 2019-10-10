@@ -96,12 +96,14 @@ export default class PostList extends PureComponent {
         EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.channelId !== nextProps.channelId) {
+    static getDerivedStateFromProps(props, state) {
+        if (state.channelId !== props.channelId) {
             this.contentOffsetY = 0;
             this.hasDoneInitialScroll = false;
-            this.setState({contentHeight: 0});
+            return {contentHeight: 0};
         }
+
+        return null;
     }
 
     componentDidUpdate(prevProps) {

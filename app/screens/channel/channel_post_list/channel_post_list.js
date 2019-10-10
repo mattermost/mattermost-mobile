@@ -68,19 +68,19 @@ export default class ChannelPostList extends PureComponent {
         EventEmitter.on('goToThread', this.goToThread);
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {postIds: nextPostIds} = nextProps;
+    static getDerivedStateFromProps(props, state) {
+        const {postIds: nextPostIds} = props;
 
-        let visiblePostIds = this.state.visiblePostIds;
-        if (nextPostIds !== this.props.postIds || nextProps.postVisibility !== this.props.postVisibility) {
-            visiblePostIds = this.getVisiblePostIds(nextProps);
+        let visiblePostIds = state.visiblePostIds;
+        if (nextPostIds !== state.postIds || props.postVisibility !== state.postVisibility) {
+            visiblePostIds = this.getVisiblePostIds(props);
         }
 
-        if (this.props.channelId !== nextProps.channelId) {
+        if (state.channelId !== props.channelId) {
             this.isLoadingMoreTop = false;
         }
 
-        this.setState({visiblePostIds});
+        return {visiblePostIds};
     }
 
     componentDidUpdate(prevProps) {
