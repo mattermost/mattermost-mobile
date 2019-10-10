@@ -213,6 +213,9 @@ jobs:
       - run:
           name: Running Tests
           command: npm test
+      - run:
+          name: Check i18n
+          command: make i18n-extract-ci
 
   build-android-beta:
     executor: android
