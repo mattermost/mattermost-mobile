@@ -5,7 +5,6 @@ import {Alert} from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 import {Posts} from 'mattermost-redux/constants';
-import {DeviceTypes} from 'app/constants';
 
 export function fromAutoResponder(post) {
     return Boolean(post.type && (post.type === Posts.SYSTEM_AUTO_RESPONDER));
@@ -53,7 +52,7 @@ export function emptyFunction() { // eslint-disable-line no-empty-function
 
 export function hapticFeedback(method = 'impactLight') {
     ReactNativeHapticFeedback.trigger(method, {
-        enableVibrateFallback: DeviceTypes.ENABLE_HAPTIC_FEEDBACK,
+        enableVibrateFallback: false,
         ignoreAndroidSystemSettings: false,
     });
 }
