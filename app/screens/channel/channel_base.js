@@ -124,7 +124,7 @@ export default class ChannelBase extends PureComponent {
             const options = {
                 layout: {
                     backgroundColor: props.theme.centerChannelBg,
-                }
+                },
             };
             mergeNavigationOptions(state.componentId, options);
         }
