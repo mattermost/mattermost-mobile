@@ -42,6 +42,9 @@ public class CustomPushNotification extends PushNotification {
     public static final String KEY_TEXT_REPLY = "CAN_REPLY";
     public static final String NOTIFICATION_REPLIED_EVENT_NAME = "notificationReplied";
 
+    private NotificationChannel mHighImportanceChannel;
+    private NotificationChannel mMinImportanceChannel;
+
     private static LinkedHashMap<String,Integer> channelIdToNotificationCount = new LinkedHashMap<String,Integer>();
     private static LinkedHashMap<String,List<Bundle>> channelIdToNotification = new LinkedHashMap<String,List<Bundle>>();
     private static AppLifecycleFacade lifecycleFacade;
@@ -51,6 +54,7 @@ public class CustomPushNotification extends PushNotification {
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
         this.context = context;
+        createNotificationChannels();
     }
 
     public static void clearNotification(Context mContext, int notificationId, String channelId) {
@@ -146,19 +150,6 @@ public class CustomPushNotification extends PushNotification {
     }
 
     @Override
-    protected void postNotification(int id, Notification notification) {
-        boolean force = false;
-        Bundle bundle = notification.extras;
-        if (bundle != null) {
-            force = bundle.getBoolean("localTest");
-        }
-
-        if (!mAppLifecycleFacade.isAppVisible() || force) {
-            super.postNotification(id, notification);
-        }
-    }
-
-    @Override
     protected Notification.Builder getNotificationBuilder(PendingIntent intent) {
         // First, get a builder initialized with defaults from the core class.
         final Notification.Builder notification = new Notification.Builder(mContext);
@@ -168,8 +159,8 @@ public class CustomPushNotification extends PushNotification {
         addNotificationExtras(notification, bundle);
         setNotificationIcons(notification, bundle);
         setNotificationMessagingStyle(notification, bundle);
+        setNotificationChannel(notification, bundle);
         setNotificationBadgeIconType(notification);
-        setNotificationChannel(notification);
 
         NotificationPreferences notificationPreferences = NotificationPreferences.getInstance(mContext);
         setNotificationSound(notification, notificationPreferences);
@@ -354,6 +345,27 @@ public class CustomPushNotification extends PushNotification {
         }
     }
 
+    private void setNotificationChannel(Notification.Builder notification, Bundle bundle) {
+        // If Android Oreo or above we need to register a channel
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+
+        NotificationChannel notificationChannel = mHighImportanceChannel;
+
+        boolean localPushNotificationTest = false;
+        Bundle userInfoBundle = bundle.getBundle("userInfo");
+        if (userInfoBundle != null) {
+            localPushNotificationTest = userInfoBundle.getBoolean("localTest");
+        }
+
+        if (mAppLifecycleFacade.isAppVisible() && !localPushNotificationTest) {
+            notificationChannel = mMinImportanceChannel;
+        }
+
+        notification.setChannelId(notificationChannel.getId());
+    }
+
     private void setNotificationBadgeIconType(Notification.Builder notification) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notification.setBadgeIconType(Notification.BADGE_ICON_SMALL);
@@ -366,26 +378,6 @@ public class CustomPushNotification extends PushNotification {
                 .setGroup(GROUP_KEY_MESSAGES)
                 .setGroupSummary(true);
         }
-    }
-
-    private void setNotificationChannel(Notification.Builder notification) {
-        // If Android Oreo or above we need to register a channel
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return;
-        }
-
-        String CHANNEL_ID = "channel_01";
-        String CHANNEL_NAME = "Channel Name";
-
-        NotificationChannel channel = new NotificationChannel(
-            CHANNEL_ID,
-            CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_HIGH);
-        channel.setShowBadge(true);
-
-        final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.createNotificationChannel(channel);
-        notification.setChannelId(CHANNEL_ID);
     }
 
     private void setNotificationSound(Notification.Builder notification, NotificationPreferences notificationPreferences) {
@@ -496,5 +488,17 @@ public class CustomPushNotification extends PushNotification {
 
     private void notificationReceiptDelivery(String ackId, String type) {
         ReceiptDelivery.send(context, ackId, type);
+    }
+
+    private void createNotificationChannels() {
+        final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        mHighImportanceChannel = new NotificationChannel("channel_01", "High Importance", NotificationManager.IMPORTANCE_HIGH);
+        mHighImportanceChannel.setShowBadge(true);
+        notificationManager.createNotificationChannel(mHighImportanceChannel);
+
+        mMinImportanceChannel = new NotificationChannel("channel_02", "Min Importance", NotificationManager.IMPORTANCE_MIN);
+        mMinImportanceChannel.setShowBadge(true);
+        notificationManager.createNotificationChannel(mMinImportanceChannel);
     }
 }
