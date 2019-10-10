@@ -140,15 +140,14 @@ export default class FileAttachment extends PureComponent {
         return (
             <View style={[style.fileWrapper]}>
                 {fileAttachmentComponent}
-                <View style={style.fileInfoContainer}>
-                    <TouchableWithFeedback
-                        onLongPress={onLongPress}
-                        onPress={this.handlePreviewPress}
-                        type={'opacity'}
-                    >
-                        {this.renderFileInfo()}
-                    </TouchableWithFeedback>
-                </View>
+                <TouchableWithFeedback
+                    style={style.fileInfoContainer}
+                    onLongPress={onLongPress}
+                    onPress={this.handlePreviewPress}
+                    type={'opacity'}
+                >
+                    {this.renderFileInfo()}
+                </TouchableWithFeedback>
             </View>
         );
     }

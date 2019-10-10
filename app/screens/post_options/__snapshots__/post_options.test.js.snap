@@ -10,8 +10,8 @@ exports[`PostOptions should match snapshot, no option for system message to user
 >
   <ForwardRef(forwardConnectRef)
     allowStayMiddle={false}
-    initialPosition={250}
-    marginFromTop={350}
+    initialPosition={300}
+    marginFromTop={300}
     onRequestClose={[Function]}
     theme={
       Object {
@@ -44,10 +44,10 @@ exports[`PostOptions should match snapshot, no option for system message to user
   >
     <PostOption
       destructive={false}
-      icon="edit"
+      icon="reply"
       isLandscape={false}
       onPress={[Function]}
-      text="Edit"
+      text="Reply"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -79,10 +79,44 @@ exports[`PostOptions should match snapshot, no option for system message to user
     />
     <PostOption
       destructive={false}
-      icon="reply"
+      icon="emoji"
       isLandscape={false}
       onPress={[Function]}
-      text="Reply"
+      text="Add Reaction"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <PostOption
+      icon="bookmark"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Mark post as unread"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -149,10 +183,10 @@ exports[`PostOptions should match snapshot, no option for system message to user
     />
     <PostOption
       destructive={false}
-      icon="emoji"
+      icon="edit"
       isLandscape={false}
       onPress={[Function]}
-      text="Add Reaction"
+      text="Edit"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -196,8 +230,8 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
 >
   <ForwardRef(forwardConnectRef)
     allowStayMiddle={false}
-    initialPosition={300}
-    marginFromTop={300}
+    initialPosition={350}
+    marginFromTop={250}
     onRequestClose={[Function]}
     theme={
       Object {
@@ -230,10 +264,10 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
   >
     <PostOption
       destructive={false}
-      icon="edit"
+      icon="reply"
       isLandscape={false}
       onPress={[Function]}
-      text="Edit"
+      text="Reply"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -265,10 +299,44 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     />
     <PostOption
       destructive={false}
-      icon="reply"
+      icon="emoji"
       isLandscape={false}
       onPress={[Function]}
-      text="Reply"
+      text="Add Reaction"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <PostOption
+      icon="bookmark"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Mark post as unread"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -335,10 +403,10 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     />
     <PostOption
       destructive={false}
-      icon="emoji"
+      icon="edit"
       isLandscape={false}
       onPress={[Function]}
-      text="Add Reaction"
+      text="Edit"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -417,8 +485,8 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
 >
   <ForwardRef(forwardConnectRef)
     allowStayMiddle={false}
-    initialPosition={300}
-    marginFromTop={300}
+    initialPosition={350}
+    marginFromTop={250}
     onRequestClose={[Function]}
     theme={
       Object {
@@ -451,10 +519,10 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
   >
     <PostOption
       destructive={false}
-      icon="edit"
+      icon="reply"
       isLandscape={false}
       onPress={[Function]}
-      text="Edit"
+      text="Reply"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -486,10 +554,44 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     />
     <PostOption
       destructive={false}
-      icon="reply"
+      icon="emoji"
       isLandscape={false}
       onPress={[Function]}
-      text="Reply"
+      text="Add Reaction"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <PostOption
+      icon="bookmark"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Mark post as unread"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -556,10 +658,10 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     />
     <PostOption
       destructive={false}
-      icon="emoji"
+      icon="edit"
       isLandscape={false}
       onPress={[Function]}
-      text="Add Reaction"
+      text="Edit"
       theme={
         Object {
           "awayIndicator": "#ffbc42",

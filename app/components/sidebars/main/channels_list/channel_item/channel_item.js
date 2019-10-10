@@ -339,7 +339,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 11,
         },
         text: {
-            color: changeOpacity(theme.sidebarText, 0.88),
+            color: changeOpacity(theme.sidebarText, 0.6),
             fontSize: 16,
             lineHeight: 24,
             paddingRight: 10,
