@@ -41,7 +41,7 @@ export default class NotificationSettingsEmailBase extends PureComponent {
 
         this.state = {
             emailInterval,
-            newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
+            newInterval: this.computeEmailInterval(notifyProps.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
             showEmailNotificationsModal: false,
         };
     }
@@ -49,9 +49,8 @@ export default class NotificationSettingsEmailBase extends PureComponent {
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.theme !== nextProps.theme) {
             setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
@@ -63,17 +62,19 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         } = nextProps;
 
         if (
-            this.props.sendEmailNotifications !== sendEmailNotifications ||
-            this.props.enableEmailBatching !== enableEmailBatching ||
-            this.props.emailInterval !== emailInterval
+            prevState.sendEmailNotifications !== sendEmailNotifications ||
+            prevState.enableEmailBatching !== enableEmailBatching ||
+            prevState.emailInterval !== emailInterval
         ) {
             const notifyProps = getNotificationProps(currentUser);
 
-            this.setState({
+            return {
                 emailInterval,
-                newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
-            });
+                newInterval: prevState.computeEmailInterval(notifyProps.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval)
+            }
         }
+
+        return null;
     }
 
     componentDidDisappear() {

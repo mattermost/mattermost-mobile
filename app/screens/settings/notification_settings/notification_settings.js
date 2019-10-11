@@ -38,13 +38,12 @@ class NotificationSettings extends PureComponent {
         isLandscape: PropTypes.bool.isRequired,
     };
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.theme !== nextProps.theme) {
+            setNavigatorStyles(prevState.componentId, nextProps.theme)
         }
-
         const {updateMeRequest, intl} = nextProps;
-        if (this.props.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
+        if (prevState.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.notification_settings.save_failed_title',
@@ -56,6 +55,8 @@ class NotificationSettings extends PureComponent {
                 })
             );
         }
+
+        return null;
     }
 
     handlePress = preventDoubleTap((action) => {

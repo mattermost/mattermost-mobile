@@ -1,3 +1,4 @@
+
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
@@ -24,11 +25,11 @@ export default class RadioButtonGroup extends PureComponent {
             selected: this.getSelectedValue(props.options),
         };
     }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.options !== nextProps.options) {
-            this.setState({selected: this.getSelectedValue(nextProps.options)});
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.options !== nextProps.options) {
+            return { selected: prevState.getSelectedValue(nextProps.options) };
         }
+        return null;
     }
 
     getSelectedValue = (options = []) => {
