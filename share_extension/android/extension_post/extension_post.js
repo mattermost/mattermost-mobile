@@ -452,7 +452,6 @@ export default class ExtensionPost extends PureComponent {
                 <TextInput
                     ref={this.getInputRef}
                     autoCapitalize='sentences'
-                    maxLength={MAX_MESSAGE_LENGTH}
                     multiline={true}
                     onBlur={this.handleBlur}
                     onChangeText={this.handleTextChange}
