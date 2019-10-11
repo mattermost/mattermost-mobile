@@ -28,6 +28,7 @@ exports[`channel_info should match snapshot 1`] = `
       isBot={false}
       isGroupConstrained={false}
       isLandscape={false}
+      isTeammateGuest={false}
       memberCount={2}
       onPermalinkPress={[Function]}
       purpose="Purpose"

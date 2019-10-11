@@ -60,6 +60,7 @@ describe('channel_info', () => {
         status: 'status',
         theme: Preferences.THEMES.default,
         isBot: false,
+        isTeammateGuest: false,
         isLandscape: false,
         actions: {
             clearPinnedPosts: jest.fn(),
