@@ -303,7 +303,6 @@ module.exports = [
     'dist/assets/images/icons/word.png',
     'dist/assets/images/post_header/flag.png',
     'dist/assets/images/post_header/pin.png',
-    'dist/assets/images/post_header/bookmark.png',
     'dist/assets/images/profile.jpg',
     'dist/assets/images/status/away.png',
     'dist/assets/images/status/dnd.png',
