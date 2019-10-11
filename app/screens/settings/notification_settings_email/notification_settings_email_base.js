@@ -70,8 +70,8 @@ export default class NotificationSettingsEmailBase extends PureComponent {
 
             return {
                 emailInterval,
-                newInterval: prevState.computeEmailInterval(notifyProps.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval)
-            }
+                newInterval: prevState.computeEmailInterval(notifyProps.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
+            };
         }
 
         return null;

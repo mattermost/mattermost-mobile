@@ -40,7 +40,7 @@ class NotificationSettings extends PureComponent {
 
     static getDerivedStateFromProps(nextProps, prevState) {
         if (prevState.theme !== nextProps.theme) {
-            setNavigatorStyles(prevState.componentId, nextProps.theme)
+            setNavigatorStyles(prevState.componentId, nextProps.theme);
         }
         const {updateMeRequest, intl} = nextProps;
         if (prevState.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {

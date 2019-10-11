@@ -27,7 +27,7 @@ export default class RadioButtonGroup extends PureComponent {
     }
     static getDerivedStateFromProps(nextProps, prevState) {
         if (prevState.options !== nextProps.options) {
-            return { selected: prevState.getSelectedValue(nextProps.options) };
+            return {selected: prevState.getSelectedValue(nextProps.options)};
         }
         return null;
     }
