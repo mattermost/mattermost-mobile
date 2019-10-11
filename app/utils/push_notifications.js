@@ -148,14 +148,12 @@ class PushNotificationUtils {
                 return;
             }
 
-            if (badgeCount >= 0) {
-                const newBadgeCount = badgeCount - 1;
-                PushNotifications.setApplicationIconBadgeNumber(newBadgeCount);
-            }
-
-            dispatch(markChannelViewedAndRead(data.channel_id));
             this.replyNotificationData = null;
-            completion();
+
+            PushNotifications.getDeliveredNotifications((notifications) => {
+                PushNotifications.setApplicationIconBadgeNumber(notifications.length);
+                completion();
+            });
         } else {
             this.replyNotificationData = {
                 data,
