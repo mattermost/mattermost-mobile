@@ -51,7 +51,7 @@ export default class NotificationSettingsEmailBase extends PureComponent {
     }
     static getDerivedStateFromProps(nextProps, prevState) {
         if (prevState.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+            setNavigatorStyles(prevState.componentId, nextProps.theme);
         }
 
         const {
