@@ -205,7 +205,7 @@ export default class PostHeader extends PureComponent {
     };
 
     renderTag = () => {
-        const {fromAutoResponder, fromWebHook, isBot, isGuest, theme} = this.props;
+        const {fromAutoResponder, fromWebHook, isBot, isSystemMessage, isGuest, theme} = this.props;
         const style = getStyleSheet(theme);
 
         if (fromWebHook || isBot) {
@@ -215,6 +215,8 @@ export default class PostHeader extends PureComponent {
                     theme={theme}
                 />
             );
+        } else if (isSystemMessage) {
+            return null;
         } else if (isGuest) {
             return (
                 <GuestTag
