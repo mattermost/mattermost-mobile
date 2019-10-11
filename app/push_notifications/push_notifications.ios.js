@@ -189,7 +189,7 @@ class PushNotification {
             for (let i = 0; i < notifications.length; i++) {
                 const notification = notifications[i];
 
-                if (notification.userInfo.channel_id === channelId) {
+                if (notification.channel_id === channelId) {
                     ids.push(notification.identifier);
                 }
             }
