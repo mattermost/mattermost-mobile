@@ -370,11 +370,9 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         );
     }
 
-    componentWillReceiveProps(nextProps) {
-        super.componentWillReceiveProps(nextProps);
-
+    static getDerivedStateFromProps(nextProps, prevState) {
         const {updateMeRequest, intl} = nextProps;
-        if (this.props.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
+        if (prevState.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.notification_settings.save_failed_title',
@@ -386,6 +384,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 })
             );
         }
+        return null;
     }
 
     renderMobilePushSection() {

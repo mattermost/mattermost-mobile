@@ -24,11 +24,11 @@ export default class RadioButtonGroup extends PureComponent {
             selected: this.getSelectedValue(props.options),
         };
     }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.options !== nextProps.options) {
-            this.setState({selected: this.getSelectedValue(nextProps.options)});
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.options !== nextProps.options) {
+            return { selected: prevState.getSelectedValue(nextProps.options) };
         }
+        return null;
     }
 
     getSelectedValue = (options = []) => {
