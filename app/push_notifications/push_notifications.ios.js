@@ -49,11 +49,10 @@ class PushNotification {
     };
 
     handleReply = (notification, text, completion) => {
-        if (this.onReply && !replies.has(notification.identifier)) {
-            replies.add(notification.identifier);
+        const data = notification.getData();
 
-            const data = notification.getData();
-
+        if (this.onReply && !replies.has(data.identifier)) {
+            replies.add(data.identifier);
             this.onReply(data, text, completion);
         } else {
             completion();
