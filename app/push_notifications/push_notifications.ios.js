@@ -12,11 +12,13 @@ import NotificationsIOS, {
 
 import {getBadgeCount} from 'app/selectors/views';
 import ephemeralStore from 'app/store/ephemeral_store';
+import {getCurrentLocale} from 'app/selectors/i18n';
+import {getLocalizedMessage} from 'app/i18n';
+import {t} from 'app/utils/i18n';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
 
-let replyCategory;
 const replies = new Set();
 
 class PushNotification {
@@ -30,23 +32,6 @@ class PushNotification {
         NotificationsIOS.addEventListener(DEVICE_REMOTE_NOTIFICATIONS_REGISTERED_EVENT, this.onRemoteNotificationsRegistered);
         NotificationsIOS.addEventListener(DEVICE_NOTIFICATION_RECEIVED_FOREGROUND_EVENT, this.onNotificationReceivedForeground);
         NotificationsIOS.addEventListener(DEVICE_NOTIFICATION_OPENED_EVENT, this.onNotificationOpened);
-
-        const replyAction = new NotificationAction({
-            activationMode: 'background',
-            title: 'Reply',
-            textInput: {
-                buttonTitle: 'Send',
-                placeholder: 'Write a reply...',
-            },
-            authenticationRequired: true,
-            identifier: REPLY_ACTION,
-        });
-
-        replyCategory = new NotificationCategory({
-            identifier: CATEGORY,
-            actions: [replyAction],
-            context: 'default',
-        });
     }
 
     handleNotification = (data, foreground, userInteraction) => {
@@ -68,9 +53,8 @@ class PushNotification {
             replies.add(notification.identifier);
 
             const data = notification.getData();
-            const badgeCount = parseInt(notification.getBadgeCount(), 10);
 
-            this.onReply(data, text, badgeCount, completion);
+            this.onReply(data, text, completion);
         } else {
             completion();
         }
@@ -82,7 +66,39 @@ class PushNotification {
         this.onNotification = options.onNotification;
         this.onReply = options.onReply;
 
+        this.requestNotificationReplyPermissions();
+    }
+
+    requestNotificationReplyPermissions = () => {
+        const replyCategory = this.createReplyCategory();
         this.requestPermissions([replyCategory]);
+    }
+
+    createReplyCategory = () => {
+        const {getState} = this.reduxStore;
+        const state = getState();
+        const locale = getCurrentLocale(state);
+
+        const replyTitle = getLocalizedMessage(locale, t('mobile.push_notification_reply.title'));
+        const replyButton = getLocalizedMessage(locale, t('mobile.push_notification_reply.button'));
+        const replyPlaceholder = getLocalizedMessage(locale, t('mobile.push_notification_reply.placeholder'));
+
+        const replyAction = new NotificationAction({
+            activationMode: 'background',
+            title: replyTitle,
+            textInput: {
+                buttonTitle: replyButton,
+                placeholder: replyPlaceholder,
+            },
+            authenticationRequired: true,
+            identifier: REPLY_ACTION,
+        });
+
+        return new NotificationCategory({
+            identifier: CATEGORY,
+            actions: [replyAction],
+            context: 'default',
+        });
     }
 
     requestPermissions = (permissions) => {
