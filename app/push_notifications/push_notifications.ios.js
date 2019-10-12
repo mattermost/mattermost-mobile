@@ -190,6 +190,10 @@ class PushNotification {
         this.deviceNotification = null;
     }
 
+    getDeliveredNotifications(callback) {
+        NotificationsIOS.getDeliveredNotifications(callback);
+    }
+
     clearChannelNotifications(channelId) {
         NotificationsIOS.getDeliveredNotifications((notifications) => {
             const ids = [];
