@@ -528,6 +528,7 @@ export default class ChannelInfo extends PureComponent {
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
+                        isLandscape={isLandscape}
                     />
                     }
                     <View style={style.rowsContainer}>
