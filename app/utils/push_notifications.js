@@ -102,7 +102,7 @@ class PushNotificationUtils {
         }
     };
 
-    onPushNotificationReply = async (data, text, badgeCount, completion) => {
+    onPushNotificationReply = async (data, text, completion) => {
         const {dispatch, getState} = this.store;
         const state = getState();
         const credentials = await getAppCredentials(); // TODO Change to handle multiple servers
@@ -158,7 +158,6 @@ class PushNotificationUtils {
             this.replyNotificationData = {
                 data,
                 text,
-                badgeCount,
                 completion,
             };
         }
