@@ -89,7 +89,7 @@ export default class ProgressiveImage extends PureComponent {
         if (this.subscribedToCache) {
             if (!thumb && !this.state.failedImageLoad) {
                 this.load();
-                this.setState({failedImageLoad:true})
+                this.setState({failedImageLoad: true});
             } else {
                 const {filename, imageUri} = this.props;
                 this.setState({thumb}, () => {
