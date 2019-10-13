@@ -82,7 +82,7 @@ export default class ImageCacheManager {
                     notifyAll(uri, pathWithPrefix);
                 } catch (e) {
                     RNFetchBlob.fs.unlink(pathWithPrefix);
-                    notifyAll(uri, uri);
+                    notifyAll(uri, null);
                     unsubscribe(uri);
                     return null;
                 }
