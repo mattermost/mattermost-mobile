@@ -48,14 +48,6 @@ describe('ChannelBase', () => {
         };
     };
 
-    test('should match snapshot', () => {
-        const wrapper = shallow(
-            <ChannelBase {...baseProps}/>
-        );
-
-        expect(wrapper.getElement()).toMatchSnapshot();
-    });
-
     test('should call mergeNavigationOptions on all navigation components when theme changes', () => {
         const mergeNavigationOptions = jest.spyOn(NavigationActions, 'mergeNavigationOptions');
 
