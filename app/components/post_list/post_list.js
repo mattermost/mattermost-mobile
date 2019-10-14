@@ -89,6 +89,7 @@ export default class PostList extends PureComponent {
 
         this.state = {
             postListHeight: 0,
+            channelId: '',
         };
     }
 
