@@ -10,7 +10,6 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {goToScreen} from 'app/actions/navigation';
 import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {recordLoadTime} from 'app/actions/views/root';
 import {isLandscape} from 'app/selectors/device';
@@ -45,7 +44,6 @@ function mapDispatchToProps(dispatch) {
             selectPost,
             recordLoadTime,
             refreshChannelWithRetry,
-            goToScreen,
         }, dispatch),
     };
 }

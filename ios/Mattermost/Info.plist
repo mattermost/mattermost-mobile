@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.23.0</string>
+	<string>1.24.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -34,7 +34,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>228</string>
+	<string>238</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -56,6 +56,8 @@
 	</dict>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>Let Mattermost access your Media files</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Share post data accross devices with Mattermost</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Share post data accross devices with Mattermost</string>
 	<key>NSCalendarsUsageDescription</key>
@@ -71,11 +73,23 @@
 	<key>NSMotionUsageDescription</key>
 	<string>Share your route in your Mattermost instance</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Upload Photos and Videos to your Mattermost instance or save them to your device</string>
+	<string>Upload Photos and Videos from your device to your Mattermost instance</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save downloaded Photos and Videos from your Mattermost instance to your device</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Send voice messages to your Mattermost instance</string>
 	<key>UIAppFonts</key>
 	<array>
+		<string>Entypo.ttf</string>
+		<string>EvilIcons.ttf</string>
+		<string>FontAwesome.ttf</string>
+		<string>Foundation.ttf</string>
+		<string>Ionicons.ttf</string>
+		<string>MaterialIcons.ttf</string>
+		<string>Octicons.ttf</string>
+		<string>Zocial.ttf</string>
+		<string>MaterialCommunityIcons.ttf</string>
+		<string>SimpleLineIcons.ttf</string>
 		<string>OpenSans-Bold.ttf</string>
 		<string>OpenSans-BoldItalic.ttf</string>
 		<string>OpenSans-ExtraBold.ttf</string>
@@ -99,20 +113,11 @@
 		<string>Roboto-Thin.ttf</string>
 		<string>Roboto-ThinItalic.ttf</string>
 		<string>AntDesign.ttf</string>
-		<string>Entypo.ttf</string>
-		<string>EvilIcons.ttf</string>
 		<string>Feather.ttf</string>
-		<string>FontAwesome.ttf</string>
 		<string>FontAwesome5_Brands.ttf</string>
 		<string>FontAwesome5_Regular.ttf</string>
 		<string>FontAwesome5_Solid.ttf</string>
-		<string>Foundation.ttf</string>
-		<string>Ionicons.ttf</string>
-		<string>MaterialCommunityIcons.ttf</string>
-		<string>MaterialIcons.ttf</string>
-		<string>Octicons.ttf</string>
-		<string>SimpleLineIcons.ttf</string>
-		<string>Zocial.ttf</string>
+		<string>Mattermost-Regular.otf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

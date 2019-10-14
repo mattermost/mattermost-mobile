@@ -4,15 +4,15 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentTeam, getMyTeamsCount, getChannelDrawerBadgeCount} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentTeamId, getMyTeamsCount, getChannelDrawerBadgeCount} from 'mattermost-redux/selectors/entities/teams';
 
 import SwitchTeamsButton from './switch_teams_button';
 
 function mapStateToProps(state) {
-    const team = getCurrentTeam(state) || {};
+    const currentTeamId = getCurrentTeamId(state);
 
     return {
-        currentTeamId: team.id,
+        currentTeamId,
         mentionCount: getChannelDrawerBadgeCount(state),
         teamsCount: getMyTeamsCount(state),
         theme: getTheme(state),

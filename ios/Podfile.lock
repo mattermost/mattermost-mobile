@@ -77,9 +77,7 @@ PODS:
     - react-native-video/Video (= 4.4.1)
   - react-native-video/Video (4.4.1):
     - React
-  - react-native-webview (5.8.1):
-    - React
-  - react-native-youtube (1.1.0):
+  - react-native-webview (7.0.1):
     - React
   - React-RCTActionSheet (0.60.5):
     - React-Core (= 0.60.5)
@@ -116,24 +114,27 @@ PODS:
     - React
   - RNDeviceInfo (2.1.2):
     - React
-  - RNGestureHandler (1.2.1):
+  - RNGestureHandler (1.3.0):
     - React
   - RNKeychain (3.1.3):
     - React
   - RNReactNativeDocViewer (1.0.0):
+    - React
+  - RNReactNativeHapticFeedback (1.8.2):
     - React
   - RNSentry (1.0.4):
     - React
     - Sentry (~> 4.4.0)
   - RNSVG (9.4.0):
     - React
-  - RNVectorIcons (6.4.2):
+  - RNVectorIcons (6.6.0):
     - React
   - Sentry (4.4.0):
     - Sentry/Core (= 4.4.0)
   - Sentry/Core (4.4.0)
-  - XCDYouTubeKit (2.7.1)
+  - XCDYouTubeKit (2.8.1)
   - yoga (0.60.5.React)
+  - YoutubePlayer-in-WKWebView (0.3.3)
 
 DEPENDENCIES:
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
@@ -156,7 +157,6 @@ DEPENDENCIES:
   - react-native-safe-area (from `../node_modules/react-native-safe-area`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webview (from `../node_modules/react-native-webview`)
-  - react-native-youtube (from `../node_modules/react-native-youtube`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
   - React-RCTAnimation (from `../node_modules/react-native/Libraries/NativeAnimation`)
   - React-RCTBlob (from `../node_modules/react-native/Libraries/Blob`)
@@ -176,17 +176,20 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNReactNativeDocViewer (from `../node_modules/react-native-doc-viewer`)
+  - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
-  - XCDYouTubeKit (= 2.7.1)
+  - XCDYouTubeKit (~> 2.8)
   - yoga (from `../node_modules/react-native/ReactCommon/yoga`)
+  - YoutubePlayer-in-WKWebView (~> 0.3.1)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - boost-for-react-native
     - Sentry
     - XCDYouTubeKit
+    - YoutubePlayer-in-WKWebView
 
 EXTERNAL SOURCES:
   BVLinearGradient:
@@ -229,8 +232,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-video"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
-  react-native-youtube:
-    :path: "../node_modules/react-native-youtube"
   React-RCTActionSheet:
     :path: "../node_modules/react-native/Libraries/ActionSheetIOS"
   React-RCTAnimation:
@@ -269,6 +270,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNReactNativeDocViewer:
     :path: "../node_modules/react-native-doc-viewer"
+  RNReactNativeHapticFeedback:
+    :path: "../node_modules/react-native-haptic-feedback"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
   RNSVG:
@@ -300,7 +303,6 @@ SPEC CHECKSUMS:
   react-native-safe-area: cec86d422df9430ab60511916a3fa18f87d21e1e
   react-native-video: 44c6befbc1526283ca1919891fcebe4680feade4
   react-native-webview: a42108b827082f8f0333529b0772102031d5960d
-  react-native-youtube: 7ab01f1320b037d605e6c6ac9d59cc2b92091799
   React-RCTActionSheet: 08864c609d9f959abf3d51fdd93f8bc6e91f21eb
   React-RCTAnimation: a4547e9fac2627ded3df9d302f5558b475faf819
   React-RCTBlob: 62d5c263a2adb8f7a2cafd601beba18a2d99cbbb
@@ -320,13 +322,15 @@ SPEC CHECKSUMS:
   RNGestureHandler: 7ccf2f3f60458e084f9ada01fbaf610f6fef073c
   RNKeychain: 5381e340056c23de103d73ae59cbddc6ffc21d97
   RNReactNativeDocViewer: 1ff418afb9b3d1a1050ab2ee9fee882ed6bfe6a6
+  RNReactNativeHapticFeedback: 89c72bf6308e5d5269369e8365319a2d752435b8
   RNSentry: ea67b65b328405ed060f43a2940003ed93b5c4eb
   RNSVG: 4834be1d644eb77f0e3f6de851881b83758a3124
-  RNVectorIcons: 8c52e1e8da1153613fdef44748e865c25556cb9c
+  RNVectorIcons: 66af4d5c8ff4f584c7b7cd9c4b0780920f27fce2
   Sentry: 26650184fe71eb7476dfd2737acb5ea6cc64b4b1
-  XCDYouTubeKit: c8567fd5cb388a3099fa26eee4b30df2a467847d
+  XCDYouTubeKit: 4ca4e3322fa556ec1c32932d378365c15ce1386e
   yoga: 88c514f310aff89b94a14c5fbf44b95735af0cb7
+  YoutubePlayer-in-WKWebView: 7694e858c5c3472ed067d6fe34eb9b944845e63c
 
-PODFILE CHECKSUM: b57ffe748e4335d5327ce6e976198edf2a03ef4f
+PODFILE CHECKSUM: 4918ed3b29a0108fde3ca56873177868710bfac2
 
 COCOAPODS: 1.5.3

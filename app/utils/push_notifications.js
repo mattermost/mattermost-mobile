@@ -16,6 +16,7 @@ import {
     loadFromPushNotification,
 } from 'app/actions/views/root';
 import {dismissAllModals, popToRoot} from 'app/actions/navigation';
+
 import {ViewTypes} from 'app/constants';
 import {getLocalizedMessage} from 'app/i18n';
 import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
@@ -34,6 +35,7 @@ class PushNotificationUtils {
         this.store = store;
 
         PushNotifications.configure({
+            reduxStore: store,
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
             onReply: this.onPushNotificationReply,
@@ -53,9 +55,8 @@ class PushNotificationUtils {
             EventEmitter.emit('close_channel_drawer');
             EventEmitter.emit('close_settings_sidebar');
 
-            const {dispatch} = this.store;
-            dispatch(dismissAllModals());
-            dispatch(popToRoot());
+            await dismissAllModals();
+            await popToRoot();
 
             PushNotifications.resetNotification();
         }
@@ -66,15 +67,11 @@ class PushNotificationUtils {
         let unsubscribeFromStore = null;
         let stopLoadingNotification = false;
 
-        const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
+        const {data, foreground, message, userInteraction} = deviceNotification;
         const notification = {
             data,
             message,
         };
-
-        if (userInfo) {
-            notification.localNotification = userInfo.localNotification;
-        }
 
         if (data.type === 'clear') {
             dispatch(markChannelViewedAndRead(data.channel_id, null, false));
@@ -84,7 +81,7 @@ class PushNotificationUtils {
 
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
-            } else if (userInteraction && !notification.localNotification) {
+            } else if (userInteraction && !notification?.data?.localNotification) {
                 EventEmitter.emit('close_channel_drawer');
                 if (getState().views.root.hydrationComplete) { //TODO: Replace when realm is ready
                     setTimeout(() => {

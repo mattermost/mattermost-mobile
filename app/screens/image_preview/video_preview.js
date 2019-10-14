@@ -59,7 +59,7 @@ export default class VideoPreview extends PureComponent {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         EventEmitter.on('stop-video-playback', this.stopPlayback);
         this.initializeComponent();
     }

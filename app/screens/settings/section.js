@@ -87,6 +87,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         footer: {
             marginTop: 10,
+            marginHorizontal: 15,
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },

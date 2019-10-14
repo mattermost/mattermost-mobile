@@ -7,8 +7,6 @@ import {connect} from 'react-redux';
 import {editPost} from 'mattermost-redux/actions/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {setButtons, dismissModal} from 'app/actions/navigation';
-
 import {getDimensions, isLandscape} from 'app/selectors/device';
 
 import EditPost from './edit_post';
@@ -29,8 +27,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             editPost,
-            setButtons,
-            dismissModal,
         }, dispatch),
     };
 }

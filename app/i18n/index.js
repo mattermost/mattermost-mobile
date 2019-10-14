@@ -108,10 +108,15 @@ function loadTranslation(locale) {
     }
 }
 
+export function resetMomentLocale() {
+    moment.locale(DEFAULT_LOCALE);
+}
+
 export function getTranslations(locale) {
     if (!TRANSLATIONS[locale]) {
         loadTranslation(locale);
     }
+
     return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];
 }
 

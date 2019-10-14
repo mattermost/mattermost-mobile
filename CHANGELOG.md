@@ -1,5 +1,47 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.23.1 Release
+- Release Date: September 27, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed issues causing the app to crash on some devices
+
+## 1.23.0 Release
+- Release Date: September 16, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed an issue where some Giphy actions were not working in ephemeral posts on mobile.
+ - Fixed an issue where users were unable to create new channels when "Combine all channel types" was selected.
+ - Fixed an issue on Android EMM where a crash occurred when tapping **Go to Settings**.
+ - Fixed an issue on iOS where the in-app "Date" localization persisted after server and user changed.
+ - Fixed an issue where the download step was showing when previewing a video right after posting it. 
+ - Fixed an issue on Android where cancelling a video download twice in a row showed an error.
+ - Fixed an issue where file attachment thumbnail/preview could fail to load and not be able to be reloaded.
+ - Fixed an issue on Android where **Channel > Add Members > ADD** text changed to black.
+ - Fixed an issue on iOS where the **Cancel** label text didn't fit in one line in German language.
+ - Fixed an issue where longer than allowed reply posts kept showing a warning with every backspace.
+ - Fixed an issue where there was a delay in search box and emoji content width change when switching to/from portrait/landscape view.
+ - Fixed an issue where deactivated users did not appear in the "Jump to..." screen.
+ - Fixed an issue where "@undefined has joined the channel" was shown instead of "Someone has joined the channel" when a user joined a channel that another user was viewing.
+ - Fixed an issue on Android where the reply arrow was cut off in search results.
+ - Fixed an issue where changing display theme from webapp didn't work properly on mobile.
+ - Fixed an issue on iOS where a bot account icon style was broken.
+ - Fixed an issue with an incorrect UI text for location of touch ID setting.
+ 
+### Known Issues
+  - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
+  - When users are deactivated, they are not immediately removed from the mention auto-complete. [MM-17953](https://mattermost.atlassian.net/browse/MM-17953)
+
 ## 1.22.1 Release
 - Release Date: August 23, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
