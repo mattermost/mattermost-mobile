@@ -27,6 +27,7 @@ export default class ChannelItem extends PureComponent {
         channel: PropTypes.object,
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
+        isArchived: PropTypes.bool,
         isChannelMuted: PropTypes.bool,
         currentUserId: PropTypes.string.isRequired,
         isUnread: PropTypes.bool,
@@ -44,6 +45,7 @@ export default class ChannelItem extends PureComponent {
     };
 
     static defaultProps = {
+        isArchived: false,
         mentions: 0,
     };
 
@@ -89,6 +91,7 @@ export default class ChannelItem extends PureComponent {
             channelId,
             currentChannelId,
             displayName,
+            isArchived,
             isChannelMuted,
             currentUserId,
             isUnread,
@@ -102,8 +105,6 @@ export default class ChannelItem extends PureComponent {
             isLandscape,
         } = this.props;
 
-        const isArchived = channel.delete_at > 0;
-
         // Only ever show an archived channel if it's the currently viewed channel.
         // It should disappear as soon as one navigates to another channel.
         if (isArchived && (currentChannelId !== channelId) && !isSearchResult) {
@@ -114,7 +115,7 @@ export default class ChannelItem extends PureComponent {
             return null;
         }
 
-        if (!this.props.displayName) {
+        if (!displayName) {
             return null;
         }
 
@@ -133,7 +134,7 @@ export default class ChannelItem extends PureComponent {
         if (isCurrenUser) {
             channelDisplayName = intl.formatMessage({
                 id: 'channel_header.directchannel.you',
-                defaultMessage: '{displayName} (you)',
+                defaultMessage: '{displayname} (you)',
             }, {displayname: displayName});
         }
 
@@ -160,10 +161,12 @@ export default class ChannelItem extends PureComponent {
         if (mentions) {
             badge = (
                 <Badge
+                    containerStyle={style.badgeContainer}
                     style={style.badge}
                     countStyle={style.mention}
                     count={mentions}
                     onPress={this.onPress}
+                    minWidth={21}
                 />
             );
         }
@@ -238,31 +241,38 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 11,
         },
         text: {
-            color: changeOpacity(theme.sidebarText, 0.4),
-            fontSize: 14,
-            fontWeight: '600',
+            color: changeOpacity(theme.sidebarText, 0.6),
+            fontSize: 16,
+            lineHeight: 24,
             paddingRight: 10,
             flex: 1,
             alignSelf: 'center',
+            fontFamily: 'Open Sans',
         },
         textActive: {
             color: theme.sidebarTextActiveColor,
         },
         textUnread: {
             color: theme.sidebarUnreadText,
+            fontWeight: '500',
         },
         badge: {
             backgroundColor: theme.mentionBg,
-            borderColor: theme.sidebarHeaderBg,
-            borderRadius: 10,
-            borderWidth: 1,
             padding: 3,
             position: 'relative',
-            right: 16,
+            height: 21,
+        },
+        badgeContainer: {
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 14,
+            borderWidth: 0,
+            right: 0,
+            top: 11,
+            marginRight: 16,
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10,
+            fontSize: 12,
         },
         muted: {
             opacity: 0.5,

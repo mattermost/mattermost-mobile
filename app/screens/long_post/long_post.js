@@ -18,10 +18,11 @@ import FormattedText from 'app/components/formatted_text';
 import Post from 'app/components/post';
 import Reactions from 'app/components/reactions';
 import SafeAreaView from 'app/components/safe_area_view';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
+import {goToScreen, dismissModal} from 'app/actions/navigation';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -45,8 +46,6 @@ export default class LongPost extends PureComponent {
         actions: PropTypes.shape({
             loadThreadIfNecessary: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         channelName: PropTypes.string,
         fileIds: PropTypes.array,
@@ -97,14 +96,13 @@ export default class LongPost extends PureComponent {
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     handleClose = () => {
-        const {actions} = this.props;
         if (this.viewRef) {
             this.viewRef.zoomOut().then(() => {
-                actions.dismissModal();
+                dismissModal();
             });
         }
     };

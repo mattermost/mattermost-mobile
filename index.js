@@ -17,8 +17,6 @@ if (Platform.OS === 'android') {
 
 if (__DEV__) {
     YellowBox.ignoreWarnings([
-        'Warning: componentWillMount is deprecated',
-        'Warning: componentWillUpdate is deprecated',
         'Warning: componentWillReceiveProps is deprecated',
 
         // Hide warnings caused by React Native (https://github.com/facebook/react-native/issues/20841)

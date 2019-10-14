@@ -39,7 +39,6 @@ export default class TextSetting extends PureComponent {
         onChange: PropTypes.func.isRequired,
         value: PropTypes.string.isRequired,
         multiline: PropTypes.bool,
-        showRequiredAsterisk: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
         keyboardType: PropTypes.oneOf([
             'default',
@@ -57,7 +56,6 @@ export default class TextSetting extends PureComponent {
         optional: false,
         disabled: false,
         multiline: false,
-        showRequiredAsterisk: false,
         keyboardType: 'default',
         isLandscape: false,
         secureTextEntry: false,
@@ -80,7 +78,6 @@ export default class TextSetting extends PureComponent {
             errorText,
             value,
             multiline,
-            showRequiredAsterisk,
             isLandscape,
             secureTextEntry,
         } = this.props;
@@ -109,7 +106,7 @@ export default class TextSetting extends PureComponent {
                     defaultMessage='(optional)'
                 />
             );
-        } else if (showRequiredAsterisk) {
+        } else {
             asterisk = <Text style={style.asterisk}>{' *'}</Text>;
         }
 

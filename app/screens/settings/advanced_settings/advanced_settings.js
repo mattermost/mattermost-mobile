@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
@@ -22,13 +22,13 @@ import {t} from 'app/utils/i18n';
 import {deleteFileCache, getFileCacheSize} from 'app/utils/file';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {dismissAllModals} from 'app/actions/navigation';
 
 import Config from 'assets/config';
 
-class AdvancedSettings extends PureComponent {
+class AdvancedSettings extends Component {
     static propTypes = {
         actions: PropTypes.shape({
-            dismissAllModals: PropTypes.func.isRequired,
             purgeOfflineStore: PropTypes.func.isRequired,
         }).isRequired,
         intl: intlShape.isRequired,
@@ -43,6 +43,10 @@ class AdvancedSettings extends PureComponent {
 
     componentDidMount() {
         this.getDownloadCacheSize();
+    }
+
+    shouldComponentUpdate(nextProps) {
+        return this.props.theme === nextProps.theme;
     }
 
     clearOfflineCache = preventDoubleTap(() => {
@@ -77,7 +81,7 @@ class AdvancedSettings extends PureComponent {
         actions.purgeOfflineStore();
 
         if (Platform.OS === 'android') {
-            actions.dismissAllModals();
+            dismissAllModals();
         }
     });
 

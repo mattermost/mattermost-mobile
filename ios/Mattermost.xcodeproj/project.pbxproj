@@ -14,25 +14,21 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		140ED2AC1D01E1AD002B40FF /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
-		16736FA1F8864829B46D5C21 /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 75387D8184A144939E9E7561 /* EvilIcons.ttf */; };
-		16B11C41CEA84A998465BA56 /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2CD0ACABF8EE4E1A94982CC8 /* Zocial.ttf */; };
-		2127BC45609D45A798A1D34F /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C7B0EEFD80DC4A9C8C050ED5 /* Feather.ttf */; };
 		2D5296A8926B4D7FBAF2D6E2 /* OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6561AEAC21CC40B8A72ABB93 /* OpenSans-Light.ttf */; };
-		30EB2A6433DF46AF8FC18ACC /* FontAwesome5_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 82E74EA3327D40BA9F122B38 /* FontAwesome5_Brands.ttf */; };
 		34597018264CF70D1F2CB7AE /* libPods-Mattermost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E94C0BF2B231F5A5425C51F7 /* libPods-Mattermost.a */; };
 		3C0B333879CE4730843D8584 /* Roboto-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D08F54E10DF14AE4BBF4E2B4 /* Roboto-MediumItalic.ttf */; };
 		3D7B4E6EE6B948AAA6A1E4E6 /* Roboto-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C46342B0E5FD4D878AF3A129 /* Roboto-BoldItalic.ttf */; };
 		460A48EA5C6C4D8B8D9A2C75 /* Roboto-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 031EF04FB2D14EEFAACBAA1A /* Roboto-Italic.ttf */; };
+		499F7A5F2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 499F7A5E2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.m */; };
+		499F7A622354F4CC00E7AF6E /* NSData+MimeType.m in Sources */ = {isa = PBXBuildFile; fileRef = 499F7A602354F4CC00E7AF6E /* NSData+MimeType.m */; };
+		499F7A652354F51900E7AF6E /* OnPasteEventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 499F7A642354F51900E7AF6E /* OnPasteEventManager.m */; };
+		499F7AF1235511FD00E7AF6E /* Mattermost-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 499F7AF0235511FC00E7AF6E /* Mattermost-Regular.otf */; };
+		499F7B7E235519F800E7AF6E /* libRCTYouTube.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 499F7B6D235519D700E7AF6E /* libRCTYouTube.a */; };
 		49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
 		49B4C1FC230CBA93006E919E /* libKeyboardTrackingView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49B4C1D8230CBA79006E919E /* libKeyboardTrackingView.a */; };
-		4F9F15FCA7734CEEA94575E5 /* Entypo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AF5978138E514607B5793F37 /* Entypo.ttf */; };
-		50B04238083B4A44B4E9812A /* AntDesign.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8A5992A3325D4F8BB21AAD9B /* AntDesign.ttf */; };
-		5447D6C2FD864E8D9A570AFB /* FontAwesome5_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 563B800AC53A447FA18F47D3 /* FontAwesome5_Solid.ttf */; };
 		552835DCC0C24FC691EE6CAB /* Roboto-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8F0B22D2C9924FAFA7FB681C /* Roboto-LightItalic.ttf */; };
 		55C6561DDBBA45929D88B6D1 /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */; };
-		5CB86E9DFB94485CAA748DF3 /* YTPlayerView-iframe-player.html in Resources */ = {isa = PBXBuildFile; fileRef = 79CB6EBA24FE4ABFB0C155F0 /* YTPlayerView-iframe-player.html */; };
 		62A8448264674B4D95A5A7C2 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C78A387124874496AD2C1466 /* OpenSans-Semibold.ttf */; };
-		62E11CAC0CED463FBB59FC36 /* Foundation.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D2A2E7723B364D62A9C5054D /* Foundation.ttf */; };
 		69AC753E496743BABB7A7124 /* OpenSans-SemiboldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0E617BF0F36D4E738F51D169 /* OpenSans-SemiboldItalic.ttf */; };
 		71F30A436B5847DF9D319D15 /* Roboto-BlackItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7F54ABFAE6CE4A6DB11D1ED7 /* Roboto-BlackItalic.ttf */; };
 		7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */; };
@@ -63,24 +59,17 @@
 		7FF2AF8B2086483E00FFBDF4 /* KeyShareConsumer.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7FF2AF8A2086483E00FFBDF4 /* KeyShareConsumer.storyboard */; };
 		84E3264B229834C30055068A /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E325FF229834C30055068A /* Config.swift */; };
 		89D61F541F7271506A51D9A1 /* libPods-MattermostTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E554E00F9446118711EB001 /* libPods-MattermostTests.a */; };
-		92A794B9D98C4B5AA6600CBE /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 263D389521BE459684618177 /* Octicons.ttf */; };
 		9358B95F95184EE0A4DCE629 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */; };
 		A08D512E7ADC40CCAD055A9E /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */; };
 		AA9605CFDA8E4E7CB8A041BF /* Roboto-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C5BD64DE829E455A997DCAD5 /* Roboto-Regular.ttf */; };
 		ABF5F93B1D0A47BAACEAC376 /* Roboto-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 34B20A903038487E8D7DEA1E /* Roboto-Light.ttf */; };
-		B6D968C50458441085599A28 /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 49D0879035464473A11A0E1C /* MaterialIcons.ttf */; };
 		C99BB3F4E4564F01A531FBEA /* Roboto-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 09FA716C56874BDDA30FE8C4 /* Roboto-Medium.ttf */; };
-		CCFF74A8E32B4C3194D110C7 /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C854D45E0BB74833AE9D9EB0 /* SimpleLineIcons.ttf */; };
-		D3C436F187CD48FFB218D7F7 /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 37A4388335B14748A27EB094 /* MaterialCommunityIcons.ttf */; };
 		D719A67137964F08BE47A5FC /* OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */; };
-		D8B709252B9946BEBC909C63 /* FontAwesome5_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD2C51EF151E455D8758FE3F /* FontAwesome5_Regular.ttf */; };
 		DDE492F7425D451884DAA088 /* Roboto-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6EFF13DD24CE4E26953E598A /* Roboto-Black.ttf */; };
 		DE863F2E1E194A45A5B58FFA /* Roboto-Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A734E00E7E184582A877F2B3 /* Roboto-Thin.ttf */; };
 		E052494CD6104A65840485E7 /* Roboto-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 71E626D4980A4560B26F0E1C /* Roboto-Bold.ttf */; };
 		EC6AF34E03F647389D377064 /* Roboto-ThinItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 12D0B0E475FD46E29907305E /* Roboto-ThinItalic.ttf */; };
 		F083DB472349411A8E6E7AAD /* OpenSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE17F630DB5D41FD93F32D22 /* OpenSans-LightItalic.ttf */; };
-		F1FF0C25DFD34E528CC4AC27 /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7CA9B66DCC1F47AF86A50CDA /* Ionicons.ttf */; };
-		F24DA73AFEA34AD7B2227CFC /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 12116E4B6BE0457BBFD69632 /* FontAwesome.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -265,6 +254,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 3D3CD9321DE5FBEE00167DC4;
 			remoteInfo = "cxxreact-tvOS";
+		};
+		499F7B6C235519D700E7AF6E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 499F7B52235519D600E7AF6E /* RCTYouTube.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8BDB9BC91B4289AE00EF9FEF;
+			remoteInfo = RCTYouTube;
 		};
 		49B4C1D7230CBA79006E919E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -458,6 +454,16 @@
 		37A4388335B14748A27EB094 /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
 		37ABD3971F4CE13B001FDE6B /* ART.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ART.xcodeproj; path = "../node_modules/react-native/Libraries/ART/ART.xcodeproj"; sourceTree = "<group>"; };
 		41F3AFE83AAF4B74878AB78A /* OpenSans-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Italic.ttf"; path = "../assets/fonts/OpenSans-Italic.ttf"; sourceTree = "<group>"; };
+		499F7A5D2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIPasteboard+GetImageInfo.h"; path = "Mattermost/UIPasteboard+GetImageInfo.h"; sourceTree = "<group>"; };
+		499F7A5E2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIPasteboard+GetImageInfo.m"; path = "Mattermost/UIPasteboard+GetImageInfo.m"; sourceTree = "<group>"; };
+		499F7A602354F4CC00E7AF6E /* NSData+MimeType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+MimeType.m"; path = "Mattermost/NSData+MimeType.m"; sourceTree = "<group>"; };
+		499F7A612354F4CC00E7AF6E /* NSData+MimeType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+MimeType.h"; path = "Mattermost/NSData+MimeType.h"; sourceTree = "<group>"; };
+		499F7A632354F51900E7AF6E /* OnPasteEventManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OnPasteEventManager.h; path = Mattermost/OnPasteEventManager.h; sourceTree = "<group>"; };
+		499F7A642354F51900E7AF6E /* OnPasteEventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OnPasteEventManager.m; path = Mattermost/OnPasteEventManager.m; sourceTree = "<group>"; };
+		499F7AF0235511FC00E7AF6E /* Mattermost-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Mattermost-Regular.otf"; path = "../assets/fonts/Mattermost-Regular.otf"; sourceTree = "<group>"; };
+		499F7B3F235513F600E7AF6E /* libXCDYouTubeKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libXCDYouTubeKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		499F7B412355141200E7AF6E /* libYoutubePlayer-in-WKWebView.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libYoutubePlayer-in-WKWebView.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		499F7B52235519D600E7AF6E /* RCTYouTube.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTYouTube.xcodeproj; path = "../node_modules/react-native-youtube/RCTYouTube.xcodeproj"; sourceTree = "<group>"; };
 		49B4BF51230C83D2006E919E /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
 		49B4C1D1230CBA79006E919E /* KeyboardTrackingView.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = KeyboardTrackingView.xcodeproj; path = "../node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingView.xcodeproj"; sourceTree = "<group>"; };
 		49D0879035464473A11A0E1C /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
@@ -469,7 +475,6 @@
 		71E626D4980A4560B26F0E1C /* Roboto-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Bold.ttf"; path = "../assets/fonts/Roboto-Bold.ttf"; sourceTree = "<group>"; };
 		75387D8184A144939E9E7561 /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
-		79CB6EBA24FE4ABFB0C155F0 /* YTPlayerView-iframe-player.html */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "YTPlayerView-iframe-player.html"; path = "../node_modules/react-native-youtube/assets/YTPlayerView-iframe-player.html"; sourceTree = "<group>"; };
 		7CA9B66DCC1F47AF86A50CDA /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
 		7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeUtils.swift; path = Mattermost/RuntimeUtils.swift; sourceTree = "<group>"; };
 		7F151D40221B069200FAD8F3 /* 0155-keys.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "0155-keys.png"; path = "Mattermost/0155-keys.png"; sourceTree = "<group>"; };
@@ -564,6 +569,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				499F7B7E235519F800E7AF6E /* libRCTYouTube.a in Frameworks */,
 				49B4C1FC230CBA93006E919E /* libKeyboardTrackingView.a in Frameworks */,
 				49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */,
 				34597018264CF70D1F2CB7AE /* libPods-Mattermost.a in Frameworks */,
@@ -643,6 +649,7 @@
 		0156F464626F49C2977D7982 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				499F7AF0235511FC00E7AF6E /* Mattermost-Regular.otf */,
 				D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */,
 				32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */,
 				3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */,
@@ -653,7 +660,6 @@
 				BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */,
 				C78A387124874496AD2C1466 /* OpenSans-Semibold.ttf */,
 				0E617BF0F36D4E738F51D169 /* OpenSans-SemiboldItalic.ttf */,
-				79CB6EBA24FE4ABFB0C155F0 /* YTPlayerView-iframe-player.html */,
 				6EFF13DD24CE4E26953E598A /* Roboto-Black.ttf */,
 				7F54ABFAE6CE4A6DB11D1ED7 /* Roboto-BlackItalic.ttf */,
 				71E626D4980A4560B26F0E1C /* Roboto-Bold.ttf */,
@@ -706,6 +712,12 @@
 		13B07FAE1A68108700A75B9A /* Mattermost */ = {
 			isa = PBXGroup;
 			children = (
+				499F7A632354F51900E7AF6E /* OnPasteEventManager.h */,
+				499F7A642354F51900E7AF6E /* OnPasteEventManager.m */,
+				499F7A612354F4CC00E7AF6E /* NSData+MimeType.h */,
+				499F7A602354F4CC00E7AF6E /* NSData+MimeType.m */,
+				499F7A5D2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.h */,
+				499F7A5E2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.m */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				7FEB10961F6101710039A015 /* BlurAppScreen.h */,
@@ -791,6 +803,14 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		499F7B53235519D600E7AF6E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				499F7B6D235519D700E7AF6E /* libRCTYouTube.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		49B4C1D2230CBA79006E919E /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -802,6 +822,8 @@
 		4B992D7BAAEDF8759DB525B5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				499F7B412355141200E7AF6E /* libYoutubePlayer-in-WKWebView.a */,
+				499F7B3F235513F600E7AF6E /* libXCDYouTubeKit.a */,
 				49B4BF51230C83D2006E919E /* libz.1.dylib */,
 				7FFE32B51FD9CCAA0038C7A0 /* FLAnimatedImage.framework */,
 				7FFE32B61FD9CCAA0038C7A0 /* KSCrash.framework */,
@@ -900,6 +922,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				499F7B52235519D600E7AF6E /* RCTYouTube.xcodeproj */,
 				49B4C1D1230CBA79006E919E /* KeyboardTrackingView.xcodeproj */,
 				7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */,
 				37ABD3971F4CE13B001FDE6B /* ART.xcodeproj */,
@@ -1166,6 +1189,10 @@
 					ProjectRef = 139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */;
 				},
 				{
+					ProductGroup = 499F7B53235519D600E7AF6E /* Products */;
+					ProjectRef = 499F7B52235519D600E7AF6E /* RCTYouTube.xcodeproj */;
+				},
+				{
 					ProductGroup = 146834001AC3E56700842450 /* Products */;
 					ProjectRef = 146833FF1AC3E56700842450 /* React.xcodeproj */;
 				},
@@ -1360,6 +1387,13 @@
 			remoteRef = 3DAD3EAA1DF850E9000B6D8A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		499F7B6D235519D700E7AF6E /* libRCTYouTube.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRCTYouTube.a;
+			remoteRef = 499F7B6C235519D700E7AF6E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		49B4C1D8230CBA79006E919E /* libKeyboardTrackingView.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -1472,6 +1506,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				499F7AF1235511FD00E7AF6E /* Mattermost-Regular.otf in Resources */,
 				7F151D41221B069200FAD8F3 /* 0155-keys.png in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				7F292AA71E8ABB1100A450A3 /* splash.png in Resources */,
@@ -1488,7 +1523,6 @@
 				A08D512E7ADC40CCAD055A9E /* OpenSans-Regular.ttf in Resources */,
 				62A8448264674B4D95A5A7C2 /* OpenSans-Semibold.ttf in Resources */,
 				69AC753E496743BABB7A7124 /* OpenSans-SemiboldItalic.ttf in Resources */,
-				5CB86E9DFB94485CAA748DF3 /* YTPlayerView-iframe-player.html in Resources */,
 				DDE492F7425D451884DAA088 /* Roboto-Black.ttf in Resources */,
 				71F30A436B5847DF9D319D15 /* Roboto-BlackItalic.ttf in Resources */,
 				E052494CD6104A65840485E7 /* Roboto-Bold.ttf in Resources */,
@@ -1501,21 +1535,6 @@
 				AA9605CFDA8E4E7CB8A041BF /* Roboto-Regular.ttf in Resources */,
 				DE863F2E1E194A45A5B58FFA /* Roboto-Thin.ttf in Resources */,
 				EC6AF34E03F647389D377064 /* Roboto-ThinItalic.ttf in Resources */,
-				50B04238083B4A44B4E9812A /* AntDesign.ttf in Resources */,
-				4F9F15FCA7734CEEA94575E5 /* Entypo.ttf in Resources */,
-				16736FA1F8864829B46D5C21 /* EvilIcons.ttf in Resources */,
-				2127BC45609D45A798A1D34F /* Feather.ttf in Resources */,
-				F24DA73AFEA34AD7B2227CFC /* FontAwesome.ttf in Resources */,
-				30EB2A6433DF46AF8FC18ACC /* FontAwesome5_Brands.ttf in Resources */,
-				D8B709252B9946BEBC909C63 /* FontAwesome5_Regular.ttf in Resources */,
-				5447D6C2FD864E8D9A570AFB /* FontAwesome5_Solid.ttf in Resources */,
-				62E11CAC0CED463FBB59FC36 /* Foundation.ttf in Resources */,
-				F1FF0C25DFD34E528CC4AC27 /* Ionicons.ttf in Resources */,
-				D3C436F187CD48FFB218D7F7 /* MaterialCommunityIcons.ttf in Resources */,
-				B6D968C50458441085599A28 /* MaterialIcons.ttf in Resources */,
-				92A794B9D98C4B5AA6600CBE /* Octicons.ttf in Resources */,
-				CCFF74A8E32B4C3194D110C7 /* SimpleLineIcons.ttf in Resources */,
-				16B11C41CEA84A998465BA56 /* Zocial.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1592,6 +1611,7 @@
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Foundation.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf",
@@ -1599,7 +1619,7 @@
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Octicons.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf",
 				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Zocial.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-youtube/assets/YTPlayerView-iframe-player.html",
+				"${PODS_ROOT}/YoutubePlayer-in-WKWebView/WKYTPlayerView/WKYTPlayerView.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
@@ -1613,6 +1633,7 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Brands.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Regular.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Solid.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Fontisto.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Foundation.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Ionicons.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MaterialCommunityIcons.ttf",
@@ -1620,7 +1641,7 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Octicons.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SimpleLineIcons.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Zocial.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/YTPlayerView-iframe-player.html",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/WKYTPlayerView.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1680,10 +1701,13 @@
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */,
+				499F7A622354F4CC00E7AF6E /* NSData+MimeType.m in Sources */,
 				7FEB109E1F61019C0039A015 /* UIImage+ImageEffects.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				7FEB10981F6101710039A015 /* BlurAppScreen.m in Sources */,
+				499F7A5F2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.m in Sources */,
 				7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */,
+				499F7A652354F51900E7AF6E /* OnPasteEventManager.m in Sources */,
 				7F240ACD220D460300637665 /* MattermostBucketModule.m in Sources */,
 				7F5BA34722B99B7B005B05D3 /* Mattermost+RCTUITextView.m in Sources */,
 			);

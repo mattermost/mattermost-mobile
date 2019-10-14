@@ -147,7 +147,8 @@ const initFetchConfig = async () => {
         // no managed config
     }
 
-    Client4.setUserAgent(DeviceInfo.getUserAgent());
+    const userAgent = await DeviceInfo.getUserAgent();
+    Client4.setUserAgent(userAgent);
 
     if (Platform.OS === 'ios') {
         const certificate = await mattermostBucket.getPreference('cert');

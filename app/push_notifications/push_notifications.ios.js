@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {AppState} from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
 import NotificationsIOS, {NotificationAction, NotificationCategory} from 'react-native-notifications';
 
+import {getBadgeCount} from 'app/selectors/views';
 import ephemeralStore from 'app/store/ephemeral_store';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
-export const FOREGROUND_NOTIFICATIONS_KEY = '@FOREGROUND_NOTIFICATIONS';
 
 let replyCategory;
 const replies = new Set();
@@ -20,6 +19,7 @@ class PushNotification {
         this.onRegister = null;
         this.onNotification = null;
         this.onReply = null;
+        this.reduxStore = null;
 
         NotificationsIOS.addEventListener('remoteNotificationsRegistered', this.onRemoteNotificationsRegistered);
         NotificationsIOS.addEventListener('notificationReceivedForeground', this.onNotificationReceivedForeground);
@@ -53,10 +53,6 @@ class PushNotification {
         if (this.onNotification) {
             this.onNotification(this.deviceNotification);
         }
-
-        if (foreground) {
-            this.trackForegroundNotification(data.channel_id);
-        }
     };
 
     handleReply = (action, completed) => {
@@ -75,6 +71,7 @@ class PushNotification {
     };
 
     configure(options) {
+        this.reduxStore = options.reduxStore;
         this.onRegister = options.onRegister;
         this.onNotification = options.onNotification;
         this.onReply = options.onReply;
@@ -139,10 +136,6 @@ class PushNotification {
             message: notification.getMessage(),
         };
         this.handleNotification(info, true, false);
-
-        NotificationsIOS.getBadgesCount((count) => {
-            this.setApplicationIconBadgeNumber(count + 1);
-        });
     };
 
     onNotificationOpened = (notification) => {
@@ -173,22 +166,17 @@ class PushNotification {
     }
 
     clearChannelNotifications(channelId) {
-        NotificationsIOS.getDeliveredNotifications(async (notifications) => {
-            let foregroundNotifications;
-            try {
-                const value = await AsyncStorage.getItem(FOREGROUND_NOTIFICATIONS_KEY);
-                foregroundNotifications = JSON.parse(value) || {};
-            } catch (e) {
-                foregroundNotifications = {};
+        NotificationsIOS.getDeliveredNotifications((notifications) => {
+            const ids = [];
+            let badgeCount = notifications.length;
+
+            if (this.reduxStore) {
+                const totalMentions = getBadgeCount(this.reduxStore.getState());
+                if (totalMentions > -1) {
+                    badgeCount = totalMentions;
+                }
             }
 
-            Reflect.deleteProperty(foregroundNotifications, channelId);
-            AsyncStorage.setItem(FOREGROUND_NOTIFICATIONS_KEY, JSON.stringify(foregroundNotifications));
-
-            const foregroundCount = Object.values(foregroundNotifications).reduce((a, b) => a + b, 0);
-            let badgeCount = notifications.length + foregroundCount;
-
-            const ids = [];
             for (let i = 0; i < notifications.length; i++) {
                 const notification = notifications[i];
 
@@ -206,24 +194,9 @@ class PushNotification {
         });
     }
 
-    trackForegroundNotification = async (channelId) => {
-        const value = await AsyncStorage.getItem(FOREGROUND_NOTIFICATIONS_KEY);
-        const foregroundNotifications = value ? JSON.parse(value) : {};
-        if (!foregroundNotifications.hasOwnProperty(channelId)) {
-            foregroundNotifications[channelId] = 0;
-        }
-        foregroundNotifications[channelId] += 1;
-        await AsyncStorage.setItem(FOREGROUND_NOTIFICATIONS_KEY, JSON.stringify(foregroundNotifications));
-    }
-
-    clearForegroundNotifications = () => {
-        AsyncStorage.removeItem(FOREGROUND_NOTIFICATIONS_KEY);
-    };
-
     clearNotifications = () => {
         this.setApplicationIconBadgeNumber(0);
         this.cancelAllLocalNotifications(); // TODO: Only cancel the local notifications that belong to this server
-        this.clearForegroundNotifications(); // TODO: Only clear the foreground notifications that belong to this server
     }
 }
 

@@ -7,8 +7,6 @@ import {connect} from 'react-redux';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {submitInteractiveDialog} from 'mattermost-redux/actions/integrations';
 
-import {dismissModal} from 'app/actions/navigation';
-
 import InteractiveDialog from './interactive_dialog';
 
 function mapStateToProps(state) {
@@ -19,6 +17,7 @@ function mapStateToProps(state) {
         callbackId: data.dialog.callback_id,
         elements: data.dialog.elements,
         title: data.dialog.title,
+        introductionText: data.dialog.introduction_text,
         iconUrl: data.dialog.icon_url,
         submitLabel: data.dialog.submit_label,
         notifyOnCancel: data.dialog.notify_on_cancel,
@@ -31,7 +30,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             submitInteractiveDialog,
-            dismissModal,
         }, dispatch),
     };
 }
