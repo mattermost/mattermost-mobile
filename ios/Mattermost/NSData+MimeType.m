@@ -39,17 +39,17 @@
   
   switch (c) {
     case 0xFF:
-      return @".jpeg";
+      return @"jpg";
       break;
     case 0x89:
-      return @".png";
+      return @"png";
       break;
     case 0x47:
-      return @".gif";
+      return @"gif";
       break;
     case 0x49:
     case 0x4D:
-      return @".tiff";
+      return @"tiff";
       break;
     default:
       return @"";

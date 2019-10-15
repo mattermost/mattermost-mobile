@@ -38,7 +38,7 @@ RCT_EXPORT_MODULE();
   [self sendEventWithName:@"onPaste" body:data.userInfo[@"data"]];
 }
 
-+(void)pasteImage:(NSArray<NSDictionary *> *)data {
++(void)pasteFiles:(NSArray<NSDictionary *> *)data {
   [[NSNotificationCenter defaultCenter] postNotificationName:@"onPaste" object:data userInfo:@{
                                                                                                @"data": data
                                                                                                }];
