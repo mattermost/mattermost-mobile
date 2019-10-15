@@ -87,14 +87,6 @@ jest.doMock('react-native', () => {
 
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
-jest.mock('react-native-permissions');
-
-jest.mock('react-native-document-picker', () => ({
-    DocumentPickerUtil: {
-        images: jest.fn(() => 'public.image'),
-    },
-}));
-
 jest.mock('react-native-device-info', () => {
     return {
         getVersion: () => '0.0.0',
