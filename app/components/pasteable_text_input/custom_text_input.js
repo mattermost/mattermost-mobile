@@ -4,10 +4,14 @@
 /* eslint-disable no-underscore-dangle */
 
 import React from 'react';
-import {TextInput, Text, TouchableWithoutFeedback} from 'react-native';
-import UIManager from 'UIManager';
+import {
+    TextInput,
+    Text,
+    TouchableWithoutFeedback,
+    UIManager,
+    requireNativeComponent,
+} from 'react-native';
 import invariant from 'invariant';
-import requireNativeComponent from 'requireNativeComponent';
 
 const AndroidTextInput = requireNativeComponent('PasteableTextInputAndroid');
 

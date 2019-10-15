@@ -54,6 +54,7 @@ buck-out/
 \.buckd/
 android/app/libs
 *.keystore
+!debug.keystore
 
 # Vim
 [._]*.s[a-w][a-z]

@@ -25,7 +25,7 @@ import com.RNFetchBlob.RNFetchBlob;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
 import com.inprogress.reactnativeyoutube.YouTubeStandaloneModule;
 import com.philipphecht.RNDocViewerModule;
-import com.reactnativedocumentpicker.DocumentPicker;
+import io.github.elyx0.reactnativedocumentpicker.DocumentPickerModule;
 import com.oblador.keychain.KeychainModule;
 import com.reactnativecommunity.asyncstorage.AsyncStorageModule;
 import com.reactnativecommunity.netinfo.NetInfoModule;
@@ -33,6 +33,7 @@ import com.reactnativecommunity.webview.RNCWebViewPackage;
 import io.sentry.RNSentryModule;
 import com.levelasquez.androidopensettings.AndroidOpenSettings;
 import com.mkuczera.RNReactNativeHapticFeedbackModule;
+import com.reactnativecommunity.rnpermissions.RNPermissionsModule;
 
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.brentvatne.react.ReactVideoPackage;
@@ -140,7 +141,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                   case "RNDocViewer":
                     return new RNDocViewerModule(reactContext);
                   case "RNDocumentPicker":
-                    return new DocumentPicker(reactContext);
+                    return new DocumentPickerModule(reactContext);
                   case "RNKeychainManager":
                     return new KeychainModule(reactContext);
                   case "RNSentry":
@@ -153,6 +154,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return new AndroidOpenSettings(reactContext);
                   case "RNReactNativeHapticFeedbackModule":
                     return new RNReactNativeHapticFeedbackModule(reactContext);
+                  case "RNPermissions":
+                    return new RNPermissionsModule(reactContext);
                   default:
                     throw new IllegalArgumentException("Could not find module " + name);
                 }
@@ -180,13 +183,14 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("ReactNativeExceptionHandler", new ReactModuleInfo("ReactNativeExceptionHandler", "com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule", false, false, false, false, false));
                     map.put("YouTubeStandaloneModule", new ReactModuleInfo("YouTubeStandaloneModule", "com.inprogress.reactnativeyoutube.YouTubeStandaloneModule", false, false, false, false, false));
                     map.put("RNDocViewer", new ReactModuleInfo("RNDocViewer", "com.philipphecht.RNDocViewerModule", false, false, false, false, false));
-                    map.put("RNDocumentPicker", new ReactModuleInfo("RNDocumentPicker", "com.reactnativedocumentpicker.DocumentPicker", false, false, false, false, false));
+                    map.put("RNDocumentPicker", new ReactModuleInfo("RNDocumentPicker", "import io.github.elyx0.reactnativedocumentpicker.DocumentPickerModule", false, false, false, false, false));
                     map.put("RNKeychainManager", new ReactModuleInfo("RNKeychainManager", "com.oblador.keychain.KeychainModule", false, false, true, false, false));
                     map.put("RNSentry", new ReactModuleInfo("RNSentry", "com.sentry.RNSentryModule", false, false, true, false, false));
                     map.put(AsyncStorageModule.NAME, new ReactModuleInfo(AsyncStorageModule.NAME, "com.reactnativecommunity.asyncstorage.AsyncStorageModule", false, false, false, false, false));
                     map.put(NetInfoModule.NAME, new ReactModuleInfo(NetInfoModule.NAME, "com.reactnativecommunity.netinfo.NetInfoModule", false, false, false, false, false));
                     map.put("RNAndroidOpenSettings", new ReactModuleInfo("RNAndroidOpenSettings", "com.levelasquez.androidopensettings.AndroidOpenSettings", false, false, false, false, false));
                     map.put("RNReactNativeHapticFeedbackModule", new ReactModuleInfo("RNReactNativeHapticFeedback", "com.mkuczera.RNReactNativeHapticFeedbackModule", false, false, false, false, false));
+                    map.put("RNPermissions", new ReactModuleInfo("RNPermissions", "com.reactnativecommunity.rnpermissions.RNPermissionsModule", false, false, false, false, false));
                     return map;
                   }
                 };
