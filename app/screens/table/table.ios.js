@@ -4,7 +4,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
-    Platform,
     ScrollView,
     SafeAreaView,
 } from 'react-native';
@@ -22,31 +21,13 @@ export default class Table extends React.PureComponent {
         const content = this.props.renderRows(true);
         const viewStyle = this.props.renderAsFlex ? style.displayFlex : {width: this.props.tableWidth};
 
-        let container;
-        if (Platform.OS === 'android') {
-            // On Android, ScrollViews can only handle one direction at once, so use two ScrollViews that go in
-            // different directions. This prevents diagonal scrolling, so only do it on Android when totally necessary.
-            container = (
-                <ScrollView>
-                    <ScrollView
-                        contentContainerStyle={viewStyle}
-                        horizontal={true}
-                    >
-                        {content}
-                    </ScrollView>
+        return (
+            <SafeAreaView>
+                <ScrollView contentContainerStyle={viewStyle}>
+                    {content}
                 </ScrollView>
-            );
-        } else {
-            container = (
-                <SafeAreaView>
-                    <ScrollView contentContainerStyle={viewStyle}>
-                        {content}
-                    </ScrollView>
-                </SafeAreaView>
-            );
-        }
-
-        return container;
+            </SafeAreaView>
+        );
     }
 }
 

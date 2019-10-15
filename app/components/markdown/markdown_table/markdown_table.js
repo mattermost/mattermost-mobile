@@ -125,13 +125,19 @@ export default class MarkdownTable extends React.PureComponent {
 
         // render as flex in the channel screen, only for mobile phones on the portrait mode,
         // and if tables have 2 ~ 4 columns
-        if (!isFullView && numColumns > 1 && numColumns <= 4 && !DeviceTypes.IS_TABLET && !isLandscape) {
+        if (!isFullView && numColumns > 1 && numColumns < 4 && !DeviceTypes.IS_TABLET) {
+            return true;
+        }
+
+        // render a 4 column table as flex when in landscape mode only
+        // otherwise it should expand beyond the device's full width
+        if (!isFullView && isLandscape && numColumns === 4) {
             return true;
         }
 
         // render as flex in full table screen, only for mobile phones on portrait mode,
         // and if tables have 3 or 4 columns
-        if (isFullView && numColumns >= 3 && numColumns <= 4 && !DeviceTypes.IS_TABLET && !isLandscape) {
+        if (isFullView && numColumns >= 3 && numColumns <= 4 && !DeviceTypes.IS_TABLET) {
             return true;
         }
 
@@ -207,10 +213,18 @@ export default class MarkdownTable extends React.PureComponent {
             );
         }
 
+        const expandButtonStyle = [style.expandButton];
+        if (renderAsFlex || tableWidth > this.state.containerWidth) {
+            expandButtonStyle.push({left: this.state.containerWidth - 20});
+        } else {
+            expandButtonStyle.push({left: tableWidth - 20});
+        }
+
         const expandButton = (
             <TouchableWithFeedback
+                type={'opacity'}
                 onPress={this.handlePress}
-                style={{...style.expandButton, left: renderAsFlex ? this.state.containerWidth - 20 : tableWidth - 20}}
+                style={expandButtonStyle}
             >
                 <Icon
                     name={'expand'}
@@ -251,8 +265,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 30,
             width: 30,
             borderWidth: 1,
-            paddingTop: 6,
-            paddingLeft: 7,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderRadius: 15,
             bottom: 20,

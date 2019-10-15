@@ -47,8 +47,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         cell: {
             flex: 1,
-            minWidth: CELL_MIN_WIDTH,
-            maxWidth: CELL_MAX_WIDTH,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             justifyContent: 'flex-start',
             padding: 8,
