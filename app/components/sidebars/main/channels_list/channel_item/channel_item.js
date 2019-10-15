@@ -158,9 +158,13 @@ export default class ChannelItem extends PureComponent {
             return false;
         }
 
+        if (myMember.mentionCount > 0) {
+            return true;
+        }
+
         const hasUnreads = (channel.totalMsgCount - myMember.msgCount) > 0;
         const showUnreadForMsgs = myMember.notifyPropsAsJSON?.mark_unread !== General.MENTION; //eslint-disable-line camelcase
-        return myMember.mentionCount > 0 || (hasUnreads > 0 && showUnreadForMsgs);
+        return hasUnreads > 0 && showUnreadForMsgs;
     };
 
     shouldHideChannel = () => {
@@ -178,7 +182,7 @@ export default class ChannelItem extends PureComponent {
         return (
             channel?.name === General.DEFAULT_CHANNEL &&
             channel.id !== currentChannelId &&
-            isAdmin && !isFavorite && !isSearchResult &&
+            !isAdmin && !isFavorite && !isSearchResult &&
             experimentalHideTownSquare === 'true'
         );
     };

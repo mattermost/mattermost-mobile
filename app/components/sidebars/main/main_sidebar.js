@@ -313,6 +313,7 @@ export default class MainSidebar extends PureComponent {
         } = this.props;
 
         const {
+            drawerOpened,
             isLandscape,
             show,
             openDrawerOffset,
@@ -360,7 +361,7 @@ export default class MainSidebar extends PureComponent {
             >
                 <ChannelsList
                     currentTeamId={currentTeamId}
-                    drawerOpened={this.state.drawerOpened}
+                    drawerOpened={drawerOpened}
                     isLandscape={isLandscape}
                     ref={this.channelListRef}
                     onSelectChannel={this.selectChannel}

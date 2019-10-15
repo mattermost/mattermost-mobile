@@ -8,7 +8,6 @@ import options from 'app/store/realm_options';
 
 import TeamIcon from './team_icon';
 
-/* eslint-disable camelcase*/
 function mapPropsToQueries(realm, ownProps) {
     const team = realm.objectForPrimaryKey('Team', ownProps.teamId) || General.REALM_EMPTY_OBJECT;
 
