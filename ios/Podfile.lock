@@ -246,7 +246,7 @@ PODS:
     - React
   - ReactNativeNavigation (3.2.0):
     - React
-  - rn-fetch-blob (0.13.9):
+  - rn-fetch-blob (0.10.6):
     - React-Core
   - RNCAsyncStorage (1.6.2):
     - React
@@ -478,7 +478,7 @@ SPEC CHECKSUMS:
   ReactCommon: eb96b70a2a5bed775e919151fd77699fed52944c
   ReactNativeExceptionHandler: 2ef25736761126fe199c412ed179e479661de794
   ReactNativeNavigation: 20522060de61b1c293ec50681a6aa11488596286
-  rn-fetch-blob: ecb022b7b14357dd2f9c1edc62bbdaa8909bf1b7
+  rn-fetch-blob: 206c04a36e0a5bb52ad64d070f9ab6d26612f6ec
   RNCAsyncStorage: e99188b8a89ea0edddc82d8831cd5142f4550fdc
   RNDeviceInfo: 5b5b42b12587207b6bd686441ac42d19d8e07933
   RNGestureHandler: 311e3b1cef021a7c9ef31e97e7dc31970cc6288d
