@@ -303,7 +303,7 @@ describe('ChannelItem', () => {
     test('should not show default channel', () => {
         const members = [{
             id: 'town_square_channel-current_user_id',
-            msgCount: 10,
+            msgCount: 0,
             mentionCount: 0,
             user: {
                 id: 'current_user_id',
@@ -312,7 +312,7 @@ describe('ChannelItem', () => {
                 lastName: 'Account',
                 fullName: 'Test Account',
                 status: 'offline',
-                roles: Roles.SYSTEM_ADMIN_ROLE,
+                roles: Roles.SYSTEM_USER_ROLE,
             },
         }, {
             id: 'town_square_channel-other_user_id',
@@ -330,7 +330,63 @@ describe('ChannelItem', () => {
 
         const channelObj = {
             ...channel,
-            totalMsgCount: 10,
+            totalMsgCount: 0,
+            members,
+            id: 'town_square_channel',
+            name: 'town-square',
+            displayName: 'Town Square',
+            type: General.OPEN_CHANNEL,
+        };
+
+        const newProps = {
+            ...baseProps,
+            channel: channelObj,
+            currentChannelId: 'channel_id',
+        };
+
+        const wrapper = shallow(
+            <ChannelItem
+                {...newProps}
+                hasDraft={true}
+                experimentalHideTownSquare='true'
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper.getElement()).toBe(null);
+    });
+
+    test('should show default channel if it has unread messages', () => {
+        const members = [{
+            id: 'town_square_channel-current_user_id',
+            msgCount: 1,
+            mentionCount: 0,
+            user: {
+                id: 'current_user_id',
+                username: 'test',
+                firstName: 'Test',
+                lastName: 'Account',
+                fullName: 'Test Account',
+                status: 'offline',
+                roles: Roles.SYSTEM_USER_ROLE,
+            },
+        }, {
+            id: 'town_square_channel-other_user_id',
+            msgCount: 0,
+            mentionCount: 0,
+            user: {
+                id: 'other_user_id',
+                username: 'another',
+                firstName: 'Another',
+                lastName: 'Account',
+                fullName: 'Another Account',
+                status: 'online',
+            },
+        }];
+
+        const channelObj = {
+            ...channel,
+            totalMsgCount: 1,
             members,
             id: 'town_square_channel',
             name: 'town-square',

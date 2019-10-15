@@ -181,7 +181,7 @@ export default class ChannelItem extends PureComponent {
 
         return (
             channel?.name === General.DEFAULT_CHANNEL &&
-            channel.id !== currentChannelId &&
+            channel?.id !== currentChannelId &&
             !isAdmin && !isFavorite && !isSearchResult &&
             experimentalHideTownSquare === 'true'
         );
