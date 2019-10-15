@@ -17,7 +17,7 @@
 #### Copy and paste protection managed configuration for Android
 
 ### Improvements
- - Added a confirmation dialog when posting a message with `at-channel`.
+ - Added a confirmation dialog when posting a message with `@channel` and `@all`.
  - Added support for safe area in landscape view on iOS.
  - Changed recent date separators to read Today/Yesterday.
  - Added an autocomplete to the edit channel screen.
