@@ -35,7 +35,6 @@ target 'Mattermost' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
-  pod 'YoutubePlayer-in-WKWebView', '~> 0.3.1'
   pod 'XCDYouTubeKit', '~> 2.8'
 
   target 'MattermostTests' do

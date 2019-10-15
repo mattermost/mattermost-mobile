@@ -169,6 +169,8 @@
 		3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBold.ttf"; path = "../assets/fonts/OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		37A4388335B14748A27EB094 /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
 		41F3AFE83AAF4B74878AB78A /* OpenSans-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Italic.ttf"; path = "../assets/fonts/OpenSans-Italic.ttf"; sourceTree = "<group>"; };
+		495BC95F23565ABF00C40C83 /* libXCDYouTubeKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libXCDYouTubeKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		495BC96123565ADD00C40C83 /* libYoutubePlayer-in-WKWebView.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libYoutubePlayer-in-WKWebView.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		499F7A5D2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIPasteboard+GetImageInfo.h"; path = "Mattermost/UIPasteboard+GetImageInfo.h"; sourceTree = "<group>"; };
 		499F7A5E2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIPasteboard+GetImageInfo.m"; path = "Mattermost/UIPasteboard+GetImageInfo.m"; sourceTree = "<group>"; };
 		499F7A602354F4CC00E7AF6E /* NSData+MimeType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+MimeType.m"; path = "Mattermost/NSData+MimeType.m"; sourceTree = "<group>"; };
@@ -420,6 +422,8 @@
 		4B992D7BAAEDF8759DB525B5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				495BC96123565ADD00C40C83 /* libYoutubePlayer-in-WKWebView.a */,
+				495BC95F23565ABF00C40C83 /* libXCDYouTubeKit.a */,
 				499F7B412355141200E7AF6E /* libYoutubePlayer-in-WKWebView.a */,
 				499F7B3F235513F600E7AF6E /* libXCDYouTubeKit.a */,
 				49B4BF51230C83D2006E919E /* libz.1.dylib */,

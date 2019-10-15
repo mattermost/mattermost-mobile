@@ -31,6 +31,9 @@ PODS:
     - Folly (= 2018.10.22.00)
     - RCTRequired (= 0.61.2)
     - React-Core (= 0.61.2)
+  - RCTYouTube (2.0.0-beta.2):
+    - React
+    - YoutubePlayer-in-WKWebView (~> 0.3.1)
   - React (0.61.2):
     - React-Core (= 0.61.2)
     - React-Core/DevSupport (= 0.61.2)
@@ -287,6 +290,7 @@ DEPENDENCIES:
   - KeyboardTrackingView (from `../node_modules/react-native-keyboard-tracking-view`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
+  - RCTYouTube (from `../node_modules/react-native-youtube`)
   - React (from `../node_modules/react-native/`)
   - React-Core (from `../node_modules/react-native/`)
   - React-Core/DevSupport (from `../node_modules/react-native/`)
@@ -330,7 +334,6 @@ DEPENDENCIES:
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - XCDYouTubeKit (~> 2.8)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
-  - YoutubePlayer-in-WKWebView (~> 0.3.1)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -360,6 +363,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/RCTRequired"
   RCTTypeSafety:
     :path: "../node_modules/react-native/Libraries/TypeSafety"
+  RCTYouTube:
+    :path: "../node_modules/react-native-youtube"
   React:
     :path: "../node_modules/react-native/"
   React-Core:
@@ -451,6 +456,7 @@ SPEC CHECKSUMS:
   KeyboardTrackingView: 9e82167042c0cdc9c022a4e5f397337ba62cada9
   RCTRequired: 81db8debffc2eb932841fa02dcf5a2e911af74c1
   RCTTypeSafety: 39a7d8643abe2460aef0adeb9acbe9401b579fff
+  RCTYouTube: 93855e427c355afde1d28d0992954e4d1552fe0d
   React: 89f2294058332cf7c4feee644e17d5024da1f531
   React-Core: c55956aa434fae94816b665f99d51d50f48d5993
   React-CoreModules: c70b9db4f48e31474bb022716fff41983b335ce2
@@ -494,6 +500,6 @@ SPEC CHECKSUMS:
   Yoga: 6af72bedeaea291a3a3717772d6d41836f23a1b9
   YoutubePlayer-in-WKWebView: 7694e858c5c3472ed067d6fe34eb9b944845e63c
 
-PODFILE CHECKSUM: 5b4d5d642525728797e8dbf44473f4892c47d05c
+PODFILE CHECKSUM: 78fdf52ba415665015ffa025c7bff18fdac43f9a
 
 COCOAPODS: 1.5.3

@@ -1,0 +1,26 @@
+diff --git a/node_modules/react-native-youtube/RCTYouTubeStandalone.m b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
+index 433c08d..12b38d2 100644
+--- a/node_modules/react-native-youtube/RCTYouTubeStandalone.m
++++ b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
+@@ -14,6 +14,7 @@ @implementation RCTYouTubeStandalone {
+ 
+ RCT_REMAP_METHOD(playVideo,
+                  playVideoWithResolver:(NSString*)videoId
++                 startTime:(NSNumber* _Nonnull)startTime
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+ {
+@@ -36,8 +37,12 @@ @implementation RCTYouTubeStandalone {
+                         streamURLs[@(XCDYouTubeVideoQualityMedium360)] ?:
+                         streamURLs[@(XCDYouTubeVideoQualitySmall240)
+                     ];
++                    CMTime initialPlaybackTime = CMTimeMakeWithSeconds([startTime doubleValue], 1);
++
+                     weakPlayerViewController.player = [AVPlayer playerWithURL:streamURL];
+-                    [weakPlayerViewController.player play];
++                    [weakPlayerViewController.player seekToTime:initialPlaybackTime completionHandler: ^(BOOL finished) {
++                        [weakPlayerViewController.player play];
++                    }];
+ 
+                     [[NSNotificationCenter defaultCenter] addObserver:self
+                                                              selector:@selector(moviePlayerPlaybackDidFinish:)
