@@ -1,0 +1,30 @@
+diff --git a/node_modules/react-native-image-picker/ios/ImagePickerManager.m b/node_modules/react-native-image-picker/ios/ImagePickerManager.m
+index 28d5870..3f70983 100644
+--- a/node_modules/react-native-image-picker/ios/ImagePickerManager.m
++++ b/node_modules/react-native-image-picker/ios/ImagePickerManager.m
+@@ -455,12 +455,19 @@ - (void)imagePickerController:(UIImagePickerController *)picker didFinishPicking
+                 }
+ 
+                 if (videoURL) { // Protect against reported crash
+-                  NSError *error = nil;
+-                  [fileManager moveItemAtURL:videoURL toURL:videoDestinationURL error:&error];
+-                  if (error) {
+-                      self.callback(@[@{@"error": error.localizedFailureReason}]);
+-                      return;
+-                  }
++                    NSError *error = nil;
++
++                    // If we have write access to the source file, move it. Otherwise use copy.
++                    if ([fileManager isWritableFileAtPath:[videoURL path]]) {
++                        [fileManager moveItemAtURL:videoURL toURL:videoDestinationURL error:&error];
++                    } else {
++                        [fileManager copyItemAtURL:videoURL toURL:videoDestinationURL error:&error];
++                    }
++
++                    if (error) {
++                        self.callback(@[@{@"error": error.localizedFailureReason}]);
++                        return;
++                    }
+                 }
+             }
+
