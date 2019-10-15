@@ -195,7 +195,7 @@ PODS:
     - React
   - react-native-document-picker (3.2.4):
     - React
-  - react-native-image-picker (1.1.0):
+  - react-native-image-picker (0.28.1):
     - React
   - react-native-netinfo (4.4.0):
     - React
@@ -249,6 +249,8 @@ PODS:
     - React
   - ReactNativeNavigation (3.2.0):
     - React
+  - ReactNativePermissions (1.1.1):
+    - React
   - rn-fetch-blob (0.10.6):
     - React-Core
   - RNCAsyncStorage (1.6.2):
@@ -258,8 +260,6 @@ PODS:
   - RNGestureHandler (1.4.1):
     - React
   - RNKeychain (4.0.1):
-    - React
-  - RNPermissions (2.0.2):
     - React
   - RNReactNativeDocViewer (1.0.0):
     - React
@@ -321,12 +321,12 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
   - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
+  - ReactNativePermissions (from `../node_modules/react-native-permissions`)
   - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
-  - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeDocViewer (from `../node_modules/react-native-doc-viewer`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
@@ -419,6 +419,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-exception-handler"
   ReactNativeNavigation:
     :path: "../node_modules/react-native-navigation"
+  ReactNativePermissions:
+    :path: "../node_modules/react-native-permissions"
   rn-fetch-blob:
     :path: "../node_modules/rn-fetch-blob"
   RNCAsyncStorage:
@@ -429,8 +431,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
-  RNPermissions:
-    :path: "../node_modules/react-native-permissions"
   RNReactNativeDocViewer:
     :path: "../node_modules/react-native-doc-viewer"
   RNReactNativeHapticFeedback:
@@ -466,7 +466,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 044105eea064aec81adc5e4d777a8f6589e7d094
   react-native-cookies: a9abe7c8154a268bdda24bf9f6ab8f00ac8632fe
   react-native-document-picker: e7934f6a3c898a1b62fa68b1f09371beef6ac51a
-  react-native-image-picker: 02cc046cf072f1254fb6eba51990a3f25e138cb4
+  react-native-image-picker: f42de90075c5b1af53417af927631d909a1a746e
   react-native-netinfo: a91b5cf92ed3ada997cfe2bf067633386eb19fd8
   react-native-notifications: 4626ecc0189e1b0594b1f422c17e64849390e30d
   react-native-safe-area: cec86d422df9430ab60511916a3fa18f87d21e1e
@@ -484,12 +484,12 @@ SPEC CHECKSUMS:
   ReactCommon: eb96b70a2a5bed775e919151fd77699fed52944c
   ReactNativeExceptionHandler: 2ef25736761126fe199c412ed179e479661de794
   ReactNativeNavigation: 20522060de61b1c293ec50681a6aa11488596286
+  ReactNativePermissions: 9f2d9c45c98800795e6c2ed330e25d11a66a8169
   rn-fetch-blob: 206c04a36e0a5bb52ad64d070f9ab6d26612f6ec
   RNCAsyncStorage: e99188b8a89ea0edddc82d8831cd5142f4550fdc
   RNDeviceInfo: 5b5b42b12587207b6bd686441ac42d19d8e07933
   RNGestureHandler: 311e3b1cef021a7c9ef31e97e7dc31970cc6288d
   RNKeychain: 5381e340056c23de103d73ae59cbddc6ffc21d97
-  RNPermissions: 09451e563764b938c2bbc945ca430f758044f0dd
   RNReactNativeDocViewer: 1ff418afb9b3d1a1050ab2ee9fee882ed6bfe6a6
   RNReactNativeHapticFeedback: 89c72bf6308e5d5269369e8365319a2d752435b8
   RNSentry: ea67b65b328405ed060f43a2940003ed93b5c4eb

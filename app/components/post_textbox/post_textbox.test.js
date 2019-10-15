@@ -16,14 +16,6 @@ import EphemeralStore from 'app/store/ephemeral_store';
 
 import PostTextbox from './post_textbox.ios';
 
-jest.mock('NativeEventEmitter');
-
-jest.mock('Alert', () => {
-    return {
-        alert: jest.fn(),
-    };
-});
-
 describe('PostTextBox', () => {
     const baseProps = {
         actions: {

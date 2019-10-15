@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as ReactNative from 'react-native';
 import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
@@ -13,8 +14,25 @@ global.fetch = jest.fn(() => Promise.resolve());
 
 /* eslint-disable no-console */
 
-jest.mock('NativeModules', () => {
-    return {
+jest.doMock('react-native', () => {
+    const {
+        Platform,
+        StyleSheet,
+        ViewPropTypes,
+        PermissionsAndroid,
+        ImagePickerManager,
+        requireNativeComponent,
+        Alert: RNAlert,
+        NativeModules: RNNativeModules,
+    } = ReactNative;
+
+    const Alert = {
+        ...RNAlert,
+        alert: jest.fn(),
+    };
+
+    const NativeModules = {
+        ...RNNativeModules,
         UIManager: {
             RCTView: {
                 directEventTypes: {},
@@ -54,8 +72,28 @@ jest.mock('NativeModules', () => {
             getHeight: jest.fn(),
         },
     };
+
+    return Object.setPrototypeOf({
+        Platform,
+        StyleSheet,
+        ViewPropTypes,
+        PermissionsAndroid,
+        ImagePickerManager,
+        requireNativeComponent,
+        Alert,
+        NativeModules,
+    }, ReactNative);
 });
-jest.mock('NativeEventEmitter');
+
+jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
+
+jest.mock('react-native-permissions');
+
+jest.mock('react-native-document-picker', () => ({
+    DocumentPickerUtil: {
+        images: jest.fn(() => 'public.image'),
+    },
+}));
 
 jest.mock('react-native-device-info', () => {
     return {

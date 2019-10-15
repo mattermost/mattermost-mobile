@@ -10,12 +10,6 @@ import SectionItem from 'app/screens/settings/section_item';
 
 import NotificationSettingsEmailIos from './notification_settings_email.ios.js';
 
-jest.mock('Platform', () => {
-    const Platform = require.requireActual('Platform');
-    Platform.OS = 'ios';
-    return Platform;
-});
-
 jest.mock('app/utils/theme', () => {
     const original = require.requireActual('app/utils/theme');
     return {

@@ -42,7 +42,7 @@
     "react-native-gesture-handler": "1.4.1",
     "react-native-haptic-feedback": "1.8.2",
     "react-native-image-gallery": "github:mattermost/react-native-image-gallery#c1a9f7118e90cc87d47620bc0584c9cac4b0cf38",
-    "react-native-image-picker": "1.1.0",
+    "react-native-image-picker": "0.28.1",
     "react-native-keyboard-aware-scroll-view": "0.9.1",
     "react-native-keyboard-tracking-view": "github:enahum/react-native-keyboard-tracking-view#169676811a32f82cb674a52d7857a14043f7b8f7",
     "react-native-keychain": "4.0.1",
@@ -51,7 +51,7 @@
     "react-native-navigation": "3.2.0",
     "react-native-notifications": "github:mattermost/react-native-notifications#1b7ec8513606b42237ab4674de9dacb4d1935e38",
     "react-native-passcode-status": "1.1.2",
-    "react-native-permissions": "2.0.2",
+    "react-native-permissions": "1.1.1",
     "react-native-safe-area": "0.5.1",
     "react-native-section-list-get-item-layout": "2.2.3",
     "react-native-slider": "0.11.0",
@@ -144,6 +144,9 @@
     ],
     "moduleNameMapper": {
       "assets/images/video_player/(.*).png": "<rootDir>/dist/assets/images/video_player/$1@2x.png"
-    }
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!react-native|jail-monkey|@sentry/react-native)"
+    ]
   }
 }
