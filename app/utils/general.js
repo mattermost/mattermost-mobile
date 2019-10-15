@@ -52,7 +52,7 @@ export function emptyFunction() { // eslint-disable-line no-empty-function
 
 export function hapticFeedback(method = 'impactLight') {
     ReactNativeHapticFeedback.trigger(method, {
-        enableVibrateFallback: true,
+        enableVibrateFallback: false,
         ignoreAndroidSystemSettings: false,
     });
 }
