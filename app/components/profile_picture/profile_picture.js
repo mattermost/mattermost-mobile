@@ -67,27 +67,6 @@ export default class ProfilePicture extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.mounted) {
-            if (nextProps.edit && nextProps.imageUri && nextProps.imageUri !== this.props.imageUri) {
-                this.setImageURL(nextProps.imageUri);
-                return;
-            }
-
-            if (nextProps.profileImageUri !== '' && nextProps.profileImageUri !== this.props.profileImageUri) {
-                this.setImageURL(nextProps.profileImageUri);
-            }
-
-            const url = this.props.user ? Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update) : null;
-            const nextUrl = nextProps.user ? Client4.getProfilePictureUrl(nextProps.user.id, nextProps.user.last_picture_update) : null;
-
-            if (nextUrl && url !== nextUrl) {
-                // empty function is so that promise unhandled is not triggered in dev mode
-                ImageCacheManager.cache('', nextUrl, this.setImageURL).then(this.clearProfileImageUri).catch(emptyFunction);
-            }
-        }
-    }
-
     componentWillUnmount() {
         this.mounted = false;
     }
@@ -107,6 +86,23 @@ export default class ProfilePicture extends PureComponent {
     componentDidUpdate(prevProps) {
         if (this.props.profileImageRemove !== prevProps.profileImageRemove) {
             this.setImageURL(null);
+        } else if (this.mounted) {
+            if (this.props.edit && this.props.imageUri && this.props.imageUri !== prevProps.imageUri) {
+                this.setImageURL(this.props.imageUri);
+                return;
+            }
+
+            if (this.props.profileImageUri !== '' && this.props.profileImageUri !== prevProps.profileImageUri) {
+                this.setImageURL(this.props.profileImageUri);
+            }
+
+            const url = prevProps.user ? Client4.getProfilePictureUrl(prevProps.user.id, prevProps.user.last_picture_update) : null;
+            const nextUrl = this.props.user ? Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update) : null;
+
+            if (nextUrl && url !== nextUrl) {
+                // empty function is so that promise unhandled is not triggered in dev mode
+                ImageCacheManager.cache('', nextUrl, this.setImageURL).then(this.clearProfileImageUri).catch(emptyFunction);
+            }
         }
     }
 
