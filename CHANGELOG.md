@@ -12,11 +12,9 @@
 
 #### Sidebar and theming UI/UX improvements
 
-#### Ability to paste images on input text box
-
-#### Copy and paste protection managed configuration for Android
-
 ### Improvements
+ - Ability to paste images on input text box
+ - Copy and paste protection managed configuration support for Android
  - Added a confirmation dialog when posting a message with `@channel` and `@all`.
  - Added support for safe area in landscape view on iOS.
  - Changed recent date separators to read Today/Yesterday.
@@ -27,7 +25,7 @@
  - Added a password type for interactive dialogs.
  - Added support for introductory markdown paragraph in interactive dialogs.
  - Added support for boolean elements in interactive dialogs.
- - If Mattermost doesn't have permission to the photo library because the user denied the first prompt, the app now prompts to give permission to send the user to the settings to manually change the permission.
+ - Improved the permissions prompt if Mattermost doesn't have permission to the photo library.
 
 ### Bug Fixes
  - Fixed an issue where the notification badge could get out of sync when reading messages in another client.
@@ -44,13 +42,12 @@
  - Fixed an issue where post textbox did not clear after using a slash command.
  - Fixed an issue where users were are not immediately removed from the mention auto-complete when those users were deactivated.
  - Fixed an issue where returning to a channel from a thread view could trigger a long-press menu that couldn't be dismissed.
- - Fixed an issue with a missing "(you)" suffix in the channel header.
- - Fixed an issue where the Connected banner got stuck after the WebSocket was connected.
+ - Fixed an issue with a missing "(you)" suffix in the channel header of a self DM.
+ - Fixed an issue where the Connected banner got stuck open after the WebSocket was connected.
  - Fixed an issue where the text input area in Android Share extension did not use available space.
  - Fixed an issue where Windows dark theme was not consistent when viewing an archived channel.
  - Fixed an issue where interactive dialogs rendered out of safe area view on landscape orientation.
  - Fixed an issue where a themed "Delete Documents & Data" action flashed a white screen.
- - Fixed an issue where "Close group message" button implied a confirmation.
 
 ### Known Issues
  - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
