@@ -454,6 +454,8 @@
   "mobile.share_extension.error_message": "An error has occurred while using the share extension.",
   "mobile.share_extension.error_title": "Extension Error",
   "mobile.share_extension.team": "Team",
+  "mobile.share_extension.too_long_message": "Character count: {count}/{max}",
+  "mobile.share_extension.too_long_title": "Message is too long",
   "mobile.sidebar_settings.permanent": "Permanent Sidebar",
   "mobile.sidebar_settings.permanent_description": "Keep the sidebar open permanently",
   "mobile.storage_permission_denied_description": "Upload files to your Mattermost instance. Open Settings to grant Mattermost Read and Write access to files on this device.",
