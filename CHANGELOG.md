@@ -11,11 +11,11 @@
 ### Highlights
 
 #### Sidebar UI/UX improvements
- - Improved usability and styling of the channel drawer
+ - Improved usability and styling of the channel drawer.
 
 ### Improvements
- - Ability to paste images on input text box
- - Copy and paste protection managed configuration support for Android
+ - Added the ability to paste images on input text box.
+ - Added copy and paste protection managed configuration support for Android.
  - Added a confirmation dialog when posting a message with `@channel` and `@all`.
  - Added support for safe area in landscape view on iOS.
  - Changed recent date separators to read Today/Yesterday.
@@ -43,7 +43,7 @@
  - Fixed an issue where post textbox did not clear after using a slash command.
  - Fixed an issue where users were are not immediately removed from the mention auto-complete when those users were deactivated.
  - Fixed an issue where returning to a channel from a thread view could trigger a long-press menu that couldn't be dismissed.
- - Fixed an issue with a missing "(you)" suffix in the channel header of a self DM.
+ - Fixed an issue with a missing "(you)" suffix in the channel header of a self Direct Message.
  - Fixed an issue where the Connected banner got stuck open after the WebSocket was connected.
  - Fixed an issue where the text input area in Android Share extension did not use available space.
  - Fixed an issue where Windows dark theme was not consistent when viewing an archived channel.
