@@ -45,7 +45,7 @@ export default class Badge extends PureComponent {
 
         this.state = {
             layoutReady: false,
-            count: 0,
+            count: props.count,
         };
     }
 
