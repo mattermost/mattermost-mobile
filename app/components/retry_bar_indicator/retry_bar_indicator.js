@@ -19,7 +19,7 @@ export default class RetryBarIndicator extends PureComponent {
         retryMessageHeight: new Animated.Value(0),
     };
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (this.props.failed !== prevProps.failed) {
             this.toggleRetryMessage(this.props.failed);
         }
