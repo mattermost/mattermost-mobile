@@ -10,7 +10,8 @@
 
 ### Highlights
 
-#### Sidebar and theming UI/UX improvements
+#### Sidebar UI/UX improvements
+ - Improved usability and styling of the channel drawer
 
 ### Improvements
  - Ability to paste images on input text box
