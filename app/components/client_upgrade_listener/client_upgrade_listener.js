@@ -62,7 +62,7 @@ export default class ClientUpgradeListener extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {forceUpgrade, latestVersion, minVersion} = this.props;
         const {latestVersion: nextLatestVersion, minVersion: nextMinVersion, lastUpgradeCheck} = nextProps;
 

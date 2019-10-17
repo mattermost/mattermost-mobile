@@ -68,7 +68,7 @@ export default class SelectTeam extends PureComponent {
         this.getTeams();
     }
 
-    componentWillReceiveProps(nextProps) {
+     UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
             setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
