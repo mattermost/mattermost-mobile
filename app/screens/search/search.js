@@ -28,15 +28,16 @@ import PostSeparator from 'app/components/post_separator';
 import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes, ListTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
+import {goToScreen, showModalOverCurrentContext, dismissModal} from 'app/actions/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import ChannelDisplayName from './channel_display_name';
 import Modifier, {MODIFIER_LABEL_HEIGHT} from './modifier';
@@ -61,9 +62,6 @@ export default class Search extends PureComponent {
             getMorePostsForSearch: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -111,7 +109,7 @@ export default class Search extends PureComponent {
         }
 
         setTimeout(() => {
-            if (this.refs.searchBar) {
+            if (this.refs.searchBar && !this.props.initialValue) {
                 this.refs.searchBar.focus();
             }
         }, 150);
@@ -154,7 +152,7 @@ export default class Search extends PureComponent {
             if (this.state.preview) {
                 this.refs.preview.handleClose();
             } else {
-                this.props.actions.dismissModal();
+                dismissModal();
             }
         }
     }
@@ -185,7 +183,7 @@ export default class Search extends PureComponent {
 
     cancelSearch = preventDoubleTap(() => {
         this.handleTextChanged('', true);
-        this.props.actions.dismissModal();
+        dismissModal();
     });
 
     goToThread = (post) => {
@@ -204,12 +202,12 @@ export default class Search extends PureComponent {
             rootId,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     handleHashtagPress = (hashtag) => {
         if (this.showingPermalink) {
-            this.props.actions.dismissModal();
+            dismissModal();
             this.handleClosePermalink();
         }
 
@@ -464,7 +462,7 @@ export default class Search extends PureComponent {
             };
 
             this.showingPermalink = true;
-            actions.showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options);
         }
     };
 
@@ -687,7 +685,7 @@ export default class Search extends PureComponent {
 
         return (
             <SafeAreaView
-                excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_X}
+                excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_WITH_INSETS}
                 forceTop={44}
             >
                 <KeyboardLayout>
@@ -842,4 +840,3 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-

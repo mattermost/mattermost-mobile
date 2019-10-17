@@ -8,9 +8,12 @@
 
 #import "Mattermost+RCTUITextView.h"
 #import "RCTUITextView.h"
+#import <React/RCTUtils.h>
+#import "RCTMultilineTextInputView.h"
+#import "OnPasteEventManager.h"
+#import "UIPasteboard+GetImageInfo.h"
 
 @implementation Mattermost_RCTUITextView
-
 @end
 
 @implementation RCTUITextView (DisableCopyPaste)
@@ -30,7 +33,27 @@
     }
   }
   
+  // Allow copy and paste string and image
+  if (action == @selector(paste:)) {
+    return [UIPasteboard generalPasteboard].string != nil || [UIPasteboard generalPasteboard].image != nil;
+  }
+  
   return [super canPerformAction:action withSender:sender];
+}
+
+-(void)paste:(id)sender {
+  [super paste:sender];
+  
+  UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+  if (!pasteboard.hasImages) {
+    return;
+  }
+  
+  NSArray<NSDictionary *> *images = [pasteboard getCopiedImages];
+  [OnPasteEventManager pasteImage:images];
+
+  // Dismiss contextual menu
+  [self resignFirstResponder];
 }
 
 @end

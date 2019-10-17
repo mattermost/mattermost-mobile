@@ -15,14 +15,6 @@ import {loadBot} from 'mattermost-redux/actions/bots';
 import {getBotAccounts} from 'mattermost-redux/selectors/entities/bots';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
-import {
-    setButtons,
-    dismissModal,
-    goToScreen,
-    dismissAllModals,
-    popToRoot,
-} from 'app/actions/navigation';
-
 import UserProfile from './user_profile';
 
 function mapStateToProps(state, ownProps) {
@@ -52,11 +44,6 @@ function mapDispatchToProps(dispatch) {
             makeDirectChannel,
             setChannelDisplayName,
             loadBot,
-            setButtons,
-            dismissModal,
-            goToScreen,
-            dismissAllModals,
-            popToRoot,
         }, dispatch),
     };
 }

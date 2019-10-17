@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {General, Posts} from 'mattermost-redux/constants';
@@ -22,8 +21,6 @@ import {
 } from 'mattermost-redux/utils/post_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-import {showModalOverCurrentContext} from 'app/actions/navigation';
-
 import {getDimensions} from 'app/selectors/device';
 
 import {hasEmojisOnly} from 'app/utils/emoji_utils';
@@ -32,7 +29,7 @@ import PostBody from './post_body';
 
 const POST_TIMEOUT = 20000;
 
-function makeMapStateToProps() {
+export function makeMapStateToProps() {
     const memoizeHasEmojisOnly = memoizeResult((message, customEmojis) => hasEmojisOnly(message, customEmojis));
     const getReactionsForPost = makeGetReactionsForPost();
 
@@ -61,9 +58,10 @@ function makeMapStateToProps() {
         const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
         const isAdmin = checkIsAdmin(roles);
         const isSystemAdmin = checkIsSystemAdmin(roles);
+        const channelIsArchived = channel?.delete_at !== 0; //eslint-disable-line camelcase
         let canDelete = false;
 
-        if (post && !ownProps.channelIsArchived) {
+        if (post && !channelIsArchived) {
             canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
         }
 
@@ -105,12 +103,4 @@ function makeMapStateToProps() {
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            showModalOverCurrentContext,
-        }, dispatch),
-    };
-}
-
-export default connect(makeMapStateToProps, mapDispatchToProps, null, {forwardRef: true})(PostBody);
+export default connect(makeMapStateToProps, null, null, {forwardRef: true})(PostBody);

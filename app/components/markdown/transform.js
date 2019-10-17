@@ -258,8 +258,6 @@ function getLastSibling(node) {
 export function highlightMentions(ast, mentionKeys) {
     const walker = ast.walker();
 
-    // console.warn(mentionKeys);
-
     let e;
     while ((e = walker.next())) {
         if (!e.entering) {

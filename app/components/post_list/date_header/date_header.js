@@ -8,7 +8,7 @@ import {
     ViewPropTypes,
 } from 'react-native';
 
-import FormattedDate from 'app/components/formatted_date';
+import RecentDate from 'app/components/recent_date';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 // DateHeader accepts as a timestamp for rendering as part of a post list.
@@ -28,7 +28,7 @@ export default class DateHeader extends PureComponent {
             <View style={[style.container, this.props.style]}>
                 <View style={style.line}/>
                 <View style={style.dateContainer}>
-                    <FormattedDate
+                    <RecentDate
                         style={style.date}
                         timeZone={timeZone}
                         value={date}

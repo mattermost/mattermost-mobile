@@ -10,7 +10,6 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
-import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import ChannelMentionItem from 'app/components/autocomplete/channel_mention_item';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -231,7 +230,6 @@ export default class ChannelMention extends PureComponent {
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
-                ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
                 nestedScrollEnabled={nestedScrollEnabled}
             />

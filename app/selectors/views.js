@@ -3,7 +3,8 @@
 
 import {createSelector} from 'reselect';
 
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId, getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
 
 const emptyDraft = {
     draft: '',
@@ -42,3 +43,28 @@ export const getThreadDraft = createSelector(
 export function getProfileImageUri(state) {
     return state.views.user.profileImageUri;
 }
+
+export const getBadgeCount = createSelector(
+    getCurrentTeamId,
+    getTeamMemberships,
+    getUnreadsInCurrentTeam,
+    (currentTeamId, myTeamMembers, {mentionCount, messageCount}) => {
+        let mentions = mentionCount;
+        let messages = messageCount;
+
+        const members = Object.values(myTeamMembers).filter((m) => m.team_id !== currentTeamId);
+        members.forEach((m) => {
+            mentions += (m.mention_count || 0);
+            messages += (m.msg_count || 0);
+        });
+
+        let badgeCount = 0;
+        if (mentions) {
+            badgeCount = mentions;
+        } else if (messages) {
+            badgeCount = -1;
+        }
+
+        return badgeCount;
+    }
+);

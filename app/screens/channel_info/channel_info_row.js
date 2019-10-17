@@ -25,7 +25,7 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
+    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -52,6 +52,24 @@ function channelInfoRow(props) {
         );
     }
 
+    let actionElement = null;
+    if (togglable) {
+        actionElement = (
+            <Switch
+                onValueChange={action}
+                value={detail}
+            />
+        );
+    } else if (rightArrow) {
+        actionElement = (
+            <Icon
+                name='angle-right'
+                size={20}
+                style={style.rightIcon}
+            />
+        );
+    }
+
     const RowComponent = (
         <View style={[style.container, padding(isLandscape)]}>
             {iconElement}
@@ -61,17 +79,7 @@ function channelInfoRow(props) {
                 defaultMessage={defaultMessage}
             />
             <Text style={style.detail}>{detail}</Text>
-            {togglable ?
-                <Switch
-                    onValueChange={action}
-                    value={detail}
-                /> :
-                <Icon
-                    name='angle-right'
-                    size={20}
-                    style={style.rightIcon}
-                />
-            }
+            {actionElement}
         </View>
     );
 
@@ -94,6 +102,7 @@ channelInfoRow.propTypes = {
     iconColor: PropTypes.string,
     image: PropTypes.number,
     imageTintColor: PropTypes.string,
+    rightArrow: PropTypes.bool,
     textId: PropTypes.string.isRequired,
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
@@ -101,6 +110,7 @@ channelInfoRow.propTypes = {
 };
 
 channelInfoRow.defaultProps = {
+    rightArrow: true,
     togglable: false,
     shouldRender: true,
 };

@@ -11,19 +11,29 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
+
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
+
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ProfilePicture from 'app/components/profile_picture';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import StatusBar from 'app/components/status_bar';
-import BotTag from 'app/components/bot_tag';
-import GuestTag from 'app/components/guest_tag';
+import {BotTag, GuestTag} from 'app/components/tag';
+
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {isGuest} from 'app/utils/users';
+
+import {
+    goToScreen,
+    popToRoot,
+    dismissModal,
+    dismissAllModals,
+    setButtons,
+} from 'app/actions/navigation';
 
 import UserProfileRow from './user_profile_row';
 import Config from 'assets/config';
@@ -34,11 +44,6 @@ export default class UserProfile extends PureComponent {
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             loadBot: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            dismissAllModals: PropTypes.func.isRequired,
-            popToRoot: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
@@ -74,13 +79,13 @@ export default class UserProfile extends PureComponent {
                 rightButtons: [this.rightButton],
             };
 
-            props.actions.setButtons(props.componentId, buttons);
+            setButtons(props.componentId, buttons);
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 
@@ -103,16 +108,16 @@ export default class UserProfile extends PureComponent {
         }
     }
 
-    close = () => {
-        const {actions, fromSettings, componentId} = this.props;
+    close = async () => {
+        const {fromSettings} = this.props;
 
         if (fromSettings) {
-            actions.dismissModal();
+            dismissModal();
             return;
         }
 
-        actions.dismissAllModals();
-        actions.popToRoot(componentId);
+        await dismissAllModals();
+        await popToRoot();
     };
 
     getDisplayName = () => {
@@ -227,7 +232,7 @@ export default class UserProfile extends PureComponent {
     };
 
     goToEditProfile = () => {
-        const {actions, user: currentUser} = this.props;
+        const {user: currentUser} = this.props;
         const {formatMessage} = this.context.intl;
         const commandType = 'Push';
         const screen = 'EditProfile';
@@ -235,7 +240,7 @@ export default class UserProfile extends PureComponent {
         const passProps = {currentUser, commandType};
 
         requestAnimationFrame(() => {
-            actions.goToScreen(screen, title, passProps);
+            goToScreen(screen, title, passProps);
         });
     };
 

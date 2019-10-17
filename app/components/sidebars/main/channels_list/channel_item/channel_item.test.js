@@ -115,6 +115,7 @@ describe('ChannelItem', () => {
             ...baseProps,
             channel: channelObj,
             currentChannelId: 'channel_id',
+            isArchived: true,
         };
 
         const wrapper = shallow(

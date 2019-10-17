@@ -24,6 +24,12 @@ import mattermostManaged from 'app/mattermost_managed';
 import SearchResultPost from 'app/screens/search/search_result_post';
 import ChannelDisplayName from 'app/screens/search/channel_display_name';
 import {changeOpacity} from 'app/utils/theme';
+import {
+    goToScreen,
+    showModalOverCurrentContext,
+    showSearchModal,
+    dismissModal,
+} from 'app/actions/navigation';
 
 export default class RecentMentions extends PureComponent {
     static propTypes = {
@@ -34,9 +40,6 @@ export default class RecentMentions extends PureComponent {
             getRecentMentions: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            showSearchModal: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         didFail: PropTypes.bool,
         isLoading: PropTypes.bool,
@@ -77,7 +80,7 @@ export default class RecentMentions extends PureComponent {
         Keyboard.dismiss();
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     handleClosePermalink = () => {
@@ -92,18 +95,15 @@ export default class RecentMentions extends PureComponent {
     };
 
     handleHashtagPress = async (hashtag) => {
-        const {actions} = this.props;
-
-        await actions.dismissModal();
-
-        actions.showSearchModal('#' + hashtag);
+        await dismissModal();
+        showSearchModal('#' + hashtag);
     };
 
     keyExtractor = (item) => item;
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-settings') {
-            this.props.actions.dismissModal();
+            dismissModal();
         }
     }
 
@@ -184,7 +184,7 @@ export default class RecentMentions extends PureComponent {
             };
 
             this.showingPermalink = true;
-            actions.showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options);
         }
     };
 

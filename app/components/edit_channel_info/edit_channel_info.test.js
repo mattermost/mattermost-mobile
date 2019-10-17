@@ -11,10 +11,6 @@ import EditChannelInfo from './edit_channel_info';
 
 describe('EditChannelInfo', () => {
     const baseProps = {
-        actions: {
-            dismissModal: jest.fn(),
-            popTopScreen: jest.fn(),
-        },
         theme: Preferences.THEMES.default,
         deviceWidth: 400,
         deviceHeight: 600,
@@ -38,6 +34,14 @@ describe('EditChannelInfo', () => {
         oldPurpose: 'old_purpose',
         isLandscape: true,
     };
+
+    test('should match snapshot', () => {
+        const wrapper = shallow(
+            <EditChannelInfo {...baseProps}/>
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
 
     test('should have called onHeaderChangeText on text change from Autocomplete', () => {
         const wrapper = shallow(

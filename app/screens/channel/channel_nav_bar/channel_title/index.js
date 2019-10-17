@@ -20,13 +20,16 @@ function mapStateToProps(state) {
     const stats = getCurrentChannelStats(state) || {member_count: 0, guest_count: 0};
 
     let isTeammateGuest = false;
+    let isSelfDMChannel = false;
     if (currentChannel && currentChannel.type === General.DM_CHANNEL) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
         isTeammateGuest = isGuest(teammate);
+        isSelfDMChannel = currentUserId === currentChannel.teammate_id;
     }
 
     return {
+        isSelfDMChannel,
         currentChannelName: currentChannel ? currentChannel.display_name : '',
         isArchived: currentChannel ? currentChannel.delete_at !== 0 : false,
         displayName: state.views.channel.displayName,

@@ -2,12 +2,13 @@
 
 exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
 <Connect(SafeAreaIos)
+  excludeFooter={true}
   excludeHeader={true}
 >
   <KeyboardAvoidingView
     behavior="padding"
-    enabled={true}
-    keyboardVerticalOffset={107}
+    enabled={false}
+    keyboardVerticalOffset={50}
     style={
       Object {
         "flex": 1,
@@ -59,11 +60,13 @@ exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
     </View>
     <View
       style={
-        Object {
-          "alignItems": "center",
-          "backgroundColor": "#ffffff",
-          "flex": 1,
-        }
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "flex": 1,
+          },
+        ]
       }
     >
       <SectionList
@@ -72,17 +75,19 @@ exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
         disableVirtualization={false}
         getItemLayout={[Function]}
         horizontal={false}
-        initialNumToRender={10}
+        initialNumToRender={50}
         keyExtractor={[Function]}
+        keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="always"
         maxToRenderPerBatch={10}
+        nativeID="emojiPicker"
         onEndReached={[Function]}
         onEndReachedThreshold={0}
         onMomentumScrollEnd={[Function]}
         onScroll={[Function]}
         onScrollToIndexFailed={[Function]}
-        pageSize={30}
-        removeClippedSubviews={true}
+        pageSize={50}
+        removeClippedSubviews={false}
         renderItem={[Function]}
         renderSectionHeader={[Function]}
         scrollEventThrottle={50}
@@ -91,10 +96,7 @@ exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
         stickySectionHeadersEnabled={true}
         style={
           Array [
-            Object {
-              "backgroundColor": "#ffffff",
-              "marginBottom": 35,
-            },
+            Object {},
             Object {
               "width": 370,
             },
@@ -103,30 +105,34 @@ exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
         updateCellsBatchingPeriod={50}
         windowSize={21}
       />
-      <View
-        style={
-          Object {
-            "bottom": 0,
-            "height": 35,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "width": "100%",
-          }
-        }
+      <KeyboardTrackingView
+        normalList={true}
+        scrollViewNativeID="emojiPicker"
       >
         <View
           style={
             Object {
-              "backgroundColor": "rgba(61,60,64,0.1)",
-              "borderTopColor": "rgba(61,60,64,0.3)",
-              "borderTopWidth": 1,
+              "backgroundColor": "#ffffff",
               "flexDirection": "row",
-              "justifyContent": "space-between",
+              "height": 35,
+              "width": "100%",
             }
           }
-        />
-      </View>
+        >
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(61,60,64,0.1)",
+                "borderTopColor": "rgba(61,60,64,0.3)",
+                "borderTopWidth": 1,
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "width": "100%",
+              }
+            }
+          />
+        </View>
+      </KeyboardTrackingView>
     </View>
   </KeyboardAvoidingView>
 </Connect(SafeAreaIos)>

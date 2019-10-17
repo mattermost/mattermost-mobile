@@ -1,0 +1,571 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`channel_info should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <ScrollViewMock
+    style={
+      Object {
+        "backgroundColor": undefined,
+        "flex": 1,
+      }
+    }
+  >
+    <ChannelInfoHeader
+      createAt={123}
+      creator="Creator"
+      displayName="Channel Name"
+      hasGuests={false}
+      header=""
+      isArchived={false}
+      isBot={false}
+      isGroupConstrained={false}
+      isLandscape={false}
+      isTeammateGuest={false}
+      memberCount={2}
+      onPermalinkPress={[Function]}
+      purpose="Purpose"
+      status="status"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+      type="O"
+    />
+    <View
+      style={
+        Object {
+          "backgroundColor": "#ffffff",
+          "borderBottomColor": undefined,
+          "borderBottomWidth": 1,
+          "borderTopColor": undefined,
+          "borderTopWidth": 1,
+        }
+      }
+    >
+      <React.Fragment>
+        <channelInfoRow
+          action={[Function]}
+          defaultMessage="Favorite"
+          detail={false}
+          icon="star-o"
+          isLandscape={false}
+          rightArrow={true}
+          shouldRender={true}
+          textId="mobile.routes.channelInfo.favorite"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+          togglable={true}
+        />
+        <View
+          style={
+            Object {
+              "backgroundColor": undefined,
+              "height": 1,
+              "marginHorizontal": 15,
+            }
+          }
+        />
+        <channelInfoRow
+          action={[Function]}
+          defaultMessage="Mute channel"
+          detail={false}
+          icon="bell-slash-o"
+          isLandscape={false}
+          rightArrow={true}
+          shouldRender={true}
+          textId="channel_notifications.muteChannel.settings"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+          togglable={true}
+        />
+        <View
+          style={
+            Object {
+              "backgroundColor": undefined,
+              "height": 1,
+              "marginHorizontal": 15,
+            }
+          }
+        />
+        <channelInfoRow
+          action={[Function]}
+          defaultMessage="Ignore @channel, @here, @all"
+          detail={false}
+          icon="at"
+          isLandscape={false}
+          rightArrow={true}
+          shouldRender={true}
+          textId="channel_notifications.ignoreChannelMentions.settings"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+          togglable={true}
+        />
+        <View
+          style={
+            Object {
+              "backgroundColor": undefined,
+              "height": 1,
+              "marginHorizontal": 15,
+            }
+          }
+        />
+        <channelInfoRow
+          action={[Function]}
+          defaultMessage="Pinned Posts"
+          image={1}
+          isLandscape={false}
+          rightArrow={true}
+          shouldRender={true}
+          textId="channel_header.pinnedPosts"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+          togglable={false}
+        />
+        <React.Fragment>
+          <View
+            style={
+              Object {
+                "backgroundColor": undefined,
+                "height": 1,
+                "marginHorizontal": 15,
+              }
+            }
+          />
+          <channelInfoRow
+            action={[Function]}
+            defaultMessage="Manage Members"
+            detail={2}
+            icon="users"
+            isLandscape={false}
+            rightArrow={true}
+            shouldRender={true}
+            textId="channel_header.manageMembers"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+            togglable={false}
+          />
+        </React.Fragment>
+        <React.Fragment>
+          <View
+            style={
+              Object {
+                "backgroundColor": undefined,
+                "height": 1,
+                "marginHorizontal": 15,
+              }
+            }
+          />
+          <channelInfoRow
+            action={[Function]}
+            defaultMessage="Add Members"
+            icon="user-plus"
+            isLandscape={false}
+            rightArrow={true}
+            shouldRender={true}
+            textId="channel_header.addMembers"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+            togglable={false}
+          />
+        </React.Fragment>
+        <React.Fragment>
+          <View
+            style={
+              Object {
+                "backgroundColor": undefined,
+                "height": 1,
+                "marginHorizontal": 15,
+              }
+            }
+          />
+          <channelInfoRow
+            action={[Function]}
+            defaultMessage="Convert to Private Channel"
+            icon="lock"
+            isLandscape={false}
+            rightArrow={true}
+            shouldRender={true}
+            textId="mobile.channel_info.convert"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+            togglable={false}
+          />
+        </React.Fragment>
+        <React.Fragment>
+          <View
+            style={
+              Object {
+                "backgroundColor": undefined,
+                "height": 1,
+                "marginHorizontal": 15,
+              }
+            }
+          />
+          <channelInfoRow
+            action={[Function]}
+            defaultMessage="Edit Channel"
+            icon="edit"
+            isLandscape={false}
+            rightArrow={true}
+            shouldRender={true}
+            textId="mobile.channel_info.edit"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+            togglable={false}
+          />
+        </React.Fragment>
+      </React.Fragment>
+      <React.Fragment>
+        <View
+          style={
+            Object {
+              "backgroundColor": undefined,
+              "height": 1,
+              "marginHorizontal": 15,
+            }
+          }
+        />
+        <channelInfoRow
+          action={[Function]}
+          defaultMessage="Leave Channel"
+          icon="sign-out"
+          isLandscape={false}
+          rightArrow={true}
+          shouldRender={true}
+          textId="navbar.leave"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+          togglable={false}
+        />
+      </React.Fragment>
+    </View>
+    <View
+      style={
+        Array [
+          Object {
+            "backgroundColor": "#ffffff",
+            "borderBottomColor": undefined,
+            "borderBottomWidth": 1,
+            "borderTopColor": undefined,
+            "borderTopWidth": 1,
+          },
+          Object {
+            "borderBottomColor": undefined,
+            "borderBottomWidth": 1,
+            "borderTopColor": undefined,
+            "borderTopWidth": 1,
+            "marginTop": 40,
+          },
+        ]
+      }
+    >
+      <channelInfoRow
+        action={[Function]}
+        defaultMessage="Archive Channel"
+        icon="archive"
+        iconColor="#CA3B27"
+        isLandscape={false}
+        rightArrow={true}
+        shouldRender={true}
+        textColor="#CA3B27"
+        textId="mobile.routes.channelInfo.delete_channel"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        togglable={false}
+      />
+    </View>
+  </ScrollViewMock>
+</View>
+`;
