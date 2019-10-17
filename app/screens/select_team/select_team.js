@@ -68,7 +68,7 @@ export default class SelectTeam extends PureComponent {
         this.getTeams();
     }
 
-     UNSAFE_componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
         if (this.props.theme !== nextProps.theme) {
             setNavigatorStyles(this.props.componentId, nextProps.theme);
         }

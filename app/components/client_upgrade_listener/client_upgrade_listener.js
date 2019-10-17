@@ -62,7 +62,7 @@ export default class ClientUpgradeListener extends PureComponent {
         }
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
         const {forceUpgrade, latestVersion, minVersion} = this.props;
         const {latestVersion: nextLatestVersion, minVersion: nextMinVersion, lastUpgradeCheck} = nextProps;
 
