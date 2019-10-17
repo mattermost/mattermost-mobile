@@ -209,6 +209,7 @@ NotificationSettingsMentionsKeywords {
                     "color": "#3d3c40",
                     "fontSize": 15,
                     "height": 150,
+                    "paddingHorizontal": 15,
                     "paddingVertical": 10,
                   },
                   null,
