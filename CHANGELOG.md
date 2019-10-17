@@ -4,7 +4,14 @@
 - Release Date: November 16, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
-
+### Bug Fixes
+ - Fixed an issue on iOS where clicking on a hashtag from "recent mentions" (or flagged posts) returned the user to the channel instead of displaying hashtag search results.
+ - Fixed an issue where posts of the same thread appeared to be from different threads if separated by a new message line.
+ - Fixed an issue where tapping on a hashtag engaged a keyboard for a moment before displaying search results.
+ - Fixed an issue on iOS where the Name, Purpose and Header information appeared “boxed in” on channel info screen.
+ - Fixed an issue where ``mobile.message_length.message`` did not match webapp's ``create_post.error_message``.
+ - Fixed an issue with horizontal margin on single sign-on screen in landscape view on iOS iPhone X and later.
+ - Fixed an issue on iOS where the Helper text on two Settings screens was not offset on the left.
 
 ## 1.24.0 Release
 - Release Date: October 16, 2019
