@@ -109,7 +109,7 @@ export default class Search extends PureComponent {
         }
 
         setTimeout(() => {
-            if (this.refs.searchBar) {
+            if (this.refs.searchBar && !this.props.initialValue) {
                 this.refs.searchBar.focus();
             }
         }, 150);
@@ -840,4 +840,3 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
