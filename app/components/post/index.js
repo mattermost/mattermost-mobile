@@ -41,6 +41,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         const post = ownProps.post || getPost(state, ownProps.postId);
         const previousPost = getPost(state, ownProps.previousPostId);
+        const beforePrevPost = getPost(state, ownProps.beforePrevPostId);
 
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
@@ -84,6 +85,8 @@ function makeMapStateToProps() {
             isFlagged: isPostFlagged(post.id, myPreferences),
             isCommentMention,
             isLandscape: isLandscape(state),
+            previousPostExists: Boolean(previousPost),
+            beforePrevPostUserId: (beforePrevPost ? beforePrevPost.user_id : null),
         };
     };
 }
