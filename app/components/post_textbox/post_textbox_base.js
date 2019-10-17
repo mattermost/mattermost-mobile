@@ -203,7 +203,7 @@ export default class PostTextBoxBase extends PureComponent {
                     }),
                     intl.formatMessage({
                         id: 'mobile.message_length.message',
-                        defaultMessage: 'Your current message is too long. Current character count: {max}/{count}',
+                        defaultMessage: 'Your current message is too long. Current character count: {count}/{max}',
                     }, {
                         max: maxMessageLength,
                         count: valueLength,
