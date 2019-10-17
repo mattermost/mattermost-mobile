@@ -5,6 +5,7 @@ import {StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import * as ThemeUtils from 'mattermost-redux/utils/theme_utils';
+import * as HighlightStyles from 'react-syntax-highlighter/styles/hljs';
 
 import {mergeNavigationOptions} from 'app/actions/navigation';
 
@@ -48,6 +49,14 @@ export function setNavigatorStyles(componentId, theme) {
 export function isThemeSwitchingEnabled(state) {
     const {config} = state.entities.general;
     return config.EnableThemeSelection === 'true';
+}
+
+const snakeCaseToCamelCase = (str) => str.replace(
+    /([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', '')
+);
+
+export function getHighlightStyleFromTheme(theme) {
+    return HighlightStyles[snakeCaseToCamelCase(theme.codeTheme)] || HighlightStyles.github;
 }
 
 export function getKeyboardAppearanceFromTheme(theme) {
