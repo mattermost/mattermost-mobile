@@ -76,7 +76,15 @@
 }
 
 -(NSData *) getDataForImageItem:(NSData *)imageData type:(NSString *)type {
-  UIImage *image = (UIImage *)imageData;
+  UIImage *image;
+  if ([type isEqual:@"public.heic"]) {
+    CFDataRef cfdata = CFDataCreate(NULL, [imageData bytes], [imageData length]);
+    CGImageSourceRef source = CGImageSourceCreateWithData(cfdata, nil);
+    CGImageRef imageRef = CGImageSourceCreateImageAtIndex(source, 0, nil);
+    image = [[UIImage alloc] initWithCGImage:imageRef];
+  } else {
+    image = (UIImage *)imageData;
+  }
   size_t width = CGImageGetWidth(image.CGImage);
   size_t height = CGImageGetHeight(image.CGImage);
   if (width > 6048 || height > 4032) {
