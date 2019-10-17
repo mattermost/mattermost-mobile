@@ -125,19 +125,10 @@ export default class EditChannel extends PureComponent {
             };
 
             switch (updateChannelRequest.status) {
-            case RequestStatus.STARTED:
-                this.emitUpdating(true);
-                break;
             case RequestStatus.SUCCESS:
-                EventEmitter.emit('close_channel_drawer');
-                InteractionManager.runAfterInteractions(() => {
-                    this.emitUpdating(false);
-                    this.close();
-                });
                 newState.updating = false;
                 break;
             case RequestStatus.FAILURE:
-                this.emitUpdating(false);
                 newState.error = updateChannelRequest.error;
                 newState.updating = false;
                 break;
@@ -151,6 +142,24 @@ export default class EditChannel extends PureComponent {
     componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
             setNavigatorStyles(prevProps.componentId, this.props.theme);
+        }
+
+        if (prevProps.updateChannelRequest !== this.props.updateChannelRequest) {
+            switch (this.props.updateChannelRequest.status) {
+            case RequestStatus.STARTED:
+                this.emitUpdating(true);
+                break;
+            case RequestStatus.SUCCESS:
+                EventEmitter.emit('close_channel_drawer');
+                InteractionManager.runAfterInteractions(() => {
+                    this.emitUpdating(false);
+                    this.close();
+                });
+                break;
+            case RequestStatus.FAILURE:
+                this.emitUpdating(false);
+                break;
+            }
         }
     }
 

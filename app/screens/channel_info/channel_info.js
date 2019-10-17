@@ -82,40 +82,12 @@ export default class ChannelInfo extends PureComponent {
             isFavorite: props.isFavorite,
             isMuted: props.isChannelMuted,
             ignoreChannelMentions: props.ignoreChannelMentions,
-            prevPropsUserId: props.currentUserId,
         };
     }
 
     componentDidMount() {
         this.props.actions.getChannelStats(this.props.currentChannel.id);
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
-    }
-
-    static getDerivedStateFromProps(nextProps, state) {
-        let isFavorite = state.isFavorite;
-        if (isFavorite !== nextProps.isFavorite) {
-            isFavorite = nextProps.isFavorite;
-        }
-
-        let isMuted = state.isMuted;
-        if (isMuted !== nextProps.isChannelMuted) {
-            isMuted = nextProps.isChannelMuted;
-        }
-
-        let ignoreChannelMentions = state.ignoreChannelMentions;
-        if (ignoreChannelMentions !== nextProps.ignoreChannelMentions) {
-            ignoreChannelMentions = nextProps.ignoreChannelMentions;
-        }
-
-        if (nextProps.currentUserId !== state.prevPropsUserId) {
-            return {
-                prevPropsUserId: nextProps.currentUserId,
-                isFavorite,
-                isMuted,
-                ignoreChannelMentions,
-            };
-        }
-        return null;
     }
 
     componentDidUpdate(prevProps) {
