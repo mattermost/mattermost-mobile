@@ -124,7 +124,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                   case "RNLocalAuth":
                     return new LocalAuthModule(reactContext);
                   case "JailMonkey":
-                    return new JailMonkeyModule(reactContext);
+                    return new JailMonkeyModule(reactContext, false);
                   case "RNFetchBlob":
                     return new RNFetchBlob(reactContext);
                   case "MattermostManaged":
