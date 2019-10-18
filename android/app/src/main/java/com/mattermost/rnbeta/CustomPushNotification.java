@@ -326,7 +326,14 @@ public class CustomPushNotification extends PushNotification {
             Bundle data = bundleList.get(i);
             String message = data.getString("message");
             String senderId = data.getString("sender_id");
+            Bundle userInfoBundle = data.getBundle("userInfo");
             String senderName = getSenderName(data);
+            if (userInfoBundle != null) {
+                boolean localPushNotificationTest = userInfoBundle.getBoolean("localTest");
+                if (localPushNotificationTest) {
+                    senderName = "Test";
+                }
+            }
 
             if (conversationTitle == null || !android.text.TextUtils.isEmpty(senderName.trim())) {
                 message = removeSenderNameFromMessage(message, senderName);
