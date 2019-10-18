@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-youtube/RCTYouTubeStandalone.m b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
-index 433c08d..12b38d2 100644
+index fabd291..9158a6a 100644
 --- a/node_modules/react-native-youtube/RCTYouTubeStandalone.m
 +++ b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
 @@ -14,6 +14,7 @@ @implementation RCTYouTubeStandalone {
@@ -10,17 +10,26 @@ index 433c08d..12b38d2 100644
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
  {
-@@ -36,8 +37,12 @@ @implementation RCTYouTubeStandalone {
-                         streamURLs[@(XCDYouTubeVideoQualityMedium360)] ?:
+@@ -38,10 +39,19 @@ @implementation RCTYouTubeStandalone {
                          streamURLs[@(XCDYouTubeVideoQualitySmall240)
                      ];
-+                    CMTime initialPlaybackTime = CMTimeMakeWithSeconds([startTime doubleValue], 1);
-+
-                     weakPlayerViewController.player = [AVPlayer playerWithURL:streamURL];
--                    [weakPlayerViewController.player play];
-+                    [weakPlayerViewController.player seekToTime:initialPlaybackTime completionHandler: ^(BOOL finished) {
-+                        [weakPlayerViewController.player play];
-+                    }];
  
-                     [[NSNotificationCenter defaultCenter] addObserver:self
-                                                              selector:@selector(moviePlayerPlaybackDidFinish:)
+-                    weakPlayerViewController.player = [AVPlayer playerWithURL:streamURL];
+-                    [weakPlayerViewController.player play];
++                    @try {
++                        CMTime initialPlaybackTime = CMTimeMakeWithSeconds([startTime doubleValue], 1);
+ 
+-                    resolve(@"YouTubeStandaloneIOS player launched successfully");
++                        weakPlayerViewController.player = [AVPlayer playerWithURL:streamURL];
++                        [weakPlayerViewController.player seekToTime:initialPlaybackTime completionHandler: ^(BOOL finished) {
++                            [weakPlayerViewController.player play];
++                            resolve(@"YouTubeStandaloneIOS player launched successfully");
++                        }];
++                    }
++                    @catch (NSException *ex) {
++                        reject(@"error", ex.reason, nil);
++                        [root dismissViewControllerAnimated:YES completion:nil];
++                    }
+                 } else {
+                     reject(@"error", error.localizedDescription, nil);
+                     [root dismissViewControllerAnimated:YES completion:nil];
