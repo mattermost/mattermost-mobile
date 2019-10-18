@@ -101,7 +101,7 @@ export default class FlaggedPosts extends PureComponent {
     };
 
     handleHashtagPress = async (hashtag) => {
-        dismissModal();
+        await dismissModal();
         showSearchModal('#' + hashtag);
     };
 

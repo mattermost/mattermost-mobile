@@ -43,6 +43,9 @@ export default class PostHeader extends PureComponent {
         isGuest: PropTypes.bool,
         userTimezone: PropTypes.string,
         enableTimezone: PropTypes.bool,
+        previousPostExists: PropTypes.bool,
+        post: PropTypes.object,
+        beforePrevPostUserId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -58,11 +61,18 @@ export default class PostHeader extends PureComponent {
     };
 
     renderCommentedOnMessage = () => {
-        if (!this.props.renderReplies || !this.props.commentedOnDisplayName) {
+        const {
+            beforePrevPostUserId,
+            commentedOnDisplayName,
+            post,
+            previousPostExists,
+            renderReplies,
+            theme,
+        } = this.props;
+        if (!renderReplies || !commentedOnDisplayName || (!previousPostExists && post.user_id === beforePrevPostUserId)) {
             return null;
         }
 
-        const {commentedOnDisplayName, theme} = this.props;
         const style = getStyleSheet(theme);
         const displayName = commentedOnDisplayName;
 
@@ -205,7 +215,7 @@ export default class PostHeader extends PureComponent {
     };
 
     renderTag = () => {
-        const {fromAutoResponder, fromWebHook, isBot, isGuest, theme} = this.props;
+        const {fromAutoResponder, fromWebHook, isBot, isSystemMessage, isGuest, theme} = this.props;
         const style = getStyleSheet(theme);
 
         if (fromWebHook || isBot) {
@@ -215,6 +225,8 @@ export default class PostHeader extends PureComponent {
                     theme={theme}
                 />
             );
+        } else if (isSystemMessage) {
+            return null;
         } else if (isGuest) {
             return (
                 <GuestTag
