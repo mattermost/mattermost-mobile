@@ -13,17 +13,12 @@ import {
     View,
 } from 'react-native';
 
-import SyntaxHighlighter from 'react-native-syntax-highlighter';
-
-import CustomPropTypes from 'app/constants/custom_prop_types';
 import {getCodeFont} from 'app/utils/markdown';
-
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
-    getHighlightStyleFromTheme,
 } from 'app/utils/theme';
 import {popTopScreen} from 'app/actions/navigation';
 
@@ -32,8 +27,6 @@ export default class Code extends React.PureComponent {
         componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,
-        language: PropTypes.string,
-        textStyle: CustomPropTypes.Style,
     };
 
     componentDidMount() {
@@ -80,20 +73,13 @@ export default class Code extends React.PureComponent {
         let textComponent;
         if (Platform.OS === 'ios') {
             textComponent = (
-                <SyntaxHighlighter
-                    language={this.props.language}
-                    style={getHighlightStyleFromTheme(this.props.theme)}
-                    highlighter={'hljs'}
-                    CodeTag={TextInput}
-                    codeTagProps={{
-                        editable: false,
-                        multiline: true,
-                        keyboardAppearance: getKeyboardAppearanceFromTheme(this.props.theme),
-                        style: {...style.codeText, ...this.props.textStyle},
-                    }}
-                >
-                    {this.props.content}
-                </SyntaxHighlighter>
+                <TextInput
+                    editable={false}
+                    multiline={true}
+                    value={this.props.content}
+                    style={[style.codeText]}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(this.props.theme)}
+                />
             );
         } else {
             textComponent = (
@@ -159,13 +145,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexGrow: 0,
             flexShrink: 1,
             width: '100%',
-            backgroundColor: getHighlightStyleFromTheme(theme).hljs.background,
         },
         code: {
             paddingHorizontal: 6,
             ...Platform.select({
                 android: {
                     paddingVertical: 4,
+                },
+                ios: {
+                    top: -4,
                 },
             }),
         },
@@ -176,7 +164,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 18,
             ...Platform.select({
                 ios: {
-                    top: -11,
+                    margin: 0,
+                    padding: 0,
                 },
             }),
         },
