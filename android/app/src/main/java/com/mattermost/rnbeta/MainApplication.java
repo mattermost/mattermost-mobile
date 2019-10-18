@@ -180,7 +180,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("ReactNativeExceptionHandler", new ReactModuleInfo("ReactNativeExceptionHandler", "com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule", false, false, false, false, false));
                     map.put("YouTubeStandaloneModule", new ReactModuleInfo("YouTubeStandaloneModule", "com.inprogress.reactnativeyoutube.YouTubeStandaloneModule", false, false, false, false, false));
                     map.put("RNDocViewer", new ReactModuleInfo("RNDocViewer", "com.philipphecht.RNDocViewerModule", false, false, false, false, false));
-                    map.put("RNDocumentPicker", new ReactModuleInfo("RNDocumentPicker", "import io.github.elyx0.reactnativedocumentpicker.DocumentPickerModule", false, false, false, false, false));
+                    map.put("RNDocumentPicker", new ReactModuleInfo("RNDocumentPicker", "io.github.elyx0.reactnativedocumentpicker.DocumentPickerModule", false, false, false, false, false));
                     map.put("RNKeychainManager", new ReactModuleInfo("RNKeychainManager", "com.oblador.keychain.KeychainModule", false, false, true, false, false));
                     map.put("RNSentry", new ReactModuleInfo("RNSentry", "com.sentry.RNSentryModule", false, false, true, false, false));
                     map.put(AsyncStorageModule.NAME, new ReactModuleInfo(AsyncStorageModule.NAME, "com.reactnativecommunity.asyncstorage.AsyncStorageModule", false, false, false, false, false));
