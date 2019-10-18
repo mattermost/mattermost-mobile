@@ -4,7 +4,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
+    Platform,
     ScrollView,
+    SafeAreaView,
 } from 'react-native';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -20,23 +22,42 @@ export default class Table extends React.PureComponent {
         const content = this.props.renderRows(true);
         const viewStyle = this.props.renderAsFlex ? style.displayFlex : {width: this.props.tableWidth};
 
-        return (
-            <ScrollView>
-                <ScrollView
-                    contentContainerStyle={viewStyle}
-                    horizontal={true}
-                >
-                    {content}
+        let container;
+        if (Platform.OS === 'android') {
+            container = (
+                <ScrollView>
+                    <ScrollView
+                        contentContainerStyle={viewStyle}
+                        horizontal={true}
+                    >
+                        {content}
+                    </ScrollView>
                 </ScrollView>
-            </ScrollView>
-        );
+            );
+        } else {
+            container = (
+                <SafeAreaView>
+                    <ScrollView contentContainerStyle={viewStyle}>
+                        {content}
+                    </ScrollView>
+                </SafeAreaView>
+            );
+        }
+        return container;
     }
 }
 
 const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         displayFlex: {
-            flex: 1,
+            ...Platform.select({
+                android: {
+                    flex: 1,
+                },
+                ios: {
+                    flex: 0,
+                },
+            }),
         },
     };
 });
