@@ -71,6 +71,9 @@ jest.doMock('react-native', () => {
         StatusBarManager: {
             getHeight: jest.fn(),
         },
+        RNDocumentPicker: {
+            pick: jest.fn(),
+        },
     };
 
     return Object.setPrototypeOf({

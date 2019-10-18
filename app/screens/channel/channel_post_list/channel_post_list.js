@@ -33,6 +33,7 @@ export default class ChannelPostList extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
+            setChannelRefreshing: PropTypes.func,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelRefreshingFailed: PropTypes.bool,

@@ -85,6 +85,7 @@ NotificationSettingsMentionsKeywords {
         "useMemo": [Function],
         "useReducer": [Function],
         "useRef": [Function],
+        "useResponder": [Function],
         "useState": [Function],
       },
       "_element": <NotificationSettingsMentionsKeywords

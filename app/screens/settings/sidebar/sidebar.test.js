@@ -56,6 +56,7 @@ describe('SidebarSettings', () => {
                 makeDirectChannel: jest.fn(),
                 setChannelDisplayName: jest.fn(),
                 setChannelLoading: jest.fn(),
+                joinChannel: jest.fn(),
             },
             blurPostTextBox: jest.fn(),
             currentTeamId: 'current-team-id',
