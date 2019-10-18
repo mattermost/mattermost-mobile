@@ -1,21 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ErrorTeamsList should match snapshot 1`] = `
+exports[`FlaggedPosts should match snapshot 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
 >
   <Connect(StatusBar) />
-  <FailedNetworkAction
-    actionDefaultMessage="try again"
-    actionId="mobile.failed_network_action.retry"
-    errorDefaultMessage="Messages will load when you have an internet connection or {refresh}."
-    errorId="mobile.failed_network_action.shortDescription"
-    onRetry={[Function]}
+  <NoResults
+    description="Flags are a way to mark messages for follow up. Your flags are personal, and cannot be seen by other users."
+    iconName="ios-flag"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -45,6 +41,7 @@ exports[`ErrorTeamsList should match snapshot 1`] = `
         "type": "Mattermost",
       }
     }
+    title="No Flagged Posts"
   />
 </View>
 `;

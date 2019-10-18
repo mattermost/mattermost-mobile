@@ -26,7 +26,6 @@ describe('PostOptions', () => {
         removePost: jest.fn(),
         unflagPost: jest.fn(),
         unpinPost: jest.fn(),
-        setUnreadPost: jest.fn(),
     };
 
     const post = {
@@ -47,7 +46,6 @@ describe('PostOptions', () => {
         canEditUntil: -1,
         channelIsReadOnly: false,
         currentTeamUrl: 'http://localhost:8065/team-name',
-        currentUserId: 'user1',
         deviceHeight: 600,
         hasBeenDeleted: false,
         isFlagged: false,

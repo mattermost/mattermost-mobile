@@ -1,21 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ErrorTeamsList should match snapshot 1`] = `
+exports[`RecentMentions should match snapshot 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
 >
   <Connect(StatusBar) />
-  <FailedNetworkAction
-    actionDefaultMessage="try again"
-    actionId="mobile.failed_network_action.retry"
-    errorDefaultMessage="Messages will load when you have an internet connection or {refresh}."
-    errorId="mobile.failed_network_action.shortDescription"
-    onRetry={[Function]}
+  <NoResults
+    description="Messages containing your username and other words that trigger mentions will appear here."
+    iconName="ios-at"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -45,6 +41,7 @@ exports[`ErrorTeamsList should match snapshot 1`] = `
         "type": "Mattermost",
       }
     }
+    title="No Recent Mentions"
   />
 </View>
 `;
