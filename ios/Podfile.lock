@@ -21,7 +21,7 @@ PODS:
     - DoubleConversion
     - glog
   - glog (0.3.5)
-  - jail-monkey (2.2.0):
+  - jail-monkey (2.3.0):
     - React
   - KeyboardTrackingView (5.5.0):
     - React
@@ -31,7 +31,7 @@ PODS:
     - Folly (= 2018.10.22.00)
     - RCTRequired (= 0.61.2)
     - React-Core (= 0.61.2)
-  - RCTYouTube (2.0.0-beta.2):
+  - RCTYouTube (2.0.0-beta.3):
     - React
     - YoutubePlayer-in-WKWebView (~> 0.3.1)
   - React (0.61.2):
@@ -452,11 +452,11 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: 6fda0eee5b059ee8ea0f845f4060620ff96b5b55
   Folly: 30e7936e1c45c08d884aa59369ed951a8e68cf51
   glog: 1f3da668190260b06b429bb211bfbee5cd790c28
-  jail-monkey: f62830045fe452550b248e3ecf788ef99b0b5ee1
+  jail-monkey: 562c12840725513834643eb7f603c3152e84c5a5
   KeyboardTrackingView: 9e82167042c0cdc9c022a4e5f397337ba62cada9
   RCTRequired: 81db8debffc2eb932841fa02dcf5a2e911af74c1
   RCTTypeSafety: 39a7d8643abe2460aef0adeb9acbe9401b579fff
-  RCTYouTube: 93855e427c355afde1d28d0992954e4d1552fe0d
+  RCTYouTube: 68f5cdeb80c36efb5d2386965f2ee0e558c3cabc
   React: 89f2294058332cf7c4feee644e17d5024da1f531
   React-Core: c55956aa434fae94816b665f99d51d50f48d5993
   React-CoreModules: c70b9db4f48e31474bb022716fff41983b335ce2
