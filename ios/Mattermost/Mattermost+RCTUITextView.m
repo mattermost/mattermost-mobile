@@ -33,7 +33,6 @@
     }
   }
 
-  // Allow copy and paste string and image
   if (action == @selector(paste:) && [UIPasteboard generalPasteboard].numberOfItems > 0) {
     return true;
   }
