@@ -69,6 +69,10 @@ class FilteredList extends Component {
 
         this.state = {
             dataSource: this.buildData(props),
+            term: '',
+            currentTeam: null,
+            actions: null,
+
         };
     }
 
@@ -82,14 +86,13 @@ class FilteredList extends Component {
         return !deepEqual(this.props, nextProps, {strict: true}) || !deepEqual(this.state, nextState, {strict: true});
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.term !== nextProps.term) {
-            const {actions, currentTeam} = this.props;
-            const {term} = nextProps;
+    static getDerivedStateFromProps(props, state) {
+        if (state.term !== props.term) {
+            const {actions, currentTeam} = state;
+            const {term} = props;
             const {searchChannels, searchProfiles} = actions;
-            const dataSource = this.buildData(this.props, term);
+            const dataSource = this.buildData(state, term);
 
-            this.setState({dataSource, term});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
@@ -101,9 +104,11 @@ class FilteredList extends Component {
                 searchProfiles(term, {allow_inactive: true});
                 searchChannels(currentTeam.id, term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        }
-    }
 
+            return {dataSource, term};
+        }
+        return null;
+    }
     onSelectChannel = (channel) => {
         const {actions, currentChannel} = this.props;
         const {makeGroupMessageVisibleIfNecessary} = actions;

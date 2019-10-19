@@ -68,6 +68,8 @@ export default class MoreChannels extends PureComponent {
             loading: false,
             adding: false,
             term: '',
+            theme: null,
+            componentId: '',
         };
 
         this.rightButton = {
@@ -94,24 +96,26 @@ export default class MoreChannels extends PureComponent {
         this.mounted = false;
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {term} = this.state;
+    static getDerivedStateFromProps(props, state) {
+        const {term} = state;
         let channels;
 
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+        if (state.theme !== props.theme) {
+            setNavigatorStyles(state.componentId, props.theme);
         }
 
-        if (nextProps.channels !== this.props.channels) {
-            channels = nextProps.channels;
+        if (props.channels !== state.channels) {
+            channels = props.channels;
             if (term) {
-                channels = this.filterChannels(nextProps.channels, term);
+                channels = this.filterChannels(props.channels, term);
             }
         }
 
         if (channels) {
-            this.setState({channels});
+            return {channels};
         }
+
+        return null;
     }
 
     navigationButtonPressed({buttonId}) {

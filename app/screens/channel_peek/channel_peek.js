@@ -34,6 +34,7 @@ export default class ChannelPeek extends PureComponent {
         props.actions.loadPostsIfNecessaryWithRetry(props.channelId);
         this.state = {
             visiblePostIds: this.getVisiblePostIds(props),
+            postIds: [],
         };
     }
 
@@ -41,18 +42,16 @@ export default class ChannelPeek extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {postIds: nextPostIds} = nextProps;
+    static getDerivedStateFromProps(props, state) {
+        const {postIds: nextPostIds} = props;
 
-        let visiblePostIds = this.state.visiblePostIds;
+        let visiblePostIds = state.visiblePostIds;
 
-        if (nextPostIds !== this.props.postIds) {
-            visiblePostIds = this.getVisiblePostIds(nextProps);
+        if (nextPostIds !== state.postIds) {
+            visiblePostIds = this.getVisiblePostIds(props);
         }
 
-        this.setState({
-            visiblePostIds,
-        });
+        return {visiblePostIds};
     }
 
     navigationButtonPressed({buttonId}) {

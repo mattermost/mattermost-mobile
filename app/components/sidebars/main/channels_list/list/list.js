@@ -65,6 +65,9 @@ export default class List extends PureComponent {
             sections: this.buildSections(props),
             showIndicator: false,
             width: 0,
+            canCreatePrivateChannels: false,
+            orderedChannelIds: [],
+            unreadChannelIds: [],
         };
 
         this.keyboardDismissProp = {
@@ -83,18 +86,19 @@ export default class List extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    static getDerivedStateFromProps(props, state) {
         const {
             canCreatePrivateChannels,
             orderedChannelIds,
             unreadChannelIds,
-        } = this.props;
+        } = state;
 
-        if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
-            nextProps.unreadChannelIds !== unreadChannelIds ||
-            nextProps.orderedChannelIds !== orderedChannelIds) {
-            this.setState({sections: this.buildSections(nextProps)});
+        if (props.canCreatePrivateChannels !== canCreatePrivateChannels ||
+            props.unreadChannelIds !== unreadChannelIds ||
+            props.orderedChannelIds !== orderedChannelIds) {
+            return {sections: this.buildSections(props)};
         }
+        return null;
     }
 
     componentDidUpdate(prevProps, prevState) {
