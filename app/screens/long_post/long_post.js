@@ -201,6 +201,7 @@ export default class LongPost extends PureComponent {
                                 onPress={this.handlePress}
                                 isSearchResult={false}
                                 showLongPost={true}
+                                showAddReaction={false}
                                 onHashtagPress={onHashtagPress}
                                 onPermalinkPress={onPermalinkPress}
                                 managedConfig={managedConfig}
