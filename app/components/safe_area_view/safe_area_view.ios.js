@@ -54,25 +54,9 @@ export default class SafeAreaIos extends PureComponent {
         };
     }
 
-    componentWillMount() {
-        this.mounted = true;
-        this.getSafeAreaInsets();
-        this.mounted = true;
-    }
-
-<<<<<<< HEAD
     componentDidMount() {
-        Dimensions.addEventListener('change', this.getSafeAreaInsets);
-        EventEmitter.on('update_safe_area_view', this.getSafeAreaInsets);
-        this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
-        this.keyboardDidHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
-        this.getStatusBarHeight();
-    }
+        this.mounted = true;
 
-    componentWillUnmount() {
-        this.mounted = false;
-        Dimensions.removeEventListener('change', this.getSafeAreaInsets);
-=======
         SafeArea.addEventListener('safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsForRootViewChange);
         EventEmitter.on('update_safe_area_view', this.getSafeAreaInsets);
         this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
@@ -83,7 +67,6 @@ export default class SafeAreaIos extends PureComponent {
 
     componentWillUnmount() {
         SafeArea.removeEventListener('safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsForRootViewChange);
->>>>>>> 8137b857... [MM-18983] Listen to safeAreaInsetsForRootViewDidChange over Dimension change (#3413)
         EventEmitter.off('update_safe_area_view', this.getSafeAreaInsets);
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
