@@ -2,6 +2,10 @@
 
 exports[`ChannelDrawerButton should match, full snapshot 1`] = `
 <TouchableOpacity
+  accessibilityHint="Opens the channels and teams drawer"
+  accessibilityLabel="Channels and teams"
+  accessibilityRole="button"
+  accessible={true}
   activeOpacity={0.2}
   onPress={[Function]}
   style={
@@ -38,6 +42,10 @@ exports[`ChannelDrawerButton should match, full snapshot 1`] = `
 
 exports[`ChannelDrawerButton should match, full snapshot 2`] = `
 <TouchableOpacity
+  accessibilityHint="Opens the channels and teams drawer"
+  accessibilityLabel="Channels and teams"
+  accessibilityRole="button"
+  accessible={true}
   activeOpacity={0.2}
   onPress={[Function]}
   style={
