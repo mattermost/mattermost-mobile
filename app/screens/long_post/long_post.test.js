@@ -13,7 +13,7 @@ jest.mock('react-native-doc-viewer', () => ({
     openDoc: jest.fn(),
 }));
 
-describe('Login', () => {
+describe('LongPost', () => {
     const baseProps = {
         actions: {
             loadThreadIfNecessary: jest.fn(),
