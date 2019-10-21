@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Login should match snapshot 1`] = `
+exports[`LongPost should match snapshot 1`] = `
 LongPost {
   "context": Object {
     "intl": Object {
