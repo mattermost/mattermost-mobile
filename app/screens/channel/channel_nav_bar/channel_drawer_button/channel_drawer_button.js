@@ -69,12 +69,19 @@ export default class ChannelDrawerButton extends PureComponent {
 
         const {formatMessage} = this.context.intl;
 
-        const descriptor = {
+        const buttonDescriptor = {
             id: t('navbar.channel_drawer.button'),
             defaultMessage: 'Channels and teams',
             description: 'Accessibility helper for channel drawer button.',
         };
-        const accessibilityLabel = formatMessage(descriptor);
+        const accessibilityLabel = formatMessage(buttonDescriptor);
+
+        const buttonHint = {
+            id: t('navbar.channel_drawer.hint'),
+            defaultMessage: 'Opens the channels and teams drawer',
+            description: 'Accessibility helper for explaining what the channel drawer button will do.',
+        };
+        const accessibilityHint = formatMessage(buttonHint);
 
         const style = getStyleFromTheme(theme);
 
@@ -111,7 +118,9 @@ export default class ChannelDrawerButton extends PureComponent {
         return (
             <TouchableOpacity
                 accessible={true}
+                accessibilityHint={accessibilityHint}
                 accessibilityLabel={accessibilityLabel}
+                accessibilityRole='button'
                 onPress={this.handlePress}
                 style={containerStyle}
             >
