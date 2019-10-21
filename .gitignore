@@ -85,10 +85,6 @@ ios/sentry.properties
 .nyc_output
 coverage
 
-# Pods
-.podinstall
-ios/Pods/
-
 # Bundle artifact
 *.jsbundle
 

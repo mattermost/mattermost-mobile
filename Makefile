@@ -31,18 +31,6 @@ npm-ci: package.json
 	@echo Getting Javascript dependencies
 	@npm ci
 
-.podinstall:
-ifeq ($(OS), Darwin)
-ifdef POD
-	@echo Getting Cocoapods dependencies;
-	@cd ios && pod install;
-else
-	@echo "Cocoapods is not installed https://cocoapods.org/"
-	@exit 1
-endif
-endif
-	@touch $@
-
 dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 	@mkdir -p dist
 
@@ -53,9 +41,9 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 	@echo "Generating app assets"
 	@node scripts/make-dist-assets.js
 
-pre-run: | node_modules .podinstall dist/assets ## Installs dependencies and assets
+pre-run: | node_modules dist/assets ## Installs dependencies and assets
 
-pre-build: | npm-ci .podinstall dist/assets ## Install dependencies and assets before building
+pre-build: | npm-ci dist/assets ## Install dependencies and assets before building
 
 check-style: node_modules ## Runs eslint
 	@echo Checking for style guide compliance
@@ -65,10 +53,8 @@ clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleaning started
 
 	@rm -rf node_modules
-	@rm -f .podinstall
 	@rm -rf dist
 	@rm -rf ios/build
-	@rm -rf ios/Pods
 	@rm -rf android/app/build
 
 	@echo Cleanup finished
@@ -189,7 +175,7 @@ unsigned-ios: stop pre-build check-style ## Build an unsigned version of the iOS
 	@echo "Building unsigned iOS app"
 	@cd fastlane && NODE_ENV=production bundle exec fastlane ios unsigned
 	@mkdir -p build-ios
-	@cd ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+	@cd ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 	@cd build-ios/ && mkdir -p Payload && cp -R Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/
 	@mv build-ios/Mattermost-unsigned.ipa .
 	@cd fastlane && bundle exec fastlane upload_file_to_s3 file:Mattermost-unsigned.ipa os_type:iOS
