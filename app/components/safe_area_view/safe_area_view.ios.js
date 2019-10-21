@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Dimensions, Keyboard, NativeModules, View} from 'react-native';
+import {Keyboard, NativeModules, View} from 'react-native';
 import SafeArea from 'react-native-safe-area';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -60,6 +60,7 @@ export default class SafeAreaIos extends PureComponent {
         this.mounted = true;
     }
 
+<<<<<<< HEAD
     componentDidMount() {
         Dimensions.addEventListener('change', this.getSafeAreaInsets);
         EventEmitter.on('update_safe_area_view', this.getSafeAreaInsets);
@@ -71,6 +72,18 @@ export default class SafeAreaIos extends PureComponent {
     componentWillUnmount() {
         this.mounted = false;
         Dimensions.removeEventListener('change', this.getSafeAreaInsets);
+=======
+        SafeArea.addEventListener('safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsForRootViewChange);
+        EventEmitter.on('update_safe_area_view', this.getSafeAreaInsets);
+        this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
+        this.keyboardDidHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
+
+        this.getSafeAreaInsets();
+    }
+
+    componentWillUnmount() {
+        SafeArea.removeEventListener('safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsForRootViewChange);
+>>>>>>> 8137b857... [MM-18983] Listen to safeAreaInsetsForRootViewDidChange over Dimension change (#3413)
         EventEmitter.off('update_safe_area_view', this.getSafeAreaInsets);
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
@@ -104,6 +117,15 @@ export default class SafeAreaIos extends PureComponent {
             });
         }
     };
+
+    onSafeAreaInsetsForRootViewChange = (result) => {
+        const {safeAreaInsets} = result;
+
+        if (this.mounted && (DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets)) {
+            this.getStatusBarHeight();
+            this.setState({safeAreaInsets});
+        }
+    }
 
     keyboardWillHide = () => {
         this.setState({keyboard: false});
