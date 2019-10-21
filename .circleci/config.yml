@@ -148,6 +148,7 @@ commands:
           path: ~/mattermost-mobile
       - run:
           name: Install CocoaPods
+          working_directory: ios
           command: |
             curl https://cocoapods-specs.circleci.com/fetch-cocoapods-repo-from-s3.sh | bash -s cf
             pod install
