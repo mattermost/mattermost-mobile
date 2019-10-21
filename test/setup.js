@@ -42,6 +42,9 @@ jest.doMock('react-native', () => {
         MattermostManaged: {
             getConfig: jest.fn(),
         },
+        MattermostShare: {
+            close: jest.fn(),
+        },
         PlatformConstants: {
             forceTouchAvailable: false,
         },
