@@ -4,7 +4,7 @@
 //
 //  Created by Matt Donnelly on 03/07/2013.
 //  Copyright (c) 2013 Matt Donnelly. All rights reserved.
-//
+//  originally taken from https://gist.github.com/mattdonnelly/5924492
 
 #import <Accelerate/Accelerate.h>
 #import <UIKit/UIKit.h>

@@ -690,7 +690,7 @@ export default class PostTextBoxBase extends PureComponent {
         Alert.alert(
             formatMessage({
                 id: 'mobile.files_paste.error_title',
-                defaultMessage: 'Paste files failed',
+                defaultMessage: 'Paste failed',
             }),
             formatMessage({
                 id: 'mobile.files_paste.error_description',
