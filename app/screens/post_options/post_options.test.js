@@ -11,12 +11,6 @@ import PostOptions from './post_options';
 
 jest.mock('react-intl');
 
-jest.mock('Alert', () => {
-    return {
-        alert: jest.fn(),
-    };
-});
-
 describe('PostOptions', () => {
     const actions = {
         addReaction: jest.fn(),

@@ -51,7 +51,7 @@ export async function checkConnection(isConnected) {
     };
 
     if (Platform.OS === 'ios' && certificate === '') {
-        certificate = await mattermostBucket.getPreference('cert');
+        certificate = await mattermostBucket.getPreference('cert'); /* eslint-disable-line require-atomic-updates */
         config.certificate = certificate;
     }
 

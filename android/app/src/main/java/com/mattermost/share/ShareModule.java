@@ -77,7 +77,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         this.clear();
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
-            currentActivity.finish();
+            currentActivity.finishAndRemoveTask();
         }
 
         if (data != null && data.hasKey("url")) {

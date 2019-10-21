@@ -69,7 +69,7 @@ export default class FileAttachmentDocument extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
-        this.eventEmitter = new NativeEventEmitter(NativeModules.RNReactNativeDocViewer);
+        this.eventEmitter = new NativeEventEmitter(NativeModules.RNDocViewer);
         this.eventEmitter.addListener('DoneButtonEvent', this.onDonePreviewingFile);
     }
 
