@@ -31,18 +31,6 @@ npm-ci: package.json
 	@echo Getting Javascript dependencies
 	@npm ci
 
-.podinstall:
-ifeq ($(OS), Darwin)
-ifdef POD
-	@echo Getting Cocoapods dependencies;
-	@cd ios && pod install;
-else
-	@echo "Cocoapods is not installed https://cocoapods.org/"
-	@exit 1
-endif
-endif
-	@touch $@
-
 dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 	@mkdir -p dist
 
@@ -53,9 +41,9 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 	@echo "Generating app assets"
 	@node scripts/make-dist-assets.js
 
-pre-run: | node_modules .podinstall dist/assets ## Installs dependencies and assets
+pre-run: | node_modules dist/assets ## Installs dependencies and assets
 
-pre-build: | npm-ci .podinstall dist/assets ## Install dependencies and assets before building
+pre-build: | npm-ci dist/assets ## Install dependencies and assets before building
 
 check-style: node_modules ## Runs eslint
 	@echo Checking for style guide compliance
@@ -65,10 +53,8 @@ clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleaning started
 
 	@rm -rf node_modules
-	@rm -f .podinstall
 	@rm -rf dist
 	@rm -rf ios/build
-	@rm -rf ios/Pods
 	@rm -rf android/app/build
 
 	@echo Cleanup finished
