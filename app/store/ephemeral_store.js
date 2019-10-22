@@ -9,6 +9,10 @@ class EphemeralStore {
         this.navigationComponentIdStack = [];
         this.allNavigationComponentIds = [];
         this.currentServerUrl = null;
+        this.safeAreaInsets = {
+            portrait: null,
+            landscape: null,
+        };
     }
 
     getNavigationTopComponentId = () => this.navigationComponentIdStack[0];
