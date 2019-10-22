@@ -12,6 +12,8 @@
  - Fixed an issue where ``mobile.message_length.message`` did not match webapp's ``create_post.error_message``.
  - Fixed an issue with horizontal margin on single sign-on screen in landscape view on iOS iPhone X and later.
  - Fixed an issue on iOS where the Helper text on two Settings screens was not offset on the left.
+ - Fixed an issue where the thread view header theme was inconsistent during transition back to main channel view.
+ - Fixed an issue on iOS where the navigation bar tucked under the phone's status bar when switching orientation.
 
 ## 1.24.0 Release
 - Release Date: October 16, 2019
