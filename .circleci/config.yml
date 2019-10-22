@@ -36,24 +36,27 @@ commands:
           name: Clone the mobile private repo
           command: git clone git@github.com:mattermost/mattermost-mobile-private.git ~/mattermost-mobile-private
 
-  android-gem-dependencies:
-    description: "Get Fastlane dependencies for Android builds"
+  fastlane-dependencies:
+    description: "Get Fastlane dependencies"
+    parameters:
+      for:
+        type: string
     steps:
       - restore_cache:
           name: Restore Fastlane cache
-          key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
+          key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
       - run:
           working_directory: fastlane
           name: Download Fastlane dependencies
           command: bundle install --path vendor/bundle
       - save_cache:
           name: Save Fastlane cache
-          key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
+          key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
           paths:
             - fastlane/vendor/bundle
 
-  android-gradle-dependencies:
-    description: "Get Gradle dependencies for Android buils"
+  gradle-dependencies:
+    description: "Get Gradle dependencies"
     steps:
       - restore_cache:
           name: Restore Gradle cache
@@ -83,27 +86,8 @@ commands:
           paths:
             - dist
 
-  ios-gem-dependencies:
-    description: "Get Fastlane dependencies for iOS builds"
-    steps:
-      - run:
-          name: Set Ruby version
-          command:  echo "ruby-2.6.3" > ~/.ruby-version
-      - restore_cache:
-          name: Restore Fastlane cache
-          key: v1-gems-ios-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
-      - run:
-          working_directory: fastlane
-          name: Download Fastlane dependencies
-          command: bundle install --path vendor/bundle
-      - save_cache:
-          name: Save Fastlane cache
-          key: v1-gems-ios-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
-          paths:
-            - fastlane/vendor/bundle
-
   npm-dependencies:
-    description: "Get JavaScript dependencies for the job"
+    description: "Get JavaScript dependencies"
     steps:
       - restore_cache:
           name: Restore npm cache
@@ -117,6 +101,23 @@ commands:
           paths:
             - node_modules
 
+  pods-dependencies:
+    description: "Get cocoapods dependencies"
+    steps:
+      - restore_cache:
+          name: Restore cocoapods specs and pods
+          key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
+      - run:
+          name: Getting cocoapods dependencies
+          working_directory: ios
+          command: pod install
+      - save_cache:
+          name: Save cocoapods specs and pods cache
+          key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
+          paths:
+            - ios/Pods
+            - ~/.cocoapods
+
   build-android:
     description: "Build the android app"
     steps:
@@ -125,12 +126,14 @@ commands:
       - checkout-private
       - npm-dependencies
       - assets
-      - android-gem-dependencies
-      - android-gradle-dependencies
+      - fastlane-dependencies:
+          for: android
+      - gradle-dependencies
       - run:
           name: Append Keystore to build Android
           command: |
             cp ~/mattermost-mobile-private/android/${STORE_FILE} android/app/${STORE_FILE}
+            echo "" | tee -a android/gradle.properties > /dev/null
             echo MATTERMOST_RELEASE_STORE_FILE=${STORE_FILE} | tee -a android/gradle.properties > /dev/null
             echo ${STORE_ALIAS} | tee -a android/gradle.properties > /dev/null
             echo ${STORE_PASSWORD} | tee -a android/gradle.properties > /dev/null
@@ -146,8 +149,10 @@ commands:
       - checkout:
           path: ~/mattermost-mobile
       - npm-dependencies
+      - pods-dependencies
       - assets
-      - ios-gem-dependencies
+      - fastlane-dependencies:
+          for: ios
       - run:
           working_directory: fastlane
           name: Run fastlane to build iOS
