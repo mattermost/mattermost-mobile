@@ -36,24 +36,27 @@ commands:
           name: Clone the mobile private repo
           command: git clone git@github.com:mattermost/mattermost-mobile-private.git ~/mattermost-mobile-private
 
-  android-gem-dependencies:
-    description: "Get Fastlane dependencies for Android builds"
+  fastlane-dependencies:
+    description: "Get Fastlane dependencies"
+    parameters:
+      for:
+        type: string
     steps:
       - restore_cache:
           name: Restore Fastlane cache
-          key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
+          key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
       - run:
           working_directory: fastlane
           name: Download Fastlane dependencies
           command: bundle install --path vendor/bundle
       - save_cache:
           name: Save Fastlane cache
-          key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
+          key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
           paths:
             - fastlane/vendor/bundle
 
-  android-gradle-dependencies:
-    description: "Get Gradle dependencies for Android buils"
+  gradle-dependencies:
+    description: "Get Gradle dependencies"
     steps:
       - restore_cache:
           name: Restore Gradle cache
@@ -83,41 +86,26 @@ commands:
           paths:
             - dist
 
-  ios-gem-dependencies:
-    description: "Get Fastlane dependencies for iOS builds"
-    steps:
-      - run:
-          name: Set Ruby version
-          command:  echo "ruby-2.6.3" > ~/.ruby-version
-      - restore_cache:
-          name: Restore Fastlane cache
-          key: v1-gems-ios-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
-      - run:
-          working_directory: fastlane
-          name: Download Fastlane dependencies
-          command: bundle install --path vendor/bundle
-      - save_cache:
-          name: Save Fastlane cache
-          key: v1-gems-ios-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
-          paths:
-            - fastlane/vendor/bundle
-
   npm-dependencies:
-    description: "Get JavaScript dependencies for the job"
+    description: "Get JavaScript dependencies"
+    parameters:
+      for:
+        type: string
+        default: test
     steps:
       - restore_cache:
           name: Restore npm cache
-          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+          key: v1-npm-<< parameters.for >>-{{ checksum "package.json" }}-{{ arch }}
       - run:
           name: Getting JavaScript dependencies
           command: NODE_ENV=development npm install
       - save_cache:
           name: Save npm cache
-          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+          key: v1-npm-<< parameters.for >>-{{ checksum "package.json" }}-{{ arch }}
           paths:
             - node_modules
 
-  cocoapods:
+  pods-dependencies:
     description: "Get cocoapods dependencies"
     steps:
       - restore_cache:
@@ -140,10 +128,12 @@ commands:
       - checkout:
           path: ~/mattermost-mobile
       - checkout-private
-      - npm-dependencies
+      - npm-dependencies:
+          for: android
       - assets
-      - android-gem-dependencies
-      - android-gradle-dependencies
+      - fastlane-dependencies:
+          for: android
+      - gradle-dependencies
       - run:
           name: Append Keystore to build Android
           command: |
@@ -163,10 +153,12 @@ commands:
     steps:
       - checkout:
           path: ~/mattermost-mobile
-      - npm-dependencies
-      - cocoapods
+      - npm-dependencies:
+          for: ios
+      - pods-dependencies
       - assets
-      - ios-gem-dependencies
+      - fastlane-dependencies:
+          for: ios
       - run:
           working_directory: fastlane
           name: Run fastlane to build iOS
