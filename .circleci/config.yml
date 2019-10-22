@@ -95,13 +95,13 @@ commands:
     steps:
       - restore_cache:
           name: Restore npm cache
-          key: v1-npm-<< parameters.for >>-{{ checksum "package.json" }}-{{ arch }}
+          key: v1-npm-<< parameters.for >>-{{ checksum "package-lock.json" }}-{{ arch }}
       - run:
           name: Getting JavaScript dependencies
           command: NODE_ENV=development npm install
       - save_cache:
           name: Save npm cache
-          key: v1-npm-<< parameters.for >>-{{ checksum "package.json" }}-{{ arch }}
+          key: v1-npm-<< parameters.for >>-{{ checksum "package-lock.json" }}-{{ arch }}
           paths:
             - node_modules
 
