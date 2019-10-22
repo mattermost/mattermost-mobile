@@ -112,11 +112,11 @@ commands:
           working_directory: ios
           command: pod install
       - save_cache:
-          name: Save cocoapods cache
+          name: Save cocoapods specs and pods cache
           key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
           paths:
             - ios/Pods
-            - "~/.cocoapods"
+            - ~/.cocoapods
 
   build-android:
     description: "Build the android app"
