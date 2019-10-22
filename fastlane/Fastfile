@@ -13,6 +13,10 @@ is_build_pr = false
 # Executes before anything else use to setup the script
 before_all do
   is_build_pr = ENV['BUILD_PR'] == 'true'
+  if is_build_pr && ENV['CIRCLECI'] == 'true'
+    ENV['BRANCH_TO_BUILD'] = ENV['CIRCLE_BRANCH']
+  end
+
   UI.success("Building for release #{ENV['BUILD_FOR_RELEASE']}")
 
   if ENV['CIRCLECI'] != 'true'
