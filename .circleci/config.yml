@@ -88,20 +88,16 @@ commands:
 
   npm-dependencies:
     description: "Get JavaScript dependencies"
-    parameters:
-      for:
-        type: string
-        default: test
     steps:
       - restore_cache:
           name: Restore npm cache
-          key: v1-npm-<< parameters.for >>-{{ checksum "package.json" }}-{{ arch }}
+          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
       - run:
           name: Getting JavaScript dependencies
           command: NODE_ENV=development npm install
       - save_cache:
           name: Save npm cache
-          key: v1-npm-<< parameters.for >>-{{ checksum "package.json" }}-{{ arch }}
+          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
           paths:
             - node_modules
 
@@ -128,8 +124,7 @@ commands:
       - checkout:
           path: ~/mattermost-mobile
       - checkout-private
-      - npm-dependencies:
-          for: android
+      - npm-dependencies
       - assets
       - fastlane-dependencies:
           for: android
@@ -153,8 +148,7 @@ commands:
     steps:
       - checkout:
           path: ~/mattermost-mobile
-      - npm-dependencies:
-          for: ios
+      - npm-dependencies
       - pods-dependencies
       - assets
       - fastlane-dependencies:
