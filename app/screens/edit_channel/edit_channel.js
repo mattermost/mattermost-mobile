@@ -122,6 +122,7 @@ export default class EditChannel extends PureComponent {
             const newState = {
                 error: null,
                 updating: true,
+                updateChannelRequest,
             };
 
             switch (updateChannelRequest.status) {
