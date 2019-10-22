@@ -363,7 +363,7 @@ export default class EmojiPicker extends PureComponent {
             jumpToSection: true,
             currentSectionIndex: index,
         }, () => {
-            this.sectionList.scrollToLocation({
+            this.sectionListRef.scrollToLocation({
                 sectionIndex: index,
                 itemIndex: 0,
                 viewOffset: 25,
