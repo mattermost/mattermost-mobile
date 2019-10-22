@@ -117,6 +117,22 @@ commands:
           paths:
             - node_modules
 
+  cocoapods:
+    description: "Get cocoapods dependencies"
+    steps:
+      - restore_cache:
+          name: Restore cocoapods specs and pods
+          key: v1-cocoapods-{{ checksum ios/Podfile.lock}}-{{ arch }}
+      - run:
+          name: Getting cocoapods dependencies
+          command: pod install
+      - save_cache:
+          name: Save cocoapods cache
+          key: v1-cocoapods-{{ checksum ios/Podfile.lock}}-{{ arch }}
+          paths:
+            - ios/Pods
+            - "~/.cocoapods"
+
   build-android:
     description: "Build the android app"
     steps:
@@ -146,13 +162,8 @@ commands:
     steps:
       - checkout:
           path: ~/mattermost-mobile
-      - run:
-          name: Install CocoaPods
-          working_directory: ios
-          command: |
-            curl https://cocoapods-specs.circleci.com/fetch-cocoapods-repo-from-s3.sh | bash -s cf
-            pod install
       - npm-dependencies
+      - cocoapods
       - assets
       - ios-gem-dependencies
       - run:
