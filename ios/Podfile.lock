@@ -446,60 +446,60 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
-  BVLinearGradient: b0b70acf63ee888829b7c2ebbf6b50e227396e55
+  BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: 5805e889d232975c086db112ece9ed034df7a0b2
-  FBLazyVector: cb37b5590a27600f0a889222d7c1f019625f4168
-  FBReactNativeSpec: 6fda0eee5b059ee8ea0f845f4060620ff96b5b55
+  FBLazyVector: 68b6a76960fbd8ecd9fb7ce0aadd3329c3340a99
+  FBReactNativeSpec: 5a764c60abdc3336a213e5310c40b74741f32839
   Folly: 30e7936e1c45c08d884aa59369ed951a8e68cf51
   glog: 1f3da668190260b06b429bb211bfbee5cd790c28
-  jail-monkey: 562c12840725513834643eb7f603c3152e84c5a5
-  KeyboardTrackingView: 9e82167042c0cdc9c022a4e5f397337ba62cada9
-  RCTRequired: 81db8debffc2eb932841fa02dcf5a2e911af74c1
-  RCTTypeSafety: 39a7d8643abe2460aef0adeb9acbe9401b579fff
-  RCTYouTube: 68f5cdeb80c36efb5d2386965f2ee0e558c3cabc
-  React: 89f2294058332cf7c4feee644e17d5024da1f531
-  React-Core: c55956aa434fae94816b665f99d51d50f48d5993
-  React-CoreModules: c70b9db4f48e31474bb022716fff41983b335ce2
-  React-cxxreact: 1dbe583c02d15d269f13451d203e645bb233fc96
-  React-jsi: f9126dd5818fbd8fbf869be9bbc1c0543973e1a1
-  React-jsiexecutor: 752f034d0f007d1141a1c52ba9ef3fd9668fbfa7
-  React-jsinspector: 044105eea064aec81adc5e4d777a8f6589e7d094
-  react-native-cookies: a9abe7c8154a268bdda24bf9f6ab8f00ac8632fe
-  react-native-document-picker: e7934f6a3c898a1b62fa68b1f09371beef6ac51a
-  react-native-image-picker: f42de90075c5b1af53417af927631d909a1a746e
-  react-native-netinfo: a91b5cf92ed3ada997cfe2bf067633386eb19fd8
-  react-native-notifications: 4626ecc0189e1b0594b1f422c17e64849390e30d
-  react-native-safe-area: cec86d422df9430ab60511916a3fa18f87d21e1e
-  react-native-video: 44c6befbc1526283ca1919891fcebe4680feade4
-  react-native-webview: a42108b827082f8f0333529b0772102031d5960d
-  React-RCTActionSheet: 49433f6e3659ba5d3ee650e44b9c18743ef9a7fc
-  React-RCTAnimation: 12f86a4e3542032329366b03bca2cc254a7c64a9
-  React-RCTBlob: ba90a4144ad478a022b79a4e8a1f150548d39425
-  React-RCTImage: f652d97e49f4b0f26c7df336e723a0d259179967
-  React-RCTLinking: e738422857085a1c40c57505a25920160d365783
-  React-RCTNetwork: d0d635ad07deed0c05a1b1499d1ab4ce5c41ac97
-  React-RCTSettings: ae6f8b64ee5c5e4fc629f5109042e122fd0fd14b
-  React-RCTText: 3f24042210886ee8c02613758013010be04b291e
-  React-RCTVibration: d55e1365be416980217914fe009e9d55dec02e03
-  ReactCommon: eb96b70a2a5bed775e919151fd77699fed52944c
-  ReactNativeExceptionHandler: 2ef25736761126fe199c412ed179e479661de794
-  ReactNativeNavigation: 20522060de61b1c293ec50681a6aa11488596286
-  ReactNativePermissions: 9f2d9c45c98800795e6c2ed330e25d11a66a8169
-  rn-fetch-blob: 206c04a36e0a5bb52ad64d070f9ab6d26612f6ec
-  RNCAsyncStorage: e99188b8a89ea0edddc82d8831cd5142f4550fdc
-  RNDeviceInfo: 5b5b42b12587207b6bd686441ac42d19d8e07933
-  RNGestureHandler: 311e3b1cef021a7c9ef31e97e7dc31970cc6288d
-  RNKeychain: 5381e340056c23de103d73ae59cbddc6ffc21d97
-  RNReactNativeDocViewer: 1ff418afb9b3d1a1050ab2ee9fee882ed6bfe6a6
-  RNReactNativeHapticFeedback: 89c72bf6308e5d5269369e8365319a2d752435b8
-  RNSentry: ea67b65b328405ed060f43a2940003ed93b5c4eb
-  RNSVG: 2e097b92aaa6d4e0f354fd7c49cbf3b17f8b3920
-  RNVectorIcons: 66af4d5c8ff4f584c7b7cd9c4b0780920f27fce2
+  jail-monkey: 0830c18bb6f085938a4c8529d554f9b29230a5a4
+  KeyboardTrackingView: d4d7236123b401ed9b1e02869e7943117740c522
+  RCTRequired: c639d59ed389cfb1f1203f65c2ea946d8ec586e2
+  RCTTypeSafety: dc23fb655d6c77667c78e327bf661bc11e3b8aec
+  RCTYouTube: a36b9960e040063877fb8dc61fff19d3bd1a97ff
+  React: 7e586e5d7bec12b91c1a096826b0fc9ab1da7865
+  React-Core: 8ddb9770b4a30a6ab4a754e6ed5ec76454e3d699
+  React-CoreModules: b3d9eece8ad7df36c917a41f05c1168c52fe0b34
+  React-cxxreact: 1f972757c0bd08d962ef78068e06613c27489a3f
+  React-jsi: 32285a21b1b24c36060493ed3057a34677d58d09
+  React-jsiexecutor: 8909917ff7d8f21a57e443a866fd8d4560e50c65
+  React-jsinspector: 111d7d342b07a904c400592e02a2b958f1098b60
+  react-native-cookies: 854d59c4135c70b92a02ca4930e68e4e2eb58150
+  react-native-document-picker: c36bf5f067a581657ecaf7124dcd921a8be19061
+  react-native-image-picker: fd93361c666f397bdf72f9c6c23f13d2685b9173
+  react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1
+  react-native-notifications: c5eb1cfc7c945d910ddabeea68d601d79a0c7c11
+  react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
+  react-native-video: 961749da457e73bf0b5565edfbaffc25abfb8974
+  react-native-webview: 0d1c2b4e7ffb0543a74fa0512f2f8dc5fb0e49e2
+  React-RCTActionSheet: 89b037c0fb7d2671607cb645760164e7e0c013f6
+  React-RCTAnimation: e3cefa93c38c004c318f7ec04b883eb14b8b8235
+  React-RCTBlob: d26ac0e313fbf14e7203473fd593ccaaeee8329e
+  React-RCTImage: 4bdd9588783fa9e48ef669ccd4f747224e208edf
+  React-RCTLinking: 65f0088ff463babd3d5d567964a65b74141eff3b
+  React-RCTNetwork: 0c1a73576c1cfeafe68396556de1b17d93c0c595
+  React-RCTSettings: 4194f1f0edbddf3fd44d1714dc6578bb20379b60
+  React-RCTText: e3ef6191cdb627855ff7fe8fa0c1e14094967fb8
+  React-RCTVibration: fb54c732fd20405a76598e431aa2f8c2bf527de9
+  ReactCommon: 5848032ed2f274fcb40f6b9ec24067787c42d479
+  ReactNativeExceptionHandler: 8025d98049c25f186835a3af732dd7c9974d6dce
+  ReactNativeNavigation: aad255980f20cc5d2001ed37972319f3789fea70
+  ReactNativePermissions: 2e324bb3baf12702e3ec27f76c8ae1158fa69fc6
+  rn-fetch-blob: 3258c6483235bb7daf16cf921306ffb18406071f
+  RNCAsyncStorage: 5ae4d57458804e99f73d427214442a6b10a53856
+  RNDeviceInfo: fd8296de6fca8b743cdc499b896f48e8a9f1faf5
+  RNGestureHandler: 4cb47a93019c1a201df2644413a0a1569a51c8aa
+  RNKeychain: 45dbd50d1ac4bd42c3740f76ffb135abf05746d0
+  RNReactNativeDocViewer: 571c6ac38483531b8fb521d02a6ba54652ed10a7
+  RNReactNativeHapticFeedback: e11a4da0ce174e9f88b03cbaf5d76d94633cdee2
+  RNSentry: 2803ba8c8129dcf26b79e9b4d8c80168be6e4390
+  RNSVG: be27aa7c58819f97399388ae53d7fa0572f32c7f
+  RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   Sentry: 26650184fe71eb7476dfd2737acb5ea6cc64b4b1
   XCDYouTubeKit: 4ca4e3322fa556ec1c32932d378365c15ce1386e
-  Yoga: 6af72bedeaea291a3a3717772d6d41836f23a1b9
+  Yoga: 14927e37bd25376d216b150ab2a561773d57911f
   YoutubePlayer-in-WKWebView: 7694e858c5c3472ed067d6fe34eb9b944845e63c
 
 PODFILE CHECKSUM: 78fdf52ba415665015ffa025c7bff18fdac43f9a
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.7.5
