@@ -487,6 +487,8 @@
   "msg_typing.areTyping": "{users} and {last} are typing...",
   "msg_typing.isTyping": "{user} is typing...",
   "navbar_dropdown.logout": "Logout",
+  "navbar.channel_drawer.button": "Channels and teams",
+  "navbar.channel_drawer.hint": "Opens the channels and teams drawer",
   "navbar.leave": "Leave Channel",
   "password_form.title": "Password Reset",
   "password_send.checkInbox": "Please check your inbox.",

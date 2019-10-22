@@ -17,6 +17,7 @@ import MainSidebar from 'app/components/sidebars/main';
 import SettingsSidebar from 'app/components/sidebars/settings';
 
 import {preventDoubleTap} from 'app/utils/tap';
+import {setNavigatorStyles} from 'app/utils/theme';
 import PushNotifications from 'app/push_notifications';
 import EphemeralStore from 'app/store/ephemeral_store';
 import tracker from 'app/utils/time_tracker';
@@ -24,7 +25,6 @@ import telemetry from 'app/telemetry';
 import {
     goToScreen,
     showModalOverCurrentContext,
-    mergeNavigationOptions,
 } from 'app/actions/navigation';
 
 import LocalConfig from 'assets/config';
@@ -67,12 +67,7 @@ export default class ChannelBase extends PureComponent {
             channelsRequestFailed: false,
         };
 
-        const options = {
-            layout: {
-                backgroundColor: props.theme.centerChannelBg,
-            },
-        };
-        mergeNavigationOptions(props.componentId, options);
+        setNavigatorStyles(props.componentId, props.theme);
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
@@ -111,12 +106,9 @@ export default class ChannelBase extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            const options = {
-                layout: {
-                    backgroundColor: nextProps.theme.centerChannelBg,
-                },
-            };
-            mergeNavigationOptions(this.props.componentId, options);
+            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+                setNavigatorStyles(componentId, nextProps.theme);
+            });
         }
 
         if (!nextProps.currentTeamId) {
@@ -289,6 +281,12 @@ export default class ChannelBase extends PureComponent {
                 />
             </MainSidebar>
         );
+    }
+
+    render() {
+        // Overriden in channel.android.js and channel.ios.js
+        // but defined here for channel_base.test.js
+        return; // eslint-disable-line no-useless-return
     }
 }
 
