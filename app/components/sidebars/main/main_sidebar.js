@@ -13,12 +13,12 @@ import {
 import {intlShape} from 'react-intl';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import {General, WebsocketEvents} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
 import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
-import {DeviceTypes} from 'app/constants';
+import {DeviceTypes, Events} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
@@ -29,22 +29,20 @@ import TeamsList from './teams_list';
 
 import telemetry from 'app/telemetry';
 
-export default class ChannelSidebar extends PureComponent {
+export default class MainSidebar extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            getTeams: PropTypes.func.isRequired,
-            logChannelSwitch: PropTypes.func.isRequired,
-            makeDirectChannel: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
-        }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        getTeams: PropTypes.func.isRequired,
+        handleSelectChannel: PropTypes.func.isRequired,
+        joinChannel: PropTypes.func.isRequired,
+        logChannelSwitch: PropTypes.func.isRequired,
+        makeDirectChannel: PropTypes.func.isRequired,
+        previewChannel: PropTypes.func,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
-        previewChannel: PropTypes.func,
     };
 
     static contextTypes = {
@@ -54,27 +52,34 @@ export default class ChannelSidebar extends PureComponent {
     constructor(props) {
         super(props);
 
+        const {height, width} = Dimensions.get('window');
+        const isLandscape = width > height;
+        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+        if (isLandscape || DeviceTypes.IS_TABLET) {
+            openDrawerOffset = width * 0.5;
+        }
+
         this.swiperIndex = 1;
         this.drawerRef = React.createRef();
         this.channelListRef = React.createRef();
         this.state = {
-            deviceWidth: Dimensions.get('window').width,
+            deviceWidth: width,
             show: false,
-            openDrawerOffset: DRAWER_INITIAL_OFFSET,
+            openDrawerOffset,
             drawerOpened: false,
             searching: false,
             isSplitView: false,
+            isLandscape,
         };
     }
 
     componentDidMount() {
         this.mounted = true;
-        this.props.actions.getTeams();
+        this.props.getTeams();
         this.handleDimensions({window: Dimensions.get('window')});
         this.handlePermanentSidebar();
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.on('renderDrawer', this.handleShowDrawerContent);
-        EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         Dimensions.addEventListener('change', this.handleDimensions);
@@ -83,7 +88,6 @@ export default class ChannelSidebar extends PureComponent {
     componentWillUnmount() {
         this.mounted = false;
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
-        EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         EventEmitter.off('renderDrawer', this.handleShowDrawerContent);
         EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -100,22 +104,35 @@ export default class ChannelSidebar extends PureComponent {
     };
 
     handleDimensions = ({window}) => {
-        if (this.mounted) {
-            if (DeviceTypes.IS_TABLET) {
-                mattermostManaged.isRunningInSplitView().then((result) => {
-                    const isSplitView = Boolean(result.isSplitView);
-                    this.setState({isSplitView});
-                });
-            }
+        const {deviceWidth, openDrawerOffset} = this.state;
+        const {height, width} = window;
+        const nextIsLandscape = width > height;
+        let nextOpenDrawerOffset = openDrawerOffset;
 
-            if (this.state.openDrawerOffset !== 0) {
-                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-                if ((window.width > window.height) || DeviceTypes.IS_TABLET) {
-                    openDrawerOffset = window.width * 0.5;
+        if (deviceWidth !== width) {
+            if (openDrawerOffset !== 0) {
+                nextOpenDrawerOffset = DRAWER_INITIAL_OFFSET;
+                if (nextIsLandscape || DeviceTypes.IS_TABLET) {
+                    nextOpenDrawerOffset = width * 0.5;
                 }
-
-                this.setState({openDrawerOffset, deviceWidth: window.width});
             }
+        }
+
+        const nextState = {
+            deviceWidth: width,
+            isLandscape: nextIsLandscape,
+            openDrawerOffset: nextOpenDrawerOffset,
+        };
+
+        if (DeviceTypes.IS_TABLET) {
+            mattermostManaged.isRunningInSplitView().then((result) => {
+                const isSplitView = Boolean(result.isSplitView);
+                if (this.mounted) {
+                    this.setState({isSplitView, ...nextState});
+                }
+            });
+        } else if (this.mounted) {
+            this.setState(nextState);
         }
     };
 
@@ -157,14 +174,6 @@ export default class ChannelSidebar extends PureComponent {
         });
     };
 
-    handleUpdateTitle = (channel) => {
-        let channelName = '';
-        if (channel.display_name) {
-            channelName = channel.display_name;
-        }
-        this.props.actions.setChannelDisplayName(channelName);
-    };
-
     openChannelSidebar = () => {
         this.props.blurPostTextBox();
 
@@ -174,7 +183,7 @@ export default class ChannelSidebar extends PureComponent {
     };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {logChannelSwitch, setChannelLoading} = this.props.actions;
+        const {handleSelectChannel, logChannelSwitch} = this.props;
 
         logChannelSwitch(channel.id, currentChannelId);
 
@@ -183,7 +192,7 @@ export default class ChannelSidebar extends PureComponent {
         if (closeDrawer) {
             telemetry.start(['channel:close_drawer']);
             this.closeChannelDrawer();
-            setChannelLoading(channel.id !== currentChannelId);
+            EventEmitter.emit(Events.SET_CHANNEL_LOADING, channel.id !== currentChannelId);
         }
 
         if (!channel) {
@@ -197,31 +206,29 @@ export default class ChannelSidebar extends PureComponent {
             const erroMessage = {};
 
             utils.alertErrorWithFallback(intl, erroMessage, unableToJoinMessage);
-            setChannelLoading(false);
+            EventEmitter.emit(Events.SET_CHANNEL_LOADING, false);
             return;
         }
 
-        EventEmitter.emit('switch_channel', channel, currentChannelId);
+        requestAnimationFrame(() => {
+            handleSelectChannel(channel.id);
+        });
     };
 
     joinChannel = (channel, currentChannelId) => {
         const {intl} = this.context;
         const {
-            actions,
             currentTeamId,
             currentUserId,
-        } = this.props;
-
-        const {
             joinChannel,
             makeDirectChannel,
-        } = actions;
+        } = this.props;
 
         this.closeChannelDrawer();
-        actions.setChannelLoading(channel.id !== currentChannelId);
+        EventEmitter.emit(Events.SET_CHANNEL_LOADING, channel.id !== currentChannelId);
 
         setTimeout(async () => {
-            const displayValue = {displayName: channel.display_name};
+            const displayValue = {displayName: channel.displayName};
             const utils = require('app/utils/general');
 
             let result;
@@ -248,7 +255,7 @@ export default class ChannelSidebar extends PureComponent {
             }
 
             if (result.error || (!result.data && !result.data.channel)) {
-                actions.setChannelLoading(false);
+                EventEmitter.emit(Events.SET_CHANNEL_LOADING, false);
                 return;
             }
 
@@ -306,6 +313,8 @@ export default class ChannelSidebar extends PureComponent {
         } = this.props;
 
         const {
+            drawerOpened,
+            isLandscape,
             show,
             openDrawerOffset,
             searching,
@@ -337,6 +346,7 @@ export default class ChannelSidebar extends PureComponent {
                     <TeamsList
                         closeChannelDrawer={this.closeChannelDrawer}
                         currentTeamId={currentTeamId}
+                        isLandscape={isLandscape}
                         theme={theme}
                     />
                 </View>
@@ -350,15 +360,18 @@ export default class ChannelSidebar extends PureComponent {
                 style={style.swiperContent}
             >
                 <ChannelsList
+                    currentTeamId={currentTeamId}
+                    drawerOpened={drawerOpened}
+                    isLandscape={isLandscape}
                     ref={this.channelListRef}
                     onSelectChannel={this.selectChannel}
                     onJoinChannel={this.joinChannel}
                     onShowTeams={this.showTeams}
                     onSearchStart={this.onSearchStart}
                     onSearchEnds={this.onSearchEnds}
-                    theme={theme}
-                    drawerOpened={this.state.drawerOpened}
                     previewChannel={previewChannel}
+                    teamsCount={teamsCount}
+                    theme={theme}
                 />
             </View>
         );
@@ -377,6 +390,7 @@ export default class ChannelSidebar extends PureComponent {
                     drawerOpened={this.state.drawerOpened}
                     drawerWidth={drawerWidth}
                     hasSafeAreaInsets={hasSafeAreaInsets}
+                    theme={theme}
                 >
                     {lists}
                 </DrawerSwiper>

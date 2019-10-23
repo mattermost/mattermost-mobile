@@ -7,7 +7,53 @@ import {General} from 'app/constants';
 import {TeamTypes} from 'app/realm/action_types';
 import {teamDataToRealm, teamMemberDataToRealm} from 'app/realm/utils/team';
 
-export function mapTeamMembers(data, user) {
+export function mapTeamMemberships(data, users) {
+    const teamMembersMap = new Map();
+
+    if (data.teamMembers?.length) {
+        data.teamMembers.forEach((member) => {
+            const user = users.filtered('id = $0', member.user_id)[0];
+            if (user) {
+                const members = teamMembersMap.get(member.team_id) || [];
+
+                let unreads;
+                if (data.teamUnreads?.length) {
+                    unreads = data.teamUnreads.find((u) => u.team_id === member.team_id);
+                }
+
+                if (unreads) {
+                    member.mention_count = unreads.mention_count;
+                    member.msg_count = unreads.msg_count;
+                }
+
+                members.push(teamMemberDataToRealm(user, member));
+                teamMembersMap.set(member.team_id, members);
+            }
+        });
+    }
+
+    return teamMembersMap;
+}
+
+export function removeTeamMembershipsIfNeeded(realm, general, teamMembersMap) {
+    const realmTeams = realm.objects('Team');
+    realmTeams.forEach((t) => {
+        const teamMembers = teamMembersMap.get(t.id) || [];
+        teamMembers.forEach((member) => {
+            if (member?.deleteAt) {
+                realm.delete(realm.objectForPrimaryKey('TeamMember', member.id));
+            }
+
+            // If we are no longer in the team but is currently selected, we have to clear the selection
+            // to let the application select the next default team
+            if (t.id === general.currentTeamId && member.user.id === general.currentUserId) {
+                general.currentTeamId = null;
+            }
+        });
+    });
+}
+
+export function mapUserToTeamMembers(data, user) {
     const teamMembersMap = new Map();
 
     if (data.teams?.length && data.teamMembers?.length) {
@@ -32,7 +78,7 @@ export function mapTeamMembers(data, user) {
     return teamMembersMap;
 }
 
-export function removeTeamMemberships(realm, general, user, teamMembersMap) {
+export function removeUserTeamMembershipsIfNeeded(realm, general, user, teamMembersMap) {
     const realmTeams = realm.objects('Team');
     realmTeams.forEach((t) => {
         const teamMembers = teamMembersMap.get(t.id);
@@ -41,19 +87,54 @@ export function removeTeamMemberships(realm, general, user, teamMembersMap) {
 
             // If we are no longer in the team but is currently selected, we have to clear the selection
             // to let the application select the next default team
-            if (t.id === general.currentTeamId) {
+            if (t.id === general.currentTeamId && user.id === general.currentUserId) {
                 general.currentTeamId = null;
             }
         }
     });
 }
 
-export function createOrUpdateTeams(realm, data, teamMembersMap) {
+export function createOrUpdateTeams(realm, data, teamMembersMap = null) {
     if (data.teams?.length) {
-        data.teams.forEach((teamData) => {
-            teamData.members = teamMembersMap.get(teamData.id) || [];
-            realm.create('Team', teamDataToRealm(teamData), true);
-        });
+        const totalTeams = data.teams.length;
+        for (let i = 0; i < totalTeams; i++) {
+            const teamData = data.teams[i];
+            const realmTeam = realm.objectForPrimaryKey('Team', teamData.id);
+            const teamMembers = teamMembersMap?.get(teamData.id) || [];
+
+            if (realmTeam) {
+                const currentMembers = realmTeam.members.map((m) => m);
+                teamMembers.forEach((member) => {
+                    const index = currentMembers.findIndex((c) => c.id === `${teamData.id}-${member.user.id}`);
+                    if (index === -1) {
+                        realmTeam.members.push(member);
+                    } else {
+                        realm.create('TeamMember', member, true);
+                    }
+                });
+            } else {
+                teamData.members = teamMembers;
+                realm.create('Team', teamDataToRealm(teamData), true);
+            }
+        }
+    }
+}
+
+export function addMembersToTeam(realm, teamId, teamMembersMap = null) {
+    if (teamId) {
+        const realmTeam = realm.objectForPrimaryKey('Team', teamId);
+        const teamMembers = teamMembersMap?.get(teamId) || [];
+        if (realmTeam) {
+            const currentMembers = realmTeam.members.map((m) => m);
+            teamMembers.forEach((member) => {
+                const index = currentMembers.findIndex((c) => c.id === `${teamId}-${member.user.id}`);
+                if (index === -1) {
+                    realmTeam.members.push(member);
+                } else {
+                    realm.create('TeamMember', member, true);
+                }
+            });
+        }
     }
 }
 
@@ -65,10 +146,10 @@ function myTeamsWriter(realm, action) {
         const user = realm.objectForPrimaryKey('User', general?.currentUserId);
 
         if (user) {
-            const teamMembersMap = mapTeamMembers(data, user);
+            const teamMembersMap = mapUserToTeamMembers(data, user);
 
             // Remove membership from teams
-            removeTeamMemberships(realm, general, user, teamMembersMap);
+            removeUserTeamMembershipsIfNeeded(realm, general, user, teamMembersMap);
 
             createOrUpdateTeams(realm, data, teamMembersMap);
         }
@@ -81,6 +162,13 @@ function myTeamsWriter(realm, action) {
         const generalRealm = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
         generalRealm.currentTeamId = data;
         generalRealm.currentChannelId = null;
+        break;
+    }
+
+    case TeamTypes.RECEIVED_TEAMS_LIST: {
+        const data = action.data || action.payload;
+
+        createOrUpdateTeams(realm, data);
         break;
     }
 

@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Dimensions, Platform, View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -20,14 +20,12 @@ const {
 
 export default class EmptyToolbar extends PureComponent {
     static propTypes = {
+        isLandscape: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     };
 
     render() {
-        const {theme} = this.props;
-        const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
-        const isLandscape = deviceWidth > deviceHeight;
-
+        const {isLandscape, theme} = this.props;
         const style = getStyleFromTheme(theme);
         const padding = {paddingHorizontal: 0};
 

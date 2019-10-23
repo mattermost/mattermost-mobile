@@ -7,6 +7,7 @@ import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import ChannelLoader from 'app/components/channel_loader';
+import EmptyToolbar from 'app/components/empty_toolbar';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import NetworkIndicator from 'app/components/network_indicator';
 import PostTextbox from 'app/components/post_textbox';
@@ -50,10 +51,16 @@ export default class ChannelIOS extends ChannelBase {
 
         if (!currentTeamId) {
             return (
-                <ChannelLoader
-                    height={height}
-                    style={channelLoaderStyle}
-                />
+                <SafeAreaView>
+                    <EmptyToolbar
+                        isLandscape={width > height}
+                        theme={theme}
+                    />
+                    <ChannelLoader
+                        height={height}
+                        style={channelLoaderStyle}
+                    />
+                </SafeAreaView>
             );
         }
 

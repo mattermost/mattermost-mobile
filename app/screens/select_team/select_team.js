@@ -100,7 +100,7 @@ export default class SelectTeam extends PureComponent {
                 page: state.page + 1,
             }));
         });
-    }
+    };
 
     buildData = (props) => {
         if (props.teams.length) {
@@ -157,7 +157,7 @@ export default class SelectTeam extends PureComponent {
         this.setState({page: 0, refreshing: true}, () => {
             this.getTeams();
         });
-    }
+    };
 
     renderItem = ({item}) => {
         const {currentUrl, theme, isLandscape} = this.props;
@@ -184,10 +184,11 @@ export default class SelectTeam extends PureComponent {
                 >
                     <View style={style.teamContainer}>
                         <TeamIcon
-                            teamId={item.id}
                             styleContainer={style.teamIconContainer}
-                            styleText={style.teamIconText}
                             styleImage={style.imageContainer}
+                            styleText={style.teamIconText}
+                            teamId={item.id}
+                            theme={theme}
                         />
                         <View style={style.teamNameContainer}>
                             <Text

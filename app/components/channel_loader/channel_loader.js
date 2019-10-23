@@ -13,7 +13,7 @@ import {ImageContent} from 'rn-placeholder';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import {CustomPropTypes, Events} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
@@ -65,36 +65,13 @@ export default class ChannelLoader extends PureComponent {
     }
 
     componentDidMount() {
-        EventEmitter.on('switch_channel', this.handleChannelSwitch);
+        EventEmitter.on(Events.SWITCH_CHANNEL, this.handleChannelSwitch);
+        EventEmitter.on(Events.SET_CHANNEL_LOADING, this.handleChannelLoading);
     }
 
     componentWillUnmount() {
-        EventEmitter.off('switch_channel', this.handleChannelSwitch);
-    }
-
-    startLoadingAnimation = () => {
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(this.state.barsOpacity, {
-                    toValue: 1,
-                    duration: 750,
-                    easing: Easing.quad,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(this.state.barsOpacity, {
-                    toValue: 0.6,
-                    duration: 750,
-                    easing: Easing.quad,
-                    useNativeDriver: true,
-                }),
-            ]),
-        ).start();
-    };
-
-    stopLoadingAnimation = () => {
-        Animated.timing(
-            this.state.barsOpacity
-        ).stop();
+        EventEmitter.off(Events.SWITCH_CHANNEL, this.handleChannelSwitch);
+        EventEmitter.off(Events.SET_CHANNEL_LOADING, this.handleChannelLoading);
     }
 
     componentDidUpdate(prevProps) {
@@ -139,6 +116,10 @@ export default class ChannelLoader extends PureComponent {
         );
     }
 
+    handleChannelLoading = (loading) => {
+        this.props.actions.setChannelLoading(loading);
+    };
+
     handleChannelSwitch = (channel, currentChannelId) => {
         if (channel.id === currentChannelId) {
             this.props.actions.setChannelLoading(false);
@@ -151,6 +132,31 @@ export default class ChannelLoader extends PureComponent {
         const {height} = e.nativeEvent.layout;
         const maxRows = calculateMaxRows(height);
         this.setState({maxRows});
+    }
+
+    startLoadingAnimation = () => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(this.state.barsOpacity, {
+                    toValue: 1,
+                    duration: 750,
+                    easing: Easing.quad,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(this.state.barsOpacity, {
+                    toValue: 0.6,
+                    duration: 750,
+                    easing: Easing.quad,
+                    useNativeDriver: true,
+                }),
+            ]),
+        ).start();
+    };
+
+    stopLoadingAnimation = () => {
+        Animated.timing(
+            this.state.barsOpacity
+        ).stop();
     }
 
     render() {

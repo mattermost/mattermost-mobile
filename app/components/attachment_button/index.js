@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
@@ -16,12 +17,12 @@ import AndroidOpenSettings from 'react-native-android-open-settings';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {DocumentPicker} from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
-import Permissions from 'react-native-permissions';
+import RNPermissions from 'react-native-permissions';
 
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {PermissionTypes} from 'app/constants';
+import {Permissions} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {showModalOverCurrentContext} from 'app/actions/navigation';
@@ -145,7 +146,7 @@ export default class AttachmentButton extends PureComponent {
             };
         }
         }
-    }
+    };
 
     attachPhotoFromCamera = () => {
         return this.attachFileFromCamera('camera', 'photo');
@@ -287,17 +288,17 @@ export default class AttachmentButton extends PureComponent {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
             const targetSource = source || 'photo';
-            const hasPermissionToStorage = await Permissions.check(targetSource);
+            const hasPermissionToStorage = await RNPermissions.check(targetSource);
 
             switch (hasPermissionToStorage) {
-            case PermissionTypes.UNDETERMINED:
-                permissionRequest = await Permissions.request(targetSource);
-                if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+            case Permissions.UNDETERMINED:
+                permissionRequest = await RNPermissions.request(targetSource);
+                if (permissionRequest !== Permissions.AUTHORIZED) {
                     return false;
                 }
                 break;
-            case PermissionTypes.DENIED: {
-                const canOpenSettings = await Permissions.canOpenSettings();
+            case Permissions.DENIED: {
+                const canOpenSettings = await RNPermissions.canOpenSettings();
                 let grantOption = null;
                 if (canOpenSettings) {
                     grantOption = {
@@ -305,7 +306,7 @@ export default class AttachmentButton extends PureComponent {
                             id: 'mobile.permission_denied_retry',
                             defaultMessage: 'Settings',
                         }),
-                        onPress: () => Permissions.openSettings(),
+                        onPress: () => RNPermissions.openSettings(),
                     };
                 }
 
@@ -336,16 +337,16 @@ export default class AttachmentButton extends PureComponent {
         if (Platform.OS === 'android') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const hasPermissionToStorage = await Permissions.check('storage');
+            const hasPermissionToStorage = await RNPermissions.check('storage');
 
             switch (hasPermissionToStorage) {
-            case PermissionTypes.UNDETERMINED:
-                permissionRequest = await Permissions.request('storage');
-                if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+            case Permissions.UNDETERMINED:
+                permissionRequest = await RNPermissions.request('storage');
+                if (permissionRequest !== Permissions.AUTHORIZED) {
                     return false;
                 }
                 break;
-            case PermissionTypes.DENIED: {
+            case Permissions.DENIED: {
                 const {title, text} = this.getPermissionDeniedMessage('storage');
 
                 Alert.alert(

@@ -3,13 +3,13 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
-import Permissions from 'react-native-permissions';
+import RNPermissions from 'react-native-permissions';
 import {Alert} from 'react-native';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
+import {Permissions} from 'app/constants';
 import {VALID_MIME_TYPES} from 'app/screens/edit_profile/edit_profile';
-import {PermissionTypes} from 'app/constants';
 
 import AttachmentButton from './index';
 
@@ -85,8 +85,8 @@ describe('AttachmentButton', () => {
     test('should show permission denied alert if permission is denied in iOS', async () => {
         expect.assertions(1);
 
-        jest.spyOn(Permissions, 'check').mockReturnValue(PermissionTypes.DENIED);
-        jest.spyOn(Permissions, 'canOpenSettings').mockReturnValue(true);
+        jest.spyOn(RNPermissions, 'check').mockReturnValue(Permissions.DENIED);
+        jest.spyOn(RNPermissions, 'canOpenSettings').mockReturnValue(true);
         jest.spyOn(Alert, 'alert').mockReturnValue(true);
 
         const wrapper = shallow(

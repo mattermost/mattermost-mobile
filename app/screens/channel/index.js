@@ -6,8 +6,8 @@ import {realmConnect} from 'realm-react-redux';
 import {General, Preferences} from 'app/constants';
 import {getChannelStats, loadChannelsForTeam, loadSidebarDirectMessagesProfiles, selectInitialChannel} from 'app/realm/actions/channel';
 import {recordLoadTime} from 'app/realm/actions/general';
+import {getTheme} from 'app/realm/selectors/preference';
 import {selectDefaultTeam} from 'app/realm/actions/team';
-import {getTheme} from 'app/realm/selectors/theme';
 import {shouldShowTermsOfService} from 'app/realm/selectors/user';
 import options from 'app/store/realm_options';
 

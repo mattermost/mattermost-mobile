@@ -33,20 +33,12 @@ import StatusLabel from './status_label';
 
 export default class SettingsDrawer extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            logout: PropTypes.func.isRequired,
-            setStatus: PropTypes.func.isRequired,
-        }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
-        currentUser: PropTypes.object.isRequired,
-        status: PropTypes.string,
+        currentUser: PropTypes.object,
+        logout: PropTypes.func.isRequired,
+        setStatus: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-    };
-
-    static defaultProps = {
-        currentUser: {},
-        status: 'offline',
     };
 
     static contextTypes = {
@@ -55,6 +47,8 @@ export default class SettingsDrawer extends PureComponent {
 
     constructor(props) {
         super(props);
+
+        this.drawer = React.createRef();
 
         MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
@@ -87,14 +81,14 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     closeSettingsSidebar = () => {
-        if (this.refs.drawer && this.drawerOpened) {
-            this.refs.drawer.closeDrawer();
+        if (this.drawer?.current && this.drawerOpened) {
+            this.drawer.current.closeDrawer();
         }
     };
 
     handleAndroidBack = () => {
-        if (this.refs.drawer && this.drawerOpened) {
-            this.refs.drawer.closeDrawer();
+        if (this.drawer?.current && this.drawerOpened) {
+            this.drawer.current.closeDrawer();
             return true;
         }
 
@@ -205,7 +199,7 @@ export default class SettingsDrawer extends PureComponent {
     });
 
     logout = preventDoubleTap(() => {
-        const {logout} = this.props.actions;
+        const {logout} = this.props;
         this.closeSettingsSidebar();
         logout();
     });
@@ -230,8 +224,8 @@ export default class SettingsDrawer extends PureComponent {
     openSettingsSidebar = () => {
         this.props.blurPostTextBox();
 
-        if (this.refs.drawer && !this.drawerOpened) {
-            this.refs.drawer.openDrawer();
+        if (this.drawer?.current && !this.drawerOpened) {
+            this.drawer.current.openDrawer();
         }
     };
 
@@ -244,9 +238,14 @@ export default class SettingsDrawer extends PureComponent {
         );
     };
 
-    renderUserStatusLabel = (userId) => {
+    renderUserStatusLabel = () => {
+        const {currentUser, theme} = this.props;
+
         return (
-            <StatusLabel userId={userId}/>
+            <StatusLabel
+                status={currentUser.status}
+                theme={theme}
+            />
         );
     };
 
@@ -271,10 +270,11 @@ export default class SettingsDrawer extends PureComponent {
                         <UserInfo
                             onPress={this.goToUserProfile}
                             user={currentUser}
+                            theme={theme}
                         />
                         <View style={style.block}>
                             <DrawerItem
-                                labelComponent={this.renderUserStatusLabel(currentUser.id)}
+                                labelComponent={this.renderUserStatusLabel()}
                                 leftComponent={this.renderUserStatusIcon(currentUser.id)}
                                 separator={false}
                                 onPress={this.handleSetStatus}
@@ -342,17 +342,17 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     updateStatus = (status) => {
-        const {currentUser: {id: currentUserId}} = this.props;
-        this.props.actions.setStatus({
-            user_id: currentUserId,
+        const {currentUser} = this.props;
+        this.props.setStatus({
+            user_id: currentUser.id,
             status,
         });
     };
 
     setStatus = (status) => {
-        const {status: currentUserStatus} = this.props;
+        const {currentUser} = this.props;
 
-        if (currentUserStatus === General.OUT_OF_OFFICE) {
+        if (currentUser.status === General.OUT_OF_OFFICE) {
             dismissModal();
             this.closeSettingsSidebar();
             this.confirmReset(status);
@@ -369,7 +369,7 @@ export default class SettingsDrawer extends PureComponent {
 
         return (
             <DrawerLayout
-                ref='drawer'
+                ref={this.drawer}
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}

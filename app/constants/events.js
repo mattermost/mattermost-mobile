@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 export default {
-    allowUnsafeWrites: true,
-    forwardRef: true,
-    watchUnsafeWrites: true,
+    SET_CHANNEL_LOADING: 'set_channel_loading',
+    SWITCH_CHANNEL: 'switch_channel',
 };

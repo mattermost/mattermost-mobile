@@ -18,6 +18,7 @@ import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import {getLastValidPostId} from 'app/utils/post';
 import tracker from 'app/utils/time_tracker';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import ephemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import {goToScreen} from 'app/actions/navigation';
 
@@ -26,7 +27,7 @@ let LoadMorePosts = null;
 
 export default class ChannelPostList extends PureComponent {
     static propTypes = {
-        channelId: PropTypes.string.isRequired,
+        channelId: PropTypes.string,
         currentUserId: PropTypes.string,
         lastViewedAt: PropTypes.number,
         loadMorePostsAbove: PropTypes.func.isRequired,
@@ -68,6 +69,7 @@ export default class ChannelPostList extends PureComponent {
         if (this.props.channelId !== channelId) {
             this.isLoadingMoreTop = false;
             this.setState({loadMorePostsVisible});
+            this.detectIfPostsLoadingChanged();
         } else if (this.props.loadMorePostsVisible !== loadMorePostsVisible) {
             this.setState({loadMorePostsVisible});
         }
@@ -88,6 +90,14 @@ export default class ChannelPostList extends PureComponent {
         this.mounted = false;
         EventEmitter.off('goToThread', this.goToThread);
     }
+
+    detectIfPostsLoadingChanged = () => {
+        setTimeout(() => {
+            if (this.props.loadMorePostsVisible !== ephemeralStore.loadingPosts) {
+                this.setState({loadMorePostsVisible: ephemeralStore.loadingPosts});
+            }
+        }, 1000);
+    };
 
     goToThread = (post) => {
         telemetry.start(['post_list:thread']);

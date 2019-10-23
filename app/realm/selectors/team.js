@@ -3,6 +3,13 @@
 
 import {createSelector} from 'reselect';
 
+export const getTeamsFromResult = createSelector(
+    (teams) => teams,
+    (teams) => {
+        return teams.map((t) => t);
+    }
+);
+
 export const getTeamsFromTeamMembers = createSelector(
     (members) => members,
     (members) => {

@@ -272,6 +272,7 @@ export default class ChannelBase extends PureComponent {
                 <SettingsSidebar
                     ref={this.settingsSidebarRef}
                     blurPostTextBox={this.blurPostTextBox}
+                    theme={theme}
                 >
                     {drawerContent}
                 </SettingsSidebar>

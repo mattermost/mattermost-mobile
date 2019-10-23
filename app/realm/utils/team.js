@@ -7,6 +7,7 @@ export function teamDataToRealm(team) {
         createAt: team.create_at,
         updateAt: team.update_at,
         deleteAt: team.delete_at,
+        lastIconUpdateAt: team.last_team_icon_update,
         displayName: team.display_name,
         name: team.name,
         type: team.type,

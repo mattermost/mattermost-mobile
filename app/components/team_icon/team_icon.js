@@ -18,7 +18,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class TeamIcon extends React.PureComponent {
     static propTypes = {
         displayName: PropTypes.string,
-        lastIconUpdate: PropTypes.number,
+        lastIconUpdateAt: PropTypes.number,
         teamId: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
         styleContainer: PropTypes.any,
         styleText: PropTypes.any,
@@ -29,9 +29,9 @@ export default class TeamIcon extends React.PureComponent {
     constructor(props) {
         super(props);
 
-        const {lastIconUpdate, teamId} = props;
-        if (lastIconUpdate) {
-            ImageCacheManager.cache('', Client4.getTeamIconUrl(teamId, lastIconUpdate), this.setImageURL);
+        const {lastIconUpdateAt, teamId} = props;
+        if (lastIconUpdateAt) {
+            ImageCacheManager.cache('', Client4.getTeamIconUrl(teamId, lastIconUpdateAt), this.setImageURL);
         }
 
         this.state = {
@@ -47,9 +47,9 @@ export default class TeamIcon extends React.PureComponent {
             newState.teamIcon = null;
         }
 
-        if (nextProps.lastIconUpdate && this.props.lastIconUpdate !== nextProps.lastIconUpdate) {
-            const {lastIconUpdate, teamId} = nextProps;
-            ImageCacheManager.cache('', Client4.getTeamIconUrl(teamId, lastIconUpdate), this.setImageURL);
+        if (nextProps.lastIconUpdateAt && this.props.lastIconUpdateAt !== nextProps.lastIconUpdateAt) {
+            const {lastIconUpdateAt, teamId} = nextProps;
+            ImageCacheManager.cache('', Client4.getTeamIconUrl(teamId, lastIconUpdateAt), this.setImageURL);
         }
 
         this.setState(newState);

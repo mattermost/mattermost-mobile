@@ -9,8 +9,7 @@ import merge from 'deepmerge';
 import {getTheme as getThemeRedux} from 'mattermost-redux/selectors/entities/preferences';
 
 import {General, Preferences} from 'app/constants';
-import {getDefaultThemeFromConfig} from 'app/selectors/theme';
-import {getTheme} from 'app/realm/selectors/theme';
+import {getDefaultThemeFromConfig, getTheme} from 'app/realm/selectors/preference';
 import EphemeralStore from 'app/store/ephemeral_store';
 import {reduxStore} from 'app/store';
 

@@ -1,22 +1,44 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {connect} from 'react-redux';
+import {realmConnect} from 'realm-react-redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentTeamId, getMyTeamsCount, getChannelDrawerBadgeCount} from 'mattermost-redux/selectors/entities/teams';
+import {General} from 'app/constants';
+import options from 'app/store/realm_options';
 
 import SwitchTeamsButton from './switch_teams_button';
 
-function mapStateToProps(state) {
-    const currentTeamId = getCurrentTeamId(state);
+function getChannelDrawerBadgeCount(currentTeamId, teamMemberships) {
+    let mentionCount = 0;
+    let messageCount = 0;
+    teamMemberships.forEach((m) => {
+        if (m.teams[0].id !== currentTeamId) {
+            mentionCount += (m.mentionCount || 0);
+            messageCount += (m.msgCount || 0);
+        }
+    });
 
+    let badgeCount = 0;
+    if (mentionCount) {
+        badgeCount = mentionCount;
+    } else if (messageCount) {
+        badgeCount = -1;
+    }
+
+    return badgeCount;
+}
+
+function mapPropsToQueries(realm) {
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+    const members = realm.objects('TeamMember').filtered('deleteAt = 0 AND teams.deleteAt = 0 AND user.id = $0', general.currentUserId);
+
+    return [members];
+}
+
+function mapQueriesToProps([members], ownProps) {
     return {
-        currentTeamId,
-        mentionCount: getChannelDrawerBadgeCount(state),
-        teamsCount: getMyTeamsCount(state),
-        theme: getTheme(state),
+        mentionCount: getChannelDrawerBadgeCount(ownProps.currentTeamId, members),
     };
 }
 
-export default connect(mapStateToProps)(SwitchTeamsButton);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, null, null, options)(SwitchTeamsButton);

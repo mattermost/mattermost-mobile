@@ -1,33 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+import {realmConnect} from 'realm-react-redux';
 
-import {logout, setStatus} from 'mattermost-redux/actions/users';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+import {General} from 'app/constants';
+import {logout, setStatus} from 'app/realm/actions/user';
+import options from 'app/store/realm_options';
 
 import SettingsSidebar from './settings_sidebar';
 
-function mapStateToProps(state) {
-    const currentUser = getCurrentUser(state) || {};
-    const status = getStatusForUserId(state, currentUser.id);
+function mapPropsToQueries(realm) {
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+    const currentUser = realm.objectForPrimaryKey('User', general.currentUserId);
 
+    return [currentUser];
+}
+
+function mapQueriesToProps([currentUser]) {
     return {
         currentUser,
-        status,
-        theme: getTheme(state),
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            logout,
-            setStatus,
-        }, dispatch),
-    };
-}
+const mapRealmDispatchToProps = {
+    logout,
+    setStatus,
+};
 
-export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(SettingsSidebar);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(SettingsSidebar);

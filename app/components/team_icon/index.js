@@ -1,22 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {connect} from 'react-redux';
+import {realmConnect} from 'realm-react-redux';
 
-import {getTeam} from 'mattermost-redux/selectors/entities/teams';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {General} from 'app/constants';
+import options from 'app/store/realm_options';
 
 import TeamIcon from './team_icon';
 
-function mapStateToProps(state, ownProps) {
-    const team = getTeam(state, ownProps.teamId);
-    const lastIconUpdate = team.last_team_icon_update;
+function mapPropsToQueries(realm, ownProps) {
+    const team = realm.objectForPrimaryKey('Team', ownProps.teamId) || General.REALM_EMPTY_OBJECT;
 
+    return [team];
+}
+
+function mapQueriesToProps([team]) {
     return {
-        displayName: team.display_name,
-        lastIconUpdate,
-        theme: getTheme(state),
+        displayName: team?.displayName,
+        lastIconUpdateAt: team?.lastIconUpdateAt,
     };
 }
 
-export default connect(mapStateToProps)(TeamIcon);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, null, null, options)(TeamIcon);

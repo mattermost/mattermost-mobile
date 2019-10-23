@@ -5,7 +5,7 @@ import allSettled from 'promise.allsettled';
 
 import {Client4} from 'mattermost-redux/client';
 
-import {General} from 'app/constants';
+import {General, NavigationTypes} from 'app/constants';
 import {GeneralTypes, UserTypes} from 'app/realm/action_types';
 import {setAppCredentials} from 'app/init/credentials';
 import {configureRealmStore} from 'app/store/';
@@ -13,12 +13,13 @@ import EphemeralStore from 'app/store/ephemeral_store';
 import {setCSRFFromCookie} from 'app/utils/security';
 import {getDeviceTimezone} from 'app/utils/timezone';
 
-import {saveConfigAndLicense} from './general';
+import {loadConfigAndLicense, saveConfigAndLicense} from './general';
 import {forceLogoutIfNecessary} from './helpers';
 import {loadRolesIfNeeded} from './role';
 
 // TODO: Remove redux compatibility
 import {completeLogin} from 'mattermost-redux/actions/users';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {reduxStore} from 'app/store';
 import {handleSuccessfulLogin as handleSuccessfulLoginRedux} from 'app/actions/views/login';
 
@@ -173,6 +174,8 @@ export function loadMe(loginUser) {
                 dispatch(loadRolesIfNeeded(roles));
             }
 
+            await dispatch(loadConfigAndLicense());
+
             return data;
         } catch (error) {
             return {error};
@@ -221,5 +224,123 @@ export function autoUpdateTimezone(deviceTimezone) {
 
             dispatch(updateMe(updatedUser));
         }
+    };
+}
+
+export function getProfilesByIds(userIds, options) {
+    return async (dispatch) => {
+        try {
+            const profiles = await Client4.getProfilesByIds(userIds, options);
+            const statuses = await Client4.getStatusesByIds(userIds);
+            const data = {
+                profiles,
+                statuses,
+            };
+
+            dispatch({
+                type: UserTypes.RECEIVED_PROFILES,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+    };
+}
+
+export function getProfilesInTeam(teamId, page = 0, perPage = General.PROFILE_CHUNK_SIZE, sort = '') {
+    return async (dispatch) => {
+        try {
+            const profiles = await Client4.getProfilesInTeam(teamId, page, perPage, sort);
+            const userIds = profiles.map((p) => p.id);
+            const statuses = await Client4.getStatusesByIds(userIds);
+
+            const data = {
+                profiles,
+                statuses,
+                teamId,
+            };
+
+            dispatch({
+                type: UserTypes.RECEIVE_PROFILES_IN_TEAM,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+    };
+}
+
+export function searchProfiles(term, options = {}) {
+    return async (dispatch) => {
+        try {
+            const profiles = await Client4.searchChannels(term, options);
+            const userIds = profiles.map((p) => p.id);
+            const statuses = await Client4.getStatusesByIds(userIds);
+
+            const data = {
+                profiles,
+                statuses,
+            };
+
+            if (options.in_team) {
+                dispatch({
+                    type: UserTypes.RECEIVE_PROFILES_IN_TEAM,
+                    data: {
+                        ...data,
+                        teamId: options.in_team,
+                    },
+                });
+            } else {
+                dispatch({
+                    type: UserTypes.RECEIVED_PROFILES,
+                    data,
+                });
+            }
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+    };
+}
+
+export function setStatus(data) {
+    return async (dispatch) => {
+        try {
+            await Client4.updateStatus(data);
+
+            dispatch({
+                type: UserTypes.RECEIVED_STATUS,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+    };
+}
+
+export function logout() {
+    return async () => {
+        try {
+            await Client4.logout();
+        } catch (e) {
+            // nothing here
+        }
+
+        // TODO: Remove redux
+        reduxStore.dispatch({type: 'LOGOUT_SUCCESS'});
+        EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
+
+        return {data: true};
     };
 }

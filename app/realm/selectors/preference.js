@@ -3,7 +3,7 @@
 
 import {createSelector} from 'reselect';
 
-import Preferences from 'app/constants/preferences';
+import {General, Preferences} from 'app/constants';
 import {getConfig, getCurrentTeamId} from 'app/realm/selectors/general';
 
 export const getDefaultTheme = createSelector(
@@ -82,5 +82,53 @@ export const getTheme = createSelector(
         }
 
         return Object.assign({}, defaultTheme, theme);
+    }
+);
+
+export const getDefaultThemeFromConfig = createSelector(
+    (config) => {
+        if (config?.DefaultTheme) {
+            const theme = Preferences.THEMES[config.DefaultTheme];
+            if (theme) {
+                return theme;
+            }
+        }
+
+        // If no config.DefaultTheme or value doesn't refer to a valid theme name...
+        return Preferences.THEMES.default;
+    }
+);
+
+const defaultSidebarPrefs = {
+    grouping: 'by_type',
+    unreads_at_top: 'true',
+    favorite_at_top: 'true',
+    sorting: 'alpha',
+};
+
+export const getSidebarPreferences = createSelector(
+    (config, preferences) => {
+        if (config?.ExperimentalGroupUnreadChannels !== General.DISABLED) {
+            const showUnreadSection = preferences.filtered('category = $0 AND name ="show_unread_section"', Preferences.CATEGORY_SIDEBAR_SETTINGS)[0];
+            return showUnreadSection?.value === General.DEFAULT_ON;
+        }
+
+        return false;
+    },
+    (_, preferences) => {
+        const sidebarPreference = preferences.filtered('category = $0 AND name =""', Preferences.CATEGORY_SIDEBAR_SETTINGS)[0];
+        return sidebarPreference?.value || null;
+    },
+    (showUnreadSection, sidebarPreference) => {
+        let sidebarPrefs = JSON.parse(sidebarPreference);
+        if (sidebarPrefs === null) {
+            // Support unread settings for old implementation
+            sidebarPrefs = {
+                ...defaultSidebarPrefs,
+                unreads_at_top: showUnreadSection.toString(),
+            };
+        }
+
+        return sidebarPrefs;
     }
 );

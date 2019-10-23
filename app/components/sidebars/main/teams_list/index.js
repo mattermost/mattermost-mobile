@@ -5,10 +5,10 @@ import {realmConnect} from 'realm-react-redux';
 
 import {General} from 'app/constants';
 import {handleTeamChangeAndSwitchToInitialChannel} from 'app/realm/actions/team';
+import {getTeamsFromResult} from 'app/realm/selectors/team';
+import options from 'app/store/realm_options';
 
 import TeamsList from './teams_list';
-
-import options from 'app/store/realm_options';
 
 function mapPropsToQueries(realm) {
     const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
@@ -22,7 +22,7 @@ function mapQueriesToProps([general, myTeams, openTeams]) {
     return {
         currentTeamId: general?.currentTeamId,
         hasOtherJoinableTeams: !openTeams.isEmpty(),
-        teams: myTeams,
+        teams: getTeamsFromResult(myTeams),
     };
 }
 

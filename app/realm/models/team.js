@@ -11,6 +11,7 @@ export class Team extends Realm.Object {
             createAt: 'int',
             updateAt: 'int',
             deleteAt: {type: 'int', default: 0},
+            lastIconUpdateAt: {type: 'int', default: 0},
             displayName: 'string',
             name: 'string',
             type: 'string',

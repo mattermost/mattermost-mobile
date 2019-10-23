@@ -1,142 +1,95 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-import {createSelector} from 'reselect';
+import {realmConnect} from 'realm-react-redux';
 
-import {searchChannels} from 'mattermost-redux/actions/channels';
-import {getProfilesInTeam, searchProfiles} from 'mattermost-redux/actions/users';
-import {makeGroupMessageVisibleIfNecessary} from 'mattermost-redux/actions/preferences';
-import {General} from 'mattermost-redux/constants';
-import {
-    getChannelsWithUnreadSection,
-    getCurrentChannel,
-    getGroupChannels,
-    getArchivedChannels,
-    getOtherChannels,
-} from 'mattermost-redux/selectors/entities/channels';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUserId, getProfilesInCurrentTeam, getUsers, getUserIdsInChannels, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
-import {getDirectShowPreferences, getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {isLandscape} from 'app/selectors/device';
-import Config from 'assets/config';
+import {General, Permissions, Preferences} from 'app/constants';
+import {SidebarSectionTypes} from 'app/constants/view';
+import {searchChannels} from 'app/realm/actions/channel';
+import {makeGroupMessageVisibleIfNecessary} from 'app/realm/actions/preference';
+import {getProfilesInTeam, searchProfiles} from 'app/realm/actions/user';
+import {getFilteredChannels} from 'app/realm/selectors/channel';
+import {havePermission, mergeRoles} from 'app/realm/utils/role';
+import {getDisplayNameSettings} from 'app/realm/utils/user';
+import options from 'app/store/realm_options';
+
+import LocalConfig from 'assets/config';
 
 import FilteredList from './filtered_list';
 
-const DEFAULT_SEARCH_ORDER = ['unreads', 'dms', 'channels', 'members', 'nonmembers', 'archived'];
+const DEFAULT_SEARCH_ORDER = [
+    SidebarSectionTypes.UNREADS,
+    SidebarSectionTypes.DIRECT,
+    SidebarSectionTypes.ALPHA,
+    SidebarSectionTypes.MEMBERS,
+    SidebarSectionTypes.OTHER,
+    SidebarSectionTypes.ARCHIVED,
+];
 
-const pastDirectMessages = createSelector(
-    getDirectShowPreferences,
-    (directChannelsFromPreferences) => directChannelsFromPreferences.filter((d) => d.value === 'false').map((d) => d.name)
-);
+function mapPropsToQueries(realm) {
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+    const currentTeamId = general.currentTeamId;
+    const users = realm.objects('User').filtered('deleteAt = 0');
+    const currentUser = realm.objectForPrimaryKey('User', general.currentUserId);
+    const teamMembers = realm.objects('TeamMember').filtered('id BEGINSWITH $0', currentTeamId);
+    const teamChannels = realm.objects('Channel').
+        filtered('(team = null OR team.id = $0)', currentTeamId);
 
-const getTeamProfiles = createSelector(
-    getProfilesInCurrentTeam,
-    (members) => {
-        return members.reduce((memberProfiles, member) => {
-            memberProfiles[member.id] = member;
+    const preferences = realm.objects('Preference');
+    const roles = realm.objects('Role');
 
-            return memberProfiles;
-        }, {});
-    }
-);
-
-// Fill an object for each group channel with concatenated strings for username, email, fullname, and nickname
-function getGroupDetails(currentUserId, userIdsInChannels, profiles, groupChannels) {
-    return groupChannels.reduce((groupMemberDetails, channel) => {
-        if (!userIdsInChannels.hasOwnProperty(channel.id)) {
-            return groupMemberDetails;
-        }
-
-        const members = Array.from(userIdsInChannels[channel.id]).reduce((memberDetails, member) => {
-            if (member === currentUserId) {
-                return memberDetails;
-            }
-
-            const details = {...memberDetails};
-
-            const profile = profiles[member];
-            details.username.push(profile.username);
-            if (profile.email) {
-                details.email.push(profile.email);
-            }
-            if (profile.nickname) {
-                details.nickname.push(profile.nickname);
-            }
-            if (profile.fullname) {
-                details.fullname.push(`${profile.first_name} ${profile.last_name}`);
-            }
-
-            return details;
-        }, {
-            email: [],
-            fullname: [],
-            nickname: [],
-            username: [],
-        });
-
-        groupMemberDetails[channel.id] = {
-            email: members.email.join(','),
-            fullname: members.fullname.join(','),
-            nickname: members.nickname.join(','),
-            username: members.username.join(','),
-        };
-
-        return groupMemberDetails;
-    }, {});
+    return [general, currentUser, preferences, users, roles, teamMembers, teamChannels];
 }
 
-const getGroupChannelMemberDetails = createSelector(
-    getCurrentUserId,
-    getUserIdsInChannels,
-    getUsers,
-    getGroupChannels,
-    getGroupDetails
-);
-
-function mapStateToProps(state) {
-    const {currentUserId} = state.entities.users;
-
-    const profiles = getUsers(state);
-    let teamProfiles = {};
-    const restrictDms = getConfig(state).RestrictDirectMessage !== General.RESTRICT_DIRECT_MESSAGE_ANY;
+function mapQueriesToProps([general, currentUser, preferences, users, roles, teamMembers, teamChannels]) {
+    const config = general.config;
+    const restrictDms = config?.RestrictDirectMessage === General.RESTRICT_DIRECT_MESSAGE_TEAM;
+    const searchOrder = LocalConfig?.DrawerSearchOrder || DEFAULT_SEARCH_ORDER;
+    const teammateDisplayNamePref = preferences.filtered('category = $0 AND name = $1', Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT)[0];
+    const teammateDisplayNameSettings = getDisplayNameSettings(config?.TeammateNameDisplay, teammateDisplayNamePref);
+    const myTeamMember = teamMembers.filtered('user.id = $0', currentUser.id)[0];
+    const myRoles = mergeRoles(currentUser, myTeamMember);
+    const canJoinPublicChannels = havePermission(roles, myRoles, Permissions.JOIN_PUBLIC_CHANNELS);
+    const locale = currentUser.locale;
+    let profiles = users;
     if (restrictDms) {
-        teamProfiles = getTeamProfiles(state);
+        profiles = teamMembers;
     }
 
-    const searchOrder = Config.DrawerSearchOrder ? Config.DrawerSearchOrder : DEFAULT_SEARCH_ORDER;
-
-    return {
-        channels: getChannelsWithUnreadSection(state),
-        currentChannel: getCurrentChannel(state),
-        currentTeam: getCurrentTeam(state),
-        currentUserId,
-        otherChannels: getOtherChannels(state, false),
-        archivedChannels: getArchivedChannels(state),
-        groupChannelMemberDetails: getGroupChannelMemberDetails(state),
+    const opts = {
+        canJoinPublicChannels,
+        currentChannelId: general.currentChannelId,
+        currentUserId: currentUser.id,
+        favoritesAtTop: false,
+        filterArchived: true,
+        locale,
+        preferences,
         profiles,
-        teamProfiles,
-        teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        statuses: getUserStatuses(state),
-        searchOrder,
-        pastDirectMessages: pastDirectMessages(state),
         restrictDms,
-        theme: getTheme(state),
-        isLandscape: isLandscape(state),
+        showHiddenDirectChannels: true,
+        sortMentionsFirst: true,
+        teamChannels,
+        teammateDisplayNameSettings,
+        unreadsAtTop: true,
     };
-}
 
-function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators({
-            getProfilesInTeam,
-            makeGroupMessageVisibleIfNecessary,
-            searchChannels,
-            searchProfiles,
-        }, dispatch),
+        channels: getFilteredChannels(opts),
+        currentChannelId: general.currentChannelId,
+        currentTeamId: general.currentTeamId,
+        currentUserId: general.currentUserId,
+        locale,
+        restrictDms,
+        searchOrder,
+        teammateDisplayNameSettings,
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(FilteredList);
+const mapRealmDispatchToProps = {
+    getProfilesInTeam,
+    makeGroupMessageVisibleIfNecessary,
+    searchChannels,
+    searchProfiles,
+};
+
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(FilteredList);
