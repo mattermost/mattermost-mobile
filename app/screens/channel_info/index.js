@@ -1,151 +1,114 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+import {realmConnect} from 'realm-react-redux';
 
 import {
+    closeDirectChannel,
     convertChannelToPrivate,
-    favoriteChannel,
-    getChannelStats,
-    getChannel,
     deleteChannel,
-    unfavoriteChannel,
-    updateChannelNotifyProps,
-} from 'mattermost-redux/actions/channels';
-import {getCustomEmojisInText} from 'mattermost-redux/actions/emojis';
-import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
-import {clearPinnedPosts} from 'mattermost-redux/actions/search';
-import {General} from 'mattermost-redux/constants';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {
-    canManageChannelMembers,
-    getCurrentChannel,
-    getCurrentChannelStats,
-    getSortedFavoriteChannelIds,
-    getMyCurrentChannelMembership,
-    isCurrentChannelReadOnly,
-} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
-import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
-import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
-
-import {
-    closeDMChannel,
-    closeGMChannel,
+    getChannel,
+    getChannelStats,
     handleSelectChannel,
     leaveChannel,
     loadChannelsByTeamName,
-    selectPenultimateChannel,
-    setChannelDisplayName,
-} from 'app/actions/views/channel';
-import {isLandscape} from 'app/selectors/device';
-import {isGuest} from 'app/utils/users';
+    markChannelAsFavorite,
+    updateChannelNotifyProps,
+    selectInitialChannel,
+} from 'app/realm/actions/channel';
+import {getCustomEmojisInText} from 'app/realm/actions/emoji';
+import {General, Preferences} from 'app/constants';
+import {getTheme} from 'app/realm/selectors/preference';
+import options from 'app/store/realm_options';
+import {
+    areChannelMentionsIgnored,
+    canDeleteChannel,
+    canEditChannel,
+    canManageChannelMembers,
+    getUserIdFromChannelName,
+    isChannelMuted,
+    isChannelReadOnly,
+    isFavoriteChannel,
+} from 'app/realm/utils/channel';
+import {mergeRoles} from 'app/realm/utils/role';
+import {displayUserName, getDisplayNameSettings, isAdmin, isGuest, isSystemAdmin} from 'app/realm/utils/user';
 
 import ChannelInfo from './channel_info';
 
-function mapStateToProps(state) {
-    const config = getConfig(state);
-    const license = getLicense(state);
-    const currentChannel = getCurrentChannel(state) || {};
-    const currentChannelCreator = getUser(state, currentChannel.creator_id);
-    const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
-    const currentChannelStats = getCurrentChannelStats(state);
-    const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
-    let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
-    const currentChannelMember = getMyCurrentChannelMembership(state);
-    const currentUserId = getCurrentUserId(state);
-    const favoriteChannels = getSortedFavoriteChannelIds(state);
-    const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
-    const isFavorite = favoriteChannels && favoriteChannels.indexOf(currentChannel.id) > -1;
-    const roles = getCurrentUserRoles(state);
-    let canManageUsers = currentChannel.hasOwnProperty('id') ? canManageChannelMembers(state) : false;
-    if (currentChannel.group_constrained) {
-        canManageUsers = false;
-    }
-    const currentUser = getUser(state, currentUserId);
-    const currentUserIsGuest = isGuest(currentUser);
+function mapPropsToQueries(realm) {
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID) || General.REALM_EMPTY_OBJECT;
+    const currentUser = realm.objectForPrimaryKey('User', general.currentUserId) || General.REALM_EMPTY_OBJECT;
+    const channel = realm.objectForPrimaryKey('Channel', general.currentChannelId) || General.REALM_EMPTY_OBJECT;
+    const channelMember = channel?.members.filtered('id = $0', `${general.currentChannelId}-${general.currentUserId}`)[0] || General.REALM_EMPTY_OBJECT;
+    const creator = realm.objectForPrimaryKey('User', channel?.creatorId) || General.REALM_EMPTY_OBJECT;
+    const preferences = realm.objects('Preference');
+    const roles = realm.objects('Role');
+
+    return [general, currentUser, channel, channelMember, creator, roles, preferences];
+}
+
+function mapQueriesToProps([general, currentUser, channel, currentChannelMember, creator, roles, preferences]) {
+    const currentTeam = channel?.team;
+    const currentTeamMember = currentTeam?.members.filtered('id = $0', `${currentTeam?.id}-${general.currentUserId}`)[0];
+    const myRoles = mergeRoles(currentUser, currentChannelMember, currentTeamMember);
+
+    const channelIsReadOnly = isChannelReadOnly(channel, isSystemAdmin(currentChannelMember?.user), general.config?.ExperimentalTownSquareIsReadOnly);
+    const viewArchivedChannels = general.config?.ExperimentalViewArchivedChannels === 'true';
+
+    const teammateDisplayNamePref = preferences.filtered('category = $0 AND name = $1', Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT)[0];
+    const themePreference = preferences.filtered(`category="${Preferences.CATEGORY_THEME}"`);
+    const teammateDisplayNameSettings = getDisplayNameSettings(general.config?.TeammateNameDisplay, teammateDisplayNamePref);
+    const currentChannelCreatorName = displayUserName(creator, currentUser?.locale, teammateDisplayNameSettings);
 
     let status;
     let isBot = false;
     let isTeammateGuest = false;
-    if (currentChannel.type === General.DM_CHANNEL) {
-        const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
-        const teammate = getUser(state, teammateId);
-        status = getStatusForUserId(state, teammateId);
-        if (teammate && teammate.is_bot) {
-            isBot = true;
-        }
-        if (isGuest(teammate)) {
-            isTeammateGuest = true;
-            currentChannelGuestCount = 1;
-        }
-    }
+    if (channel.type === General.DM_CHANNEL) {
+        const teammateId = getUserIdFromChannelName(currentUser?.id, channel?.name);
+        const teammate = channel?.members.filtered('id = $0', `${channel?.id}-${teammateId}`);
 
-    const isAdmin = checkIsAdmin(roles);
-    const isChannelAdmin = checkIsChannelAdmin(roles);
-    const isSystemAdmin = checkIsSystemAdmin(roles);
-
-    const channelIsReadOnly = isCurrentChannelReadOnly(state);
-    const canEditChannel = !channelIsReadOnly && showManagementOptions(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin);
-    const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
-
-    const enableTimezone = isTimezoneEnabled(state);
-    let timeZone = null;
-    if (enableTimezone) {
-        timeZone = getUserCurrentTimezone(currentUser.timezone);
+        status = teammate?.status || General.OFFLINE;
+        isBot = teammate?.isBot || false;
+        isTeammateGuest = isGuest(teammate);
     }
 
     return {
-        canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
-        canConvertChannel: isAdmin,
-        viewArchivedChannels,
-        canEditChannel,
-        currentChannel,
+        canDeleteChannel: canDeleteChannel(roles, myRoles, channel),
+        canEditChannel: !channelIsReadOnly && canEditChannel(roles, myRoles, channel),
+        canConvertChannel: isAdmin(currentChannelMember?.user),
+        canManageUsers: canManageChannelMembers(roles, myRoles, channel),
+        currentChannel: channel,
+        currentChannelGuestCount: channel?.guestCount,
         currentChannelCreatorName,
-        currentChannelMemberCount,
-        currentChannelGuestCount,
-        currentUserId,
-        currentUserIsGuest,
-        isChannelMuted: isChannelMuted(currentChannelMember),
-        ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember && currentChannelMember.notify_props, currentUser.notify_props),
-        isCurrent,
-        isFavorite,
-        status,
-        theme: getTheme(state),
-        canManageUsers,
+        currentChannelMemberCount: channel?.memberCount,
+        currentUserId: currentUser?.id,
+        currentUserIsGuest: isGuest(currentUser),
+        ignoreChannelMentions: areChannelMentionsIgnored(currentChannelMember),
         isBot,
+        isChannelMuted: isChannelMuted(currentChannelMember, true),
+        isFavorite: isFavoriteChannel(preferences, channel?.id),
         isTeammateGuest,
-        isLandscape: isLandscape(state),
-        timeZone,
+        locale: currentUser?.locale,
+        status,
+        teammateDisplayNameSettings,
+        theme: getTheme([general], themePreference),
+        viewArchivedChannels,
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            clearPinnedPosts,
-            closeDMChannel,
-            closeGMChannel,
-            convertChannelToPrivate,
-            deleteChannel,
-            getChannelStats,
-            getChannel,
-            leaveChannel,
-            loadChannelsByTeamName,
-            favoriteChannel,
-            unfavoriteChannel,
-            getCustomEmojisInText,
-            selectFocusedPostId,
-            updateChannelNotifyProps,
-            selectPenultimateChannel,
-            setChannelDisplayName,
-            handleSelectChannel,
-        }, dispatch),
-    };
-}
+const mapRealmDispatchToProps = {
+    closeDirectChannel,
+    convertChannelToPrivate,
+    deleteChannel,
+    getChannel,
+    getChannelStats,
+    getCustomEmojisInText,
+    handleSelectChannel,
+    leaveChannel,
+    loadChannelsByTeamName,
+    markChannelAsFavorite,
+    selectInitialChannel,
+    updateChannelNotifyProps,
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelInfo);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(ChannelInfo);

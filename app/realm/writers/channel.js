@@ -87,6 +87,16 @@ function updateChannelUnreadCounts(realm, currentUserId, channelId, setLastViewe
 
 function channels(realm, action) {
     switch (action.type) {
+    case ChannelTypes.LEAVE_CHANNEL: {
+        const data = action.data || action.payload;
+        const member = realm.objectForPrimaryKey('ChannelMember', `${data.id}-${data.userId}`);
+
+        if (member) {
+            realm.delete(member);
+        }
+        break;
+    }
+
     case ChannelTypes.RECEIVED_MY_CHANNELS: {
         const data = action.data || action.payload;
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
@@ -104,24 +114,6 @@ function channels(realm, action) {
                     storeChannelAndMember(realm, channelData, myMembers[0]);
                 });
             }
-        }
-        break;
-    }
-
-    case ChannelTypes.SELECT_CHANNEL: {
-        const {data} = action;
-        const {nextChannel, previousChannel} = data;
-        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
-
-        general.currentChannelId = nextChannel.id;
-        if (data.teamId) {
-            general.currentTeamId = data.teamId;
-        }
-
-        updateChannelUnreadCounts(realm, general.currentUserId, nextChannel.id, nextChannel.setLastViewed);
-
-        if (previousChannel.id && previousChannel.id !== nextChannel.id) {
-            updateChannelUnreadCounts(realm, general.currentUserId, previousChannel.id, true);
         }
         break;
     }
@@ -175,12 +167,61 @@ function channels(realm, action) {
         if (data.channels?.length) {
             data.channels.forEach((channel) => {
                 const channelRealm = realm.objectForPrimaryKey('Channel', channel.id);
-                if (!channelRealm) {
+                if (!channelRealm || channel.update_at !== channelRealm.updateAt) {
                     storeChannel(realm, channel);
                 }
             });
         }
 
+        break;
+    }
+
+    case ChannelTypes.RECEIVED_CHANNEL: {
+        const channel = action.data || action.payload;
+        const channelRealm = realm.objectForPrimaryKey('Channel', channel.id);
+
+        if (!channelRealm || channel.update_at !== channelRealm.updateAt) {
+            storeChannel(realm, channel);
+        }
+
+        break;
+    }
+
+    case ChannelTypes.DELETED_CHANNEL: {
+        const channel = action.data || action.payload;
+        const channelRealm = realm.objectForPrimaryKey('Channel', channel.id);
+
+        if (channelRealm) {
+            channelRealm.deleteAt = Date.now();
+        }
+        break;
+    }
+
+    case ChannelTypes.RECEIVED_CHANNEL_PROPS: {
+        const data = action.data || action.payload;
+        const channelMember = realm.objectForPrimaryKey('ChannelMember', `${data.id}-${data.userId}`);
+
+        if (channelMember) {
+            channelMember.notifyProps = JSON.stringify(data.notifyProps);
+        }
+        break;
+    }
+
+    case ChannelTypes.SELECT_CHANNEL: {
+        const {data} = action;
+        const {nextChannel, previousChannel} = data;
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+
+        general.currentChannelId = nextChannel.id;
+        if (data.teamId) {
+            general.currentTeamId = data.teamId;
+        }
+
+        updateChannelUnreadCounts(realm, general.currentUserId, nextChannel.id, nextChannel.setLastViewed);
+
+        if (previousChannel.id && previousChannel.id !== nextChannel.id) {
+            updateChannelUnreadCounts(realm, general.currentUserId, previousChannel.id, true);
+        }
         break;
     }
 

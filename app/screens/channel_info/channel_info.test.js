@@ -3,8 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
-import {General} from 'mattermost-redux/constants';
+import {General, Preferences} from 'app/constants';
 
 import ChannelInfo from './channel_info';
 
@@ -34,53 +33,47 @@ describe('channel_info', () => {
     };
     const baseProps = {
         canDeleteChannel: true,
+        canEditChannel: true,
         canConvertChannel: true,
         canManageUsers: true,
-        viewArchivedChannels: true,
-        canEditChannel: true,
+        closeDirectChannel: jest.fn(),
+        componentId: 'Component1',
+        convertChannelToPrivate: jest.fn(),
         currentChannel: {
             id: '1234',
-            display_name: 'Channel Name',
+            displayName: 'Channel Name',
             type: General.OPEN_CHANNEL,
-            create_at: 123,
-            delete_at: 0,
+            createAt: 123,
+            deleteAt: 0,
             header: '',
             purpose: 'Purpose',
-            group_constrained: false,
+            groupConstrained: false,
         },
+        currentChannelGuestCount: 0,
         currentChannelCreatorName: 'Creator',
         currentChannelMemberCount: 2,
-        currentChannelGuestCount: 0,
         currentUserId: '1234',
         currentUserIsGuest: false,
-        isChannelMuted: false,
+        deleteChannel: jest.fn(),
+        getChannel: jest.fn(),
+        getChannelStats: jest.fn(),
+        getCustomEmojisInText: jest.fn(),
+        handleSelectChannel: jest.fn(),
         ignoreChannelMentions: false,
-        isCurrent: true,
-        isFavorite: false,
-        status: 'status',
-        theme: Preferences.THEMES.default,
         isBot: false,
+        isChannelMuted: false,
+        isFavorite: false,
         isTeammateGuest: false,
-        isLandscape: false,
-        actions: {
-            clearPinnedPosts: jest.fn(),
-            closeDMChannel: jest.fn(),
-            closeGMChannel: jest.fn(),
-            convertChannelToPrivate: jest.fn(),
-            deleteChannel: jest.fn(),
-            getChannelStats: jest.fn(),
-            getChannel: jest.fn(),
-            leaveChannel: jest.fn(),
-            loadChannelsByTeamName: jest.fn(),
-            favoriteChannel: jest.fn(),
-            unfavoriteChannel: jest.fn(),
-            getCustomEmojisInText: jest.fn(),
-            selectFocusedPostId: jest.fn(),
-            updateChannelNotifyProps: jest.fn(),
-            selectPenultimateChannel: jest.fn(),
-            setChannelDisplayName: jest.fn(),
-            handleSelectChannel: jest.fn(),
-        },
+        leaveChannel: jest.fn(),
+        loadChannelsByTeamName: jest.fn(),
+        locale: 'en',
+        markChannelAsFavorite: jest.fn(),
+        selectInitialChannel: jest.fn(),
+        status: 'status',
+        teammateDisplayNameSettings: Preferences.DISPLAY_PREFER_FULL_NAME,
+        theme: Preferences.THEMES.default,
+        updateChannelNotifyProps: jest.fn(),
+        viewArchivedChannels: false,
     };
 
     test('should match snapshot', async () => {
@@ -102,7 +95,7 @@ describe('channel_info', () => {
         );
 
         const instance = wrapper.instance();
-        const render = instance.renderConvertToPrivateRow();
+        const render = instance.shouldRenderConvertToPrivateRow();
         expect(render).toBeTruthy();
     });
 
@@ -116,7 +109,7 @@ describe('channel_info', () => {
         );
 
         const instance = wrapper.instance();
-        const render = instance.renderConvertToPrivateRow();
+        const render = instance.shouldRenderConvertToPrivateRow();
         expect(render).toBeFalsy();
     });
 
@@ -131,7 +124,7 @@ describe('channel_info', () => {
         );
 
         const instance = wrapper.instance();
-        const render = instance.renderConvertToPrivateRow();
+        const render = instance.shouldRenderConvertToPrivateRow();
         expect(render).toBeFalsy();
     });
 
@@ -146,7 +139,7 @@ describe('channel_info', () => {
         );
 
         const instance = wrapper.instance();
-        const render = instance.renderConvertToPrivateRow();
+        const render = instance.shouldRenderConvertToPrivateRow();
         expect(render).toBeFalsy();
     });
 });

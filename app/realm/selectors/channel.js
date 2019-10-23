@@ -70,13 +70,29 @@ export const getSortedFavoriteChannels = createSelector(
     (unreadIds, options) => {
         const {currentUserId, preferences, teamChannels, filterArchived} = options;
         const favoriteIds = preferences.filtered('category = $0 AND value = "true"', Preferences.CATEGORY_FAVORITE_CHANNEL).map((favorite) => favorite.name);
+        const visibleDirectIds = preferences.
+            filtered('(category = $0 OR category = $1) AND value = "true"', Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, Preferences.CATEGORY_GROUP_CHANNEL_SHOW).
+            map((p) => p.name);
         const channels = [];
         const members = {};
 
         teamChannels.forEach((channel) => {
             const isArchived = channel.deleteAt > 0 && filterArchived;
             const member = channel.members.filtered('user.id = $0', currentUserId)[0];
-            if (favoriteIds.includes(channel.id) && !unreadIds.includes(channel.id) && !isArchived && member) {
+            let excludeClosedDirect = false;
+
+            switch (channel.type) {
+            case General.DM_CHANNEL: {
+                const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+                excludeClosedDirect = !visibleDirectIds.includes(teammateId);
+                break;
+            }
+            case General.GM_CHANNEL:
+                excludeClosedDirect = !visibleDirectIds.includes(channel.id);
+                break;
+            }
+
+            if (favoriteIds.includes(channel.id) && !unreadIds.includes(channel.id) && !isArchived && member && !excludeClosedDirect) {
                 members[channel.id] = member;
                 channels.push(channel);
             }

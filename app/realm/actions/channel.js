@@ -54,6 +54,14 @@ export function loadChannelsForTeam(teamId) {
                 data,
             });
 
+            const creators = new Set();
+            channels.forEach((channel) => {
+                creators.add(channel.creator_id);
+            });
+            if (creators.size > 0) {
+                dispatch(getProfilesByIds(Array.from(creators)));
+            }
+
             const roles = new Set();
             for (const member of channelMembers) {
                 for (const role of member.roles.split(' ')) {
@@ -142,7 +150,7 @@ export function loadSidebarDirectMessagesProfiles(teamId) {
     };
 }
 
-export function selectInitialChannel(teamId) {
+export function selectInitialChannel(teamId, lastIndex = 0) {
     return async (dispatch, getState) => {
         const realm = getState();
         reduxStore.dispatch(selectInitialChannelRedux(teamId));
@@ -150,7 +158,7 @@ export function selectInitialChannel(teamId) {
         // We'll use the redux state to get the last channel viewed for the team
         const reduxState = reduxStore.getState();
         const lastChannelForTeam = reduxState.views.team.lastChannelForTeam[teamId];
-        const lastChannelId = lastChannelForTeam && lastChannelForTeam.length ? lastChannelForTeam[0] : '';
+        const lastChannelId = lastChannelForTeam && lastChannelForTeam.length ? lastChannelForTeam[lastIndex] : '';
         const lastChannel = realm.objectForPrimaryKey('Channel', lastChannelId);
         const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
 
@@ -271,6 +279,25 @@ export function getProfilesInChannel(channelId, batch = false) {
         } catch (error) {
             return {error};
         }
+    };
+}
+
+export function getChannel(channelId) {
+    return async (dispatch) => {
+        let data;
+        try {
+            data = await Client4.getChannel(channelId);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        dispatch({
+            type: ChannelTypes.RECEIVED_CHANNEL,
+            data,
+        });
+
+        return {data};
     };
 }
 
@@ -444,6 +471,37 @@ export function createDirectChannel(otherUserId) {
     };
 }
 
+export function closeDirectChannel(channel) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const currentUserId = general.currentUserId;
+        const currentChannelId = general.currentChannelId;
+        const prefs = [];
+
+        switch (channel.type) {
+        case General.DM_CHANNEL: {
+            const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+            prefs.push(buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, teammateId, 'false'));
+            break;
+        }
+        case General.GM_CHANNEL:
+            prefs.push(buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, currentChannelId, 'false'));
+            break;
+        }
+
+        if (prefs.length) {
+            dispatch(savePreferences(currentUserId, prefs));
+
+            if (channel.id === currentChannelId) {
+                dispatch(selectInitialChannel(general.currentTeamId, 1));
+            }
+        }
+
+        return {data: true};
+    };
+}
+
 export function searchChannels(teamId, term) {
     return async (dispatch) => {
         try {
@@ -464,5 +522,151 @@ export function searchChannels(teamId, term) {
             forceLogoutIfNecessary(error);
             return {error};
         }
+    };
+}
+
+export function convertChannelToPrivate(channelId) {
+    return async (dispatch) => {
+        let convertedChannel;
+        try {
+            convertedChannel = await Client4.convertChannelToPrivate(channelId);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        dispatch({
+            type: ChannelTypes.RECEIVED_CHANNEL,
+            data: convertedChannel,
+        });
+
+        return {data: convertedChannel};
+    };
+}
+
+export function deleteChannel(channelId) {
+    return async (dispatch) => {
+        try {
+            await Client4.deleteChannel(channelId);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        dispatch({
+            type: ChannelTypes.DELETED_CHANNEL,
+            data: {id: channelId},
+        });
+
+        return {data: true};
+    };
+}
+
+export function leaveChannel(channel, reset = false) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const {currentUserId, currentChannelId, currentTeamId} = general;
+
+        Client4.trackEvent('action', 'action_channels_leave', {channel_id: channel.id});
+
+        try {
+            await Client4.removeFromChannel(currentUserId, channel.id);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+            return {error};
+        }
+
+        reduxStore.dispatch({
+            type: ViewTypes.REMOVE_LAST_CHANNEL_FOR_TEAM,
+            data: {
+                teamId: currentTeamId,
+                channelId: channel.id,
+            },
+        });
+
+        if (channel.id === currentChannelId || reset) {
+            await dispatch(selectInitialChannel(currentTeamId));
+        }
+
+        setTimeout(() => {
+            // Dispathing after one second so that it gives enough time
+            // to transitions screens and switching channels etc before removing
+            // the element from the database so realm does not complain about trying to access
+            // a previously deleted element
+            dispatch({
+                type: ChannelTypes.LEAVE_CHANNEL,
+                data: {
+                    id: channel.id,
+                    userId: currentUserId,
+                },
+            });
+        }, 1000);
+
+        return {data: true};
+    };
+}
+
+export function loadChannelsByTeamName(teamName) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+
+        const {currentTeamId} = general;
+        const team = realm.objects('Team').filtered('name = $0', teamName)[0];
+
+        if (team && team.id !== currentTeamId) {
+            await dispatch(loadChannelsForTeam(team.id));
+        }
+    };
+}
+
+export function markChannelAsFavorite(channeId, favorite = true) {
+    return async (dispatch, getState) => {
+        const realm = getState();
+        const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+        const favoritePref = realm.objectForPrimaryKey('Preference', `${Preferences.CATEGORY_FAVORITE_CHANNEL}-${channeId}`);
+        const prefs = [];
+
+        if (favorite && (!favoritePref || favoritePref.value === 'false')) {
+            prefs.push(buildPreference(Preferences.CATEGORY_FAVORITE_CHANNEL, general.currentUserId, channeId));
+        } else if (!favorite) {
+            prefs.push(buildPreference(Preferences.CATEGORY_FAVORITE_CHANNEL, general.currentUserId, channeId, 'false'));
+        }
+
+        return dispatch(savePreferences(general.currentUserId, prefs));
+    };
+}
+
+export function updateChannelNotifyProps(userId, channelId, props) {
+    return async (dispatch, getState) => {
+        const notifyProps = {
+            user_id: userId,
+            channel_id: channelId,
+            ...props,
+        };
+
+        try {
+            await Client4.updateChannelNotifyProps(notifyProps);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+
+            return {error};
+        }
+
+        const realm = getState();
+        const member = realm.objectForPrimaryKey('ChannelMember', `${channelId}-${userId}`);
+        const currentNotifyProps = member?.notifyPropsAsJSON;
+
+        dispatch({
+            type: ChannelTypes.RECEIVED_CHANNEL_PROPS,
+            data: {
+                id: channelId,
+                userId,
+                notifyProps: {...currentNotifyProps, ...notifyProps},
+            },
+        });
+
+        return {data: true};
     };
 }
