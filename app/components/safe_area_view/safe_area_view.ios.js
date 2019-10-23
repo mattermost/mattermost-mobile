@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Dimensions, Keyboard, NativeModules, View} from 'react-native';
+import {Keyboard, NativeModules, View} from 'react-native';
 import SafeArea from 'react-native-safe-area';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -57,17 +57,16 @@ export default class SafeAreaIos extends PureComponent {
     componentDidMount() {
         this.mounted = true;
 
-        Dimensions.addEventListener('change', this.getSafeAreaInsets);
+        SafeArea.addEventListener('safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsForRootViewChange);
         EventEmitter.on('update_safe_area_view', this.getSafeAreaInsets);
         this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
 
         this.getSafeAreaInsets();
-        this.getStatusBarHeight();
     }
 
     componentWillUnmount() {
-        Dimensions.removeEventListener('change', this.getSafeAreaInsets);
+        SafeArea.removeEventListener('safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsForRootViewChange);
         EventEmitter.off('update_safe_area_view', this.getSafeAreaInsets);
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
@@ -102,6 +101,15 @@ export default class SafeAreaIos extends PureComponent {
             });
         }
     };
+
+    onSafeAreaInsetsForRootViewChange = (result) => {
+        const {safeAreaInsets} = result;
+
+        if (this.mounted && (DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets)) {
+            this.getStatusBarHeight();
+            this.setState({safeAreaInsets});
+        }
+    }
 
     keyboardWillHide = () => {
         this.setState({keyboard: false});

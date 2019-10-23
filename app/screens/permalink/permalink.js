@@ -65,8 +65,6 @@ export default class Permalink extends PureComponent {
             joinChannel: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         channelIsArchived: PropTypes.bool,
@@ -221,24 +219,22 @@ export default class Permalink extends PureComponent {
     };
 
     handlePress = () => {
-        const {channelIdState, channelNameState} = this.state;
+        const {channelIdState} = this.state;
 
         if (this.refs.view) {
             this.refs.view.growOut().then(() => {
-                this.jumpToChannel(channelIdState, channelNameState);
+                this.jumpToChannel(channelIdState);
             });
         }
     };
 
-    jumpToChannel = async (channelId, channelDisplayName) => {
+    jumpToChannel = async (channelId) => {
         if (channelId) {
             const {actions, channelTeamId, currentTeamId, onClose} = this.props;
             const currentChannelId = this.props.channelId;
             const {
                 handleSelectChannel,
                 handleTeamChange,
-                setChannelLoading,
-                setChannelDisplayName,
             } = actions;
 
             actions.selectPost('');
@@ -263,8 +259,6 @@ export default class Permalink extends PureComponent {
                 handleTeamChange(channelTeamId);
             }
 
-            setChannelLoading(channelId !== currentChannelId);
-            setChannelDisplayName(channelDisplayName);
             handleSelectChannel(channelId);
         }
     };
