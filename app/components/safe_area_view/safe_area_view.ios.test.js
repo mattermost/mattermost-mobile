@@ -6,11 +6,13 @@ import {shallow} from 'enzyme';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
-import {DeviceTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import EphemeralStore from 'app/store/ephemeral_store';
 
 import SafeAreaIos from './safe_area_view.ios';
+
+const {PORTRAIT, LANDSCAPE} = ViewTypes;
 
 describe('SafeAreaIos', () => {
     const baseProps = {
@@ -71,8 +73,8 @@ describe('SafeAreaIos', () => {
 
     beforeEach(() => {
         EphemeralStore.safeAreaInsets = {
-            portrait: null,
-            landscape: null,
+            [PORTRAIT]: null,
+            [LANDSCAPE]: null,
         };
     });
 
@@ -190,15 +192,15 @@ describe('SafeAreaIos', () => {
         );
 
         expect(wrapper.state().safeAreaInsets).not.toEqual(PORTRAIT_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.portrait).toEqual(null);
-        expect(EphemeralStore.safeAreaInsets.landscape).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(null);
 
         const landscape = false;
         const instance = wrapper.instance();
         instance.setSafeAreaInsets(PORTRAIT_INSETS.safeAreaInsets, landscape);
         expect(wrapper.state().safeAreaInsets).toEqual(PORTRAIT_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.portrait).toEqual(PORTRAIT_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.landscape).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(PORTRAIT_INSETS.safeAreaInsets);
+        expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(null);
     });
 
     test('should set portrait safe area insets from EphemeralStore', () => {
@@ -206,15 +208,15 @@ describe('SafeAreaIos', () => {
             <SafeAreaIos {...baseProps}/>
         );
 
-        EphemeralStore.safeAreaInsets.portrait = PORTRAIT_INSETS.safeAreaInsets;
+        EphemeralStore.safeAreaInsets[PORTRAIT] = PORTRAIT_INSETS.safeAreaInsets;
         expect(wrapper.state().safeAreaInsets).not.toEqual(PORTRAIT_INSETS.safeAreaInsets);
 
         const landscape = false;
         const instance = wrapper.instance();
         instance.setSafeAreaInsets(IGNORED_INSETS.safeAreaInsets, landscape);
         expect(wrapper.state().safeAreaInsets).toEqual(PORTRAIT_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.portrait).toEqual(PORTRAIT_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.landscape).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(PORTRAIT_INSETS.safeAreaInsets);
+        expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(null);
     });
 
     test('should set landscape safe area insets', () => {
@@ -223,15 +225,15 @@ describe('SafeAreaIos', () => {
         );
 
         expect(wrapper.state().safeAreaInsets).not.toEqual(LANDSCAPE_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.portrait).toEqual(null);
-        expect(EphemeralStore.safeAreaInsets.landscape).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(null);
 
         const landscape = true;
         const instance = wrapper.instance();
         instance.setSafeAreaInsets(LANDSCAPE_INSETS.safeAreaInsets, landscape);
         expect(wrapper.state().safeAreaInsets).toEqual(LANDSCAPE_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.landscape).toEqual(LANDSCAPE_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.portrait).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(LANDSCAPE_INSETS.safeAreaInsets);
+        expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
     });
 
     test('should set landscape safe area insets from EphemeralStore', () => {
@@ -239,22 +241,22 @@ describe('SafeAreaIos', () => {
             <SafeAreaIos {...baseProps}/>
         );
 
-        EphemeralStore.safeAreaInsets.landscape = LANDSCAPE_INSETS.safeAreaInsets;
+        EphemeralStore.safeAreaInsets[LANDSCAPE] = LANDSCAPE_INSETS.safeAreaInsets;
         expect(wrapper.state().safeAreaInsets).not.toEqual(LANDSCAPE_INSETS.safeAreaInsets);
 
         const landscape = true;
         const instance = wrapper.instance();
         instance.setSafeAreaInsets(IGNORED_INSETS.safeAreaInsets, landscape);
         expect(wrapper.state().safeAreaInsets).toEqual(LANDSCAPE_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.landscape).toEqual(LANDSCAPE_INSETS.safeAreaInsets);
-        expect(EphemeralStore.safeAreaInsets.portrait).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(LANDSCAPE_INSETS.safeAreaInsets);
+        expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
     });
 
     test('should add safeAreaInsetsForRootViewDidChange listener when EphemeralStore values are not set', () => {
         const addEventListener = jest.spyOn(SafeArea, 'addEventListener');
 
-        expect(EphemeralStore.safeAreaInsets.portrait).toEqual(null);
-        expect(EphemeralStore.safeAreaInsets.landscape).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(null);
         let wrapper = shallow(
             <SafeAreaIos {...baseProps}/>
         );
@@ -262,7 +264,7 @@ describe('SafeAreaIos', () => {
         expect(addEventListener).toHaveBeenCalledWith('safeAreaInsetsForRootViewDidChange', instance.onSafeAreaInsetsForRootViewChange);
         addEventListener.mockClear();
 
-        EphemeralStore.safeAreaInsets.portrait = TEST_INSETS_1.safeAreaInsets;
+        EphemeralStore.safeAreaInsets[PORTRAIT] = TEST_INSETS_1.safeAreaInsets;
         wrapper = shallow(
             <SafeAreaIos {...baseProps}/>
         );
@@ -270,8 +272,8 @@ describe('SafeAreaIos', () => {
         expect(addEventListener).toHaveBeenCalledWith('safeAreaInsetsForRootViewDidChange', instance.onSafeAreaInsetsForRootViewChange);
         addEventListener.mockClear();
 
-        EphemeralStore.safeAreaInsets.portrait = TEST_INSETS_1.safeAreaInsets;
-        EphemeralStore.safeAreaInsets.landscape = TEST_INSETS_1.safeAreaInsets;
+        EphemeralStore.safeAreaInsets[PORTRAIT] = TEST_INSETS_1.safeAreaInsets;
+        EphemeralStore.safeAreaInsets[LANDSCAPE] = TEST_INSETS_1.safeAreaInsets;
         wrapper = shallow(
             <SafeAreaIos {...baseProps}/>
         );
@@ -286,18 +288,41 @@ describe('SafeAreaIos', () => {
             <SafeAreaIos {...baseProps}/>
         );
         const instance = wrapper.instance();
-        expect(EphemeralStore.safeAreaInsets.portrait).toEqual(null);
-        expect(EphemeralStore.safeAreaInsets.landscape).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(null);
 
         instance.onSafeAreaInsetsForRootViewChange(TEST_INSETS_1);
         expect(removeEventListener).not.toHaveBeenCalled();
 
-        EphemeralStore.safeAreaInsets.portrait = TEST_INSETS_1.safeAreaInsets;
+        EphemeralStore.safeAreaInsets[PORTRAIT] = TEST_INSETS_1.safeAreaInsets;
         instance.onSafeAreaInsetsForRootViewChange(TEST_INSETS_1);
         expect(removeEventListener).not.toHaveBeenCalled();
 
-        EphemeralStore.safeAreaInsets.landscape = TEST_INSETS_1.safeAreaInsets;
+        EphemeralStore.safeAreaInsets[LANDSCAPE] = TEST_INSETS_1.safeAreaInsets;
         instance.onSafeAreaInsetsForRootViewChange(TEST_INSETS_1);
         expect(removeEventListener).toHaveBeenCalledWith('safeAreaInsetsForRootViewDidChange', instance.onSafeAreaInsetsForRootViewChange);
+    });
+
+    test('getSafeAreaInsets should set safe area insets when not already in ephemeral store', async () => {
+        const wrapper = shallow(
+            <SafeAreaIos {...baseProps}/>
+        );
+        const instance = wrapper.instance();
+        const setSafeAreaInsets = jest.spyOn(instance, 'setSafeAreaInsets');
+
+        expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
+        expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(null);
+        await instance.getSafeAreaInsets();
+        expect(setSafeAreaInsets).toHaveBeenCalled();
+        setSafeAreaInsets.mockClear();
+
+        EphemeralStore.safeAreaInsets[PORTRAIT] = TEST_INSETS_1.safeAreaInsets;
+        await instance.getSafeAreaInsets();
+        expect(setSafeAreaInsets).toHaveBeenCalled();
+        setSafeAreaInsets.mockClear();
+
+        EphemeralStore.safeAreaInsets[LANDSCAPE] = TEST_INSETS_1.safeAreaInsets;
+        await instance.getSafeAreaInsets();
+        expect(setSafeAreaInsets).not.toHaveBeenCalled();
     });
 });
