@@ -98,7 +98,7 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
         onPress={[Function]}
         style={
           Object {
-            "backgroundColor": "#ffffff",
+            "backgroundColor": undefined,
             "height": 19,
             "padding": 3,
           }
