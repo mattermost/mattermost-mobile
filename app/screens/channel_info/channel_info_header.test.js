@@ -40,8 +40,10 @@ describe('channel_info_header', () => {
         type: General.OPEN_CHANNEL,
         isArchived: false,
         isBot: false,
+        isTeammateGuest: false,
         hasGuests: false,
         isGroupConstrained: false,
+        isLandscape: false,
     };
 
     test('should match snapshot', async () => {
@@ -76,12 +78,26 @@ describe('channel_info_header', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot when DM and hasGuests', async () => {
+    test('should match snapshot when DM and hasGuests but its me and not the teammate', async () => {
         const wrapper = shallow(
             <ChannelInfoHeader
                 {...baseProps}
                 type={General.DM_CHANNEL}
                 hasGuests={true}
+                isTeammateGuest={false}
+            />,
+            {context: {intl: intlMock}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when DM and hasGuests and is the teammate', async () => {
+        const wrapper = shallow(
+            <ChannelInfoHeader
+                {...baseProps}
+                type={General.DM_CHANNEL}
+                hasGuests={true}
+                isTeammateGuest={true}
             />,
             {context: {intl: intlMock}},
         );

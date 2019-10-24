@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Swiper should match snapshot 1`] = `
+<View
+  onLayout={[Function]}
+  style={
+    Array [
+      Object {
+        "backgroundColor": "transparent",
+        "flex": 1,
+        "position": "relative",
+      },
+    ]
+  }
+>
+  <ScrollViewMock
+    automaticallyAdjustContentInsets={true}
+    bounces={false}
+    contentContainerStyle={
+      Array [
+        Object {
+          "backgroundColor": "transparent",
+        },
+        undefined,
+      ]
+    }
+    horizontal={true}
+    keyboardShouldPersistTaps="handled"
+    onMomentumScrollEnd={[Function]}
+    onScrollBeginDrag={[Function]}
+    pagingEnabled={true}
+    removeClippedSubviews={true}
+    scrollEnabled={true}
+    showsHorizontalScrollIndicator={false}
+    showsVerticalScrollIndicator={false}
+  />
+</View>
+`;

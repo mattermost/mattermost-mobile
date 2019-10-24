@@ -83,7 +83,7 @@ class ShareViewController: SLComposeServiceViewController {
 
     extractDataFromContext()
     
-    if sessionToken == nil {
+    if sessionToken == nil || serverURL == nil {
       showErrorMessage(title: "", message: "Authentication required: Please first login using the app.", VC: self)
     }
   }

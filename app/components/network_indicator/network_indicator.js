@@ -34,7 +34,7 @@ const {
     ANDROID_TOP_PORTRAIT,
     IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
-    IOSX_TOP_PORTRAIT,
+    IOS_INSETS_TOP_PORTRAIT,
 } = ViewTypes;
 
 export default class NetworkIndicator extends PureComponent {
@@ -206,7 +206,7 @@ export default class NetworkIndicator extends PureComponent {
         if (iPhoneWithInsets && isLandscape) {
             return IOS_TOP_LANDSCAPE;
         } else if (iPhoneWithInsets) {
-            return IOSX_TOP_PORTRAIT;
+            return IOS_INSETS_TOP_PORTRAIT;
         } else if (isLandscape && !DeviceTypes.IS_TABLET) {
             return IOS_TOP_LANDSCAPE;
         }

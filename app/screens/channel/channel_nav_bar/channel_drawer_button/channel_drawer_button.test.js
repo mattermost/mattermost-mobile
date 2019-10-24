@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 import NotificationsIOS from 'react-native-notifications';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import Badge from 'app/components/badge';
 import PushNotification from 'app/push_notifications/push_notifications.ios';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelDrawerButton from './channel_drawer_button';
 
@@ -48,7 +48,7 @@ describe('ChannelDrawerButton', () => {
     afterEach(() => NotificationsIOS.setBadgesCount(0));
 
     test('should match, full snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelDrawerButton {...baseProps}/>
         );
 
@@ -69,7 +69,7 @@ describe('ChannelDrawerButton', () => {
             badgeCount: 0,
         };
 
-        shallow(
+        shallowWithIntl(
             <ChannelDrawerButton {...props}/>
         );
         expect(setApplicationIconBadgeNumber).not.toBeCalled();
@@ -83,7 +83,7 @@ describe('ChannelDrawerButton', () => {
             badgeCount: 1,
         };
 
-        shallow(
+        shallowWithIntl(
             <ChannelDrawerButton {...props}/>
         );
         expect(setApplicationIconBadgeNumber).toHaveBeenCalledTimes(1);
@@ -97,7 +97,7 @@ describe('ChannelDrawerButton', () => {
             badgeCount: 0,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelDrawerButton {...props}/>
         );
         NotificationsIOS.getBadgesCount((count) => expect(count).toBe(0));
@@ -115,7 +115,7 @@ describe('ChannelDrawerButton', () => {
             badgeCount: 0,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelDrawerButton {...props}/>
         );
         wrapper.setProps({badgeCount: 2});

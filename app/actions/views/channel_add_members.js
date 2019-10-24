@@ -4,9 +4,9 @@
 import {addChannelMember} from 'mattermost-redux/actions/channels';
 
 export function handleAddChannelMembers(channelId, members) {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         try {
-            const requests = members.map((m) => dispatch(addChannelMember(channelId, m, getState)));
+            const requests = members.map((m) => dispatch(addChannelMember(channelId, m)));
 
             return await Promise.all(requests);
         } catch (error) {

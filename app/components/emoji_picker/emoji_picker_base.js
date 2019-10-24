@@ -72,7 +72,7 @@ export default class EmojiPicker extends PureComponent {
 
         this.sectionListGetItemLayout = sectionListGetItemLayout({
             getItemHeight: () => {
-                return (EMOJI_SIZE + 5) + (EMOJI_GUTTER * 2);
+                return (EMOJI_SIZE + 7) + (EMOJI_GUTTER * 2);
             },
             getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
         });
@@ -161,7 +161,7 @@ export default class EmojiPicker extends PureComponent {
         let lastOffset = 0;
         return emojiSections.map((section) => {
             const start = lastOffset;
-            const nextOffset = (section.data.length * (EMOJI_SIZE + (EMOJI_GUTTER * 2))) + SECTION_HEADER_HEIGHT;
+            const nextOffset = (section.data.length * ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * 2))) + SECTION_HEADER_HEIGHT;
             lastOffset += nextOffset;
 
             return start;
@@ -216,7 +216,7 @@ export default class EmojiPicker extends PureComponent {
 
     getNumberOfColumns = (deviceWidth) => {
         const shorten = DeviceTypes.IS_IPHONE_WITH_INSETS && this.props.isLandscape ? 4 : 2;
-        return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / (EMOJI_SIZE + (EMOJI_GUTTER * shorten)))));
+        return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
     renderItem = ({item}) => {

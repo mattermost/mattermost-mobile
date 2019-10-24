@@ -24,7 +24,7 @@ import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 
 import ChannelsList from './channels_list';
-import DrawerSwiper from './drawer_swipper';
+import DrawerSwiper from './drawer_swiper';
 import TeamsList from './teams_list';
 
 import telemetry from 'app/telemetry';
