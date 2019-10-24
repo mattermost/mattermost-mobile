@@ -370,11 +370,9 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         );
     }
 
-    componentWillReceiveProps(nextProps) {
-        super.componentWillReceiveProps(nextProps);
-
-        const {updateMeRequest, intl} = nextProps;
-        if (this.props.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
+    componentDidUpdate(prevProps) {
+        const {updateMeRequest, intl} = this.props;
+        if (updateMeRequest !== prevProps.updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.notification_settings.save_failed_title',
