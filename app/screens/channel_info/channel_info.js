@@ -85,6 +85,20 @@ export default class ChannelInfo extends PureComponent {
         };
     }
 
+    static getDerivedStateFromProps(nextProps, state) {
+        if (state.isFavorite !== nextProps.isFavorite ||
+            state.isMuted !== nextProps.isChannelMuted ||
+            state.ignoreChannelMentions !== nextProps.ignoreChannelMentions) {
+            return {
+                isFavorite: nextProps.isFavorite,
+                isMuted: nextProps.isChannelMuted,
+                ignoreChannelMentions: nextProps.ignoreChannelMentions,
+            };
+        }
+
+        return null;
+    }
+
     componentDidMount() {
         this.props.actions.getChannelStats(this.props.currentChannel.id);
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
