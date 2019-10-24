@@ -371,6 +371,8 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     }
 
     componentDidUpdate(prevProps) {
+        super.componentDidUpdate(prevProps);
+
         const {updateMeRequest, intl} = this.props;
         if (updateMeRequest !== prevProps.updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
             Alert.alert(
