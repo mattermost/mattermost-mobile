@@ -67,6 +67,7 @@
     "react-redux": "7.1.1",
     "redux": "4.0.4",
     "redux-batched-actions": "0.4.1",
+    "redux-offline": "github:mattermost/redux-offline#885024de96b6ec73650c340c8928066585c413df",
     "redux-persist": "4.10.2",
     "redux-persist-transform-filter": "0.0.20",
     "redux-thunk": "2.3.0",
