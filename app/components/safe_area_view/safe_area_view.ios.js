@@ -8,11 +8,12 @@ import SafeArea from 'react-native-safe-area';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {DeviceTypes} from 'app/constants';
+import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import EphemeralStore from 'app/store/ephemeral_store';
 
 const {StatusBarManager} = NativeModules;
+const {PORTRAIT, LANDSCAPE} = ViewTypes;
 
 export default class SafeAreaIos extends PureComponent {
     static propTypes = {
@@ -60,7 +61,7 @@ export default class SafeAreaIos extends PureComponent {
 
         Dimensions.addEventListener('change', this.getSafeAreaInsets);
         EventEmitter.on('update_safe_area_view', this.getSafeAreaInsets);
-        if (EphemeralStore.safeAreaInsets.portait === null || EphemeralStore.safeAreaInsets.landscape === null) {
+        if (EphemeralStore.safeAreaInsets[PORTRAIT] === null || EphemeralStore.safeAreaInsets[LANDSCAPE] === null) {
             SafeArea.addEventListener('safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsForRootViewChange);
         }
 
@@ -83,7 +84,8 @@ export default class SafeAreaIos extends PureComponent {
     getSafeAreaInsets = async (dimensions) => {
         this.getStatusBarHeight();
 
-        if (DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets) {
+        const safeAreaInsetsStored = EphemeralStore.safeAreaInsets[PORTRAIT] !== null && EphemeralStore.safeAreaInsets[LANDSCAPE] !== null;
+        if ((DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets) && !safeAreaInsetsStored) {
             const window = dimensions?.window || Dimensions.get('window');
             const landscape = window.width > window.length;
             const {safeAreaInsets} = await SafeArea.getSafeAreaInsetsForRootView();
@@ -92,8 +94,8 @@ export default class SafeAreaIos extends PureComponent {
     }
 
     setSafeAreaInsets = (safeAreaInsets, landscape) => {
-        const orientation = landscape ? 'landscape' : 'portrait';
-        if (!EphemeralStore.safeAreaInsets[orientation]) {
+        const orientation = landscape ? LANDSCAPE : PORTRAIT;
+        if (EphemeralStore.safeAreaInsets[orientation] === null) {
             EphemeralStore.safeAreaInsets[orientation] = safeAreaInsets;
         }
 
@@ -119,7 +121,7 @@ export default class SafeAreaIos extends PureComponent {
     };
 
     onSafeAreaInsetsForRootViewChange = ({safeAreaInsets}) => {
-        if (EphemeralStore.safeAreaInsets.portait !== null && EphemeralStore.safeAreaInsets.landscape !== null) {
+        if (EphemeralStore.safeAreaInsets[PORTRAIT] !== null && EphemeralStore.safeAreaInsets[LANDSCAPE] !== null) {
             SafeArea.removeEventListener('safeAreaInsetsForRootViewDidChange', this.onSafeAreaInsetsForRootViewChange);
             return;
         }
