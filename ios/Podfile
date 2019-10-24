@@ -8,6 +8,7 @@ target 'Mattermost' do
   # Pods for Mattermost
   pod 'XCDYouTubeKit', '2.7.1'
   pod 'YoutubePlayer-in-WKWebView', '~> 0.3.1'
+  pod 'Swime', '3.0.6'
 
   target 'MattermostTests' do
     inherit! :search_paths

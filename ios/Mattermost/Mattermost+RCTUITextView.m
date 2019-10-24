@@ -32,10 +32,9 @@
       return NO;
     }
   }
-  
-  // Allow copy and paste string and image
-  if (action == @selector(paste:)) {
-    return [UIPasteboard generalPasteboard].string != nil || [UIPasteboard generalPasteboard].image != nil;
+
+  if (action == @selector(paste:) && [UIPasteboard generalPasteboard].numberOfItems > 0) {
+    return true;
   }
   
   return [super canPerformAction:action withSender:sender];
@@ -45,12 +44,14 @@
   [super paste:sender];
   
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-  if (!pasteboard.hasImages) {
+  if (pasteboard.hasURLs || pasteboard.hasStrings || pasteboard.hasColors) {
     return;
   }
   
-  NSArray<NSDictionary *> *images = [pasteboard getCopiedImages];
-  [OnPasteEventManager pasteImage:images];
+  NSArray<NSDictionary *> *files = [pasteboard getCopiedFiles];
+  if (files != nil && files.count > 0) {
+    [OnPasteEventManager pasteFiles:files];
+  }
 
   // Dismiss contextual menu
   [self resignFirstResponder];

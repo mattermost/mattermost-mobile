@@ -64,25 +64,16 @@ check-style: node_modules ## Runs eslint
 clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleaning started
 
-	@rm -rf node_modules
 	@rm -f .podinstall
+	@rm -rf ios/Pods
+	@rm -rf node_modules
 	@rm -rf dist
 	@rm -rf ios/build
-	@rm -rf ios/Pods
 	@rm -rf android/app/build
 
 	@echo Cleanup finished
 
 post-install:
-	@# Need to copy custom RNDocumentPicker.m that implements direct access to the document picker in iOS
-	@cp ./native_modules/RNDocumentPicker.m node_modules/react-native-document-picker/ios/RNDocumentPicker/RNDocumentPicker.m
-
-	@# Need to copy custom RNCookieManagerIOS.m that fixes a crash when cookies does not have expiration date set
-	@cp ./native_modules/RNCookieManagerIOS.m node_modules/react-native-cookies/ios/RNCookieManagerIOS/RNCookieManagerIOS.m
-
-	@# Need to copy custom RNCNetInfo.m that checks for internet connectivity instead of reaching a host by default
-	@cp ./native_modules/RNCNetInfo.m node_modules/@react-native-community/netinfo/ios/RNCNetInfo.m
-
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
@@ -90,10 +81,6 @@ post-install:
 	@sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-messageformat/package.json
 	@sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-relativeformat/package.json
 	@sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
-	@if [ $(shell grep "const Platform" node_modules/react-native/Libraries/Lists/VirtualizedList.js | grep -civ grep) -eq 0 ]; then \
-		sed $ -i'' -e "s|const ReactNative = require('ReactNative');|const ReactNative = require('ReactNative');`echo $\\\\\\r;`const Platform = require('Platform');|g" node_modules/react-native/Libraries/Lists/VirtualizedList.js; \
-	fi
-	@sed -i'' -e 's|transform: \[{scaleY: -1}\],|...Platform.select({android: {transform: \[{perspective: 1}, {scaleY: -1}\]}, ios: {transform: \[{scaleY: -1}\]}}),|g' node_modules/react-native/Libraries/Lists/VirtualizedList.js
 
 	@./node_modules/.bin/patch-package
 
