@@ -615,7 +615,6 @@ module.exports = [
     './node_modules/node_modules/react-native-button/coalesceNonElementChildren.js',
     './node_modules/node_modules/react-native-cookies/index.js',
     './node_modules/node_modules/react-native-device-info/deviceinfo.js',
-    './node_modules/node_modules/react-native-document-picker/index.js',
     './node_modules/node_modules/react-native-gesture-handler/Directions.js',
     './node_modules/node_modules/react-native-gesture-handler/DrawerLayout.js',
     './node_modules/node_modules/react-native-gesture-handler/GestureButtons.js',
