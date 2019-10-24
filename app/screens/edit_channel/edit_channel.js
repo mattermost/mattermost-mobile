@@ -92,7 +92,7 @@ export default class EditChannel extends PureComponent {
         this.state = {
             error: null,
             updating: false,
-            updateChannelRequest: this.props.updateChannelRequest,
+            updateChannelRequest: props.updateChannelRequest,
             displayName,
             channelURL,
             purpose,
