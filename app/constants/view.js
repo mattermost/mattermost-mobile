@@ -95,6 +95,9 @@ const ViewTypes = keyMirror({
     SELECTED_ACTION_MENU: null,
     SUBMIT_ATTACHMENT_MENU_ACTION: null,
     SELECT_CHANNEL_WITH_MEMBER: null,
+
+    PORTRAIT: null,
+    LANDSCAPE: null,
 });
 
 export default {
