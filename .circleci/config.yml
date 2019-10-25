@@ -170,7 +170,7 @@ commands:
       - deploy:
           name: "Deploy apk to Google Play"
           working_directory: fastlane
-          command: bundle exec fastlane android deploy apk:../<<parameters.apk_path>>
+          command: bundle exec fastlane android deploy apk:./<<parameters.apk_path>>
 
   deploy-ios:
     description: "Deploy ipa to TestFlight"
@@ -183,7 +183,7 @@ commands:
       - deploy:
           name: "Deploy ipa to TestFlight"
           working_directory: fastlane
-          command: bundle exec fastlane ios deploy ipa:../<<parameters.ipa_path>>
+          command: bundle exec fastlane ios deploy ipa:./<<parameters.ipa_path>>
 
   persist:
     description: "Persist mattermost-mobile directory"
