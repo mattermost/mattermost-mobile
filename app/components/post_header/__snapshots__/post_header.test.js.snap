@@ -99,9 +99,7 @@ exports[`PostHeader should match snapshot when post is autoresponder 1`] = `
               "marginRight": 5,
               "maxWidth": "60%",
             },
-            Object {
-              "maxWidth": "30%",
-            },
+            null,
           ]
         }
       >

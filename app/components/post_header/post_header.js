@@ -126,7 +126,7 @@ export default class PostHeader extends PureComponent {
 
         const style = getStyleSheet(theme);
         const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
-        const displayNameStyle = [style.displayNameContainer, showReply && isBot ? style.displayNameContainerBotReplyWidth : null];
+        const displayNameStyle = [style.displayNameContainer, showReply && (isBot || fromAutoResponder || fromWebHook) ? style.displayNameContainerBotReplyWidth : null];
 
         if (fromAutoResponder || fromWebHook) {
             let name = displayName;
@@ -135,7 +135,7 @@ export default class PostHeader extends PureComponent {
             }
 
             return (
-                <View style={[style.displayNameContainer, {maxWidth: fromAutoResponder ? '30%' : '60%'}]}>
+                <View style={displayNameStyle}>
                     <Text
                         style={style.displayName}
                         ellipsizeMode={'tail'}
