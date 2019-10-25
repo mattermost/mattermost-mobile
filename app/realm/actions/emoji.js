@@ -53,8 +53,8 @@ export function getCustomEmojisByName(names) {
             if (item.status === 'fulfilled') {
                 r.emoji.push(item.value);
             } else {
-                const seguments = item.reason.url.split('/');
-                const name = seguments[seguments.length - 1];
+                const segments = item.reason.url.split('/');
+                const name = segments[segments.length - 1];
                 r.nonExistent.push(name);
             }
 
