@@ -127,7 +127,7 @@ public class CustomPushNotification extends PushNotification {
                 }
 
                 if (PUSH_TYPE_MESSAGE.equals(type)) {
-                    String senderName = getSenderName(data.getString("sender_name"), data.getString("channel_name"), data.getString("message"));
+                    String senderName = getSenderName(data);
                     data.putLong("time", new Date().getTime());
                     data.putString("sender_name", senderName);
                     data.putString("sender_id", data.getString("sender_id"));
