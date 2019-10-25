@@ -37,6 +37,39 @@ export function getCustomEmojiByName(name: string) {
     };
 }
 
+export function getCustomEmojisByName(names) {
+    return async (dispatch) => {
+        if (!names || names.length === 0) {
+            return {data: true};
+        }
+
+        const promises = [];
+        names.forEach((name) => {
+            promises.push(Client4.getCustomEmojiByName(name));
+        });
+
+        const st = await allSettled(promises);
+        const result = st.reduce((r, item) => {
+            if (item.status === 'fulfilled') {
+                r.emoji.push(item.value);
+            } else {
+                const segments = item.reason.url.split('/');
+                const name = segments[segments.length - 1];
+                r.nonExistent.push(name);
+            }
+
+            return r;
+        }, {emoji: [], nonExistent: []});
+
+        dispatch({
+            type: EmojiTypes.RECEIVED_CUSTOM_AND_NON_EXISTENT_EMOJIS,
+            data: result,
+        });
+
+        return {data: result.emoji};
+    };
+}
+
 export function getCustomEmojisForPosts(posts) {
     return async (dispatch, getState) => {
         const realm = getState();
@@ -84,31 +117,23 @@ export function getCustomEmojisForPosts(posts) {
             }
         });
 
-        const data = Array.from(customEmojisToLoad);
+        return dispatch(getCustomEmojisByName(Array.from(customEmojisToLoad)));
+    };
+}
 
-        const promises = [];
-        data.forEach((name) => {
-            promises.push(Client4.getCustomEmojiByName(name));
-        });
+export function getCustomEmojisInText(text) {
+    return async (dispatch, getState) => {
+        if (!text) {
+            return {data: true};
+        }
 
-        const st = await allSettled(promises);
-        const result = st.reduce((r, item) => {
-            if (item.status === 'fulfilled') {
-                r.emoji.push(item.value);
-            } else {
-                const seguments = item.reason.url.split('/');
-                const name = seguments[seguments.length - 1];
-                r.nonExistent.push(name);
-            }
+        const realm = getState();
+        const nonExistentEmoji = realm.objects('NonExistentEmoji').map((n) => n);
+        const customEmojisByName = realm.objects('Emoji').map((emoji) => emoji.name);
+        const systemEmojis = Array.from(EmojiIndicesByAlias.keys());
 
-            return r;
-        }, {emoji: [], nonExistent: []});
+        const emojisToLoad = parseNeededCustomEmojisFromText(text, systemEmojis, customEmojisByName, nonExistentEmoji);
 
-        dispatch({
-            type: EmojiTypes.RECEIVED_CUSTOM_AND_NON_EXISTENT_EMOJIS,
-            data: result,
-        });
-
-        return {data: result.emoji};
+        return getCustomEmojisByName(Array.from(emojisToLoad))(dispatch, getState);
     };
 }

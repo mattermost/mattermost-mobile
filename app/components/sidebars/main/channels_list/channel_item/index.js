@@ -18,9 +18,9 @@ function mapPropsToQueries(realm, ownProps) {
     let channel;
     if (fake) {
         // If the channel is fake it means that is a user without a DM channel
-        channel = realm.objectForPrimaryKey('User', channelId) || {addListener: () => true, removeListener: () => true};
+        channel = realm.objectForPrimaryKey('User', channelId) || General.REALM_EMPTY_OBJECT;
     } else {
-        channel = realm.objectForPrimaryKey('Channel', channelId) || {addListener: () => true, removeListener: () => true};
+        channel = realm.objectForPrimaryKey('Channel', channelId) || General.REALM_EMPTY_OBJECT;
     }
 
     return [general, channel, currentUser];

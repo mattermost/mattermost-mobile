@@ -31,4 +31,14 @@ export default {
 
     RESTRICT_DIRECT_MESSAGE_ANY: 'any',
     RESTRICT_DIRECT_MESSAGE_TEAM: 'team',
+
+    IGNORE_CHANNEL_MENTIONS_ON: 'on',
+    IGNORE_CHANNEL_MENTIONS_OFF: 'off',
+    IGNORE_CHANNEL_MENTIONS_DEFAULT: 'default',
+
+    OUT_OF_OFFICE: 'ooo',
+    OFFLINE: 'offline',
+    AWAY: 'away',
+    ONLINE: 'online',
+    DND: 'dnd',
 };

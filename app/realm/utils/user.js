@@ -33,6 +33,18 @@ export function isGuest(user) {
     return haveRole(user?.roles, Roles.SYSTEM_GUEST_ROLE);
 }
 
+export function isAdmin(user) {
+    return isSystemAdmin(user) || isTeamAdmin(user);
+}
+
+export function isChannelAdmin(user) {
+    return haveRole(user?.roles, Roles.CHANNEL_ADMIN_ROLE);
+}
+
+export function isTeamAdmin(user) {
+    return haveRole(user?.roles, Roles.TEAM_ADMIN_ROLE);
+}
+
 export function isSystemAdmin(user) {
     return haveRole(user?.roles, Roles.SYSTEM_ADMIN_ROLE);
 }
