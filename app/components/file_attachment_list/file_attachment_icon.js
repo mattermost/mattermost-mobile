@@ -22,6 +22,8 @@ import pptIcon from 'assets/images/icons/ppt.png';
 import videoIcon from 'assets/images/icons/video.png';
 import wordIcon from 'assets/images/icons/word.png';
 
+import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from 'app/constants/attachment';
+
 const ICON_PATH_FROM_FILE_TYPE = {
     audio: audioIcon,
     code: codeIcon,
@@ -48,10 +50,10 @@ export default class FileAttachmentIcon extends PureComponent {
 
     static defaultProps = {
         backgroundColor: '#fff',
-        iconHeight: 60,
-        iconWidth: 60,
-        wrapperHeight: 80,
-        wrapperWidth: 80,
+        iconHeight: ATTACHMENT_ICON_HEIGHT,
+        iconWidth: ATTACHMENT_ICON_WIDTH,
+        wrapperHeight: ATTACHMENT_ICON_HEIGHT,
+        wrapperWidth: ATTACHMENT_ICON_WIDTH,
     };
 
     getFileIconPath(file) {
@@ -77,7 +79,7 @@ export default class FileAttachmentIcon extends PureComponent {
                 style={[styles.fileIconWrapper, {backgroundColor, height: wrapperHeight, width: wrapperWidth}]}
             >
                 <Image
-                    style={[styles.icon, {height: iconHeight, width: iconWidth}]}
+                    style={[styles.icon, {maxHeight: iconHeight, maxWidth: iconWidth}]}
                     source={source}
                 />
             </View>
@@ -89,12 +91,8 @@ const styles = StyleSheet.create({
     fileIconWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
     },
     icon: {
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
         backgroundColor: '#fff',
     },
 });

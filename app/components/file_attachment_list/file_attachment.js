@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Text,
     View,
+    StyleSheet,
 } from 'react-native';
 
 import * as Utils from 'mattermost-redux/utils/file_utils.js';
@@ -28,6 +29,11 @@ export default class FileAttachment extends PureComponent {
         onLongPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
+        imagesListProps: PropTypes.shape({
+            isSingleImage: PropTypes.bool,
+            moreImagesCount: PropTypes.number,
+        }),
+
     };
 
     static defaultProps = {
@@ -74,7 +80,7 @@ export default class FileAttachment extends PureComponent {
                         ellipsizeMode='tail'
                         style={style.fileInfo}
                     >
-                        {`${data.extension.toUpperCase()} ${Utils.getFormattedFileSize(data)}`}
+                        {`${Utils.getFormattedFileSize(data)}`}
                     </Text>
                 </View>
             </View>
@@ -85,12 +91,30 @@ export default class FileAttachment extends PureComponent {
         this.documentElement = ref;
     };
 
+    renderMoreImagesOverlay = (value) => {
+        if (!value) {
+            return null;
+        }
+
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        return (
+            <View style={style.moreImagesWrapper}>
+                <Text style={style.moreImagesText}>
+                    {`+${value}`}
+                </Text>
+            </View>
+        );
+    };
+
     render() {
         const {
             canDownloadFiles,
             file,
             theme,
             onLongPress,
+            imagesListProps,
         } = this.props;
         const {data} = file;
         const style = getStyleSheet(theme);
@@ -108,48 +132,48 @@ export default class FileAttachment extends PureComponent {
                         file={data || {}}
                         onCaptureRef={this.handleCaptureRef}
                         theme={theme}
+                        isSingleImage={imagesListProps.isSingleImage}
                     />
+                    {this.renderMoreImagesOverlay(imagesListProps.moreImagesCount)}
                 </TouchableWithFeedback>
             );
         } else if (isDocument(data)) {
             fileAttachmentComponent = (
-                <FileAttachmentDocument
-                    ref={this.setDocumentRef}
-                    canDownloadFiles={canDownloadFiles}
-                    file={file}
-                    onLongPress={onLongPress}
-                    theme={theme}
-                />
+                <View style={style.fileWrapper}>
+                    <View style={style.iconWrapper}>
+                        <FileAttachmentDocument
+                            ref={this.setDocumentRef}
+                            canDownloadFiles={canDownloadFiles}
+                            file={file}
+                            onLongPress={onLongPress}
+                            theme={theme}
+                        />
+                    </View>
+                    {this.renderFileInfo()}
+                </View>
             );
         } else {
             fileAttachmentComponent = (
-                <TouchableWithFeedback
-                    onPress={this.handlePreviewPress}
-                    onLongPress={onLongPress}
-                    type={'opacity'}
-                >
-                    <FileAttachmentIcon
-                        file={data}
-                        onCaptureRef={this.handleCaptureRef}
-                        theme={theme}
-                    />
-                </TouchableWithFeedback>
+                <View style={style.fileWrapper}>
+                    <View style={style.iconWrapper}>
+                        <TouchableWithFeedback
+                            onPress={this.handlePreviewPress}
+                            onLongPress={onLongPress}
+                            type={'opacity'}
+                        >
+                            <FileAttachmentIcon
+                                file={data}
+                                onCaptureRef={this.handleCaptureRef}
+                                theme={theme}
+                            />
+                        </TouchableWithFeedback>
+                    </View>
+                    {this.renderFileInfo()}
+                </View>
             );
         }
 
-        return (
-            <View style={[style.fileWrapper]}>
-                {fileAttachmentComponent}
-                <TouchableWithFeedback
-                    style={style.fileInfoContainer}
-                    onLongPress={onLongPress}
-                    onPress={this.handlePreviewPress}
-                    type={'opacity'}
-                >
-                    {this.renderFileInfo()}
-                </TouchableWithFeedback>
-            </View>
-        );
+        return fileAttachmentComponent;
     }
 }
 
@@ -168,22 +192,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 3,
         },
         fileInfo: {
-            marginLeft: 2,
             fontSize: 14,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-        fileInfoContainer: {
-            flex: 1,
-            paddingHorizontal: 8,
-            paddingVertical: 5,
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
+            color: theme.centerChannelColor,
         },
         fileName: {
             flexDirection: 'column',
             flexWrap: 'wrap',
-            marginLeft: 2,
             fontSize: 14,
+            fontWeight: '600',
             color: theme.centerChannelColor,
         },
         fileWrapper: {
@@ -192,9 +208,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 10,
             marginRight: 10,
             borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRadius: 2,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.4),
+            borderRadius: 5,
             width: 300,
+        },
+        iconWrapper: {
+            marginHorizontal: 20,
+            marginVertical: 10,
         },
         circularProgress: {
             width: '100%',
@@ -210,6 +230,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             left: 0,
             alignItems: 'center',
             justifyContent: 'center',
+        },
+        moreImagesWrapper: {
+            ...StyleSheet.absoluteFill,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            borderRadius: 5,
+        },
+        moreImagesText: {
+            color: theme.sidebarHeaderTextColor,
+            fontSize: 24,
+            fontFamily: 'Open Sans',
+            textAlign: 'center',
         },
     };
 });

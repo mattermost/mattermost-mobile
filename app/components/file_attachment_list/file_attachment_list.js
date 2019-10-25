@@ -3,10 +3,7 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {
-    ScrollView,
-    StyleSheet,
-} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -17,6 +14,8 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {emptyFunction} from 'app/utils/general';
 
 import FileAttachment from './file_attachment';
+
+const MAX_VISIBLE_ROW_IMAGES = 4;
 
 export default class FileAttachmentList extends Component {
     static propTypes = {
@@ -40,8 +39,6 @@ export default class FileAttachmentList extends Component {
         super(props);
 
         this.items = [];
-        this.previewItems = [];
-
         this.state = {
             loadingFiles: props.files.length === 0,
         };
@@ -124,8 +121,83 @@ export default class FileAttachmentList extends Component {
         previewImageAtIndex(this.items, idx, this.galleryFiles);
     });
 
-    renderItems = () => {
-        const {canDownloadFiles, fileIds, files} = this.props;
+    imageAttachments = (files) => (files.filter((file) => file.has_preview_image));
+
+    nonImageAttachments = (files) => (files.filter((file) => !file.has_preview_image));
+
+    isSingleImage = () => {
+        const {files} = this.props;
+        return this.imageAttachments(files).length === 1;
+    }
+
+    moreImagesCount = () => {
+        const {files} = this.props;
+        const value = this.imageAttachments(files).length - MAX_VISIBLE_ROW_IMAGES;
+
+        return (value > 0) ? value : null;
+    }
+
+    attachmentIndex = (fileId) => {
+        const {files} = this.props;
+        return files.findIndex((file) => file.id === fileId);
+    }
+
+    renderItems = (items) => {
+        const {canDownloadFiles, onLongPress, theme} = this.props;
+        const isSingleImage = this.isSingleImage();
+        const moreImagesCount = this.moreImagesCount();
+
+        return items.map((file, idx) => {
+            const f = {
+                caption: file.name,
+                data: file,
+            };
+
+            const imagesListProps = {isSingleImage};
+            if (moreImagesCount && (idx === MAX_VISIBLE_ROW_IMAGES - 1)) {
+                imagesListProps.moreImagesCount = moreImagesCount;
+            }
+
+            return (
+                <View
+                    style={styles.pictureFrame}
+                    key={file.id}
+                >
+                    <FileAttachment
+                        key={file.id}
+                        canDownloadFiles={canDownloadFiles}
+                        file={f}
+                        id={file.id}
+                        index={this.attachmentIndex(file.id)}
+                        onCaptureRef={this.handleCaptureRef}
+                        onPreviewPress={this.handlePreviewPress}
+                        onLongPress={onLongPress}
+                        theme={theme}
+                        imagesListProps={imagesListProps}
+                    />
+                </View>
+            );
+        });
+    };
+
+    renderImageRow = (images) => {
+        if (images.length === 0) {
+            return null;
+        }
+
+        const visibleImages = images.slice(0, MAX_VISIBLE_ROW_IMAGES);
+
+        return (
+            <View>
+                <View style={styles.row}>
+                    { this.renderItems(visibleImages) }
+                </View>
+            </View>
+        );
+    };
+
+    render() {
+        const {canDownloadFiles, fileIds, files, isFailed} = this.props;
 
         if (!files.length && fileIds.length > 0) {
             return fileIds.map((id, idx) => (
@@ -140,45 +212,28 @@ export default class FileAttachmentList extends Component {
             ));
         }
 
-        return files.map((file, idx) => {
-            const f = {
-                caption: file.name,
-                data: file,
-            };
-
-            return (
-                <FileAttachment
-                    key={file.id}
-                    canDownloadFiles={canDownloadFiles}
-                    file={f}
-                    id={file.id}
-                    index={idx}
-                    onCaptureRef={this.handleCaptureRef}
-                    onPreviewPress={this.handlePreviewPress}
-                    onLongPress={this.props.onLongPress}
-                    theme={this.props.theme}
-                />
-            );
-        });
-    };
-
-    render() {
-        const {fileIds, isFailed} = this.props;
+        const images = this.imageAttachments(files);
+        const nonImages = this.nonImageAttachments(files);
 
         return (
-            <ScrollView
-                horizontal={true}
-                scrollEnabled={fileIds.length > 1}
-                style={[(isFailed && styles.failed)]}
-                keyboardShouldPersistTaps={'always'}
-            >
-                {this.renderItems()}
-            </ScrollView>
+            <View style={isFailed && styles.failed}>
+                { this.renderImageRow(images) }
+                { this.renderItems(nonImages) }
+            </View>
         );
     }
 }
 
 const styles = StyleSheet.create({
+    row: {
+        flex: 1,
+        flexDirection: 'row',
+    },
+    pictureFrame: {
+        width: '100%',
+        flexShrink: 1,
+        margin: 3,
+    },
     failed: {
         opacity: 0.5,
     },

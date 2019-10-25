@@ -27,6 +27,8 @@ import mattermostBucket from 'app/mattermost_bucket';
 import {changeOpacity} from 'app/utils/theme';
 import {goToScreen} from 'app/actions/navigation';
 
+import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from 'app/constants/attachment';
+
 const {DOCUMENTS_PATH} = DeviceTypes;
 const DOWNLOADING_OFFSET = 28;
 const TEXT_PREVIEW_FORMATS = [
@@ -50,10 +52,10 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     static defaultProps = {
-        iconHeight: 47,
-        iconWidth: 47,
-        wrapperHeight: 80,
-        wrapperWidth: 80,
+        iconHeight: ATTACHMENT_ICON_HEIGHT,
+        iconWidth: ATTACHMENT_ICON_WIDTH,
+        wrapperHeight: ATTACHMENT_ICON_HEIGHT,
+        wrapperWidth: ATTACHMENT_ICON_WIDTH,
     };
 
     static contextTypes = {
