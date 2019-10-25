@@ -14,6 +14,8 @@
  - Fixed an issue on iOS where the Helper text on two Settings screens was not offset on the left.
  - Fixed an issue where the thread view header theme was inconsistent during transition back to main channel view.
  - Fixed an issue on iOS where the navigation bar tucked under the phone's status bar when switching orientation.
+ - Fixed an issue on Android where uploading pictures from storage or camera required unwanted permissions.
+ - Fixed an issue where the timezone setting did not updated when changing back to set automatically.
 
 ## 1.24.0 Release
 - Release Date: October 16, 2019
