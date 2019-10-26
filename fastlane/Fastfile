@@ -729,7 +729,7 @@ def submit_to_testflight(ipa_path)
 
   if(File.file?(ipa_path))
     UI.success("ipa file #{ipa_path}")
-    upload_to_tesflight(
+    pilot(
         ipa: ipa_path
     )
   else
