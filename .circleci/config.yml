@@ -166,11 +166,13 @@ commands:
         type: string
     steps:
       - attach_workspace:
-          at: ~/mattermost-mobile
-      - deploy:
+          at: .
+      - attach_workspace:
+          at: ~/mattermost-mobile-private
+      - run:
           name: "Deploy apk to Google Play"
           working_directory: fastlane
-          command: bundle exec fastlane android deploy apk:./<<parameters.apk_path>>
+          command: bundle exec fastlane android deploy apk:$HOME/mattermost-mobile/<<parameters.apk_path>>
 
   deploy-ios:
     description: "Deploy ipa to TestFlight"
@@ -179,19 +181,27 @@ commands:
         type: string
     steps:
       - attach_workspace:
-          at: ~/mattermost-mobile
-      - deploy:
+          at: .
+      - run:
           name: "Deploy ipa to TestFlight"
           working_directory: fastlane
-          command: bundle exec fastlane ios deploy ipa:./<<parameters.ipa_path>>
+          command: bundle exec fastlane ios deploy ipa:$HOME/mattermost-mobile/<<parameters.ipa_path>>
 
   persist:
     description: "Persist mattermost-mobile directory"
     steps:
       - persist_to_workspace:
-          root: ./
+          root: .
           paths:
-            - ./
+            - .
+
+  persist-private:
+    description: "Persist mattermost-mobile-private directory"
+    steps:
+      - persist_to_workspace:
+          root: ~/mattermost-mobile-private
+          paths:
+            - .
 
   save:
     description: "Save binaries artifacts"
@@ -227,6 +237,7 @@ jobs:
     steps:
       - build-android
       - persist
+      - persist-private
       - save:
           filename: "Mattermost_Beta.apk"
 
@@ -235,6 +246,7 @@ jobs:
     steps:
       - build-android
       - persist
+      - persist-private
       - save:
           filename: "Mattermost.apk"
 
