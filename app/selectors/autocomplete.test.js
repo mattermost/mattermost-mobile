@@ -5,6 +5,7 @@ import assert from 'assert';
 
 import {
     getMatchTermForAtMention,
+    filterMembersNotInChannel,
 } from 'app/selectors/autocomplete';
 
 /* eslint-disable max-nested-callbacks */
@@ -55,5 +56,42 @@ describe('Selectors.Autocomplete', () => {
                 });
             });
         });
+    });
+
+    it('Should return profiles not in channel', () => {
+        const state = {
+            entities: {
+                channels: {
+                    currentChannelId: 'current-channel-id',
+                },
+                users: {
+                    currentUserId: 'current-user-id',
+                    profiles: {
+                        'current-user-id': {id: 'current-user-id', username: 'current', detele_at: 0},
+                        'test-user-id': {id: 'test-user-id', username: 'test', first_name: 'Test', last_name: 'User', email: 'test@example.com', delete_at: 0},
+                        'another-user-id': {id: 'another-user-id', username: 'another', first_name: 'Another', last_name: 'One', email: 'another@example.com', delete_at: 0},
+                    },
+                    profilesNotInChannel: {
+                        'current-channel-id': new Set(['test-user-id', 'another-user-id']),
+                    },
+                },
+            },
+        };
+
+        let profiles = filterMembersNotInChannel(state, '');
+        expect(profiles.length).toBe(2);
+
+        // filter to get the current user, should return zero results
+        profiles = filterMembersNotInChannel(state, 'current');
+        expect(profiles.length).toBe(0);
+
+        profiles = filterMembersNotInChannel(state, 'tes');
+        expect(profiles.length).toBe(1);
+
+        profiles = filterMembersNotInChannel(state, 'one');
+        expect(profiles.length).toBe(1);
+
+        profiles = filterMembersNotInChannel(state, 'example');
+        expect(profiles.length).toBe(2);
     });
 });
