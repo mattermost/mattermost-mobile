@@ -190,9 +190,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     attachmentMargin: {
-        marginTop:2.5,
-        marginLeft:2.5,
+        marginTop: 2.5,
+        marginLeft: 2.5,
         marginBottom: 5,
         marginRight: 5,
-    }
+    },
 });
