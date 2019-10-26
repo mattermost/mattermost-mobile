@@ -167,7 +167,7 @@ export default class ProgressiveImage extends PureComponent {
                     resizeMethod={resizeMethod}
                     onError={onError}
                     source={{uri}}
-                    style={StyleSheet.absoluteFill}
+                    style={[StyleSheet.absoluteFill, styles.attachmentMargin]}
                 >
                     {this.props.children}
                 </ImageComponent>
@@ -189,4 +189,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    attachmentMargin: {
+        marginTop:2.5,
+        marginLeft:2.5,
+        marginBottom: 5,
+        marginRight: 5,
+    }
 });
