@@ -13,7 +13,6 @@ exports[`PostAttachmentOpenGraph should match snapshot with a single image file 
 >
   <FileAttachment
     canDownloadFiles={true}
-    deviceWidth={660}
     file={
       Object {
         "caption": "image.png",

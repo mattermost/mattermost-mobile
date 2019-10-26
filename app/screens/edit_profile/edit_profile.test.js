@@ -21,9 +21,6 @@ describe('edit_profile', () => {
         updateUser: jest.fn(),
         setProfileImageUri: jest.fn(),
         removeProfileImage: jest.fn(),
-        popTopScreen: jest.fn(),
-        dismissModal: jest.fn(),
-        setButtons: jest.fn(),
     };
 
     const baseProps = {

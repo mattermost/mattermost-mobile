@@ -6,6 +6,8 @@ import {shallow} from 'enzyme';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
+import * as NavigationActions from 'app/actions/navigation';
+
 import MoreChannels from './more_channels.js';
 
 jest.mock('react-intl');
@@ -17,9 +19,6 @@ describe('MoreChannels', () => {
         getChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2'}]}),
         searchChannels: jest.fn(),
         setChannelDisplayName: jest.fn(),
-        setButtons: jest.fn(),
-        dismissModal: jest.fn(),
-        goToScreen: jest.fn(),
     };
 
     const baseProps = {
@@ -43,25 +42,29 @@ describe('MoreChannels', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should call props.actions.dismissModal on close', () => {
+    test('should call dismissModal on close', () => {
+        const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
+
         const wrapper = shallow(
             <MoreChannels {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.instance().close();
-        expect(baseProps.actions.dismissModal).toHaveBeenCalledTimes(1);
+        expect(dismissModal).toHaveBeenCalledTimes(1);
     });
 
-    test('should call props.actions.setButtons on setHeaderButtons', () => {
+    test('should call setButtons on setHeaderButtons', () => {
+        const setButtons = jest.spyOn(NavigationActions, 'setButtons');
+
         const wrapper = shallow(
             <MoreChannels {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(1);
+        expect(setButtons).toHaveBeenCalledTimes(1);
         wrapper.instance().setHeaderButtons(true);
-        expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(2);
+        expect(setButtons).toHaveBeenCalledTimes(2);
     });
 
     test('should match return value of filterChannels', () => {

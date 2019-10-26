@@ -9,7 +9,6 @@ import {getCurrentUrl, getConfig} from 'mattermost-redux/selectors/entities/gene
 import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {goToScreen, dismissModal} from 'app/actions/navigation';
 import {purgeOfflineStore} from 'app/actions/views/root';
 import {isLandscape} from 'app/selectors/device';
 import {removeProtocol} from 'app/utils/url';
@@ -36,8 +35,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             clearErrors,
             purgeOfflineStore,
-            goToScreen,
-            dismissModal,
         }, dispatch),
     };
 }

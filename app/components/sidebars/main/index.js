@@ -11,7 +11,6 @@ import {getCurrentTeamId, getMyTeamsCount} from 'mattermost-redux/selectors/enti
 
 import {setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
-import {getDimensions} from 'app/selectors/device';
 import telemetry from 'app/telemetry';
 
 import MainSidebar from './main_sidebar.js';
@@ -38,7 +37,6 @@ function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
 
     return {
-        ...getDimensions(state),
         currentTeamId: getCurrentTeamId(state),
         currentUserId,
         teamsCount: getMyTeamsCount(state),

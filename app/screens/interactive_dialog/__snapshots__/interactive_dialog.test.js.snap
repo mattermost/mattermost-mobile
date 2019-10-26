@@ -18,6 +18,7 @@ exports[`InteractiveDialog should display introduction text if present 1`] = `
   >
     <Connect(StatusBar) />
     <DialogIntroductionText
+      isLandscape={false}
       theme={
         Object {
           "awayIndicator": "#ffbc42",

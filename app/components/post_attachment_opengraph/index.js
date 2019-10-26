@@ -6,8 +6,6 @@ import {bindActionCreators} from 'redux';
 
 import {getOpenGraphMetadata} from 'mattermost-redux/actions/posts';
 
-import {showModalOverCurrentContext} from 'app/actions/navigation';
-
 import {getDimensions} from 'app/selectors/device';
 
 import PostAttachmentOpenGraph from './post_attachment_opengraph';
@@ -22,7 +20,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getOpenGraphMetadata,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

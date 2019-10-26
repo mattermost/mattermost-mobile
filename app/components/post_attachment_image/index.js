@@ -3,9 +3,10 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import ProgressiveImage from 'app/components/progressive_image';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {isGifTooLarge} from 'app/utils/images';
 
 export default class PostAttachmentImage extends React.PureComponent {
@@ -40,9 +41,10 @@ export default class PostAttachmentImage extends React.PureComponent {
         // Note that TouchableWithoutFeedback only works if its child is a View
 
         return (
-            <TouchableWithoutFeedback
+            <TouchableWithFeedback
                 onPress={this.handlePress}
                 style={[styles.imageContainer, {height: this.props.height}]}
+                type={'none'}
             >
                 <View ref={this.image}>
                     <ProgressiveImage
@@ -52,7 +54,7 @@ export default class PostAttachmentImage extends React.PureComponent {
                         onError={this.props.onError}
                     />
                 </View>
-            </TouchableWithoutFeedback>
+            </TouchableWithFeedback>
         );
     }
 }

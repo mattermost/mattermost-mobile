@@ -8,7 +8,6 @@ import {getPing, resetPing, setServerVersion} from 'mattermost-redux/actions/gen
 import {login} from 'mattermost-redux/actions/users';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
-import {resetToChannel, goToScreen} from 'app/actions/navigation';
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
 import {loadConfigAndLicense} from 'app/actions/views/root';
@@ -45,8 +44,6 @@ function mapDispatchToProps(dispatch) {
             resetPing,
             setLastUpgradeCheck,
             setServerVersion,
-            resetToChannel,
-            goToScreen,
         }, dispatch),
     };
 }

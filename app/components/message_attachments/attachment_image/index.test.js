@@ -11,13 +11,10 @@ const originalGetSizeFn = Image.getSize;
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
-import AttachmentImage from './attachment_image';
+import AttachmentImage from './index';
 
 describe('AttachmentImage', () => {
     const baseProps = {
-        actions: {
-            showModalOverCurrentContext: jest.fn(),
-        },
         deviceHeight: 256,
         deviceWidth: 128,
         imageMetadata: {width: 32, height: 32},

@@ -17,6 +17,7 @@ import FormattedText from 'app/components/formatted_text';
 import {DeviceTypes} from 'app/constants';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {showModal, dismissModal} from 'app/actions/navigation';
 
 const {View: AnimatedView} = Animated;
 
@@ -27,8 +28,6 @@ export default class ClientUpgradeListener extends PureComponent {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         currentVersion: PropTypes.string,
         downloadLink: PropTypes.string,
@@ -71,7 +70,7 @@ export default class ClientUpgradeListener extends PureComponent {
         if (versionMismatch && (forceUpgrade || Date.now() - lastUpgradeCheck > UPDATE_TIMEOUT)) {
             this.checkUpgrade(minVersion, latestVersion, nextProps.isLandscape);
         } else if (this.props.isLandscape !== nextProps.isLandscape &&
-            isUpgradeAvailable(this.state.upgradeType) && DeviceTypes.IS_IPHONE_X) {
+            isUpgradeAvailable(this.state.upgradeType) && DeviceTypes.IS_IPHONE_WITH_INSETS) {
             const newTop = nextProps.isLandscape ? 45 : 100;
             this.setState({top: new Animated.Value(newTop)});
         }
@@ -98,10 +97,10 @@ export default class ClientUpgradeListener extends PureComponent {
     toggleUpgradeMessage = (show = true, isLandscape) => {
         let toValue = -100;
         if (show) {
-            if (DeviceTypes.IS_IPHONE_X && isLandscape) {
+            if (DeviceTypes.IS_IPHONE_WITH_INSETS && isLandscape) {
                 toValue = 45;
             } else {
-                toValue = DeviceTypes.IS_IPHONE_X ? 100 : 75;
+                toValue = DeviceTypes.IS_IPHONE_WITH_INSETS ? 100 : 75;
             }
         }
         Animated.timing(this.state.top, {
@@ -141,10 +140,9 @@ export default class ClientUpgradeListener extends PureComponent {
     };
 
     handleLearnMore = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
 
-        actions.dismissModal();
+        dismissModal();
 
         const screen = 'ClientUpgrade';
         const title = intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'});
@@ -160,7 +158,7 @@ export default class ClientUpgradeListener extends PureComponent {
             },
         };
 
-        actions.showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps, options);
 
         this.toggleUpgradeMessage(false);
     };

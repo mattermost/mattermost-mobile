@@ -9,7 +9,6 @@ import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts
 import {getCurrentUserId, makeGetProfilesByIdsAndUsernames} from 'mattermost-redux/selectors/entities/users';
 import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {dismissModal} from 'app/actions/navigation';
 import {isLandscape} from 'app/selectors/device';
 import {getUniqueUserIds} from 'app/utils/reaction';
 
@@ -38,7 +37,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getMissingProfilesByIds,
-            dismissModal,
         }, dispatch),
     };
 }

@@ -1,16 +1,24 @@
 PODS:
+  - Swime (3.0.6)
   - XCDYouTubeKit (2.7.1)
+  - YoutubePlayer-in-WKWebView (0.3.3)
 
 DEPENDENCIES:
+  - Swime (= 3.0.6)
   - XCDYouTubeKit (= 2.7.1)
+  - YoutubePlayer-in-WKWebView (~> 0.3.1)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
+    - Swime
     - XCDYouTubeKit
+    - YoutubePlayer-in-WKWebView
 
 SPEC CHECKSUMS:
+  Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   XCDYouTubeKit: c8567fd5cb388a3099fa26eee4b30df2a467847d
+  YoutubePlayer-in-WKWebView: 7694e858c5c3472ed067d6fe34eb9b944845e63c
 
-PODFILE CHECKSUM: 63cb0d0aef536c8cbf15bf664fcfe31852a13dd1
+PODFILE CHECKSUM: 74e6d20d391445b945031efe1c5d16c093114192
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.7.5

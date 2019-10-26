@@ -5,14 +5,13 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    TouchableOpacity,
 } from 'react-native';
 
 import {General} from 'mattermost-redux/constants';
-import BotTag from 'app/components/bot_tag';
+import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
+import {BotTag, GuestTag} from 'app/components/tag';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import GuestTag from 'app/components/guest_tag';
-
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelMentionItem extends PureComponent {
@@ -51,15 +50,18 @@ export default class ChannelMentionItem extends PureComponent {
 
         const style = getStyleFromTheme(theme);
 
+        let component;
         if (type === General.DM_CHANNEL || type === General.GM_CHANNEL) {
             if (!displayName) {
                 return null;
             }
-            return (
-                <TouchableOpacity
+
+            component = (
+                <TouchableWithFeedback
                     key={channelId}
                     onPress={this.completeMention}
                     style={[style.row, padding(isLandscape)]}
+                    type={'opacity'}
                 >
                     <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
                     <BotTag
@@ -70,18 +72,27 @@ export default class ChannelMentionItem extends PureComponent {
                         show={isGuest}
                         theme={theme}
                     />
-                </TouchableOpacity>
+                </TouchableWithFeedback>
+            );
+        } else {
+            component = (
+                <TouchableWithFeedback
+                    key={channelId}
+                    onPress={this.completeMention}
+                    style={[style.row, padding(isLandscape)]}
+                    type={'opacity'}
+                >
+                    <Text style={style.rowDisplayName}>{displayName}</Text>
+                    <Text style={style.rowName}>{` (~${name})`}</Text>
+                </TouchableWithFeedback>
             );
         }
+
         return (
-            <TouchableOpacity
-                key={channelId}
-                onPress={this.completeMention}
-                style={[style.row, padding(isLandscape)]}
-            >
-                <Text style={style.rowDisplayName}>{displayName}</Text>
-                <Text style={style.rowName}>{` (~${name})`}</Text>
-            </TouchableOpacity>
+            <React.Fragment>
+                {component}
+                <AutocompleteDivider/>
+            </React.Fragment>
         );
     }
 }

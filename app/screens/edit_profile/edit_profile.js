@@ -9,7 +9,9 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {DocumentPickerUtil} from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
+
 import {Client4} from 'mattermost-redux/client';
+import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
@@ -24,8 +26,7 @@ import StatusBar from 'app/components/status_bar/index';
 import ProfilePictureButton from 'app/components/profile_picture_button';
 import ProfilePicture from 'app/components/profile_picture';
 import mattermostBucket from 'app/mattermost_bucket';
-
-import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
+import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
 
 const MAX_SIZE = 20 * 1024 * 1024;
 export const VALID_MIME_TYPES = [
@@ -87,9 +88,6 @@ export default class EditProfile extends PureComponent {
             setProfileImageUri: PropTypes.func.isRequired,
             removeProfileImage: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
@@ -122,7 +120,7 @@ export default class EditProfile extends PureComponent {
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.rightButton.text = context.intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'});
 
-        props.actions.setButtons(props.componentId, buttons);
+        setButtons(props.componentId, buttons);
 
         this.state = {
             email,
@@ -180,21 +178,21 @@ export default class EditProfile extends PureComponent {
     };
 
     close = () => {
-        const {commandType, actions} = this.props;
+        const {commandType} = this.props;
         if (commandType === 'Push') {
-            actions.popTopScreen();
+            popTopScreen();
         } else {
-            actions.dismissModal();
+            dismissModal();
         }
     };
 
     emitCanUpdateAccount = (enabled) => {
-        const {actions, componentId} = this.props;
+        const {componentId} = this.props;
         const buttons = {
             rightButtons: [{...this.rightButton, enabled}],
         };
 
-        actions.setButtons(componentId, buttons);
+        setButtons(componentId, buttons);
     };
 
     handleRequestError = (error) => {

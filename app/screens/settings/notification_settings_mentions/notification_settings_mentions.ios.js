@@ -8,18 +8,20 @@ import {
     View,
 } from 'react-native';
 import {injectIntl} from 'react-intl';
+
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {goToScreen} from 'app/actions/navigation';
 
 import NotificationSettingsMentionsBase from './notification_settings_mention_base';
 
 class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
     goToNotificationSettingsMentionKeywords = () => {
-        const {actions, intl} = this.props;
+        const {intl} = this.props;
         this.goingBack = false;
 
         const screen = 'NotificationSettingsMentionsKeywords';
@@ -29,7 +31,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
             onBack: this.updateMentionKeys,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     renderMentionSection(style) {

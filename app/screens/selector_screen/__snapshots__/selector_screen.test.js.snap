@@ -12,9 +12,12 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -104,9 +107,12 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -196,9 +202,12 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -295,9 +304,12 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -387,9 +399,12 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -479,9 +494,12 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos

@@ -20,6 +20,23 @@ jest.mock('mattermost-redux/selectors/entities/channels', () => ({
     getMyChannelMember: () => ({data: {member: {}}}),
 }));
 
+jest.mock('mattermost-redux/actions/channels', () => {
+    const channelActions = require.requireActual('mattermost-redux/actions/channels');
+    return {
+        ...channelActions,
+        markChannelAsRead: jest.fn(),
+        markChannelAsViewed: jest.fn(),
+    };
+});
+
+jest.mock('mattermost-redux/selectors/entities/teams', () => {
+    const teamSelectors = require.requireActual('mattermost-redux/selectors/entities/teams');
+    return {
+        ...teamSelectors,
+        getTeamByName: jest.fn(() => ({name: 'current-team-name'})),
+    };
+});
+
 const mockStore = configureStore([thunk]);
 
 describe('Actions.Views.Channel', () => {

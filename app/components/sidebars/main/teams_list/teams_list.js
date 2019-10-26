@@ -23,6 +23,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {removeProtocol} from 'app/utils/url';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
+import {showModal} from 'app/actions/navigation';
 
 import TeamsListItem from './teams_list_item';
 
@@ -36,7 +37,6 @@ export default class TeamsList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
         }).isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -86,7 +86,7 @@ export default class TeamsList extends PureComponent {
 
     goToSelectTeam = preventDoubleTap(async () => {
         const {intl} = this.context;
-        const {theme, actions} = this.props;
+        const {theme} = this.props;
         const {serverUrl} = this.state;
         const screen = 'SelectTeam';
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
@@ -103,7 +103,7 @@ export default class TeamsList extends PureComponent {
             },
         };
 
-        actions.showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps, options);
     });
 
     keyExtractor = (item) => {
@@ -117,7 +117,7 @@ export default class TeamsList extends PureComponent {
 
         const {width, height} = Dimensions.get('window');
         const landscape = width > height;
-        if (DeviceTypes.IS_IPHONE_X) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
             return landscape ? 54 : 44;
         }
 

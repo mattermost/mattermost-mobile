@@ -17,7 +17,8 @@ import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getDeviceTimezone} from 'app/utils/timezone';
+import {getDeviceTimezoneAsync} from 'app/utils/timezone';
+import {goToScreen} from 'app/actions/navigation';
 
 export default class Timezone extends PureComponent {
     static propTypes = {
@@ -52,7 +53,7 @@ export default class Timezone extends PureComponent {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         const {actions: {getSupportedTimezones}, timezones} = this.props;
 
         if (timezones.length === 0) {
@@ -60,13 +61,13 @@ export default class Timezone extends PureComponent {
         }
     }
 
-    updateAutomaticTimezone = (useAutomaticTimezone) => {
+    updateAutomaticTimezone = async (useAutomaticTimezone) => {
         const {userTimezone: {manualTimezone}} = this.props;
         let automaticTimezone = '';
 
         this.setState({useAutomaticTimezone});
         if (useAutomaticTimezone) {
-            automaticTimezone = getDeviceTimezone();
+            automaticTimezone = await getDeviceTimezoneAsync();
             this.submitUser({
                 useAutomaticTimezone,
                 automaticTimezone,
@@ -116,7 +117,6 @@ export default class Timezone extends PureComponent {
 
     goToSelectTimezone = () => {
         const {
-            actions,
             userTimezone: {manualTimezone},
         } = this.props;
         const {intl} = this.context;
@@ -129,7 +129,7 @@ export default class Timezone extends PureComponent {
 
         this.goingBack = false;
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     render() {

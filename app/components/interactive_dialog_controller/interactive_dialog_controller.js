@@ -7,10 +7,11 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {Alert} from 'react-native';
 import {intlShape} from 'react-intl';
 
+import {showModal} from 'app/actions/navigation';
+
 export default class InteractiveDialogController extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            showModal: PropTypes.func.isRequired,
             submitInteractiveDialog: PropTypes.func.isRequired,
         }).isRequired,
         triggerId: PropTypes.string,
@@ -88,7 +89,7 @@ export default class InteractiveDialogController extends PureComponent {
             },
         };
 
-        this.props.actions.showModal('InteractiveDialog', dialog.title, null, options);
+        showModal('InteractiveDialog', dialog.title, null, options);
     }
 
     handleCancel = (dialog, url) => {

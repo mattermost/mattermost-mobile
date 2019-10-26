@@ -47,7 +47,7 @@ export default class ExtensionTeam extends PureComponent {
         sections: null,
     };
 
-    componentWillMount() {
+    componentDidMount() {
         this.buildSections();
     }
 

@@ -6,26 +6,27 @@ import PropTypes from 'prop-types';
 import {
     Keyboard,
     Platform,
-    TouchableHighlight,
     View,
     ViewPropTypes,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
+import {Posts} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+
 import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostPreHeader from 'app/components/post_header/post_pre_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {NavigationTypes} from 'app/constants';
 import {fromAutoResponder} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-
-import {Posts} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 
 import Config from 'assets/config';
 
@@ -35,8 +36,6 @@ export default class Post extends PureComponent {
             createPost: PropTypes.func.isRequired,
             insertToDraft: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         channelIsReadOnly: PropTypes.bool,
         currentUserId: PropTypes.string.isRequired,
@@ -69,6 +68,8 @@ export default class Post extends PureComponent {
         location: PropTypes.string,
         isBot: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
+        previousPostExists: PropTypes.bool,
+        beforePrevPostUserId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -91,7 +92,7 @@ export default class Post extends PureComponent {
 
     goToUserProfile = () => {
         const {intl} = this.context;
-        const {actions, post} = this.props;
+        const {post} = this.props;
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
@@ -100,7 +101,7 @@ export default class Post extends PureComponent {
 
         Keyboard.dismiss();
         requestAnimationFrame(() => {
-            actions.goToScreen(screen, title, passProps);
+            goToScreen(screen, title, passProps);
         });
     };
 
@@ -141,10 +142,11 @@ export default class Post extends PureComponent {
             }],
         };
 
-        this.props.actions.showModalOverCurrentContext(screen, passProps);
+        showModalOverCurrentContext(screen, passProps);
     };
 
     handlePress = preventDoubleTap(() => {
+        this.onPressDetected = true;
         const {
             onPress,
             post,
@@ -157,6 +159,10 @@ export default class Post extends PureComponent {
         } else if ((isPostEphemeral(post) || post.state === Posts.POST_DELETED) && !showLongPost) {
             this.onRemovePost(post);
         }
+
+        setTimeout(() => {
+            this.onPressDetected = false;
+        }, 300);
     });
 
     handleReply = preventDoubleTap(() => {
@@ -214,7 +220,7 @@ export default class Post extends PureComponent {
     });
 
     showPostOptions = () => {
-        if (this.postBodyRef?.current) {
+        if (this.postBodyRef?.current && !this.onPressDetected) {
             this.postBodyRef.current.showPostOptions();
         }
     };
@@ -246,6 +252,8 @@ export default class Post extends PureComponent {
             skipPinnedHeader,
             location,
             isLandscape,
+            previousPostExists,
+            beforePrevPostUserId,
         } = this.props;
 
         if (!post) {
@@ -295,6 +303,8 @@ export default class Post extends PureComponent {
                     onUsernamePress={onUsernamePress}
                     renderReplies={renderReplies}
                     theme={theme}
+                    previousPostExists={previousPostExists}
+                    beforePrevPostUserId={beforePrevPostUserId}
                 />
             );
         }
@@ -302,50 +312,52 @@ export default class Post extends PureComponent {
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
 
         return (
-            <TouchableHighlight
-                style={[style.postStyle, highlighted, padding(isLandscape)]}
-                onPress={this.handlePress}
-                onLongPress={this.showPostOptions}
-                delayLongPress={75}
-                underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-            >
-                <React.Fragment>
-                    <PostPreHeader
-                        isConsecutive={mergeMessage}
-                        isFlagged={isFlagged}
-                        isPinned={post.is_pinned}
-                        rightColumnStyle={style.rightColumn}
-                        skipFlaggedHeader={skipFlaggedHeader}
-                        skipPinnedHeader={skipPinnedHeader}
-                        theme={theme}
-                    />
-                    <View style={[style.container, this.props.style, consecutiveStyle]}>
-                        {userProfile}
-                        <View style={rightColumnStyle}>
-                            {postHeader}
-                            <PostBody
-                                ref={this.postBodyRef}
-                                highlight={highlight}
-                                channelIsReadOnly={channelIsReadOnly}
-                                isLastPost={isLastPost}
-                                isSearchResult={isSearchResult}
-                                onFailedPostPress={this.handleFailedPostPress}
-                                onHashtagPress={onHashtagPress}
-                                onPermalinkPress={onPermalinkPress}
-                                onPress={this.handlePress}
-                                post={post}
-                                replyBarStyle={replyBarStyle}
-                                managedConfig={managedConfig}
-                                isFlagged={isFlagged}
-                                isReplyPost={isReplyPost}
-                                showAddReaction={showAddReaction}
-                                showLongPost={showLongPost}
-                                location={location}
-                            />
+            <View style={[style.postStyle, highlighted, padding(isLandscape)]}>
+                <TouchableWithFeedback
+                    onPress={this.handlePress}
+                    onLongPress={this.showPostOptions}
+                    delayLongPress={100}
+                    underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+                    cancelTouchOnPanning={true}
+                >
+                    <React.Fragment>
+                        <PostPreHeader
+                            isConsecutive={mergeMessage}
+                            isFlagged={isFlagged}
+                            isPinned={post.is_pinned}
+                            rightColumnStyle={style.preHeaderRightColumn}
+                            skipFlaggedHeader={skipFlaggedHeader}
+                            skipPinnedHeader={skipPinnedHeader}
+                            theme={theme}
+                        />
+                        <View style={[style.container, this.props.style, consecutiveStyle]}>
+                            {userProfile}
+                            <View style={rightColumnStyle}>
+                                {postHeader}
+                                <PostBody
+                                    ref={this.postBodyRef}
+                                    highlight={highlight}
+                                    channelIsReadOnly={channelIsReadOnly}
+                                    isLastPost={isLastPost}
+                                    isSearchResult={isSearchResult}
+                                    onFailedPostPress={this.handleFailedPostPress}
+                                    onHashtagPress={onHashtagPress}
+                                    onPermalinkPress={onPermalinkPress}
+                                    onPress={this.handlePress}
+                                    post={post}
+                                    replyBarStyle={replyBarStyle}
+                                    managedConfig={managedConfig}
+                                    isFlagged={isFlagged}
+                                    isReplyPost={isReplyPost}
+                                    showAddReaction={showAddReaction}
+                                    showLongPost={showLongPost}
+                                    location={location}
+                                />
+                            </View>
                         </View>
-                    </View>
-                </React.Fragment>
-            </TouchableHighlight>
+                    </React.Fragment>
+                </TouchableWithFeedback>
+            </View>
         );
     }
 }
@@ -354,12 +366,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         postStyle: {
             overflow: 'hidden',
+            flex: 1,
         },
         container: {
             flexDirection: 'row',
         },
         pendingPost: {
             opacity: 0.5,
+        },
+        preHeaderRightColumn: {
+            flex: 1,
+            flexDirection: 'column',
+            marginLeft: 2,
         },
         rightColumn: {
             flex: 1,
@@ -393,6 +411,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         replyBar: {
             backgroundColor: theme.centerChannelColor,
             opacity: 0.1,
+            marginLeft: 1,
             marginRight: 7,
             width: 3,
             flexBasis: 3,

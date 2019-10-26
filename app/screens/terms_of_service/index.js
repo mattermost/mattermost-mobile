@@ -8,12 +8,6 @@ import {getTermsOfService, logout, updateMyTermsOfServiceStatus} from 'mattermos
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {
-    setButtons,
-    dismissModal,
-    dismissAllModals,
-} from 'app/actions/navigation';
-
 import TermsOfService from './terms_of_service.js';
 
 function mapStateToProps(state) {
@@ -31,9 +25,6 @@ function mapDispatchToProps(dispatch) {
             getTermsOfService,
             logout,
             updateMyTermsOfServiceStatus,
-            setButtons,
-            dismissModal,
-            dismissAllModals,
         }, dispatch),
     };
 }

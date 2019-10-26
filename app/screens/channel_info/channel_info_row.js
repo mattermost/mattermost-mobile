@@ -60,9 +60,7 @@ function channelInfoRow(props) {
                 value={detail}
             />
         );
-    }
-
-    if (rightArrow) {
+    } else if (rightArrow) {
         actionElement = (
             <Icon
                 name='angle-right'

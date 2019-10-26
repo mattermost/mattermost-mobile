@@ -3,12 +3,12 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import FormattedText from 'app/components/formatted_text';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {t} from 'app/utils/i18n';
-
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ShowMoreButton extends PureComponent {
@@ -73,12 +73,13 @@ export default class ShowMoreButton extends PureComponent {
                 }
                 <View style={style.container}>
                     <View style={style.dividerLeft}/>
-                    <TouchableOpacity
+                    <TouchableWithFeedback
                         onPress={this.props.onPress}
                         style={style.buttonContainer}
+                        type={'opacity'}
                     >
                         {this.renderButton(showMore, style)}
-                    </TouchableOpacity>
+                    </TouchableWithFeedback>
                     <View style={style.dividerRight}/>
                 </View>
             </View>

@@ -4,8 +4,10 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import PostList from './post_list';
 import Preferences from 'mattermost-redux/constants/preferences';
+
+import * as NavigationActions from 'app/actions/navigation';
+import PostList from './post_list';
 
 jest.useFakeTimers();
 
@@ -18,7 +20,6 @@ describe('PostList', () => {
             refreshChannelWithRetry: jest.fn(),
             selectFocusedPostId: jest.fn(),
             setDeepLinkURL: jest.fn(),
-            showModalOverCurrentContext: jest.fn(),
         },
         deepLinkURL: '',
         lastPostIndex: -1,
@@ -42,10 +43,12 @@ describe('PostList', () => {
     });
 
     test('setting permalink deep link', () => {
+        const showModalOverCurrentContext = jest.spyOn(NavigationActions, 'showModalOverCurrentContext');
+
         wrapper.setProps({deepLinkURL: deepLinks.permalink});
         expect(baseProps.actions.setDeepLinkURL).toHaveBeenCalled();
         expect(baseProps.actions.selectFocusedPostId).toHaveBeenCalled();
-        expect(baseProps.actions.showModalOverCurrentContext).toHaveBeenCalled();
+        expect(showModalOverCurrentContext).toHaveBeenCalled();
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
@@ -64,7 +67,9 @@ describe('PostList', () => {
         const indexInRange = baseProps.postIds.length;
         const indexOutOfRange = [-1, indexInRange + 1];
 
-        instance.flatListRef = {};
+        instance.flatListRef = {
+            current: null,
+        };
         instance.scrollToIndex(indexInRange);
         expect(flatListScrollToIndex).not.toHaveBeenCalled();
 

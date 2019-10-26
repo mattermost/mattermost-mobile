@@ -17,19 +17,17 @@ import {General, WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import DrawerLayout, {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
+import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 
 import ChannelsList from './channels_list';
-import DrawerSwiper from './drawer_swipper';
+import DrawerSwiper from './drawer_swiper';
 import TeamsList from './teams_list';
 
 import telemetry from 'app/telemetry';
-
-const DRAWER_INITIAL_OFFSET = 40;
 
 export default class ChannelSidebar extends Component {
     static propTypes = {
@@ -44,7 +42,6 @@ export default class ChannelSidebar extends Component {
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
         previewChannel: PropTypes.func,
@@ -61,6 +58,7 @@ export default class ChannelSidebar extends Component {
         this.drawerRef = React.createRef();
         this.channelListRef = React.createRef();
         this.state = {
+            deviceWidth: Dimensions.get('window').width,
             show: false,
             openDrawerOffset: DRAWER_INITIAL_OFFSET,
             drawerOpened: false,
@@ -83,15 +81,14 @@ export default class ChannelSidebar extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, deviceWidth, teamsCount, theme} = this.props;
-        const {openDrawerOffset, isSplitView, permanentSidebar, show, searching} = this.state;
+        const {currentTeamId, teamsCount, theme} = this.props;
+        const {deviceWidth, openDrawerOffset, isSplitView, permanentSidebar, show, searching} = this.state;
 
-        if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching) {
+        if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching || nextState.deviceWidth !== deviceWidth) {
             return true;
         }
 
         return nextProps.currentTeamId !== currentTeamId ||
-            nextProps.deviceWidth !== deviceWidth ||
             nextProps.teamsCount !== teamsCount ||
             nextProps.theme !== theme ||
             nextState.isSplitView !== isSplitView ||
@@ -105,7 +102,7 @@ export default class ChannelSidebar extends Component {
         EventEmitter.off('renderDrawer', this.handleShowDrawerContent);
         EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
-        Dimensions.addEventListener('change', this.handleDimensions);
+        Dimensions.removeEventListener('change', this.handleDimensions);
     }
 
     handleAndroidBack = () => {
@@ -132,7 +129,7 @@ export default class ChannelSidebar extends Component {
                     openDrawerOffset = window.width * 0.5;
                 }
 
-                this.setState({openDrawerOffset});
+                this.setState({openDrawerOffset, deviceWidth: window.width});
             }
         }
     };
@@ -332,7 +329,7 @@ export default class ChannelSidebar extends Component {
             return null;
         }
 
-        const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_X || mattermostManaged.hasSafeAreaInsets;
+        const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets;
         const multipleTeams = teamsCount > 1;
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {
@@ -400,8 +397,8 @@ export default class ChannelSidebar extends Component {
     };
 
     render() {
-        const {children, deviceWidth} = this.props;
-        const {openDrawerOffset} = this.state;
+        const {children} = this.props;
+        const {deviceWidth, openDrawerOffset} = this.state;
         const isTablet = DeviceTypes.IS_TABLET && !this.state.isSplitView && this.state.permanentSidebar;
         const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
 

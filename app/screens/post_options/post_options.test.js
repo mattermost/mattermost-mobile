@@ -26,8 +26,6 @@ describe('PostOptions', () => {
         removePost: jest.fn(),
         unflagPost: jest.fn(),
         unpinPost: jest.fn(),
-        dismissModal: jest.fn(),
-        showModal: jest.fn(),
     };
 
     const post = {

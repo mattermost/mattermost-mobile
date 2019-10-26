@@ -5,9 +5,12 @@ exports[`DialogIntroductionText should not render the component with an empty va
 exports[`DialogIntroductionText should render the introduction text correctly 1`] = `
 <View
   style={
-    Object {
-      "marginHorizontal": 15,
-    }
+    Array [
+      Object {
+        "marginHorizontal": 15,
+      },
+      null,
+    ]
   }
 >
   <Connect(Markdown)
@@ -106,10 +109,11 @@ exports[`DialogIntroductionText should render the introduction text correctly 1`
           "color": "#2389d7",
         },
         "mention": Object {
-          "color": "#2389d7",
+          "color": "#166de0",
         },
         "mention_highlight": Object {
           "backgroundColor": "#ffe577",
+          "color": "#166de0",
         },
         "strong": Object {
           "fontWeight": "bold",

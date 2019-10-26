@@ -9,7 +9,6 @@ import {getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
 import {patchChannel, getChannel} from 'mattermost-redux/actions/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {setButtons, popTopScreen} from 'app/actions/navigation';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {getDimensions} from 'app/selectors/device';
 
@@ -36,8 +35,6 @@ function mapDispatchToProps(dispatch) {
             patchChannel,
             getChannel,
             setChannelDisplayName,
-            setButtons,
-            popTopScreen,
         }, dispatch),
     };
 }

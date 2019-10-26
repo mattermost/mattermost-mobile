@@ -16,7 +16,6 @@ describe('PostAttachmentOpenGraph', () => {
     const baseProps = {
         actions: {
             loadFilesForPostIfNecessary,
-            showModalOverCurrentContext: jest.fn(),
         },
         canDownloadFiles: true,
         deviceHeight: 680,
@@ -72,7 +71,6 @@ describe('PostAttachmentOpenGraph', () => {
             files: [],
             actions: {
                 loadFilesForPostIfNecessary: loadFilesForPostIfNecessaryMock,
-                showModalOverCurrentContext: jest.fn(),
             },
         };
 

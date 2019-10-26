@@ -1,13 +1,20 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`profile_picture_button should match snapshot 1`] = `
-<Connect(AttachmentButton)
+<AttachmentButton
   blurTextBox={[MockFunction]}
+  browseFileTypes="public.item"
+  canBrowseFiles={true}
+  canBrowsePhotoLibrary={true}
+  canBrowseVideoLibrary={true}
+  canTakePhoto={true}
+  canTakeVideo={true}
   extraOptions={
     Array [
       null,
     ]
   }
+  maxFileCount={5}
   maxFileSize={20971520}
   theme={
     Object {
@@ -38,5 +45,6 @@ exports[`profile_picture_button should match snapshot 1`] = `
     }
   }
   uploadFiles={[MockFunction]}
+  validMimeTypes={Array []}
 />
 `;

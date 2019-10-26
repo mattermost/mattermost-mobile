@@ -15,12 +15,10 @@ import ClockDisplay from 'app/screens/settings/clock_display';
 import SettingsItem from 'app/screens/settings/settings_item';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {goToScreen} from 'app/actions/navigation';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
@@ -41,13 +39,12 @@ export default class DisplaySettings extends PureComponent {
     };
 
     goToClockDisplaySettings = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
 
         if (Platform.OS === 'ios') {
             const screen = 'ClockDisplaySettings';
             const title = intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'});
-            actions.goToScreen(screen, title);
+            goToScreen(screen, title);
             return;
         }
 
@@ -55,30 +52,28 @@ export default class DisplaySettings extends PureComponent {
     });
 
     goToSidebarSettings = preventDoubleTap(() => {
-        const {actions, theme} = this.props;
+        const {theme} = this.props;
         const {intl} = this.context;
         const screen = 'SidebarSettings';
         const title = intl.formatMessage({id: 'mobile.display_settings.sidebar', defaultMessage: 'Sidebar'});
 
-        actions.goToScreen(screen, title, {theme});
+        goToScreen(screen, title, {theme});
     });
 
     goToTimezoneSettings = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'TimezoneSettings';
         const title = intl.formatMessage({id: 'mobile.advanced_settings.timezone', defaultMessage: 'Timezone'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     goToThemeSettings = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'ThemeSettings';
         const title = intl.formatMessage({id: 'mobile.display_settings.theme', defaultMessage: 'Theme'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     render() {

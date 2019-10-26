@@ -12,9 +12,6 @@ import PostBody from './post_body.js';
 
 describe('PostBody', () => {
     const baseProps = {
-        actions: {
-            showModalOverCurrentContext: jest.fn(),
-        },
         canDelete: true,
         channelIsReadOnly: false,
         deviceHeight: 1920,

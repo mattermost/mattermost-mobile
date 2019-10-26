@@ -6,14 +6,14 @@ import PropTypes from 'prop-types';
 import {
     Switch,
     Text,
-    TouchableHighlight,
     View,
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
-import VectorIcon from 'app/components/vector_icon.js';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
+import VectorIcon from 'app/components/vector_icon';
 
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -55,9 +55,9 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 function createTouchableComponent(children, action) {
     return (
-        <TouchableHighlight onPress={action}>
+        <TouchableWithFeedback onPress={action}>
             {children}
-        </TouchableHighlight>
+        </TouchableWithFeedback>
     );
 }
 

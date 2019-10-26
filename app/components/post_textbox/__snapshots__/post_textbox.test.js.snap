@@ -19,8 +19,15 @@ exports[`PostTextBox should match, full snapshot 1`] = `
       ]
     }
   >
-    <Connect(AttachmentButton)
+    <AttachmentButton
       blurTextBox={[Function]}
+      browseFileTypes="public.item"
+      canBrowseFiles={true}
+      canBrowsePhotoLibrary={true}
+      canBrowseVideoLibrary={true}
+      canTakePhoto={true}
+      canTakeVideo={true}
+      extraOptions={null}
       fileCount={0}
       maxFileCount={5}
       maxFileSize={1024}
@@ -55,6 +62,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         }
       }
       uploadFiles={[Function]}
+      validMimeTypes={Array []}
     />
     <View
       style={

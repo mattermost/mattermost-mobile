@@ -9,12 +9,6 @@ import {clearSearch, getRecentMentions} from 'mattermost-redux/actions/search';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {
-    dismissModal,
-    goToScreen,
-    showSearchModal,
-    showModalOverCurrentContext,
-} from 'app/actions/navigation';
 import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
 import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
 
@@ -46,10 +40,6 @@ function mapDispatchToProps(dispatch) {
             getRecentMentions,
             selectFocusedPostId,
             selectPost,
-            showSearchModal,
-            dismissModal,
-            goToScreen,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

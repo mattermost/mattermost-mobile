@@ -47,9 +47,9 @@ export default class NotificationSettingsMobileBase extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 

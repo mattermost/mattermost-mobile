@@ -9,21 +9,19 @@ import {loadMe} from 'mattermost-redux/actions/users';
 
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
-import initialState from 'app/initial_state';
 import {getAppCredentials} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/device';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
-import configureStore from 'app/store';
+import store from 'app/store';
 import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import pushNotificationsUtils from 'app/utils/push_notifications';
 
 const {MattermostShare} = NativeModules;
 const sharedExtensionStarted = Platform.OS === 'android' && MattermostShare.isOpened;
-export const store = configureStore(initialState);
 
 const init = async () => {
     const credentials = await getAppCredentials();
@@ -57,9 +55,9 @@ const launchApp = async (credentials) => {
 
     if (credentials) {
         store.dispatch(loadMe());
-        store.dispatch(resetToChannel({skipMetrics: true}));
+        resetToChannel({skipMetrics: true});
     } else {
-        store.dispatch(resetToSelectServer(emmProvider.allowOtherServers));
+        resetToSelectServer(emmProvider.allowOtherServers);
     }
 
     telemetry.startSinceLaunch(['start:splash_screen']);

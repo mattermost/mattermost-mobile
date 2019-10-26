@@ -3,9 +3,7 @@
 
 import React from 'react';
 import {
-    FlatList,
     KeyboardAvoidingView,
-    SectionList,
     View,
 } from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
@@ -16,61 +14,20 @@ import SearchBar from 'app/components/search_bar';
 import {DeviceTypes} from 'app/constants';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from 'app/utils/theme';
 
-import EmojiPickerBase, {getStyleSheetFromTheme, SECTION_MARGIN} from './emoji_picker_base';
-
-const SCROLLVIEW_NATIVE_ID = 'emojiPicker';
+import EmojiPickerBase, {getStyleSheetFromTheme, SCROLLVIEW_NATIVE_ID} from './emoji_picker_base';
 
 export default class EmojiPicker extends EmojiPickerBase {
     render() {
         const {formatMessage} = this.context.intl;
-        const {deviceWidth, isLandscape, theme} = this.props;
-        const {emojis, filteredEmojis, searchTerm} = this.state;
+        const {isLandscape, theme} = this.props;
+        const {searchTerm} = this.state;
         const styles = getStyleSheetFromTheme(theme);
 
-        const shorten = DeviceTypes.IS_IPHONE_X && isLandscape ? 6 : 2;
+        const shorten = DeviceTypes.IS_IPHONE_WITH_INSETS && isLandscape ? 6 : 2;
 
-        let listComponent;
-        if (searchTerm) {
-            listComponent = (
-                <FlatList
-                    data={filteredEmojis}
-                    initialListSize={10}
-                    keyboardShouldPersistTaps='always'
-                    keyExtractor={this.flatListKeyExtractor}
-                    nativeID={SCROLLVIEW_NATIVE_ID}
-                    pageSize={10}
-                    renderItem={this.flatListRenderItem}
-                    style={styles.flatList}
-                />
-            );
-        } else {
-            listComponent = (
-                <SectionList
-                    getItemLayout={this.sectionListGetItemLayout}
-                    keyboardShouldPersistTaps='always'
-                    keyboardDismissMode='interactive'
-                    ListFooterComponent={this.renderFooter}
-                    nativeID={SCROLLVIEW_NATIVE_ID}
-                    onEndReached={this.loadMoreCustomEmojis}
-                    onEndReachedThreshold={0}
-                    onMomentumScrollEnd={this.onMomentumScrollEnd}
-                    onScroll={this.onScroll}
-                    onScrollToIndexFailed={this.handleScrollToSectionFailed}
-                    pageSize={30}
-                    ref={this.attachSectionList}
-                    removeClippedSubviews={false}
-                    renderItem={this.renderItem}
-                    renderSectionHeader={this.renderSectionHeader}
-                    sections={emojis}
-                    showsVerticalScrollIndicator={false}
-                    style={[styles.sectionList, {width: deviceWidth - (SECTION_MARGIN * shorten)}]}
-                />
-            );
-        }
-
-        let keyboardOffset = DeviceTypes.IS_IPHONE_X ? 50 : 30;
+        let keyboardOffset = DeviceTypes.IS_IPHONE_WITH_INSETS ? 50 : 30;
         if (isLandscape) {
-            keyboardOffset = DeviceTypes.IS_IPHONE_X ? 0 : 10;
+            keyboardOffset = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 10;
         }
 
         const searchBarInput = {
@@ -111,7 +68,7 @@ export default class EmojiPicker extends EmojiPickerBase {
                         />
                     </View>
                     <View style={[styles.container]}>
-                        {listComponent}
+                        {this.renderListComponent(shorten)}
                         {!searchTerm &&
                         <KeyboardTrackingView
                             ref={this.keyboardTracker}

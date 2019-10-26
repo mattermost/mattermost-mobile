@@ -21,7 +21,6 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
-import SafeAreaView from 'app/components/safe_area_view';
 
 import merge from 'deepmerge';
 
@@ -29,6 +28,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
+import SafeAreaView from 'app/components/safe_area_view';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
@@ -38,6 +38,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 import {changeOpacity} from 'app/utils/theme';
+import {resetToChannel, goToScreen} from 'app/actions/navigation';
 
 import telemetry from 'app/telemetry';
 
@@ -53,7 +54,6 @@ export default class SelectServer extends PureComponent {
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
             setServerVersion: PropTypes.func.isRequired,
         }).isRequired,
@@ -159,7 +159,6 @@ export default class SelectServer extends PureComponent {
     };
 
     goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
-        const {actions} = this.props;
         const defaultOptions = {
             popGesture: !LocalConfig.AutoSelectServerUrl,
             topBar: {
@@ -169,7 +168,7 @@ export default class SelectServer extends PureComponent {
         };
         const options = merge(defaultOptions, navOptions);
 
-        actions.goToScreen(screen, title, passProps, options);
+        goToScreen(screen, title, passProps, options);
     };
 
     handleAndroidKeyboard = () => {
@@ -287,7 +286,7 @@ export default class SelectServer extends PureComponent {
         await this.props.actions.handleSuccessfulLogin();
         this.scheduleSessionExpiredNotification();
 
-        this.props.actions.resetToChannel();
+        resetToChannel();
     };
 
     pingServer = (url, retryWithHttp = true) => {

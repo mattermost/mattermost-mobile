@@ -21,12 +21,12 @@ import {getNotificationProps} from 'app/utils/notify_props';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {goToScreen} from 'app/actions/navigation';
 
 class NotificationSettings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             updateMe: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
@@ -63,7 +63,7 @@ class NotificationSettings extends PureComponent {
     });
 
     goToNotificationSettingsAutoResponder = () => {
-        const {actions, currentUser, intl} = this.props;
+        const {currentUser, intl} = this.props;
         const screen = 'NotificationSettingsAutoResponder';
         const title = intl.formatMessage({
             id: 'mobile.notification_settings.auto_responder_short',
@@ -74,11 +74,11 @@ class NotificationSettings extends PureComponent {
             onBack: this.saveAutoResponder,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     goToNotificationSettingsEmail = () => {
-        const {actions, currentUser, intl} = this.props;
+        const {currentUser, intl} = this.props;
         const screen = 'NotificationSettingsEmail';
         const title = intl.formatMessage({
             id: 'mobile.notification_settings.email_title',
@@ -88,11 +88,11 @@ class NotificationSettings extends PureComponent {
             currentUser,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     goToNotificationSettingsMentions = () => {
-        const {actions, currentUser, intl} = this.props;
+        const {currentUser, intl} = this.props;
         const screen = 'NotificationSettingsMentions';
         const title = intl.formatMessage({
             id: 'mobile.notification_settings.mentions_replies',
@@ -103,11 +103,11 @@ class NotificationSettings extends PureComponent {
             onBack: this.saveNotificationProps,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     goToNotificationSettingsMobile = () => {
-        const {actions, currentUser, intl} = this.props;
+        const {currentUser, intl} = this.props;
         const screen = 'NotificationSettingsMobile';
         const title = intl.formatMessage({
             id: 'mobile.notification_settings.mobile_title',
@@ -121,7 +121,7 @@ class NotificationSettings extends PureComponent {
                 notificationPreferences,
             };
             requestAnimationFrame(() => {
-                actions.goToScreen(screen, title, passProps);
+                goToScreen(screen, title, passProps);
             });
         }).catch((e) => {
             Alert.alert('There was a problem getting the device preferences', e.message);

@@ -72,12 +72,13 @@ export default class ThreadIOS extends ThreadBase {
                     accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                 >
                     <PostTextbox
-                        ref={this.postTextbox}
-                        channelIsArchived={channelIsArchived}
-                        rootId={rootId}
                         channelId={channelId}
-                        onCloseChannel={this.onCloseChannel}
+                        channelIsArchived={channelIsArchived}
                         cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
+                        onCloseChannel={this.onCloseChannel}
+                        ref={this.postTextbox}
+                        rootId={rootId}
+                        screenId={this.props.componentId}
                         valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
                     />
                 </KeyboardTrackingView>

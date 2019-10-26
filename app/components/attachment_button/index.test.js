@@ -9,8 +9,9 @@ import {Alert} from 'react-native';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import {VALID_MIME_TYPES} from 'app/screens/edit_profile/edit_profile';
-import AttachmentButton from './attachment_button';
 import {PermissionTypes} from 'app/constants';
+
+import AttachmentButton from './index';
 
 jest.mock('react-intl');
 
@@ -23,9 +24,6 @@ jest.mock('Platform', () => {
 describe('AttachmentButton', () => {
     const formatMessage = jest.fn();
     const baseProps = {
-        actions: {
-            showModalOverCurrentContext: jest.fn(),
-        },
         theme: Preferences.THEMES.default,
         blurTextBox: jest.fn(),
         maxFileSize: 10,

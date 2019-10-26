@@ -4,6 +4,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
+
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -14,12 +15,10 @@ import {
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
+import {popTopScreen} from 'app/actions/navigation';
 
 export default class NotificationSettingsMentionsKeywords extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            popTopScreen: PropTypes.func.isRequired,
-        }).isRequired,
         componentId: PropTypes.string,
         keywords: PropTypes.string,
         onBack: PropTypes.func.isRequired,
@@ -39,14 +38,14 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 
     handleSubmit = () => {
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     keywordsRef = (ref) => {
@@ -128,6 +127,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             height: 150,
             paddingVertical: 10,
+            paddingHorizontal: 15,
         },
         helpContainer: {
             marginTop: 10,

@@ -10,7 +10,6 @@ import {getChannelsNameMapInCurrentTeam} from 'mattermost-redux/selectors/entiti
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
-import {dismissAllModals, popToRoot} from 'app/actions/navigation';
 import {handleSelectChannel} from 'app/actions/views/channel';
 
 import ChannelLink from './channel_link';
@@ -44,10 +43,8 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            dismissAllModals,
             handleSelectChannel,
             joinChannel,
-            popToRoot,
         }, dispatch),
     };
 }

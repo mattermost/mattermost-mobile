@@ -44,10 +44,11 @@ export default class ThreadAndroid extends ThreadBase {
 
             postTextBox = (
                 <PostTextbox
-                    channelIsArchived={channelIsArchived}
-                    rootId={rootId}
                     channelId={channelId}
+                    channelIsArchived={channelIsArchived}
                     onCloseChannel={this.onCloseChannel}
+                    rootId={rootId}
+                    screenId={this.props.componentId}
                 />
             );
         } else {
