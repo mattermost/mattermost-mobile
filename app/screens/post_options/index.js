@@ -28,95 +28,96 @@ import {getDimensions, isLandscape} from 'app/selectors/device';
 
 import PostOptions from './post_options';
 
-export function mapStateToProps(state, ownProps) {
-    const post = ownProps.post;
-    const channel = getChannel(state, post.channel_id) || {};
-    const config = getConfig(state);
-    const license = getLicense(state);
-    const currentUserId = getCurrentUserId(state);
-    const currentTeamId = getCurrentTeamId(state);
-    const currentChannelId = getCurrentChannelId(state);
-
-    const channelIsArchived = channel.delete_at !== 0;
-
-    let canAddReaction = true;
-    let canReply = true;
-    let canCopyPermalink = true;
-    let canCopyText = false;
-    let canEdit = false;
-    let canEditUntil = -1;
-    let {canDelete} = ownProps;
-    let canFlag = true;
-    let canPin = true;
-
-    if (hasNewPermissions(state)) {
-        canAddReaction = haveIChannelPermission(state, {
-            team: currentTeamId,
-            channel: post.channel_id,
-            permission: Permissions.ADD_REACTION,
-        });
-    }
-
-    if (ownProps.location === THREAD) {
-        canReply = false;
-    }
-
-    if (channelIsArchived || ownProps.channelIsReadOnly) {
-        canAddReaction = false;
-        canReply = false;
-        canDelete = false;
-        canPin = false;
-    } else {
-        canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
-        if (canEdit && license.IsLicensed === 'true' &&
-            (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT || (config.PostEditTimeLimit !== -1 && config.PostEditTimeLimit !== '-1'))
-        ) {
-            canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
-        }
-    }
-
-    if (ownProps.isSystemMessage) {
-        canAddReaction = false;
-        canReply = false;
-        canCopyPermalink = false;
-        canEdit = false;
-        canPin = false;
-        canFlag = false;
-    }
-    if (ownProps.hasBeenDeleted) {
-        canDelete = false;
-    }
-
-    if (!ownProps.showAddReaction) {
-        canAddReaction = false;
-    }
-
-    if (!ownProps.isSystemMessage && ownProps.managedConfig?.copyAndPasteProtection !== 'true' && post.message) {
-        canCopyText = true;
-    }
-
+export function makeMapStateToProps() {
     const getReactionsForPostSelector = makeGetReactionsForPost();
-    const reactions = getReactionsForPostSelector(state, post.id);
 
-    if (Object.values(reactions).length >= 40) {
-        canAddReaction = false;
-    }
+    return (state, ownProps) => {
+        const post = ownProps.post;
+        const channel = getChannel(state, post.channel_id) || {};
+        const config = getConfig(state);
+        const license = getLicense(state);
+        const currentUserId = getCurrentUserId(state);
+        const currentTeamId = getCurrentTeamId(state);
+        const currentChannelId = getCurrentChannelId(state);
+        const reactions = getReactionsForPostSelector(state, post.id);
+        const channelIsArchived = channel.delete_at !== 0;
 
-    return {
-        ...getDimensions(state),
-        canAddReaction,
-        canReply,
-        canCopyPermalink,
-        canCopyText,
-        canEdit,
-        canEditUntil,
-        canDelete,
-        canFlag,
-        canPin,
-        currentTeamUrl: getCurrentTeamUrl(state),
-        isMyPost: currentUserId === post.user_id,
-        theme: getTheme(state),
-        isLandscape: isLandscape(state),
+        let canAddReaction = true;
+        let canReply = true;
+        let canCopyPermalink = true;
+        let canCopyText = false;
+        let canEdit = false;
+        let canEditUntil = -1;
+        let {canDelete} = ownProps;
+        let canFlag = true;
+        let canPin = true;
+
+        if (hasNewPermissions(state)) {
+            canAddReaction = haveIChannelPermission(state, {
+                team: currentTeamId,
+                channel: post.channel_id,
+                permission: Permissions.ADD_REACTION,
+            });
+        }
+
+        if (ownProps.location === THREAD) {
+            canReply = false;
+        }
+
+        if (channelIsArchived || ownProps.channelIsReadOnly) {
+            canAddReaction = false;
+            canReply = false;
+            canDelete = false;
+            canPin = false;
+        } else {
+            canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
+            if (canEdit && license.IsLicensed === 'true' &&
+                (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT || (config.PostEditTimeLimit !== -1 && config.PostEditTimeLimit !== '-1'))
+            ) {
+                canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
+            }
+        }
+
+        if (ownProps.isSystemMessage) {
+            canAddReaction = false;
+            canReply = false;
+            canCopyPermalink = false;
+            canEdit = false;
+            canPin = false;
+            canFlag = false;
+        }
+        if (ownProps.hasBeenDeleted) {
+            canDelete = false;
+        }
+
+        if (!ownProps.showAddReaction) {
+            canAddReaction = false;
+        }
+
+        if (!ownProps.isSystemMessage && ownProps.managedConfig?.copyAndPasteProtection !== 'true' && post.message) {
+            canCopyText = true;
+        }
+
+        if (reactions && Object.values(reactions).length >= 40) {
+            canAddReaction = false;
+        }
+
+        return {
+            ...getDimensions(state),
+            canAddReaction,
+            canReply,
+            canCopyPermalink,
+            canCopyText,
+            canEdit,
+            canEditUntil,
+            canDelete,
+            canFlag,
+            canPin,
+            currentTeamUrl: getCurrentTeamUrl(state),
+            isMyPost: currentUserId === post.user_id,
+            theme: getTheme(state),
+            isLandscape: isLandscape(state),
+        };
     };
 }
 
@@ -134,4 +135,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PostOptions);
+export default connect(makeMapStateToProps, mapDispatchToProps)(PostOptions);

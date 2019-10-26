@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {mapStateToProps} from './index';
+import {makeMapStateToProps} from './index';
 
 import * as channelSelectors from 'mattermost-redux/selectors/entities/channels';
 import * as generalSelectors from 'mattermost-redux/selectors/entities/general';
@@ -24,7 +24,7 @@ deviceSelectors.getDimensions = jest.fn();
 deviceSelectors.isLandscape = jest.fn();
 preferencesSelectors.getTheme = jest.fn();
 
-describe('mapStateToProps', () => {
+describe('makeMapStateToProps', () => {
     const baseState = {
         entities: {
             posts: {
@@ -50,6 +50,7 @@ describe('mapStateToProps', () => {
             isSystemMessage: true,
         };
 
+        const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, ownProps);
         expect(props.canFlag).toBe(false);
     });
@@ -60,6 +61,7 @@ describe('mapStateToProps', () => {
             isSystemMessage: false,
         };
 
+        const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, ownProps);
         expect(props.canFlag).toBe(true);
     });
