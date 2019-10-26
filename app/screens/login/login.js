@@ -82,9 +82,9 @@ export default class Login extends PureComponent {
         setMfaPreflightDone(false);
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         const {loginRequest, actions} = this.props;
-        if (loginRequest.status === RequestStatus.STARTED && loginRequest.status === RequestStatus.SUCCESS) {
+        if (prevProps.loginRequest.status === RequestStatus.STARTED && loginRequest.status === RequestStatus.SUCCESS) {
             actions.handleSuccessfulLogin().then(this.goToChannel);
         }
     }
