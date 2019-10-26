@@ -2,15 +2,23 @@
 // See LICENSE.txt for license information.
 
 import {AppState} from 'react-native';
-import NotificationsIOS, {NotificationAction, NotificationCategory} from 'react-native-notifications';
+import NotificationsIOS, {
+    NotificationAction,
+    NotificationCategory,
+    DEVICE_REMOTE_NOTIFICATIONS_REGISTERED_EVENT,
+    DEVICE_NOTIFICATION_RECEIVED_FOREGROUND_EVENT,
+    DEVICE_NOTIFICATION_OPENED_EVENT,
+} from 'react-native-notifications';
 
 import {getBadgeCount} from 'app/selectors/views';
 import ephemeralStore from 'app/store/ephemeral_store';
+import {getCurrentLocale} from 'app/selectors/i18n';
+import {getLocalizedMessage} from 'app/i18n';
+import {t} from 'app/utils/i18n';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
 
-let replyCategory;
 const replies = new Set();
 
 class PushNotification {
@@ -21,24 +29,9 @@ class PushNotification {
         this.onReply = null;
         this.reduxStore = null;
 
-        NotificationsIOS.addEventListener('remoteNotificationsRegistered', this.onRemoteNotificationsRegistered);
-        NotificationsIOS.addEventListener('notificationReceivedForeground', this.onNotificationReceivedForeground);
-        NotificationsIOS.addEventListener('notificationReceivedBackground', this.onNotificationReceivedBackground);
-        NotificationsIOS.addEventListener('notificationOpened', this.onNotificationOpened);
-
-        const replyAction = new NotificationAction({
-            activationMode: 'background',
-            title: 'Reply',
-            behavior: 'textInput',
-            authenticationRequired: true,
-            identifier: REPLY_ACTION,
-        }, this.handleReply);
-
-        replyCategory = new NotificationCategory({
-            identifier: CATEGORY,
-            actions: [replyAction],
-            context: 'default',
-        });
+        NotificationsIOS.addEventListener(DEVICE_REMOTE_NOTIFICATIONS_REGISTERED_EVENT, this.onRemoteNotificationsRegistered);
+        NotificationsIOS.addEventListener(DEVICE_NOTIFICATION_RECEIVED_FOREGROUND_EVENT, this.onNotificationReceivedForeground);
+        NotificationsIOS.addEventListener(DEVICE_NOTIFICATION_OPENED_EVENT, this.onNotificationOpened);
     }
 
     handleNotification = (data, foreground, userInteraction) => {
@@ -55,18 +48,14 @@ class PushNotification {
         }
     };
 
-    handleReply = (action, completed) => {
-        if (action.identifier === REPLY_ACTION) {
-            const data = action.notification.getData();
-            const text = action.text;
-            const badge = parseInt(action.notification._badge, 10) - 1; //eslint-disable-line no-underscore-dangle
+    handleReply = (notification, text, completion) => {
+        const data = notification.getData();
 
-            if (this.onReply && !replies.has(action.completionKey)) {
-                replies.add(action.completionKey);
-                this.onReply(data, text, badge, completed);
-            }
+        if (this.onReply && !replies.has(data.identifier)) {
+            replies.add(data.identifier);
+            this.onReply(data, text, completion);
         } else {
-            completed();
+            completion();
         }
     };
 
@@ -76,9 +65,39 @@ class PushNotification {
         this.onNotification = options.onNotification;
         this.onReply = options.onReply;
 
-        this.requestPermissions([replyCategory]);
+        this.requestNotificationReplyPermissions();
+    }
 
-        NotificationsIOS.consumeBackgroundQueue();
+    requestNotificationReplyPermissions = () => {
+        const replyCategory = this.createReplyCategory();
+        this.requestPermissions([replyCategory]);
+    }
+
+    createReplyCategory = () => {
+        const {getState} = this.reduxStore;
+        const state = getState();
+        const locale = getCurrentLocale(state);
+
+        const replyTitle = getLocalizedMessage(locale, t('mobile.push_notification_reply.title'));
+        const replyButton = getLocalizedMessage(locale, t('mobile.push_notification_reply.button'));
+        const replyPlaceholder = getLocalizedMessage(locale, t('mobile.push_notification_reply.placeholder'));
+
+        const replyAction = new NotificationAction({
+            activationMode: 'background',
+            title: replyTitle,
+            textInput: {
+                buttonTitle: replyButton,
+                placeholder: replyPlaceholder,
+            },
+            authenticationRequired: true,
+            identifier: REPLY_ACTION,
+        });
+
+        return new NotificationCategory({
+            identifier: CATEGORY,
+            actions: [replyAction],
+            context: 'default',
+        });
     }
 
     requestPermissions = (permissions) => {
@@ -89,7 +108,7 @@ class PushNotification {
         if (notification.date) {
             const deviceNotification = {
                 fireDate: notification.date.toISOString(),
-                alertBody: notification.message,
+                body: notification.message,
                 alertAction: '',
                 userInfo: notification.userInfo,
             };
@@ -100,7 +119,7 @@ class PushNotification {
 
     localNotification(notification) {
         this.deviceNotification = {
-            alertBody: notification.message,
+            body: notification.message,
             alertAction: '',
             userInfo: notification.userInfo,
         };
@@ -138,12 +157,17 @@ class PushNotification {
         this.handleNotification(info, true, false);
     };
 
-    onNotificationOpened = (notification) => {
-        const info = {
-            ...notification.getData(),
-            message: notification.getMessage(),
-        };
-        this.handleNotification(info, false, true);
+    onNotificationOpened = (notification, completion, action) => {
+        if (action.identifier === REPLY_ACTION) {
+            this.handleReply(notification, action.text, completion);
+        } else {
+            const info = {
+                ...notification.getData(),
+                message: notification.getMessage(),
+            };
+            this.handleNotification(info, false, true);
+            completion();
+        }
     };
 
     onRemoteNotificationsRegistered = (deviceToken) => {
@@ -165,6 +189,10 @@ class PushNotification {
         this.deviceNotification = null;
     }
 
+    getDeliveredNotifications(callback) {
+        NotificationsIOS.getDeliveredNotifications(callback);
+    }
+
     clearChannelNotifications(channelId) {
         NotificationsIOS.getDeliveredNotifications((notifications) => {
             const ids = [];
@@ -180,7 +208,7 @@ class PushNotification {
             for (let i = 0; i < notifications.length; i++) {
                 const notification = notifications[i];
 
-                if (notification.userInfo.channel_id === channelId) {
+                if (notification.channel_id === channelId) {
                     ids.push(notification.identifier);
                 }
             }

@@ -132,9 +132,9 @@ export default class Search extends Component {
         this.shadowHeight = this.props.shadowOffsetHeightCollapsed;
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.value !== nextProps.value) {
-            if (nextProps.value) {
+    componentDidUpdate(prevProps) {
+        if (this.props.value !== prevProps.value) {
+            if (this.props.value) {
                 this.iconDeleteAnimated = new Animated.Value(1);
             } else {
                 this.iconDeleteAnimated = new Animated.Value(0);

@@ -95,6 +95,9 @@ const ViewTypes = keyMirror({
     SELECTED_ACTION_MENU: null,
     SUBMIT_ATTACHMENT_MENU_ACTION: null,
     SELECT_CHANNEL_WITH_MEMBER: null,
+
+    PORTRAIT: null,
+    LANDSCAPE: null,
 });
 
 export default {
@@ -109,7 +112,7 @@ export default {
     ANDROID_TOP_PORTRAIT: 56,
     IOS_TOP_LANDSCAPE: 40,
     IOS_TOP_PORTRAIT: 64,
-    IOSX_TOP_PORTRAIT: 88,
+    IOS_INSETS_TOP_PORTRAIT: 88,
     STATUS_BAR_HEIGHT: 20,
     PROFILE_PICTURE_SIZE: 32,
     PROFILE_PICTURE_EMOJI_SIZE: 28,

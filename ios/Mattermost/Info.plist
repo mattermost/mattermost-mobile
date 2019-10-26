@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.24.0</string>
+	<string>1.25.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -34,7 +34,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>235</string>
+	<string>241</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -57,9 +57,9 @@
 	<key>NSAppleMusicUsageDescription</key>
 	<string>Let Mattermost access your Media files</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Share post data accross devices with Mattermost</string>
+	<string>Share post data across devices with Mattermost</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Share post data accross devices with Mattermost</string>
+	<string>Share post data across devices with Mattermost</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Share contacts in your Mattermost instance</string>
 	<key>NSCameraUsageDescription</key>

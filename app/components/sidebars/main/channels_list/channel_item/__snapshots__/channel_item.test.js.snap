@@ -82,11 +82,12 @@ exports[`ChannelItem should match snapshot 1`] = `
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.88)",
+                "color": "rgba(255,255,255,0.6)",
                 "flex": 1,
                 "fontFamily": "Open Sans",
                 "fontSize": 16,
                 "lineHeight": 24,
+                "maxWidth": "80%",
                 "paddingRight": 10,
               },
               Object {
@@ -197,11 +198,12 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.88)",
+                "color": "rgba(255,255,255,0.6)",
                 "flex": 1,
                 "fontFamily": "Open Sans",
                 "fontSize": 16,
                 "lineHeight": 24,
+                "maxWidth": "80%",
                 "paddingRight": 10,
               },
               Object {
@@ -210,7 +212,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             ]
           }
         >
-          {displayName} (you)
+          {displayname} (you)
         </Text>
       </View>
     </View>
@@ -311,11 +313,12 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.88)",
+                "color": "rgba(255,255,255,0.6)",
                 "flex": 1,
                 "fontFamily": "Open Sans",
                 "fontSize": 16,
                 "lineHeight": 24,
+                "maxWidth": "80%",
                 "paddingRight": 10,
               },
               Object {
@@ -324,7 +327,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             ]
           }
         >
-          {displayName} (you)
+          {displayname} (you)
         </Text>
       </View>
     </View>
@@ -425,11 +428,12 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.88)",
+                "color": "rgba(255,255,255,0.6)",
                 "flex": 1,
                 "fontFamily": "Open Sans",
                 "fontSize": 16,
                 "lineHeight": 24,
+                "maxWidth": "80%",
                 "paddingRight": 10,
               },
               Object {
@@ -528,11 +532,12 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.88)",
+                "color": "rgba(255,255,255,0.6)",
                 "flex": 1,
                 "fontFamily": "Open Sans",
                 "fontSize": 16,
                 "lineHeight": 24,
+                "maxWidth": "80%",
                 "paddingRight": 10,
               },
               Object {
@@ -632,11 +637,12 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.88)",
+                "color": "rgba(255,255,255,0.6)",
                 "flex": 1,
                 "fontFamily": "Open Sans",
                 "fontSize": 16,
                 "lineHeight": 24,
+                "maxWidth": "80%",
                 "paddingRight": 10,
               },
               Object {
@@ -740,11 +746,12 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.88)",
+                "color": "rgba(255,255,255,0.6)",
                 "flex": 1,
                 "fontFamily": "Open Sans",
                 "fontSize": 16,
                 "lineHeight": 24,
+                "maxWidth": "80%",
                 "paddingRight": 10,
               },
               Object {
@@ -846,11 +853,12 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             Array [
               Object {
                 "alignSelf": "center",
-                "color": "rgba(255,255,255,0.88)",
+                "color": "rgba(255,255,255,0.6)",
                 "flex": 1,
                 "fontFamily": "Open Sans",
                 "fontSize": 16,
                 "lineHeight": 24,
+                "maxWidth": "80%",
                 "paddingRight": 10,
               },
               Object {

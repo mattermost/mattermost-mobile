@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ViewTypes} from 'app/constants';
+
 class EphemeralStore {
     constructor() {
         this.appStarted = false;
@@ -9,6 +11,10 @@ class EphemeralStore {
         this.navigationComponentIdStack = [];
         this.allNavigationComponentIds = [];
         this.currentServerUrl = null;
+        this.safeAreaInsets = {
+            [ViewTypes.PORTRAIT]: null,
+            [ViewTypes.LANDSCAPE]: null,
+        };
     }
 
     getNavigationTopComponentId = () => this.navigationComponentIdStack[0];

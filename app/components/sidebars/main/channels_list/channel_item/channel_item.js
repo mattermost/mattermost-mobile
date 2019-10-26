@@ -115,7 +115,7 @@ export default class ChannelItem extends PureComponent {
             return null;
         }
 
-        if (!this.props.displayName) {
+        if (!displayName) {
             return null;
         }
 
@@ -134,7 +134,7 @@ export default class ChannelItem extends PureComponent {
         if (isCurrenUser) {
             channelDisplayName = intl.formatMessage({
                 id: 'channel_header.directchannel.you',
-                defaultMessage: '{displayName} (you)',
+                defaultMessage: '{displayname} (you)',
             }, {displayname: displayName});
         }
 
@@ -241,10 +241,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 11,
         },
         text: {
-            color: changeOpacity(theme.sidebarText, 0.88),
+            color: changeOpacity(theme.sidebarText, 0.6),
             fontSize: 16,
             lineHeight: 24,
             paddingRight: 10,
+            maxWidth: '80%',
             flex: 1,
             alignSelf: 'center',
             fontFamily: 'Open Sans',

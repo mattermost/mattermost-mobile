@@ -95,7 +95,7 @@ export default class RecentMentions extends PureComponent {
     };
 
     handleHashtagPress = async (hashtag) => {
-        dismissModal();
+        await dismissModal();
         showSearchModal('#' + hashtag);
     };
 

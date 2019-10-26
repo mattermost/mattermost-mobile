@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {CELL_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
 
@@ -107,7 +108,7 @@ export default class MarkdownTable extends React.PureComponent {
                     ]}
                     start={{x: 0, y: 0}}
                     end={{x: 1, y: 0}}
-                    style={style.moreRight}
+                    style={[style.moreRight, {height: this.state.contentHeight}]}
                 />
             );
         }
@@ -120,13 +121,26 @@ export default class MarkdownTable extends React.PureComponent {
                         changeOpacity(this.props.theme.centerChannelColor, 0.0),
                         changeOpacity(this.props.theme.centerChannelColor, 0.1),
                     ]}
-                    style={style.moreBelow}
+                    style={[style.moreBelow, {width: this.getTableWidth()}]}
                 />
             );
         }
 
+        const expandButton = (
+            <TouchableWithFeedback
+                onPress={this.handlePress}
+                style={{...style.expandButton, left: this.state.containerWidth - 20}}
+            >
+                <Icon
+                    name={'expand'}
+                    style={style.icon}
+                />
+            </TouchableWithFeedback>
+        );
+
         return (
             <TouchableWithFeedback
+                style={style.tablePadding}
                 onPress={this.handlePress}
                 type={'opacity'}
             >
@@ -142,6 +156,7 @@ export default class MarkdownTable extends React.PureComponent {
                 </ScrollView>
                 {moreRight}
                 {moreBelow}
+                {expandButton}
             </TouchableWithFeedback>
         );
     }
@@ -155,26 +170,44 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRightWidth: 1,
             maxHeight: MAX_HEIGHT,
         },
+        expandButton: {
+            height: 30,
+            width: 30,
+            borderWidth: 1,
+            paddingTop: 6,
+            paddingLeft: 7,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRadius: 15,
+            bottom: 20,
+            backgroundColor: theme.centerChannelBg,
+        },
+        icon: {
+            fontSize: 15,
+            color: theme.linkColor,
+        },
         table: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderLeftWidth: 1,
             borderTopWidth: 1,
+        },
+        tablePadding: {
+            paddingRight: 10,
         },
         tableExtraBorders: {
             borderBottomWidth: 1,
             borderRightWidth: 1,
         },
         moreBelow: {
-            bottom: 0,
+            bottom: 30,
             height: 20,
             position: 'absolute',
-            right: 0,
+            left: 0,
             width: '100%',
         },
         moreRight: {
-            height: '100%',
+            maxHeight: MAX_HEIGHT,
             position: 'absolute',
-            right: 0,
+            right: 10,
             top: 0,
             width: 20,
         },

@@ -203,7 +203,7 @@ export default class PostTextBoxBase extends PureComponent {
                     }),
                     intl.formatMessage({
                         id: 'mobile.message_length.message',
-                        defaultMessage: 'Your current message is too long. Current character count: {max}/{count}',
+                        defaultMessage: 'Your current message is too long. Current character count: {count}/{max}',
                     }, {
                         max: maxMessageLength,
                         count: valueLength,
@@ -409,8 +409,8 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handleUploadFiles = (images) => {
-        this.props.actions.initUploadFiles(images, this.props.rootId);
+    handleUploadFiles = (files) => {
+        this.props.actions.initUploadFiles(files, this.props.rootId);
     };
 
     isFileLoading = () => {
@@ -685,21 +685,21 @@ export default class PostTextBoxBase extends PureComponent {
         });
     };
 
-    showPasteImageErrorDialog = () => {
+    showPasteFilesErrorDialog = () => {
         const {formatMessage} = this.context.intl;
         Alert.alert(
             formatMessage({
-                id: 'mobile.image_paste.error_title',
-                defaultMessage: 'Paste Image failed',
+                id: 'mobile.files_paste.error_title',
+                defaultMessage: 'Paste failed',
             }),
             formatMessage({
-                id: 'mobile.image_paste.error_description',
-                defaultMessage: 'An error occurred while pasting the image. Please try again.',
+                id: 'mobile.files_paste.error_description',
+                defaultMessage: 'An error occurred while pasting the file(s). Please try again.',
             }),
             [
                 {
                     text: formatMessage({
-                        id: 'mobile.image_paste.error_dismiss',
+                        id: 'mobile.files_paste.error_dismiss',
                         defaultMessage: 'Dismiss',
                     }),
                 },
@@ -707,27 +707,27 @@ export default class PostTextBoxBase extends PureComponent {
         );
     };
 
-    handlePasteImages = (error, images) => {
+    handlePasteFiles = (error, files) => {
         if (this.props.screenId === EphemeralStore.getNavigationTopComponentId()) {
             if (error) {
-                this.showPasteImageErrorDialog();
+                this.showPasteFilesErrorDialog();
                 return;
             }
 
-            const {maxFileSize, files} = this.props;
-            const availableCount = MAX_FILE_COUNT - files.length;
-            if (images.length > availableCount) {
+            const {maxFileSize} = this.props;
+            const availableCount = MAX_FILE_COUNT - this.props.files.length;
+            if (files.length > availableCount) {
                 this.onShowFileMaxWarning();
                 return;
             }
 
-            const largeImage = images.find((image) => image.fileSize > maxFileSize);
-            if (largeImage) {
-                this.onShowFileSizeWarning(largeImage.fileName);
+            const largeFile = files.find((image) => image.fileSize > maxFileSize);
+            if (largeFile) {
+                this.onShowFileSizeWarning(largeFile.fileName);
                 return;
             }
 
-            this.handleUploadFiles(images);
+            this.handleUploadFiles(files);
         }
     };
 
@@ -780,7 +780,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
                         editable={!channelIsReadOnly}
-                        onPaste={this.handlePasteImages}
+                        onPaste={this.handlePasteFiles}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     />
                     <Fade visible={this.isSendButtonVisible()}>

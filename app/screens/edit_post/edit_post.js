@@ -8,9 +8,11 @@ import {
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
+import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import ErrorText from 'app/components/error_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
@@ -56,7 +58,11 @@ export default class EditPost extends PureComponent {
     constructor(props, context) {
         super(props);
 
-        this.state = {message: props.post.message};
+        this.state = {
+            message: props.post.message,
+            cursorPosition: 0,
+        };
+
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.rightButton.text = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
 
@@ -152,6 +158,11 @@ export default class EditPost extends PureComponent {
         }
     };
 
+    onPostSelectionChange = (event) => {
+        const cursorPosition = event.nativeEvent.selection.end;
+        this.setState({cursorPosition});
+    };
+
     render() {
         const {deviceHeight, deviceWidth, theme, isLandscape} = this.props;
         const {editing, message, error} = this.state;
@@ -200,9 +211,19 @@ export default class EditPost extends PureComponent {
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
                             keyboardAppearance={getKeyboardAppearanceFromTheme(this.props.theme)}
+                            onSelectionChange={this.onPostSelectionChange}
                         />
                     </View>
                 </View>
+                <KeyboardTrackingView style={style.autocompleteContainer}>
+                    <Autocomplete
+                        cursorPosition={this.state.cursorPosition}
+                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        onChangeText={this.onPostChangeText}
+                        value={message}
+                        nestedScrollEnabled={true}
+                    />
+                </KeyboardTrackingView>
             </View>
         );
     }
@@ -237,6 +258,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             padding: 15,
             textAlignVertical: 'top',
+        },
+        autocompleteContainer: {
+            flex: 1,
+            justifyContent: 'flex-end',
         },
     };
 });

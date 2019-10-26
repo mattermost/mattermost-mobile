@@ -11,7 +11,7 @@ import {hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
 import Permissions from 'mattermost-redux/constants/permissions';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getChannel, isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channels';
 
 import {addReaction} from 'app/actions/views/emoji';
 
@@ -25,13 +25,14 @@ function makeMapStateToProps() {
         const channel = getChannel(state, channelId) || {};
         const teamId = channel.team_id;
         const channelIsArchived = channel.delete_at !== 0;
+        const channelIsReadOnly = isChannelReadOnlyById(state, channelId);
 
         const currentUserId = getCurrentUserId(state);
         const reactions = getReactionsForPostSelector(state, ownProps.postId);
 
         let canAddReaction = true;
         let canRemoveReaction = true;
-        if (channelIsArchived) {
+        if (channelIsArchived || channelIsReadOnly) {
             canAddReaction = false;
             canRemoveReaction = false;
         } else if (hasNewPermissions(state)) {

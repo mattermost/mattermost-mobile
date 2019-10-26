@@ -8,6 +8,7 @@ import {Navigation} from 'react-native-navigation';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
 
+import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
 
@@ -48,10 +49,13 @@ export default class InteractiveDialog extends PureComponent {
 
         this.state = {
             values,
+            error: null,
             errors: {},
             isLandscape: this.isLandscape(),
             submitting: false,
         };
+
+        this.scrollView = React.createRef();
     }
 
     componentDidMount() {
@@ -123,17 +127,29 @@ export default class InteractiveDialog extends PureComponent {
 
         this.submitted = true;
 
-        if (!data || !data.errors || Object.keys(data.errors).length === 0) {
+        let hasErrors = false;
+
+        if (data) {
+            if (data.errors &&
+                Object.keys(data.errors).length >= 0 &&
+                checkIfErrorsMatchElements(data.errors, elements)
+            ) {
+                hasErrors = true;
+                this.setState({errors: data.errors});
+            }
+
+            if (data.error) {
+                hasErrors = true;
+                this.setState({error: data.error});
+                if (this.scrollView?.current) {
+                    this.scrollView.current.scrollTo({x: 0, y: 0});
+                }
+            }
+        }
+
+        if (!hasErrors) {
             this.handleHide();
-            return;
         }
-
-        if (checkIfErrorsMatchElements(data.errors, elements)) {
-            this.setState({errors: data.errors});
-            return;
-        }
-
-        this.handleHide();
     }
 
     notifyOnCancelIfNeeded = () => {
@@ -168,13 +184,22 @@ export default class InteractiveDialog extends PureComponent {
 
     render() {
         const {introductionText, elements, theme} = this.props;
-        const {errors, isLandscape, values} = this.state;
+        const {error, errors, isLandscape, values} = this.state;
         const style = getStyleFromTheme(theme);
 
         return (
             <View style={style.container}>
-                <ScrollView style={style.scrollView}>
+                <ScrollView
+                    ref={this.scrollView}
+                    style={style.scrollView}
+                >
                     <StatusBar/>
+                    {error && (
+                        <ErrorText
+                            textStyle={style.errorContainer}
+                            error={error}
+                        />
+                    )}
                     {Boolean(introductionText) &&
                         <DialogIntroductionText
                             value={introductionText}
@@ -215,6 +240,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+        },
+        errorContainer: {
+            marginTop: 15,
+            marginLeft: 15,
+            fontSize: 14,
+            fontWeight: 'bold',
         },
         scrollView: {
             marginBottom: 20,

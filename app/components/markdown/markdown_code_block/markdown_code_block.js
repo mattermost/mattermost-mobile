@@ -5,19 +5,22 @@ import {PropTypes} from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {
+    Platform,
     Clipboard,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
 
+import SyntaxHighlighter from 'react-native-syntax-highlighter';
+
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import BottomSheet from 'app/utils/bottom_sheet';
-import {getDisplayNameForLanguage} from 'app/utils/markdown';
+import {getDisplayNameForLanguage, getCodeFont} from 'app/utils/markdown';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, getHighlightStyleFromTheme} from 'app/utils/theme';
 import mattermostManaged from 'app/mattermost_managed';
 import {goToScreen} from 'app/actions/navigation';
 
@@ -40,11 +43,13 @@ export default class MarkdownCodeBlock extends React.PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {language, content} = this.props;
+        const {language, content, textStyle} = this.props;
         const {intl} = this.context;
         const screen = 'Code';
         const passProps = {
             content,
+            language,
+            textStyle,
         };
 
         const languageDisplayName = getDisplayNameForLanguage(language);
@@ -150,6 +155,26 @@ export default class MarkdownCodeBlock extends React.PureComponent {
             );
         }
 
+        let textComponent = null;
+        if (Platform.OS === 'ios') {
+            textComponent = (
+                <SyntaxHighlighter
+                    language={this.props.language}
+                    style={getHighlightStyleFromTheme(this.props.theme)}
+                    highlighter={'hljs'}
+                    customStyle={{...style.codeText, ...this.props.textStyle}}
+                >
+                    {content}
+                </SyntaxHighlighter>
+            );
+        } else {
+            textComponent = (
+                <Text style={[style.codeText, this.props.textStyle]}>
+                    {content}
+                </Text>
+            );
+        }
+
         return (
             <TouchableWithFeedback
                 onPress={this.handlePress}
@@ -164,9 +189,7 @@ export default class MarkdownCodeBlock extends React.PureComponent {
                     </View>
                     <View style={style.rightColumn}>
                         <View style={style.code}>
-                            <Text style={[style.codeText, this.props.textStyle]}>
-                                {content}
-                            </Text>
+                            {textComponent}
                         </View>
                         {plusMoreLines}
                     </View>
@@ -204,7 +227,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'column',
             flex: 1,
             paddingHorizontal: 6,
-            paddingVertical: 4,
+            ...Platform.select({
+                ios: {
+                    paddingVertical: 0,
+                    backgroundColor: getHighlightStyleFromTheme(theme).hljs.background,
+                },
+                android: {
+                    paddingVertical: 4,
+                },
+            }),
         },
         code: {
             flexDirection: 'row',
@@ -214,6 +245,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             fontSize: 12,
             lineHeight: 18,
+            ...Platform.select({
+                ios: {
+                    fontFamily: getCodeFont(),
+                    paddingVertical: 6,
+                },
+            }),
         },
         plusMoreLinesText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),

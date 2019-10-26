@@ -52,6 +52,7 @@ export default class ChannelInfo extends PureComponent {
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
         currentChannelGuestCount: PropTypes.number,
+        currentChannelPinnedPostCount: PropTypes.number,
         currentUserId: PropTypes.string,
         currentUserIsGuest: PropTypes.bool,
         status: PropTypes.string,
@@ -64,6 +65,7 @@ export default class ChannelInfo extends PureComponent {
         canEditChannel: PropTypes.bool.isRequired,
         ignoreChannelMentions: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
+        isTeammateGuest: PropTypes.bool.isRequired,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -413,6 +415,7 @@ export default class ChannelInfo extends PureComponent {
     actionsRows = (style, channelIsArchived) => {
         const {
             currentChannelMemberCount,
+            currentChannelPinnedPostCount,
             canManageUsers,
             canEditChannel,
             theme,
@@ -474,6 +477,7 @@ export default class ChannelInfo extends PureComponent {
                 <ChannelInfoRow
                     action={this.goToPinnedPosts}
                     defaultMessage='Pinned Posts'
+                    detail={currentChannelPinnedPostCount}
                     image={pinIcon}
                     textId={t('channel_header.pinnedPosts')}
                     theme={theme}
@@ -559,6 +563,7 @@ export default class ChannelInfo extends PureComponent {
             status,
             theme,
             isBot,
+            isTeammateGuest,
             isLandscape,
         } = this.props;
 
@@ -598,8 +603,10 @@ export default class ChannelInfo extends PureComponent {
                         type={currentChannel.type}
                         isArchived={currentChannel.delete_at !== 0}
                         isBot={isBot}
+                        isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
+                        isLandscape={isLandscape}
                     />
                     }
                     <View style={style.rowsContainer}>

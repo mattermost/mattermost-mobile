@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SafeAreaIos should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+      "marginLeft": 0,
+      "marginRight": 0,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "backgroundColor": "#1153ab",
+        "paddingTop": 44,
+        "zIndex": 10,
+      }
+    }
+  />
+  <View
+    style={
+      Object {
+        "backgroundColor": "#ffffff",
+        "height": 0,
+      }
+    }
+  />
+</View>
+`;

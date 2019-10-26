@@ -22,7 +22,6 @@ build/
 *.perspectivev3
 !default.perspectivev3
 xcuserdata
-xcshareddata
 *.xccheckout
 *.moved-aside
 DerivedData
@@ -31,7 +30,8 @@ DerivedData
 *.apk
 *.xcuserstate
 project.xcworkspace
-xcshareddata/
+ios/Pods
+.podinstall
 
 # Android/IntelliJ
 #
@@ -39,6 +39,7 @@ xcshareddata/
 .gradle
 local.properties
 *.iml
+android/app/bin
 
 # node.js
 #
@@ -83,10 +84,6 @@ ios/sentry.properties
 # Testing
 .nyc_output
 coverage
-
-# Pods
-.podinstall
-ios/Pods/
 
 # Bundle artifact
 *.jsbundle

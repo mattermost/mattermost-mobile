@@ -127,6 +127,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             height: 150,
             paddingVertical: 10,
+            paddingHorizontal: 15,
         },
         helpContainer: {
             marginTop: 10,
