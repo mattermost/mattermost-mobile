@@ -238,6 +238,25 @@ jobs:
       - save:
           filename: "Mattermost_Beta.apk"
 
+  build-android-unsigned:
+    executor: android
+    steps:
+      - checkout:
+          path: ~/mattermost-mobile
+      - npm-dependencies
+      - assets
+      - fastlane-dependencies:
+          for: android
+      - gradle-dependencies
+      - run:
+          working_directory: fastlane
+          name: Run fastlane to build unsigned android
+          no_output_timeout: 30m
+          command: bundle exec fastlane android unsigned || exit 1
+      - persist
+      - save:
+          filename: "Mattermost-unsigned.apk"
+
   build-ios-beta:
     executor: ios
     steps:
@@ -262,6 +281,25 @@ jobs:
       - build-ios
       - save:
           filename: "Mattermost_Beta.ipa"
+
+  build-ios-unsigned:
+    executor: ios
+    steps:
+      - checkout:
+          path: ~/mattermost-mobile
+      - npm-dependencies
+      - pods-dependencies
+      - assets
+      - fastlane-dependencies:
+          for: ios
+      - run:
+          working_directory: fastlane
+          name: Run fastlane to build unsigned iOS
+          no_output_timeout: 30m
+          command: bundle exec fastlane ios unsigned || exit 1
+      - persist
+      - save:
+          filename: "Mattermost-unsigned.ipa"
 
   deploy-android-release:
     executor:
@@ -298,6 +336,18 @@ jobs:
           task: "Deploy to TestFlight"
           target: ios
           file: Mattermost_Beta.ipa
+
+  github-release:
+    executor:
+      name: android
+      resource_class: medium
+    steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name: Create GitHub release
+          working_directory: fastlane
+          command: bundle exec fastlane github
 
 workflows:
   version: 2
@@ -403,3 +453,32 @@ workflows:
           filters:
             branches:
               only: /^build-pr-.*/
+
+      - build-android-unsigned:
+          context: mattermost-mobile-unsigned
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
+            branches:
+              ignore: /.*/
+      - build-ios-unsigned:
+          context: mattermost-mobile-unsigned
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
+            branches:
+              ignore: /.*/
+      - github-release:
+          context: mattermost-mobile-unsigned
+          requires:
+            - build-android-unsigned
+            - build-ios-unsigned
+          filters:
+            tags:
+              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
+            branches:
+              ignore: /.*/
