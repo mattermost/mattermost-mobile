@@ -63,8 +63,17 @@ export default class Login extends PureComponent {
         super(props);
 
         this.state = {
+            loginRequest: this.props.loginRequest,
             error: null,
         };
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
+            return {isLoading: false};
+        }
+
+        return null;
     }
 
     componentDidMount() {
@@ -73,11 +82,10 @@ export default class Login extends PureComponent {
         setMfaPreflightDone(false);
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
-        if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-            this.props.actions.handleSuccessfulLogin().then(this.goToChannel);
-        } else if (this.props.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
-            this.setState({isLoading: false});
+    componentDidUpdate() {
+        const {loginRequest, actions} = this.props;
+        if (loginRequest.status === RequestStatus.STARTED && loginRequest.status === RequestStatus.SUCCESS) {
+            actions.handleSuccessfulLogin().then(this.goToChannel);
         }
     }
 

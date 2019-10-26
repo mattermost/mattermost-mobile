@@ -40,6 +40,7 @@ export default class ClientUpgradeListener extends PureComponent {
     };
 
     static contextTypes = {
+        isLandscape: this.props.isLandscape,
         intl: intlShape,
     };
 
@@ -55,6 +56,16 @@ export default class ClientUpgradeListener extends PureComponent {
         };
     }
 
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.isLandscape !== nextProps.isLandscape &&
+          isUpgradeAvailable(prevState.upgradeType) && DeviceTypes.IS_IPHONE_WITH_INSETS) {
+            const newTop = nextProps.isLandscape ? 45 : 100;
+            return {top: new Animated.Value(newTop)};
+        }
+
+        return null;
+    }
+
     componentDidMount() {
         const {forceUpgrade, isLandscape, lastUpgradeCheck, latestVersion, minVersion} = this.props;
         if (forceUpgrade || Date.now() - lastUpgradeCheck > UPDATE_TIMEOUT) {
@@ -62,17 +73,13 @@ export default class ClientUpgradeListener extends PureComponent {
         }
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
-        const {forceUpgrade, latestVersion, minVersion} = this.props;
-        const {latestVersion: nextLatestVersion, minVersion: nextMinVersion, lastUpgradeCheck} = nextProps;
+    componentDidUpdate(prevProps) {
+        const {forceUpgrade, latestVersion, minVersion, isLandscape} = this.props;
+        const {latestVersion: prevLatestVersion, minVersion: prevMinVersion, lastUpgradeCheck} = prevProps;
 
-        const versionMismatch = latestVersion !== nextLatestVersion || minVersion !== nextMinVersion;
+        const versionMismatch = latestVersion !== prevLatestVersion || minVersion !== prevMinVersion;
         if (versionMismatch && (forceUpgrade || Date.now() - lastUpgradeCheck > UPDATE_TIMEOUT)) {
-            this.checkUpgrade(minVersion, latestVersion, nextProps.isLandscape);
-        } else if (this.props.isLandscape !== nextProps.isLandscape &&
-            isUpgradeAvailable(this.state.upgradeType) && DeviceTypes.IS_IPHONE_WITH_INSETS) {
-            const newTop = nextProps.isLandscape ? 45 : 100;
-            this.setState({top: new Animated.Value(newTop)});
+            this.checkUpgrade(minVersion, latestVersion, isLandscape);
         }
     }
 

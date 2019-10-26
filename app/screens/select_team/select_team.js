@@ -68,13 +68,15 @@ export default class SelectTeam extends PureComponent {
         this.getTeams();
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    componentDidUpdate(prevProps) {
+        const {theme, componentId, teams} = this.props;
+
+        if (theme !== prevProps.theme) {
+            setNavigatorStyles(componentId, theme);
         }
 
-        if (this.props.teams !== nextProps.teams) {
-            this.buildData(nextProps);
+        if (teams !== prevProps.teams) {
+            this.buildData(teams);
         }
     }
 
