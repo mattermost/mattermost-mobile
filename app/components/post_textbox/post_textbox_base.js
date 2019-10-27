@@ -806,7 +806,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingBottom: 8,
             paddingLeft: 12,
             paddingRight: 12,
-            paddingTop: 8,
+            paddingTop: Platform.select({
+                ios: 8,
+                android: 4,
+            }),
         },
         hidden: {
             position: 'absolute',
@@ -827,7 +830,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 10,
         },
         inputWrapper: {
-            alignItems: 'flex-end',
+            alignItems: 'flex-start',
             flexDirection: 'row',
             paddingVertical: 4,
             backgroundColor: theme.centerChannelBg,

@@ -8,7 +8,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
     style={
       Array [
         Object {
-          "alignItems": "flex-end",
+          "alignItems": "flex-start",
           "backgroundColor": "#ffffff",
           "borderTopColor": "rgba(61,60,64,0.2)",
           "borderTopWidth": 1,
