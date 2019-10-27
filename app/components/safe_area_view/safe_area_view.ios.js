@@ -23,6 +23,7 @@ export default class SafeAreaIos extends PureComponent {
         excludeFooter: PropTypes.bool,
         footerColor: PropTypes.string,
         footerComponent: PropTypes.node,
+        forceInsets: PropTypes.bool,
         forceTop: PropTypes.number,
         keyboardOffset: PropTypes.number.isRequired,
         navBarBackgroundColor: PropTypes.string,
@@ -85,7 +86,7 @@ export default class SafeAreaIos extends PureComponent {
         this.getStatusBarHeight();
 
         const safeAreaInsetsStored = EphemeralStore.safeAreaInsets[PORTRAIT] !== null && EphemeralStore.safeAreaInsets[LANDSCAPE] !== null;
-        if ((DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets) && !safeAreaInsetsStored) {
+        if ((DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets) && (!safeAreaInsetsStored || this.props.forceInsets)) {
             const window = dimensions?.window || Dimensions.get('window');
             const landscape = window.width > window.length;
             const {safeAreaInsets} = await SafeArea.getSafeAreaInsetsForRootView();
