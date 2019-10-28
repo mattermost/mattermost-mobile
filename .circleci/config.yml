@@ -161,8 +161,8 @@ commands:
 
   deploy-to-store:
     description: "Deploy build to store"
-    paramenters:
-      name:
+    parameters:
+      task:
         type: string
       target:
         type: string
@@ -172,7 +172,7 @@ commands:
       - attach_workspace:
           at: /
       - run:
-          name: <<parameters.name>>
+          name: <<parameters.task>>
           working_directory: fastlane
           command: bundle exec fastlane <<parameters.target>> deploy file:$HOME/mattermost-mobile/<<parameters.file>>
 
@@ -269,9 +269,9 @@ jobs:
       resource_class: medium
     steps:
       - deploy-to-store:
-          name: "Deploy to Google Play"
+          task: "Deploy to Google Play"
           target: android
-          apk_path: Mattermost.apk
+          file: Mattermost.apk
 
   deploy-android-beta:
     executor:
@@ -279,7 +279,7 @@ jobs:
       resource_class: medium
     steps:
       - deploy-to-store:
-          name: "Deploy to Google Play"
+          task: "Deploy to Google Play"
           target: android
           file: Mattermost_Beta.apk
 
@@ -287,15 +287,15 @@ jobs:
     executor: ios
     steps:
       - deploy-to-store:
-          name: "Deploy to TestFlight"
+          task: "Deploy to TestFlight"
           target: ios
           file: Mattermost.ipa
 
   deploy-ios-beta:
     executor: ios
     steps:
-      - deploy-ios:
-          name: "Deploy to TestFlight"
+      - deploy-to-store:
+          task: "Deploy to TestFlight"
           target: ios
           file: Mattermost_Beta.ipa
 
