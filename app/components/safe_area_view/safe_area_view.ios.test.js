@@ -316,12 +316,12 @@ describe('SafeAreaIos', () => {
         expect(setSafeAreaInsets).toHaveBeenCalled();
         setSafeAreaInsets.mockClear();
 
-        EphemeralStore.safeAreaInsets[PORTRAIT] = TEST_INSETS_1.safeAreaInsets;
+        EphemeralStore.safeAreaInsets[PORTRAIT] = TEST_INSETS_1.safeAreaInsets; /* eslint-disable-line require-atomic-updates */
         await instance.getSafeAreaInsets();
         expect(setSafeAreaInsets).toHaveBeenCalled();
         setSafeAreaInsets.mockClear();
 
-        EphemeralStore.safeAreaInsets[LANDSCAPE] = TEST_INSETS_1.safeAreaInsets;
+        EphemeralStore.safeAreaInsets[LANDSCAPE] = TEST_INSETS_1.safeAreaInsets; /* eslint-disable-line require-atomic-updates */
         await instance.getSafeAreaInsets();
         expect(setSafeAreaInsets).not.toHaveBeenCalled();
     });
