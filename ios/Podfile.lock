@@ -275,6 +275,7 @@ PODS:
   - Sentry (4.4.0):
     - Sentry/Core (= 4.4.0)
   - Sentry/Core (4.4.0)
+  - Swime (3.0.6)
   - XCDYouTubeKit (2.8.1)
   - Yoga (1.14.0)
   - YoutubePlayer-in-WKWebView (0.3.3)
@@ -332,15 +333,18 @@ DEPENDENCIES:
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
+  - Swime (= 3.0.6)
   - XCDYouTubeKit (~> 2.8)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - boost-for-react-native
     - Sentry
     - XCDYouTubeKit
     - YoutubePlayer-in-WKWebView
+  trunk:
+    - Swime
 
 EXTERNAL SOURCES:
   BVLinearGradient:
@@ -496,10 +500,11 @@ SPEC CHECKSUMS:
   RNSVG: be27aa7c58819f97399388ae53d7fa0572f32c7f
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   Sentry: 26650184fe71eb7476dfd2737acb5ea6cc64b4b1
+  Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   XCDYouTubeKit: 4ca4e3322fa556ec1c32932d378365c15ce1386e
   Yoga: 14927e37bd25376d216b150ab2a561773d57911f
   YoutubePlayer-in-WKWebView: 7694e858c5c3472ed067d6fe34eb9b944845e63c
 
-PODFILE CHECKSUM: 78fdf52ba415665015ffa025c7bff18fdac43f9a
+PODFILE CHECKSUM: 807d95a6b7f45b6daddd86ab902e339f591ca8b0
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.8.4

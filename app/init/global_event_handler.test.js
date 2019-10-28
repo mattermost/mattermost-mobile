@@ -90,4 +90,14 @@ describe('GlobalEventHandler', () => {
         expect(appActive).not.toHaveBeenCalled();
         expect(appInactive).not.toHaveBeenCalled();
     });
+
+    it('should set the user TimeZone when the app becomes active', () => {
+        const onAppStateChange = jest.spyOn(GlobalEventHandler, 'onAppStateChange');
+        const setUserTimezone = jest.spyOn(GlobalEventHandler, 'setUserTimezone');
+
+        GlobalEventHandler.configure({store});
+        expect(GlobalEventHandler.store).not.toBeNull();
+        expect(onAppStateChange).toHaveBeenCalledWith('active');
+        expect(setUserTimezone).toHaveBeenCalledTimes(1);
+    });
 });

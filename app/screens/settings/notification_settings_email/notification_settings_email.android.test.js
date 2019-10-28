@@ -14,6 +14,9 @@ import NotificationSettingsEmailAndroid from './notification_settings_email.andr
 describe('NotificationSettingsEmailAndroid', () => {
     const baseProps = {
         currentUser: {id: 'current_user_id'},
+        notifyProps: {
+            email: 'true',
+        },
         emailInterval: '30',
         enableEmailBatching: false,
         actions: {

@@ -36,6 +36,7 @@ target 'Mattermost' do
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
   pod 'XCDYouTubeKit', '~> 2.8'
+  pod 'Swime', '3.0.6'
 
   target 'MattermostTests' do
     inherit! :search_paths
