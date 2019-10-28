@@ -81,20 +81,32 @@ export default class SettingsDrawer extends PureComponent {
         Dimensions.removeEventListener('change', this.handleDimensions);
     }
 
+    setDrawerRef = (ref) => {
+        this.drawerRef = ref;
+    }
+
     confirmReset = (status) => {
         const {intl} = this.context;
         confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
     };
 
     closeSettingsSidebar = () => {
-        if (this.refs.drawer && this.drawerOpened) {
-            this.refs.drawer.closeDrawer();
+        if (this.drawerRef && this.drawerOpened) {
+            this.drawerRef.closeDrawer();
+        }
+    };
+
+    openSettingsSidebar = () => {
+        this.props.blurPostTextBox();
+
+        if (this.drawerRef && !this.drawerOpened) {
+            this.drawerRef.openDrawer();
         }
     };
 
     handleAndroidBack = () => {
-        if (this.refs.drawer && this.drawerOpened) {
-            this.refs.drawer.closeDrawer();
+        if (this.drawerRef && this.drawerOpened) {
+            this.drawerRef.closeDrawer();
             return true;
         }
 
@@ -227,12 +239,25 @@ export default class SettingsDrawer extends PureComponent {
         });
     };
 
-    openSettingsSidebar = () => {
-        this.props.blurPostTextBox();
+    updateStatus = (status) => {
+        const {currentUser: {id: currentUserId}} = this.props;
+        this.props.actions.setStatus({
+            user_id: currentUserId,
+            status,
+        });
+    };
 
-        if (this.refs.drawer && !this.drawerOpened) {
-            this.refs.drawer.openDrawer();
+    setStatus = (status) => {
+        const {status: currentUserStatus} = this.props;
+
+        if (currentUserStatus === General.OUT_OF_OFFICE) {
+            dismissModal();
+            this.closeSettingsSidebar();
+            this.confirmReset(status);
+            return;
         }
+        this.updateStatus(status);
+        EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
     };
 
     renderUserStatusIcon = (userId) => {
@@ -341,27 +366,6 @@ export default class SettingsDrawer extends PureComponent {
         );
     };
 
-    updateStatus = (status) => {
-        const {currentUser: {id: currentUserId}} = this.props;
-        this.props.actions.setStatus({
-            user_id: currentUserId,
-            status,
-        });
-    };
-
-    setStatus = (status) => {
-        const {status: currentUserStatus} = this.props;
-
-        if (currentUserStatus === General.OUT_OF_OFFICE) {
-            dismissModal();
-            this.closeSettingsSidebar();
-            this.confirmReset(status);
-            return;
-        }
-        this.updateStatus(status);
-        EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
-    };
-
     render() {
         const {children} = this.props;
         const {deviceWidth, openDrawerOffset} = this.state;
@@ -369,7 +373,7 @@ export default class SettingsDrawer extends PureComponent {
 
         return (
             <DrawerLayout
-                ref='drawer'
+                ref={this.setDrawerRef}
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}

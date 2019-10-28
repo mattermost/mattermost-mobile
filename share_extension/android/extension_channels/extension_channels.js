@@ -51,6 +51,10 @@ export default class ExtensionTeam extends PureComponent {
         this.buildSections();
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     buildSections = (term) => {
         const sections = [];
         let {
@@ -183,7 +187,7 @@ export default class ExtensionTeam extends PureComponent {
         return (
             <View style={styles.searchContainer}>
                 <SearchBar
-                    ref='search_bar'
+                    ref={this.setSearchBarRef}
                     placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
