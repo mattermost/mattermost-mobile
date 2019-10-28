@@ -70,9 +70,10 @@ describe('Selectors.Autocomplete', () => {
                         'current-user-id': {id: 'current-user-id', username: 'current', detele_at: 0},
                         'test-user-id': {id: 'test-user-id', username: 'test', first_name: 'Test', last_name: 'User', email: 'test@example.com', delete_at: 0},
                         'another-user-id': {id: 'another-user-id', username: 'another', first_name: 'Another', last_name: 'One', email: 'another@example.com', delete_at: 0},
+                        'deleted-user-id': {id: 'deleted-user-id', username: 'deleted', first_name: 'Remvoed', last_name: 'Friend', email: 'deleted@example.com', delete_at: 123},
                     },
                     profilesNotInChannel: {
-                        'current-channel-id': new Set(['test-user-id', 'another-user-id']),
+                        'current-channel-id': new Set(['test-user-id', 'another-user-id', 'deleted-user-id']),
                     },
                 },
             },
