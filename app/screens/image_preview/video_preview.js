@@ -68,6 +68,14 @@ export default class VideoPreview extends PureComponent {
         EventEmitter.off('stop-video-playback', this.stopPlayback);
     }
 
+    setVideoPlayerRef = (ref) => {
+        this.videoPlayerRef = ref;
+    }
+
+    setControlsRef = (ref) => {
+        this.controlsRef = ref;
+    }
+
     async initializeComponent() {
         const {file} = this.props;
         const prefix = Platform.OS === 'android' ? 'file:/' : '';
@@ -210,7 +218,7 @@ export default class VideoPreview extends PureComponent {
                     onPress={() => this.refs.controls.fadeInControls()}
                 >
                     <Video
-                        ref='videoPlayer'
+                        ref={this.setVideoPlayerRef}
                         style={[StyleSheet.absoluteFill, {position: 'absolute'}]}
                         resizeMode='contain'
                         source={{uri: path}}
@@ -224,7 +232,7 @@ export default class VideoPreview extends PureComponent {
                     />
                 </TouchableOpacity>
                 <VideoControls
-                    ref='controls'
+                    ref={this.setControlsRef}
                     mainColor={theme.linkColor}
                     playerState={playerState}
                     isFullScreen={isFullScreen}

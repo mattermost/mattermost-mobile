@@ -12,7 +12,7 @@ import {
     Text,
     View,
 } from 'react-native';
-import {Sentry} from 'react-native-sentry';
+import * as Sentry from '@sentry/react-native';
 
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 

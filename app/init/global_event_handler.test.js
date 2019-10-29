@@ -30,6 +30,10 @@ jest.mock('react-native-notifications', () => ({
     NotificationCategory: jest.fn(),
 }));
 
+jest.mock('react-native-status-bar-size', () => ({
+    addEventListener: jest.fn(),
+}));
+
 const mockStore = configureMockStore([thunk]);
 const store = mockStore(intitialState);
 GlobalEventHandler.store = store;

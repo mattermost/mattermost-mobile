@@ -11,12 +11,6 @@ import RadioButtonGroup from 'app/components/radio_button';
 
 import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
 
-jest.mock('Platform', () => {
-    const Platform = require.requireActual('Platform');
-    Platform.OS = 'android';
-    return Platform;
-});
-
 describe('NotificationSettingsEmailAndroid', () => {
     const baseProps = {
         currentUser: {id: 'current_user_id'},
@@ -155,6 +149,7 @@ describe('NotificationSettingsEmailAndroid', () => {
 
         const instance = wrapper.instance();
         instance.saveEmailNotifyProps = jest.fn();
+        instance.getPlatformOS = jest.fn(() => 'android');
 
         // Back button on Android should close the modal and trigger
         // componentDidDisappear.

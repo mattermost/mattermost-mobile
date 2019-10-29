@@ -74,9 +74,13 @@ export default class NotificationSettingsEmailBase extends PureComponent {
     }
 
     componentDidDisappear() {
-        if (Platform.OS === 'ios') {
+        if (this.getPlatformOS() === 'ios') {
             this.saveEmailNotifyProps();
         }
+    }
+
+    getPlatformOS = () => {
+        return Platform.OS;
     }
 
     setEmailInterval = (value) => {
