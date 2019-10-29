@@ -5,17 +5,22 @@
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Bug Fixes
+ - Fixed an issue on Android where the notification badge count didn't update when using multiple channels.
+ - Fixed an issue on Android where test notifications did not work properly.
+ - Fixed an issue where "In-app" notifications caused the app badge count to get out of sync.
+ - Fixed an issue on Android where email notification setting displayed was not updated when the setting was changed.
+ - Fixed an issue where the timezone setting did not update when changing it back to set automatically.
  - Fixed an issue on iOS where clicking on a hashtag from "recent mentions" (or flagged posts) returned the user to the channel instead of displaying hashtag search results.
- - Fixed an issue where posts of the same thread appeared to be from different threads if separated by a new message line.
  - Fixed an issue where tapping on a hashtag engaged a keyboard for a moment before displaying search results.
+ - Fixed an issue where posts of the same thread appeared to be from different threads if separated by a new message line.
  - Fixed an issue on iOS where the Name, Purpose and Header information appeared “boxed in” on channel info screen.
- - Fixed an issue where ``mobile.message_length.message`` did not match webapp's ``create_post.error_message``.
  - Fixed an issue with horizontal margin on single sign-on screen in landscape view on iOS iPhone X and later.
  - Fixed an issue on iOS where the Helper text on two Settings screens was not offset on the left.
  - Fixed an issue where the thread view header theme was inconsistent during transition back to main channel view.
  - Fixed an issue on iOS where the navigation bar tucked under the phone's status bar when switching orientation.
+ - Fixed an issue on iOS where the keyboard flashed darker when Automatic Replies had been previously enabled.
  - Fixed an issue on Android where uploading pictures from storage or camera required unwanted permissions.
- - Fixed an issue where the timezone setting did not updated when changing back to set automatically.
+ - Fixed an issue where ``mobile.message_length.message`` did not match webapp's ``create_post.error_message``.
 
 ## 1.24.0 Release
 - Release Date: October 16, 2019
