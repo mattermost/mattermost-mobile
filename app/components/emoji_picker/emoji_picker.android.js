@@ -27,7 +27,7 @@ export default class EmojiPicker extends EmojiPickerBase {
             <React.Fragment>
                 <View style={styles.searchBar}>
                     <SearchBar
-                        ref={this.searchBarRef}
+                        ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

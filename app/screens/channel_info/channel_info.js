@@ -52,6 +52,7 @@ export default class ChannelInfo extends PureComponent {
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
         currentChannelGuestCount: PropTypes.number,
+        currentChannelPinnedPostCount: PropTypes.number,
         currentUserId: PropTypes.string,
         currentUserIsGuest: PropTypes.bool,
         status: PropTypes.string,
@@ -414,6 +415,7 @@ export default class ChannelInfo extends PureComponent {
     actionsRows = (style, channelIsArchived) => {
         const {
             currentChannelMemberCount,
+            currentChannelPinnedPostCount,
             canManageUsers,
             canEditChannel,
             theme,
@@ -475,6 +477,7 @@ export default class ChannelInfo extends PureComponent {
                 <ChannelInfoRow
                     action={this.goToPinnedPosts}
                     defaultMessage='Pinned Posts'
+                    detail={currentChannelPinnedPostCount}
                     image={pinIcon}
                     textId={t('channel_header.pinnedPosts')}
                     theme={theme}

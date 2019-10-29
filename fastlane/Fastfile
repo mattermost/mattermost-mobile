@@ -428,7 +428,7 @@ platform :ios do
   end
 
   lane :deploy do |options|
-    ipa_path = options[:ipa]
+    ipa_path = options[:file]
 
     unless ipa_path.nil?
       submit_to_testflight(ipa_path)
@@ -612,7 +612,7 @@ platform :android do
   end
 
   lane :deploy do |options|
-    apk_path = options[:apk]
+    apk_path = options[:file]
 
     unless apk_path.nil?
       submit_to_google_play(apk_path)
@@ -729,7 +729,7 @@ def submit_to_testflight(ipa_path)
 
   if(File.file?(ipa_path))
     UI.success("ipa file #{ipa_path}")
-    upload_to_tesflight(
+    pilot(
         ipa: ipa_path
     )
   else

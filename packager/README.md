@@ -5,7 +5,7 @@
 3. Open the App, enable the JavaScript debugger from the debug menu, and open the debugger
 4. Copy the console output starting with `module.exports =` into `packager/moduleNames.js`
 4. Run `node packager/generateModulePaths.js`
-5. Run `eslint --fix packager/module*`
+5. Run `./node_modules/.bin/eslint --fix packager/module*`
 6. Open modulePaths.js
 7. Remove entries for files that don't need to exist on app load:
 	- announcement_banner
