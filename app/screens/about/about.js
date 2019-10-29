@@ -18,6 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import AppIcon from 'app/components/app_icon';
 import Config from 'assets/config';
+import AboutLinks from 'app/constants/about_links';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
@@ -53,11 +54,11 @@ export default class About extends PureComponent {
     };
 
     handleTermsOfService = () => {
-        Linking.openURL(this.props.config.TermsOfServiceLink);
+        Linking.openURL(AboutLinks.TERMS_OF_SERVICE);
     };
 
     handlePrivacyPolicy = () => {
-        Linking.openURL(this.props.config.PrivacyPolicyLink);
+        Linking.openURL(AboutLinks.PRIVACY_POLICY);
     }
 
     render() {
