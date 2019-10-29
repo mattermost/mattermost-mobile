@@ -338,13 +338,12 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  https://github.com/cocoapods/specs.git:
     - boost-for-react-native
     - Sentry
+    - Swime
     - XCDYouTubeKit
     - YoutubePlayer-in-WKWebView
-  trunk:
-    - Swime
 
 EXTERNAL SOURCES:
   BVLinearGradient:
@@ -507,4 +506,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 807d95a6b7f45b6daddd86ab902e339f591ca8b0
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.7.5
