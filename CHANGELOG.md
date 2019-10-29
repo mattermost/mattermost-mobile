@@ -14,6 +14,7 @@
  - Fixed an issue where tapping on a hashtag engaged a keyboard for a moment before displaying search results.
  - Fixed an issue where posts of the same thread appeared to be from different threads if separated by a new message line.
  - Fixed an issue on iOS where the Name, Purpose and Header information appeared “boxed in” on channel info screen.
+ - Fixed an issue where bot posts timestamps wrapped in search results and pinned posts.
  - Fixed an issue with horizontal margin on single sign-on screen in landscape view on iOS iPhone X and later.
  - Fixed an issue on iOS where the Helper text on two Settings screens was not offset on the left.
  - Fixed an issue where the thread view header theme was inconsistent during transition back to main channel view.
