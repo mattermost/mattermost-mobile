@@ -84,17 +84,15 @@ export default class SafeAreaIos extends PureComponent {
     getSafeAreaInsets = async (dimensions) => {
         this.getStatusBarHeight();
 
-        const safeAreaInsetsStored = EphemeralStore.safeAreaInsets[PORTRAIT] !== null && EphemeralStore.safeAreaInsets[LANDSCAPE] !== null;
         if (DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets) {
             const window = dimensions?.window || Dimensions.get('window');
-            const landscape = window.width > window.length;
+            const orientation = window.width > window.length ? LANDSCAPE : PORTRAIT;
             const {safeAreaInsets} = await SafeArea.getSafeAreaInsetsForRootView();
-            this.setSafeAreaInsets(safeAreaInsets, landscape);
+            this.setSafeAreaInsets(safeAreaInsets, orientation);
         }
     }
 
-    setSafeAreaInsets = (safeAreaInsets, landscape) => {
-        const orientation = landscape ? LANDSCAPE : PORTRAIT;
+    setSafeAreaInsets = (safeAreaInsets, orientation) => {
         if (EphemeralStore.safeAreaInsets[orientation] === null) {
             EphemeralStore.safeAreaInsets[orientation] = safeAreaInsets;
         }
@@ -130,8 +128,8 @@ export default class SafeAreaIos extends PureComponent {
             this.getStatusBarHeight();
 
             const {width, height} = Dimensions.get('window');
-            const landscape = width > height;
-            this.setSafeAreaInsets(safeAreaInsets, landscape);
+            const orientation = width > height ? LANDSCAPE : PORTRAIT;
+            this.setSafeAreaInsets(safeAreaInsets, orientation);
         }
     }
 
