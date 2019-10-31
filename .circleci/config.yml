@@ -170,7 +170,7 @@ commands:
         type: string
     steps:
       - attach_workspace:
-          at: /
+          at: ~/
       - run:
           name: <<parameters.task>>
           working_directory: fastlane
