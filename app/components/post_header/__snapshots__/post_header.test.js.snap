@@ -1,0 +1,507 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostHeader should match snapshot when just a base post 1`] = `
+<React.Fragment>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "marginTop": 10,
+        },
+        false,
+      ]
+    }
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <TouchableWithFeedbackIOS
+        onPress={[Function]}
+        style={
+          Array [
+            Object {
+              "marginBottom": 3,
+              "marginRight": 5,
+              "maxWidth": "60%",
+            },
+            null,
+          ]
+        }
+        type="opacity"
+      >
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Object {
+              "color": "#3d3c40",
+              "flexGrow": 1,
+              "fontSize": 15,
+              "fontWeight": "600",
+              "paddingVertical": 2,
+            }
+          }
+        >
+          John Smith
+        </Text>
+      </TouchableWithFeedbackIOS>
+      <FormattedTime
+        hour12={true}
+        style={
+          Object {
+            "color": "#3d3c40",
+            "flex": 1,
+            "fontSize": 12,
+            "marginTop": 5,
+            "opacity": 0.5,
+          }
+        }
+        timeZone=""
+        value={0}
+      />
+    </View>
+  </View>
+</React.Fragment>
+`;
+
+exports[`PostHeader should match snapshot when post is autoresponder 1`] = `
+<React.Fragment>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "marginTop": 10,
+        },
+        false,
+      ]
+    }
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        style={
+          Array [
+            Object {
+              "marginBottom": 3,
+              "marginRight": 5,
+              "maxWidth": "60%",
+            },
+            null,
+          ]
+        }
+      >
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Object {
+              "color": "#3d3c40",
+              "flexGrow": 1,
+              "fontSize": 15,
+              "fontWeight": "600",
+              "paddingVertical": 2,
+            }
+          }
+        >
+          John Smith
+        </Text>
+      </View>
+      <Tag
+        defaultMessage="AUTOMATIC REPLY"
+        id="post_info.auto_responder"
+        show={true}
+        style={
+          Object {
+            "marginBottom": 5,
+            "marginLeft": 0,
+            "marginRight": 5,
+          }
+        }
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+      />
+      <FormattedTime
+        hour12={true}
+        style={
+          Object {
+            "color": "#3d3c40",
+            "flex": 1,
+            "fontSize": 12,
+            "marginTop": 5,
+            "opacity": 0.5,
+          }
+        }
+        timeZone=""
+        value={0}
+      />
+    </View>
+  </View>
+</React.Fragment>
+`;
+
+exports[`PostHeader should match snapshot when post is from system message 1`] = `
+<React.Fragment>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "marginTop": 10,
+        },
+        false,
+      ]
+    }
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "marginBottom": 3,
+            "marginRight": 5,
+            "maxWidth": "60%",
+          }
+        }
+      >
+        <FormattedText
+          defaultMessage="System"
+          id="post_info.system"
+          style={
+            Array [
+              Object {
+                "color": "#3d3c40",
+                "flexGrow": 1,
+                "fontSize": 15,
+                "fontWeight": "600",
+                "paddingVertical": 2,
+              },
+            ]
+          }
+        />
+      </View>
+      <FormattedTime
+        hour12={true}
+        style={
+          Object {
+            "color": "#3d3c40",
+            "flex": 1,
+            "fontSize": 12,
+            "marginTop": 5,
+            "opacity": 0.5,
+          }
+        }
+        timeZone=""
+        value={0}
+      />
+    </View>
+  </View>
+</React.Fragment>
+`;
+
+exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyButton 1`] = `
+<React.Fragment>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "marginTop": 10,
+        },
+        false,
+      ]
+    }
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <TouchableWithFeedbackIOS
+        onPress={[Function]}
+        style={
+          Array [
+            Object {
+              "marginBottom": 3,
+              "marginRight": 5,
+              "maxWidth": "60%",
+            },
+            Object {
+              "maxWidth": "50%",
+            },
+          ]
+        }
+        type="opacity"
+      >
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Object {
+              "color": "#3d3c40",
+              "flexGrow": 1,
+              "fontSize": 15,
+              "fontWeight": "600",
+              "paddingVertical": 2,
+            }
+          }
+        >
+          John Smith
+        </Text>
+      </TouchableWithFeedbackIOS>
+      <BotTag
+        style={
+          Object {
+            "marginBottom": 5,
+            "marginLeft": 0,
+            "marginRight": 5,
+          }
+        }
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+      />
+      <FormattedTime
+        hour12={true}
+        style={
+          Object {
+            "color": "#3d3c40",
+            "flex": 1,
+            "fontSize": 12,
+            "marginTop": 5,
+            "opacity": 0.5,
+          }
+        }
+        timeZone=""
+        value={0}
+      />
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "justifyContent": "flex-end",
+          }
+        }
+      >
+        <TouchableWithFeedbackIOS
+          onPress={[MockFunction]}
+          style={
+            Object {
+              "alignItems": "flex-start",
+              "flex": 1,
+              "flexDirection": "row",
+              "justifyContent": "flex-end",
+              "minWidth": 40,
+              "paddingBottom": 10,
+              "paddingTop": 2,
+            }
+          }
+          type="opacity"
+        >
+          <ReplyIcon
+            color="#2389d7"
+            height={16}
+            width={16}
+          />
+          <Text
+            style={
+              Object {
+                "color": "#2389d7",
+                "fontSize": 12,
+                "marginLeft": 2,
+                "marginTop": 2,
+              }
+            }
+          >
+            0
+          </Text>
+        </TouchableWithFeedbackIOS>
+      </View>
+    </View>
+  </View>
+</React.Fragment>
+`;
+
+exports[`PostHeader should match snapshot when post should display reply button 1`] = `
+<React.Fragment>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "marginTop": 10,
+        },
+        false,
+      ]
+    }
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <TouchableWithFeedbackIOS
+        onPress={[Function]}
+        style={
+          Array [
+            Object {
+              "marginBottom": 3,
+              "marginRight": 5,
+              "maxWidth": "60%",
+            },
+            null,
+          ]
+        }
+        type="opacity"
+      >
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Object {
+              "color": "#3d3c40",
+              "flexGrow": 1,
+              "fontSize": 15,
+              "fontWeight": "600",
+              "paddingVertical": 2,
+            }
+          }
+        >
+          John Smith
+        </Text>
+      </TouchableWithFeedbackIOS>
+      <FormattedTime
+        hour12={true}
+        style={
+          Object {
+            "color": "#3d3c40",
+            "flex": 1,
+            "fontSize": 12,
+            "marginTop": 5,
+            "opacity": 0.5,
+          }
+        }
+        timeZone=""
+        value={0}
+      />
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "justifyContent": "flex-end",
+          }
+        }
+      >
+        <TouchableWithFeedbackIOS
+          onPress={[MockFunction]}
+          style={
+            Object {
+              "alignItems": "flex-start",
+              "flex": 1,
+              "flexDirection": "row",
+              "justifyContent": "flex-end",
+              "minWidth": 40,
+              "paddingBottom": 10,
+              "paddingTop": 2,
+            }
+          }
+          type="opacity"
+        >
+          <ReplyIcon
+            color="#2389d7"
+            height={16}
+            width={16}
+          />
+          <Text
+            style={
+              Object {
+                "color": "#2389d7",
+                "fontSize": 12,
+                "marginLeft": 2,
+                "marginTop": 2,
+              }
+            }
+          >
+            0
+          </Text>
+        </TouchableWithFeedbackIOS>
+      </View>
+    </View>
+  </View>
+</React.Fragment>
+`;
