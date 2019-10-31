@@ -180,7 +180,7 @@ commands:
     description: "Persist mattermost-mobile directory"
     steps:
       - persist_to_workspace:
-          root: /
+          root: ~/
           paths:
             - mattermost-mobile*
 
