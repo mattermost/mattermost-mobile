@@ -5,6 +5,7 @@
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Bug Fixes
+ - Fixed an issue where Mattermost monokai theme no longer worked properly on mobile apps.
  - Fixed an issue on Android where the notification badge count didn't update when using multiple channels.
  - Fixed an issue on Android where test notifications did not work properly.
  - Fixed an issue where "In-app" notifications caused the app badge count to get out of sync.
