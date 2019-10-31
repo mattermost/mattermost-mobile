@@ -343,7 +343,7 @@ jobs:
       resource_class: medium
     steps:
       - attach_workspace:
-          at: /
+          at: /~
       - run:
           name: Create GitHub release
           working_directory: fastlane
