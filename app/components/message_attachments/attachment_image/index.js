@@ -169,7 +169,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderRadius: 2,
             flex: 1,
-            padding: 5,
         },
     };
 });
