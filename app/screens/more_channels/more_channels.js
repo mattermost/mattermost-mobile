@@ -34,7 +34,7 @@ export default class MoreChannels extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
-            getTeamArchivedChannels: PropTypes.func.isRequired,
+            getArchivedChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
@@ -157,7 +157,7 @@ export default class MoreChannels extends PureComponent {
                     currentTeamId,
                     this.page + 1,
                     General.CHANNELS_CHUNK_SIZE
-                ).then(actions.getTeamArchivedChannels(
+                ).then(actions.getArchivedChannels(
                     currentTeamId,
                     this.page + 1,
                     General.CHANNELS_CHUNK_SIZE

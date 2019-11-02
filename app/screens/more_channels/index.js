@@ -6,8 +6,8 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 import {isLandscape} from 'app/selectors/device';
 import {General} from 'mattermost-redux/constants';
-import {getChannels, getTeamArchivedChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
-import {getChannelsInCurrentTeam, getMyChannelMemberships, getArchivedChannels} from 'mattermost-redux/selectors/entities/channels';
+import {getChannels, getArchivedChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
+import {getChannelsInCurrentTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
@@ -30,9 +30,9 @@ const joinablePublicChannels = createSelector(
 );
 
 const joinableArchivedChannels = createSelector(
-    getArchivedChannels,
+    getChannelsInCurrentTeam,
     (channels) => {
-        return channels;
+        return channels.filter((c) => c.delete_at !== 0);
     }
 );
 
@@ -61,7 +61,7 @@ function mapDispatchToProps(dispatch) {
             handleSelectChannel,
             joinChannel,
             getChannels,
-            getTeamArchivedChannels,
+            getArchivedChannels,
             searchChannels,
             setChannelDisplayName,
         }, dispatch),
