@@ -27,6 +27,8 @@ import {
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
+import {getLocalizedMessage} from '../../i18n';
+import { getCurrentLocale } from '../../selectors/i18n';
 
 export default class MoreChannels extends PureComponent {
     static propTypes = {
@@ -405,11 +407,11 @@ export default class MoreChannels extends PureComponent {
                         }
                     >
                         <Picker.Item
-                            label='Show: Public Channels'
+                            label={formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Show: Public Channels'})}
                             value='public'
                         />
                         <Picker.Item
-                            label='Show: Archived Channels'
+                            label={formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Show: Archived Channels'})}
                             value='archived'
                         />
                     </Picker>
