@@ -1,0 +1,87 @@
+diff --git a/node_modules/react-native-youtube/RCTYouTubeStandalone.m b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
+index 0929305..4a52d8c 100644
+--- a/node_modules/react-native-youtube/RCTYouTubeStandalone.m
++++ b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
+@@ -3,6 +3,7 @@
+ #import <XCDYouTubeKit/XCDYouTubeKit.h>
+ #define XCD_YOUTUBE_KIT_INSTALLED
+ #endif
++@import AVKit;
+ 
+ @implementation RCTYouTubeStandalone {
+     RCTPromiseResolveBlock resolver;
+@@ -21,20 +22,41 @@ @implementation RCTYouTubeStandalone {
+         reject(@"error", @"XCDYouTubeKit is not installed", nil);
+     #else
+         dispatch_async(dispatch_get_main_queue(), ^{
+-            XCDYouTubeVideoPlayerViewController *videoPlayerViewController =
+-                [[XCDYouTubeVideoPlayerViewController alloc] initWithVideoIdentifier:videoId];
+-            NSTimeInterval initialPlaybackTime = [startTime doubleValue];
+-            videoPlayerViewController.moviePlayer.initialPlaybackTime = initialPlaybackTime;
+-            [[NSNotificationCenter defaultCenter] addObserver:self
+-                                                     selector:@selector(moviePlayerPlaybackDidFinish:)
+-                                                         name:MPMoviePlayerPlaybackDidFinishNotification
+-                                                       object:videoPlayerViewController.moviePlayer];
++            UIViewController *root = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
++            AVPlayerViewController *playerViewController = [AVPlayerViewController new];
++            [root presentViewController:playerViewController animated:YES completion:nil];
+ 
+-            resolver = resolve;
+-            rejecter = reject;
++            __weak AVPlayerViewController *weakPlayerViewController = playerViewController;
+ 
+-            UIViewController *root = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+-            [root presentMoviePlayerViewControllerAnimated:videoPlayerViewController];
++            [[XCDYouTubeClient defaultClient] getVideoWithIdentifier:videoId
++                                                   completionHandler:^(XCDYouTubeVideo * _Nullable video, NSError * _Nullable error) {
++                if (video) {
++                    NSDictionary *streamURLs = video.streamURLs;
++                    NSURL *streamURL = streamURLs[
++                        XCDYouTubeVideoQualityHTTPLiveStreaming] ?:
++                        streamURLs[@(XCDYouTubeVideoQualityHD720)] ?:
++                        streamURLs[@(XCDYouTubeVideoQualityMedium360)] ?:
++                        streamURLs[@(XCDYouTubeVideoQualitySmall240)
++                    ];
++
++                    @try {
++                        CMTime initialPlaybackTime = CMTimeMakeWithSeconds([startTime doubleValue], 1);
++
++                        weakPlayerViewController.player = [AVPlayer playerWithURL:streamURL];
++                        [weakPlayerViewController.player seekToTime:initialPlaybackTime completionHandler: ^(BOOL finished) {
++                            [weakPlayerViewController.player play];
++                            resolve(@"YouTubeStandaloneIOS player launched successfully");
++                        }];
++                    }
++                    @catch (NSException *ex) {
++                        reject(@"error", ex.reason, nil);
++                        [root dismissViewControllerAnimated:YES completion:nil];
++                    }
++                } else {
++                    reject(@"error", error.localizedDescription, nil);
++                    [root dismissViewControllerAnimated:YES completion:nil];
++                }
++            }];
+         });
+     #endif
+ }
+diff --git a/node_modules/react-native-youtube/YouTubeStandalone.ios.js b/node_modules/react-native-youtube/YouTubeStandalone.ios.js
+index 761029f..f97e422 100644
+--- a/node_modules/react-native-youtube/YouTubeStandalone.ios.js
++++ b/node_modules/react-native-youtube/YouTubeStandalone.ios.js
+@@ -4,12 +4,5 @@ import { NativeModules } from 'react-native';
+ const { YouTubeStandalone } = NativeModules;
+ 
+ export const YouTubeStandaloneIOS = !YouTubeStandalone
+-    ? null
+-    : {
+-        playVideo: (videoId, startTime = 0) =>
+-            new Promise((resolve, reject) => {
+-                YouTubeStandalone.playVideo(videoId, startTime)
+-                .then(() => resolve())
+-                .catch(errorMessage => reject(errorMessage));
+-            }),
+-    };
+\ No newline at end of file
++  ? null
++  : { playVideo: (videoId, startTime) => YouTubeStandalone.playVideo(videoId, startTime) };
+\ No newline at end of file
