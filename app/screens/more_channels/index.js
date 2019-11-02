@@ -52,6 +52,7 @@ function mapStateToProps(state) {
         archivedChannels,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
+        serverVersion: state.entities.general.serverVersion,
     };
 }
 

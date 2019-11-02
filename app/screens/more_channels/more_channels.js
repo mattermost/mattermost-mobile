@@ -27,8 +27,7 @@ import {
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
-import {getLocalizedMessage} from '../../i18n';
-import { getCurrentLocale } from '../../selectors/i18n';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 export default class MoreChannels extends PureComponent {
     static propTypes = {
@@ -49,6 +48,7 @@ export default class MoreChannels extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        serverVersion: PropTypes.string,
     };
 
     static defaultProps = {
@@ -326,7 +326,7 @@ export default class MoreChannels extends PureComponent {
                     term: text,
                 });
                 clearTimeout(this.searchTimeoutId);
-            } else if (typeOfChannels === 'archived') {
+            } else if (typeOfChannels === 'archived' && isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
                 const filtered = this.filterChannels(archivedChannels, text);
                 this.setState({
                     archivedChannels: filtered,
@@ -364,17 +364,32 @@ export default class MoreChannels extends PureComponent {
                 }),
             };
 
-            let activeChannels;
+            let activeChannels = channels;
 
-            switch (this.state.typeOfChannels) {
-            case 'public':
-                activeChannels = channels;
-                break;
-            case 'archived':
+            if (isMinimumServerVersion(this.props.serverVersion, 5, 4) && this.state.typeOfChannels === 'archived') {
                 activeChannels = archivedChannels;
-                break;
-            default:
-                activeChannels = channels;
+            }
+
+            let channelDropdown;
+            if (isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+                channelDropdown = (
+                    <Picker
+                        selectedValue={this.state.typeOfChannels}
+                        style={{height: 50, width: 250}}
+                        onValueChange={(itemValue) =>
+                            this.setState({typeOfChannels: itemValue})
+                        }
+                    >
+                        <Picker.Item
+                            label={formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Show: Public Channels'})}
+                            value='public'
+                        />
+                        <Picker.Item
+                            label={formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Show: Archived Channels'})}
+                            value='archived'
+                        />
+                    </Picker>
+                );
             }
 
             content = (
@@ -399,22 +414,7 @@ export default class MoreChannels extends PureComponent {
                             value={term}
                         />
                     </View>
-                    <Picker
-                        selectedValue={this.state.typeOfChannels}
-                        style={{height: 50, width: 250}}
-                        onValueChange={(itemValue) =>
-                            this.setState({typeOfChannels: itemValue})
-                        }
-                    >
-                        <Picker.Item
-                            label={formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Show: Public Channels'})}
-                            value='public'
-                        />
-                        <Picker.Item
-                            label={formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Show: Archived Channels'})}
-                            value='archived'
-                        />
-                    </Picker>
+                    {channelDropdown}
                     <CustomList
                         data={activeChannels}
                         extraData={loading}
