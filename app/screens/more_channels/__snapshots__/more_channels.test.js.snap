@@ -43,6 +43,26 @@ exports[`MoreChannels should match snapshot 1`] = `
         value=""
       />
     </View>
+    <Picker
+      mode="dialog"
+      onValueChange={[Function]}
+      selectedValue="public"
+      style={
+        Object {
+          "height": 50,
+          "width": 250,
+        }
+      }
+    >
+      <PickerItem
+        label="Show: Public Channels"
+        value="public"
+      />
+      <PickerItem
+        label="Show: Archived Channels"
+        value="archived"
+      />
+    </Picker>
     <CustomList
       data={
         Array [

@@ -157,11 +157,12 @@ export default class MoreChannels extends PureComponent {
                     currentTeamId,
                     this.page + 1,
                     General.CHANNELS_CHUNK_SIZE
-                ).then(actions.getArchivedChannels(
+                );
+                actions.getArchivedChannels(
                     currentTeamId,
                     this.page + 1,
                     General.CHANNELS_CHUNK_SIZE
-                ).then(this.loadedChannels));
+                ).then(this.loadedChannels);
             });
         }
     };

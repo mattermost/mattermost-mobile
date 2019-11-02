@@ -29,7 +29,7 @@ const joinablePublicChannels = createSelector(
     }
 );
 
-const joinableArchivedChannels = createSelector(
+const teamArchivedChannels = createSelector(
     getChannelsInCurrentTeam,
     (channels) => {
         return channels.filter((c) => c.delete_at !== 0);
@@ -41,7 +41,7 @@ function mapStateToProps(state) {
     const license = getLicense(state);
     const roles = getCurrentUserRoles(state);
     const channels = joinablePublicChannels(state);
-    const archivedChannels = joinableArchivedChannels(state);
+    const archivedChannels = teamArchivedChannels(state);
     const currentTeamId = getCurrentTeamId(state);
 
     return {
