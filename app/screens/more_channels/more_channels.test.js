@@ -93,4 +93,20 @@ describe('MoreChannels', () => {
         expect(wrapper.state('term')).toEqual('');
         expect(wrapper.state('channels')).toEqual(baseProps.channels);
     });
+
+    test('should search correct channels', () => {
+        const wrapper = shallow(
+            <MoreChannels {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+
+        wrapper.setState({typeOfChannels: 'public'});
+        instance.searchChannels('display_name');
+        expect(wrapper.state('channels')).toEqual(baseProps.channels);
+
+        wrapper.setState({typeOfChannels: 'archived'});
+        instance.searchChannels('archived channel');
+        expect(wrapper.state('archivedChannels')).toEqual(baseProps.archivedChannels);
+    });
 });
