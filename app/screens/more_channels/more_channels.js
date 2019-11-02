@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Platform, View} from 'react-native';
+import {Platform, View, Picker} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
@@ -34,12 +34,14 @@ export default class MoreChannels extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
+            getTeamArchivedChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         canCreateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.array,
+        archivedChannels: PropTypes.array,
         closeButton: PropTypes.object,
         currentUserId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -65,6 +67,8 @@ export default class MoreChannels extends PureComponent {
 
         this.state = {
             channels: props.channels.slice(0, General.CHANNELS_CHUNK_SIZE),
+            archivedChannels: props.archivedChannels.slice(0, General.CHANNELS_CHUNK_SIZE),
+            typeOfChannels: 'public',
             loading: false,
             adding: false,
             term: '',
@@ -130,10 +134,11 @@ export default class MoreChannels extends PureComponent {
     }
 
     cancelSearch = () => {
-        const {channels} = this.props;
+        const {channels, archivedChannels} = this.props;
 
         this.setState({
             channels,
+            archivedChannels,
             term: '',
         });
     };
@@ -152,7 +157,11 @@ export default class MoreChannels extends PureComponent {
                     currentTeamId,
                     this.page + 1,
                     General.CHANNELS_CHUNK_SIZE
-                ).then(this.loadedChannels);
+                ).then(actions.getTeamArchivedChannels(
+                    currentTeamId,
+                    this.page + 1,
+                    General.CHANNELS_CHUNK_SIZE
+                ).then(this.loadedChannels));
             });
         }
     };
@@ -295,23 +304,35 @@ export default class MoreChannels extends PureComponent {
 
     renderItem = (props) => {
         return (
-            <ChannelListRow {...props}/>
+            <ChannelListRow
+                {...props}
+                isArchived={this.state.typeOfChannels === 'archived'}
+            />
         );
     }
 
     searchChannels = (text) => {
-        const {actions, channels, currentTeamId} = this.props;
+        const {actions, channels, archivedChannels, currentTeamId} = this.props;
+        const {typeOfChannels} = this.state;
 
         if (text) {
-            const filtered = this.filterChannels(channels, text);
-            this.setState({
-                channels: filtered,
-                term: text,
-            });
-            clearTimeout(this.searchTimeoutId);
-
+            if (typeOfChannels === 'public') {
+                const filtered = this.filterChannels(channels, text);
+                this.setState({
+                    channels: filtered,
+                    term: text,
+                });
+                clearTimeout(this.searchTimeoutId);
+            } else if (typeOfChannels === 'archived') {
+                const filtered = this.filterChannels(archivedChannels, text);
+                this.setState({
+                    archivedChannels: filtered,
+                    term: text,
+                });
+                clearTimeout(this.searchTimeoutId);
+            }
             this.searchTimeoutId = setTimeout(() => {
-                actions.searchChannels(currentTeamId, text.toLowerCase());
+                actions.searchChannels(currentTeamId, text.toLowerCase(), typeOfChannels === 'archived');
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
@@ -321,7 +342,7 @@ export default class MoreChannels extends PureComponent {
     render() {
         const {formatMessage} = this.context.intl;
         const {theme, isLandscape} = this.props;
-        const {adding, channels, loading, term} = this.state;
+        const {adding, channels, archivedChannels, loading, term} = this.state;
         const more = term ? () => true : this.getChannels;
         const style = getStyleFromTheme(theme);
 
@@ -339,6 +360,19 @@ export default class MoreChannels extends PureComponent {
                     },
                 }),
             };
+
+            let activeChannels;
+
+            switch (this.state.typeOfChannels) {
+            case 'public':
+                activeChannels = channels;
+                break;
+            case 'archived':
+                activeChannels = archivedChannels;
+                break;
+            default:
+                activeChannels = channels;
+            }
 
             content = (
                 <React.Fragment>
@@ -362,8 +396,24 @@ export default class MoreChannels extends PureComponent {
                             value={term}
                         />
                     </View>
+                    <Picker
+                        selectedValue={this.state.typeOfChannels}
+                        style={{height: 50, width: 250}}
+                        onValueChange={(itemValue) =>
+                            this.setState({typeOfChannels: itemValue})
+                        }
+                    >
+                        <Picker.Item
+                            label='Show: Public Channels'
+                            value='public'
+                        />
+                        <Picker.Item
+                            label='Show: Archived Channels'
+                            value='archived'
+                        />
+                    </Picker>
                     <CustomList
-                        data={channels}
+                        data={activeChannels}
                         extraData={loading}
                         key='custom_list'
                         loading={loading}

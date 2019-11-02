@@ -6,8 +6,8 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 import {isLandscape} from 'app/selectors/device';
 import {General} from 'mattermost-redux/constants';
-import {getChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
-import {getChannelsInCurrentTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
+import {getChannels, getTeamArchivedChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
+import {getChannelsInCurrentTeam, getMyChannelMemberships, getArchivedChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
@@ -19,7 +19,7 @@ import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/chan
 
 import MoreChannels from './more_channels';
 
-const joinableChannels = createSelector(
+const joinablePublicChannels = createSelector(
     getChannelsInCurrentTeam,
     getMyChannelMemberships,
     (channels, myMembers) => {
@@ -29,11 +29,19 @@ const joinableChannels = createSelector(
     }
 );
 
+const joinableArchivedChannels = createSelector(
+    getArchivedChannels,
+    (channels) => {
+        return channels;
+    }
+);
+
 function mapStateToProps(state) {
     const config = getConfig(state);
     const license = getLicense(state);
     const roles = getCurrentUserRoles(state);
-    const channels = joinableChannels(state);
+    const channels = joinablePublicChannels(state);
+    const archivedChannels = joinableArchivedChannels(state);
     const currentTeamId = getCurrentTeamId(state);
 
     return {
@@ -41,6 +49,7 @@ function mapStateToProps(state) {
         currentUserId: getCurrentUserId(state),
         currentTeamId,
         channels,
+        archivedChannels,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
     };
@@ -52,6 +61,7 @@ function mapDispatchToProps(dispatch) {
             handleSelectChannel,
             joinChannel,
             getChannels,
+            getTeamArchivedChannels,
             searchChannels,
             setChannelDisplayName,
         }, dispatch),
