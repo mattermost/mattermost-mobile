@@ -4,7 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Platform, View, Picker} from 'react-native';
+import {Platform, View, Text} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
@@ -28,6 +29,7 @@ import {
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+import BottomSheet from '../../utils/bottom_sheet';
 
 export default class MoreChannels extends PureComponent {
     static propTypes = {
@@ -326,7 +328,7 @@ export default class MoreChannels extends PureComponent {
                     term: text,
                 });
                 clearTimeout(this.searchTimeoutId);
-            } else if (typeOfChannels === 'archived' && isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+            } else if (typeOfChannels === 'archived' && isMinimumServerVersion(this.props.serverVersion, 5, 18)) {
                 const filtered = this.filterChannels(archivedChannels, text);
                 this.setState({
                     archivedChannels: filtered,
@@ -342,12 +344,37 @@ export default class MoreChannels extends PureComponent {
         }
     };
 
+    handleDropdownClick = () => {
+        const {formatMessage} = this.context.intl;
+        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Show: Public Channels'});
+        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Show: Archived Channels'});
+        const cancelText = 'Cancel';
+        BottomSheet.showBottomSheetWithOptions({
+            options: [publicChannelsText, archivedChannelsText, cancelText],
+            cancelButtonIndex: 2,
+        }, (value) => {
+            let typeOfChannels;
+            switch (value) {
+            case 0:
+                typeOfChannels = 'public';
+                break;
+            case 1:
+                typeOfChannels = 'archived';
+                break;
+            }
+            this.setState({typeOfChannels});
+        });
+    }
+
     render() {
         const {formatMessage} = this.context.intl;
         const {theme, isLandscape} = this.props;
-        const {adding, channels, archivedChannels, loading, term} = this.state;
+        const {adding, channels, archivedChannels, loading, term, typeOfChannels} = this.state;
         const more = term ? () => true : this.getChannels;
         const style = getStyleFromTheme(theme);
+
+        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Show: Public Channels'});
+        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Show: Archived Channels'});
 
         let content;
         if (adding) {
@@ -366,29 +393,26 @@ export default class MoreChannels extends PureComponent {
 
             let activeChannels = channels;
 
-            if (isMinimumServerVersion(this.props.serverVersion, 5, 4) && this.state.typeOfChannels === 'archived') {
+            if (isMinimumServerVersion(this.props.serverVersion, 5, 18) && typeOfChannels === 'archived') {
                 activeChannels = archivedChannels;
             }
 
             let channelDropdown;
-            if (isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+            if (isMinimumServerVersion(this.props.serverVersion, 5, 18)) {
                 channelDropdown = (
-                    <Picker
-                        selectedValue={this.state.typeOfChannels}
-                        style={{height: 50, width: 250}}
-                        onValueChange={(itemValue) =>
-                            this.setState({typeOfChannels: itemValue})
-                        }
-                    >
-                        <Picker.Item
-                            label={formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Show: Public Channels'})}
-                            value='public'
-                        />
-                        <Picker.Item
-                            label={formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Show: Archived Channels'})}
-                            value='archived'
-                        />
-                    </Picker>
+                    <View style={style.titleContainer}>
+                        <Text
+                            accessibilityRole={'button'}
+                            style={{fontWeight: 'bold', marginLeft: 10, marginTop: 20, marginBottom: 10}}
+                            onPress={this.handleDropdownClick}
+                        >
+                            {typeOfChannels === 'public' ? publicChannelsText : archivedChannelsText}
+                            {'  '}
+                            <Icon
+                                name={'caret-down'}
+                            />
+                        </Text>
+                    </View>
                 );
             }
 
