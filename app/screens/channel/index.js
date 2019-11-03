@@ -14,19 +14,30 @@ import options from 'app/store/realm_options';
 import Channel from './channel';
 
 function mapPropsToQueries(realm) {
-    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID);
+    // Assigning REALM_EMPTY_OBJECT to handle the case when upgrading from redux to realm and the user is logged in
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID) || General.REALM_EMPTY_OBJECT;
     const themePreference = realm.objects('Preference').filtered(`category="${Preferences.CATEGORY_THEME}"`);
-    const currentUser = realm.objectForPrimaryKey('User', general.currentUserId);
+    const currentUser = realm.objectForPrimaryKey('User', general?.currentUserId || '') || General.REALM_EMPTY_OBJECT;
     return [currentUser, general, themePreference];
 }
 
 function mapQueriesToProps([currentUser, general, themePreference]) {
+    let theme;
+    let showTermsOfService = false;
+
+    if (general?.currentUserId) {
+        theme = getTheme([general], themePreference);
+        showTermsOfService = shouldShowTermsOfService(currentUser, general);
+    } else {
+        theme = Preferences.THEMES.default;
+    }
+
     return {
         currentChannelId: general?.currentChannelId,
         currentTeamId: general?.currentTeamId,
         currentUserId: currentUser?.id,
-        theme: getTheme([general], themePreference),
-        showTermsOfService: shouldShowTermsOfService(currentUser, general),
+        theme,
+        showTermsOfService,
     };
 }
 

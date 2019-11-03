@@ -32,8 +32,6 @@ class PushNotificationsHandler {
     }
 
     configure = (store) => {
-        this.store = store;
-
         PushNotifications.configure({
             reduxStore: store,
             onRegister: this.onRegisterDevice,
@@ -47,7 +45,7 @@ class PushNotificationsHandler {
     loadFromNotification = async (notification) => {
         // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
         EphemeralStore.appStartedFromPushNotification = true;
-        await this.store.dispatch(loadFromPushNotification(notification, true));
+        await this.reduxStore.dispatch(loadFromPushNotification(notification, true));
 
         // if we have a componentId means that the app is already initialized
         const componentId = EphemeralStore.getNavigationTopComponentId();
@@ -63,7 +61,7 @@ class PushNotificationsHandler {
     };
 
     onPushNotification = async (deviceNotification) => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = this.reduxStore;
         let unsubscribeFromStore = null;
         let stopLoadingNotification = false;
 
@@ -96,14 +94,14 @@ class PushNotificationsHandler {
                         }
                     };
 
-                    unsubscribeFromStore = this.store.subscribe(waitForHydration);
+                    unsubscribeFromStore = this.reduxStore.subscribe(waitForHydration);
                 }
             }
         }
     };
 
     onPushNotificationReply = async (data, text, completion) => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = this.reduxStore;
         const state = getState();
         const credentials = await getAppCredentials(); // TODO Change to handle multiple servers
         const url = await getCurrentServerUrl(); // TODO Change to handle multiple servers
@@ -164,7 +162,7 @@ class PushNotificationsHandler {
     };
 
     onRegisterDevice = (data) => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = this.reduxStore;
         let unsubscribeFromStore = null;
 
         let prefix;
@@ -188,7 +186,7 @@ class PushNotificationsHandler {
             }
         };
 
-        unsubscribeFromStore = this.store.subscribe(waitForHydration);
+        unsubscribeFromStore = this.reduxStore.subscribe(waitForHydration);
     };
 
     getNotification = () => {

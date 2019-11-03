@@ -261,7 +261,7 @@ class GlobalEventHandler {
 
     handleInAppNotification = (notification) => {
         const {data} = notification;
-        const {getState} = this.store;
+        const {getState} = this.reduxStore;
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
@@ -277,7 +277,7 @@ class GlobalEventHandler {
     };
 
     setUserTimezone = async () => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = this.reduxStore;
         const state = getState();
         const currentUserId = getCurrentUserId(state);
 
