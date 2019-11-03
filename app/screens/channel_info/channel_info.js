@@ -39,6 +39,7 @@ export default class ChannelInfo extends PureComponent {
         currentChannelGuestCount: PropTypes.number,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
+        currentChannelPinnedPostCount: PropTypes.number,
         currentUserId: PropTypes.string,
         currentUserIsGuest: PropTypes.bool.isRequired,
         deleteChannel: PropTypes.func.isRequired,

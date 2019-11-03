@@ -66,7 +66,7 @@ export function loadPostsWithRetry(channelId) {
             hasMorePosts = count >= General.POST_CHUNK_SIZE;
         }
 
-        EphemeralStore.loadingPosts = hasMorePosts;
+        EphemeralStore.setLoadingPosts(hasMorePosts);
         return received;
     };
 }

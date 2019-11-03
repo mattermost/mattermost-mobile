@@ -98,7 +98,7 @@ export default class List extends PureComponent {
         }
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (prevProps.orderedChannelIds !== this.props.orderedChannelIds && this.listRef?.current?._wrapperListRef.getListRef()._viewabilityHelper) { //eslint-disable-line
             this.listRef.current.list.recordInteraction();
             this.updateUnreadIndicators({

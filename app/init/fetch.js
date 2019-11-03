@@ -122,7 +122,7 @@ Client4.doFetchWithResponse = async (url, options) => {
     if (headers[HEADER_X_VERSION_ID] && !headers[HEADER_CACHE_CONTROL]) {
         const serverVersion = headers[HEADER_X_VERSION_ID];
         if (serverVersion && Client4.serverVersion !== serverVersion) {
-            Client4.serverVersion = serverVersion;
+            Client4.serverVersion = serverVersion; //eslint-disable-line require-atomic-updates
         }
     }
 

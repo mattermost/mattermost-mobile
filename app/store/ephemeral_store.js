@@ -68,6 +68,10 @@ class EphemeralStore {
     removeRealmStoreForServer = (url) => {
         Reflect.deleteProperty(this.realmStores, url);
     };
+
+    setLoadingPosts = (loading) => {
+        this.loadingPosts = loading;
+    };
 }
 
 export default new EphemeralStore();

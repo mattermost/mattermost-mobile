@@ -136,7 +136,7 @@ export function loadSidebarDirectMessagesProfiles(teamId) {
                 });
 
                 if (failed.length) {
-                    promises = failed.map((id) => dispatch(getProfilesInChannel(id, true)));
+                    promises = failed.map((id) => dispatch(getProfilesInChannel(id, true))); //eslint-disable-line require-atomic-updates
                     continue;
                 }
 
