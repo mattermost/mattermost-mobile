@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as ReactNative from 'react-native';
 import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
@@ -13,8 +14,25 @@ global.fetch = jest.fn(() => Promise.resolve());
 
 /* eslint-disable no-console */
 
-jest.mock('NativeModules', () => {
-    return {
+jest.doMock('react-native', () => {
+    const {
+        Platform,
+        StyleSheet,
+        ViewPropTypes,
+        PermissionsAndroid,
+        ImagePickerManager,
+        requireNativeComponent,
+        Alert: RNAlert,
+        NativeModules: RNNativeModules,
+    } = ReactNative;
+
+    const Alert = {
+        ...RNAlert,
+        alert: jest.fn(),
+    };
+
+    const NativeModules = {
+        ...RNNativeModules,
         UIManager: {
             RCTView: {
                 directEventTypes: {},
@@ -23,6 +41,9 @@ jest.mock('NativeModules', () => {
         BlurAppScreen: () => true,
         MattermostManaged: {
             getConfig: jest.fn(),
+        },
+        MattermostShare: {
+            close: jest.fn(),
         },
         PlatformConstants: {
             forceTouchAvailable: false,
@@ -35,14 +56,17 @@ jest.mock('NativeModules', () => {
                 END: 'END',
             },
         },
+        KeyboardObserver: {},
+        RNCNetInfo: {
+            getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
+            addListener: jest.fn(),
+            removeListeners: jest.fn(),
+            addEventListener: jest.fn(),
+        },
         RNKeychainManager: {
             SECURITY_LEVEL_ANY: 'ANY',
             SECURITY_LEVEL_SECURE_SOFTWARE: 'SOFTWARE',
             SECURITY_LEVEL_SECURE_HARDWARE: 'HARDWARE',
-        },
-        RNCNetInfo: {
-            addEventListener: jest.fn(),
-            getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
         },
         RNReactNativeHapticFeedback: {
             trigger: jest.fn(),
@@ -50,9 +74,24 @@ jest.mock('NativeModules', () => {
         StatusBarManager: {
             getHeight: jest.fn(),
         },
+        RNDocumentPicker: {
+            pick: jest.fn(),
+        },
     };
+
+    return Object.setPrototypeOf({
+        Platform,
+        StyleSheet,
+        ViewPropTypes,
+        PermissionsAndroid,
+        ImagePickerManager,
+        requireNativeComponent,
+        Alert,
+        NativeModules,
+    }, ReactNative);
 });
-jest.mock('NativeEventEmitter');
+
+jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
 jest.mock('react-native-device-info', () => {
     return {

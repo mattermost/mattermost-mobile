@@ -339,6 +339,7 @@ export default class ChannelInfo extends PureComponent {
     renderActions = (style, channelIsArchived, isLandscape) => {
         const {
             currentChannelMemberCount,
+            currentChannelPinnedPostCount,
             canManageUsers,
             canEditChannel,
             theme,
@@ -399,6 +400,7 @@ export default class ChannelInfo extends PureComponent {
                 <ChannelInfoRow
                     action={this.goToPinnedPosts}
                     defaultMessage='Pinned Posts'
+                    detail={currentChannelPinnedPostCount}
                     image={pinIcon}
                     textId={t('channel_header.pinnedPosts')}
                     theme={theme}

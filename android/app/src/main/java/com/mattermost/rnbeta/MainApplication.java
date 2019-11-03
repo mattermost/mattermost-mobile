@@ -1,7 +1,7 @@
 package com.mattermost.rnbeta;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.content.Context;
 import android.content.RestrictionsManager;
 import android.os.Bundle;
@@ -22,15 +22,15 @@ import com.wix.reactnativenotifications.RNNotificationsModule;
 import io.tradle.react.LocalAuthModule;
 import com.gantix.JailMonkey.JailMonkeyModule;
 import com.RNFetchBlob.RNFetchBlob;
-import io.sentry.RNSentryModule;
-import io.sentry.RNSentryEventEmitter;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
 import com.inprogress.reactnativeyoutube.YouTubeStandaloneModule;
-import com.reactlibrary.RNReactNativeDocViewerModule;
-import com.reactnativedocumentpicker.DocumentPicker;
+import com.philipphecht.RNDocViewerModule;
+import io.github.elyx0.reactnativedocumentpicker.DocumentPickerModule;
 import com.oblador.keychain.KeychainModule;
 import com.reactnativecommunity.asyncstorage.AsyncStorageModule;
 import com.reactnativecommunity.netinfo.NetInfoModule;
+import com.reactnativecommunity.webview.RNCWebViewPackage;
+import io.sentry.RNSentryModule;
 import com.levelasquez.androidopensettings.AndroidOpenSettings;
 import com.mkuczera.RNReactNativeHapticFeedbackModule;
 
@@ -125,7 +125,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                   case "RNLocalAuth":
                     return new LocalAuthModule(reactContext);
                   case "JailMonkey":
-                    return new JailMonkeyModule(reactContext);
+                    return new JailMonkeyModule(reactContext, false);
                   case "RNFetchBlob":
                     return new RNFetchBlob(reactContext);
                   case "MattermostManaged":
@@ -134,20 +134,18 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return NotificationPreferencesModule.getInstance(instance, reactContext);
                   case "RNTextInputReset":
                     return new RNTextInputResetModule(reactContext);
-                  case "RNSentry":
-                    return new RNSentryModule(reactContext);
-                  case "RNSentryEventEmitter":
-                    return new RNSentryEventEmitter(reactContext);
                   case "ReactNativeExceptionHandler":
                     return new ReactNativeExceptionHandlerModule(reactContext);
                   case "YouTubeStandaloneModule":
                     return new YouTubeStandaloneModule(reactContext);
-                  case "RNReactNativeDocViewer":
-                    return new RNReactNativeDocViewerModule(reactContext);
+                  case "RNDocViewer":
+                    return new RNDocViewerModule(reactContext);
                   case "RNDocumentPicker":
-                    return new DocumentPicker(reactContext);
+                    return new DocumentPickerModule(reactContext);
                   case "RNKeychainManager":
                     return new KeychainModule(reactContext);
+                  case "RNSentry":
+                    return new RNSentryModule(reactContext);
                   case AsyncStorageModule.NAME:
                     return new AsyncStorageModule(reactContext);
                   case NetInfoModule.NAME:
@@ -180,13 +178,12 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("RNLocalAuth", new ReactModuleInfo("RNLocalAuth", "io.tradle.react.LocalAuthModule", false, false, false, false, false));
                     map.put("JailMonkey", new ReactModuleInfo("JailMonkey", "com.gantix.JailMonkey.JailMonkeyModule", false, false, true, false, false));
                     map.put("RNFetchBlob", new ReactModuleInfo("RNFetchBlob", "com.RNFetchBlob.RNFetchBlob", false, false, true, false, false));
-                    map.put("RNSentry", new ReactModuleInfo("RNSentry", "com.sentry.RNSentryModule", false, false, true, false, false));
-                    map.put("RNSentryEventEmitter", new ReactModuleInfo("RNSentryEventEmitter", "com.sentry.RNSentryEventEmitter", false, false, true, false, false));
                     map.put("ReactNativeExceptionHandler", new ReactModuleInfo("ReactNativeExceptionHandler", "com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule", false, false, false, false, false));
                     map.put("YouTubeStandaloneModule", new ReactModuleInfo("YouTubeStandaloneModule", "com.inprogress.reactnativeyoutube.YouTubeStandaloneModule", false, false, false, false, false));
-                    map.put("RNReactNativeDocViewer", new ReactModuleInfo("RNReactNativeDocViewer", "com.reactlibrary.RNReactNativeDocViewerModule", false, false, false, false, false));
-                    map.put("RNDocumentPicker", new ReactModuleInfo("RNDocumentPicker", "com.reactnativedocumentpicker.DocumentPicker", false, false, false, false, false));
+                    map.put("RNDocViewer", new ReactModuleInfo("RNDocViewer", "com.philipphecht.RNDocViewerModule", false, false, false, false, false));
+                    map.put("RNDocumentPicker", new ReactModuleInfo("RNDocumentPicker", "io.github.elyx0.reactnativedocumentpicker.DocumentPickerModule", false, false, false, false, false));
                     map.put("RNKeychainManager", new ReactModuleInfo("RNKeychainManager", "com.oblador.keychain.KeychainModule", false, false, true, false, false));
+                    map.put("RNSentry", new ReactModuleInfo("RNSentry", "com.sentry.RNSentryModule", false, false, true, false, false));
                     map.put(AsyncStorageModule.NAME, new ReactModuleInfo(AsyncStorageModule.NAME, "com.reactnativecommunity.asyncstorage.AsyncStorageModule", false, false, false, false, false));
                     map.put(NetInfoModule.NAME, new ReactModuleInfo(NetInfoModule.NAME, "com.reactnativecommunity.netinfo.NetInfoModule", false, false, false, false, false));
                     map.put("RNAndroidOpenSettings", new ReactModuleInfo("RNAndroidOpenSettings", "com.levelasquez.androidopensettings.AndroidOpenSettings", false, false, false, false, false));

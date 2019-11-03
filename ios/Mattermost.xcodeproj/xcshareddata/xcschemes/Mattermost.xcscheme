@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7FABE03522137F2900D0F595"
-               BuildableName = "libUploadAttachments.a"
-               BlueprintName = "UploadAttachments"
-               ReferencedContainer = "container:UploadAttachments/UploadAttachments.xcodeproj">
+               BlueprintIdentifier = "5C519960AB061400DBE7B093654CB72C"
+               BuildableName = "libReact-Core.a"
+               BlueprintName = "React-Core"
+               ReferencedContainer = "container:Pods/Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -28,10 +28,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "83CBBA2D1A601D0E00E9B192"
-               BuildableName = "libReact.a"
-               BlueprintName = "React"
-               ReferencedContainer = "container:../node_modules/react-native/React/React.xcodeproj">
+               BlueprintIdentifier = "7FABE03522137F2900D0F595"
+               BuildableName = "libUploadAttachments.a"
+               BlueprintName = "UploadAttachments"
+               ReferencedContainer = "container:UploadAttachments/UploadAttachments.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry

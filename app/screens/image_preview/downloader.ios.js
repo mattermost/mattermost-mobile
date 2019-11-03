@@ -276,7 +276,7 @@ export default class Downloader extends PureComponent {
             let path = res.path();
 
             if (saveToCameraRoll) {
-                path = await CameraRoll.saveToCameraRoll(path, 'photo');
+                path = await CameraRoll.saveToCameraRoll(path, 'photo'); /* eslint-disable-line require-atomic-updates */
             }
 
             if (this.mounted) {

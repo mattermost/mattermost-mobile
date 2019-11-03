@@ -37,7 +37,7 @@ export function login(options) {
         const url = Client4.getUrl();
         const realm = configureRealmStore(url);
 
-        EphemeralStore.currentServerUrl = url;
+        EphemeralStore.setCurrentServerUrl(url);
         setAppCredentials(EphemeralStore.deviceToken, data.id, token, url);
         await setCSRFFromCookie(url);
         await realm.dispatch(saveConfigAndLicense(config, license));

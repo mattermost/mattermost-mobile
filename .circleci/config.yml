@@ -159,39 +159,30 @@ commands:
           no_output_timeout: 30m
           command: bundle exec fastlane ios build || exit 1
 
-  deploy-android:
-    description: "Deploy apk to Google Play"
+  deploy-to-store:
+    description: "Deploy build to store"
     parameters:
-      apk_path:
+      task:
+        type: string
+      target:
+        type: string
+      file:
         type: string
     steps:
       - attach_workspace:
-          at: ~/mattermost-mobile
-      - deploy:
-          name: "Deploy apk to Google Play"
+          at: ~/
+      - run:
+          name: <<parameters.task>>
           working_directory: fastlane
-          command: bundle exec fastlane android deploy apk:../<<parameters.apk_path>>
-
-  deploy-ios:
-    description: "Deploy ipa to TestFlight"
-    parameters:
-      ipa_path:
-        type: string
-    steps:
-      - attach_workspace:
-          at: ~/mattermost-mobile
-      - deploy:
-          name: "Deploy ipa to TestFlight"
-          working_directory: fastlane
-          command: bundle exec fastlane ios deploy ipa:../<<parameters.ipa_path>>
+          command: bundle exec fastlane <<parameters.target>> deploy file:$HOME/mattermost-mobile/<<parameters.file>>
 
   persist:
     description: "Persist mattermost-mobile directory"
     steps:
       - persist_to_workspace:
-          root: ./
+          root: ~/
           paths:
-            - ./
+            - mattermost-mobile*
 
   save:
     description: "Save binaries artifacts"
@@ -244,7 +235,6 @@ jobs:
       BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
     steps:
       - build-android
-      - persist
       - save:
           filename: "Mattermost_Beta.apk"
 
@@ -270,7 +260,6 @@ jobs:
       BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
     steps:
       - build-ios
-      - persist
       - save:
           filename: "Mattermost_Beta.ipa"
 
@@ -279,28 +268,36 @@ jobs:
       name: android
       resource_class: medium
     steps:
-      - deploy-android:
-          apk_path: Mattermost.apk
+      - deploy-to-store:
+          task: "Deploy to Google Play"
+          target: android
+          file: Mattermost.apk
 
   deploy-android-beta:
     executor:
       name: android
       resource_class: medium
     steps:
-      - deploy-android:
-          apk_path: Mattermost_Beta.apk
+      - deploy-to-store:
+          task: "Deploy to Google Play"
+          target: android
+          file: Mattermost_Beta.apk
 
   deploy-ios-release:
     executor: ios
     steps:
-      - deploy-ios:
-          ipa_path: Mattermost.ipa
+      - deploy-to-store:
+          task: "Deploy to TestFlight"
+          target: ios
+          file: Mattermost.ipa
 
   deploy-ios-beta:
     executor: ios
     steps:
-      - deploy-ios:
-          ipa_path: Mattermost_Beta.ipa
+      - deploy-to-store:
+          task: "Deploy to TestFlight"
+          target: ios
+          file: Mattermost_Beta.ipa
 
 workflows:
   version: 2

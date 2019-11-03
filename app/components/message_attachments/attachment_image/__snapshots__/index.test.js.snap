@@ -23,7 +23,6 @@ exports[`AttachmentImage it matches snapshot 1`] = `
           "borderRadius": 2,
           "borderWidth": 1,
           "flex": 1,
-          "padding": 5,
         },
         Object {
           "height": 28,

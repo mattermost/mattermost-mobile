@@ -15,12 +15,6 @@ import AttachmentButton from './index';
 
 jest.mock('react-intl');
 
-jest.mock('Platform', () => {
-    const Platform = require.requireActual('Platform');
-    Platform.OS = 'ios';
-    return Platform;
-});
-
 describe('AttachmentButton', () => {
     const formatMessage = jest.fn();
     const baseProps = {

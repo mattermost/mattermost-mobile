@@ -16,7 +16,7 @@ import {ViewTypes} from 'app/constants';
 import {setAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
 import ephemeralStore from 'app/store/ephemeral_store';
-import {getDeviceTimezone} from 'app/utils/timezone';
+import {getDeviceTimezoneAsync} from 'app/utils/timezone';
 import {setCSRFFromCookie} from 'app/utils/security';
 
 export function handleLoginIdChanged(loginId) {
@@ -52,7 +52,8 @@ export function handleSuccessfulLogin() {
 
         const enableTimezone = isTimezoneEnabled(state);
         if (enableTimezone) {
-            dispatch(autoUpdateTimezone(getDeviceTimezone()));
+            const timezone = await getDeviceTimezoneAsync();
+            dispatch(autoUpdateTimezone(timezone));
         }
 
         ephemeralStore.currentServerUrl = url;

@@ -15,7 +15,7 @@ import DeviceInfo from 'react-native-device-info';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 
 import Icon from 'react-native-vector-icons/Ionicons';
-import {DocumentPicker} from 'react-native-document-picker';
+import DocumentPicker from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
 import RNPermissions from 'react-native-permissions';
 
@@ -258,13 +258,8 @@ export default class AttachmentButton extends PureComponent {
         const hasPermission = await this.hasStoragePermission();
 
         if (hasPermission) {
-            DocumentPicker.show({
-                filetype: [browseFileTypes],
-            }, async (error, res) => {
-                if (error) {
-                    return;
-                }
-
+            try {
+                const res = await DocumentPicker.pick({type: [browseFileTypes]});
                 if (Platform.OS === 'android') {
                     // For android we need to retrieve the realPath in case the file being imported is from the cloud
                     const newUri = await ShareExtension.getFilePath(res.uri);
@@ -279,7 +274,9 @@ export default class AttachmentButton extends PureComponent {
                 res.uri = decodeURIComponent(res.uri);
 
                 this.uploadFiles([res]);
-            });
+            } catch (error) {
+                // Do nothing
+            }
         }
     };
 

@@ -84,7 +84,21 @@ export default class List extends PureComponent {
         }
     }
 
-    componentDidUpdate(prevProps) {
+    componentWillReceiveProps(nextProps) {
+        const {
+            canCreatePrivateChannels,
+            orderedChannelIds,
+            unreadChannelIds,
+        } = this.props;
+
+        if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
+            nextProps.unreadChannelIds !== unreadChannelIds ||
+            nextProps.orderedChannelIds !== orderedChannelIds) {
+            this.setState({sections: this.buildSections(nextProps)});
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
         if (prevProps.orderedChannelIds !== this.props.orderedChannelIds && this.listRef?.current?._wrapperListRef.getListRef()._viewabilityHelper) { //eslint-disable-line
             this.listRef.current.list.recordInteraction();
             this.updateUnreadIndicators({

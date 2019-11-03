@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Alert,
     Platform,
@@ -23,14 +23,13 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 import {t} from 'app/utils/i18n';
 import {goToScreen} from 'app/actions/navigation';
 
-class NotificationSettings extends PureComponent {
+export default class NotificationSettings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             updateMe: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
-        intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired,
         updateMeRequest: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
@@ -38,12 +37,17 @@ class NotificationSettings extends PureComponent {
         isLandscape: PropTypes.bool.isRequired,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
             setNavigatorStyles(this.props.componentId, nextProps.theme);
         }
 
-        const {updateMeRequest, intl} = nextProps;
+        const {updateMeRequest} = nextProps;
+        const {intl} = this.context;
         if (this.props.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
             Alert.alert(
                 intl.formatMessage({
@@ -63,7 +67,8 @@ class NotificationSettings extends PureComponent {
     });
 
     goToNotificationSettingsAutoResponder = () => {
-        const {currentUser, intl} = this.props;
+        const {currentUser} = this.props;
+        const {intl} = this.context;
         const screen = 'NotificationSettingsAutoResponder';
         const title = intl.formatMessage({
             id: 'mobile.notification_settings.auto_responder_short',
@@ -78,21 +83,19 @@ class NotificationSettings extends PureComponent {
     };
 
     goToNotificationSettingsEmail = () => {
-        const {currentUser, intl} = this.props;
+        const {intl} = this.context;
         const screen = 'NotificationSettingsEmail';
         const title = intl.formatMessage({
             id: 'mobile.notification_settings.email_title',
             defaultMessage: 'Email Notifications',
         });
-        const passProps = {
-            currentUser,
-        };
 
-        goToScreen(screen, title, passProps);
+        goToScreen(screen, title);
     };
 
     goToNotificationSettingsMentions = () => {
-        const {currentUser, intl} = this.props;
+        const {currentUser} = this.props;
+        const {intl} = this.context;
         const screen = 'NotificationSettingsMentions';
         const title = intl.formatMessage({
             id: 'mobile.notification_settings.mentions_replies',
@@ -107,7 +110,8 @@ class NotificationSettings extends PureComponent {
     };
 
     goToNotificationSettingsMobile = () => {
-        const {currentUser, intl} = this.props;
+        const {currentUser} = this.props;
+        const {intl} = this.context;
         const screen = 'NotificationSettingsMobile';
         const title = intl.formatMessage({
             id: 'mobile.notification_settings.mobile_title',
@@ -130,14 +134,13 @@ class NotificationSettings extends PureComponent {
 
     saveNotificationProps = (notifyProps) => {
         const {currentUser} = this.props;
-        const {user_id: userId} = notifyProps;
-        const previousProps = {
+        const updatedProps = {
             ...getNotificationProps(currentUser),
-            user_id: userId,
+            ...notifyProps,
         };
 
-        if (!deepEqual(previousProps, notifyProps)) {
-            this.props.actions.updateMe({notify_props: notifyProps});
+        if (!deepEqual(updatedProps, notifyProps)) {
+            this.props.actions.updateMe({notify_props: updatedProps});
         }
     };
 
@@ -161,7 +164,7 @@ class NotificationSettings extends PureComponent {
     };
 
     saveAutoResponder = (notifyProps) => {
-        const {intl} = this.props;
+        const {intl} = this.context;
 
         if (!notifyProps.auto_responder_message || notifyProps.auto_responder_message === '') {
             notifyProps.auto_responder_message = intl.formatMessage({
@@ -268,5 +271,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-export default injectIntl(NotificationSettings);

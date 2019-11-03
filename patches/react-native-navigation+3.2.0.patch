@@ -1,8 +1,47 @@
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
+index 82b434b..858ca59 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
+@@ -26,6 +26,7 @@ import com.reactnativenavigation.viewcontrollers.ViewController;
+ import com.reactnativenavigation.viewcontrollers.navigator.Navigator;
+ 
+ import java.util.ArrayList;
++import java.lang.ClassCastException;
+ 
+ import androidx.annotation.NonNull;
+ import androidx.annotation.Nullable;
+@@ -54,14 +55,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+         reactContext.addLifecycleEventListener(new LifecycleEventListenerAdapter() {
+             @Override
+             public void onHostResume() {
+-                eventEmitter = new EventEmitter(reactContext);
+-                navigator().setEventEmitter(eventEmitter);
+-                layoutFactory.init(
+-                        activity(),
+-                        eventEmitter,
+-                        navigator().getChildRegistry(),
+-                        ((NavigationApplication) activity().getApplication()).getExternalComponents()
+-                );
++                try {
++                    eventEmitter = new EventEmitter(reactContext);
++                    navigator().setEventEmitter(eventEmitter);
++                    layoutFactory.init(
++                            activity(),
++                            eventEmitter,
++                            navigator().getChildRegistry(),
++                            ((NavigationApplication) activity().getApplication()).getExternalComponents()
++                    );
++                } catch (ClassCastException e) {
++                    // The most current activity is not a NavigationActivity
++                }
+             }
+         });
+     }
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
-index 91b878d..9cd61d5 100644
+index 2d34f5a..82e7bcc 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
-@@ -72,7 +72,7 @@ - (void)setRoot:(NSDictionary*)layout commandId:(NSString*)commandId completion:
+@@ -69,7 +69,7 @@ - (void)setRoot:(NSDictionary*)layout commandId:(NSString*)commandId completion:
  		}
  	}
  	
@@ -11,7 +50,7 @@ index 91b878d..9cd61d5 100644
  	
  	UIViewController *vc = [_controllerFactory createLayout:layout[@"root"]];
  	
-@@ -286,10 +286,9 @@ - (void)dismissAllModals:(NSDictionary *)mergeOptions commandId:(NSString*)comma
+@@ -289,10 +289,9 @@ - (void)dismissAllModals:(NSDictionary *)mergeOptions commandId:(NSString*)comma
  	[CATransaction begin];
  	[CATransaction setCompletionBlock:^{
  		[_eventEmitter sendOnNavigationCommandCompletion:dismissAllModals commandId:commandId params:@{}];
@@ -36,7 +75,7 @@ index 9809db0..a602c92 100644
  
  @end
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNModalManager.m b/node_modules/react-native-navigation/lib/ios/RNNModalManager.m
-index 18c0eb8..a404da7 100644
+index 91adb14..8aa3935 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNModalManager.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNModalManager.m
 @@ -50,9 +50,16 @@ - (void)dismissModal:(UIViewController *)viewController completion:(RNNTransitio
@@ -58,28 +97,8 @@ index 18c0eb8..a404da7 100644
  	[_delegate dismissedMultipleModals:_presentedModals];
  	[_pendingModalIdsToDismiss removeAllObjects];
  	[_presentedModals removeAllObjects];
-diff --git a/node_modules/react-native-navigation/lib/ios/ReactNativeNavigation.xcodeproj/xcuserdata/miguel.xcuserdatad/xcschemes/xcschememanagement.plist b/node_modules/react-native-navigation/lib/ios/ReactNativeNavigation.xcodeproj/xcuserdata/miguel.xcuserdatad/xcschemes/xcschememanagement.plist
-new file mode 100644
-index 0000000..a2f2607
---- /dev/null
-+++ b/node_modules/react-native-navigation/lib/ios/ReactNativeNavigation.xcodeproj/xcuserdata/miguel.xcuserdatad/xcschemes/xcschememanagement.plist
-@@ -0,0 +1,14 @@
-+<?xml version="1.0" encoding="UTF-8"?>
-+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-+<plist version="1.0">
-+<dict>
-+	<key>SchemeUserState</key>
-+	<dict>
-+		<key>ReactNativeNavigation.xcscheme_^#shared#^_</key>
-+		<dict>
-+			<key>orderHint</key>
-+			<integer>6</integer>
-+		</dict>
-+	</dict>
-+</dict>
-+</plist>
 diff --git a/node_modules/react-native-navigation/lib/ios/ReactNativeNavigationTests/RNNModalManagerTest.m b/node_modules/react-native-navigation/lib/ios/ReactNativeNavigationTests/RNNModalManagerTest.m
-index 407051a..8f02aae 100644
+index 1f9df16..23b6528 100644
 --- a/node_modules/react-native-navigation/lib/ios/ReactNativeNavigationTests/RNNModalManagerTest.m
 +++ b/node_modules/react-native-navigation/lib/ios/ReactNativeNavigationTests/RNNModalManagerTest.m
 @@ -51,7 +51,7 @@ - (void)testDismissMultipleModalsInvokeDelegateWithCorrectParameters {

@@ -75,6 +75,10 @@ export default class SettingsDrawer extends PureComponent {
         Dimensions.removeEventListener('change', this.handleDimensions);
     }
 
+    setDrawerRef = (ref) => {
+        this.drawerRef = ref;
+    }
+
     confirmReset = (status) => {
         const {intl} = this.context;
         confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
@@ -83,6 +87,14 @@ export default class SettingsDrawer extends PureComponent {
     closeSettingsSidebar = () => {
         if (this.drawer?.current && this.drawerOpened) {
             this.drawer.current.closeDrawer();
+        }
+    };
+
+    openSettingsSidebar = () => {
+        this.props.blurPostTextBox();
+
+        if (this.drawer?.current && !this.drawerOpened) {
+            this.drawer.current.openDrawer();
         }
     };
 
@@ -221,14 +233,6 @@ export default class SettingsDrawer extends PureComponent {
         });
     };
 
-    openSettingsSidebar = () => {
-        this.props.blurPostTextBox();
-
-        if (this.drawer?.current && !this.drawerOpened) {
-            this.drawer.current.openDrawer();
-        }
-    };
-
     renderUserStatusIcon = (userId) => {
         return (
             <UserStatus
@@ -341,14 +345,6 @@ export default class SettingsDrawer extends PureComponent {
         );
     };
 
-    updateStatus = (status) => {
-        const {currentUser} = this.props;
-        this.props.setStatus({
-            user_id: currentUser.id,
-            status,
-        });
-    };
-
     setStatus = (status) => {
         const {currentUser} = this.props;
 
@@ -360,6 +356,14 @@ export default class SettingsDrawer extends PureComponent {
         }
         this.updateStatus(status);
         EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
+    };
+
+    updateStatus = (status) => {
+        const {currentUser} = this.props;
+        this.props.setStatus({
+            user_id: currentUser.id,
+            status,
+        });
     };
 
     render() {
