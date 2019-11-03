@@ -31,6 +31,7 @@ export class Channel extends Realm.Object {
             members: 'ChannelMember[]',
             memberCount: {type: 'int', default: 0},
             guestCount: {type: 'int', default: 0},
+            pinnedCount: {type: 'int', default: 0},
         },
     }
 }
