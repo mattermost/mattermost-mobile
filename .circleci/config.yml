@@ -170,7 +170,7 @@ commands:
         type: string
     steps:
       - attach_workspace:
-          at: /
+          at: ~/
       - run:
           name: <<parameters.task>>
           working_directory: fastlane
@@ -180,7 +180,7 @@ commands:
     description: "Persist mattermost-mobile directory"
     steps:
       - persist_to_workspace:
-          root: /
+          root: ~/
           paths:
             - mattermost-mobile*
 
