@@ -397,7 +397,7 @@ export default class MoreChannels extends PureComponent {
                     <View style={style.titleContainer}>
                         <Text
                             accessibilityRole={'button'}
-                            style={{fontWeight: 'bold', marginLeft: 10, marginTop: 20, marginBottom: 10}}
+                            style={style.channelDropdown}
                             onPress={this.handleDropdownClick}
                         >
                             {typeOfChannels === 'public' ? publicChannelsText : archivedChannelsText}
@@ -481,6 +481,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         noResultText: {
             fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        channelDropdown: {
+            fontWeight: 'bold',
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10,
         },
     };
 });
