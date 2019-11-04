@@ -11,7 +11,6 @@ import {
     unflagPost,
     unpinPost,
     removePost,
-    setUnreadPost,
 } from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
 import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
@@ -107,7 +106,6 @@ export function mapStateToProps(state, ownProps) {
         canFlag,
         canPin,
         currentTeamUrl: getCurrentTeamUrl(state),
-        currentUserId: getCurrentUserId(state),
         isMyPost: currentUserId === post.user_id,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
@@ -124,7 +122,6 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
-            setUnreadPost,
         }, dispatch),
     };
 }

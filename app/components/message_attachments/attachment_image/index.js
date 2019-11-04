@@ -52,6 +52,14 @@ export default class AttachmentImage extends PureComponent {
         }
     }
 
+    setImageRef = (ref) => {
+        this.imageRef = ref;
+    }
+
+    setItemRef = (ref) => {
+        this.itemRef = ref;
+    }
+
     handlePreviewImage = () => {
         const {imageUrl} = this.props;
         const {
@@ -79,7 +87,7 @@ export default class AttachmentImage extends PureComponent {
                 localPath: uri,
             },
         }];
-        previewImageAtIndex([this.refs.item], 0, files);
+        previewImageAtIndex([this.itemRef], 0, files);
     };
 
     setImageDimensions = (imageUri, dimensions, originalWidth, originalHeight) => {
@@ -132,7 +140,7 @@ export default class AttachmentImage extends PureComponent {
         if (imageUri) {
             progressiveImage = (
                 <ProgressiveImage
-                    ref='image'
+                    ref={this.setImageRef}
                     style={{height, width}}
                     imageUri={imageUri}
                     resizeMode='contain'
@@ -149,7 +157,7 @@ export default class AttachmentImage extends PureComponent {
                 type={'none'}
             >
                 <View
-                    ref='item'
+                    ref={this.setItemRef}
                     style={[style.imageContainer, {width, height}]}
                 >
                     {progressiveImage}
@@ -169,7 +177,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderRadius: 2,
             flex: 1,
-            padding: 5,
         },
     };
 });

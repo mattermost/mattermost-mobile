@@ -43,6 +43,9 @@ export default class PostHeader extends PureComponent {
         isGuest: PropTypes.bool,
         userTimezone: PropTypes.string,
         enableTimezone: PropTypes.bool,
+        previousPostExists: PropTypes.bool,
+        post: PropTypes.object,
+        beforePrevPostUserId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -58,11 +61,18 @@ export default class PostHeader extends PureComponent {
     };
 
     renderCommentedOnMessage = () => {
-        if (!this.props.renderReplies || !this.props.commentedOnDisplayName) {
+        const {
+            beforePrevPostUserId,
+            commentedOnDisplayName,
+            post,
+            previousPostExists,
+            renderReplies,
+            theme,
+        } = this.props;
+        if (!renderReplies || !commentedOnDisplayName || (!previousPostExists && post.user_id === beforePrevPostUserId)) {
             return null;
         }
 
-        const {commentedOnDisplayName, theme} = this.props;
         const style = getStyleSheet(theme);
         const displayName = commentedOnDisplayName;
 
@@ -107,9 +117,16 @@ export default class PostHeader extends PureComponent {
             fromAutoResponder,
             overrideUsername,
             theme,
+            renderReplies,
+            shouldRenderReplyButton,
+            commentedOnDisplayName,
+            commentCount,
+            isBot,
         } = this.props;
 
         const style = getStyleSheet(theme);
+        const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
+        const displayNameStyle = [style.displayNameContainer, showReply && (isBot || fromAutoResponder || fromWebHook) ? style.displayNameContainerBotReplyWidth : null];
 
         if (fromAutoResponder || fromWebHook) {
             let name = displayName;
@@ -118,7 +135,7 @@ export default class PostHeader extends PureComponent {
             }
 
             return (
-                <View style={[style.displayNameContainer, {maxWidth: fromAutoResponder ? '30%' : '60%'}]}>
+                <View style={displayNameStyle}>
                     <Text
                         style={style.displayName}
                         ellipsizeMode={'tail'}
@@ -142,7 +159,7 @@ export default class PostHeader extends PureComponent {
             return (
                 <TouchableWithFeedback
                     onPress={this.handleUsernamePress}
-                    style={style.displayNameContainer}
+                    style={displayNameStyle}
                     type={'opacity'}
                 >
                     <Text
@@ -205,7 +222,7 @@ export default class PostHeader extends PureComponent {
     };
 
     renderTag = () => {
-        const {fromAutoResponder, fromWebHook, isBot, isGuest, theme} = this.props;
+        const {fromAutoResponder, fromWebHook, isBot, isSystemMessage, isGuest, theme} = this.props;
         const style = getStyleSheet(theme);
 
         if (fromWebHook || isBot) {
@@ -215,6 +232,8 @@ export default class PostHeader extends PureComponent {
                     theme={theme}
                 />
             );
+        } else if (isSystemMessage) {
+            return null;
         } else if (isGuest) {
             return (
                 <GuestTag
@@ -344,6 +363,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             marginBottom: 3,
             lineHeight: 21,
+        },
+        displayNameContainerBotReplyWidth: {
+            maxWidth: '50%',
         },
     };
 });

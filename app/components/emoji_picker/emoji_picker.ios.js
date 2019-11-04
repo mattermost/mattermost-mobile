@@ -49,7 +49,7 @@ export default class EmojiPicker extends EmojiPickerBase {
                 >
                     <View style={[styles.searchBar, padding(isLandscape)]}>
                         <SearchBar
-                            ref={this.searchBarRef}
+                            ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'
@@ -71,7 +71,6 @@ export default class EmojiPicker extends EmojiPickerBase {
                         {this.renderListComponent(shorten)}
                         {!searchTerm &&
                         <KeyboardTrackingView
-                            ref={this.keyboardTracker}
                             scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
                             normalList={true}
                         >

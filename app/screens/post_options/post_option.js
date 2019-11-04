@@ -23,7 +23,6 @@ import link from 'assets/images/post_menu/link.png';
 import pin from 'assets/images/post_menu/pin.png';
 import trash from 'assets/images/post_menu/trash.png';
 import reply from 'assets/images/post_menu/reply.png';
-import bookmark from 'assets/images/post_menu/bookmark.png';
 
 const icons = {
     copy,
@@ -34,7 +33,6 @@ const icons = {
     pin,
     trash,
     reply,
-    bookmark,
 };
 
 export default class PostOption extends PureComponent {

@@ -55,6 +55,7 @@ function mapStateToProps(state) {
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
+    const currentChannelPinnedPostCount = currentChannelStats && currentChannelStats.pinnedpost_count;
     let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
     const currentChannelMember = getMyCurrentChannelMembership(state);
     const currentUserId = getCurrentUserId(state);
@@ -71,6 +72,7 @@ function mapStateToProps(state) {
 
     let status;
     let isBot = false;
+    let isTeammateGuest = false;
     if (currentChannel.type === General.DM_CHANNEL) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
@@ -79,6 +81,7 @@ function mapStateToProps(state) {
             isBot = true;
         }
         if (isGuest(teammate)) {
+            isTeammateGuest = true;
             currentChannelGuestCount = 1;
         }
     }
@@ -106,6 +109,7 @@ function mapStateToProps(state) {
         currentChannelCreatorName,
         currentChannelMemberCount,
         currentChannelGuestCount,
+        currentChannelPinnedPostCount,
         currentUserId,
         currentUserIsGuest,
         isChannelMuted: isChannelMuted(currentChannelMember),
@@ -116,6 +120,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         canManageUsers,
         isBot,
+        isTeammateGuest,
         isLandscape: isLandscape(state),
         timeZone,
     };

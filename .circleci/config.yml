@@ -1,5 +1,197 @@
 version: 2.1
 
+executors:
+  android:
+    parameters:
+      resource_class:
+        default: large
+        type: string
+    environment:
+      NODE_OPTIONS: --max_old_space_size=12000
+      NODE_ENV: production
+      BABEL_ENV: production
+    docker:
+      - image: circleci/android:api-27-node
+    working_directory: ~/mattermost-mobile
+    resource_class: <<parameters.resource_class>>
+
+  ios:
+    environment:
+      NODE_OPTIONS: --max_old_space_size=12000
+      NODE_ENV: production
+      BABEL_ENV: production
+    macos:
+      xcode: "11.0.0"
+    working_directory: ~/mattermost-mobile
+    shell: /bin/bash --login -o pipefail
+
+commands:
+  checkout-private:
+    description: "Checkout the private repo with build env vars"
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "59:4d:99:5e:1c:6d:30:36:6d:60:76:88:ff:a7:ab:63"
+      - run:
+          name: Clone the mobile private repo
+          command: git clone git@github.com:mattermost/mattermost-mobile-private.git ~/mattermost-mobile-private
+
+  fastlane-dependencies:
+    description: "Get Fastlane dependencies"
+    parameters:
+      for:
+        type: string
+    steps:
+      - restore_cache:
+          name: Restore Fastlane cache
+          key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
+      - run:
+          working_directory: fastlane
+          name: Download Fastlane dependencies
+          command: bundle install --path vendor/bundle
+      - save_cache:
+          name: Save Fastlane cache
+          key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
+          paths:
+            - fastlane/vendor/bundle
+
+  gradle-dependencies:
+    description: "Get Gradle dependencies"
+    steps:
+      - restore_cache:
+          name: Restore Gradle cache
+          key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
+      - run:
+          working_directory: android
+          name: Download Gradle dependencies
+          command: ./gradlew dependencies
+      - save_cache:
+          name: Save Gradle cache
+          paths:
+            - ~/.gradle
+          key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
+
+  assets:
+    description: "Generate app assets"
+    steps:
+      - restore_cache:
+          name: Restore assets cache
+          key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}
+      - run:
+          name: Generate assets
+          command: make dist/assets
+      - save_cache:
+          name: Save assets cache
+          key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}
+          paths:
+            - dist
+
+  npm-dependencies:
+    description: "Get JavaScript dependencies"
+    steps:
+      - restore_cache:
+          name: Restore npm cache
+          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+      - run:
+          name: Getting JavaScript dependencies
+          command: NODE_ENV=development npm install
+      - save_cache:
+          name: Save npm cache
+          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+          paths:
+            - node_modules
+
+  pods-dependencies:
+    description: "Get cocoapods dependencies"
+    steps:
+      - restore_cache:
+          name: Restore cocoapods specs and pods
+          key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
+      - run:
+          name: Getting cocoapods dependencies
+          working_directory: ios
+          command: pod install
+      - save_cache:
+          name: Save cocoapods specs and pods cache
+          key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
+          paths:
+            - ios/Pods
+            - ~/.cocoapods
+
+  build-android:
+    description: "Build the android app"
+    steps:
+      - checkout:
+          path: ~/mattermost-mobile
+      - checkout-private
+      - npm-dependencies
+      - assets
+      - fastlane-dependencies:
+          for: android
+      - gradle-dependencies
+      - run:
+          name: Append Keystore to build Android
+          command: |
+            cp ~/mattermost-mobile-private/android/${STORE_FILE} android/app/${STORE_FILE}
+            echo "" | tee -a android/gradle.properties > /dev/null
+            echo MATTERMOST_RELEASE_STORE_FILE=${STORE_FILE} | tee -a android/gradle.properties > /dev/null
+            echo ${STORE_ALIAS} | tee -a android/gradle.properties > /dev/null
+            echo ${STORE_PASSWORD} | tee -a android/gradle.properties > /dev/null
+      - run:
+          working_directory: fastlane
+          name: Run fastlane to build android
+          no_output_timeout: 30m
+          command: bundle exec fastlane android build || exit 1
+
+  build-ios:
+    description: "Build the iOS app"
+    steps:
+      - checkout:
+          path: ~/mattermost-mobile
+      - npm-dependencies
+      - pods-dependencies
+      - assets
+      - fastlane-dependencies:
+          for: ios
+      - run:
+          working_directory: fastlane
+          name: Run fastlane to build iOS
+          no_output_timeout: 30m
+          command: bundle exec fastlane ios build || exit 1
+
+  deploy-to-store:
+    description: "Deploy build to store"
+    parameters:
+      task:
+        type: string
+      target:
+        type: string
+      file:
+        type: string
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: <<parameters.task>>
+          working_directory: fastlane
+          command: bundle exec fastlane <<parameters.target>> deploy file:$HOME/mattermost-mobile/<<parameters.file>>
+
+  persist:
+    description: "Persist mattermost-mobile directory"
+    steps:
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - mattermost-mobile*
+
+  save:
+    description: "Save binaries artifacts"
+    parameters:
+      filename:
+        type: string
+    steps:
+      - store_artifacts:
+          path: ~/mattermost-mobile/<<parameters.filename>>
 
 jobs:
   test:
@@ -7,17 +199,207 @@ jobs:
     docker:
       - image: circleci/node:10
     steps:
-      - checkout
-      - run: |
-          echo assets/base/config.json
-          cat assets/base/config.json
-          # Avoid installing pods
-          touch .podinstall
-          # Run tests
-          make test || exit 1
+      - checkout:
+          path: ~/mattermost-mobile
+      - npm-dependencies
+      - assets
+      - run:
+          name: Check styles
+          command: npm run check
+      - run:
+          name: Running Tests
+          command: npm test
+      - run:
+          name: Check i18n
+          command: make i18n-extract-ci
+
+  build-android-beta:
+    executor: android
+    steps:
+      - build-android
+      - persist
+      - save:
+          filename: "Mattermost_Beta.apk"
+
+  build-android-release:
+    executor: android
+    steps:
+      - build-android
+      - persist
+      - save:
+          filename: "Mattermost.apk"
+
+  build-android-pr:
+    executor: android
+    environment:
+      BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
+    steps:
+      - build-android
+      - save:
+          filename: "Mattermost_Beta.apk"
+
+  build-ios-beta:
+    executor: ios
+    steps:
+      - build-ios
+      - persist
+      - save:
+          filename: "Mattermost_Beta.ipa"
+
+  build-ios-release:
+    executor: ios
+    steps:
+      - build-ios
+      - persist
+      - save:
+          filename: "Mattermost.ipa"
+
+  build-ios-pr:
+    executor: ios
+    environment:
+      BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
+    steps:
+      - build-ios
+      - save:
+          filename: "Mattermost_Beta.ipa"
+
+  deploy-android-release:
+    executor:
+      name: android
+      resource_class: medium
+    steps:
+      - deploy-to-store:
+          task: "Deploy to Google Play"
+          target: android
+          file: Mattermost.apk
+
+  deploy-android-beta:
+    executor:
+      name: android
+      resource_class: medium
+    steps:
+      - deploy-to-store:
+          task: "Deploy to Google Play"
+          target: android
+          file: Mattermost_Beta.apk
+
+  deploy-ios-release:
+    executor: ios
+    steps:
+      - deploy-to-store:
+          task: "Deploy to TestFlight"
+          target: ios
+          file: Mattermost.ipa
+
+  deploy-ios-beta:
+    executor: ios
+    steps:
+      - deploy-to-store:
+          task: "Deploy to TestFlight"
+          target: ios
+          file: Mattermost_Beta.ipa
 
 workflows:
   version: 2
-  pr-test:
+  build:
     jobs:
       - test
+
+      - build-android-release:
+          context: mattermost-mobile-android-release
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - /^build-\d+$/
+                - /^build-android-\d+$/
+                - /^build-android-release-\d+$/
+      - deploy-android-release:
+          context: mattermost-mobile-android-release
+          requires:
+            - build-android-release
+          filters:
+            branches:
+              only:
+                - /^build-\d+$/
+                - /^build-android-\d+$/
+                - /^build-android-release-\d+$/
+
+      - build-android-beta:
+          context: mattermost-mobile-android-beta
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - /^build-\d+$/
+                - /^build-android-\d+$/
+                - /^build-android-beta-\d+$/
+      - deploy-android-beta:
+          context: mattermost-mobile-android-beta
+          requires:
+            - build-android-beta
+          filters:
+            branches:
+              only:
+                - /^build-\d+$/
+                - /^build-android-\d+$/
+                - /^build-android-beta-\d+$/
+
+      - build-ios-release:
+          context: mattermost-mobile-ios-release
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-release-\d+$/
+      - deploy-ios-release:
+          context: mattermost-mobile-ios-release
+          requires:
+            - build-ios-release
+          filters:
+            branches:
+              only:
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-release-\d+$/
+
+      - build-ios-beta:
+          context: mattermost-mobile-ios-beta
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-beta-\d+$/
+      - deploy-ios-beta:
+          context: mattermost-mobile-ios-beta
+          requires:
+            - build-ios-beta
+          filters:
+            branches:
+              only:
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-beta-\d+$/
+
+      - build-android-pr:
+          context: mattermost-mobile-android-pr
+          requires:
+            - test
+          filters:
+            branches:
+              only: /^build-pr-.*/
+      - build-ios-pr:
+          context: mattermost-mobile-ios-pr
+          requires:
+            - test
+          filters:
+            branches:
+              only: /^build-pr-.*/

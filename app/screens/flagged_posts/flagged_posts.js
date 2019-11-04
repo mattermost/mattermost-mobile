@@ -72,6 +72,10 @@ export default class FlaggedPosts extends PureComponent {
         }
     }
 
+    setListRef = (ref) => {
+        this.listRef = ref;
+    }
+
     goToThread = (post) => {
         const {actions} = this.props;
         const channelId = post.channel_id;
@@ -101,7 +105,7 @@ export default class FlaggedPosts extends PureComponent {
     };
 
     handleHashtagPress = async (hashtag) => {
-        dismissModal();
+        await dismissModal();
         showSearchModal('#' + hashtag);
     };
 
@@ -212,7 +216,7 @@ export default class FlaggedPosts extends PureComponent {
         } else if (postIds.length) {
             component = (
                 <FlatList
-                    ref='list'
+                    ref={this.setListRef}
                     contentContainerStyle={style.sectionList}
                     data={postIds}
                     keyExtractor={this.keyExtractor}
