@@ -248,7 +248,7 @@ export default function configureAppStore(initialState) {
                         if (!key.startsWith('theme--')) {
                             Reflect.deleteProperty(myPreferences, key);
                         }
-                    })
+                    });
 
                     const initialStateWithTeamAndThemePreferences = merge(initialState, {
                         entities: {
