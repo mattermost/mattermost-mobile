@@ -32,6 +32,8 @@ class PushNotificationsHandler {
     }
 
     configure = (store) => {
+        this.reduxStore = store;
+
         PushNotifications.configure({
             reduxStore: store,
             onRegister: this.onRegisterDevice,

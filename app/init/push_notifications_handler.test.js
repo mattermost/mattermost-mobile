@@ -37,8 +37,8 @@ jest.mock('react-native-notifications', () => {
 });
 
 const mockStore = configureMockStore([thunk]);
-const store = mockStore({});
-PushNotificationHandler.configure(store);
+const reduxStore = mockStore({});
+PushNotificationHandler.configure(reduxStore);
 
 describe('PushNotifications', () => {
     it('should add channel_id to failed push notification reply', async () => {
@@ -51,7 +51,7 @@ describe('PushNotifications', () => {
         const completion = () => {};
         await PushNotificationHandler.onPushNotificationReply(data, text, completion);
 
-        const storeActions = store.getActions();
+        const storeActions = reduxStore.getActions();
         const receivedPost = storeActions.some((action) => action.type === PostTypes.RECEIVED_POST);
         expect(receivedPost).toBe(false);
 
