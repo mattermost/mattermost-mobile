@@ -141,7 +141,7 @@ commands:
           working_directory: fastlane
           name: Run fastlane to build android
           no_output_timeout: 30m
-          command: bundle exec fastlane android build || exit 1
+          command: bundle exec fastlane android build
 
   build-ios:
     description: "Build the iOS app"
@@ -157,7 +157,7 @@ commands:
           working_directory: fastlane
           name: Run fastlane to build iOS
           no_output_timeout: 30m
-          command: bundle exec fastlane ios build || exit 1
+          command: bundle exec fastlane ios build
 
   deploy-to-store:
     description: "Deploy build to store"
@@ -252,7 +252,7 @@ jobs:
           working_directory: fastlane
           name: Run fastlane to build unsigned android
           no_output_timeout: 30m
-          command: bundle exec fastlane android unsigned || exit 1
+          command: bundle exec fastlane android unsigned
       - persist
       - save:
           filename: "Mattermost-unsigned.apk"
@@ -296,7 +296,7 @@ jobs:
           working_directory: fastlane
           name: Run fastlane to build unsigned iOS
           no_output_timeout: 30m
-          command: bundle exec fastlane ios unsigned || exit 1
+          command: bundle exec fastlane ios unsigned
       - persist
       - save:
           filename: "Mattermost-unsigned.ipa"
