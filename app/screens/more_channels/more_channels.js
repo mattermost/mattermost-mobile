@@ -28,7 +28,6 @@ import {
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 import BottomSheet from '../../utils/bottom_sheet';
 
 export default class MoreChannels extends PureComponent {
@@ -36,8 +35,7 @@ export default class MoreChannels extends PureComponent {
         actions: PropTypes.shape({
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
-            getChannels: PropTypes.func.isRequired,
-            getArchivedChannels: PropTypes.func.isRequired,
+            loadPublicAndArchivedChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
@@ -50,7 +48,7 @@ export default class MoreChannels extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-        serverVersion: PropTypes.string,
+        canShowArchivedChannels: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -152,20 +150,16 @@ export default class MoreChannels extends PureComponent {
     };
 
     doGetChannels = () => {
-        const {actions, currentTeamId} = this.props;
+        const {actions, currentTeamId, canShowArchivedChannels} = this.props;
         const {loading, term} = this.state;
 
         if (this.next && !loading && !term && this.mounted) {
             this.setState({loading: true}, () => {
-                actions.getChannels(
+                actions.loadPublicAndArchivedChannels(
                     currentTeamId,
                     this.page + 1,
-                    General.CHANNELS_CHUNK_SIZE
-                );
-                actions.getArchivedChannels(
-                    currentTeamId,
-                    this.page + 1,
-                    General.CHANNELS_CHUNK_SIZE
+                    General.CHANNELS_CHUNK_SIZE,
+                    canShowArchivedChannels,
                 ).then(this.loadedChannels);
             });
         }
@@ -317,7 +311,7 @@ export default class MoreChannels extends PureComponent {
     }
 
     searchChannels = (text) => {
-        const {actions, channels, archivedChannels, currentTeamId} = this.props;
+        const {actions, channels, archivedChannels, currentTeamId, canShowArchivedChannels} = this.props;
         const {typeOfChannels} = this.state;
 
         if (text) {
@@ -328,7 +322,7 @@ export default class MoreChannels extends PureComponent {
                     term: text,
                 });
                 clearTimeout(this.searchTimeoutId);
-            } else if (typeOfChannels === 'archived' && isMinimumServerVersion(this.props.serverVersion, 5, 18)) {
+            } else if (typeOfChannels === 'archived' && canShowArchivedChannels) {
                 const filtered = this.filterChannels(archivedChannels, text);
                 this.setState({
                     archivedChannels: filtered,
@@ -368,7 +362,7 @@ export default class MoreChannels extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme, isLandscape} = this.props;
+        const {theme, isLandscape, canShowArchivedChannels} = this.props;
         const {adding, channels, archivedChannels, loading, term, typeOfChannels} = this.state;
         const more = term ? () => true : this.getChannels;
         const style = getStyleFromTheme(theme);
@@ -393,12 +387,12 @@ export default class MoreChannels extends PureComponent {
 
             let activeChannels = channels;
 
-            if (isMinimumServerVersion(this.props.serverVersion, 5, 18) && typeOfChannels === 'archived') {
+            if (canShowArchivedChannels && typeOfChannels === 'archived') {
                 activeChannels = archivedChannels;
             }
 
             let channelDropdown;
-            if (isMinimumServerVersion(this.props.serverVersion, 5, 18)) {
+            if (canShowArchivedChannels) {
                 channelDropdown = (
                     <View style={style.titleContainer}>
                         <Text

@@ -14,6 +14,8 @@ import {
     leaveChannel as serviceLeaveChannel,
     selectChannel,
     getChannelStats,
+    getChannels,
+    getArchivedChannels,
 } from 'mattermost-redux/actions/channels';
 import {
     getPosts,
@@ -70,6 +72,26 @@ export function loadChannelsByTeamName(teamName) {
         if (team && team.id !== currentTeamId) {
             await dispatch(fetchMyChannelsAndMembers(team.id));
         }
+    };
+}
+
+export function loadPublicAndArchivedChannels(teamId, page, perPage, shouldLoadArchivedChannels) {
+    return async (dispatch) => {
+        return dispatch(getChannels(
+            teamId,
+            page,
+            perPage
+        )).then(async (publicChannels) => {
+            if (shouldLoadArchivedChannels) {
+                const archivedChannels = await dispatch(getArchivedChannels(
+                    teamId,
+                    page,
+                    perPage
+                ));
+                return archivedChannels;
+            }
+            return publicChannels;
+        });
     };
 }
 

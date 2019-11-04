@@ -16,8 +16,7 @@ describe('MoreChannels', () => {
     const actions = {
         handleSelectChannel: jest.fn(),
         joinChannel: jest.fn(),
-        getChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2'}]}),
-        getArchivedChannels: jest.fn().mockResolvedValue({data: [{id: 'id3', name: 'name3', display_name: 'display_name3'}]}),
+        loadPublicAndArchivedChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2'}]}),
         searchChannels: jest.fn(),
         setChannelDisplayName: jest.fn(),
     };
@@ -33,6 +32,7 @@ describe('MoreChannels', () => {
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
         isLandscape: false,
+        canShowArchivedChannels: true,
     };
 
     test('should match snapshot', () => {
