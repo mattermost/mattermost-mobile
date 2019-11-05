@@ -162,7 +162,7 @@ android {
         unsigned.initWith(buildTypes.release)
         unsigned {
             signingConfig null
-            matchingFallbacks = ['debug', 'release']
+            matchingFallbacks = ['release']
         }
     }
     // applicationVariants are e.g. debug, release
