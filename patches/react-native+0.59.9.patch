@@ -1,3 +1,25 @@
+diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
+index f10a00b..467f7a5 100644
+--- a/node_modules/react-native/react.gradle
++++ b/node_modules/react-native/react.gradle
+@@ -58,7 +58,7 @@ afterEvaluate {
+ 
+             // Set up dev mode
+             def devEnabled = !(config."devDisabledIn${targetName}"
+-                || targetName.toLowerCase().contains("release"))
++                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+ 
+             def extraArgs = extraPackagerArgs;
+ 
+@@ -78,7 +78,7 @@ afterEvaluate {
+ 
+             enabled config."bundleIn${targetName}" ||
+                 config."bundleIn${variant.buildType.name.capitalize()}" ?:
+-                targetName.toLowerCase().contains("release")
++                (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+         }
+ 
+         // Expose a minimal interface on the application variant and the task itself:
 diff --git a/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m b/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m
 index d464e6a..6c397c5 100644
 --- a/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m
@@ -23,25 +45,3 @@ index d464e6a..6c397c5 100644
        [attributedText addAttribute:NSAttachmentAttributeName value:attachment range:range];
      }
    ];
-diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
-index f10a00b..467f7a5 100644
---- a/node_modules/react-native/react.gradle
-+++ b/node_modules/react-native/react.gradle
-@@ -58,7 +58,7 @@ afterEvaluate {
- 
-             // Set up dev mode
-             def devEnabled = !(config."devDisabledIn${targetName}"
--                || targetName.toLowerCase().contains("release"))
-+                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
- 
-             def extraArgs = extraPackagerArgs;
- 
-@@ -78,7 +78,7 @@ afterEvaluate {
- 
-             enabled config."bundleIn${targetName}" ||
-                 config."bundleIn${variant.buildType.name.capitalize()}" ?:
--                targetName.toLowerCase().contains("release")
-+                (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
-         }
- 
-         // Expose a minimal interface on the application variant and the task itself:
