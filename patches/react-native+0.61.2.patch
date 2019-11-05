@@ -1,3 +1,43 @@
+diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
+index 14f0746..054f652 100644
+--- a/node_modules/react-native/react.gradle
++++ b/node_modules/react-native/react.gradle
+@@ -116,7 +116,7 @@ afterEvaluate {
+ 
+             // Set up dev mode
+             def devEnabled = !(config."devDisabledIn${targetName}"
+-                || targetName.toLowerCase().contains("release"))
++                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+ 
+             def extraArgs = extraPackagerArgs;
+ 
+@@ -141,7 +141,7 @@ afterEvaluate {
+                     def hermesFlags;
+                     def hbcTempFile = file("${jsBundleFile}.hbc")
+                     exec {
+-                        if (targetName.toLowerCase().contains("release")) {
++                        if (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")) {
+                             // Can't use ?: since that will also substitute valid empty lists
+                             hermesFlags = config.hermesFlagsRelease
+                             if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
+@@ -180,7 +180,7 @@ afterEvaluate {
+                 ? config."bundleIn${targetName}"
+                 : config."bundleIn${variant.buildType.name.capitalize()}" != null
+                     ? config."bundleIn${variant.buildType.name.capitalize()}"
+-                    : targetName.toLowerCase().contains("release")
++                    : (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+         }
+ 
+         // Expose a minimal interface on the application variant and the task itself:
+@@ -272,7 +272,7 @@ afterEvaluate {
+         // This should really be done by packaging all Hermes releated libs into
+         // two separate HermesDebug and HermesRelease AARs, but until then we'll
+         // kludge it by deleting the .so files out of the /transforms/ directory.
+-        def isRelease = targetName.toLowerCase().contains("release")
++        def isRelease = targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")
+         def libDir = "$buildDir/intermediates/transforms/"
+         def vmSelectionAction = {
+             fileTree(libDir).matching {
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 index 7dffc17..548e7bb 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
@@ -19,6 +59,31 @@ index 7dffc17..548e7bb 100644
    },
    horizontallyInverted: {
      transform: [{scaleX: -1}],
+diff --git a/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m b/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m
+index 1543bca..a4502b7 100644
+--- a/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m
++++ b/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m
+@@ -177,6 +177,12 @@ - (void)postprocessAttributedText:(NSMutableAttributedString *)attributedText
+ 
+ - (NSAttributedString *)attributedTextWithMeasuredAttachmentsThatFitSize:(CGSize)size
+ {
++  static UIImage *placeholderImage;
++  static dispatch_once_t onceToken;
++  dispatch_once(&onceToken, ^{
++    placeholderImage = [UIImage new];
++  });
++
+   NSMutableAttributedString *attributedText =
+     [[NSMutableAttributedString alloc] initWithAttributedString:[self attributedTextWithBaseTextAttributes:nil]];
+ 
+@@ -195,6 +201,7 @@ - (NSAttributedString *)attributedTextWithMeasuredAttachmentsThatFitSize:(CGSize
+                                                    maximumSize:size];
+       NSTextAttachment *attachment = [NSTextAttachment new];
+       attachment.bounds = (CGRect){CGPointZero, fittingSize};
++      attachment.image = placeholderImage;
+       [attributedText addAttribute:NSAttachmentAttributeName value:attachment range:range];
+     }
+   ];
 diff --git a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h
 index 1b17cff..9efa98e 100644
 --- a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h
@@ -150,3 +215,16 @@ index 35f0757..a0205fc 100644
    }
  
    get binaryType(): ?BinaryType {
+diff --git a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
+index ef2ae93..2795802 100644
+--- a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
++++ b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
+@@ -92,7 +92,7 @@ public class AndroidInfoModule extends ReactContextBaseJavaModule implements Tur
+ 
+   private Boolean isRunningScreenshotTest() {
+     try {
+-      Class.forName("android.support.test.rule.ActivityTestRule");
++      Class.forName("androidx.test.rule.ActivityTestRule");
+       return true;
+     } catch (ClassNotFoundException ignored) {
+       return false;

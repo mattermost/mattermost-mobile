@@ -140,7 +140,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative60"
-        versionCode 242
+        versionCode 243
         versionName "1.25.0"
         multiDexEnabled = true
         ndk {
@@ -179,7 +179,7 @@ android {
         unsigned.initWith(buildTypes.release)
         unsigned {
             signingConfig null
-            matchingFallbacks = ['debug', 'release']
+            matchingFallbacks = ['release']
         }
     }
     // applicationVariants are e.g. debug, release
