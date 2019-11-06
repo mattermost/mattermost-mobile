@@ -3,16 +3,19 @@
 exports[`FileAttachment should match snapshot 1`] = `
 <View
   style={
-    Object {
-      "borderColor": "rgba(61,60,64,0.4)",
-      "borderRadius": 5,
-      "borderWidth": 1,
-      "flex": 1,
-      "flexDirection": "row",
-      "marginRight": 10,
-      "marginTop": 10,
-      "width": 300,
-    }
+    Array [
+      Object {
+        "borderColor": "rgba(61,60,64,0.4)",
+        "borderRadius": 5,
+        "borderWidth": 1,
+        "flex": 1,
+        "flexDirection": "row",
+        "marginTop": 10,
+      },
+      Object {
+        "width": 300,
+      },
+    ]
   }
 >
   <View

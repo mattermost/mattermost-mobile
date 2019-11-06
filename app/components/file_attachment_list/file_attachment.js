@@ -29,6 +29,7 @@ export default class FileAttachment extends PureComponent {
         onLongPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
+        wrapperWidth: PropTypes.number,
         imagesListProps: PropTypes.shape({
             isSingleImage: PropTypes.bool,
             moreImagesCount: PropTypes.number,
@@ -38,6 +39,7 @@ export default class FileAttachment extends PureComponent {
 
     static defaultProps = {
         onPreviewPress: () => true,
+        wrapperWidth: 300,
     };
 
     handleCaptureRef = (ref) => {
@@ -115,6 +117,7 @@ export default class FileAttachment extends PureComponent {
             theme,
             onLongPress,
             imagesListProps,
+            wrapperWidth,
         } = this.props;
         const {data} = file;
         const style = getStyleSheet(theme);
@@ -139,7 +142,7 @@ export default class FileAttachment extends PureComponent {
             );
         } else if (isDocument(data)) {
             fileAttachmentComponent = (
-                <View style={style.fileWrapper}>
+                <View style={[style.fileWrapper, {width: wrapperWidth}]}>
                     <View style={style.iconWrapper}>
                         <FileAttachmentDocument
                             ref={this.setDocumentRef}
@@ -154,7 +157,7 @@ export default class FileAttachment extends PureComponent {
             );
         } else {
             fileAttachmentComponent = (
-                <View style={style.fileWrapper}>
+                <View style={[style.fileWrapper, {width: wrapperWidth}]}>
                     <View style={style.iconWrapper}>
                         <TouchableWithFeedback
                             onPress={this.handlePreviewPress}
@@ -206,11 +209,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             marginTop: 10,
-            marginRight: 10,
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.4),
             borderRadius: 5,
-            width: 300,
         },
         iconWrapper: {
             marginHorizontal: 20,

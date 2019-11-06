@@ -2,86 +2,90 @@
 
 exports[`FileAttachmentList should match snapshot with a single image file 1`] = `
 <View>
-  <View>
-    <View
-      style={
+  <View
+    style={
+      Array [
         Object {
           "flex": 1,
           "flexDirection": "row",
+        },
+        Object {
+          "width": 657,
+        },
+      ]
+    }
+  >
+    <View
+      style={
+        Object {
+          "flexShrink": 1,
+          "margin": 3,
+          "width": "100%",
         }
       }
     >
-      <View
-        style={
+      <FileAttachment
+        canDownloadFiles={true}
+        file={
           Object {
-            "flexShrink": 1,
-            "margin": 3,
-            "width": "100%",
+            "caption": "image01.png",
+            "data": Object {
+              "create_at": 1546893090093,
+              "delete_at": 0,
+              "extension": "png",
+              "has_preview_image": true,
+              "height": 171,
+              "id": "fileId",
+              "mime_type": "image/png",
+              "name": "image01.png",
+              "post_id": "postId",
+              "size": 14894,
+              "update_at": 1546893090093,
+              "user_id": "userId",
+              "width": 425,
+            },
           }
         }
-      >
-        <FileAttachment
-          canDownloadFiles={true}
-          file={
-            Object {
-              "caption": "image01.png",
-              "data": Object {
-                "create_at": 1546893090093,
-                "delete_at": 0,
-                "extension": "png",
-                "has_preview_image": true,
-                "height": 171,
-                "id": "fileId",
-                "mime_type": "image/png",
-                "name": "image01.png",
-                "post_id": "postId",
-                "size": 14894,
-                "update_at": 1546893090093,
-                "user_id": "userId",
-                "width": 425,
-              },
-            }
+        id="fileId"
+        imagesListProps={
+          Object {
+            "isSingleImage": true,
           }
-          id="fileId"
-          imagesListProps={
-            Object {
-              "isSingleImage": true,
-            }
+        }
+        index={0}
+        onCaptureRef={[Function]}
+        onPreviewPress={[Function]}
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
           }
-          index={0}
-          onCaptureRef={[Function]}
-          onPreviewPress={[Function]}
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-        />
-      </View>
+        }
+        wrapperWidth={657}
+      />
     </View>
   </View>
 </View>
@@ -89,157 +93,162 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
 
 exports[`FileAttachmentList should match snapshot with multiple image files 1`] = `
 <View>
-  <View>
-    <View
-      style={
+  <View
+    style={
+      Array [
         Object {
           "flex": 1,
           "flexDirection": "row",
+        },
+        Object {
+          "width": 657,
+        },
+      ]
+    }
+  >
+    <View
+      style={
+        Object {
+          "flexShrink": 1,
+          "margin": 3,
+          "width": "100%",
         }
       }
     >
-      <View
-        style={
+      <FileAttachment
+        canDownloadFiles={true}
+        file={
           Object {
-            "flexShrink": 1,
-            "margin": 3,
-            "width": "100%",
+            "caption": "image01.png",
+            "data": Object {
+              "create_at": 1546893090093,
+              "delete_at": 0,
+              "extension": "png",
+              "has_preview_image": true,
+              "height": 171,
+              "id": "fileId",
+              "mime_type": "image/png",
+              "name": "image01.png",
+              "post_id": "postId",
+              "size": 14894,
+              "update_at": 1546893090093,
+              "user_id": "userId",
+              "width": 425,
+            },
           }
         }
-      >
-        <FileAttachment
-          canDownloadFiles={true}
-          file={
-            Object {
-              "caption": "image01.png",
-              "data": Object {
-                "create_at": 1546893090093,
-                "delete_at": 0,
-                "extension": "png",
-                "has_preview_image": true,
-                "height": 171,
-                "id": "fileId",
-                "mime_type": "image/png",
-                "name": "image01.png",
-                "post_id": "postId",
-                "size": 14894,
-                "update_at": 1546893090093,
-                "user_id": "userId",
-                "width": 425,
-              },
-            }
-          }
-          id="fileId"
-          imagesListProps={
-            Object {
-              "isSingleImage": false,
-            }
-          }
-          index={0}
-          onCaptureRef={[Function]}
-          onPreviewPress={[Function]}
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-        />
-      </View>
-      <View
-        style={
+        id="fileId"
+        imagesListProps={
           Object {
-            "flexShrink": 1,
-            "margin": 3,
-            "width": "100%",
+            "isSingleImage": false,
           }
         }
-      >
-        <FileAttachment
-          canDownloadFiles={true}
-          file={
-            Object {
-              "caption": "image02.png",
-              "data": Object {
-                "create_at": 1546893090093,
-                "delete_at": 0,
-                "extension": "png",
-                "has_preview_image": true,
-                "height": 800,
-                "id": "otherFileId",
-                "mime_type": "image/png",
-                "name": "image02.png",
-                "post_id": "postId",
-                "size": 24894,
-                "update_at": 1546893090093,
-                "user_id": "userId",
-                "width": 555,
-              },
-            }
+        index={0}
+        onCaptureRef={[Function]}
+        onPreviewPress={[Function]}
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
           }
-          id="otherFileId"
-          imagesListProps={
-            Object {
-              "isSingleImage": false,
-            }
+        }
+        wrapperWidth={657}
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "flexShrink": 1,
+          "margin": 3,
+          "width": "100%",
+        }
+      }
+    >
+      <FileAttachment
+        canDownloadFiles={true}
+        file={
+          Object {
+            "caption": "image02.png",
+            "data": Object {
+              "create_at": 1546893090093,
+              "delete_at": 0,
+              "extension": "png",
+              "has_preview_image": true,
+              "height": 800,
+              "id": "otherFileId",
+              "mime_type": "image/png",
+              "name": "image02.png",
+              "post_id": "postId",
+              "size": 24894,
+              "update_at": 1546893090093,
+              "user_id": "userId",
+              "width": 555,
+            },
           }
-          index={1}
-          onCaptureRef={[Function]}
-          onPreviewPress={[Function]}
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
+        }
+        id="otherFileId"
+        imagesListProps={
+          Object {
+            "isSingleImage": false,
           }
-        />
-      </View>
+        }
+        index={1}
+        onCaptureRef={[Function]}
+        onPreviewPress={[Function]}
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        wrapperWidth={657}
+      />
     </View>
   </View>
 </View>

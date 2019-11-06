@@ -3,7 +3,7 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, View} from 'react-native';
+import {Dimensions, StyleSheet, View} from 'react-native';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -16,6 +16,8 @@ import {emptyFunction} from 'app/utils/general';
 import FileAttachment from './file_attachment';
 
 const MAX_VISIBLE_ROW_IMAGES = 4;
+const VIEWPORT_IMAGE_OFFSET = 93;
+const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
 export default class FileAttachmentList extends Component {
     static propTypes = {
@@ -29,6 +31,7 @@ export default class FileAttachmentList extends Component {
         onLongPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        isReplyPost: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -41,6 +44,7 @@ export default class FileAttachmentList extends Component {
         this.items = [];
         this.state = {
             loadingFiles: props.files.length === 0,
+            portraitPostWidth: this.getPortraitPostWidth(),
         };
 
         this.buildGalleryFiles(props).then((results) => {
@@ -142,8 +146,22 @@ export default class FileAttachmentList extends Component {
         return files.findIndex((file) => file.id === fileId);
     }
 
+    getPortraitPostWidth = () => {
+        const {isReplyPost} = this.props;
+        const {width, height} = Dimensions.get('window');
+
+        let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
+
+        if (isReplyPost) {
+            portraitPostWidth -= VIEWPORT_IMAGE_REPLY_OFFSET;
+        }
+
+        return portraitPostWidth;
+    };
+
     renderItems = (items) => {
         const {canDownloadFiles, onLongPress, theme} = this.props;
+        const {portraitPostWidth} = this.state;
         const isSingleImage = this.isSingleImage();
         const moreImagesCount = this.moreImagesCount();
 
@@ -174,6 +192,7 @@ export default class FileAttachmentList extends Component {
                         onLongPress={onLongPress}
                         theme={theme}
                         imagesListProps={imagesListProps}
+                        wrapperWidth={portraitPostWidth}
                     />
                 </View>
             );
@@ -186,12 +205,11 @@ export default class FileAttachmentList extends Component {
         }
 
         const visibleImages = images.slice(0, MAX_VISIBLE_ROW_IMAGES);
+        const {portraitPostWidth} = this.state;
 
         return (
-            <View>
-                <View style={styles.row}>
-                    { this.renderItems(visibleImages) }
-                </View>
+            <View style={[styles.row, {width: portraitPostWidth}]}>
+                { this.renderItems(visibleImages) }
             </View>
         );
     };
