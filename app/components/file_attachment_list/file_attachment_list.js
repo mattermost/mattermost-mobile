@@ -248,8 +248,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     pictureFrame: {
-        width: '100%',
-        flexShrink: 1,
+        flex: 1,
         margin: 3,
     },
     failed: {

@@ -18,9 +18,8 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
     <View
       style={
         Object {
-          "flexShrink": 1,
+          "flex": 1,
           "margin": 3,
-          "width": "100%",
         }
       }
     >
@@ -109,9 +108,8 @@ exports[`FileAttachmentList should match snapshot with multiple image files 1`] 
     <View
       style={
         Object {
-          "flexShrink": 1,
+          "flex": 1,
           "margin": 3,
-          "width": "100%",
         }
       }
     >
@@ -181,9 +179,8 @@ exports[`FileAttachmentList should match snapshot with multiple image files 1`] 
     <View
       style={
         Object {
-          "flexShrink": 1,
+          "flex": 1,
           "margin": 3,
-          "width": "100%",
         }
       }
     >
