@@ -33,6 +33,7 @@ jest.mock('react-native-notifications', () => {
         NotificationAction: jest.fn(),
         NotificationCategory: jest.fn(),
         localNotification: jest.fn(),
+        getInitialNotification: jest.fn(() => Promise.resolve()),
     };
 });
 
