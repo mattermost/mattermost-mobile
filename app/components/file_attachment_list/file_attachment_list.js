@@ -249,7 +249,6 @@ const styles = StyleSheet.create({
     },
     pictureFrame: {
         flex: 1,
-        margin: 3,
     },
     failed: {
         opacity: 0.5,

@@ -19,7 +19,6 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
       style={
         Object {
           "flex": 1,
-          "margin": 3,
         }
       }
     >
@@ -109,7 +108,6 @@ exports[`FileAttachmentList should match snapshot with multiple image files 1`] 
       style={
         Object {
           "flex": 1,
-          "margin": 3,
         }
       }
     >
@@ -180,7 +178,6 @@ exports[`FileAttachmentList should match snapshot with multiple image files 1`] 
       style={
         Object {
           "flex": 1,
-          "margin": 3,
         }
       }
     >

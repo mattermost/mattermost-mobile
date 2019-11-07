@@ -168,6 +168,7 @@ const style = StyleSheet.create({
     fileImageWrapper: {
         borderRadius: 5,
         overflow: 'hidden',
+        margin: 3,
     },
     boxPlaceholder: {
         paddingBottom: '100%',
