@@ -6,7 +6,6 @@ import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
-import merge from 'deepmerge';
 
 import {ErrorTypes, GeneralTypes} from 'mattermost-redux/action_types';
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -242,29 +241,10 @@ export default function configureAppStore(initialState) {
 
                     await persistor.purge();
 
-                    const {currentTeamId} = state.entities.teams;
-                    const myPreferences = {...state.entities.preferences.myPreferences};
-                    Object.keys(myPreferences).forEach((key) => {
-                        if (!key.startsWith('theme--')) {
-                            Reflect.deleteProperty(myPreferences, key);
-                        }
-                    });
-
-                    const initialStateWithTeamAndThemePreferences = merge(initialState, {
-                        entities: {
-                            teams: {
-                                currentTeamId,
-                            },
-                            preferences: {
-                                myPreferences,
-                            },
-                        },
-                    });
-
                     store.dispatch(batchActions([
                         {
                             type: General.OFFLINE_STORE_RESET,
-                            data: initialStateWithTeamAndThemePreferences,
+                            data: initialState,
                         },
                         {
                             type: ErrorTypes.RESTORE_ERRORS,
