@@ -4,6 +4,10 @@
 - Release Date: November 16, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
 ### Bug Fixes
  - Fixed an issue where Mattermost monokai theme no longer worked properly on mobile apps.
  - Fixed an issue on Android where the notification badge count didn't update when using multiple channels.
@@ -25,6 +29,9 @@
  - Fixed an issue on iOS where the keyboard flashed darker when Automatic Replies had been previously enabled.
  - Fixed an issue on Android where uploading pictures from storage or camera required unwanted permissions.
  - Fixed an issue where ``mobile.message_length.message`` did not match webapp's ``create_post.error_message``.
+ 
+### Known Issues
+ - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
 
 ## 1.24.0 Release
 - Release Date: October 16, 2019
