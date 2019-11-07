@@ -8,27 +8,35 @@ import {
     AppState,
     BackHandler,
     findNodeHandle,
+    Image,
     Keyboard,
     NativeModules,
     Platform,
     Text,
+    TouchableOpacity,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import Button from 'react-native-button';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import slashForwardBoxIcon from 'assets/images/icons/slash-forward-box.png';
+
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
-import AttachmentButton from 'app/components/attachment_button';
-import Fade from 'app/components/fade';
+import FileUploadButton from './components/fileUploadButton';
+import ImageUploadButton from './components/imageUploadButton';
+import CameraButton from './components/cameraButton';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
 import PasteableTextInput from 'app/components/pasteable_text_input';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import SendButton from 'app/components/send_button';
-import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {NOTIFY_ALL_MEMBERS} from 'app/constants/view';
+import FileUploadPreview from 'app/components/file_upload_preview';
+
 import EphemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
@@ -151,6 +159,12 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
+    focus = () => {
+        if (this.input.current) {
+            this.input.current.focus();
+        }
+    }
+
     numberOfTimezones = async () => {
         const {data} = await this.props.actions.getChannelTimezones(this.props.channelId);
         return data?.length || 0;
@@ -216,36 +230,100 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    getAttachmentButton = () => {
+    getTextInputButton = (actionType) => {
+        const {channelIsReadOnly, theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        let button = null;
+        const buttonStyle = [];
+        const slashDisabled = this.state.value.length > 0;
+
+        if (!channelIsReadOnly) {
+            switch (actionType) {
+            case 'at':
+                button = (
+                    <TouchableOpacity
+                        onPress={() => {
+                            this.handleTextChange(`${this.state.value}@`, true);
+                            this.focus();
+                        }}
+                        style={style.iconWrapper}
+                    >
+                        <MaterialCommunityIcons
+                            color={theme.centerChannelColor}
+                            name='at'
+                            size={20}
+                        />
+                    </TouchableOpacity>
+                );
+                break;
+            case 'slash':
+                buttonStyle.push(style.slashIcon);
+                if (slashDisabled) {
+                    buttonStyle.push(style.slashIconDisabled);
+                }
+
+                button = (
+                    <TouchableOpacity
+                        onPress={slashDisabled ? null : () => {
+                            this.handleTextChange('/', true);
+                            this.focus();
+                        }}
+                        style={style.iconWrapper}
+                    >
+                        <Image
+                            source={slashForwardBoxIcon}
+                            style={buttonStyle}
+                        />
+                    </TouchableOpacity>
+                );
+                break;
+            }
+        }
+
+        return button;
+    }
+
+    getMediaButton = (actionType) => {
         const {canUploadFiles, channelIsReadOnly, files, maxFileSize, theme} = this.props;
-        let attachmentButton = null;
+        let button = null;
+        const props = {
+            blurTextBox: this.blur,
+            fileCount: files.length,
+            maxFileCount: MAX_FILE_COUNT,
+            onShowFileMaxWarning: this.onShowFileMaxWarning,
+            onShowFileSizeWarning: this.onShowFileSizeWarning,
+            uploadFiles: this.handleUploadFiles,
+            maxFileSize,
+            theme,
+        };
 
         if (canUploadFiles && !channelIsReadOnly) {
-            attachmentButton = (
-                <AttachmentButton
-                    blurTextBox={this.blur}
-                    theme={theme}
-                    fileCount={files.length}
-                    maxFileSize={maxFileSize}
-                    maxFileCount={MAX_FILE_COUNT}
-                    onShowFileMaxWarning={this.onShowFileMaxWarning}
-                    onShowFileSizeWarning={this.onShowFileSizeWarning}
-                    uploadFiles={this.handleUploadFiles}
-                />
-            );
+            switch (actionType) {
+            case 'file':
+                button = (
+                    <FileUploadButton {...props}/>
+                );
+                break;
+            case 'image':
+                button = (
+                    <ImageUploadButton {...props}/>
+                );
+                break;
+            case 'camera':
+                button = (
+                    <CameraButton {...props}/>
+                );
+            }
         }
 
-        return attachmentButton;
-    };
+        return button;
+    }
 
     getInputContainerStyle = () => {
-        const {canUploadFiles, channelIsReadOnly, theme} = this.props;
+        const {channelIsReadOnly, theme} = this.props;
         const style = getStyleSheet(theme);
         const inputContainerStyle = [style.inputContainer];
-
-        if (!canUploadFiles) {
-            inputContainerStyle.push(style.inputContainerWithoutFileUpload);
-        }
 
         if (channelIsReadOnly) {
             inputContainerStyle.push(style.readonlyContainer);
@@ -745,7 +823,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     renderTextBox = () => {
         const {intl} = this.context;
-        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape} = this.props;
+        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape, files, rootId} = this.props;
         const style = getStyleSheet(theme);
 
         if (channelIsArchived) {
@@ -761,7 +839,6 @@ export default class PostTextBoxBase extends PureComponent {
                 style={[style.inputWrapper, padding(isLandscape)]}
                 onLayout={this.handleLayout}
             >
-                {this.getAttachmentButton()}
                 <View style={this.getInputContainerStyle()}>
                     <PasteableTextInput
                         ref={this.input}
@@ -781,13 +858,32 @@ export default class PostTextBoxBase extends PureComponent {
                         onPaste={this.handlePasteFiles}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     />
-                    <Fade visible={this.isSendButtonVisible()}>
+
+                    <FileUploadPreview
+                        files={files}
+                        rootId={rootId}
+                    />
+
+                    <View style={style.buttonsContainer}>
+                        <View style={style.quickActionsContainer}>
+
+                            {this.getTextInputButton('at')}
+
+                            {this.getTextInputButton('slash')}
+
+                            {this.getMediaButton('file')}
+
+                            {this.getMediaButton('image')}
+
+                            {this.getMediaButton('camera')}
+
+                        </View>
                         <SendButton
                             disabled={!this.isSendButtonEnabled()}
                             handleSendMessage={this.handleSendMessage}
                             theme={theme}
                         />
-                    </Fade>
+                    </View>
                 </View>
             </View>
         );
@@ -796,11 +892,33 @@ export default class PostTextBoxBase extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        buttonsContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
+        slashIcon: {
+            width: 20,
+            height: 20,
+            opacity: 1,
+            tintColor: theme.centerChannelColor,
+        },
+        slashIconDisabled: {
+            tintColor: changeOpacity(theme.centerChannelColor, 0.6),
+        },
+        iconWrapper: {
+            paddingLeft: 10,
+            paddingRight: 10,
+        },
+        quickActionsContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+        },
         input: {
             color: theme.centerChannelColor,
-            flex: 1,
+            flex: 0,
             fontSize: 14,
-            maxHeight: MAX_CONTENT_HEIGHT,
             paddingBottom: 8,
             paddingLeft: 12,
             paddingRight: 12,
@@ -816,12 +934,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         inputContainer: {
             flex: 1,
-            flexDirection: 'row',
+            flexDirection: 'column',
             backgroundColor: theme.centerChannelBg,
             alignItems: 'stretch',
             marginRight: 10,
-        },
-        inputContainerWithoutFileUpload: {
             marginLeft: 10,
         },
         inputWrapper: {
