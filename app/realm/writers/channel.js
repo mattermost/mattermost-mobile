@@ -124,6 +124,8 @@ function channels(realm, action) {
         const channel = realm.objectForPrimaryKey('Channel', data.channel_id);
         if (channel) {
             channel.memberCount = data.member_count;
+            channel.guestCount = data.guest_count;
+            channel.pinnedCount = data.pinnedpost_count;
         }
         break;
     }
