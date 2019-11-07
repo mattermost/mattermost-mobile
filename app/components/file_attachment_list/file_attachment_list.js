@@ -125,21 +125,20 @@ export default class FileAttachmentList extends Component {
         previewImageAtIndex(this.items, idx, this.galleryFiles);
     });
 
-    imageAttachments = (files) => (files.filter((file) => file.has_preview_image));
-
-    nonImageAttachments = (files) => (files.filter((file) => !file.has_preview_image));
-
-    isSingleImage = () => {
-        const {files} = this.props;
-        return this.imageAttachments(files).length === 1;
+    attachmentManifest = (attachments) => {
+        return attachments.reduce((info, file) => {
+            if (file.has_preview_image) {
+                info.imageAttachments.push(file);
+            } else {
+                info.nonImageAttachments.push(file);
+            }
+            return info;
+        }, {imageAttachments: [], nonImageAttachments: []});
     }
 
-    moreImagesCount = () => {
-        const {files} = this.props;
-        const value = this.imageAttachments(files).length - MAX_VISIBLE_ROW_IMAGES;
+    isImage = (file) => (file.has_preview_image);
 
-        return (value > 0) ? value : null;
-    }
+    isSingleImage = (files) => (files.length === 1 && this.isImage(files[0]));
 
     attachmentIndex = (fileId) => {
         const {files} = this.props;
@@ -159,11 +158,11 @@ export default class FileAttachmentList extends Component {
         return portraitPostWidth;
     };
 
-    renderItems = (items) => {
+    renderItems = (items, moreImagesCount) => {
         const {canDownloadFiles, onLongPress, theme} = this.props;
         const {portraitPostWidth} = this.state;
-        const isSingleImage = this.isSingleImage();
-        const moreImagesCount = this.moreImagesCount();
+        const isSingleImage = this.isSingleImage(items);
+        let nonVisibleImagesCount;
 
         return items.map((file, idx) => {
             const f = {
@@ -171,9 +170,8 @@ export default class FileAttachmentList extends Component {
                 data: file,
             };
 
-            const imagesListProps = {isSingleImage};
-            if (moreImagesCount && (idx === MAX_VISIBLE_ROW_IMAGES - 1)) {
-                imagesListProps.moreImagesCount = moreImagesCount;
+            if (moreImagesCount && idx === MAX_VISIBLE_ROW_IMAGES - 1) {
+                nonVisibleImagesCount = moreImagesCount;
             }
 
             return (
@@ -191,7 +189,8 @@ export default class FileAttachmentList extends Component {
                         onPreviewPress={this.handlePreviewPress}
                         onLongPress={onLongPress}
                         theme={theme}
-                        imagesListProps={imagesListProps}
+                        isSingleImage={isSingleImage}
+                        nonVisibleImagesCount={nonVisibleImagesCount}
                         wrapperWidth={portraitPostWidth}
                     />
                 </View>
@@ -207,9 +206,14 @@ export default class FileAttachmentList extends Component {
         const visibleImages = images.slice(0, MAX_VISIBLE_ROW_IMAGES);
         const {portraitPostWidth} = this.state;
 
+        let nonVisibleImagesCount;
+        if (images.length > MAX_VISIBLE_ROW_IMAGES) {
+            nonVisibleImagesCount = images.length - MAX_VISIBLE_ROW_IMAGES;
+        }
+
         return (
             <View style={[styles.row, {width: portraitPostWidth}]}>
-                { this.renderItems(visibleImages) }
+                { this.renderItems(visibleImages, nonVisibleImagesCount) }
             </View>
         );
     };
@@ -230,13 +234,12 @@ export default class FileAttachmentList extends Component {
             ));
         }
 
-        const images = this.imageAttachments(files);
-        const nonImages = this.nonImageAttachments(files);
+        const manifest = this.attachmentManifest(files);
 
         return (
             <View style={isFailed && styles.failed}>
-                { this.renderImageRow(images) }
-                { this.renderItems(nonImages) }
+                { this.renderImageRow(manifest.imageAttachments) }
+                { this.renderItems(manifest.nonImageAttachments) }
             </View>
         );
     }

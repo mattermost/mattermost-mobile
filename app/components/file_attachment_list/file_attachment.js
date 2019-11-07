@@ -30,11 +30,8 @@ export default class FileAttachment extends PureComponent {
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
         wrapperWidth: PropTypes.number,
-        imagesListProps: PropTypes.shape({
-            isSingleImage: PropTypes.bool,
-            moreImagesCount: PropTypes.number,
-        }),
-
+        isSingleImage: PropTypes.bool,
+        nonVisibleImagesCount: PropTypes.number,
     };
 
     static defaultProps = {
@@ -116,7 +113,8 @@ export default class FileAttachment extends PureComponent {
             file,
             theme,
             onLongPress,
-            imagesListProps,
+            isSingleImage,
+            nonVisibleImagesCount,
             wrapperWidth,
         } = this.props;
         const {data} = file;
@@ -135,9 +133,9 @@ export default class FileAttachment extends PureComponent {
                         file={data || {}}
                         onCaptureRef={this.handleCaptureRef}
                         theme={theme}
-                        isSingleImage={imagesListProps.isSingleImage}
+                        isSingleImage={isSingleImage}
                     />
-                    {this.renderMoreImagesOverlay(imagesListProps.moreImagesCount)}
+                    {this.renderMoreImagesOverlay(nonVisibleImagesCount, theme)}
                 </TouchableWithFeedback>
             );
         } else if (isDocument(data)) {
