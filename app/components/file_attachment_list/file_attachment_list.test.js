@@ -44,6 +44,16 @@ describe('FileAttachmentList', () => {
         width: 555,
     }];
 
+    const nonImage = {
+        extension: 'other',
+        id: 'fileId',
+        mime_type: 'other/type',
+        name: 'file01.other',
+        post_id: 'postId',
+        size: 14894,
+        user_id: 'userId',
+    };
+
     const baseProps = {
         actions: {
             loadFilesForPostIfNecessary,
@@ -65,10 +75,84 @@ describe('FileAttachmentList', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot with multiple image files', () => {
+    test('should match snapshot with two image files', () => {
         const props = {
             ...baseProps,
             files,
+        };
+
+        const wrapper = shallow(
+            <FileAttachment {...props}/>
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with three image files', () => {
+        const thirdImage = {...files[1], id: 'thirdFileId', name: 'image03.png'};
+        const props = {
+            ...baseProps,
+            files: [...files, thirdImage],
+        };
+
+        const wrapper = shallow(
+            <FileAttachment {...props}/>
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with four image files', () => {
+        const thirdImage = {...files[1], id: 'thirdFileId', name: 'image03.png'};
+        const fourthImage = {...files[1], id: 'fourthFileId', name: 'image04.png'};
+
+        const props = {
+            ...baseProps,
+            files: [...files, thirdImage, fourthImage],
+        };
+
+        const wrapper = shallow(
+            <FileAttachment {...props}/>
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with more than four image files', () => {
+        const thirdImage = {...files[1], id: 'thirdFileId', name: 'image03.png'};
+        const fourthImage = {...files[1], id: 'fourthFileId', name: 'image04.png'};
+        const fifthImage = {...files[1], id: 'fifthFileId', name: 'image05.png'};
+        const sixthImage = {...files[1], id: 'sixthFileId', name: 'image06.png'};
+
+        const props = {
+            ...baseProps,
+            files: [...files, thirdImage, fourthImage, fifthImage, sixthImage],
+        };
+
+        const wrapper = shallow(
+            <FileAttachment {...props}/>
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with non-image attachment', () => {
+        const props = {
+            ...baseProps,
+            files: [nonImage],
+        };
+
+        const wrapper = shallow(
+            <FileAttachment {...props}/>
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with combination of image and non-image attachments', () => {
+        const props = {
+            ...baseProps,
+            files: [...files, nonImage],
         };
 
         const wrapper = shallow(
