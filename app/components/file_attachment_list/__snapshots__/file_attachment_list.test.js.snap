@@ -168,9 +168,14 @@ exports[`FileAttachmentList should match snapshot with multiple image files 1`] 
     </View>
     <View
       style={
-        Object {
-          "flex": 1,
-        }
+        Array [
+          Object {
+            "flex": 1,
+          },
+          Object {
+            "marginLeft": 3,
+          },
+        ]
       }
     >
       <FileAttachment

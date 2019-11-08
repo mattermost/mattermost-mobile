@@ -163,6 +163,8 @@ export default class FileAttachmentList extends Component {
         const {portraitPostWidth} = this.state;
         const isSingleImage = this.isSingleImage(items);
         let nonVisibleImagesCount;
+        let container = styles.container;
+        const containerWithGutter = [container, styles.gutter];
 
         return items.map((file, idx) => {
             const f = {
@@ -174,9 +176,13 @@ export default class FileAttachmentList extends Component {
                 nonVisibleImagesCount = moreImagesCount;
             }
 
+            if (idx !== 0) {
+                container = containerWithGutter;
+            }
+
             return (
                 <View
-                    style={styles.pictureFrame}
+                    style={container}
                     key={file.id}
                 >
                     <FileAttachment
@@ -250,8 +256,11 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
     },
-    pictureFrame: {
+    container: {
         flex: 1,
+    },
+    gutter: {
+        marginLeft: 3,
     },
     failed: {
         opacity: 0.5,
