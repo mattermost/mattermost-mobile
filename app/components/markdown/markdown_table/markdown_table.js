@@ -90,8 +90,8 @@ export default class MarkdownTable extends React.PureComponent {
                 props: {
                     ...row.props,
                     children,
-                }
-            }
+                },
+            };
         });
         rows[rows.length - 1] = React.cloneElement(rows[rows.length - 1], {
             isLastRow: true,
