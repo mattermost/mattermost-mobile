@@ -73,6 +73,37 @@ export default class MarkdownTable extends React.PureComponent {
         });
     };
 
+    renderPreviewRows = (drawExtraBorders = true) => {
+        const style = getStyleSheet(this.props.theme);
+
+        const tableStyle = [style.table];
+        if (drawExtraBorders) {
+            tableStyle.push(style.tableExtraBorders);
+        }
+
+        // Add an extra prop to the last row of the table so that it knows not to render a bottom border
+        // since the container should be rendering that
+        const rows = React.Children.toArray(this.props.children).slice(0, 5).map((row) => {
+            const children = React.Children.toArray(row.props.children).slice(0, 5);
+            return {
+                ...row,
+                props: {
+                    ...row.props,
+                    children,
+                }
+            }
+        });
+        rows[rows.length - 1] = React.cloneElement(rows[rows.length - 1], {
+            isLastRow: true,
+        });
+
+        return (
+            <View style={tableStyle}>
+                {rows}
+            </View>
+        );
+    }
+
     renderRows = (drawExtraBorders = true) => {
         const style = getStyleSheet(this.props.theme);
 
@@ -152,7 +183,7 @@ export default class MarkdownTable extends React.PureComponent {
                     showsVerticalScrollIndicator={false}
                     style={[style.container, {maxWidth: this.getTableWidth()}]}
                 >
-                    {this.renderRows(false)}
+                    {this.renderPreviewRows(false)}
                 </ScrollView>
                 {moreRight}
                 {moreBelow}
