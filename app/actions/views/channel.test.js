@@ -5,27 +5,23 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import initialState from 'app/initial_state';
+import {ViewTypes} from 'app/constants';
 import testHelper from 'test/test_helper';
 
 import {
+    handleSelectChannel,
     handleSelectChannelByName,
     loadPostsIfNecessaryWithRetry,
 } from 'app/actions/views/channel';
 
 import postReducer from 'mattermost-redux/reducers/entities/posts';
 
-jest.mock('mattermost-redux/selectors/entities/channels', () => ({
-    getChannel: () => ({data: 'received-channel-id'}),
-    getCurrentChannelId: () => 'current-channel-id',
-    getMyChannelMember: () => ({data: {member: {}}}),
-}));
-
 jest.mock('mattermost-redux/actions/channels', () => {
     const channelActions = require.requireActual('mattermost-redux/actions/channels');
     return {
         ...channelActions,
-        markChannelAsRead: jest.fn(),
-        markChannelAsViewed: jest.fn(),
+        markChannelAsRead: jest.fn().mockReturnValue({type: ''}),
+        markChannelAsViewed: jest.fn().mockReturnValue({type: ''}),
     };
 });
 
@@ -129,6 +125,11 @@ describe('Actions.Views.Channel', () => {
             },
         },
     };
+
+    const channelSelectors = require('mattermost-redux/selectors/entities/channels');
+    channelSelectors.getChannel = jest.fn((state, channelId) => ({data: channelId}));
+    channelSelectors.getCurrentChannelId = jest.fn(() => currentChannelId);
+    channelSelectors.getMyChannelMember = jest.fn(() => ({data: {member: {}}}));
 
     test('handleSelectChannelByName success', async () => {
         store = mockStore(storeObj);
@@ -237,5 +238,80 @@ describe('Actions.Views.Channel', () => {
         expect(postUtils.getLastCreateAt).not.toBeCalled();
         expect(postActions.getPostsSince).toHaveBeenCalledWith(currentChannelId, store.getState().views.channel.lastGetPosts[currentChannelId]);
         expect(receivedPostsSince).not.toBe(null);
+    });
+
+    test('handleSelectChannel selects channel using channelId param when from push notification', async () => {
+        store = mockStore({...storeObj});
+
+        const channelId = 'from-push-notification';
+        const fromPushNotification = true;
+        await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
+        const storeBatchActions = store.getActions().find(({type}) => type === 'BATCHING_REDUCER.BATCH');
+        const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
+
+        const expectedSelectChannelWithMember = {
+            type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+            data: channelId,
+            channel: {
+                data: channelId,
+            },
+            member: {
+                data: {
+                    member: {},
+                },
+            },
+
+        };
+        expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+    });
+
+    test('handleSelectChannel selects channel using channelId param when not from push notification and same channel', async () => {
+        store = mockStore({...storeObj});
+
+        const channelId = currentChannelId;
+        const fromPushNotification = false;
+        await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
+        const storeBatchActions = store.getActions().find(({type}) => type === 'BATCHING_REDUCER.BATCH');
+        const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
+
+        const expectedSelectChannelWithMember = {
+            type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+            data: channelId,
+            channel: {
+                data: channelId,
+            },
+            member: {
+                data: {
+                    member: {},
+                },
+            },
+
+        };
+        expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+    });
+
+    test('handleSelectChannel selects channel using currentChannelId when not from push notification and not same channel', async () => {
+        store = mockStore({...storeObj});
+
+        const channelId = 'not-current-channel-id';
+        const fromPushNotification = false;
+        await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
+        const storeBatchActions = store.getActions().find(({type}) => type === 'BATCHING_REDUCER.BATCH');
+        const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
+
+        const expectedSelectChannelWithMember = {
+            type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+            data: currentChannelId,
+            channel: {
+                data: currentChannelId,
+            },
+            member: {
+                data: {
+                    member: {},
+                },
+            },
+
+        };
+        expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
     });
 });

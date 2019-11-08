@@ -404,9 +404,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
                 channel: getChannel(state, currentChannelId),
                 member: getMyChannelMember(state, currentChannelId),
             });
-        }
-
-        if (!fromPushNotification) {
+        } else {
             actions.push({
                 type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
                 data: channelId,
