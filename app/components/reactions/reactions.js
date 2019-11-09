@@ -26,13 +26,14 @@ export default class Reactions extends PureComponent {
             getReactionsForPost: PropTypes.func.isRequired,
             removeReaction: PropTypes.func.isRequired,
         }).isRequired,
+        canAddReaction: PropTypes.bool,
+        canAddMoreReactions: PropTypes.bool,
+        canRemoveReaction: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         position: PropTypes.oneOf(['right', 'left']),
         postId: PropTypes.string.isRequired,
         reactions: PropTypes.object,
         theme: PropTypes.object.isRequired,
-        canAddReaction: PropTypes.bool,
-        canRemoveReaction: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -132,7 +133,7 @@ export default class Reactions extends PureComponent {
     };
 
     render() {
-        const {position, reactions, canAddReaction} = this.props;
+        const {position, reactions, canAddMoreReactions} = this.props;
         const styles = getStyleSheet(this.props.theme);
 
         if (!reactions) {
@@ -140,7 +141,7 @@ export default class Reactions extends PureComponent {
         }
 
         let addMoreReactions = null;
-        if (canAddReaction) {
+        if (canAddMoreReactions) {
             addMoreReactions = (
                 <TouchableWithFeedback
                     key='addReaction'

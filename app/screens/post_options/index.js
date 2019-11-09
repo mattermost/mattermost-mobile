@@ -22,6 +22,7 @@ import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles'
 import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
 import {canEditPost} from 'mattermost-redux/utils/post_utils';
 
+import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
 import {THREAD} from 'app/constants/screen';
 import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions, isLandscape} from 'app/selectors/device';
@@ -98,7 +99,7 @@ export function makeMapStateToProps() {
             canCopyText = true;
         }
 
-        if (reactions && Object.values(reactions).length >= 40) {
+        if (reactions && Object.values(reactions).length >= MAX_ALLOWED_REACTIONS) {
             canAddReaction = false;
         }
 
