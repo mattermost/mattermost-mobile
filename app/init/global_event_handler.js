@@ -62,7 +62,7 @@ class GlobalEventHandler {
             await emmProvider.handleAuthentication(this.store, prompt);
         }
 
-        emmProvider.inBackgroundSince = null;
+        emmProvider.inBackgroundSince = null; /* eslint-disable-line require-atomic-updates */
     };
 
     appInactive = () => {

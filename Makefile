@@ -74,6 +74,8 @@ clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleanup finished
 
 post-install:
+	@./node_modules/.bin/jetify
+
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
@@ -184,14 +186,7 @@ build-android: | stop pre-build check-style i18n-extract-ci prepare-android-buil
 
 unsigned-ios: stop pre-build check-style ## Build an unsigned version of the iOS app
 	$(call start_packager)
-	@echo "Building unsigned iOS app"
 	@cd fastlane && NODE_ENV=production bundle exec fastlane ios unsigned
-	@mkdir -p build-ios
-	@cd ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
-	@cd build-ios/ && mkdir -p Payload && cp -R Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/
-	@mv build-ios/Mattermost-unsigned.ipa .
-	@cd fastlane && bundle exec fastlane upload_file_to_s3 file:Mattermost-unsigned.ipa os_type:iOS
-	@rm -rf build-ios/
 	$(call stop_packager)
 
 ios-sim-x86_64: stop pre-build check-style ## Build an unsigned x86_64 version of the iOS app for iPhone simulator
@@ -207,12 +202,7 @@ ios-sim-x86_64: stop pre-build check-style ## Build an unsigned x86_64 version o
 	$(call stop_packager)
 
 unsigned-android: stop pre-build check-style prepare-android-build ## Build an unsigned version of the Android app
-	$(call start_packager)
-	@echo "Building unsigned Android app"
 	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned
-	@mv android/app/build/outputs/apk/unsigned/app-unsigned-unsigned.apk ./Mattermost-unsigned.apk
-	@cd fastlane && bundle exec fastlane upload_file_to_s3 file:Mattermost-unsigned.apk os_type:Android
-	$(call stop_packager)
 
 test: | pre-run check-style ## Runs tests
 	@npm test

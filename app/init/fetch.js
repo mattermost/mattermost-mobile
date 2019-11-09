@@ -102,7 +102,7 @@ Client4.doFetchWithResponse = async (url, options) => {
     if (headers[HEADER_X_CLUSTER_ID] || headers[HEADER_X_CLUSTER_ID.toLowerCase()]) {
         const clusterId = headers[HEADER_X_CLUSTER_ID] || headers[HEADER_X_CLUSTER_ID.toLowerCase()];
         if (clusterId && Client4.clusterId !== clusterId) {
-            Client4.clusterId = clusterId;
+            Client4.clusterId = clusterId; /* eslint-disable-line require-atomic-updates */
         }
     }
 

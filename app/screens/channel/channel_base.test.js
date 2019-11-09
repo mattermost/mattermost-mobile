@@ -14,6 +14,7 @@ import ChannelBase from './channel_base';
 jest.mock('react-intl');
 
 describe('ChannelBase', () => {
+    const channelBaseComponentId = 'component-0';
     const componentIds = ['component-1', 'component-2', 'component-3'];
     const baseProps = {
         actions: {
@@ -24,7 +25,7 @@ describe('ChannelBase', () => {
             recordLoadTime: jest.fn(),
             getChannelStats: jest.fn(),
         },
-        componentId: componentIds[0],
+        componentId: channelBaseComponentId,
         theme: Preferences.THEMES.default,
     };
     const optionsForTheme = (theme) => {
@@ -61,7 +62,7 @@ describe('ChannelBase', () => {
 
         const themeOptions = optionsForTheme(Preferences.THEMES.default);
         expect(mergeNavigationOptions.mock.calls).toEqual([
-            [componentIds[0], themeOptions],
+            [baseProps.componentId, themeOptions],
         ]);
         mergeNavigationOptions.mockClear();
 
@@ -69,6 +70,7 @@ describe('ChannelBase', () => {
 
         const newThemeOptions = optionsForTheme(Preferences.THEMES.mattermostDark);
         expect(mergeNavigationOptions.mock.calls).toEqual([
+            [baseProps.componentId, newThemeOptions],
             [componentIds[2], newThemeOptions],
             [componentIds[1], newThemeOptions],
             [componentIds[0], newThemeOptions],

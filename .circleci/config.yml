@@ -141,7 +141,7 @@ commands:
           working_directory: fastlane
           name: Run fastlane to build android
           no_output_timeout: 30m
-          command: bundle exec fastlane android build || exit 1
+          command: bundle exec fastlane android build
 
   build-ios:
     description: "Build the iOS app"
@@ -157,41 +157,32 @@ commands:
           working_directory: fastlane
           name: Run fastlane to build iOS
           no_output_timeout: 30m
-          command: bundle exec fastlane ios build || exit 1
+          command: bundle exec fastlane ios build
 
-  deploy-android:
-    description: "Deploy apk to Google Play"
+  deploy-to-store:
+    description: "Deploy build to store"
     parameters:
-      apk_path:
+      task:
+        type: string
+      target:
+        type: string
+      file:
         type: string
     steps:
       - attach_workspace:
-          at: ~/mattermost-mobile
-      - deploy:
-          name: "Deploy apk to Google Play"
+          at: ~/
+      - run:
+          name: <<parameters.task>>
           working_directory: fastlane
-          command: bundle exec fastlane android deploy apk:./<<parameters.apk_path>>
-
-  deploy-ios:
-    description: "Deploy ipa to TestFlight"
-    parameters:
-      ipa_path:
-        type: string
-    steps:
-      - attach_workspace:
-          at: ~/mattermost-mobile
-      - deploy:
-          name: "Deploy ipa to TestFlight"
-          working_directory: fastlane
-          command: bundle exec fastlane ios deploy ipa:./<<parameters.ipa_path>>
+          command: bundle exec fastlane <<parameters.target>> deploy file:$HOME/mattermost-mobile/<<parameters.file>>
 
   persist:
     description: "Persist mattermost-mobile directory"
     steps:
       - persist_to_workspace:
-          root: ./
+          root: ~/
           paths:
-            - ./
+            - mattermost-mobile*
 
   save:
     description: "Save binaries artifacts"
@@ -244,9 +235,27 @@ jobs:
       BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
     steps:
       - build-android
-      - persist
       - save:
           filename: "Mattermost_Beta.apk"
+
+  build-android-unsigned:
+    executor: android
+    steps:
+      - checkout:
+          path: ~/mattermost-mobile
+      - npm-dependencies
+      - assets
+      - fastlane-dependencies:
+          for: android
+      - gradle-dependencies
+      - run:
+          working_directory: fastlane
+          name: Run fastlane to build unsigned android
+          no_output_timeout: 30m
+          command: bundle exec fastlane android unsigned
+      - persist
+      - save:
+          filename: "Mattermost-unsigned.apk"
 
   build-ios-beta:
     executor: ios
@@ -270,37 +279,75 @@ jobs:
       BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
     steps:
       - build-ios
-      - persist
       - save:
           filename: "Mattermost_Beta.ipa"
+
+  build-ios-unsigned:
+    executor: ios
+    steps:
+      - checkout:
+          path: ~/mattermost-mobile
+      - npm-dependencies
+      - pods-dependencies
+      - assets
+      - fastlane-dependencies:
+          for: ios
+      - run:
+          working_directory: fastlane
+          name: Run fastlane to build unsigned iOS
+          no_output_timeout: 30m
+          command: bundle exec fastlane ios unsigned
+      - persist
+      - save:
+          filename: "Mattermost-unsigned.ipa"
 
   deploy-android-release:
     executor:
       name: android
       resource_class: medium
     steps:
-      - deploy-android:
-          apk_path: Mattermost.apk
+      - deploy-to-store:
+          task: "Deploy to Google Play"
+          target: android
+          file: Mattermost.apk
 
   deploy-android-beta:
     executor:
       name: android
       resource_class: medium
     steps:
-      - deploy-android:
-          apk_path: Mattermost_Beta.apk
+      - deploy-to-store:
+          task: "Deploy to Google Play"
+          target: android
+          file: Mattermost_Beta.apk
 
   deploy-ios-release:
     executor: ios
     steps:
-      - deploy-ios:
-          ipa_path: Mattermost.ipa
+      - deploy-to-store:
+          task: "Deploy to TestFlight"
+          target: ios
+          file: Mattermost.ipa
 
   deploy-ios-beta:
     executor: ios
     steps:
-      - deploy-ios:
-          ipa_path: Mattermost_Beta.ipa
+      - deploy-to-store:
+          task: "Deploy to TestFlight"
+          target: ios
+          file: Mattermost_Beta.ipa
+
+  github-release:
+    executor:
+      name: android
+      resource_class: medium
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Create GitHub release
+          working_directory: fastlane
+          command: bundle exec fastlane github
 
 workflows:
   version: 2
@@ -406,3 +453,32 @@ workflows:
           filters:
             branches:
               only: /^build-pr-.*/
+
+      - build-android-unsigned:
+          context: mattermost-mobile-unsigned
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
+            branches:
+              ignore: /.*/
+      - build-ios-unsigned:
+          context: mattermost-mobile-unsigned
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
+            branches:
+              ignore: /.*/
+      - github-release:
+          context: mattermost-mobile-unsigned
+          requires:
+            - build-android-unsigned
+            - build-ios-unsigned
+          filters:
+            tags:
+              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
+            branches:
+              ignore: /.*/

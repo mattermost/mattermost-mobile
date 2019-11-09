@@ -7,9 +7,9 @@
 //
 
 #import "Mattermost+RCTUITextView.h"
-#import "RCTUITextView.h"
+#import <React/RCTUITextView.h>
 #import <React/RCTUtils.h>
-#import "RCTMultilineTextInputView.h"
+#import <React/RCTMultilineTextInputView.h>
 #import "OnPasteEventManager.h"
 #import "UIPasteboard+GetImageInfo.h"
 

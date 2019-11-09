@@ -92,6 +92,7 @@ export default class EditChannel extends PureComponent {
         this.state = {
             error: null,
             updating: false,
+            updateChannelRequest: props.updateChannelRequest,
             displayName,
             channelURL,
             purpose,
@@ -114,30 +115,50 @@ export default class EditChannel extends PureComponent {
         this.emitCanUpdateChannel(false);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
-
+    static getDerivedStateFromProps(nextProps, state) {
         const {updateChannelRequest} = nextProps;
 
-        if (this.props.updateChannelRequest !== updateChannelRequest) {
+        if (state.updateChannelRequest !== updateChannelRequest) {
+            const newState = {
+                error: null,
+                updating: true,
+                updateChannelRequest,
+            };
+
             switch (updateChannelRequest.status) {
+            case RequestStatus.SUCCESS:
+                newState.updating = false;
+                break;
+            case RequestStatus.FAILURE:
+                newState.error = updateChannelRequest.error;
+                newState.updating = false;
+                break;
+            }
+
+            return newState;
+        }
+        return null;
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.theme !== this.props.theme) {
+            setNavigatorStyles(prevProps.componentId, this.props.theme);
+        }
+
+        if (prevProps.updateChannelRequest !== this.props.updateChannelRequest) {
+            switch (this.props.updateChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitUpdating(true);
-                this.setState({error: null, updating: true});
                 break;
             case RequestStatus.SUCCESS:
                 EventEmitter.emit('close_channel_drawer');
                 InteractionManager.runAfterInteractions(() => {
                     this.emitUpdating(false);
-                    this.setState({error: null, updating: false});
                     this.close();
                 });
                 break;
             case RequestStatus.FAILURE:
                 this.emitUpdating(false);
-                this.setState({error: updateChannelRequest.error, updating: false});
                 break;
             }
         }

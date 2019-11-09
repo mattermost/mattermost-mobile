@@ -76,6 +76,7 @@ LongPost {
       "dndIndicator": "#f74343",
       "errorTextColor": "#fd5960",
       "linkColor": "#2389d7",
+      "mentionBg": "#ffffff",
       "mentionBj": "#ffffff",
       "mentionColor": "#145dbf",
       "mentionHighlightBg": "#ffe577",
@@ -95,6 +96,7 @@ LongPost {
   },
   "refs": Object {},
   "setState": [Function],
+  "setViewRef": [Function],
   "state": null,
   "updater": Updater {
     "_callbacks": Array [],
@@ -138,6 +140,7 @@ LongPost {
         "useMemo": [Function],
         "useReducer": [Function],
         "useRef": [Function],
+        "useResponder": [Function],
         "useState": [Function],
       },
       "_element": <LongPost
@@ -188,6 +191,7 @@ LongPost {
             "dndIndicator": "#f74343",
             "errorTextColor": "#fd5960",
             "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
             "mentionBj": "#ffffff",
             "mentionColor": "#145dbf",
             "mentionHighlightBg": "#ffe577",

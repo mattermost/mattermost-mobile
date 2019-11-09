@@ -117,9 +117,16 @@ export default class PostHeader extends PureComponent {
             fromAutoResponder,
             overrideUsername,
             theme,
+            renderReplies,
+            shouldRenderReplyButton,
+            commentedOnDisplayName,
+            commentCount,
+            isBot,
         } = this.props;
 
         const style = getStyleSheet(theme);
+        const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
+        const displayNameStyle = [style.displayNameContainer, showReply && (isBot || fromAutoResponder || fromWebHook) ? style.displayNameContainerBotReplyWidth : null];
 
         if (fromAutoResponder || fromWebHook) {
             let name = displayName;
@@ -128,7 +135,7 @@ export default class PostHeader extends PureComponent {
             }
 
             return (
-                <View style={[style.displayNameContainer, {maxWidth: fromAutoResponder ? '30%' : '60%'}]}>
+                <View style={displayNameStyle}>
                     <Text
                         style={style.displayName}
                         ellipsizeMode={'tail'}
@@ -152,7 +159,7 @@ export default class PostHeader extends PureComponent {
             return (
                 <TouchableWithFeedback
                     onPress={this.handleUsernamePress}
-                    style={style.displayNameContainer}
+                    style={displayNameStyle}
                     type={'opacity'}
                 >
                     <Text
@@ -356,6 +363,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             marginBottom: 3,
             lineHeight: 21,
+        },
+        displayNameContainerBotReplyWidth: {
+            maxWidth: '50%',
         },
     };
 });

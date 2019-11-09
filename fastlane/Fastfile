@@ -17,8 +17,6 @@ before_all do
     ENV['BRANCH_TO_BUILD'] = ENV['CIRCLE_BRANCH']
   end
 
-  UI.success("Building for release #{ENV['BUILD_FOR_RELEASE']}")
-
   if ENV['CIRCLECI'] != 'true'
     # Raises an error is git is not clean
     if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
@@ -187,19 +185,6 @@ lane :build do |options|
   build
 end
 
-desc 'Build the app for Android and iOS unsigned'
-lane :unsigned do
-  configure
-
-  # Build the android app
-  self.runner.current_platform = :android
-  unsigned
-
-  # Build the ios app
-  self.runner.current_platform = :ios
-  unsigned
-end
-
 desc 'Upload file to s3'
 lane :upload_file_to_s3 do |options|
   os_type = options[:os_type]
@@ -288,6 +273,29 @@ lane :upload_file_to_s3 do |options|
   end
 end
 
+desc 'Create GitHub release'
+lane :github do
+  tag = ENV['CIRCLE_TAG'] || ENV['TAG']
+  
+  if tag
+    version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
+    build = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+    changelog = File.read("metadata/changelog")
+    changelog.concat("* Android [Mattermost.apk](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.apk)\n")
+    changelog.concat("* iOS [Mattermost.ipa](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.ipa)")
+
+    github_release = set_github_release(
+      repository_name: "mattermost/mattermost-mobile",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: "Mobile Version #{version}",
+      tag_name: tag,
+      description: changelog,
+      upload_assets: ["./Mattermost-unsigned.ipa", "./Mattermost-unsigned.apk"],
+      is_draft: true
+    )
+  end
+end
+
 platform :ios do
   before_all do
     if ENV['CIRCLECI'] == 'true'
@@ -317,11 +325,20 @@ platform :ios do
 
   desc 'Build an unsigned ipa'
   lane :unsigned do
-    unless configured
-      configure
-    end
+    UI.success('Building unsigned iOS app')
+
+    ENV['APP_NAME'] = 'Mattermost'
+    ENV['REPLACE_ASSETS'] = 'true'
+    ENV['BUILD_FOR_RELEASE'] = 'true'
+
     update_identifiers
     replace_assets
+
+    sh 'mkdir -p ../build-ios'
+    sh 'cd ../ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO'
+    sh 'cd ../build-ios/ && mkdir -p Payload && cp -R Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/'
+    sh 'mv ../build-ios/Mattermost-unsigned.ipa ../'
+    sh 'rm -rf ../build-ios/'
   end
 
   lane :update_identifiers do
@@ -428,7 +445,7 @@ platform :ios do
   end
 
   lane :deploy do |options|
-    ipa_path = options[:ipa]
+    ipa_path = options[:file]
 
     unless ipa_path.nil?
       submit_to_testflight(ipa_path)
@@ -516,9 +533,12 @@ platform :android do
 
   desc 'Build an unsigned apk'
   lane :unsigned do
-    unless configured
-      configure
-    end
+    UI.success('Building unsigned Android app')
+
+    ENV['APP_NAME'] = 'Mattermost'
+    ENV['REPLACE_ASSETS'] = 'true'
+    ENV['BUILD_FOR_RELEASE'] = 'true'
+
     update_identifiers
     replace_assets
 
@@ -527,6 +547,8 @@ platform :android do
         build_type: 'Unsigned',
         project_dir: 'android/'
     )
+
+    sh "mv #{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]} #{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/Mattermost-unsigned.apk"
   end
 
   desc 'Update config and module/listener for Android telemetry'
@@ -612,7 +634,7 @@ platform :android do
   end
 
   lane :deploy do |options|
-    apk_path = options[:apk]
+    apk_path = options[:file]
 
     unless apk_path.nil?
       submit_to_google_play(apk_path)
@@ -729,7 +751,7 @@ def submit_to_testflight(ipa_path)
 
   if(File.file?(ipa_path))
     UI.success("ipa file #{ipa_path}")
-    upload_to_tesflight(
+    pilot(
         ipa: ipa_path
     )
   else
