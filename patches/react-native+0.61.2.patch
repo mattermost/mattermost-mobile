@@ -1,43 +1,3 @@
-diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
-index 14f0746..054f652 100644
---- a/node_modules/react-native/react.gradle
-+++ b/node_modules/react-native/react.gradle
-@@ -116,7 +116,7 @@ afterEvaluate {
- 
-             // Set up dev mode
-             def devEnabled = !(config."devDisabledIn${targetName}"
--                || targetName.toLowerCase().contains("release"))
-+                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
- 
-             def extraArgs = extraPackagerArgs;
- 
-@@ -141,7 +141,7 @@ afterEvaluate {
-                     def hermesFlags;
-                     def hbcTempFile = file("${jsBundleFile}.hbc")
-                     exec {
--                        if (targetName.toLowerCase().contains("release")) {
-+                        if (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")) {
-                             // Can't use ?: since that will also substitute valid empty lists
-                             hermesFlags = config.hermesFlagsRelease
-                             if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
-@@ -180,7 +180,7 @@ afterEvaluate {
-                 ? config."bundleIn${targetName}"
-                 : config."bundleIn${variant.buildType.name.capitalize()}" != null
-                     ? config."bundleIn${variant.buildType.name.capitalize()}"
--                    : targetName.toLowerCase().contains("release")
-+                    : (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
-         }
- 
-         // Expose a minimal interface on the application variant and the task itself:
-@@ -272,7 +272,7 @@ afterEvaluate {
-         // This should really be done by packaging all Hermes releated libs into
-         // two separate HermesDebug and HermesRelease AARs, but until then we'll
-         // kludge it by deleting the .so files out of the /transforms/ directory.
--        def isRelease = targetName.toLowerCase().contains("release")
-+        def isRelease = targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")
-         def libDir = "$buildDir/intermediates/transforms/"
-         def vmSelectionAction = {
-             fileTree(libDir).matching {
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 index 7dffc17..548e7bb 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
@@ -215,6 +175,19 @@ index 35f0757..a0205fc 100644
    }
  
    get binaryType(): ?BinaryType {
+diff --git a/node_modules/react-native/ReactAndroid/gradle.properties b/node_modules/react-native/ReactAndroid/gradle.properties
+index 19dff65..e112f38 100644
+--- a/node_modules/react-native/ReactAndroid/gradle.properties
++++ b/node_modules/react-native/ReactAndroid/gradle.properties
+@@ -14,7 +14,7 @@ FEST_ASSERT_CORE_VERSION=2.0M10
+ ANDROID_SUPPORT_TEST_VERSION=1.0.2
+ FRESCO_VERSION=2.0.0
+ OKHTTP_VERSION=3.12.1
+-SO_LOADER_VERSION=0.6.0
++SO_LOADER_VERSION=0.8.0
+ 
+ BOOST_VERSION=1_63_0
+ DOUBLE_CONVERSION_VERSION=1.1.6
 diff --git a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
 index ef2ae93..2795802 100644
 --- a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
@@ -228,3 +201,43 @@ index ef2ae93..2795802 100644
        return true;
      } catch (ClassNotFoundException ignored) {
        return false;
+diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
+index 14f0746..054f652 100644
+--- a/node_modules/react-native/react.gradle
++++ b/node_modules/react-native/react.gradle
+@@ -116,7 +116,7 @@ afterEvaluate {
+ 
+             // Set up dev mode
+             def devEnabled = !(config."devDisabledIn${targetName}"
+-                || targetName.toLowerCase().contains("release"))
++                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+ 
+             def extraArgs = extraPackagerArgs;
+ 
+@@ -141,7 +141,7 @@ afterEvaluate {
+                     def hermesFlags;
+                     def hbcTempFile = file("${jsBundleFile}.hbc")
+                     exec {
+-                        if (targetName.toLowerCase().contains("release")) {
++                        if (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")) {
+                             // Can't use ?: since that will also substitute valid empty lists
+                             hermesFlags = config.hermesFlagsRelease
+                             if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
+@@ -180,7 +180,7 @@ afterEvaluate {
+                 ? config."bundleIn${targetName}"
+                 : config."bundleIn${variant.buildType.name.capitalize()}" != null
+                     ? config."bundleIn${variant.buildType.name.capitalize()}"
+-                    : targetName.toLowerCase().contains("release")
++                    : (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+         }
+ 
+         // Expose a minimal interface on the application variant and the task itself:
+@@ -272,7 +272,7 @@ afterEvaluate {
+         // This should really be done by packaging all Hermes releated libs into
+         // two separate HermesDebug and HermesRelease AARs, but until then we'll
+         // kludge it by deleting the .so files out of the /transforms/ directory.
+-        def isRelease = targetName.toLowerCase().contains("release")
++        def isRelease = targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")
+         def libDir = "$buildDir/intermediates/transforms/"
+         def vmSelectionAction = {
+             fileTree(libDir).matching {
