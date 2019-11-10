@@ -3,11 +3,12 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, Animated, CameraRoll, InteractionManager, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, Animated, InteractionManager, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {CircularProgress} from 'react-native-circular-progress';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {intlShape} from 'react-intl';
+import CameraRoll from "@react-native-community/cameraroll";
 
 import {Client4} from 'mattermost-redux/client';
 
