@@ -1,0 +1,73 @@
+diff --git a/node_modules/base-64/base64.js b/node_modules/base-64/base64.js
+index 0bb7975..6210d60 100644
+--- a/node_modules/base-64/base64.js
++++ b/node_modules/base-64/base64.js
+@@ -57,7 +57,7 @@
+ 		var bitCounter = 0;
+ 		var bitStorage;
+ 		var buffer;
+-		var output = '';
++		const output = [];
+ 		var position = -1;
+ 		while (++position < length) {
+ 			buffer = TABLE.indexOf(input.charAt(position));
+@@ -65,12 +65,12 @@
+ 			// Unless this is the first of a group of 4 characters…
+ 			if (bitCounter++ % 4) {
+ 				// …convert the first 8 bits to a single ASCII character.
+-				output += String.fromCharCode(
++				output.push(String.fromCharCode(
+ 					0xFF & bitStorage >> (-2 * bitCounter & 6)
+-				);
++				));
+ 			}
+ 		}
+-		return output;
++		return output.join('');
+ 	};
+ 
+ 	// `encode` is designed to be fully compatible with `btoa` as described in the
+@@ -86,7 +86,7 @@
+ 			);
+ 		}
+ 		var padding = input.length % 3;
+-		var output = '';
++		const output = [];
+ 		var position = -1;
+ 		var a;
+ 		var b;
+@@ -104,7 +104,7 @@
+ 			buffer = a + b + c;
+ 			// Turn the 24 bits into four chunks of 6 bits each, and append the
+ 			// matching character for each of them to the output.
+-			output += (
++			output.push(
+ 				TABLE.charAt(buffer >> 18 & 0x3F) +
+ 				TABLE.charAt(buffer >> 12 & 0x3F) +
+ 				TABLE.charAt(buffer >> 6 & 0x3F) +
+@@ -116,7 +116,7 @@
+ 			a = input.charCodeAt(position) << 8;
+ 			b = input.charCodeAt(++position);
+ 			buffer = a + b;
+-			output += (
++			output.push(
+ 				TABLE.charAt(buffer >> 10) +
+ 				TABLE.charAt((buffer >> 4) & 0x3F) +
+ 				TABLE.charAt((buffer << 2) & 0x3F) +
+@@ -124,14 +124,14 @@
+ 			);
+ 		} else if (padding == 1) {
+ 			buffer = input.charCodeAt(position);
+-			output += (
++			output.push(
+ 				TABLE.charAt(buffer >> 2) +
+ 				TABLE.charAt((buffer << 4) & 0x3F) +
+ 				'=='
+ 			);
+ 		}
+ 
+-		return output;
++		return output.join('');
+ 	};
+ 
+ 	var base64 = {
