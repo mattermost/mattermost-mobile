@@ -118,15 +118,21 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     load = async (props) => {
-        const {link} = props;
+        const {link, metadata, openGraphData} = props;
         if (link) {
             let imageUrl;
             if (this.isImage()) {
                 imageUrl = link;
             } else if (isYoutubeLink(link)) {
                 const videoId = getYouTubeVideoId(link);
-                imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
+                if (metadata) {
+                    const image = openGraphData.images[0];
+                    imageUrl = image.secure_url || image.url;
+                    ImageCacheManager.cache(null, imageUrl, () => true);
+                } else {
+                    imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                    ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
+                }
             } else {
                 const {data} = await this.props.actions.getRedirectLocation(link);
 
@@ -218,6 +224,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     generateToggleableEmbed = (isImage, isYouTube) => {
         let {link} = this.props;
+        const {openGraphData, metadata} = this.props;
         const {shortenedLink} = this.state;
         if (shortenedLink) {
             link = shortenedLink;
@@ -227,8 +234,13 @@ export default class PostBodyAdditionalContent extends PureComponent {
         if (link) {
             if (isYouTube) {
                 const videoId = getYouTubeVideoId(link);
-                const imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                const thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
+                let imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                let thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
+                if (metadata) {
+                    const image = openGraphData.images[0];
+                    imgUrl = image.secure_url || image.url;
+                    thumbUrl = image.secure_url || image.url;
+                }
 
                 return (
                     <TouchableWithFeedback
