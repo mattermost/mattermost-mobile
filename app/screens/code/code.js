@@ -56,7 +56,7 @@ export default class Code extends React.PureComponent {
         const style = getStyleSheet(this.props.theme);
 
         const numberOfLines = this.countLines(this.props.content);
-        const lineNumbers = '1';
+        const lineNumbers = ['1'];
         for (let i = 1; i < numberOfLines; i++) {
             const line = (i + 1).toString();
 
