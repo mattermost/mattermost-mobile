@@ -393,29 +393,20 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
                 teamId: currentTeamId,
                 channelId,
             },
-        ];
-
-        let markPreviousChannelId;
-        if (!fromPushNotification && !sameChannel) {
-            markPreviousChannelId = currentChannelId;
-            actions.push({
-                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-                data: currentChannelId,
-                channel: getChannel(state, currentChannelId),
-                member: getMyChannelMember(state, currentChannelId),
-            });
-        } else {
-            actions.push({
+            {
                 type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
                 data: channelId,
                 channel,
                 member,
-            });
-        }
+            }
+        ];
 
         dispatch(batchActions(actions));
 
-        dispatch(markChannelViewedAndRead(channelId, markPreviousChannelId));
+        if (!fromPushNotification && !sameChannel) {
+            const markPreviousChannelId = currentChannelId;
+            dispatch(markChannelViewedAndRead(channelId, markPreviousChannelId));
+        }
     };
 }
 
