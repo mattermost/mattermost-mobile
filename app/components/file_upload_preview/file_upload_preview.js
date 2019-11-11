@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     ScrollView,
-    StyleSheet,
     Text,
     View,
 } from 'react-native';

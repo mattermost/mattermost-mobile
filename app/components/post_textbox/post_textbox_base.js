@@ -14,6 +14,7 @@ import {
     Platform,
     Text,
     TouchableOpacity,
+    ScrollView,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
@@ -839,7 +840,10 @@ export default class PostTextBoxBase extends PureComponent {
                 style={[style.inputWrapper, padding(isLandscape)]}
                 onLayout={this.handleLayout}
             >
-                <View style={this.getInputContainerStyle()}>
+                <ScrollView
+                    style={this.getInputContainerStyle()}
+                    contentContainerStyle={style.inputContentContainer}
+                >
                     <PasteableTextInput
                         ref={this.input}
                         value={textValue}
@@ -884,7 +888,7 @@ export default class PostTextBoxBase extends PureComponent {
                             theme={theme}
                         />
                     </View>
-                </View>
+                </ScrollView>
             </View>
         );
     };
@@ -936,9 +940,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'column',
             backgroundColor: theme.centerChannelBg,
-            alignItems: 'stretch',
             marginRight: 10,
             marginLeft: 10,
+        },
+        inputContentContainer: {
+            alignItems: 'stretch',
         },
         inputWrapper: {
             alignItems: 'flex-end',

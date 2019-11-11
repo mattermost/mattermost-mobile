@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import DeviceInfo from 'react-native-device-info';
-import AndroidOpenSettings from 'react-native-android-open-settings';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImagePicker from 'react-native-image-picker';
