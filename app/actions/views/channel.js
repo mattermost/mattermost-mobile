@@ -398,7 +398,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
                 data: channelId,
                 channel,
                 member,
-            }
+            },
         ];
 
         dispatch(batchActions(actions));
