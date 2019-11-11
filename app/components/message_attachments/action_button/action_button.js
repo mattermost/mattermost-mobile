@@ -19,6 +19,7 @@ export default class ActionButton extends PureComponent {
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         cookie: PropTypes.string.isRequired,
+        disabled: PropTypes.bool,
     };
 
     handleActionPress = preventDoubleTap(() => {
@@ -27,13 +28,15 @@ export default class ActionButton extends PureComponent {
     }, 4000);
 
     render() {
-        const {name, theme} = this.props;
+        const {name, theme, disabled} = this.props;
         const style = getStyleSheet(theme);
 
         return (
             <Button
                 containerStyle={style.button}
+                disabledContainerStyle={style.buttonDisabled}
                 onPress={this.handleActionPress}
+                disabled={disabled}
             >
                 <ActionButtonText
                     message={name}
@@ -49,12 +52,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         button: {
             borderRadius: 2,
             backgroundColor: theme.buttonBg,
+            opacity: 1,
             alignItems: 'center',
             marginBottom: 2,
             marginRight: 5,
             marginTop: 10,
             paddingHorizontal: 10,
             paddingVertical: 7,
+        },
+        buttonDisabled: {
+            backgroundColor: theme.buttonBg + '4F',
         },
         text: {
             color: theme.buttonColor,
