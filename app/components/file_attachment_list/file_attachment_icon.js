@@ -19,6 +19,7 @@ import imageIcon from 'assets/images/icons/image.png';
 import patchIcon from 'assets/images/icons/patch.png';
 import pdfIcon from 'assets/images/icons/pdf.png';
 import pptIcon from 'assets/images/icons/ppt.png';
+import textIcon from 'assets/images/icons/text.png';
 import videoIcon from 'assets/images/icons/video.png';
 import wordIcon from 'assets/images/icons/word.png';
 
@@ -33,6 +34,7 @@ const ICON_PATH_FROM_FILE_TYPE = {
     pdf: pdfIcon,
     presentation: pptIcon,
     spreadsheet: excelIcon,
+    text: textIcon,
     video: videoIcon,
     word: wordIcon,
 };
