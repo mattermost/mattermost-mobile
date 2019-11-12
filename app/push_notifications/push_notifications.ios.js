@@ -66,6 +66,22 @@ class PushNotification {
         this.onReply = options.onReply;
 
         this.requestNotificationReplyPermissions();
+
+        if (options.popInitialNotification) {
+            NotificationsIOS.getInitialNotification().
+                then((notification) => {
+                    if (notification) {
+                        const data = notification.getData();
+                        if (data) {
+                            ephemeralStore.appStartedFromPushNotification = true;
+                            this.handleNotification(data, false, true);
+                        }
+                    }
+                }).
+                catch((err) => {
+                    console.log('iOS getInitialNotifiation() failed', err); //eslint-disable-line no-console
+                });
+        }
     }
 
     requestNotificationReplyPermissions = () => {
