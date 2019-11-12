@@ -13,7 +13,7 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import BottomSheet from 'apputils/bottom_sheet';
+import BottomSheet from 'app/utils/bottom_sheet';
 import CustomList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import FormattedText from 'app/components/formatted_text';
