@@ -63,7 +63,8 @@ export default class MoreChannels extends PureComponent {
         super(props, context);
 
         this.searchTimeoutId = 0;
-        this.page = -1;
+        this.publicPage = -1;
+        this.archivedPage = -1;
         this.next = true;
         this.mounted = false;
 
@@ -157,7 +158,8 @@ export default class MoreChannels extends PureComponent {
             this.setState({loading: true}, () => {
                 actions.loadPublicAndArchivedChannels(
                     currentTeamId,
-                    this.page + 1,
+                    this.publicPage + 1,
+                    this.archivedPage + 1,
                     General.CHANNELS_CHUNK_SIZE,
                     canShowArchivedChannels,
                 ).then(this.loadedChannels);

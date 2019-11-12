@@ -75,17 +75,17 @@ export function loadChannelsByTeamName(teamName) {
     };
 }
 
-export function loadPublicAndArchivedChannels(teamId, page, perPage, shouldLoadArchivedChannels) {
+export function loadPublicAndArchivedChannels(teamId, publicPage, archivedPage, perPage, shouldLoadArchivedChannels) {
     return async (dispatch) => {
         return dispatch(getChannels(
             teamId,
-            page,
+            publicPage,
             perPage
         )).then(async (publicChannels) => {
             if (shouldLoadArchivedChannels) {
                 const archivedChannels = await dispatch(getArchivedChannels(
                     teamId,
-                    page,
+                    archivedPage,
                     perPage
                 ));
                 return archivedChannels;
