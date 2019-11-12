@@ -68,25 +68,19 @@ export default class Login extends PureComponent {
         };
     }
 
-    static getDerivedStateFromProps(nextProps, prevState) {
-        if (prevState.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
-            return {isLoading: false};
-        }
-
-        return null;
-    }
-
     componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
 
         setMfaPreflightDone(false);
     }
 
-    componentDidUpdate(prevProps) {
-        const {loginRequest, actions} = this.props;
-        if (prevProps.loginRequest.status === RequestStatus.STARTED && loginRequest.status === RequestStatus.SUCCESS) {
-            actions.handleSuccessfulLogin().then(this.goToChannel);
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
+            return {isLoading: false};
+        } else if (nextProps.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
+            return nextProps.actions.handleSuccessfulLogin().then(this.goToChannel);
         }
+        return null;
     }
 
     componentWillUnmount() {
