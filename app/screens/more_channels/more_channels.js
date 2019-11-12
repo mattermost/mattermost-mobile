@@ -396,7 +396,7 @@ export default class MoreChannels extends PureComponent {
             let channelDropdown;
             if (canShowArchivedChannels) {
                 channelDropdown = (
-                    <View style={style.titleContainer}>
+                    <View style={[style.titleContainer, padding(isLandscape)]}>
                         <Text
                             accessibilityRole={'button'}
                             style={style.channelDropdown}
