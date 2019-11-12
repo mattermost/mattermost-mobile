@@ -47,7 +47,7 @@ export function loadConfigAndLicense() {
     };
 }
 
-export function loadFromPushNotification(notification, startAppFromPushNotification) {
+export function loadFromPushNotification(notification) {
     return async (dispatch, getState) => {
         const state = getState();
         const {data} = notification;
@@ -84,7 +84,7 @@ export function loadFromPushNotification(notification, startAppFromPushNotificat
             dispatch(selectTeam({id: teamId}));
         }
 
-        dispatch(handleSelectChannel(channelId, startAppFromPushNotification));
+        dispatch(handleSelectChannel(channelId, true));
     };
 }
 
