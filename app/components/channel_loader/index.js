@@ -10,6 +10,8 @@ import {handleSelectChannel, setChannelLoading} from 'app/actions/views/channel'
 
 import ChannelLoader from './channel_loader';
 
+import {isLandscape} from 'app/selectors/device';
+
 function mapStateToProps(state, ownProps) {
     const channelIsLoading = ownProps.hasOwnProperty('channelIsLoading') ?
         ownProps.channelIsLoading :
@@ -18,6 +20,7 @@ function mapStateToProps(state, ownProps) {
     return {
         channelIsLoading,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

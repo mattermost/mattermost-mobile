@@ -29,8 +29,6 @@ describe('SelectTeam', () => {
         handleTeamChange: jest.fn(),
         joinTeam: jest.fn(),
         logout: jest.fn(),
-        resetToChannel: jest.fn(),
-        dismissModal: jest.fn(),
     };
 
     const baseProps = {
@@ -45,6 +43,7 @@ describe('SelectTeam', () => {
             status: RequestStatus.FAILURE,
         },
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot for fail of teams', async () => {

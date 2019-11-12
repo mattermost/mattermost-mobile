@@ -18,6 +18,7 @@ export default class ChannelListRow extends React.PureComponent {
         theme: PropTypes.object.isRequired,
         channel: PropTypes.object.isRequired,
         ...CustomListRow.propTypes,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     onPress = () => {
@@ -47,6 +48,7 @@ export default class ChannelListRow extends React.PureComponent {
                 enabled={this.props.enabled}
                 selectable={this.props.selectable}
                 selected={this.props.selected}
+                isLandscape={this.props.isLandscape}
             >
                 <View style={style.container}>
                     <View style={style.titleContainer}>

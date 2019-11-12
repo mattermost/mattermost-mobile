@@ -5,20 +5,18 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Keyboard} from 'react-native';
 import {intlShape} from 'react-intl';
-import {Navigation} from 'react-native-navigation';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 
 import Loading from 'app/components/loading';
-import {setNavigatorStyles} from 'app/utils/theme';
 import DeletedPost from 'app/components/deleted_post';
+import {resetToChannel, popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
+import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class ThreadBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         channelId: PropTypes.string.isRequired,
@@ -55,13 +53,14 @@ export default class ThreadBase extends PureComponent {
 
         this.postTextbox = React.createRef();
 
-        Navigation.mergeOptions(props.componentId, {
+        const options = {
             topBar: {
                 title: {
                     text: title,
                 },
             },
-        });
+        };
+        mergeNavigationOptions(props.componentId, options);
 
         this.state = {
             lastViewedAt: props.myMember && props.myMember.last_viewed_at,
@@ -88,7 +87,8 @@ export default class ThreadBase extends PureComponent {
     }
 
     close = () => {
-        this.props.actions.popTopScreen();
+        const {componentId} = this.props;
+        popTopScreen(componentId);
     };
 
     handleAutoComplete = (value) => {
@@ -123,6 +123,6 @@ export default class ThreadBase extends PureComponent {
         const passProps = {
             disableTermsModal: true,
         };
-        this.props.actions.resetToChannel(passProps);
+        resetToChannel(passProps);
     };
 }

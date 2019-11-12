@@ -7,6 +7,7 @@ import {FlatList, Keyboard, Platform, SectionList, Text, View} from 'react-nativ
 
 import {ListTypes} from 'app/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export const FLATLIST = 'flat';
 export const SECTIONLIST = 'section';
@@ -30,12 +31,14 @@ export default class CustomList extends PureComponent {
         selectable: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         shouldRenderSeparator: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         listType: FLATLIST,
         showNoResults: true,
         shouldRenderSeparator: true,
+        isLandscape: false,
     };
 
     constructor(props) {
@@ -148,12 +151,13 @@ export default class CustomList extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const style = getStyleFromTheme(this.props.theme);
+        const {theme, isLandscape} = this.props;
+        const style = getStyleFromTheme(theme);
 
         return (
             <View style={style.sectionWrapper}>
                 <View style={style.sectionContainer}>
-                    <Text style={style.sectionText}>{section.id}</Text>
+                    <Text style={[style.sectionText, padding(isLandscape)]}>{section.id}</Text>
                 </View>
             </View>
         );

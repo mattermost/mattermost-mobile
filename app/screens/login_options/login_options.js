@@ -13,11 +13,13 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
-import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
+import {ViewTypes} from 'app/constants';
+import {goToScreen} from 'app/actions/navigation';
 
 import LocalConfig from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
@@ -25,11 +27,9 @@ import logo from 'assets/images/logo.png';
 
 export default class LoginOptions extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -45,21 +45,19 @@ export default class LoginOptions extends PureComponent {
     }
 
     goToLogin = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'Login';
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     });
 
     goToSSO = (ssoType) => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'SSO';
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
 
-        actions.goToScreen(screen, title, {ssoType});
+        goToScreen(screen, title, {ssoType});
     };
 
     orientationDidChange = () => {
@@ -253,7 +251,7 @@ export default class LoginOptions extends PureComponent {
         return (
             <ScrollView
                 style={style.container}
-                contentContainerStyle={style.innerContainer}
+                contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
                 ref={this.scrollRef}
             >
                 <StatusBar/>

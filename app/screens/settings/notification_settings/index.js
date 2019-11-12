@@ -8,10 +8,8 @@ import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/ent
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
-
+import {isLandscape} from 'app/selectors/device';
 import {updateMe} from 'mattermost-redux/actions/users';
-
-import {goToScreen} from 'app/actions/navigation';
 
 import NotificationSettings from './notification_settings';
 
@@ -30,6 +28,7 @@ function mapStateToProps(state) {
         updateMeRequest: state.requests.users.updateMe,
         theme: getTheme(state),
         enableAutoResponder,
+        isLandscape: isLandscape(state),
     };
 }
 
@@ -37,7 +36,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             updateMe,
-            goToScreen,
         }, dispatch),
     };
 }

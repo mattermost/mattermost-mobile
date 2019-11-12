@@ -5,7 +5,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
   <AnimatedComponent
     style={
       Object {
-        "backgroundColor": "#FFFFFF",
+        "backgroundColor": "#ffffff",
         "borderTopLeftRadius": 10,
         "borderTopRightRadius": 10,
         "height": 36.5,
@@ -17,6 +17,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
       alwaysBounceHorizontal={false}
       horizontal={true}
       overScrollMode="never"
+      style={null}
     >
       <ReactionHeaderItem
         count={2}
@@ -34,6 +35,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
             "dndIndicator": "#f74343",
             "errorTextColor": "#fd5960",
             "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
             "mentionBj": "#ffffff",
             "mentionColor": "#145dbf",
             "mentionHighlightBg": "#ffe577",
@@ -68,6 +70,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
             "dndIndicator": "#f74343",
             "errorTextColor": "#fd5960",
             "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
             "mentionBj": "#ffffff",
             "mentionColor": "#145dbf",
             "mentionHighlightBg": "#ffe577",
@@ -109,6 +112,7 @@ Array [
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",
@@ -143,6 +147,7 @@ Array [
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",

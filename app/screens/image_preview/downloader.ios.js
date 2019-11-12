@@ -276,25 +276,22 @@ export default class Downloader extends PureComponent {
             let path = res.path();
 
             if (saveToCameraRoll) {
-                path = await CameraRoll.saveToCameraRoll(path, 'photo');
+                path = await CameraRoll.saveToCameraRoll(path, 'photo'); /* eslint-disable-line require-atomic-updates */
             }
 
             if (this.mounted) {
                 this.setState({
                     progress: 100,
-                }, () => {
-                    // need to wait a bit for the progress circle UI to update to the give progress
-                    setTimeout(async () => {
-                        if (this.state.didCancel) {
-                            try {
-                                await RNFetchBlob.fs.unlink(path);
-                            } finally {
-                                this.props.onDownloadCancel();
-                            }
-                        } else {
-                            this.props.onDownloadSuccess();
+                }, async () => {
+                    if (this.state.didCancel) {
+                        try {
+                            await RNFetchBlob.fs.unlink(path);
+                        } finally {
+                            this.downloadDidCancel();
                         }
-                    }, 2000);
+                    } else {
+                        this.props.onDownloadSuccess();
+                    }
                 });
             }
 
@@ -306,7 +303,9 @@ export default class Downloader extends PureComponent {
         } catch (error) {
             // cancellation throws so we need to catch
             if (downloadPath) {
-                RNFetchBlob.fs.unlink(getLocalFilePathFromFile(downloadPath, file));
+                RNFetchBlob.fs.unlink(getLocalFilePathFromFile(downloadPath, file)).catch(() => {
+                    // do nothing
+                });
             }
             if (error.message !== 'cancelled' && this.mounted) {
                 this.showDownloadFailedAlert();

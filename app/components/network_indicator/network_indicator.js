@@ -34,7 +34,7 @@ const {
     ANDROID_TOP_PORTRAIT,
     IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
-    IOSX_TOP_PORTRAIT,
+    IOS_INSETS_TOP_PORTRAIT,
 } = ViewTypes;
 
 export default class NetworkIndicator extends PureComponent {
@@ -78,6 +78,7 @@ export default class NetworkIndicator extends PureComponent {
 
         this.backgroundColor = new Animated.Value(0);
         this.firstRun = true;
+        this.statusUpdates = false;
 
         this.networkListener = networkConnectionListener(this.handleConnectionChange);
     }
@@ -112,7 +113,7 @@ export default class NetworkIndicator extends PureComponent {
         }
 
         if (this.props.isOnline) {
-            if (previousWebsocketStatus === RequestStatus.STARTED && websocketStatus === RequestStatus.SUCCESS) {
+            if (previousWebsocketStatus !== RequestStatus.SUCCESS && websocketStatus === RequestStatus.SUCCESS) {
                 // Show the connected animation only if we had a previous network status
                 this.connected();
                 clearTimeout(this.connectionRetryTimeout);
@@ -138,7 +139,7 @@ export default class NetworkIndicator extends PureComponent {
     }
 
     connect = (displayBar = false) => {
-        const {connection} = this.props.actions;
+        const {connection, startPeriodicStatusUpdates} = this.props.actions;
         clearTimeout(this.connectionRetryTimeout);
 
         NetInfo.fetch().then(async ({isConnected}) => {
@@ -149,7 +150,9 @@ export default class NetworkIndicator extends PureComponent {
             this.serverReachable = serverReachable;
 
             if (serverReachable) {
+                this.statusUpdates = true;
                 this.initializeWebSocket();
+                startPeriodicStatusUpdates();
             } else {
                 if (displayBar) {
                     this.show();
@@ -198,12 +201,12 @@ export default class NetworkIndicator extends PureComponent {
             return ANDROID_TOP_PORTRAIT;
         }
 
-        const isX = DeviceTypes.IS_IPHONE_X;
+        const iPhoneWithInsets = DeviceTypes.IS_IPHONE_WITH_INSETS;
 
-        if (isX && isLandscape) {
+        if (iPhoneWithInsets && isLandscape) {
             return IOS_TOP_LANDSCAPE;
-        } else if (isX) {
-            return IOSX_TOP_PORTRAIT;
+        } else if (iPhoneWithInsets) {
+            return IOS_INSETS_TOP_PORTRAIT;
         } else if (isLandscape && !DeviceTypes.IS_TABLET) {
             return IOS_TOP_LANDSCAPE;
         }
@@ -220,9 +223,11 @@ export default class NetworkIndicator extends PureComponent {
         } = actions;
 
         if (open) {
+            this.statusUpdates = true;
             this.initializeWebSocket();
             startPeriodicStatusUpdates();
-        } else {
+        } else if (this.statusUpdates) {
+            this.statusUpdates = false;
             closeWebSocket(true);
             stopPeriodicStatusUpdates();
         }
@@ -249,13 +254,12 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     handleConnectionChange = ({hasInternet, serverReachable}) => {
-        const {connection, startPeriodicStatusUpdates} = this.props.actions;
+        const {connection} = this.props.actions;
 
         // On first run always initialize the WebSocket
         // if we have internet connection
         if (hasInternet && this.firstRun) {
             this.initializeWebSocket();
-            startPeriodicStatusUpdates();
             this.firstRun = false;
 
             // if the state of the internet connection was previously known to be false,

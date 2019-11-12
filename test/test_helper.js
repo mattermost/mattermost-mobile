@@ -5,7 +5,7 @@ import assert from 'assert';
 
 import Config from 'assets/config.json';
 
-import Client from 'mattermost-redux/client/client';
+import Client from 'mattermost-redux/client/client4';
 
 const PASSWORD = 'password1';
 
@@ -103,8 +103,13 @@ class TestHelper {
     };
 
     fakePost = (channelId) => {
+        const time = Date.now();
+
         return {
+            id: this.generateId(),
             channel_id: channelId,
+            create_at: time,
+            update_at: time,
             message: `Unit Test ${this.generateId()}`,
         };
     };

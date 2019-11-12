@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+
 import {Posts} from 'mattermost-redux/constants';
 
 export function fromAutoResponder(post) {
@@ -15,12 +17,12 @@ export function toTitleCase(str) {
     return str.replace(/\w\S*/g, doTitleCase);
 }
 
-export function alertErrorWithFallback(intl, error, fallback, values) {
+export function alertErrorWithFallback(intl, error, fallback, values, buttons) {
     let msg = error.message;
     if (!msg || msg === 'Network request failed') {
         msg = intl.formatMessage(fallback, values);
     }
-    Alert.alert('', msg);
+    Alert.alert('', msg, buttons);
 }
 
 export function alertErrorIfInvalidPermissions(result) {
@@ -46,6 +48,13 @@ export function alertErrorIfInvalidPermissions(result) {
 
 export function emptyFunction() { // eslint-disable-line no-empty-function
 
+}
+
+export function hapticFeedback(method = 'impactLight') {
+    ReactNativeHapticFeedback.trigger(method, {
+        enableVibrateFallback: false,
+        ignoreAndroidSystemSettings: false,
+    });
 }
 
 export function throttle(fn, limit, ...args) {

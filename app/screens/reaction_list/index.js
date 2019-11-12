@@ -9,8 +9,7 @@ import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts
 import {getCurrentUserId, makeGetProfilesByIdsAndUsernames} from 'mattermost-redux/selectors/entities/users';
 import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {dismissModal} from 'app/actions/navigation';
-
+import {isLandscape} from 'app/selectors/device';
 import {getUniqueUserIds} from 'app/utils/reaction';
 
 import ReactionList from './reaction_list';
@@ -29,6 +28,7 @@ function makeMapStateToProps() {
             teammateNameDisplay: getTeammateNameDisplaySetting(state),
             theme: getTheme(state),
             userProfiles: getProfilesByIdsAndUsernames(state, {allUserIds}) || [],
+            isLandscape: isLandscape(state),
         };
     };
 }
@@ -37,7 +37,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getMissingProfilesByIds,
-            dismissModal,
         }, dispatch),
     };
 }

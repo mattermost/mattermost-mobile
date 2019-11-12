@@ -15,6 +15,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {View: AnimatedView} = Animated;
 
@@ -33,6 +34,7 @@ export default class ChannelLoader extends PureComponent {
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         height: PropTypes.number,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
@@ -156,6 +158,7 @@ export default class ChannelLoader extends PureComponent {
             channelIsLoading,
             style: styleProp,
             theme,
+            isLandscape,
         } = this.props;
 
         if (!channelIsLoading) {
@@ -167,7 +170,7 @@ export default class ChannelLoader extends PureComponent {
 
         return (
             <View
-                style={[style.container, styleProp, {backgroundColor: bg}]}
+                style={[style.container, styleProp, padding(isLandscape), {backgroundColor: bg}]}
                 onLayout={this.handleLayout}
             >
                 {Array(this.state.maxRows).fill().map((item, index) => this.buildSections({
@@ -185,6 +188,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
+            overflow: 'hidden',
         },
         section: {
             backgroundColor: theme.centerChannelBg,

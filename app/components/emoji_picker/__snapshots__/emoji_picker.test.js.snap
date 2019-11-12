@@ -1,0 +1,139 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
+<Connect(SafeAreaIos)
+  excludeFooter={true}
+  excludeHeader={true}
+>
+  <KeyboardAvoidingView
+    behavior="padding"
+    enabled={false}
+    keyboardVerticalOffset={50}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.2)",
+            "paddingVertical": 5,
+          },
+          null,
+        ]
+      }
+    >
+      <SearchBarIos
+        autoCapitalize="none"
+        backgroundColor="transparent"
+        blurOnSubmit={true}
+        cancelTitle="Cancel"
+        inputHeight={33}
+        inputStyle={
+          Object {
+            "backgroundColor": "#ffffff",
+            "color": "#3d3c40",
+            "fontSize": 13,
+          }
+        }
+        keyboardAppearance="light"
+        leftComponent={null}
+        onAnimationComplete={[Function]}
+        onBlur={[Function]}
+        onCancelButtonPress={[Function]}
+        onChangeText={[Function]}
+        onFocus={[Function]}
+        onSearchButtonPress={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Search"
+        placeholderTextColor="rgba(61,60,64,0.5)"
+        searchIconCollapsedMargin={10}
+        searchIconExpandedMargin={10}
+        tintColorDelete="rgba(61,60,64,0.5)"
+        tintColorSearch="rgba(61,60,64,0.8)"
+        titleCancelColor="#3d3c40"
+        value=""
+      />
+    </View>
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "flex": 1,
+          },
+        ]
+      }
+    >
+      <SectionList
+        ListFooterComponent={[Function]}
+        data={Array []}
+        disableVirtualization={false}
+        getItemLayout={[Function]}
+        horizontal={false}
+        initialNumToRender={50}
+        keyExtractor={[Function]}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="always"
+        maxToRenderPerBatch={10}
+        nativeID="emojiPicker"
+        onEndReached={[Function]}
+        onEndReachedThreshold={0}
+        onMomentumScrollEnd={[Function]}
+        onScroll={[Function]}
+        onScrollToIndexFailed={[Function]}
+        pageSize={50}
+        removeClippedSubviews={false}
+        renderItem={[Function]}
+        renderSectionHeader={[Function]}
+        scrollEventThrottle={50}
+        sections={Array []}
+        showsVerticalScrollIndicator={false}
+        stickySectionHeadersEnabled={true}
+        style={
+          Array [
+            Object {},
+            Object {
+              "width": 370,
+            },
+          ]
+        }
+        updateCellsBatchingPeriod={50}
+        windowSize={21}
+      />
+      <KeyboardTrackingView
+        normalList={true}
+        scrollViewNativeID="emojiPicker"
+      >
+        <View
+          style={
+            Object {
+              "backgroundColor": "#ffffff",
+              "flexDirection": "row",
+              "height": 35,
+              "width": "100%",
+            }
+          }
+        >
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(61,60,64,0.1)",
+                "borderTopColor": "rgba(61,60,64,0.3)",
+                "borderTopWidth": 1,
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "width": "100%",
+              }
+            }
+          />
+        </View>
+      </KeyboardTrackingView>
+    </View>
+  </KeyboardAvoidingView>
+</Connect(SafeAreaIos)>
+`;

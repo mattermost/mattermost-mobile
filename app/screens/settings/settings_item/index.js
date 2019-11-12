@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text, TouchableOpacity, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-
+import {paddingRight, paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import VectorIcon from 'app/components/vector_icon.js';
 
@@ -25,11 +25,13 @@ export default class SettingsItem extends PureComponent {
         separator: PropTypes.bool,
         showArrow: PropTypes.bool,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         isDestructor: false,
         separator: true,
+        isLandscape: false,
     };
 
     renderText = () => {
@@ -76,6 +78,7 @@ export default class SettingsItem extends PureComponent {
             separator,
             showArrow,
             theme,
+            isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -112,14 +115,14 @@ export default class SettingsItem extends PureComponent {
             <TouchableOpacity
                 onPress={onPress}
             >
-                <View style={style.container}>
+                <View style={[style.container, paddingLeft(isLandscape)]}>
                     {icon &&
                     <View style={style.iconContainer}>
                         {icon}
                     </View>
                     }
                     <View style={style.wrapper}>
-                        <View style={style.labelContainer}>
+                        <View style={[style.labelContainer, paddingRight(isLandscape)]}>
                             {this.renderText()}
                             {Boolean(additionalComponent) &&
                             <View style={style.arrowContainer}>

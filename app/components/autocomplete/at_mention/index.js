@@ -7,6 +7,7 @@ import {connect} from 'react-redux';
 import {autocompleteUsers} from 'mattermost-redux/actions/users';
 import {getCurrentChannelId, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {isLandscape} from 'app/selectors/device';
 
 import {
     filterMembersInChannel,
@@ -45,6 +46,7 @@ function mapStateToProps(state, ownProps) {
         outChannel,
         requestStatus: state.requests.users.autocompleteUsers.status,
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

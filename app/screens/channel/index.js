@@ -10,6 +10,7 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/users';
+import {getChannelStats} from 'mattermost-redux/actions/channels';
 
 import {
     loadChannelsIfNecessary,
@@ -19,7 +20,6 @@ import {
 import {connection} from 'app/actions/device';
 import {recordLoadTime} from 'app/actions/views/root';
 import {selectDefaultTeam} from 'app/actions/views/select_team';
-import {peek, goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 import {isLandscape} from 'app/selectors/device';
 
 import Channel from './channel';
@@ -40,6 +40,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            getChannelStats,
             connection,
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,
@@ -49,9 +50,6 @@ function mapDispatchToProps(dispatch) {
             recordLoadTime,
             startPeriodicStatusUpdates,
             stopPeriodicStatusUpdates,
-            peek,
-            goToScreen,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

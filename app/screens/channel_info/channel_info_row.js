@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 function createTouchableComponent(children, action) {
     return (
@@ -24,7 +25,7 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, textColor, textId, togglable, theme, shouldRender} = props;
+    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -51,8 +52,26 @@ function channelInfoRow(props) {
         );
     }
 
+    let actionElement = null;
+    if (togglable) {
+        actionElement = (
+            <Switch
+                onValueChange={action}
+                value={detail}
+            />
+        );
+    } else if (rightArrow) {
+        actionElement = (
+            <Icon
+                name='angle-right'
+                size={20}
+                style={style.rightIcon}
+            />
+        );
+    }
+
     const RowComponent = (
-        <View style={style.container}>
+        <View style={[style.container, padding(isLandscape)]}>
             {iconElement}
             <FormattedText
                 style={[style.label, {color: textColor || theme.centerChannelColor}]}
@@ -60,17 +79,7 @@ function channelInfoRow(props) {
                 defaultMessage={defaultMessage}
             />
             <Text style={style.detail}>{detail}</Text>
-            {togglable ?
-                <Switch
-                    onValueChange={action}
-                    value={detail}
-                /> :
-                <Icon
-                    name='angle-right'
-                    size={20}
-                    style={style.rightIcon}
-                />
-            }
+            {actionElement}
         </View>
     );
 
@@ -93,6 +102,7 @@ channelInfoRow.propTypes = {
     iconColor: PropTypes.string,
     image: PropTypes.number,
     imageTintColor: PropTypes.string,
+    rightArrow: PropTypes.bool,
     textId: PropTypes.string.isRequired,
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
@@ -100,6 +110,7 @@ channelInfoRow.propTypes = {
 };
 
 channelInfoRow.defaultProps = {
+    rightArrow: true,
     togglable: false,
     shouldRender: true,
 };

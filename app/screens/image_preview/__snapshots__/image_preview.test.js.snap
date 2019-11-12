@@ -234,6 +234,8 @@ exports[`ImagePreview should match snapshot 1`] = `
 </AnimatedComponent>
 `;
 
+exports[`ImagePreview should match snapshot and not renderDownloadButton for local files 1`] = `null`;
+
 exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
 <TouchableOpacity
   activeOpacity={0.2}

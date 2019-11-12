@@ -6,18 +6,28 @@ exports[`PostTextBox should match, full snapshot 1`] = `
   <View
     onLayout={[Function]}
     style={
-      Object {
-        "alignItems": "flex-end",
-        "backgroundColor": "#ffffff",
-        "borderTopColor": "rgba(61,60,64,0.2)",
-        "borderTopWidth": 1,
-        "flexDirection": "row",
-        "paddingVertical": 4,
-      }
+      Array [
+        Object {
+          "alignItems": "flex-end",
+          "backgroundColor": "#ffffff",
+          "borderTopColor": "rgba(61,60,64,0.2)",
+          "borderTopWidth": 1,
+          "flexDirection": "row",
+          "paddingVertical": 4,
+        },
+        null,
+      ]
     }
   >
-    <Connect(AttachmentButton)
+    <AttachmentButton
       blurTextBox={[Function]}
+      browseFileTypes="public.item"
+      canBrowseFiles={true}
+      canBrowsePhotoLibrary={true}
+      canBrowseVideoLibrary={true}
+      canTakePhoto={true}
+      canTakeVideo={true}
+      extraOptions={null}
       fileCount={0}
       maxFileCount={5}
       maxFileSize={1024}
@@ -34,6 +44,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -52,13 +63,14 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         }
       }
       uploadFiles={[Function]}
+      validMimeTypes={Array []}
     />
     <View
       style={
         Array [
           Object {
             "alignItems": "stretch",
-            "backgroundColor": "#fff",
+            "backgroundColor": "#ffffff",
             "flex": 1,
             "flexDirection": "row",
             "marginRight": 10,
@@ -66,22 +78,22 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         ]
       }
     >
-      <TextInput
-        allowFontScaling={true}
+      <ForwardRef(WrappedPasteableTextInput)
         blurOnSubmit={false}
         disableFullscreenUI={true}
         editable={true}
+        keyboardAppearance="light"
         keyboardType="default"
         multiline={true}
         onChangeText={[Function]}
         onEndEditing={[Function]}
+        onPaste={[Function]}
         onSelectionChange={[Function]}
         placeholder="Write to Test Channel"
-        placeholderTextColor="rgba(0,0,0,0.5)"
-        rejectResponderTermination={true}
+        placeholderTextColor="rgba(61,60,64,0.5)"
         style={
           Object {
-            "color": "#000",
+            "color": "#3d3c40",
             "flex": 1,
             "fontSize": 14,
             "maxHeight": 100,
@@ -98,7 +110,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         visible={false}
       >
         <SendButton
-          disabled={false}
+          disabled={true}
           handleSendMessage={[Function]}
           theme={
             Object {
@@ -111,6 +123,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
               "dndIndicator": "#f74343",
               "errorTextColor": "#fd5960",
               "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
               "mentionBj": "#ffffff",
               "mentionColor": "#145dbf",
               "mentionHighlightBg": "#ffe577",

@@ -13,7 +13,12 @@ import {
 } from 'react-native';
 
 import {getCodeFont} from 'app/utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 export default class TextPreview extends React.PureComponent {
     static propTypes = {
@@ -22,9 +27,9 @@ export default class TextPreview extends React.PureComponent {
         content: PropTypes.string.isRequired,
     };
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 
@@ -58,6 +63,7 @@ export default class TextPreview extends React.PureComponent {
                     multiline={true}
                     value={this.props.content}
                     style={[style.codeText]}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(this.props.theme)}
                 />
             );
         } else {

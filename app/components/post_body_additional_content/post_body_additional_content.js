@@ -9,7 +9,6 @@ import {
     Linking,
     Platform,
     StyleSheet,
-    TouchableOpacity,
     StatusBar,
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
@@ -20,6 +19,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import PostAttachmentImage from 'app/components/post_attachment_image';
 import ProgressiveImage from 'app/components/progressive_image';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
 import {DeviceTypes} from 'app/constants';
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -38,7 +38,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getRedirectLocation: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
@@ -88,19 +87,20 @@ export default class PostBodyAdditionalContent extends PureComponent {
         this.mounted = false;
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.mounted = true;
+
         this.load(this.props);
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.link !== this.props.link) {
+            this.load(this.props);
+        }
     }
 
     componentWillUnmount() {
         this.mounted = false;
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.link !== nextProps.link) {
-            this.load(nextProps);
-        }
     }
 
     isImage = (specificLink) => {
@@ -231,9 +231,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 const thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
 
                 return (
-                    <TouchableOpacity
+                    <TouchableWithFeedback
                         style={[styles.imageContainer, {height: height || MAX_YOUTUBE_IMAGE_HEIGHT}]}
                         onPress={this.playYouTubeVideo}
+                        type={'opacity'}
                     >
                         <ProgressiveImage
                             isBackgroundImage={true}
@@ -243,17 +244,18 @@ export default class PostBodyAdditionalContent extends PureComponent {
                             resizeMode='cover'
                             onError={this.handleLinkLoadError}
                         >
-                            <TouchableOpacity
+                            <TouchableWithFeedback
                                 style={styles.playButton}
                                 onPress={this.playYouTubeVideo}
+                                type={'opacity'}
                             >
                                 <Image
                                     source={require('assets/images/icons/youtube-play-icon.png')}
                                     onPress={this.playYouTubeVideo}
                                 />
-                            </TouchableOpacity>
+                            </TouchableWithFeedback>
                         </ProgressiveImage>
-                    </TouchableOpacity>
+                    </TouchableWithFeedback>
                 );
             }
 
@@ -410,7 +412,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
     handlePreviewImage = (imageRef) => {
         const {shortenedLink} = this.state;
         let {link} = this.props;
-        const {actions} = this.props;
         if (shortenedLink) {
             link = shortenedLink;
         }
@@ -432,7 +433,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             },
         }];
 
-        previewImageAtIndex([imageRef], 0, files, actions.showModalOverCurrentContext);
+        previewImageAtIndex([imageRef], 0, files);
     };
 
     playYouTubeVideo = () => {

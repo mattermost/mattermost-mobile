@@ -9,8 +9,12 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import TeamIcon from './team_icon';
 
 function mapStateToProps(state, ownProps) {
+    const team = getTeam(state, ownProps.teamId);
+    const lastIconUpdate = team.last_team_icon_update;
+
     return {
-        team: getTeam(state, ownProps.teamId),
+        displayName: team.display_name,
+        lastIconUpdate,
         theme: getTheme(state),
     };
 }

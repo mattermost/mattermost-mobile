@@ -37,23 +37,23 @@ export default class ProgressiveImage extends PureComponent {
         this.subscribedToCache = true;
 
         this.state = {
-            intensity: null,
+            intensity: new Animated.Value(80),
             thumb: null,
             uri: null,
         };
     }
 
-    componentWillMount() {
-        const intensity = new Animated.Value(80);
-        this.setState({intensity});
-        this.load(this.props);
-    }
-
-    componentWillReceiveProps(props) {
-        this.load(props);
+    componentDidMount() {
+        this.load();
     }
 
     componentDidUpdate(prevProps, prevState) {
+        if (this.props.filename !== prevProps.filename ||
+            this.props.imageUri !== prevProps.imageUri ||
+            this.props.thumbnailUri !== prevProps.thumbnailUri) {
+            this.load();
+        }
+
         const {intensity, thumb, uri} = this.state;
         if (uri && thumb && uri !== thumb && prevState.uri !== uri) {
             Animated.timing(intensity, {
@@ -68,12 +68,8 @@ export default class ProgressiveImage extends PureComponent {
         this.subscribedToCache = false;
     }
 
-    load = (props) => {
-        const {filename, imageUri, style, thumbnailUri} = props;
-        this.computedStyle = StyleSheet.absoluteFill;
-        if (Object.keys(style).length) {
-            this.style = Object.assign({}, StyleSheet.absoluteFill, style);
-        }
+    load = () => {
+        const {filename, imageUri, thumbnailUri} = this.props;
 
         if (thumbnailUri) {
             ImageCacheManager.cache(filename, thumbnailUri, this.setThumbnail);
@@ -143,7 +139,7 @@ export default class ProgressiveImage extends PureComponent {
                     resizeMethod={resizeMethod}
                     onError={onError}
                     source={defaultSource}
-                    style={this.computedStyle}
+                    style={StyleSheet.absoluteFill}
                 >
                     {this.props.children}
                 </DefaultComponent>
@@ -151,7 +147,7 @@ export default class ProgressiveImage extends PureComponent {
         }
 
         return (
-            <View {...{style}}>
+            <View style={style}>
                 {(hasDefaultSource && !hasPreview && !hasURI) && defaultImage}
                 {hasPreview && !isImageReady &&
                 <ImageComponent
@@ -159,7 +155,7 @@ export default class ProgressiveImage extends PureComponent {
                     resizeMethod={resizeMethod}
                     onError={onError}
                     source={{uri: thumb}}
-                    style={this.computedStyle}
+                    style={StyleSheet.absoluteFill}
                     blurRadius={5}
                 >
                     {this.props.children}
@@ -171,13 +167,13 @@ export default class ProgressiveImage extends PureComponent {
                     resizeMethod={resizeMethod}
                     onError={onError}
                     source={{uri}}
-                    style={this.computedStyle}
+                    style={[StyleSheet.absoluteFill, styles.attachmentMargin]}
                 >
                     {this.props.children}
                 </ImageComponent>
                 }
                 {hasPreview &&
-                <Animated.View style={[this.computedStyle, {backgroundColor: theme.centerChannelBg, opacity}]}/>
+                <Animated.View style={[StyleSheet.absoluteFill, {backgroundColor: theme.centerChannelBg, opacity}]}/>
                 }
             </View>
         );
@@ -192,5 +188,11 @@ const styles = StyleSheet.create({
         width: 80,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    attachmentMargin: {
+        marginTop: 2.5,
+        marginLeft: 2.5,
+        marginBottom: 5,
+        marginRight: 5,
     },
 });

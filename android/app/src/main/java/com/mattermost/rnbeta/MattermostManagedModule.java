@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.NativeModule;
@@ -69,7 +70,10 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
     @ReactMethod
     // Close the current activity and open the security settings.
     public void goToSecuritySettings() {
-        getReactApplicationContext().startActivity(new Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS));
+        Intent intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getReactApplicationContext().startActivity(intent);
+
         getCurrentActivity().finish();
         System.exit(0);
     }

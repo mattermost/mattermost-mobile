@@ -5,12 +5,12 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    TouchableOpacity,
     View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import FormattedText from 'app/components/formatted_text';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class PostListRetry extends PureComponent {
@@ -25,9 +25,10 @@ export default class PostListRetry extends PureComponent {
 
         return (
             <View style={style.container}>
-                <TouchableOpacity
+                <TouchableWithFeedback
                     onPress={retry}
                     style={style.buttonContainer}
+                    type={'opacity'}
                 >
                     <View style={style.buttonWrapper}>
                         <Icon
@@ -41,7 +42,7 @@ export default class PostListRetry extends PureComponent {
                         defaultMessage='Refresh'
                         style={style.text}
                     />
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             </View>
         );
     }

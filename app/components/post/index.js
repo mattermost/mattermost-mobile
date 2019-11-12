@@ -12,8 +12,8 @@ import {getUser, getCurrentUserId} from 'mattermost-redux/selectors/entities/use
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
-import {goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
+import {isLandscape} from 'app/selectors/device';
 
 import Post from './post';
 
@@ -41,6 +41,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         const post = ownProps.post || getPost(state, ownProps.postId);
         const previousPost = getPost(state, ownProps.previousPostId);
+        const beforePrevPost = getPost(state, ownProps.beforePrevPostId);
 
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
@@ -83,6 +84,9 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             isFlagged: isPostFlagged(post.id, myPreferences),
             isCommentMention,
+            isLandscape: isLandscape(state),
+            previousPostExists: Boolean(previousPost),
+            beforePrevPostUserId: (beforePrevPost ? beforePrevPost.user_id : null),
         };
     };
 }
@@ -94,8 +98,6 @@ function mapDispatchToProps(dispatch) {
             removePost,
             setPostTooltipVisible,
             insertToDraft,
-            goToScreen,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

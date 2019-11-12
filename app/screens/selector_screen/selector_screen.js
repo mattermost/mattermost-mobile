@@ -24,8 +24,16 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {ViewTypes} from 'app/constants';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {popTopScreen} from 'app/actions/navigation';
+
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class SelectorScreen extends PureComponent {
     static propTypes = {
@@ -34,7 +42,6 @@ export default class SelectorScreen extends PureComponent {
             getChannels: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
@@ -42,6 +49,7 @@ export default class SelectorScreen extends PureComponent {
         dataSource: PropTypes.string,
         onSelect: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -88,12 +96,16 @@ export default class SelectorScreen extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     clearSearch = () => {
         this.setState({term: '', searchResults: []});
     };
 
     close = () => {
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     handleSelectItem = (id, item) => {
@@ -288,7 +300,7 @@ export default class SelectorScreen extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme, dataSource} = this.props;
+        const {theme, dataSource, isLandscape} = this.props;
         const {loading, term} = this.state;
         const style = getStyleFromTheme(theme);
 
@@ -317,9 +329,9 @@ export default class SelectorScreen extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={style.searchBar}>
+                <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
-                        ref='search_bar'
+                        ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
@@ -333,6 +345,7 @@ export default class SelectorScreen extends PureComponent {
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.clearSearch}
                         autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
                     />
                 </View>
@@ -347,6 +360,7 @@ export default class SelectorScreen extends PureComponent {
                     onRowPress={this.handleSelectItem}
                     renderItem={rowComponent}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
             </View>
         );

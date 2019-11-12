@@ -10,7 +10,7 @@ import {
     View,
 } from 'react-native';
 import IconFont from 'react-native-vector-icons/FontAwesome';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
 
@@ -23,6 +23,7 @@ export default class OptionsModalList extends PureComponent {
             PropTypes.string,
             PropTypes.object,
         ]),
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -119,7 +120,7 @@ export default class OptionsModalList extends PureComponent {
 
     render() {
         return (
-            <View style={style.wrapper}>
+            <View style={[style.wrapper, padding(this.props.isLandscape)]}>
                 <View style={style.optionContainer}>
                     {this.renderOptions()}
                 </View>

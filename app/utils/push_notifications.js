@@ -16,6 +16,7 @@ import {
     loadFromPushNotification,
 } from 'app/actions/views/root';
 import {dismissAllModals, popToRoot} from 'app/actions/navigation';
+
 import {ViewTypes} from 'app/constants';
 import {getLocalizedMessage} from 'app/i18n';
 import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
@@ -34,6 +35,7 @@ class PushNotificationUtils {
         this.store = store;
 
         PushNotifications.configure({
+            reduxStore: store,
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
             onReply: this.onPushNotificationReply,
@@ -43,15 +45,18 @@ class PushNotificationUtils {
     };
 
     loadFromNotification = async (notification) => {
+        // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
+        EphemeralStore.appStartedFromPushNotification = true;
         await this.store.dispatch(loadFromPushNotification(notification, true));
 
-        if (!EphemeralStore.appStartedFromPushNotification) {
+        // if we have a componentId means that the app is already initialized
+        const componentId = EphemeralStore.getNavigationTopComponentId();
+        if (componentId) {
             EventEmitter.emit('close_channel_drawer');
             EventEmitter.emit('close_settings_sidebar');
 
-            const {dispatch} = this.store;
-            dispatch(dismissAllModals());
-            dispatch(popToRoot());
+            await dismissAllModals();
+            await popToRoot();
 
             PushNotifications.resetNotification();
         }
@@ -62,15 +67,11 @@ class PushNotificationUtils {
         let unsubscribeFromStore = null;
         let stopLoadingNotification = false;
 
-        const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
+        const {data, foreground, message, userInteraction} = deviceNotification;
         const notification = {
             data,
             message,
         };
-
-        if (userInfo) {
-            notification.localNotification = userInfo.localNotification;
-        }
 
         if (data.type === 'clear') {
             dispatch(markChannelViewedAndRead(data.channel_id, null, false));
@@ -80,7 +81,7 @@ class PushNotificationUtils {
 
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
-            } else if (userInteraction && !notification.localNotification) {
+            } else if (userInteraction && !notification?.data?.localNotification) {
                 EventEmitter.emit('close_channel_drawer');
                 if (getState().views.root.hydrationComplete) { //TODO: Replace when realm is ready
                     setTimeout(() => {
@@ -101,7 +102,7 @@ class PushNotificationUtils {
         }
     };
 
-    onPushNotificationReply = async (data, text, badge, completed) => {
+    onPushNotificationReply = async (data, text, completion) => {
         const {dispatch, getState} = this.store;
         const state = getState();
         const credentials = await getAppCredentials(); // TODO Change to handle multiple servers
@@ -143,23 +144,21 @@ class PushNotificationUtils {
                         channel_id: data.channel_id,
                     },
                 });
-                completed();
+                completion();
                 return;
             }
 
-            if (badge >= 0) {
-                PushNotifications.setApplicationIconBadgeNumber(badge);
-            }
-
-            dispatch(markChannelViewedAndRead(data.channel_id));
             this.replyNotificationData = null;
-            completed();
+
+            PushNotifications.getDeliveredNotifications((notifications) => {
+                PushNotifications.setApplicationIconBadgeNumber(notifications.length);
+                completion();
+            });
         } else {
             this.replyNotificationData = {
                 data,
                 text,
-                badge,
-                completed,
+                completion,
             };
         }
     };
@@ -190,11 +189,11 @@ class PushNotificationUtils {
         };
 
         unsubscribeFromStore = this.store.subscribe(waitForHydration);
-    }
+    };
 
     getNotification = () => {
         return PushNotifications.getNotification();
-    }
+    };
 }
 
 export default new PushNotificationUtils();

@@ -10,7 +10,6 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
-import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import ChannelMentionItem from 'app/components/autocomplete/channel_mention_item';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -39,6 +38,8 @@ export default class ChannelMention extends PureComponent {
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
         serverVersion: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
+        nestedScrollEnabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -195,6 +196,7 @@ export default class ChannelMention extends PureComponent {
                 defaultMessage={section.defaultMessage}
                 loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
+                isLandscape={this.props.isLandscape}
             />
         );
     };
@@ -209,7 +211,7 @@ export default class ChannelMention extends PureComponent {
     };
 
     render() {
-        const {maxListHeight, theme} = this.props;
+        const {maxListHeight, theme, nestedScrollEnabled} = this.props;
         const {mentionComplete, sections} = this.state;
 
         if (sections.length === 0 || mentionComplete) {
@@ -228,8 +230,8 @@ export default class ChannelMention extends PureComponent {
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
-                ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
+                nestedScrollEnabled={nestedScrollEnabled}
             />
         );
     }

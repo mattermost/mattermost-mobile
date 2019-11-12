@@ -7,29 +7,31 @@ import {
     Platform,
     TouchableWithoutFeedback,
     View,
-    Text,
     findNodeHandle,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {General} from 'mattermost-redux/constants';
 
+import Autocomplete from 'app/components/autocomplete';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getShortenedURL} from 'app/utils/url';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
+
 import {t} from 'app/utils/i18n';
+import {popTopScreen, dismissModal} from 'app/actions/navigation';
 
 export default class EditChannelInfo extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            dismissModal: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
-        }),
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -51,6 +53,7 @@ export default class EditChannelInfo extends PureComponent {
         oldChannelURL: PropTypes.string,
         oldHeader: PropTypes.string,
         oldPurpose: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -91,11 +94,10 @@ export default class EditChannelInfo extends PureComponent {
     };
 
     close = (goBack = false) => {
-        const {actions} = this.props;
         if (goBack) {
-            actions.popTopScreen();
+            popTopScreen();
         } else {
-            actions.dismissModal();
+            dismissModal();
         }
     };
 
@@ -130,17 +132,6 @@ export default class EditChannelInfo extends PureComponent {
         this.props.enableRightButton(displayNameExists);
     };
 
-    onDisplayURLChangeText = (channelURL) => {
-        const {editing, onChannelURLChange} = this.props;
-        onChannelURLChange(channelURL);
-
-        if (editing) {
-            const {displayName, purpose, header} = this.props;
-            const canUpdate = this.canUpdate(displayName, channelURL, purpose, header);
-            this.enableRightButton(canUpdate);
-        }
-    };
-
     onPurposeChangeText = (purpose) => {
         const {editing, onPurposeChange} = this.props;
         onPurposeChange(purpose);
@@ -172,19 +163,15 @@ export default class EditChannelInfo extends PureComponent {
     render() {
         const {
             theme,
-            editing,
             channelType,
-            currentTeamUrl,
             deviceWidth,
             deviceHeight,
             displayName,
-            channelURL,
             header,
             purpose,
+            isLandscape,
         } = this.props;
         const {error, saving} = this.props;
-        const fullUrl = currentTeamUrl + '/channels';
-        const shortUrl = getShortenedURL(fullUrl, 35);
 
         const style = getStyleSheet(theme);
 
@@ -204,7 +191,7 @@ export default class EditChannelInfo extends PureComponent {
         if (error) {
             displayError = (
                 <View style={[style.errorContainer, {width: deviceWidth}]}>
-                    <View style={style.errorWrapper}>
+                    <View style={[style.errorWrapper, padding(isLandscape)]}>
                         <ErrorText error={error}/>
                     </View>
                 </View>
@@ -212,11 +199,12 @@ export default class EditChannelInfo extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <React.Fragment>
                 <StatusBar/>
                 <KeyboardAwareScrollView
                     ref={this.scroll}
                     style={style.container}
+                    keyboardShouldPersistTaps={'always'}
                 >
                     {displayError}
                     <TouchableWithoutFeedback onPress={this.blur}>
@@ -225,12 +213,12 @@ export default class EditChannelInfo extends PureComponent {
                                 <View>
                                     <View>
                                         <FormattedText
-                                            style={style.title}
+                                            style={[style.title, padding(isLandscape)]}
                                             id='channel_modal.name'
                                             defaultMessage='Name'
                                         />
                                     </View>
-                                    <View style={style.inputContainer}>
+                                    <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
                                             ref={this.nameInput}
                                             value={displayName}
@@ -239,45 +227,18 @@ export default class EditChannelInfo extends PureComponent {
                                             autoCapitalize='none'
                                             autoCorrect={false}
                                             placeholder={{id: t('channel_modal.nameEx'), defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'}}
-                                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
-                                        />
-                                    </View>
-                                </View>
-                            )}
-                            {/*TODO: Hide channel url field until it's added to CreateChannel */}
-                            {false && editing && !displayHeaderOnly && (
-                                <View>
-                                    <View style={style.titleContainer30}>
-                                        <FormattedText
-                                            style={style.title}
-                                            id='rename_channel.url'
-                                            defaultMessage='URL'
-                                        />
-                                        <Text style={style.optional}>
-                                            {shortUrl}
-                                        </Text>
-                                    </View>
-                                    <View style={style.inputContainer}>
-                                        <TextInputWithLocalizedPlaceholder
-                                            ref={this.urlInput}
-                                            value={channelURL}
-                                            onChangeText={this.onDisplayURLChangeText}
-                                            style={style.input}
-                                            autoCapitalize='none'
-                                            autoCorrect={false}
-                                            placeholder={{id: t('rename_channel.handleHolder'), defaultMessage: 'lowercase alphanumeric characters'}}
-                                            placeholderTextColor={changeOpacity('#000', 0.5)}
-                                            underlineColorAndroid='transparent'
-                                            disableFullscreenUI={true}
+                                            maxLength={64}
+                                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         />
                                     </View>
                                 </View>
                             )}
                             {!displayHeaderOnly && (
                                 <View>
-                                    <View style={style.titleContainer30}>
+                                    <View style={[style.titleContainer30, padding(isLandscape)]}>
                                         <FormattedText
                                             style={style.title}
                                             id='channel_modal.purpose'
@@ -289,7 +250,7 @@ export default class EditChannelInfo extends PureComponent {
                                             defaultMessage='(optional)'
                                         />
                                     </View>
-                                    <View style={style.inputContainer}>
+                                    <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
                                             ref={this.purposeInput}
                                             value={purpose}
@@ -298,24 +259,25 @@ export default class EditChannelInfo extends PureComponent {
                                             autoCapitalize='none'
                                             autoCorrect={false}
                                             placeholder={{id: t('channel_modal.purposeEx'), defaultMessage: 'E.g.: "A channel to file bugs and improvements"'}}
-                                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                             multiline={true}
                                             blurOnSubmit={false}
                                             textAlignVertical='top'
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
+                                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         />
                                     </View>
                                     <View>
                                         <FormattedText
-                                            style={style.helpText}
+                                            style={[style.helpText, padding(isLandscape)]}
                                             id='channel_modal.descriptionHelp'
                                             defaultMessage='Describe how this channel should be used.'
                                         />
                                     </View>
                                 </View>
                             )}
-                            <View style={style.titleContainer15}>
+                            <View style={[style.titleContainer15, padding(isLandscape)]}>
                                 <FormattedText
                                     style={style.title}
                                     id='channel_modal.header'
@@ -327,7 +289,14 @@ export default class EditChannelInfo extends PureComponent {
                                     defaultMessage='(optional)'
                                 />
                             </View>
-                            <View style={style.inputContainer}>
+                            <Autocomplete
+                                cursorPosition={header.length}
+                                maxHeight={200}
+                                onChangeText={this.onHeaderChangeText}
+                                value={header}
+                                nestedScrollEnabled={true}
+                            />
+                            <View style={[style.inputContainer, padding(isLandscape)]}>
                                 <TextInputWithLocalizedPlaceholder
                                     ref={this.headerInput}
                                     value={header}
@@ -336,18 +305,19 @@ export default class EditChannelInfo extends PureComponent {
                                     autoCapitalize='none'
                                     autoCorrect={false}
                                     placeholder={{id: t('channel_modal.headerEx'), defaultMessage: 'E.g.: "[Link Title](http://example.com)"'}}
-                                    placeholderTextColor={changeOpacity('#000', 0.5)}
+                                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                     multiline={true}
                                     blurOnSubmit={false}
                                     onFocus={this.scrollToEnd}
                                     textAlignVertical='top'
                                     underlineColorAndroid='transparent'
                                     disableFullscreenUI={true}
+                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                 />
                             </View>
                             <View ref={this.lastText}>
                                 <FormattedText
-                                    style={style.helpText}
+                                    style={[style.helpText, padding(isLandscape)]}
                                     id='channel_modal.headerHelp'
                                     defaultMessage={'Set text that will appear in the header of the channel beside the channel name. For example, include frequently used links by typing [Link Title](http://example.com).'}
                                 />
@@ -355,7 +325,7 @@ export default class EditChannelInfo extends PureComponent {
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAwareScrollView>
-            </View>
+            </React.Fragment>
         );
     }
 }
@@ -368,11 +338,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            paddingTop: 10,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
+            paddingTop: 30,
         },
         errorContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         errorWrapper: {
             justifyContent: 'center',
@@ -380,10 +350,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         inputContainer: {
             marginTop: 10,
-            backgroundColor: '#fff',
+            backgroundColor: theme.centerChannelBg,
         },
         input: {
-            color: '#333',
+            color: theme.centerChannelColor,
             fontSize: 14,
             height: 40,
             paddingHorizontal: 15,

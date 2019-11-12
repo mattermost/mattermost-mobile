@@ -16,6 +16,7 @@ import AttachmentPreText from './attachment_pretext';
 import AttachmentText from './attachment_text';
 import AttachmentThumbnail from './attachment_thumbnail';
 import AttachmentTitle from './attachment_title';
+import AttachmentFooter from './attachment_footer';
 
 const STATUS_COLORS = {
     good: '#00c100',
@@ -102,6 +103,11 @@ export default class MessageAttachment extends PureComponent {
                         metadata={metadata}
                         onPermalinkPress={onPermalinkPress}
                         textStyles={textStyles}
+                        theme={theme}
+                    />
+                    <AttachmentFooter
+                        icon={attachment.footer_icon}
+                        text={attachment.footer}
                         theme={theme}
                     />
                     <AttachmentActions

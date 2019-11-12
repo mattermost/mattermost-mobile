@@ -6,9 +6,10 @@ import {shallow} from 'enzyme';
 import {
     TouchableOpacity,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import Preferences from 'mattermost-redux/constants/preferences';
+
+import * as NavigationActions from 'app/actions/navigation';
 
 import ImagePreview from './image_preview';
 
@@ -19,13 +20,6 @@ jest.mock('react-native-doc-viewer', () => {
         OpenFile: jest.fn(),
     };
 });
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        mergeOptions: jest.fn(),
-    },
-}));
-
-Navigation.mergeOptions = jest.fn();
 
 describe('ImagePreview', () => {
     const baseProps = {
@@ -42,10 +36,6 @@ describe('ImagePreview', () => {
         target: {},
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
-        actions: {
-            dismissModal: jest.fn(),
-            showModalOverCurrentContext: jest.fn(),
-        },
     };
 
     test('should match snapshot', () => {
@@ -67,6 +57,21 @@ describe('ImagePreview', () => {
         expect(wrapper.instance().renderDownloadButton()).toMatchSnapshot();
     });
 
+    test('should match snapshot and not renderDownloadButton for local files', () => {
+        const props = {
+            ...baseProps,
+            files: [{caption: 'Caption 1', source: 'source', data: {localPath: 'path'}}],
+        };
+
+        const wrapper = shallow(
+            <ImagePreview {...props}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper.instance().renderDownloadButton()).toMatchSnapshot();
+        expect(wrapper.instance().renderDownloadButton()).toBeNull();
+    });
+
     test('should match state on handleChangeImage', () => {
         const wrapper = shallow(
             <ImagePreview {...baseProps}/>,
@@ -79,7 +84,9 @@ describe('ImagePreview', () => {
         expect(wrapper.state('index')).toEqual(1);
     });
 
-    test('should match call getItemMeasures & Navigation.mergeOptions on close', () => {
+    test('should match call getItemMeasures & mergeNavigationOptions on close', () => {
+        const mergeNavigationOptions = jest.spyOn(NavigationActions, 'mergeNavigationOptions');
+
         const getItemMeasures = jest.fn();
         const wrapper = shallow(
             <ImagePreview
@@ -91,8 +98,8 @@ describe('ImagePreview', () => {
 
         wrapper.instance().close();
 
-        expect(Navigation.mergeOptions).toHaveBeenCalledTimes(2);
-        expect(Navigation.mergeOptions).toHaveBeenCalledWith(
+        expect(mergeNavigationOptions).toHaveBeenCalledTimes(2);
+        expect(mergeNavigationOptions).toHaveBeenCalledWith(
             baseProps.componentId,
             {
                 layout: {

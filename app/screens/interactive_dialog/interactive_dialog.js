@@ -3,29 +3,32 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View} from 'react-native';
+import {Dimensions, ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
+import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar';
 import FormattedText from 'app/components/formatted_text';
 
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {dismissModal} from 'app/actions/navigation';
+
 import DialogElement from './dialog_element.js';
+import DialogIntroductionText from './dialog_introduction_text.js';
 
 export default class InteractiveDialog extends PureComponent {
     static propTypes = {
         url: PropTypes.string.isRequired,
         callbackId: PropTypes.string,
-        elements: PropTypes.arrayOf(PropTypes.object).isRequired,
+        introductionText: PropTypes.string,
+        elements: PropTypes.arrayOf(PropTypes.object),
         notifyOnCancel: PropTypes.bool,
         state: PropTypes.string,
         theme: PropTypes.object,
         actions: PropTypes.shape({
             submitInteractiveDialog: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -38,19 +41,39 @@ export default class InteractiveDialog extends PureComponent {
         super(props);
 
         const values = {};
-        props.elements.forEach((e) => {
-            values[e.name] = e.default || null;
-        });
+        if (props.elements != null) {
+            props.elements.forEach((e) => {
+                values[e.name] = e.default || null;
+            });
+        }
 
         this.state = {
             values,
+            error: null,
             errors: {},
+            isLandscape: this.isLandscape(),
             submitting: false,
         };
+
+        this.scrollView = React.createRef();
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
+        Dimensions.addEventListener('change', this.orientationDidChange);
+    }
+
+    componentWillUnmount() {
+        Dimensions.removeEventListener('change', this.orientationDidChange);
+    }
+
+    orientationDidChange = () => {
+        this.setState({isLandscape: this.isLandscape()});
+    }
+
+    isLandscape = () => {
+        const {height, width} = Dimensions.get('window');
+        return width > height;
     }
 
     navigationButtonPressed({buttonId}) {
@@ -69,18 +92,21 @@ export default class InteractiveDialog extends PureComponent {
         const {elements} = this.props;
         const values = this.state.values;
         const errors = {};
-        elements.forEach((elem) => {
-            const error = checkDialogElementForError(elem, values[elem.name]);
-            if (error) {
-                errors[elem.name] = (
-                    <FormattedText
-                        id={error.id}
-                        defaultMessage={error.defaultMessage}
-                        values={error.values}
-                    />
-                );
-            }
-        });
+
+        if (elements) {
+            elements.forEach((elem) => {
+                const error = checkDialogElementForError(elem, values[elem.name]);
+                if (error) {
+                    errors[elem.name] = (
+                        <FormattedText
+                            id={error.id}
+                            defaultMessage={error.defaultMessage}
+                            values={error.values}
+                        />
+                    );
+                }
+            });
+        }
 
         this.setState({errors});
 
@@ -101,17 +127,29 @@ export default class InteractiveDialog extends PureComponent {
 
         this.submitted = true;
 
-        if (!data || !data.errors || Object.keys(data.errors).length === 0) {
+        let hasErrors = false;
+
+        if (data) {
+            if (data.errors &&
+                Object.keys(data.errors).length >= 0 &&
+                checkIfErrorsMatchElements(data.errors, elements)
+            ) {
+                hasErrors = true;
+                this.setState({errors: data.errors});
+            }
+
+            if (data.error) {
+                hasErrors = true;
+                this.setState({error: data.error});
+                if (this.scrollView?.current) {
+                    this.scrollView.current.scrollTo({x: 0, y: 0});
+                }
+            }
+        }
+
+        if (!hasErrors) {
             this.handleHide();
-            return;
         }
-
-        if (checkIfErrorsMatchElements(data.errors, elements)) {
-            this.setState({errors: data.errors});
-            return;
-        }
-
-        this.handleHide();
     }
 
     notifyOnCancelIfNeeded = () => {
@@ -136,7 +174,7 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     handleHide = () => {
-        this.props.actions.dismissModal();
+        dismissModal();
     }
 
     onChange = (name, value) => {
@@ -145,14 +183,31 @@ export default class InteractiveDialog extends PureComponent {
     }
 
     render() {
-        const {elements, theme} = this.props;
+        const {introductionText, elements, theme} = this.props;
+        const {error, errors, isLandscape, values} = this.state;
         const style = getStyleFromTheme(theme);
 
         return (
             <View style={style.container}>
-                <ScrollView style={style.scrollView}>
+                <ScrollView
+                    ref={this.scrollView}
+                    style={style.scrollView}
+                >
                     <StatusBar/>
-                    {elements.map((e) => {
+                    {error && (
+                        <ErrorText
+                            textStyle={style.errorContainer}
+                            error={error}
+                        />
+                    )}
+                    {Boolean(introductionText) &&
+                        <DialogIntroductionText
+                            value={introductionText}
+                            theme={theme}
+                            isLandscape={isLandscape}
+                        />
+                    }
+                    {elements && elements.map((e) => {
                         return (
                             <DialogElement
                                 key={'dialogelement' + e.name}
@@ -161,16 +216,17 @@ export default class InteractiveDialog extends PureComponent {
                                 type={e.type}
                                 subtype={e.subtype}
                                 helpText={e.help_text}
-                                errorText={this.state.errors[e.name]}
+                                errorText={errors[e.name]}
                                 placeholder={e.placeholder}
                                 minLength={e.min_length}
                                 maxLength={e.max_length}
                                 dataSource={e.data_source}
                                 optional={e.optional}
                                 options={e.options}
-                                value={this.state.values[e.name]}
+                                value={values[e.name]}
                                 onChange={this.onChange}
                                 theme={theme}
+                                isLandscape={isLandscape}
                             />
                         );
                     })}
@@ -184,6 +240,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+        },
+        errorContainer: {
+            marginTop: 15,
+            marginLeft: 15,
+            fontSize: 14,
+            fontWeight: 'bold',
         },
         scrollView: {
             marginBottom: 20,

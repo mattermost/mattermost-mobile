@@ -9,6 +9,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import AtMentionItem from './at_mention_item';
 
+import {isLandscape} from 'app/selectors/device';
 import {isGuest} from 'app/utils/users';
 
 function mapStateToProps(state, ownProps) {
@@ -21,6 +22,7 @@ function mapStateToProps(state, ownProps) {
         isBot: Boolean(user.is_bot),
         isGuest: isGuest(user),
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
@@ -20,8 +19,7 @@ import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selecto
 import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
 import Permissions from 'mattermost-redux/constants/permissions';
 
-import {showModal} from 'app/actions/navigation';
-
+import {isLandscape} from 'app/selectors/device';
 import {DeviceTypes, ViewTypes} from 'app/constants';
 
 import List from './list';
@@ -62,30 +60,18 @@ function mapStateToProps(state) {
             permission: Permissions.JOIN_PUBLIC_CHANNELS,
         });
     }
+    const canCreatePublicChannels = showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin, isSystemAdmin);
+    const canCreatePrivateChannels = showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin, isSystemAdmin);
 
     return {
         canJoinPublicChannels,
-        canCreatePrivateChannels: showCreateOption(
-            state,
-            config,
-            license,
-            currentTeamId,
-            General.PRIVATE_CHANNEL,
-            isAdmin,
-            isSystemAdmin
-        ),
+        canCreatePrivateChannels,
+        canCreatePublicChannels,
         favoriteChannelIds,
         theme: getTheme(state),
         unreadChannelIds,
         orderedChannelIds,
-    };
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            showModal,
-        }, dispatch),
+        isLandscape: isLandscape(state),
     };
 }
 
@@ -99,4 +85,4 @@ function areStatesEqual(next, prev) {
     return equalChannels && equalConfig && equalRoles && equalUsers && equalFav;
 }
 
-export default connect(mapStateToProps, mapDispatchToProps, null, {pure: true, areStatesEqual})(List);
+export default connect(mapStateToProps, null, null, {pure: true, areStatesEqual})(List);

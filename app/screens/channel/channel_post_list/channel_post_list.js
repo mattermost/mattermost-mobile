@@ -6,7 +6,6 @@ import React, {PureComponent} from 'react';
 import {
     Keyboard,
     Platform,
-    StyleSheet,
     View,
 } from 'react-native';
 
@@ -18,7 +17,9 @@ import PostList from 'app/components/post_list';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import telemetry from 'app/telemetry';
+import {goToScreen} from 'app/actions/navigation';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -32,7 +33,7 @@ export default class ChannelPostList extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
+            setChannelRefreshing: PropTypes.func,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelRefreshingFailed: PropTypes.bool,
@@ -119,7 +120,7 @@ export default class ChannelPostList extends PureComponent {
         };
 
         requestAnimationFrame(() => {
-            actions.goToScreen(screen, title, passProps);
+            goToScreen(screen, title, passProps);
         });
     };
 
@@ -216,8 +217,11 @@ export default class ChannelPostList extends PureComponent {
             );
         }
 
+        const style = getStyleSheet(theme);
+
         return (
             <View style={style.container}>
+                <View style={style.separator}/>
                 {component}
                 <AnnouncementBanner/>
                 <RetryBarIndicator/>
@@ -226,8 +230,12 @@ export default class ChannelPostList extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
     },
-});
+    separator: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+        height: 1,
+    },
+}));

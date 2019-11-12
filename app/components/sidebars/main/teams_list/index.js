@@ -4,14 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentTeamId, getMySortedTeamIds, getJoinableTeamIds} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {showModal} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
 import {getCurrentLocale} from 'app/selectors/i18n';
-import {removeProtocol} from 'app/utils/url';
 
 import TeamsList from './teams_list';
 
@@ -20,7 +17,6 @@ function mapStateToProps(state) {
 
     return {
         currentTeamId: getCurrentTeamId(state),
-        currentUrl: removeProtocol(getCurrentUrl(state)),
         hasOtherJoinableTeams: getJoinableTeamIds(state).length > 0,
         teamIds: getMySortedTeamIds(state, locale),
         theme: getTheme(state),
@@ -31,7 +27,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             handleTeamChange,
-            showModal,
         }, dispatch),
     };
 }

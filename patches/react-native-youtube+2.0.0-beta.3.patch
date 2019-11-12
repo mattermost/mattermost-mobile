@@ -1,0 +1,35 @@
+diff --git a/node_modules/react-native-youtube/RCTYouTubeStandalone.m b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
+index fabd291..9158a6a 100644
+--- a/node_modules/react-native-youtube/RCTYouTubeStandalone.m
++++ b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
+@@ -14,6 +14,7 @@ @implementation RCTYouTubeStandalone {
+ 
+ RCT_REMAP_METHOD(playVideo,
+                  playVideoWithResolver:(NSString*)videoId
++                 startTime:(NSNumber* _Nonnull)startTime
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+ {
+@@ -38,10 +39,19 @@ @implementation RCTYouTubeStandalone {
+                         streamURLs[@(XCDYouTubeVideoQualitySmall240)
+                     ];
+ 
+-                    weakPlayerViewController.player = [AVPlayer playerWithURL:streamURL];
+-                    [weakPlayerViewController.player play];
++                    @try {
++                        CMTime initialPlaybackTime = CMTimeMakeWithSeconds([startTime doubleValue], 1);
+ 
+-                    resolve(@"YouTubeStandaloneIOS player launched successfully");
++                        weakPlayerViewController.player = [AVPlayer playerWithURL:streamURL];
++                        [weakPlayerViewController.player seekToTime:initialPlaybackTime completionHandler: ^(BOOL finished) {
++                            [weakPlayerViewController.player play];
++                            resolve(@"YouTubeStandaloneIOS player launched successfully");
++                        }];
++                    }
++                    @catch (NSException *ex) {
++                        reject(@"error", ex.reason, nil);
++                        [root dismissViewControllerAnimated:YES completion:nil];
++                    }
+                 } else {
+                     reject(@"error", error.localizedDescription, nil);
+                     [root dismissViewControllerAnimated:YES completion:nil];

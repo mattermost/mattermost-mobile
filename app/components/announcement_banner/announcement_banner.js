@@ -13,20 +13,20 @@ import {intlShape} from 'react-intl';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import RemoveMarkdown from 'app/components/remove_markdown';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {goToScreen} from 'app/actions/navigation';
 
 const {View: AnimatedView} = Animated;
 
 export default class AnnouncementBanner extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         bannerColor: PropTypes.string,
         bannerDismissed: PropTypes.bool,
         bannerEnabled: PropTypes.bool,
         bannerText: PropTypes.string,
         bannerTextColor: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -37,24 +37,23 @@ export default class AnnouncementBanner extends PureComponent {
         bannerHeight: new Animated.Value(0),
     };
 
-    componentWillMount() {
+    componentDidMount() {
         const {bannerDismissed, bannerEnabled, bannerText} = this.props;
         const showBanner = bannerEnabled && !bannerDismissed && Boolean(bannerText);
         this.toggleBanner(showBanner);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.bannerText !== nextProps.bannerText ||
-            this.props.bannerEnabled !== nextProps.bannerEnabled ||
-            this.props.bannerDismissed !== nextProps.bannerDismissed
+    componentDidUpdate(prevProps) {
+        if (this.props.bannerText !== prevProps.bannerText ||
+            this.props.bannerEnabled !== prevProps.bannerEnabled ||
+            this.props.bannerDismissed !== prevProps.bannerDismissed
         ) {
-            const showBanner = nextProps.bannerEnabled && !nextProps.bannerDismissed && Boolean(nextProps.bannerText);
+            const showBanner = this.props.bannerEnabled && !this.props.bannerDismissed && Boolean(this.props.bannerText);
             this.toggleBanner(showBanner);
         }
     }
 
     handlePress = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
 
         const screen = 'ExpandedAnnouncementBanner';
@@ -63,7 +62,7 @@ export default class AnnouncementBanner extends PureComponent {
             defaultMessage: 'Announcement',
         });
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     };
 
     toggleBanner = (show = true) => {
@@ -84,6 +83,7 @@ export default class AnnouncementBanner extends PureComponent {
             bannerColor,
             bannerText,
             bannerTextColor,
+            isLandscape,
         } = this.props;
 
         const bannerStyle = {
@@ -101,7 +101,7 @@ export default class AnnouncementBanner extends PureComponent {
             >
                 <TouchableOpacity
                     onPress={this.handlePress}
-                    style={style.wrapper}
+                    style={[style.wrapper, padding(isLandscape)]}
                 >
                     <Text
                         ellipsizeMode='tail'

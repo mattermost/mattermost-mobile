@@ -23,9 +23,6 @@ export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
 
 export function initializeSentry() {
     if (!Config.SentryEnabled) {
-        // Still allow Sentry to configure itself in case other code tries to call it
-        Sentry.init({});
-
         return;
     }
 
@@ -33,6 +30,7 @@ export function initializeSentry() {
 
     if (!dsn) {
         console.warn('Sentry is enabled, but not configured on this platform'); // eslint-disable-line no-console
+        return;
     }
 
     Sentry.init({dsn, ...Config.SentryOptions});
@@ -155,17 +153,34 @@ function capture(captureFunc, store) {
 
         // Don't contact Sentry if we're connected to a server with diagnostics disabled. Note that this will
         // still log if we're not connected to any server.
-        if (config.EnableDiagnostics != null && config.EnableDiagnostics !== 'true') {
+        if (config && config.EnableDiagnostics != null && config.EnableDiagnostics !== 'true') {
             return;
         }
 
-        Sentry.setUserContext(getUserContext(state));
-        Sentry.setExtraContext(getExtraContext(state));
-        Sentry.setTagsContext(getBuildTags(state));
+        let hasUserContext = false;
+        const userContext = getUserContext(state);
+        if (Object.keys(userContext).length) {
+            hasUserContext = true;
+            Sentry.setUserContext(userContext);
+        }
 
-        console.warn('Capturing with Sentry at ' + getDsn() + '...'); // eslint-disable-line no-console
+        const extraContext = getExtraContext(state);
+        if (Object.keys(extraContext).length) {
+            Sentry.setExtraContext(extraContext);
+        }
 
-        captureFunc();
+        const buildTags = getBuildTags(state);
+        if (Object.keys(buildTags).length) {
+            Sentry.setTagsContext(buildTags);
+        }
+
+        if (hasUserContext) {
+            console.warn('Capturing with Sentry at ' + getDsn() + '...'); // eslint-disable-line no-console
+
+            captureFunc();
+        } else {
+            console.warn('No user context, skipping capture'); // eslint-disable-line no-console
+        }
     } catch (e) {
         // Don't want this to get into an infinite loop again...
         console.warn('Exception occured while sending to Sentry'); // eslint-disable-line no-console

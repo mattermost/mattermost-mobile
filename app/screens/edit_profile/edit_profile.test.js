@@ -21,9 +21,6 @@ describe('edit_profile', () => {
         updateUser: jest.fn(),
         setProfileImageUri: jest.fn(),
         removeProfileImage: jest.fn(),
-        popTopScreen: jest.fn(),
-        dismissModal: jest.fn(),
-        setButtons: jest.fn(),
     };
 
     const baseProps = {
@@ -43,6 +40,7 @@ describe('edit_profile', () => {
         },
         commandType: 'ShowModal',
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot', async () => {
@@ -69,7 +67,5 @@ describe('edit_profile', () => {
         expect(wrapper.state('profileImageRemove')).toEqual(true);
         expect(instance.emitCanUpdateAccount).toHaveBeenCalledTimes(1);
         expect(instance.emitCanUpdateAccount).toBeCalledWith(true);
-
-        expect(baseProps.actions.dismissModal).toHaveBeenCalledTimes(1);
     });
 });

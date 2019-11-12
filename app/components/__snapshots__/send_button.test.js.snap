@@ -37,8 +37,7 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
 `;
 
 exports[`SendButton should match snapshot 1`] = `
-<TouchableOpacity
-  activeOpacity={0.2}
+<TouchableWithFeedbackIOS
   onPress={[MockFunction]}
   style={
     Object {
@@ -47,6 +46,7 @@ exports[`SendButton should match snapshot 1`] = `
       "paddingVertical": 3,
     }
   }
+  type="opacity"
 >
   <View
     style={
@@ -66,12 +66,11 @@ exports[`SendButton should match snapshot 1`] = `
       width={15}
     />
   </View>
-</TouchableOpacity>
+</TouchableWithFeedbackIOS>
 `;
 
 exports[`SendButton should render theme backgroundColor 1`] = `
-<TouchableOpacity
-  activeOpacity={0.2}
+<TouchableWithFeedbackIOS
   onPress={[MockFunction]}
   style={
     Object {
@@ -80,6 +79,7 @@ exports[`SendButton should render theme backgroundColor 1`] = `
       "paddingVertical": 3,
     }
   }
+  type="opacity"
 >
   <View
     style={
@@ -99,5 +99,5 @@ exports[`SendButton should render theme backgroundColor 1`] = `
       width={15}
     />
   </View>
-</TouchableOpacity>
+</TouchableWithFeedbackIOS>
 `;

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 const VISIBILITY_CONFIG_DEFAULTS = {
-    viewAreaCoveragePercentThreshold: 3,
+    itemVisiblePercentThreshold: 100,
     waitForInteraction: false,
 };
 

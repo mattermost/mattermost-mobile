@@ -10,8 +10,10 @@ export const FADE_DURATION = 100;
 export default class Fade extends PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
+        duration: PropTypes.number,
         style: PropTypes.object,
         visible: PropTypes.bool.isRequired,
+        disableScale: PropTypes.bool,
     };
 
     constructor(props) {
@@ -27,7 +29,7 @@ export default class Fade extends PureComponent {
                 this.state.fadeAnim,
                 {
                     toValue: prevProps.visible ? 0 : 1,
-                    duration: FADE_DURATION,
+                    duration: this.props.duration || FADE_DURATION,
                     useNativeDriver: true,
                 }
             ).start();
@@ -35,6 +37,7 @@ export default class Fade extends PureComponent {
     }
 
     render() {
+        const {disableScale} = this.props;
         const {fadeAnim} = this.state;
 
         return (
@@ -42,8 +45,9 @@ export default class Fade extends PureComponent {
                 style={{
                     ...this.props.style,
                     opacity: fadeAnim,
-                    transform: [{scale: fadeAnim}],
+                    transform: disableScale ? [] : [{scale: fadeAnim}],
                 }}
+                pointerEvents={'box-none'}
             >
                 {this.props.children}
             </Animated.View>

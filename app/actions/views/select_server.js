@@ -16,6 +16,10 @@ export function handleServerUrlChanged(serverUrl) {
     };
 }
 
+export function setServerUrl(serverUrl) {
+    return {type: ViewTypes.SERVER_URL_CHANGED, serverUrl};
+}
+
 export default {
     handleServerUrlChanged,
 };

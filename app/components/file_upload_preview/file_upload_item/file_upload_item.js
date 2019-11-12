@@ -15,6 +15,8 @@ import FileUploadRetry from 'app/components/file_upload_preview/file_upload_retr
 import FileUploadRemove from 'app/components/file_upload_preview/file_upload_remove';
 import mattermostBucket from 'app/mattermost_bucket';
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
+import {emptyFunction} from 'app/utils/general';
+import ImageCacheManager from 'app/utils/image_cache_manager';
 
 export default class FileUploadItem extends PureComponent {
     static propTypes = {
@@ -35,8 +37,9 @@ export default class FileUploadItem extends PureComponent {
     };
 
     componentDidMount() {
-        if (this.props.file.loading) {
-            this.uploadFile();
+        const {file} = this.props;
+        if (file.loading) {
+            this.downloadAndUploadFile(file);
         }
     }
 
@@ -45,7 +48,7 @@ export default class FileUploadItem extends PureComponent {
         const {file: nextFile} = nextProps;
 
         if (file.failed !== nextFile.failed && nextFile.loading) {
-            this.uploadFile();
+            this.downloadAndUploadFile(file);
         }
     }
 
@@ -109,8 +112,22 @@ export default class FileUploadItem extends PureComponent {
         return false;
     };
 
-    uploadFile = async () => {
-        const {channelId, file} = this.props;
+    downloadAndUploadFile = async (file) => {
+        const newFile = {...file};
+        if (newFile.localPath.startsWith('http')) {
+            try {
+                newFile.localPath = await ImageCacheManager.cache(newFile.name, newFile.localPath, emptyFunction);
+            } catch (e) {
+                this.handleUploadError(e);
+                return;
+            }
+        }
+
+        this.uploadFile(newFile);
+    }
+
+    uploadFile = async (file) => {
+        const {channelId} = this.props;
         const fileData = buildFileUploadData(file);
 
         const headers = {

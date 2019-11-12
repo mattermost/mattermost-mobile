@@ -9,6 +9,7 @@ import {getAutocompleteCommands} from 'mattermost-redux/actions/integrations';
 import {getAutocompleteCommandsList} from 'mattermost-redux/selectors/entities/integrations';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {isLandscape} from 'app/selectors/device';
 
 import SlashSuggestion from './slash_suggestion';
 
@@ -31,6 +32,7 @@ function mapStateToProps(state) {
         commandsRequest: state.requests.integrations.getAutocompleteCommands,
         currentTeamId: getCurrentTeamId(state),
         theme: getTheme(state),
+        isLandscape: isLandscape(state),
     };
 }
 

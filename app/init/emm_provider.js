@@ -4,7 +4,7 @@
 import {Alert, Platform} from 'react-native';
 
 import {handleLoginIdChanged} from 'app/actions/views/login';
-import {handleServerUrlChanged} from 'app/actions/views/select_server';
+import {setServerUrl} from 'app/actions/views/select_server';
 import {getTranslations} from 'app/i18n';
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
@@ -81,7 +81,7 @@ class EMMProvider {
             return false;
         }
 
-        this.setPerformingAuthentication(false);
+        this.performingAuthentication = false;
         return true;
     };
 
@@ -93,7 +93,7 @@ class EMMProvider {
         const {dispatch} = store;
 
         if (LocalConfig.AutoSelectServerUrl) {
-            dispatch(handleServerUrlChanged(LocalConfig.DefaultServerUrl));
+            dispatch(setServerUrl(LocalConfig.DefaultServerUrl));
             this.allowOtherServers = false;
         }
 
@@ -122,7 +122,7 @@ class EMMProvider {
             }
 
             if (this.emmServerUrl) {
-                dispatch(handleServerUrlChanged(this.emmServerUrl));
+                dispatch(setServerUrl(this.emmServerUrl));
             }
 
             if (this.emmUsername) {
@@ -134,7 +134,7 @@ class EMMProvider {
     };
 
     showNotSecuredAlert = (translations) => {
-        return new Promise((resolve) => {
+        return new Promise(async (resolve) => { /* eslint-disable-line no-async-promise-executor */
             const options = [];
 
             if (Platform.OS === 'android') {
@@ -152,9 +152,22 @@ class EMMProvider {
                 style: 'cancel',
             });
 
+            let message;
+            if (Platform.OS === 'ios') {
+                const {supportsFaceId} = await mattermostManaged.supportsFaceId();
+
+                if (supportsFaceId) {
+                    message = translations[t('mobile.managed.not_secured.ios')];
+                } else {
+                    message = translations[t('mobile.managed.not_secured.ios.touchId')];
+                }
+            } else {
+                message = translations[t('mobile.managed.not_secured.android')];
+            }
+
             Alert.alert(
                 translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
-                Platform.OS === 'ios' ? translations[t('mobile.managed.not_secured.ios')] : translations[t('mobile.managed.not_secured.android')],
+                message,
                 options,
                 {cancelable: false, onDismiss: resolve},
             );

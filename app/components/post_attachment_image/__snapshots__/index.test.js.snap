@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PostAttachmentImage should match snapshot 1`] = `
-<TouchableWithoutFeedback
+<TouchableWithFeedbackIOS
   onPress={[Function]}
   style={
     Array [
@@ -16,6 +16,7 @@ exports[`PostAttachmentImage should match snapshot 1`] = `
       },
     ]
   }
+  type="none"
 >
   <View>
     <ForwardRef(forwardConnectRef)
@@ -38,5 +39,5 @@ exports[`PostAttachmentImage should match snapshot 1`] = `
       }
     />
   </View>
-</TouchableWithoutFeedback>
+</TouchableWithFeedbackIOS>
 `;

@@ -19,10 +19,9 @@ describe('ChannelMembers', () => {
             getProfilesInChannel: jest.fn().mockImplementation(() => Promise.resolve()),
             handleRemoveChannelMembers: jest.fn(),
             searchProfiles: jest.fn(),
-            setButtons: jest.fn(),
-            popTopScreen: jest.fn(),
         },
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot', () => {

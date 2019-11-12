@@ -13,7 +13,7 @@ import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
 import {General} from 'mattermost-redux/constants';
-
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -27,6 +27,7 @@ export default class ChannelItem extends PureComponent {
         channel: PropTypes.object,
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
+        isArchived: PropTypes.bool,
         isChannelMuted: PropTypes.bool,
         currentUserId: PropTypes.string.isRequired,
         isUnread: PropTypes.bool,
@@ -40,9 +41,11 @@ export default class ChannelItem extends PureComponent {
         isSearchResult: PropTypes.bool,
         isBot: PropTypes.bool.isRequired,
         previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
+        isArchived: false,
         mentions: 0,
     };
 
@@ -88,6 +91,7 @@ export default class ChannelItem extends PureComponent {
             channelId,
             currentChannelId,
             displayName,
+            isArchived,
             isChannelMuted,
             currentUserId,
             isUnread,
@@ -98,9 +102,8 @@ export default class ChannelItem extends PureComponent {
             isSearchResult,
             channel,
             isBot,
+            isLandscape,
         } = this.props;
-
-        const isArchived = channel.delete_at > 0;
 
         // Only ever show an archived channel if it's the currently viewed channel.
         // It should disappear as soon as one navigates to another channel.
@@ -112,7 +115,7 @@ export default class ChannelItem extends PureComponent {
             return null;
         }
 
-        if (!this.props.displayName) {
+        if (!displayName) {
             return null;
         }
 
@@ -131,7 +134,7 @@ export default class ChannelItem extends PureComponent {
         if (isCurrenUser) {
             channelDisplayName = intl.formatMessage({
                 id: 'channel_header.directchannel.you',
-                defaultMessage: '{displayName} (you)',
+                defaultMessage: '{displayname} (you)',
             }, {displayname: displayName});
         }
 
@@ -158,10 +161,12 @@ export default class ChannelItem extends PureComponent {
         if (mentions) {
             badge = (
                 <Badge
+                    containerStyle={style.badgeContainer}
                     style={style.badge}
                     countStyle={style.mention}
                     count={mentions}
                     onPress={this.onPress}
+                    minWidth={21}
                 />
             );
         }
@@ -194,7 +199,7 @@ export default class ChannelItem extends PureComponent {
                     onPress={this.onPress}
                     onPressIn={this.onPreview}
                 >
-                    <View style={[style.container, mutedStyle]}>
+                    <View style={[style.container, mutedStyle, padding(isLandscape)]}>
                         {extraBorder}
                         <View style={[style.item, extraItemStyle]}>
                             {icon}
@@ -236,31 +241,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 11,
         },
         text: {
-            color: changeOpacity(theme.sidebarText, 0.4),
-            fontSize: 14,
-            fontWeight: '600',
+            color: changeOpacity(theme.sidebarText, 0.6),
+            fontSize: 16,
+            lineHeight: 24,
             paddingRight: 10,
+            maxWidth: '80%',
             flex: 1,
             alignSelf: 'center',
+            fontFamily: 'Open Sans',
         },
         textActive: {
             color: theme.sidebarTextActiveColor,
         },
         textUnread: {
             color: theme.sidebarUnreadText,
+            fontWeight: '500',
         },
         badge: {
             backgroundColor: theme.mentionBg,
-            borderColor: theme.sidebarHeaderBg,
-            borderRadius: 10,
-            borderWidth: 1,
             padding: 3,
             position: 'relative',
-            right: 16,
+            height: 21,
+        },
+        badgeContainer: {
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 14,
+            borderWidth: 0,
+            right: 0,
+            top: 11,
+            marginRight: 16,
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10,
+            fontSize: 12,
         },
         muted: {
             opacity: 0.5,

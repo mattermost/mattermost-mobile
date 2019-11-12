@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated, Platform, StyleSheet, View} from 'react-native';
+import {Animated, Platform, StyleSheet, View, Easing} from 'react-native';
 import {
     PanGestureHandler,
     NativeViewGestureHandler,
@@ -13,11 +13,13 @@ import {
 
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
+import {hapticFeedback} from 'app/utils/general';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import SlideUpPanelIndicator from './slide_up_panel_indicator';
 
 export const BOTTOM_MARGIN = mattermostManaged.hasSafeAreaInsets ? 24 : 0;
-const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_X ? 84 : 64;
+const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_WITH_INSETS ? 84 : 64;
 const TOP_ANDROID_MARGIN = 44;
 const TOP_MARGIN = Platform.OS === 'ios' ? TOP_IOS_MARGIN : TOP_ANDROID_MARGIN;
 
@@ -42,6 +44,7 @@ export default class SlideUpPanel extends PureComponent {
         // The space between the top of the panel and the top of the container when the SlideUpPanel is fully open.
         marginFromTop: PropTypes.number,
         onRequestClose: PropTypes.func,
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
@@ -120,22 +123,31 @@ export default class SlideUpPanel extends PureComponent {
             outputRange: [marginFromTop, containerHeight],
             extrapolate: 'clamp',
         });
+
+        this.backdropOpacity = this.translateY.interpolate({
+            inputRange: [marginFromTop, containerHeight],
+            outputRange: [0.7, 0],
+        });
     }
 
     componentDidMount() {
+        hapticFeedback();
+
         Animated.timing(this.translateYOffset, {
-            duration: 200,
             toValue: this.snapPoints[1],
             useNativeDriver: true,
+            easing: Easing.inOut(Easing.sin),
+            duration: 200,
         }).start();
     }
 
-    closeWithAnimation = () => {
+    closeWithAnimation = (cb) => {
         Animated.timing(this.translateYOffset, {
-            duration: 200,
             toValue: this.snapPoints[2],
             useNativeDriver: true,
-        }).start(() => this.props.onRequestClose());
+            easing: Easing.inOut(Easing.sin),
+            duration: 200,
+        }).start(() => this.props.onRequestClose(cb));
     };
 
     onHeaderHandlerStateChange = ({nativeEvent}) => {
@@ -222,10 +234,16 @@ export default class SlideUpPanel extends PureComponent {
     };
 
     render() {
-        const {children, header} = this.props;
+        const {children, header, theme} = this.props;
         const {lastSnap} = this.state;
+
+        const styles = getStyleSheet(theme);
+
         const translateStyle = {
             transform: [{translateY: this.translateY}],
+        };
+        const backdropStyle = {
+            opacity: this.backdropOpacity,
         };
 
         const headerComponent = header(this.headerRef);
@@ -255,7 +273,7 @@ export default class SlideUpPanel extends PureComponent {
                             >
 
                                 <Animated.View
-                                    style={styles.backdrop}
+                                    style={[styles.backdrop, backdropStyle]}
                                     pointerEvents='box-only'
                                 />
                             </PanGestureHandler>
@@ -307,32 +325,34 @@ export default class SlideUpPanel extends PureComponent {
     }
 }
 
-const styles = StyleSheet.create({
-    viewport: {
-        flex: 1,
-    },
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-    },
-    border: {
-        ...Platform.select({
-            android: {
-                borderTopRightRadius: 2,
-                borderTopLeftRadius: 2,
-            },
-            ios: {
-                borderTopRightRadius: 10,
-                borderTopLeftRadius: 10,
-            },
-        }),
-    },
-    backdrop: {
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        viewport: {
+            flex: 1,
+        },
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg,
+        },
+        border: {
+            ...Platform.select({
+                android: {
+                    borderTopRightRadius: 2,
+                    borderTopLeftRadius: 2,
+                },
+                ios: {
+                    borderTopRightRadius: 10,
+                    borderTopLeftRadius: 10,
+                },
+            }),
+        },
+        backdrop: {
+            backgroundColor: '#000',
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+        },
+    };
 });

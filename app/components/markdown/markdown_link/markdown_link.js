@@ -9,6 +9,7 @@ import {intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {DeepLinkTypes} from 'app/constants';
+import {getCurrentServerUrl} from 'app/init/credentials';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -24,7 +25,7 @@ export default class MarkdownLink extends PureComponent {
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
         onPermalinkPress: PropTypes.func,
-        serverURL: PropTypes.string.isRequired,
+        serverURL: PropTypes.string,
         siteURL: PropTypes.string.isRequired,
     };
 
@@ -38,7 +39,7 @@ export default class MarkdownLink extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    handlePress = preventDoubleTap(() => {
+    handlePress = preventDoubleTap(async () => {
         const {href, onPermalinkPress, serverURL, siteURL} = this.props;
         const url = normalizeProtocol(href);
 
@@ -46,7 +47,12 @@ export default class MarkdownLink extends PureComponent {
             return;
         }
 
-        const match = matchDeepLink(url, serverURL, siteURL);
+        let serverUrl = serverURL;
+        if (!serverUrl) {
+            serverUrl = await getCurrentServerUrl();
+        }
+
+        const match = matchDeepLink(url, serverUrl, siteURL);
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
                 this.props.actions.handleSelectChannelByName(match.channelName, match.teamName);

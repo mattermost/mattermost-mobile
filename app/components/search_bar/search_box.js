@@ -18,6 +18,7 @@ import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import {emptyFunction} from 'app/utils/general';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const AnimatedIonIcon = Animated.createAnimatedComponent(IonIcon);
@@ -77,6 +78,8 @@ export default class Search extends Component {
         shadowVisible: PropTypes.bool,
         leftComponent: PropTypes.element,
         inputCollapsedMargin: PropTypes.number,
+        keyboardAppearance: PropTypes.string,
+        onAnimationComplete: PropTypes.func,
     };
 
     static defaultProps = {
@@ -101,6 +104,7 @@ export default class Search extends Component {
         value: '',
         leftComponent: null,
         inputCollapsedMargin: 10,
+        onAnimationComplete: emptyFunction,
     };
 
     constructor(props) {
@@ -128,9 +132,9 @@ export default class Search extends Component {
         this.shadowHeight = this.props.shadowOffsetHeightCollapsed;
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.value !== nextProps.value) {
-            if (nextProps.value) {
+    componentDidUpdate(prevProps) {
+        if (this.props.value !== prevProps.value) {
+            if (this.props.value) {
                 this.iconDeleteAnimated = new Animated.Value(1);
             } else {
                 this.iconDeleteAnimated = new Animated.Value(0);
@@ -138,15 +142,23 @@ export default class Search extends Component {
         }
     }
 
+    setSearchContainerRef = (ref) => {
+        this.searchContainerRef = ref;
+    }
+
+    setInputKeywordRef = (ref) => {
+        this.inputKeywordRef = ref;
+    }
+
     blur = () => {
-        this.refs.input_keyword.getNode().blur();
+        this.inputKeywordRef.getNode().blur();
         this.setState({expanded: false});
         this.collapseAnimation();
     };
 
     focus = () => {
         InteractionManager.runAfterInteractions(() => {
-            const input = this.refs.input_keyword.getNode();
+            const input = this.inputKeywordRef.getNode();
             if (!input.isFocused()) {
                 input.focus();
             }
@@ -244,7 +256,7 @@ export default class Search extends Component {
                 Animated.timing(
                     this.inputFocusWidthAnimated,
                     {
-                        toValue: this.contentWidth - 70,
+                        toValue: this.contentWidth - 90,
                         duration: 200,
                     }
                 ),
@@ -265,7 +277,7 @@ export default class Search extends Component {
                 Animated.timing(
                     this.btnCancelAnimated,
                     {
-                        toValue: this.state.leftComponentWidth ? 15 - this.state.leftComponentWidth : 10,
+                        toValue: this.state.leftComponentWidth ? 15 - this.state.leftComponentWidth : 5,
                         duration: 200,
                     }
                 ),
@@ -369,7 +381,7 @@ export default class Search extends Component {
                         useNativeDriver: true,
                     }
                 ),
-            ]).start();
+            ]).start(({finished}) => this.props.onAnimationComplete(finished));
             this.shadowHeight = this.props.shadowOffsetHeightCollapsed;
             resolve();
         });
@@ -380,7 +392,7 @@ export default class Search extends Component {
 
         return (
             <Animated.View
-                ref='searchContainer'
+                ref={this.setSearchContainerRef}
                 style={[
                     styles.container,
                     this.props.backgroundColor && {backgroundColor: this.props.backgroundColor},
@@ -399,7 +411,7 @@ export default class Search extends Component {
                 )}
                 <Animated.View style={{backgroundColor, right: this.inputFocusAnimated, borderRadius: 2}}>
                     <AnimatedTextInput
-                        ref='input_keyword'
+                        ref={this.setInputKeywordRef}
                         style={[
                             styles.input,
                             this.props.placeholderTextColor && {color: this.props.placeholderTextColor},
@@ -435,6 +447,7 @@ export default class Search extends Component {
                         onFocus={this.onFocus}
                         underlineColorAndroid='transparent'
                         enablesReturnKeyAutomatically={true}
+                        keyboardAppearance={this.props.keyboardAppearance}
                     />
                 </Animated.View>
                 <TouchableWithoutFeedback onPress={this.onFocus}>
@@ -544,17 +557,18 @@ const styles = StyleSheet.create({
         position: 'absolute',
         paddingLeft: 1,
         paddingTop: 3,
-        right: 65,
+        right: 80,
         width: 25,
     },
     iconDeleteDefault: {
         color: 'grey',
     },
     cancelButton: {
+        flex: 1,
         justifyContent: 'center',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         backgroundColor: 'transparent',
-        width: 60,
+        minWidth: 75,
         height: 50,
     },
     cancelButtonText: {

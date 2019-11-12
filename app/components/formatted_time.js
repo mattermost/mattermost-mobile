@@ -3,9 +3,10 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
 import moment from 'moment-timezone';
+
+import CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class FormattedTime extends React.PureComponent {
     static propTypes = {
@@ -13,42 +14,32 @@ export default class FormattedTime extends React.PureComponent {
         timeZone: PropTypes.string,
         children: PropTypes.func,
         hour12: PropTypes.bool,
-    };
-
-    static contextTypes = {
-        intl: intlShape.isRequired,
+        style: CustomPropTypes.Style,
     };
 
     getFormattedTime = () => {
-        const {intl} = this.context;
-
         const {
             value,
             timeZone,
             hour12,
         } = this.props;
 
+        const format = hour12 ? 'hh:mm A' : 'HH:mm';
         if (timeZone) {
-            const format = hour12 ? 'hh:mm A' : 'HH:mm';
             return moment.tz(value, timeZone).format(format);
         }
 
-        // If no timezone is defined fallback to the previous implementation
-        return intl.formatDate(new Date(value), {
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12,
-        });
+        return moment(value).format(format);
     };
 
     render() {
-        const {children} = this.props;
+        const {children, style} = this.props;
         const formattedTime = this.getFormattedTime();
 
         if (typeof children === 'function') {
             return children(formattedTime);
         }
 
-        return <Text>{formattedTime}</Text>;
+        return <Text style={style}>{formattedTime}</Text>;
     }
 }

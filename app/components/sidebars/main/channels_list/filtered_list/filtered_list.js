@@ -5,25 +5,21 @@ import deepEqual from 'deep-equal';
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
-    FlatList,
     Keyboard,
     Platform,
+    SectionList,
     Text,
-    TouchableHighlight,
     View,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-
-import {changeOpacity} from 'app/utils/theme';
 
 import {General} from 'mattermost-redux/constants';
 import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {t} from 'app/utils/i18n';
-
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -55,6 +51,7 @@ class FilteredList extends Component {
         term: PropTypes.string,
         theme: PropTypes.object.isRequired,
         previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -101,7 +98,7 @@ class FilteredList extends Component {
                     return;
                 }
 
-                searchProfiles(term);
+                searchProfiles(term, {allow_inactive: true});
                 searchChannels(currentTeam.id, term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         }
@@ -116,20 +113,6 @@ class FilteredList extends Component {
         }
 
         this.props.onSelectChannel(channel, currentChannel.id);
-    };
-
-    createChannelElement = (channel) => {
-        return (
-            <ChannelItem
-                channelId={channel.id}
-                channel={channel}
-                isSearchResult={true}
-                isUnread={channel.isUnread}
-                mentions={0}
-                onSelectChannel={this.onSelectChannel}
-                previewChannel={this.props.previewChannel}
-            />
-        );
     };
 
     filterChannels = (channels, term) => {
@@ -329,11 +312,10 @@ class FilteredList extends Component {
     }
 
     buildSectionsForSearch = (props, term) => {
-        const items = [];
-        const {searchOrder, styles} = props;
+        const sections = [];
+        const {searchOrder} = props;
         const sectionBuilders = this.getSectionBuilders();
 
-        let previousDataLength = 0;
         for (const section of searchOrder) {
             if (sectionBuilders.hasOwnProperty(section)) {
                 const sectionBuilder = sectionBuilders[section];
@@ -341,14 +323,12 @@ class FilteredList extends Component {
                 const data = builder(props, term);
 
                 if (data.length) {
-                    const title = this.renderTitle(styles, id, defaultMessage, null, previousDataLength > 0, true);
-                    items.push(title, ...data);
-                    previousDataLength = data.length;
+                    sections.push({id, defaultMessage, data});
                 }
             }
         }
 
-        return items;
+        return sections;
     };
 
     buildData = (props, term) => {
@@ -359,74 +339,59 @@ class FilteredList extends Component {
         return this.buildSectionsForSearch(props, term);
     };
 
-    renderSectionAction = (styles, action) => {
-        const {theme} = this.props;
-        return (
-            <TouchableHighlight
-                style={styles.actionContainer}
-                onPress={action}
-                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-            >
-                <MaterialIcon
-                    name='add'
-                    style={styles.action}
-                />
-            </TouchableHighlight>
-        );
-    };
+    keyExtractor = (item) => item.id || item;
 
-    renderDivider = (styles, marginLeft) => {
+    renderItem = ({item}) => {
         return (
-            <View
-                style={[styles.divider, {marginLeft}]}
+            <ChannelItem
+                channelId={item.id}
+                channel={item}
+                isSearchResult={true}
+                isUnread={item.isUnread}
+                mentions={0}
+                onSelectChannel={this.onSelectChannel}
+                previewChannel={this.props.previewChannel}
             />
         );
     };
 
-    renderItem = ({item}) => {
-        if (!item.isTitle) {
-            return this.createChannelElement(item);
-        }
-        return item.title;
-    };
-
-    renderTitle = (styles, id, defaultMessage, action, topDivider, bottomDivider) => {
-        const {formatMessage} = this.props.intl;
-
-        return {
+    renderSectionHeader = ({section}) => {
+        const {intl, isLandscape, styles} = this.props;
+        const {
+            defaultMessage,
             id,
-            isTitle: true,
-            title: (
-                <View>
-                    {topDivider && this.renderDivider(styles, 0)}
-                    <View style={styles.titleContainer}>
-                        <Text style={styles.title}>
-                            {formatMessage({id, defaultMessage}).toUpperCase()}
-                        </Text>
-                        {action && this.renderSectionAction(styles, action)}
+        } = section;
+
+        return (
+            <React.Fragment>
+                <View style={[styles.titleContainer, padding(isLandscape)]}>
+                    <Text style={styles.title}>
+                        {intl.formatMessage({id, defaultMessage}).toUpperCase()}
+                    </Text>
+                    <View style={styles.separatorContainer}>
+                        <View style={styles.separator}/>
                     </View>
-                    {bottomDivider && this.renderDivider(styles, 16)}
                 </View>
-            ),
-        };
+            </React.Fragment>
+        );
     };
 
     render() {
         const {styles} = this.props;
         const {dataSource} = this.state;
-
         return (
             <View
                 style={styles.container}
             >
-                <FlatList
-                    data={dataSource}
+                <SectionList
+                    sections={dataSource}
                     renderItem={this.renderItem}
-                    keyExtractor={(item) => item.id}
-                    onViewableItemsChanged={this.updateUnreadIndicators}
+                    renderSectionHeader={this.renderSectionHeader}
+                    keyExtractor={this.keyExtractor}
                     {...this.keyboardDismissProp}
                     keyboardShouldPersistTaps={'always'}
                     maxToRenderPerBatch={10}
+                    stickySectionHeadersEnabled={true}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />
             </View>

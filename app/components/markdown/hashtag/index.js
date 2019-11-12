@@ -1,25 +1,47 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {Text} from 'react-native';
 
-import {
-    popToRoot,
-    showSearchModal,
-    dismissAllModals,
-} from 'app/actions/navigation';
+import CustomPropTypes from 'app/constants/custom_prop_types';
+import {popToRoot, showSearchModal, dismissAllModals} from 'app/actions/navigation';
 
-import Hashtag from './hashtag';
-
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            popToRoot,
-            showSearchModal,
-            dismissAllModals,
-        }, dispatch),
+export default class Hashtag extends React.PureComponent {
+    static propTypes = {
+        hashtag: PropTypes.string.isRequired,
+        linkStyle: CustomPropTypes.Style.isRequired,
+        onHashtagPress: PropTypes.func,
     };
-}
 
-export default connect(null, mapDispatchToProps)(Hashtag);
+    handlePress = async () => {
+        const {
+            onHashtagPress,
+            hashtag,
+        } = this.props;
+
+        if (onHashtagPress) {
+            onHashtagPress(hashtag);
+
+            return;
+        }
+
+        // Close thread view, permalink view, etc
+        await dismissAllModals();
+        await popToRoot();
+
+        showSearchModal('#' + this.props.hashtag);
+    };
+
+    render() {
+        return (
+            <Text
+                style={this.props.linkStyle}
+                onPress={this.handlePress}
+            >
+                {`#${this.props.hashtag}`}
+            </Text>
+        );
+    }
+}

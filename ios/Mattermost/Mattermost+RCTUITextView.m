@@ -7,10 +7,13 @@
 //
 
 #import "Mattermost+RCTUITextView.h"
-#import "RCTUITextView.h"
+#import <React/RCTUITextView.h>
+#import <React/RCTUtils.h>
+#import <React/RCTMultilineTextInputView.h>
+#import "OnPasteEventManager.h"
+#import "UIPasteboard+GetImageInfo.h"
 
 @implementation Mattermost_RCTUITextView
-
 @end
 
 @implementation RCTUITextView (DisableCopyPaste)
@@ -29,8 +32,29 @@
       return NO;
     }
   }
+
+  if (action == @selector(paste:) && [UIPasteboard generalPasteboard].numberOfItems > 0) {
+    return true;
+  }
   
   return [super canPerformAction:action withSender:sender];
+}
+
+-(void)paste:(id)sender {
+  [super paste:sender];
+  
+  UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+  if (pasteboard.hasURLs || pasteboard.hasStrings || pasteboard.hasColors) {
+    return;
+  }
+  
+  NSArray<NSDictionary *> *files = [pasteboard getCopiedFiles];
+  if (files != nil && files.count > 0) {
+    [OnPasteEventManager pasteFiles:files];
+  }
+
+  // Dismiss contextual menu
+  [self resignFirstResponder];
 }
 
 @end

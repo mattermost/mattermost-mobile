@@ -5,9 +5,12 @@ exports[`ChannelMembers should match snapshot 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -23,6 +26,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
           "fontSize": 15,
         }
       }
+      keyboardAppearance="light"
       leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
@@ -43,6 +47,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
   <CustomList
     data={Array []}
     extraData={Object {}}
+    isLandscape={false}
     listType="section"
     loading={false}
     loadingComponent={null}
@@ -63,6 +68,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",

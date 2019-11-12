@@ -24,8 +24,18 @@ import Loading from 'app/components/loading';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import SafeAreaView from 'app/components/safe_area_view';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
+
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import {
+    resetToChannel,
+    goToScreen,
+    dismissModal,
+    dismissAllModals,
+    popToRoot,
+} from 'app/actions/navigation';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -55,12 +65,6 @@ export default class Permalink extends PureComponent {
             joinChannel: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            dismissAllModals: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         channelIsArchived: PropTypes.bool,
@@ -75,6 +79,7 @@ export default class Permalink extends PureComponent {
         onPress: PropTypes.func,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -173,6 +178,10 @@ export default class Permalink extends PureComponent {
         }
     }
 
+    setViewRef = (ref) => {
+        this.viewRef = ref;
+    }
+
     goToThread = preventDoubleTap((post) => {
         const {actions} = this.props;
         const channelId = post.channel_id;
@@ -187,16 +196,16 @@ export default class Permalink extends PureComponent {
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     handleClose = () => {
         const {actions, onClose} = this.props;
-        if (this.refs.view) {
+        if (this.viewRef) {
             this.mounted = false;
-            this.refs.view.zoomOut().then(() => {
+            this.viewRef.zoomOut().then(() => {
                 actions.selectPost('');
-                actions.dismissModal();
+                dismissModal();
 
                 if (onClose) {
                     onClose();
@@ -214,27 +223,28 @@ export default class Permalink extends PureComponent {
     };
 
     handlePress = () => {
-        const {channelIdState, channelNameState} = this.state;
+        const {channelIdState} = this.state;
 
-        if (this.refs.view) {
-            this.refs.view.growOut().then(() => {
-                this.jumpToChannel(channelIdState, channelNameState);
+        if (this.viewRef) {
+            this.viewRef.growOut().then(() => {
+                this.jumpToChannel(channelIdState);
             });
         }
     };
 
-    jumpToChannel = (channelId, channelDisplayName) => {
+    jumpToChannel = async (channelId) => {
         if (channelId) {
             const {actions, channelTeamId, currentTeamId, onClose} = this.props;
             const currentChannelId = this.props.channelId;
             const {
                 handleSelectChannel,
                 handleTeamChange,
-                setChannelLoading,
-                setChannelDisplayName,
             } = actions;
 
             actions.selectPost('');
+
+            await dismissAllModals();
+            await popToRoot();
 
             if (channelId === currentChannelId) {
                 EventEmitter.emit('reset_channel');
@@ -242,10 +252,8 @@ export default class Permalink extends PureComponent {
                 const passProps = {
                     disableTermsModal: true,
                 };
-                actions.resetToChannel(passProps);
+                resetToChannel(passProps);
             }
-
-            actions.dismissAllModals();
 
             if (onClose) {
                 onClose();
@@ -255,8 +263,6 @@ export default class Permalink extends PureComponent {
                 handleTeamChange(channelTeamId);
             }
 
-            setChannelLoading(channelId !== currentChannelId);
-            setChannelDisplayName(channelDisplayName);
             handleSelectChannel(channelId);
         }
     };
@@ -267,41 +273,43 @@ export default class Permalink extends PureComponent {
         const {formatMessage} = intl;
         let focusChannelId = channelId;
 
-        const post = await actions.getPostThread(focusedPostId, false);
-        if (post.error && (!postIds || !postIds.length)) {
-            if (this.mounted && isPermalink && post.error.message.toLowerCase() !== 'network request failed') {
-                this.setState({
-                    error: formatMessage({
-                        id: 'permalink.error.access',
-                        defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.',
-                    }),
-                    title: formatMessage({
-                        id: 'mobile.search.no_results',
-                        defaultMessage: 'No Results Found',
-                    }),
-                });
-            } else if (this.mounted) {
-                this.setState({error: post.error.message, retry: true});
+        if (focusedPostId) {
+            const post = await actions.getPostThread(focusedPostId, false);
+            if (post.error && (!postIds || !postIds.length)) {
+                if (this.mounted && isPermalink && post.error.message.toLowerCase() !== 'network request failed') {
+                    this.setState({
+                        error: formatMessage({
+                            id: 'permalink.error.access',
+                            defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.',
+                        }),
+                        title: formatMessage({
+                            id: 'mobile.search.no_results',
+                            defaultMessage: 'No Results Found',
+                        }),
+                    });
+                } else if (this.mounted) {
+                    this.setState({error: post.error.message, retry: true});
+                }
+
+                return;
             }
 
-            return;
-        }
-
-        if (!channelId) {
-            const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
-            focusChannelId = focusedPost ? focusedPost.channel_id : '';
-            if (focusChannelId) {
-                const {data: channel} = await actions.getChannel(focusChannelId);
-                if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
-                    await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+            if (!channelId) {
+                const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
+                focusChannelId = focusedPost ? focusedPost.channel_id : '';
+                if (focusChannelId) {
+                    const {data: channel} = await actions.getChannel(focusChannelId);
+                    if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
+                        await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+                    }
                 }
             }
-        }
 
-        await actions.getPostsAround(focusChannelId, focusedPostId, 10);
+            await actions.getPostsAround(focusChannelId, focusedPostId, 10);
 
-        if (this.mounted) {
-            this.setState({loading: false});
+            if (this.mounted) {
+                this.setState({loading: false});
+            }
         }
     };
 
@@ -334,6 +342,7 @@ export default class Permalink extends PureComponent {
             currentUserId,
             focusedPostId,
             theme,
+            isLandscape,
         } = this.props;
         const {
             error,
@@ -390,10 +399,10 @@ export default class Permalink extends PureComponent {
                 forceTop={44}
             >
                 <View
-                    style={style.container}
+                    style={[style.container, margin(isLandscape)]}
                 >
                     <Animatable.View
-                        ref='view'
+                        ref={this.setViewRef}
                         animation='zoomIn'
                         duration={200}
                         delay={0}

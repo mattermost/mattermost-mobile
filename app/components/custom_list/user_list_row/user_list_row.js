@@ -11,12 +11,11 @@ import {
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
+import CustomListRow from 'app/components/custom_list/custom_list_row';
 import ProfilePicture from 'app/components/profile_picture';
-import BotTag from 'app/components/bot_tag';
-import GuestTag from 'app/components/guest_tag';
+import {BotTag, GuestTag} from 'app/components/tag';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {isGuest} from 'app/utils/users';
-import CustomListRow from 'app/components/custom_list/custom_list_row';
 
 export default class UserListRow extends React.PureComponent {
     static propTypes = {
@@ -48,6 +47,7 @@ export default class UserListRow extends React.PureComponent {
             teammateNameDisplay,
             theme,
             user,
+            isLandscape,
         } = this.props;
 
         const {id, username} = user;
@@ -72,6 +72,7 @@ export default class UserListRow extends React.PureComponent {
                     enabled={enabled}
                     selectable={selectable}
                     selected={selected}
+                    isLandscape={isLandscape}
                 >
                     <View style={style.profileContainer}>
                         <ProfilePicture

@@ -10,12 +10,6 @@ import SectionItem from 'app/screens/settings/section_item';
 
 import NotificationSettingsEmailIos from './notification_settings_email.ios.js';
 
-jest.mock('Platform', () => {
-    const Platform = require.requireActual('Platform');
-    Platform.OS = 'ios';
-    return Platform;
-});
-
 jest.mock('app/utils/theme', () => {
     const original = require.requireActual('app/utils/theme');
     return {
@@ -27,6 +21,9 @@ jest.mock('app/utils/theme', () => {
 describe('NotificationSettingsEmailIos', () => {
     const baseProps = {
         currentUser: {id: 'current_user_id'},
+        notifyProps: {
+            email: 'true',
+        },
         emailInterval: '30',
         enableEmailBatching: false,
         actions: {
@@ -37,6 +34,7 @@ describe('NotificationSettingsEmailIos', () => {
         siteName: 'Mattermost',
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot, renderEmailSection', () => {

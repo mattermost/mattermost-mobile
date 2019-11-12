@@ -8,7 +8,6 @@ import {
     Keyboard,
     FlatList,
     StyleSheet,
-    SafeAreaView,
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -25,6 +24,12 @@ import mattermostManaged from 'app/mattermost_managed';
 import SearchResultPost from 'app/screens/search/search_result_post';
 import ChannelDisplayName from 'app/screens/search/channel_display_name';
 import {changeOpacity} from 'app/utils/theme';
+import {
+    goToScreen,
+    showModalOverCurrentContext,
+    showSearchModal,
+    dismissModal,
+} from 'app/actions/navigation';
 
 export default class FlaggedPosts extends PureComponent {
     static propTypes = {
@@ -35,9 +40,6 @@ export default class FlaggedPosts extends PureComponent {
             getFlaggedPosts: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            showSearchModal: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         didFail: PropTypes.bool,
         isLoading: PropTypes.bool,
@@ -66,8 +68,12 @@ export default class FlaggedPosts extends PureComponent {
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-settings') {
-            this.props.actions.dismissModal();
+            dismissModal();
         }
+    }
+
+    setListRef = (ref) => {
+        this.listRef = ref;
     }
 
     goToThread = (post) => {
@@ -84,7 +90,7 @@ export default class FlaggedPosts extends PureComponent {
         Keyboard.dismiss();
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     handleClosePermalink = () => {
@@ -99,11 +105,8 @@ export default class FlaggedPosts extends PureComponent {
     };
 
     handleHashtagPress = async (hashtag) => {
-        const {actions} = this.props;
-
-        await actions.dismissModal();
-
-        actions.showSearchModal('#' + hashtag);
+        await dismissModal();
+        showSearchModal('#' + hashtag);
     };
 
     keyExtractor = (item) => item;
@@ -187,7 +190,7 @@ export default class FlaggedPosts extends PureComponent {
             };
 
             this.showingPermalink = true;
-            actions.showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options);
         }
     };
 
@@ -213,7 +216,7 @@ export default class FlaggedPosts extends PureComponent {
         } else if (postIds.length) {
             component = (
                 <FlatList
-                    ref='list'
+                    ref={this.setListRef}
                     contentContainerStyle={style.sectionList}
                     data={postIds}
                     keyExtractor={this.keyExtractor}
@@ -227,12 +230,10 @@ export default class FlaggedPosts extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.container}>
-                <View style={style.container}>
-                    <StatusBar/>
-                    {component}
-                </View>
-            </SafeAreaView>
+            <View style={style.container}>
+                <StatusBar/>
+                {component}
+            </View>
         );
     }
 }

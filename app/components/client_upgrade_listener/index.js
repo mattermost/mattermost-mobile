@@ -6,7 +6,6 @@ import {connect} from 'react-redux';
 import {logError} from 'mattermost-redux/actions/errors';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {showModal, dismissModal} from 'app/actions/navigation';
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import getClientUpgrade from 'app/selectors/client_upgrade';
 import {isLandscape} from 'app/selectors/device';
@@ -33,8 +32,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             logError,
             setLastUpgradeCheck,
-            showModal,
-            dismissModal,
         }, dispatch),
     };
 }

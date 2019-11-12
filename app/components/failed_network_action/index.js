@@ -13,7 +13,7 @@ import Cloud from './cloud';
 
 export default class FailedNetworkAction extends PureComponent {
     static propTypes = {
-        action: PropTypes.func,
+        onRetry: PropTypes.func.isRequired,
         actionId: PropTypes.string,
         actionDefaultMessage: PropTypes.string,
         errorId: PropTypes.string,
@@ -29,7 +29,7 @@ export default class FailedNetworkAction extends PureComponent {
     };
 
     render() {
-        const {action, actionId, actionDefaultMessage, errorId, errorDefaultMessage, theme} = this.props;
+        const {actionId, actionDefaultMessage, errorId, errorDefaultMessage, onRetry, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         const errorTitle = {
@@ -59,7 +59,7 @@ export default class FailedNetworkAction extends PureComponent {
                                 id={actionId}
                                 defaultMessage={actionDefaultMessage}
                                 style={style.link}
-                                onPress={action}
+                                onPress={onRetry}
                             />
                         ),
                     }}

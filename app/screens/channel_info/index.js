@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {
+    convertChannelToPrivate,
     favoriteChannel,
     getChannelStats,
     getChannel,
@@ -29,14 +30,9 @@ import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from
 import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-import {isGuest} from 'app/utils/users';
+import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
+import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 
-import {
-    popTopScreen,
-    goToScreen,
-    dismissModal,
-    showModalOverCurrentContext,
-} from 'app/actions/navigation';
 import {
     closeDMChannel,
     closeGMChannel,
@@ -46,6 +42,8 @@ import {
     selectPenultimateChannel,
     setChannelDisplayName,
 } from 'app/actions/views/channel';
+import {isLandscape} from 'app/selectors/device';
+import {isGuest} from 'app/utils/users';
 
 import ChannelInfo from './channel_info';
 
@@ -57,6 +55,7 @@ function mapStateToProps(state) {
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
+    const currentChannelPinnedPostCount = currentChannelStats && currentChannelStats.pinnedpost_count;
     let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
     const currentChannelMember = getMyCurrentChannelMembership(state);
     const currentUserId = getCurrentUserId(state);
@@ -73,6 +72,7 @@ function mapStateToProps(state) {
 
     let status;
     let isBot = false;
+    let isTeammateGuest = false;
     if (currentChannel.type === General.DM_CHANNEL) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
@@ -81,6 +81,7 @@ function mapStateToProps(state) {
             isBot = true;
         }
         if (isGuest(teammate)) {
+            isTeammateGuest = true;
             currentChannelGuestCount = 1;
         }
     }
@@ -93,14 +94,22 @@ function mapStateToProps(state) {
     const canEditChannel = !channelIsReadOnly && showManagementOptions(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin);
     const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
 
+    const enableTimezone = isTimezoneEnabled(state);
+    let timeZone = null;
+    if (enableTimezone) {
+        timeZone = getUserCurrentTimezone(currentUser.timezone);
+    }
+
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
+        canConvertChannel: isAdmin,
         viewArchivedChannels,
         canEditChannel,
         currentChannel,
         currentChannelCreatorName,
         currentChannelMemberCount,
         currentChannelGuestCount,
+        currentChannelPinnedPostCount,
         currentUserId,
         currentUserIsGuest,
         isChannelMuted: isChannelMuted(currentChannelMember),
@@ -111,6 +120,9 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         canManageUsers,
         isBot,
+        isTeammateGuest,
+        isLandscape: isLandscape(state),
+        timeZone,
     };
 }
 
@@ -120,6 +132,7 @@ function mapDispatchToProps(dispatch) {
             clearPinnedPosts,
             closeDMChannel,
             closeGMChannel,
+            convertChannelToPrivate,
             deleteChannel,
             getChannelStats,
             getChannel,
@@ -133,10 +146,6 @@ function mapDispatchToProps(dispatch) {
             selectPenultimateChannel,
             setChannelDisplayName,
             handleSelectChannel,
-            popTopScreen,
-            goToScreen,
-            dismissModal,
-            showModalOverCurrentContext,
         }, dispatch),
     };
 }

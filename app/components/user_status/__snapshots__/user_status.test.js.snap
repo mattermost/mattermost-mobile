@@ -1,69 +1,57 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UserStatus should match snapshot, away status 1`] = `
-<Image
-  source={
-    Object {
-      "testUri": "../../../dist/assets/images/status/away.png",
-    }
-  }
+<VectorIcon
+  name="away"
+  size={14}
   style={
     Object {
-      "height": 32,
-      "tintColor": "#ffbc42",
-      "width": 32,
+      "color": "#ffbc42",
+      "fontSize": 32,
     }
   }
+  type="mattermost"
 />
 `;
 
 exports[`UserStatus should match snapshot, dnd status 1`] = `
-<Image
-  source={
-    Object {
-      "testUri": "../../../dist/assets/images/status/dnd.png",
-    }
-  }
+<VectorIcon
+  name="dnd"
+  size={14}
   style={
     Object {
-      "height": 32,
-      "tintColor": "#f74343",
-      "width": 32,
+      "color": "#f74343",
+      "fontSize": 32,
     }
   }
+  type="mattermost"
 />
 `;
 
 exports[`UserStatus should match snapshot, online status 1`] = `
-<Image
-  source={
-    Object {
-      "testUri": "../../../dist/assets/images/status/online.png",
-    }
-  }
+<VectorIcon
+  name="online"
+  size={14}
   style={
     Object {
-      "height": 32,
-      "tintColor": "#06d6a0",
-      "width": 32,
+      "color": "#06d6a0",
+      "fontSize": 32,
     }
   }
+  type="mattermost"
 />
 `;
 
 exports[`UserStatus should match snapshot, should default to offline status 1`] = `
-<Image
-  source={
-    Object {
-      "testUri": "../../../dist/assets/images/status/offline.png",
-    }
-  }
+<VectorIcon
+  name="offline"
+  size={14}
   style={
     Object {
-      "height": 32,
-      "tintColor": "rgba(61,60,64,0.3)",
-      "width": 32,
+      "color": "rgba(61,60,64,0.3)",
+      "fontSize": 32,
     }
   }
+  type="mattermost"
 />
 `;

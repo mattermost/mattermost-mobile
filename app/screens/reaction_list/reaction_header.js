@@ -7,9 +7,11 @@ import {
     Animated,
     Platform,
     ScrollView,
-    StyleSheet,
 } from 'react-native';
 import {NativeViewGestureHandler} from 'react-native-gesture-handler';
+
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ReactionHeaderItem from './reaction_header_item';
 
@@ -20,6 +22,7 @@ export default class ReactionHeader extends PureComponent {
         onSelectReaction: PropTypes.func.isRequired,
         reactions: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     handleOnPress = (emoji) => {
@@ -42,15 +45,19 @@ export default class ReactionHeader extends PureComponent {
     };
 
     render() {
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+
         return (
             <NativeViewGestureHandler
                 ref={this.props.forwardedRef}
             >
-                <Animated.View style={styles.container}>
+                <Animated.View style={style.container}>
                     <ScrollView
                         alwaysBounceHorizontal={false}
                         horizontal={true}
                         overScrollMode='never'
+                        style={padding(this.props.isLandscape, -10)}
                     >
                         {this.renderReactionHeaderItems()}
                     </ScrollView>
@@ -60,20 +67,22 @@ export default class ReactionHeader extends PureComponent {
     }
 }
 
-const styles = StyleSheet.create({
-    container: {
-        backgroundColor: '#FFFFFF',
-        height: 36.5,
-        paddingHorizontal: 0,
-        ...Platform.select({
-            android: {
-                borderTopRightRadius: 2,
-                borderTopLeftRadius: 2,
-            },
-            ios: {
-                borderTopRightRadius: 10,
-                borderTopLeftRadius: 10,
-            },
-        }),
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            height: 36.5,
+            paddingHorizontal: 0,
+            ...Platform.select({
+                android: {
+                    borderTopRightRadius: 2,
+                    borderTopLeftRadius: 2,
+                },
+                ios: {
+                    borderTopRightRadius: 10,
+                    borderTopLeftRadius: 10,
+                },
+            }),
+        },
+    };
 });

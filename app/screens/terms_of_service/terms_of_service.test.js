@@ -6,6 +6,8 @@ import {shallow} from 'enzyme';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
+import * as NavigationActions from 'app/actions/navigation';
+
 import TermsOfService from './terms_of_service.js';
 
 jest.mock('react-intl');
@@ -23,9 +25,6 @@ describe('TermsOfService', () => {
         getTermsOfService: jest.fn(),
         updateMyTermsOfServiceStatus: jest.fn(),
         logout: jest.fn(),
-        setButtons: jest.fn(),
-        dismissModal: jest.fn(),
-        dismissAllModals: jest.fn(),
     };
 
     const baseProps = {
@@ -81,18 +80,20 @@ describe('TermsOfService', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should call props.actions.setButtons on setNavigatorButtons', async () => {
+    test('should call setButtons on setNavigatorButtons', async () => {
+        const setButtons = jest.spyOn(NavigationActions, 'setButtons');
+
         const wrapper = shallow(
             <TermsOfService {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
 
-        expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(2);
+        expect(setButtons).toHaveBeenCalledTimes(2);
         wrapper.instance().setNavigatorButtons(true);
-        expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(3);
+        expect(setButtons).toHaveBeenCalledTimes(3);
         wrapper.instance().setNavigatorButtons(false);
-        expect(baseProps.actions.setButtons).toHaveBeenCalledTimes(4);
+        expect(setButtons).toHaveBeenCalledTimes(4);
     });
 
     test('should enable/disable navigator buttons on setNavigatorButtons true/false', () => {
@@ -120,6 +121,8 @@ describe('TermsOfService', () => {
     });
 
     test('should call dismissAllModals on closeTermsAndLogout', () => {
+        const dismissAllModals = jest.spyOn(NavigationActions, 'dismissAllModals');
+
         const wrapper = shallow(
             <TermsOfService {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
@@ -127,6 +130,6 @@ describe('TermsOfService', () => {
 
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
         wrapper.instance().closeTermsAndLogout();
-        expect(baseProps.actions.dismissAllModals).toHaveBeenCalledTimes(1);
+        expect(dismissAllModals).toHaveBeenCalledTimes(1);
     });
 });

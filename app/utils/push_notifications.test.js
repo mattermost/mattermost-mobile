@@ -32,8 +32,8 @@ jest.mock('react-native-notifications', () => {
         addEventListener: jest.fn(),
         NotificationAction: jest.fn(),
         NotificationCategory: jest.fn(),
-        consumeBackgroundQueue: jest.fn(),
         localNotification: jest.fn(),
+        getInitialNotification: jest.fn(() => Promise.resolve()),
     };
 });
 
@@ -49,9 +49,8 @@ describe('PushNotifications', () => {
         const channelID = 'channel-id';
         const data = {channel_id: channelID};
         const text = 'text';
-        const badge = 1;
-        const completed = () => {};
-        await PushNotificationUtils.onPushNotificationReply(data, text, badge, completed);
+        const completion = () => {};
+        await PushNotificationUtils.onPushNotificationReply(data, text, completion);
 
         const storeActions = store.getActions();
         const receivedPost = storeActions.some((action) => action.type === PostTypes.RECEIVED_POST);

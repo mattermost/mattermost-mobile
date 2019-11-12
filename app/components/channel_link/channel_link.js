@@ -9,6 +9,7 @@ import {intlShape} from 'react-intl';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {t} from 'app/utils/i18n';
 import {alertErrorWithFallback} from 'app/utils/general';
+import {popToRoot, dismissAllModals} from 'app/actions/navigation';
 
 import {getChannelFromChannelName} from './channel_link_utils';
 
@@ -73,7 +74,11 @@ export default class ChannelLink extends React.PureComponent {
         }
 
         if (channel.id) {
-            this.props.actions.handleSelectChannel(channel.id);
+            const {handleSelectChannel} = this.props.actions;
+            handleSelectChannel(channel.id);
+
+            await dismissAllModals();
+            await popToRoot();
 
             if (this.props.onChannelLinkPress) {
                 this.props.onChannelLinkPress(channel);

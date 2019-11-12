@@ -18,11 +18,13 @@ import ChannelIcon from 'app/components/channel_icon';
 import FormattedDate from 'app/components/formatted_date';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import {popToRoot} from 'app/actions/navigation';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
@@ -38,8 +40,11 @@ export default class ChannelInfoHeader extends React.PureComponent {
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
+        isTeammateGuest: PropTypes.bool.isRequired,
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
+        timeZone: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -47,8 +52,11 @@ export default class ChannelInfoHeader extends React.PureComponent {
     };
 
     renderHasGuestText = (style) => {
-        const {type, hasGuests} = this.props;
+        const {type, hasGuests, isTeammateGuest} = this.props;
         if (!hasGuests) {
+            return null;
+        }
+        if (type === General.DM_CHANNEL && !isTeammateGuest) {
             return null;
         }
 
@@ -67,11 +75,13 @@ export default class ChannelInfoHeader extends React.PureComponent {
         }
         return (
             <View style={style.section}>
-                <FormattedText
-                    style={style.header}
-                    id={messageId}
-                    defaultMessage={defaultMessage}
-                />
+                <View style={style.row}>
+                    <FormattedText
+                        style={style.header}
+                        id={messageId}
+                        defaultMessage={defaultMessage}
+                    />
+                </View>
             </View>
         );
     }
@@ -132,6 +142,8 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isArchived,
             isBot,
             isGroupConstrained,
+            timeZone,
+            isLandscape,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -143,7 +155,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
 
         return (
             <View style={style.container}>
-                <View style={[style.channelNameContainer, style.row]}>
+                <View style={[style.channelNameContainer, style.row, padding(isLandscape)]}>
                     <ChannelIcon
                         isInfo={true}
                         membersCount={memberCount - 1}
@@ -164,7 +176,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                 </View>
                 {this.renderHasGuestText(style)}
                 {purpose.length > 0 &&
-                    <View style={style.section}>
+                    <View style={[style.section, padding(isLandscape, -15)]}>
                         <TouchableHighlight
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                             onLongPress={this.handlePurposeLongPress}
@@ -187,7 +199,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </View>
                 }
                 {header.length > 0 &&
-                    <View style={style.section}>
+                    <View style={[style.section, padding(isLandscape, -15)]}>
                         <TouchableHighlight
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                             onLongPress={this.handleHeaderLongPress}
@@ -204,13 +216,14 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     textStyles={textStyles}
                                     blockStyles={blockStyles}
                                     value={header}
+                                    onChannelLinkPress={popToRoot}
                                 />
                             </View>
                         </TouchableHighlight>
                     </View>
                 }
                 {isGroupConstrained &&
-                    <Text style={[style.createdBy, style.row]}>
+                    <Text style={[style.createdBy, style.row, padding(isLandscape)]}>
                         <FormattedText
                             id='mobile.routes.channelInfo.groupManaged'
                             defaultMessage='Members are managed by linked groups'
@@ -218,7 +231,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </Text>
                 }
                 {creator &&
-                    <Text style={[style.createdBy, style.row]}>
+                    <Text style={[style.createdBy, style.row, padding(isLandscape)]}>
                         <FormattedText
                             id='mobile.routes.channelInfo.createdBy'
                             defaultMessage='Created by {creator} on '
@@ -227,10 +240,9 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             }}
                         />
                         <FormattedDate
-                            value={new Date(createAt)}
-                            year='numeric'
-                            month='long'
-                            day='2-digit'
+                            format='LL'
+                            timeZone={timeZone}
+                            value={createAt}
                         />
                     </Text>
                 }

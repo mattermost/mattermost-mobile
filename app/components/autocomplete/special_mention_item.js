@@ -5,12 +5,12 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 export default class SpecialMentionItem extends PureComponent {
@@ -40,9 +40,10 @@ export default class SpecialMentionItem extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={this.completeMention}
                 style={style.row}
+                type={'opacity'}
             >
                 <View style={style.rowPicture}>
                     <Icon
@@ -60,7 +61,7 @@ export default class SpecialMentionItem extends PureComponent {
                         style={style.rowFullname}
                     />
                 </Text>
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

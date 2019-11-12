@@ -10,7 +10,6 @@ import {
     Platform,
     StatusBar,
     StyleSheet,
-    TouchableOpacity,
     View,
 } from 'react-native';
 import OpenFile from 'react-native-doc-viewer';
@@ -21,11 +20,12 @@ import tinyColor from 'tinycolor2';
 
 import {getFileUrl} from 'mattermost-redux/utils/file_utils.js';
 
+import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {DeviceTypes} from 'app/constants/';
 import mattermostBucket from 'app/mattermost_bucket';
 import {changeOpacity} from 'app/utils/theme';
-
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
+import {goToScreen} from 'app/actions/navigation';
 
 const {DOCUMENTS_PATH} = DeviceTypes;
 const DOWNLOADING_OFFSET = 28;
@@ -38,9 +38,6 @@ const circularProgressWidth = 4;
 
 export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         backgroundColor: PropTypes.string,
         canDownloadFiles: PropTypes.bool.isRequired,
         iconHeight: PropTypes.number,
@@ -72,7 +69,7 @@ export default class FileAttachmentDocument extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
-        this.eventEmitter = new NativeEventEmitter(NativeModules.RNReactNativeDocViewer);
+        this.eventEmitter = new NativeEventEmitter(NativeModules.RNDocViewer);
         this.eventEmitter.addListener('DoneButtonEvent', this.onDonePreviewingFile);
     }
 
@@ -194,13 +191,14 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     previewTextFile = (file, delay = 2000) => {
-        const {actions} = this.props;
         const {data} = file;
         const prefix = Platform.OS === 'android' ? 'file:/' : '';
         const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
         const readFile = RNFetchBlob.fs.readFile(`${prefix}${path}`, 'utf8');
         setTimeout(async () => {
             try {
+                this.setState({downloading: false, progress: 0});
+
                 const content = await readFile;
                 const screen = 'TextPreview';
                 const title = file.caption;
@@ -208,8 +206,7 @@ export default class FileAttachmentDocument extends PureComponent {
                     content,
                 };
 
-                actions.goToScreen(screen, title, passProps);
-                this.setState({downloading: false, progress: 0});
+                goToScreen(screen, title, passProps);
             } catch (error) {
                 RNFetchBlob.fs.unlink(path);
             }
@@ -386,12 +383,13 @@ export default class FileAttachmentDocument extends PureComponent {
         }
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={this.handlePreviewPress}
                 onLongPress={onLongPress}
+                type={'opacity'}
             >
                 {fileAttachmentComponent}
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

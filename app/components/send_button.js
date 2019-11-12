@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {memo} from 'react';
-import {TouchableOpacity, View} from 'react-native';
-
+import {View} from 'react-native';
 import PropTypes from 'prop-types';
 
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 let PaperPlane = null;
@@ -37,14 +37,15 @@ function SendButton(props) {
     }
 
     return (
-        <TouchableOpacity
+        <TouchableWithFeedback
             onPress={props.handleSendMessage}
             style={style.sendButtonContainer}
+            type={'opacity'}
         >
             <View style={style.sendButton}>
                 {icon}
             </View>
-        </TouchableOpacity>
+        </TouchableWithFeedback>
     );
 }
 

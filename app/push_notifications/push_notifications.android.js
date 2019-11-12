@@ -94,8 +94,8 @@ class PushNotification {
         NotificationsAndroid.cancelAllLocalNotifications();
     }
 
-    setApplicationIconBadgeNumber(number) {
-        NotificationsAndroid.setBadgesCount(number);
+    setApplicationIconBadgeNumber() {
+        // Not supported for Android
     }
 
     getNotification() {
@@ -114,14 +114,8 @@ class PushNotification {
         }
     }
 
-    clearForegroundNotifications = () => {
-        // TODO: Implement as part of https://mattermost.atlassian.net/browse/MM-17110
-    };
-
     clearNotifications = () => {
-        this.setApplicationIconBadgeNumber(0);
         this.cancelAllLocalNotifications(); // TODO: Only cancel the local notifications that belong to this server
-        this.clearForegroundNotifications(); // TODO: Only clear the foreground notifications that belong to this server
     }
 }
 

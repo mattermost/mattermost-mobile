@@ -10,7 +10,8 @@ import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     markChannelAsRead,
-    leaveChannel as serviceLeaveChannel, markChannelAsViewed,
+    markChannelAsViewed,
+    leaveChannel as serviceLeaveChannel,
     selectChannel,
     getChannelStats,
 } from 'mattermost-redux/actions/channels';
@@ -199,7 +200,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
                 });
             }
         } else {
-            const {lastConnectAt} = state.websocket;
+            const lastConnectAt = state.websocket?.lastConnectAt || 0;
             const lastGetPosts = state.views.channel.lastGetPosts[channelId];
 
             let since;

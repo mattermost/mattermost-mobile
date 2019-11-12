@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Dimensions,
-    InteractionManager,
+    findNodeHandle,
     Keyboard,
     Platform,
     SectionList,
@@ -15,17 +15,20 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import FontAwesomePro from 'react-native-vector-icons/Ionicons';
 
 import {General} from 'mattermost-redux/constants';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes, ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 
+import BottomSheet from 'app/utils/bottom_sheet';
 import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity} from 'app/utils/theme';
+import {showModal} from 'app/actions/navigation';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -38,6 +41,7 @@ export default class List extends PureComponent {
     static propTypes = {
         canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
+        canCreatePublicChannels: PropTypes.bool.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         unreadChannelIds: PropTypes.array.isRequired,
@@ -45,9 +49,7 @@ export default class List extends PureComponent {
         theme: PropTypes.object.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
         previewChannel: PropTypes.func,
-        actions: PropTypes.shape({
-            showModal: PropTypes.func.isRequired,
-        }).isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -56,6 +58,8 @@ export default class List extends PureComponent {
 
     constructor(props) {
         super(props);
+
+        this.combinedActionsRef = React.createRef();
 
         this.state = {
             sections: this.buildSections(props),
@@ -73,6 +77,12 @@ export default class List extends PureComponent {
         });
     }
 
+    componentDidMount() {
+        if (!UnreadIndicator) {
+            UnreadIndicator = require('app/components/sidebars/main/channels_list/unread_indicator').default;
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         const {
             canCreatePrivateChannels,
@@ -88,12 +98,16 @@ export default class List extends PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (prevState.sections !== this.state.sections && this.refs.list._wrapperListRef.getListRef()._viewabilityHelper) { //eslint-disable-line
-            this.refs.list.recordInteraction();
+        if (prevState.sections !== this.state.sections && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
+            this.listRef.recordInteraction();
             this.updateUnreadIndicators({
-                viewableItems: Array.from(this.refs.list._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
+                viewableItems: Array.from(this.listRef._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
             });
         }
+    }
+
+    setListRef = (ref) => {
+        this.listRef = ref;
     }
 
     getSectionConfigByType = (props, sectionType) => {
@@ -154,87 +168,63 @@ export default class List extends PureComponent {
             orderedChannelIds,
         } = props;
 
-        return orderedChannelIds.map((s, i) => {
+        return orderedChannelIds.map((s) => {
             return {
                 ...this.getSectionConfigByType(props, s.type),
                 data: s.items,
-                topSeparator: i !== 0,
-                bottomSeparator: s.items.length > 0,
             };
         });
     };
 
     showCreateChannelOptions = () => {
+        const {formatMessage} = this.context.intl;
         const {
+            canJoinPublicChannels,
             canCreatePrivateChannels,
-            actions,
+            canCreatePublicChannels,
         } = this.props;
 
-        const items = [];
-        const moreChannels = {
-            action: this.goToMoreChannels,
-            text: {
-                id: 'more_channels.title',
-                defaultMessage: 'More Channels',
-            },
-        };
-        const createPublicChannel = {
-            action: this.goToCreatePublicChannel,
-            text: {
-                id: 'mobile.create_channel.public',
-                defaultMessage: 'New Public Channel',
-            },
-        };
-        const createPrivateChannel = {
-            action: this.goToCreatePrivateChannel,
-            text: {
-                id: 'mobile.create_channel.private',
-                defaultMessage: 'New Private Channel',
-            },
-        };
-        const newConversation = {
-            action: this.goToDirectMessages,
-            text: {
-                id: 'mobile.more_dms.title',
-                defaultMessage: 'New Conversation',
-            },
-        };
+        const moreChannelsText = formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
+        const newPublicChannelText = formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
+        const newPrivateChannelText = formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'});
+        const newDirectChannelText = formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'});
+        const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+        const options = [];
+        const actions = [];
 
-        items.push(moreChannels, createPublicChannel);
-        if (canCreatePrivateChannels) {
-            items.push(createPrivateChannel);
+        if (canJoinPublicChannels) {
+            actions.push(this.goToMoreChannels);
+            options.push(moreChannelsText);
         }
-        items.push(newConversation);
 
-        const screen = 'OptionsModal';
-        const title = '';
-        const passProps = {
-            items,
-        };
-        const options = {
-            modalPresentationStyle: 'overCurrentContext',
-            layout: {
-                backgroundColor: 'transparent',
-            },
-            topBar: {
-                visible: false,
-                height: 0,
-            },
-            animations: {
-                showModal: {
-                    enable: false,
-                },
-                dismissModal: {
-                    enable: false,
-                },
-            },
-        };
+        if (canCreatePublicChannels) {
+            actions.push(this.goToCreatePublicChannel);
+            options.push(newPublicChannelText);
+        }
 
-        actions.showModal(screen, title, passProps, options);
+        if (canCreatePrivateChannels) {
+            actions.push(this.goToCreatePrivateChannel);
+            options.push(newPrivateChannelText);
+        }
+
+        actions.push(this.goToDirectMessages);
+        options.push(newDirectChannelText);
+        options.push(cancelText);
+
+        const cancelButtonIndex = options.length - 1;
+
+        BottomSheet.showBottomSheetWithOptions({
+            anchor: this.combinedActionsRef?.current ? findNodeHandle(this.combinedActionsRef.current) : null,
+            options,
+            cancelButtonIndex,
+        }, (value) => {
+            if (value !== cancelButtonIndex) {
+                actions[value]();
+            }
+        });
     };
 
     goToCreatePublicChannel = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'CreateChannel';
         const title = intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
@@ -243,11 +233,10 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        actions.showModal(screen, title, passProps);
+        showModal(screen, title, passProps);
     });
 
     goToCreatePrivateChannel = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'CreateChannel';
         const title = intl.formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'});
@@ -256,11 +245,10 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        actions.showModal(screen, title, passProps);
+        showModal(screen, title, passProps);
     });
 
     goToDirectMessages = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'MoreDirectMessages';
         const title = intl.formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'});
@@ -274,11 +262,10 @@ export default class List extends PureComponent {
             },
         };
 
-        actions.showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps, options);
     });
 
     goToMoreChannels = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'MoreChannels';
         const title = intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
@@ -286,7 +273,7 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        actions.showModal(screen, title, passProps);
+        showModal(screen, title, passProps);
     });
 
     keyExtractor = (item) => item.id || item;
@@ -304,26 +291,20 @@ export default class List extends PureComponent {
         this.setState({width: width - 40});
     };
 
-    renderSectionAction = (styles, action) => {
-        const {theme} = this.props;
+    renderSectionAction = (styles, action, anchor) => {
         return (
             <TouchableHighlight
                 style={styles.actionContainer}
                 onPress={action}
-                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
+                underlayColor={'transparent'}
+                hitSlop={styles.hitSlop}
             >
-                <MaterialIcon
-                    name='add'
+                <FontAwesomePro
+                    name='ios-add-circle-outline'
+                    ref={anchor ? this.combinedActionsRef : null}
                     style={styles.action}
                 />
             </TouchableHighlight>
-        );
-    };
-
-    renderSectionSeparator = () => {
-        const {styles} = this.props;
-        return (
-            <View style={[styles.divider]}/>
         );
     };
 
@@ -342,33 +323,34 @@ export default class List extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const {styles} = this.props;
+        const {styles, isLandscape} = this.props;
         const {intl} = this.context;
         const {
             action,
-            bottomSeparator,
             defaultMessage,
             id,
-            topSeparator,
         } = section;
 
+        const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
+
         return (
-            <View>
-                {topSeparator && this.renderSectionSeparator()}
-                <View style={styles.titleContainer}>
+            <React.Fragment>
+                <View style={[styles.titleContainer, padding(isLandscape)]}>
                     <Text style={styles.title}>
                         {intl.formatMessage({id, defaultMessage}).toUpperCase()}
                     </Text>
-                    {action && this.renderSectionAction(styles, action)}
+                    <View style={styles.separatorContainer}>
+                        <View style={styles.separator}/>
+                    </View>
+                    {action && this.renderSectionAction(styles, action, anchor)}
                 </View>
-                {bottomSeparator && this.renderSectionSeparator()}
-            </View>
+            </React.Fragment>
         );
     };
 
     scrollToTop = () => {
-        if (this.refs.list) {
-            this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+        if (this.listRef?._wrapperListRef) {
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                 x: 0,
                 y: 0,
                 animated: true,
@@ -377,24 +359,19 @@ export default class List extends PureComponent {
     };
 
     emitUnreadIndicatorChange = debounce((showIndicator) => {
-        if (showIndicator && !UnreadIndicator) {
-            UnreadIndicator = require('app/components/sidebars/main/channels_list/unread_indicator').default;
-        }
         this.setState({showIndicator});
-    }, 100);
+    }, 10);
 
     updateUnreadIndicators = ({viewableItems}) => {
-        InteractionManager.runAfterInteractions(() => {
-            const {unreadChannelIds} = this.props;
-            const firstUnread = unreadChannelIds.length && unreadChannelIds[0];
-            if (firstUnread && viewableItems.length) {
-                const isVisible = viewableItems.find((v) => v.item === firstUnread);
+        const {unreadChannelIds} = this.props;
+        const firstUnread = unreadChannelIds.length && unreadChannelIds[0];
+        if (firstUnread && viewableItems.length) {
+            const isVisible = viewableItems.find((v) => v.item === firstUnread);
 
-                return this.emitUnreadIndicatorChange(!isVisible);
-            }
+            return this.emitUnreadIndicatorChange(!isVisible);
+        }
 
-            return this.emitUnreadIndicatorChange(false);
-        });
+        return this.emitUnreadIndicatorChange(false);
     };
 
     scrollBeginDrag = () => {
@@ -410,7 +387,7 @@ export default class List extends PureComponent {
 
         const {width, height} = Dimensions.get('window');
         const landscape = width > height;
-        if (DeviceTypes.IS_IPHONE_X) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
             return landscape ? 54 : 44;
         }
 
@@ -419,7 +396,7 @@ export default class List extends PureComponent {
 
     render() {
         const {styles, theme} = this.props;
-        const {sections, width, showIndicator} = this.state;
+        const {sections, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
 
@@ -429,25 +406,25 @@ export default class List extends PureComponent {
                 onLayout={this.onLayout}
             >
                 <SectionList
-                    ref='list'
+                    ref={this.setListRef}
                     sections={sections}
                     contentContainerStyle={{paddingBottom}}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
+                    keyboardShouldPersistTaps={'always'}
                     keyExtractor={this.keyExtractor}
                     onViewableItemsChanged={this.updateUnreadIndicators}
                     maxToRenderPerBatch={10}
-                    stickySectionHeadersEnabled={false}
+                    stickySectionHeadersEnabled={true}
                     viewabilityConfig={VIEWABILITY_CONFIG}
-                    keyboardShouldPersistTaps={'always'}
                     {...this.keyboardDismissProp}
                 />
-                {showIndicator &&
+                {UnreadIndicator &&
                 <UnreadIndicator
-                    show={showIndicator}
-                    style={[styles.above, {width}]}
                     onPress={this.scrollToTop}
                     theme={theme}
+                    style={styles.above}
+                    visible={showIndicator}
                 />
                 }
             </View>

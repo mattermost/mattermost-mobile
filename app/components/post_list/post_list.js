@@ -16,6 +16,7 @@ import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
 import telemetry from 'app/telemetry';
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
@@ -41,7 +42,6 @@ export default class PostList extends PureComponent {
             refreshChannelWithRetry: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             setDeepLinkURL: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         deepLinkURL: PropTypes.string,
@@ -100,6 +100,7 @@ export default class PostList extends PureComponent {
         if (this.props.channelId !== nextProps.channelId) {
             this.contentOffsetY = 0;
             this.hasDoneInitialScroll = false;
+            this.setState({contentHeight: 0});
         }
     }
 
@@ -115,11 +116,27 @@ export default class PostList extends PureComponent {
             this.scrollToBottom();
             this.shouldScrollToBottom = false;
         }
+
+        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && this.state.contentHeight) {
+            this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+        }
     }
 
     componentWillUnmount() {
         EventEmitter.off('scroll-to-bottom', this.handleSetScrollToBottom);
+
+        if (this.animationFrameIndexFailed) {
+            cancelAnimationFrame(this.animationFrameIndexFailed);
+        }
+
+        if (this.animationFrameInitialIndex) {
+            cancelAnimationFrame(this.animationFrameInitialIndex);
+        }
     }
+
+    getItemCount = () => {
+        return this.props.postIds.length;
+    };
 
     handleClosePermalink = () => {
         const {actions} = this.props;
@@ -128,12 +145,12 @@ export default class PostList extends PureComponent {
     };
 
     handleContentSizeChange = (contentWidth, contentHeight) => {
-        this.scrollToInitialIndexIfNeeded(contentWidth, contentHeight);
-
-        if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
-            // We still have less than 1 screen of posts loaded with more to get, so load more
-            this.props.onLoadMoreUp();
-        }
+        this.setState({contentHeight}, () => {
+            if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
+                // We still have less than 1 screen of posts loaded with more to get, so load more
+                this.props.onLoadMoreUp();
+            }
+        });
     };
 
     handleDeepLink = (url) => {
@@ -201,8 +218,12 @@ export default class PostList extends PureComponent {
     };
 
     handleScrollToIndexFailed = () => {
-        this.hasDoneInitialScroll = false;
-        this.scrollToInitialIndexIfNeeded(1, 1);
+        this.animationFrameIndexFailed = requestAnimationFrame(() => {
+            if (this.props.initialIndex > 0 && this.state.contentHeight > 0) {
+                this.hasDoneInitialScroll = false;
+                this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+            }
+        });
     };
 
     handleSetScrollToBottom = () => {
@@ -239,6 +260,7 @@ export default class PostList extends PureComponent {
         // Remember that the list is rendered with item 0 at the bottom so the "previous" post
         // comes after this one in the list
         const previousPostId = index < this.props.postIds.length - 1 ? this.props.postIds[index + 1] : null;
+        const beforePrevPostId = index < this.props.postIds.length - 2 ? this.props.postIds[index + 2] : null;
         const nextPostId = index > 0 ? this.props.postIds[index - 1] : null;
 
         const postProps = {
@@ -253,6 +275,7 @@ export default class PostList extends PureComponent {
             onPress: this.props.onPostPress,
             renderReplies: this.props.renderReplies,
             shouldRenderReplyButton: this.props.shouldRenderReplyButton,
+            beforePrevPostId,
         };
 
         if (PostListUtils.isCombinedUserActivityPost(item)) {
@@ -278,29 +301,39 @@ export default class PostList extends PureComponent {
 
     scrollToBottom = () => {
         setTimeout(() => {
-            if (this.flatListRef && this.flatListRef.current) {
+            if (this.flatListRef.current) {
                 this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
             }
         }, 250);
     };
 
-    scrollToInitialIndexIfNeeded = (width, height) => {
-        if (
-            width > 0 &&
-            height > 0 &&
-            !this.hasDoneInitialScroll
-        ) {
-            requestAnimationFrame(() => {
-                if (this.props.initialIndex > 0 && this.flatListRef?.current) {
-                    this.flatListRef.current.scrollToIndex({
-                        animated: false,
-                        index: this.props.initialIndex,
-                        viewOffset: 0,
-                        viewPosition: 1, // 0 is at bottom
-                    });
-                }
-            });
-            this.hasDoneInitialScroll = true;
+    flatListScrollToIndex = (index) => {
+        this.flatListRef.current.scrollToIndex({
+            animated: false,
+            index,
+            viewOffset: 0,
+            viewPosition: 1, // 0 is at bottom
+        });
+    }
+
+    scrollToIndex = (index) => {
+        this.animationFrameInitialIndex = requestAnimationFrame(() => {
+            if (this.flatListRef.current && index > 0 && index <= this.getItemCount()) {
+                this.flatListScrollToIndex(index);
+            }
+        });
+    };
+
+    scrollToInitialIndexIfNeeded = (index, count = 0) => {
+        if (!this.hasDoneInitialScroll) {
+            if (index > 0 && index <= this.getItemCount()) {
+                this.hasDoneInitialScroll = true;
+                this.scrollToIndex(index);
+            } else if (count < 3) {
+                setTimeout(() => {
+                    this.scrollToInitialIndexIfNeeded(index, count + 1);
+                }, 300);
+            }
         }
     };
 
@@ -322,7 +355,7 @@ export default class PostList extends PureComponent {
             };
 
             this.showingPermalink = true;
-            actions.showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options);
         }
     };
 

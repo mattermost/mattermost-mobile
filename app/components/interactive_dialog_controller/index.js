@@ -4,21 +4,21 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {showModal} from 'app/actions/navigation';
+import {submitInteractiveDialog} from 'mattermost-redux/actions/integrations';
 
 import InteractiveDialogController from './interactive_dialog_controller';
 
 function mapStateToProps(state) {
     return {
         triggerId: state.entities.integrations.dialogTriggerId,
-        dialog: state.entities.integrations.dialog || {},
+        dialogData: state.entities.integrations.dialog || {},
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            showModal,
+            submitInteractiveDialog,
         }, dispatch),
     };
 }

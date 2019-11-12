@@ -8,22 +8,29 @@ import {
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
+import {RequestStatus} from 'mattermost-redux/constants';
+
+import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import ErrorText from 'app/components/error_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    setNavigatorStyles,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-
-import {RequestStatus} from 'mattermost-redux/constants';
+import {dismissModal, setButtons} from 'app/actions/navigation';
 
 export default class EditPost extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             editPost: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         closeButton: PropTypes.object,
@@ -32,6 +39,7 @@ export default class EditPost extends PureComponent {
         editPostRequest: PropTypes.object.isRequired,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -50,10 +58,15 @@ export default class EditPost extends PureComponent {
     constructor(props, context) {
         super(props);
 
-        this.state = {message: props.post.message};
+        this.state = {
+            message: props.post.message,
+            cursorPosition: 0,
+        };
+
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.rightButton.text = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
 
-        props.actions.setButtons(props.componentId, {
+        setButtons(props.componentId, {
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
             rightButtons: [this.rightButton],
         });
@@ -103,20 +116,20 @@ export default class EditPost extends PureComponent {
     }
 
     close = () => {
-        this.props.actions.dismissModal();
+        dismissModal();
     };
 
     emitCanEditPost = (enabled) => {
-        const {actions, componentId} = this.props;
-        actions.setButtons(componentId, {
+        const {componentId} = this.props;
+        setButtons(componentId, {
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
             rightButtons: [{...this.rightButton, enabled}],
         });
     };
 
     emitEditing = (loading) => {
-        const {actions, componentId} = this.props;
-        actions.setButtons(componentId, {
+        const {componentId} = this.props;
+        setButtons(componentId, {
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
             rightButtons: [{...this.rightButton, enabled: !loading}],
         });
@@ -145,8 +158,13 @@ export default class EditPost extends PureComponent {
         }
     };
 
+    onPostSelectionChange = (event) => {
+        const cursorPosition = event.nativeEvent.selection.end;
+        this.setState({cursorPosition});
+    };
+
     render() {
-        const {deviceHeight, deviceWidth, theme} = this.props;
+        const {deviceHeight, deviceWidth, theme, isLandscape} = this.props;
         const {editing, message, error} = this.state;
 
         const style = getStyleSheet(theme);
@@ -178,7 +196,7 @@ export default class EditPost extends PureComponent {
                 <StatusBar/>
                 <View style={style.scrollView}>
                     {displayError}
-                    <View style={[style.inputContainer, {height}]}>
+                    <View style={[style.inputContainer, padding(isLandscape), {height}]}>
                         <TextInputWithLocalizedPlaceholder
                             ref={this.messageRef}
                             value={message}
@@ -192,9 +210,20 @@ export default class EditPost extends PureComponent {
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(this.props.theme)}
+                            onSelectionChange={this.onPostSelectionChange}
                         />
                     </View>
                 </View>
+                <KeyboardTrackingView style={style.autocompleteContainer}>
+                    <Autocomplete
+                        cursorPosition={this.state.cursorPosition}
+                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        onChangeText={this.onPostChangeText}
+                        value={message}
+                        nestedScrollEnabled={true}
+                    />
+                </KeyboardTrackingView>
             </View>
         );
     }
@@ -229,6 +258,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             padding: 15,
             textAlignVertical: 'top',
+        },
+        autocompleteContainer: {
+            flex: 1,
+            justifyContent: 'flex-end',
         },
     };
 });

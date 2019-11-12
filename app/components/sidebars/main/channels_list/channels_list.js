@@ -12,8 +12,12 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 import List from './list';
 import SwitchTeamsButton from './switch_teams_button';
@@ -31,6 +35,7 @@ export default class ChannelsList extends PureComponent {
         theme: PropTypes.object.isRequired,
         drawerOpened: PropTypes.bool,
         previewChannel: PropTypes.func,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -50,9 +55,13 @@ export default class ChannelsList extends PureComponent {
         });
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     cancelSearch = () => {
-        if (this.refs.search_bar) {
-            this.refs.search_bar.cancel();
+        if (this.searchBarRef) {
+            this.searchBarRef.cancel();
         }
     };
 
@@ -90,6 +99,7 @@ export default class ChannelsList extends PureComponent {
             onShowTeams,
             theme,
             previewChannel,
+            isLandscape,
         } = this.props;
 
         const {searching, term} = this.state;
@@ -127,9 +137,9 @@ export default class ChannelsList extends PureComponent {
         };
 
         const title = (
-            <View style={styles.searchContainer}>
+            <View style={[styles.searchContainer, padding(isLandscape)]}>
                 <SearchBar
-                    ref='search_bar'
+                    ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     inputCollapsedMargin={0}
@@ -147,12 +157,14 @@ export default class ChannelsList extends PureComponent {
                     onFocus={this.onSearchFocused}
                     searchIconCollapsedMargin={5}
                     searchIconExpandedMargin={5}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                     leftComponent={(
                         <SwitchTeamsButton
                             onShowTeams={onShowTeams}
                         />
                     )}
+                    positionRightDelete={5}
                 />
             </View>
         );
@@ -172,13 +184,34 @@ export default class ChannelsList extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        above: {
+            backgroundColor: theme.mentionBg,
+            top: 40,
+        },
+        action: {
+            color: changeOpacity(theme.sidebarText, 0.4),
+            fontSize: 26,
+            fontWeight: '100',
+        },
+        actionContainer: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 16,
+        },
         container: {
             backgroundColor: theme.sidebarBg,
             flex: 1,
         },
+        header: {
+            color: theme.sidebarHeaderTextColor,
+            flex: 1,
+            fontSize: 17,
+            fontWeight: 'normal',
+            paddingLeft: 16,
+        },
         headerContainer: {
             alignItems: 'center',
-            paddingLeft: 10,
+            paddingLeft: 13,
             backgroundColor: theme.sidebarBg,
             flexDirection: 'row',
             borderBottomWidth: 1,
@@ -188,36 +221,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                     height: ANDROID_TOP_PORTRAIT,
                 },
                 ios: {
-                    height: 44,
+                    height: 54,
                 },
             }),
         },
-        header: {
-            color: theme.sidebarHeaderTextColor,
-            flex: 1,
-            fontSize: 17,
-            fontWeight: 'normal',
-            paddingLeft: 16,
-        },
-        switchContainer: {
-            position: 'relative',
-            top: -1,
-        },
-        titleContainer: { // These aren't used by this component, but they are passed down to the list component
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            height: 48,
-            marginLeft: 16,
-        },
-        title: {
-            flex: 1,
-            color: theme.sidebarText,
-            opacity: 1,
-            fontSize: 15,
-            fontWeight: '400',
-            letterSpacing: 0.8,
-            lineHeight: 18,
+        hitSlop: {
+            bottom: 10,
+            left: 10,
+            right: 10,
+            top: 10,
         },
         searchContainer: {
             flex: 1,
@@ -231,25 +243,36 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 },
             }),
         },
-        divider: {
-            backgroundColor: changeOpacity(theme.sidebarText, 0.1),
+        separator: {
+            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.1),
             height: 1,
+            width: '100%',
         },
-        actionContainer: {
-            alignItems: 'center',
-            height: 48,
+        separatorContainer: {
+            flex: 1,
             justifyContent: 'center',
-            width: 50,
+            marginHorizontal: 16,
         },
-        action: {
+        switchContainer: {
+            position: 'relative',
+            top: -1,
+        },
+        title: {
             color: theme.sidebarText,
-            fontSize: 20,
-            fontWeight: '500',
+            opacity: 0.4,
+            fontSize: 12,
+            fontWeight: '600',
+            letterSpacing: 0.2,
             lineHeight: 18,
+            fontFamily: 'Open Sans',
         },
-        above: {
-            backgroundColor: theme.mentionBg,
-            top: 9,
+        titleContainer: { // These aren't used by this component, but they are passed down to the list component
+            alignItems: 'center',
+            backgroundColor: theme.sidebarBg,
+            flex: 1,
+            flexDirection: 'row',
+            height: 40,
+            paddingLeft: 16,
         },
     };
 });

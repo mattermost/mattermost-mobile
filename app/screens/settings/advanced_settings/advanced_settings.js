@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
@@ -22,16 +22,18 @@ import {t} from 'app/utils/i18n';
 import {deleteFileCache, getFileCacheSize} from 'app/utils/file';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {dismissAllModals} from 'app/actions/navigation';
 
 import Config from 'assets/config';
 
-class AdvancedSettings extends PureComponent {
+class AdvancedSettings extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             purgeOfflineStore: PropTypes.func.isRequired,
         }).isRequired,
         intl: intlShape.isRequired,
         theme: PropTypes.object,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     state = {
@@ -41,6 +43,10 @@ class AdvancedSettings extends PureComponent {
 
     componentDidMount() {
         this.getDownloadCacheSize();
+    }
+
+    shouldComponentUpdate(nextProps) {
+        return this.props.theme === nextProps.theme;
     }
 
     clearOfflineCache = preventDoubleTap(() => {
@@ -73,6 +79,10 @@ class AdvancedSettings extends PureComponent {
         await deleteFileCache();
         this.setState({cacheSize: 0, cacheSizedFetched: true});
         actions.purgeOfflineStore();
+
+        if (Platform.OS === 'android') {
+            dismissAllModals();
+        }
     });
 
     renderCacheFileSize = () => {
@@ -104,7 +114,7 @@ class AdvancedSettings extends PureComponent {
             return null;
         }
 
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -117,6 +127,7 @@ class AdvancedSettings extends PureComponent {
                     separator={false}
                     showArrow={false}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.divider}/>
                 <SettingsItem
@@ -127,6 +138,7 @@ class AdvancedSettings extends PureComponent {
                     separator={false}
                     showArrow={false}
                     theme={theme}
+                    isLandscape={isLandscape}
                 />
                 <View style={style.divider}/>
             </View>
@@ -134,7 +146,7 @@ class AdvancedSettings extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -156,6 +168,7 @@ class AdvancedSettings extends PureComponent {
                         showArrow={false}
                         rightComponent={this.renderCacheFileSize()}
                         theme={theme}
+                        isLandscape={isLandscape}
                     />
                     <View style={style.divider}/>
                     {this.renderSentryDebugOptions()}

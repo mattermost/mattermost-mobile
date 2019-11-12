@@ -99,7 +99,7 @@ export function getScheme(url) {
 }
 
 export function matchDeepLink(url, serverURL, siteURL) {
-    if (!url || !serverURL || !siteURL) {
+    if (!url || (!serverURL && !siteURL)) {
         return null;
     }
 

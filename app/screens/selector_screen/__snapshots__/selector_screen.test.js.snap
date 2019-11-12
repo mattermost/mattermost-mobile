@@ -12,9 +12,12 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -30,6 +33,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
           "fontSize": 15,
         }
       }
+      keyboardAppearance="light"
       leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
@@ -49,6 +53,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -69,6 +74,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",
@@ -102,9 +108,12 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -120,6 +129,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
           "fontSize": 15,
         }
       }
+      keyboardAppearance="light"
       leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
@@ -139,6 +149,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -159,6 +170,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",
@@ -192,9 +204,12 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -210,6 +225,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
           "fontSize": 15,
         }
       }
+      keyboardAppearance="light"
       leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
@@ -236,6 +252,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
         },
       ]
     }
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -256,6 +273,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",
@@ -289,9 +307,12 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -307,6 +328,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
           "fontSize": 15,
         }
       }
+      keyboardAppearance="light"
       leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
@@ -326,6 +348,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -346,6 +369,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",
@@ -379,9 +403,12 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -397,6 +424,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
           "fontSize": 15,
         }
       }
+      keyboardAppearance="light"
       leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
@@ -416,6 +444,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="section"
     loading={false}
     loadingComponent={null}
@@ -436,6 +465,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",
@@ -469,9 +499,12 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
-        "marginVertical": 5,
-      }
+      Array [
+        Object {
+          "marginVertical": 5,
+        },
+        null,
+      ]
     }
   >
     <SearchBarIos
@@ -487,6 +520,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
           "fontSize": 15,
         }
       }
+      keyboardAppearance="light"
       leftComponent={null}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
@@ -506,6 +540,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   </View>
   <CustomList
     data={Array []}
+    isLandscape={false}
     listType="section"
     loading={false}
     loadingComponent={null}
@@ -526,6 +561,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",

@@ -20,6 +20,7 @@ export default class Badge extends PureComponent {
     };
 
     static propTypes = {
+        containerStyle: ViewPropTypes.style,
         count: PropTypes.number.isRequired,
         extraPaddingHorizontal: PropTypes.number,
         style: ViewPropTypes.style,
@@ -34,9 +35,7 @@ export default class Badge extends PureComponent {
 
         this.mounted = false;
         this.layoutReady = false;
-    }
 
-    componentWillMount() {
         this.panResponder = PanResponder.create({
             onStartShouldSetPanResponder: () => true,
             onMoveShouldSetPanResponder: () => true,
@@ -60,6 +59,10 @@ export default class Badge extends PureComponent {
         this.mounted = false;
     }
 
+    setBadgeRef = (ref) => {
+        this.badgeRef = ref;
+    };
+
     handlePress = () => {
         if (this.props.onPress) {
             this.props.onPress();
@@ -67,8 +70,8 @@ export default class Badge extends PureComponent {
     };
 
     setNativeProps = (props) => {
-        if (this.mounted && this.refs.badgeContainer) {
-            this.refs.badgeContainer.setNativeProps(props);
+        if (this.mounted && this.badgeRef) {
+            this.badgeRef.setNativeProps(props);
         }
     };
 
@@ -95,7 +98,7 @@ export default class Badge extends PureComponent {
     };
 
     renderText = () => {
-        const {count} = this.props;
+        const {containerStyle, count, style} = this.props;
         let unreadCount = null;
         let unreadIndicator = null;
         if (count < 0) {
@@ -110,25 +113,33 @@ export default class Badge extends PureComponent {
                 </View>
             );
         } else {
+            let mentionCount = count;
+            if (count > 99) {
+                mentionCount = '99+';
+            }
+
             unreadCount = (
                 <View style={styles.verticalAlign}>
                     <Text
                         style={[styles.text, this.props.countStyle]}
                         onLayout={this.onLayout}
                     >
-                        {count.toString()}
+                        {mentionCount.toString()}
                     </Text>
                 </View>
             );
         }
+
         return (
-            <View
-                ref='badgeContainer'
-                style={[styles.badge, this.props.style, {opacity: 0}]}
-            >
-                <View style={styles.wrapper}>
-                    {unreadCount}
-                    {unreadIndicator}
+            <View style={[styles.badgeContainer, containerStyle]}>
+                <View
+                    ref={this.setBadgeRef}
+                    style={[styles.badge, style, {opacity: 0}]}
+                >
+                    <View style={styles.wrapper}>
+                        {unreadCount}
+                        {unreadIndicator}
+                    </View>
                 </View>
             </View>
         );
@@ -153,11 +164,13 @@ export default class Badge extends PureComponent {
 const styles = StyleSheet.create({
     badge: {
         backgroundColor: '#444',
-        borderRadius: 20,
         height: 20,
         padding: 12,
         paddingTop: 3,
         paddingBottom: 3,
+    },
+    badgeContainer: {
+        borderRadius: 20,
         position: 'absolute',
         right: 30,
         top: 2,
@@ -173,10 +186,10 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     unreadIndicator: {
-        height: 4,
-        width: 4,
+        height: 5,
+        width: 5,
         backgroundColor: '#444',
-        borderRadius: 4,
+        borderRadius: 5,
     },
     verticalAlign: {
         flex: 1,

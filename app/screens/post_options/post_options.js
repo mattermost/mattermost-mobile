@@ -11,6 +11,8 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
+import {t} from 'app/utils/i18n';
+import {showModal, dismissModal} from 'app/actions/navigation';
 
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
 import PostOption from './post_option';
@@ -25,8 +27,6 @@ export default class PostOptions extends PureComponent {
             removePost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired,
             unpinPost: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
         canReply: PropTypes.bool,
@@ -43,189 +43,185 @@ export default class PostOptions extends PureComponent {
         isMyPost: PropTypes.bool,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
-    close = () => {
-        this.props.actions.dismissModal();
-    };
+    close = async (cb) => {
+        dismissModal();
 
-    closeWithAnimation = () => {
-        if (this.slideUpPanel) {
-            this.slideUpPanel.closeWithAnimation();
-        } else {
-            this.close();
+        if (typeof cb === 'function') {
+            setTimeout(cb, 300);
         }
     };
 
-    getAddReactionOption = () => {
+    closeWithAnimation = (cb) => {
+        if (this.slideUpPanel) {
+            this.slideUpPanel.closeWithAnimation(cb);
+        } else {
+            this.close(cb);
+        }
+    };
+
+    getOption = (key, icon, message, onPress, destructive = false) => {
         const {formatMessage} = this.context.intl;
+        const {isLandscape, theme} = this.props;
+
+        return (
+            <PostOption
+                key={key}
+                icon={icon}
+                text={formatMessage(message)}
+                onPress={onPress}
+                isLandscape={isLandscape}
+                destructive={destructive}
+                theme={theme}
+            />
+        );
+    }
+
+    getAddReactionOption = () => {
         const {canAddReaction} = this.props;
 
         if (canAddReaction) {
-            return (
-                <PostOption
-                    key='reaction'
-                    icon='emoji'
-                    text={formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'})}
-                    onPress={this.handleAddReaction}
-                />
-            );
+            const key = 'reaction';
+            const icon = 'emoji';
+            const message = {id: t('mobile.post_info.add_reaction'), defaultMessage: 'Add Reaction'};
+            const onPress = this.handleAddReaction;
+
+            return this.getOption(key, icon, message, onPress);
         }
 
         return null;
     };
 
     getReplyOption = () => {
-        const {formatMessage} = this.context.intl;
         const {canReply} = this.props;
 
         if (canReply) {
-            return (
-                <PostOption
-                    key='reply'
-                    icon='reply'
-                    text={formatMessage({id: 'mobile.post_info.reply', defaultMessage: 'Reply'})}
-                    onPress={this.handleReply}
-                />
-            );
+            const key = 'reply';
+            const icon = 'reply';
+            const message = {id: t('mobile.post_info.reply'), defaultMessage: 'Reply'};
+            const onPress = this.handleReply;
+
+            return this.getOption(key, icon, message, onPress);
         }
 
         return null;
     }
 
     getCopyPermalink = () => {
-        const {formatMessage} = this.context.intl;
         const {canCopyPermalink} = this.props;
 
         if (canCopyPermalink) {
-            return (
-                <PostOption
-                    key='permalink'
-                    icon='link'
-                    text={formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'})}
-                    onPress={this.handleCopyPermalink}
-                />
-            );
+            const key = 'permalink';
+            const icon = 'link';
+            const message = {id: t('get_post_link_modal.title'), defaultMessage: 'Copy Permalink'};
+            const onPress = this.handleCopyPermalink;
+
+            return this.getOption(key, icon, message, onPress);
         }
 
         return null;
     };
 
     getCopyText = () => {
-        const {formatMessage} = this.context.intl;
         const {canCopyText} = this.props;
 
         if (canCopyText) {
-            return (
-                <PostOption
-                    key='copy'
-                    icon='copy'
-                    text={formatMessage({id: 'mobile.post_info.copy_text', defaultMessage: 'Copy Text'})}
-                    onPress={this.handleCopyText}
-                />
-            );
+            const key = 'copy';
+            const icon = 'copy';
+            const message = {id: t('mobile.post_info.copy_text'), defaultMessage: 'Copy Text'};
+            const onPress = this.handleCopyText;
+
+            return this.getOption(key, icon, message, onPress);
         }
 
         return null;
     };
 
     getDeleteOption = () => {
-        const {formatMessage} = this.context.intl;
         const {canDelete} = this.props;
 
         if (canDelete) {
-            return (
-                <PostOption
-                    destructive={true}
-                    key='delete'
-                    icon='trash'
-                    text={formatMessage({id: 'post_info.del', defaultMessage: 'Delete'})}
-                    onPress={this.handlePostDelete}
-                />
-            );
+            const key = 'delete';
+            const icon = 'trash';
+            const message = {id: t('post_info.del'), defaultMessage: 'Delete'};
+            const onPress = this.handlePostDelete;
+            const destructive = true;
+
+            return this.getOption(key, icon, message, onPress, destructive);
         }
 
         return null;
     };
 
     getEditOption = () => {
-        const {formatMessage} = this.context.intl;
         const {canEdit, canEditUntil} = this.props;
 
         if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
-            return (
-                <PostOption
-                    key='edit'
-                    icon='edit'
-                    text={formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'})}
-                    onPress={this.handlePostEdit}
-                />
-            );
+            const key = 'edit';
+            const icon = 'edit';
+            const message = {id: t('post_info.edit'), defaultMessage: 'Edit'};
+            const onPress = this.handlePostEdit;
+
+            return this.getOption(key, icon, message, onPress);
         }
 
         return null;
     };
 
     getFlagOption = () => {
-        const {formatMessage} = this.context.intl;
         const {canFlag, isFlagged} = this.props;
 
         if (!canFlag) {
             return null;
         }
 
+        let key;
+        let message;
+        let onPress;
+        const icon = 'flag';
+
         if (isFlagged) {
-            return (
-                <PostOption
-                    key='unflag'
-                    icon='flag'
-                    text={formatMessage({id: 'mobile.post_info.unflag', defaultMessage: 'Unflag'})}
-                    onPress={this.handleUnflagPost}
-                />
-            );
+            key = 'unflag';
+            message = {id: t('mobile.post_info.unflag'), defaultMessage: 'Unflag'};
+            onPress = this.handleUnflagPost;
+        } else {
+            key = 'flagged';
+            message = {id: t('mobile.post_info.flag'), defaultMessage: 'Flag'};
+            onPress = this.handleFlagPost;
         }
 
-        return (
-            <PostOption
-                key='flagged'
-                icon='flag'
-                text={formatMessage({id: 'mobile.post_info.flag', defaultMessage: 'Flag'})}
-                onPress={this.handleFlagPost}
-            />
-        );
+        return this.getOption(key, icon, message, onPress);
     };
 
     getPinOption = () => {
-        const {formatMessage} = this.context.intl;
         const {canPin, post} = this.props;
 
         if (!canPin) {
             return null;
         }
 
+        let key;
+        let message;
+        let onPress;
+        const icon = 'pin';
+
         if (post.is_pinned) {
-            return (
-                <PostOption
-                    key='unpin'
-                    icon='pin'
-                    text={formatMessage({id: 'mobile.post_info.unpin', defaultMessage: 'Unpin from Channel'})}
-                    onPress={this.handleUnpinPost}
-                />
-            );
+            key = 'unpin';
+            message = {id: t('mobile.post_info.unpin'), defaultMessage: 'Unpin from Channel'};
+            onPress = this.handleUnpinPost;
+        } else {
+            key = 'pin';
+            message = {id: t('mobile.post_info.pin'), defaultMessage: 'Pin to Channel'};
+            onPress = this.handlePinPost;
         }
 
-        return (
-            <PostOption
-                key='pin'
-                icon='pin'
-                text={formatMessage({id: 'mobile.post_info.pin', defaultMessage: 'Pin to Channel'})}
-                onPress={this.handlePinPost}
-            />
-        );
+        return this.getOption(key, icon, message, onPress);
     };
 
     getMyPostOptions = () => {
@@ -265,11 +261,10 @@ export default class PostOptions extends PureComponent {
     };
 
     handleAddReaction = () => {
-        const {actions, theme} = this.props;
+        const {theme} = this.props;
         const {formatMessage} = this.context.intl;
 
-        this.close();
-        setTimeout(() => {
+        this.close(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
                 const screen = 'AddReaction';
                 const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
@@ -278,17 +273,16 @@ export default class PostOptions extends PureComponent {
                     onEmojiPress: this.handleAddReactionToPost,
                 };
 
-                actions.showModal(screen, title, passProps);
+                showModal(screen, title, passProps);
             });
-        }, 300);
+        });
     };
 
     handleReply = () => {
         const {post} = this.props;
-        this.closeWithAnimation();
-        setTimeout(() => {
+        this.closeWithAnimation(() => {
             EventEmitter.emit('goToThread', post);
-        }, 250);
+        });
     };
 
     handleAddReactionToPost = (emoji) => {
@@ -347,20 +341,20 @@ export default class PostOptions extends PureComponent {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: () => {
-                    actions.deletePost(post);
-                    actions.removePost(post);
-                    this.closeWithAnimation();
+                    this.closeWithAnimation(() => {
+                        actions.deletePost(post);
+                        actions.removePost(post);
+                    });
                 },
             }]
         );
     };
 
     handlePostEdit = () => {
-        const {actions, theme, post} = this.props;
+        const {theme, post} = this.props;
         const {intl} = this.context;
 
-        this.close();
-        setTimeout(() => {
+        this.close(() => {
             MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
                 const screen = 'EditPost';
                 const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
@@ -369,9 +363,9 @@ export default class PostOptions extends PureComponent {
                     closeButton: source,
                 };
 
-                actions.showModal(screen, title, passProps);
+                showModal(screen, title, passProps);
             });
-        }, 300);
+        });
     };
 
     handleUnflagPost = () => {
@@ -397,7 +391,7 @@ export default class PostOptions extends PureComponent {
     };
 
     render() {
-        const {deviceHeight} = this.props;
+        const {deviceHeight, theme} = this.props;
         const options = this.getPostOptions();
         if (!options || !options.length) {
             return null;
@@ -415,6 +409,7 @@ export default class PostOptions extends PureComponent {
                     onRequestClose={this.close}
                     initialPosition={initialPosition}
                     key={marginFromTop}
+                    theme={theme}
                 >
                     {options}
                 </SlideUpPanel>

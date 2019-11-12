@@ -7,27 +7,26 @@ import {intlShape} from 'react-intl';
 import {
     Text,
     TouchableOpacity,
-    StyleSheet,
     View,
 } from 'react-native';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ProfilePicture from 'app/components/profile_picture';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {goToScreen} from 'app/actions/navigation';
 
 import Emoji from 'app/components/emoji';
 
 export default class ReactionRow extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         emojiName: PropTypes.string.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -39,7 +38,7 @@ export default class ReactionRow extends React.PureComponent {
     };
 
     goToUserProfile = () => {
-        const {actions, user} = this.props;
+        const {user} = this.props;
         const {formatMessage} = this.context.intl;
         const screen = 'UserProfile';
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
@@ -47,7 +46,7 @@ export default class ReactionRow extends React.PureComponent {
             userId: user.id,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     render() {
@@ -55,6 +54,8 @@ export default class ReactionRow extends React.PureComponent {
             emojiName,
             teammateNameDisplay,
             user,
+            isLandscape,
+            theme,
         } = this.props;
 
         if (!user.id) {
@@ -64,9 +65,11 @@ export default class ReactionRow extends React.PureComponent {
         const {id, username} = user;
         const usernameDisplay = '@' + username;
 
+        const style = getStyleSheet(theme);
+
         return (
             <View style={style.container}>
-                <View style={style.profileContainer}>
+                <View style={[style.profileContainer, padding(isLandscape)]}>
                     <TouchableOpacity
                         key={user.id}
                         onPress={preventDoubleTap(this.goToUserProfile)}
@@ -104,36 +107,39 @@ export default class ReactionRow extends React.PureComponent {
     }
 }
 
-const style = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        height: 44,
-        width: '100%',
-        alignItems: 'center',
-    },
-    profileContainer: {
-        alignItems: 'center',
-        width: '13%',
-    },
-    profile: {
-        paddingTop: 3,
-    },
-    textContainer: {
-        width: '74%',
-        flexDirection: 'row',
-    },
-    username: {
-        fontSize: 14,
-        paddingRight: 5,
-    },
-    displayName: {
-        fontSize: 14,
-        color: changeOpacity('#000', 0.5),
-    },
-    emoji: {
-        alignItems: 'center',
-        width: '13%',
-        justifyContent: 'center',
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            height: 44,
+            width: '100%',
+            alignItems: 'center',
+        },
+        profileContainer: {
+            alignItems: 'center',
+            width: '13%',
+        },
+        profile: {
+            paddingTop: 3,
+        },
+        textContainer: {
+            width: '74%',
+            flexDirection: 'row',
+        },
+        username: {
+            fontSize: 14,
+            paddingRight: 5,
+            color: theme.centerChannelColor,
+        },
+        displayName: {
+            fontSize: 14,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        emoji: {
+            alignItems: 'center',
+            width: '13%',
+            justifyContent: 'center',
+        },
+    };
 });

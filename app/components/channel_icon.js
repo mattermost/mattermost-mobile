@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    Image,
     Text,
     View,
 } from 'react-native';
@@ -86,45 +85,45 @@ export default class ChannelIcon extends React.PureComponent {
                 <Icon
                     name='archive'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='fontawesome'
+                    type='mattermost'
                 />
             );
         } else if (isBot) {
             icon = (
                 <Icon
-                    name='robot'
-                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}, style.iconBot]}
-                    type='fontawesome5'
+                    name='bot'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: (size - 1), left: -1.5, top: -1}]}
+                    type='mattermost'
                 />
             );
         } else if (hasDraft) {
             icon = (
                 <Icon
-                    name='pencil'
+                    name='draft'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='fontawesome'
+                    type='mattermost'
                 />
             );
         } else if (type === General.OPEN_CHANNEL) {
             icon = (
                 <Icon
-                    name='globe'
+                    name='public'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='fontawesome'
+                    type='mattermost'
                 />
             );
         } else if (type === General.PRIVATE_CHANNEL) {
             icon = (
                 <Icon
-                    name='lock'
-                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='fontawesome'
+                    name='private'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
+                    type='mattermost'
                 />
             );
         } else if (type === General.GM_CHANNEL) {
             icon = (
-                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}>
-                    <Text style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 6)}]}>
+                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size + 1, height: size + 1}]}>
+                    <Text style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 4)}]}>
                         {membersCount}
                     </Text>
                 </View>
@@ -133,33 +132,37 @@ export default class ChannelIcon extends React.PureComponent {
             switch (status) {
             case General.AWAY:
                 icon = (
-                    <Image
-                        source={require('assets/images/status/away_avatar.png')}
-                        style={{width: size, height: size, tintColor: theme.awayIndicator}}
+                    <Icon
+                        name='away-avatar'
+                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.awayIndicator}]}
+                        type='mattermost'
                     />
                 );
                 break;
             case General.DND:
                 icon = (
-                    <Image
-                        source={require('assets/images/status/dnd_avatar.png')}
-                        style={{width: size, height: size, tintColor: theme.dndIndicator}}
+                    <Icon
+                        name='dnd-avatar'
+                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.dndIndicator}]}
+                        type='mattermost'
                     />
                 );
                 break;
             case General.ONLINE:
                 icon = (
-                    <Image
-                        source={require('assets/images/status/online_avatar.png')}
-                        style={{width: size, height: size, tintColor: theme.onlineIndicator}}
+                    <Icon
+                        name='online-avatar'
+                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.onlineIndicator}]}
+                        type='mattermost'
                     />
                 );
                 break;
             default:
                 icon = (
-                    <Image
-                        source={require('assets/images/status/offline_avatar.png')}
-                        style={{width: size, height: size, tintColor: offlineColor}}
+                    <Icon
+                        name='offline-avatar'
+                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: offlineColor}]}
+                        type='mattermost'
                     />
                 );
                 break;
@@ -167,7 +170,7 @@ export default class ChannelIcon extends React.PureComponent {
         }
 
         return (
-            <View style={[style.container, {width: size, height: size}]}>
+            <View style={[style.container, {height: size}]}>
                 {icon}
             </View>
         );
@@ -192,27 +195,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         iconInfo: {
             color: theme.centerChannelColor,
         },
-        iconBot: {
-            marginLeft: -5,
-        },
         groupBox: {
             alignSelf: 'flex-start',
             alignItems: 'center',
+            backgroundColor: changeOpacity(theme.sidebarText, 0.3),
+            borderColor: changeOpacity(theme.sidebarText, 0.3),
             borderWidth: 1,
-            borderColor: changeOpacity(theme.sidebarText, 0.4),
+            borderRadius: 2,
             justifyContent: 'center',
         },
         groupBoxActive: {
-            borderColor: theme.sidebarTextActiveColor,
+            backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.3),
         },
         groupBoxUnread: {
-            borderColor: theme.sidebarUnreadText,
+            backgroundColor: changeOpacity(theme.sidebarUnreadText, 0.3),
         },
         groupBoxInfo: {
-            borderColor: theme.centerChannelColor,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.3),
         },
         group: {
-            color: changeOpacity(theme.sidebarText, 0.4),
+            color: changeOpacity(theme.sidebarText, 0.6),
             fontSize: 10,
             fontWeight: '600',
         },

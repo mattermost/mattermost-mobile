@@ -17,10 +17,13 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
 import {DeviceTypes, ListTypes, ViewTypes} from 'app/constants';
+import {getCurrentServerUrl} from 'app/init/credentials';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {removeProtocol} from 'app/utils/url';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
+import {showModal} from 'app/actions/navigation';
 
 import TeamsListItem from './teams_list_item';
 
@@ -34,11 +37,9 @@ export default class TeamsList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
-            showModal: PropTypes.func.isRequired,
         }).isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
-        currentUrl: PropTypes.string.isRequired,
         hasOtherJoinableTeams: PropTypes.bool,
         teamIds: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
@@ -51,8 +52,16 @@ export default class TeamsList extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.state = {
+            serverUrl: '',
+        };
+
         MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
+        });
+
+        getCurrentServerUrl().then((url) => {
+            this.setState({serverUrl: removeProtocol(url)});
         });
     }
 
@@ -75,13 +84,14 @@ export default class TeamsList extends PureComponent {
         });
     };
 
-    goToSelectTeam = preventDoubleTap(() => {
+    goToSelectTeam = preventDoubleTap(async () => {
         const {intl} = this.context;
-        const {currentUrl, theme, actions} = this.props;
+        const {theme} = this.props;
+        const {serverUrl} = this.state;
         const screen = 'SelectTeam';
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
         const passProps = {
-            currentUrl,
+            currentUrl: serverUrl,
             theme,
         };
         const options = {
@@ -93,7 +103,7 @@ export default class TeamsList extends PureComponent {
             },
         };
 
-        actions.showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps, options);
     });
 
     keyExtractor = (item) => {
@@ -107,7 +117,7 @@ export default class TeamsList extends PureComponent {
 
         const {width, height} = Dimensions.get('window');
         const landscape = width > height;
-        if (DeviceTypes.IS_IPHONE_X) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
             return landscape ? 54 : 44;
         }
 
@@ -117,6 +127,7 @@ export default class TeamsList extends PureComponent {
     renderItem = ({item}) => {
         return (
             <TeamsListItem
+                currentUrl={this.state.serverUrl}
                 selectTeam={this.selectTeam}
                 teamId={item}
             />
@@ -155,6 +166,7 @@ export default class TeamsList extends PureComponent {
                     {moreAction}
                 </View>
                 <FlatList
+                    extraData={this.state.serverUrl}
                     contentContainerStyle={this.listContentPadding()}
                     data={teamIds}
                     renderItem={this.renderItem}

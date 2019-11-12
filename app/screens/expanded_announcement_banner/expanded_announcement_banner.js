@@ -8,15 +8,15 @@ import Button from 'react-native-button';
 
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {popTopScreen} from 'app/actions/navigation';
 
 export default class ExpandedAnnouncementBanner extends React.PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             dismissBanner: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
         allowDismissal: PropTypes.bool.isRequired,
         bannerText: PropTypes.string.isRequired,
@@ -24,7 +24,7 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
     }
 
     close = () => {
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     dismissBanner = () => {
@@ -59,21 +59,23 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
         }
 
         return (
-            <View style={style.container}>
-                <ScrollView
-                    style={style.scrollContainer}
-                    contentContainerStyle={style.textContainer}
-                >
-                    <Markdown
-                        baseTextStyle={style.baseTextStyle}
-                        blockStyles={getMarkdownBlockStyles(this.props.theme)}
-                        onChannelLinkPress={this.handleChannelLinkPress}
-                        textStyles={getMarkdownTextStyles(this.props.theme)}
-                        value={this.props.bannerText}
-                    />
-                </ScrollView>
-                {dismissButton}
-            </View>
+            <SafeAreaView useLandscapeMargin={true}>
+                <View style={style.container}>
+                    <ScrollView
+                        style={style.scrollContainer}
+                        contentContainerStyle={style.textContainer}
+                    >
+                        <Markdown
+                            baseTextStyle={style.baseTextStyle}
+                            blockStyles={getMarkdownBlockStyles(this.props.theme)}
+                            onChannelLinkPress={this.handleChannelLinkPress}
+                            textStyles={getMarkdownTextStyles(this.props.theme)}
+                            value={this.props.bannerText}
+                        />
+                    </ScrollView>
+                    {dismissButton}
+                </View>
+            </SafeAreaView>
         );
     }
 }

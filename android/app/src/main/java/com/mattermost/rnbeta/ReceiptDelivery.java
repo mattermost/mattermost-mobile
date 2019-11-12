@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.HttpUrl;
 
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -37,6 +38,13 @@ public class ReceiptDelivery {
                 if (map != null) {
                     String token = map.getString("password");
                     String serverUrl = map.getString("service");
+                    if (serverUrl.isEmpty()) {
+                        String[] credentials = token.split(",[ ]*");
+                        if (credentials.length == 2) {
+                            token = credentials[0];
+                            serverUrl = credentials[1];
+                        }
+                    }
 
                     Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with TOKEN=%s", ackId, type, serverUrl, token));
                     execute(serverUrl, token, ackId, type);
@@ -64,21 +72,24 @@ public class ReceiptDelivery {
             return;
         }
 
-        final OkHttpClient client = new OkHttpClient();
-        final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, json.toString());
-        Request request = new Request.Builder()
-                .header("Authorization", String.format("Bearer %s", token))
-                .header("Content-Type", "application/json")
-                .url(String.format("%s/api/v4/notifications/ack", serverUrl.replaceAll("/$", "")))
-                .post(body)
-                .build();
+        final HttpUrl url = HttpUrl.parse(
+            String.format("%s/api/v4/notifications/ack", serverUrl.replaceAll("/$", "")));
+        if (url != null) {
+            final OkHttpClient client = new OkHttpClient();
+            final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+            RequestBody body = RequestBody.create(JSON, json.toString());
+            Request request = new Request.Builder()
+                    .header("Authorization", String.format("Bearer %s", token))
+                    .header("Content-Type", "application/json")
+                    .url(url)
+                    .post(body)
+                    .build();
 
-        try {
-            client.newCall(request).execute();
-        } catch (Exception e) {
-            Log.e("ReactNative", "Receipt delivery failed to send");
+            try {
+                client.newCall(request).execute();
+            } catch (Exception e) {
+                Log.e("ReactNative", "Receipt delivery failed to send");
+            }
         }
-
     }
 }

@@ -4,14 +4,18 @@
 import {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {Alert} from 'react-native';
+import {intlShape} from 'react-intl';
+
+import {showModal} from 'app/actions/navigation';
 
 export default class InteractiveDialogController extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            showModal: PropTypes.func.isRequired,
+            submitInteractiveDialog: PropTypes.func.isRequired,
         }).isRequired,
         triggerId: PropTypes.string,
-        dialog: PropTypes.object,
+        dialogData: PropTypes.object,
         theme: PropTypes.object,
     };
 
@@ -23,14 +27,18 @@ export default class InteractiveDialogController extends PureComponent {
         });
     }
 
+    static contextTypes = {
+        intl: intlShape,
+    };
+
     componentDidUpdate(prevProps) {
-        const {actions, triggerId} = this.props;
+        const {triggerId} = this.props;
         if (!triggerId) {
             return;
         }
 
-        const dialogData = this.props.dialog || {};
-        const prevDialogData = prevProps.dialog || {};
+        const dialogData = this.props.dialogData || {};
+        const prevDialogData = prevProps.dialogData || {};
         if (prevProps.triggerId === triggerId && dialogData.trigger_id === prevDialogData.trigger_id) {
             return;
         }
@@ -43,9 +51,30 @@ export default class InteractiveDialogController extends PureComponent {
             return;
         }
 
-        const screen = 'InteractiveDialog';
-        const title = dialogData.dialog.title;
-        const passProps = {};
+        if (dialogData.dialog.elements && dialogData.dialog.elements.length > 0) {
+            this.showInteractiveDialogScreen(dialogData.dialog);
+        } else {
+            this.showAlertDialog(dialogData.dialog, dialogData.url);
+        }
+    }
+
+    showAlertDialog(dialog, url) {
+        const {formatMessage} = this.context.intl;
+
+        Alert.alert(
+            dialog.title,
+            '',
+            [{
+                text: formatMessage({id: 'mobile.alert_dialog.alertCancel', defaultMessage: 'Cancel'}),
+                onPress: () => this.handleCancel(dialog, url),
+            }, {
+                text: dialog.submit_label,
+                onPress: () => this.props.actions.submitInteractiveDialog({...dialog, url}),
+            }],
+        );
+    }
+
+    showInteractiveDialogScreen = (dialog) => {
         const options = {
             topBar: {
                 leftButtons: [{
@@ -55,12 +84,18 @@ export default class InteractiveDialogController extends PureComponent {
                 rightButtons: [{
                     id: 'submit-dialog',
                     showAsAction: 'always',
-                    text: dialogData.dialog.submit_label,
+                    text: dialog.submit_label,
                 }],
             },
         };
 
-        actions.showModal(screen, title, passProps, options);
+        showModal('InteractiveDialog', dialog.title, null, options);
+    }
+
+    handleCancel = (dialog, url) => {
+        if (dialog.notify_on_cancel) {
+            this.props.actions.submitInteractiveDialog({...dialog, url, cancelled: true});
+        }
     }
 
     render() {

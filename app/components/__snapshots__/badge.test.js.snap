@@ -5,63 +5,75 @@ exports[`Badge should match snapshot 1`] = `
   style={
     Array [
       Object {
-        "backgroundColor": "#444",
         "borderRadius": 20,
-        "height": 20,
-        "padding": 12,
-        "paddingBottom": 3,
-        "paddingTop": 3,
         "position": "absolute",
         "right": 30,
         "top": 2,
       },
       Object {
-        "backgroundColor": "#ffffff",
-      },
-      Object {
-        "opacity": 0,
+        "borderColor": "#000000",
       },
     ]
   }
 >
   <View
     style={
-      Object {
-        "alignItems": "center",
-        "alignSelf": "center",
-        "flex": 1,
-        "justifyContent": "center",
-      }
+      Array [
+        Object {
+          "backgroundColor": "#444",
+          "height": 20,
+          "padding": 12,
+          "paddingBottom": 3,
+          "paddingTop": 3,
+        },
+        Object {
+          "backgroundColor": "#ffffff",
+        },
+        Object {
+          "opacity": 0,
+        },
+      ]
     }
   >
     <View
       style={
         Object {
           "alignItems": "center",
+          "alignSelf": "center",
           "flex": 1,
-          "flexDirection": "row",
           "justifyContent": "center",
-          "textAlignVertical": "center",
         }
       }
     >
-      <Text
-        onLayout={[Function]}
+      <View
         style={
-          Array [
-            Object {
-              "color": "white",
-              "fontSize": 14,
-            },
-            Object {
-              "color": "#145dbf",
-              "fontSize": 10,
-            },
-          ]
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+            "justifyContent": "center",
+            "textAlignVertical": "center",
+          }
         }
       >
-        1
-      </Text>
+        <Text
+          onLayout={[Function]}
+          style={
+            Array [
+              Object {
+                "color": "white",
+                "fontSize": 14,
+              },
+              Object {
+                "color": "#145dbf",
+                "fontSize": 10,
+              },
+            ]
+          }
+        >
+          99+
+        </Text>
+      </View>
     </View>
   </View>
 </View>

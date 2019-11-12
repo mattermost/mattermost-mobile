@@ -3,11 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Text,
-    TouchableOpacity,
-} from 'react-native';
+import {Text} from 'react-native';
 
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class SlashSuggestionItem extends PureComponent {
@@ -17,6 +16,7 @@ export default class SlashSuggestionItem extends PureComponent {
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         trigger: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     completeSuggestion = () => {
@@ -30,18 +30,20 @@ export default class SlashSuggestionItem extends PureComponent {
             hint,
             theme,
             trigger,
+            isLandscape,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={this.completeSuggestion}
-                style={style.row}
+                style={[style.row, padding(isLandscape)]}
+                type={'opacity'}
             >
                 <Text style={style.suggestionName}>{`/${trigger} ${hint}`}</Text>
                 <Text style={style.suggestionDescription}>{description}</Text>
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

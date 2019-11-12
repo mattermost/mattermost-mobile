@@ -1,0 +1,129 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DialogIntroductionText should not render the component with an empty value 1`] = `null`;
+
+exports[`DialogIntroductionText should render the introduction text correctly 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "marginHorizontal": 15,
+      },
+      null,
+    ]
+  }
+>
+  <Connect(Markdown)
+    baseTextStyle={
+      Object {
+        "color": "#3d3c40",
+      }
+    }
+    blockStyles={
+      Object {
+        "adjacentParagraph": Object {
+          "marginTop": 6,
+        },
+        "horizontalRule": Object {
+          "backgroundColor": "#3d3c40",
+          "height": 0.5,
+          "marginVertical": 10,
+        },
+        "quoteBlockIcon": Object {
+          "color": "rgba(61,60,64,0.5)",
+          "padding": 5,
+        },
+      }
+    }
+    disableAtMentions={true}
+    disableChannelLink={true}
+    disableHashtags={true}
+    textStyles={
+      Object {
+        "code": Object {
+          "alignSelf": "center",
+          "backgroundColor": "rgba(61,60,64,0.07)",
+          "fontFamily": "Menlo",
+        },
+        "codeBlock": Object {
+          "fontFamily": "Menlo",
+        },
+        "del": Object {
+          "textDecorationLine": "line-through",
+        },
+        "emph": Object {
+          "fontStyle": "italic",
+        },
+        "error": Object {
+          "color": "#fd5960",
+        },
+        "heading1": Object {
+          "fontSize": 17,
+          "fontWeight": "700",
+          "lineHeight": 25,
+        },
+        "heading1Text": Object {
+          "paddingBottom": 8,
+        },
+        "heading2": Object {
+          "fontSize": 17,
+          "fontWeight": "700",
+          "lineHeight": 25,
+        },
+        "heading2Text": Object {
+          "paddingBottom": 8,
+        },
+        "heading3": Object {
+          "fontSize": 17,
+          "fontWeight": "700",
+          "lineHeight": 25,
+        },
+        "heading3Text": Object {
+          "paddingBottom": 8,
+        },
+        "heading4": Object {
+          "fontSize": 17,
+          "fontWeight": "700",
+          "lineHeight": 25,
+        },
+        "heading4Text": Object {
+          "paddingBottom": 8,
+        },
+        "heading5": Object {
+          "fontSize": 17,
+          "fontWeight": "700",
+          "lineHeight": 25,
+        },
+        "heading5Text": Object {
+          "paddingBottom": 8,
+        },
+        "heading6": Object {
+          "fontSize": 17,
+          "fontWeight": "700",
+          "lineHeight": 25,
+        },
+        "heading6Text": Object {
+          "paddingBottom": 8,
+        },
+        "link": Object {
+          "color": "#2389d7",
+        },
+        "mention": Object {
+          "color": "#2389d7",
+        },
+        "mention_highlight": Object {
+          "backgroundColor": "#ffe577",
+          "color": "#166de0",
+        },
+        "strong": Object {
+          "fontWeight": "bold",
+        },
+        "table_header_row": Object {
+          "fontWeight": "700",
+        },
+      }
+    }
+    value="**bold** *italic* [link](https://mattermost.com/) <br/> [link target blank](!https://mattermost.com/)"
+  />
+</View>
+`;

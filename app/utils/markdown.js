@@ -91,6 +91,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         },
         mention_highlight: {
             backgroundColor: theme.mentionHighlightBg,
+            color: theme.mentionHighlightLink,
         },
     };
 });
@@ -103,7 +104,6 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
         horizontalRule: {
             backgroundColor: theme.centerChannelColor,
             height: StyleSheet.hairlineWidth,
-            flex: 1,
             marginVertical: 10,
         },
         quoteBlockIcon: {

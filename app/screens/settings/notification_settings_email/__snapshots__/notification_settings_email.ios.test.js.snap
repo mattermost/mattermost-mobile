@@ -12,6 +12,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
   }
   headerDefaultMessage="SEND EMAIL NOTIFICATIONS"
   headerId="mobile.notification_settings.email.send"
+  isLandscape={false}
   theme={
     Object {
       "awayIndicator": "#ffbc42",
@@ -23,6 +24,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       "dndIndicator": "#f74343",
       "errorTextColor": "#fd5960",
       "linkColor": "#2389d7",
+      "mentionBg": "#ffffff",
       "mentionBj": "#ffffff",
       "mentionColor": "#145dbf",
       "mentionHighlightBg": "#ffe577",
@@ -46,6 +48,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       action={[Function]}
       actionType="select"
       actionValue="30"
+      isLandscape={false}
       label={
         <FormattedText
           defaultMessage="Immediately"
@@ -64,6 +67,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -96,6 +100,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       action={[Function]}
       actionType="select"
       actionValue="0"
+      isLandscape={false}
       label={
         <FormattedText
           defaultMessage="Never"
@@ -114,6 +119,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",

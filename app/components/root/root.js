@@ -9,14 +9,12 @@ import {Platform} from 'react-native';
 import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import {resetToTeams} from 'app/actions/navigation';
 import {NavigationTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
 
 export default class Root extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            resetToTeams: PropTypes.func.isRequired,
-        }).isRequired,
         children: PropTypes.node,
         excludeEvents: PropTypes.bool,
         currentUrl: PropTypes.string,
@@ -24,7 +22,7 @@ export default class Root extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    componentWillMount() {
+    componentDidMount() {
         Client4.setAcceptLanguage(this.props.locale);
 
         if (!this.props.excludeEvents) {
@@ -46,8 +44,12 @@ export default class Root extends PureComponent {
         }
     }
 
+    setProviderRef = (ref) => {
+        this.providerRef = ref;
+    }
+
     handleNoTeams = () => {
-        if (!this.refs.provider) {
+        if (!this.providerRef) {
             setTimeout(this.handleNoTeams, 200);
             return;
         }
@@ -55,7 +57,7 @@ export default class Root extends PureComponent {
     };
 
     errorTeamsList = () => {
-        if (!this.refs.provider) {
+        if (!this.providerRef) {
             setTimeout(this.errorTeamsList, 200);
             return;
         }
@@ -63,8 +65,8 @@ export default class Root extends PureComponent {
     }
 
     navigateToTeamsPage = (screen) => {
-        const {currentUrl, theme, actions} = this.props;
-        const {intl} = this.refs.provider.getChildContext();
+        const {currentUrl, theme} = this.props;
+        const {intl} = this.providerRef.getChildContext();
 
         let passProps = {theme};
         const options = {topBar: {}};
@@ -93,7 +95,7 @@ export default class Root extends PureComponent {
 
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
 
-        actions.resetToTeams(screen, title, passProps, options);
+        resetToTeams(screen, title, passProps, options);
     }
 
     render() {
@@ -101,7 +103,7 @@ export default class Root extends PureComponent {
 
         return (
             <IntlProvider
-                ref='provider'
+                ref={this.setProviderRef}
                 locale={locale}
                 messages={getTranslations(locale)}
             >

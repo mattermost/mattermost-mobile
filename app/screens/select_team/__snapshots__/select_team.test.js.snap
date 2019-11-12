@@ -18,6 +18,7 @@ exports[`SelectTeam should match snapshot for fail of teams 1`] = `
       "dndIndicator": "#f74343",
       "errorTextColor": "#fd5960",
       "linkColor": "#2389d7",
+      "mentionBg": "#ffffff",
       "mentionBj": "#ffffff",
       "mentionColor": "#145dbf",
       "mentionHighlightBg": "#ffe577",
@@ -60,9 +61,12 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   >
     <View
       style={
-        Object {
-          "marginRight": 15,
-        }
+        Array [
+          Object {
+            "marginRight": 15,
+          },
+          null,
+        ]
       }
     >
       <FormattedText
@@ -89,6 +93,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   <CustomList
     data={Array []}
     extraData={false}
+    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={
@@ -115,6 +120,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",

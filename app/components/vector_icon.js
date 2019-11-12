@@ -4,11 +4,20 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {Text} from 'react-native';
+import {createIconSetFromIcoMoon} from 'react-native-vector-icons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import FoundationIcon from 'react-native-vector-icons/Foundation';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+
+import icoMoonConfig from 'assets/mattermost-fonts.json';
+
+const Mattermost = createIconSetFromIcoMoon(
+    icoMoonConfig,
+    'Mattermost',
+    'Mattermost-Regular.otf'
+);
 
 export default class VectorIcon extends PureComponent {
     static propTypes = {
@@ -61,6 +70,14 @@ export default class VectorIcon extends PureComponent {
         case 'material':
             return (
                 <MaterialIcon
+                    name={name}
+                    style={style}
+                    size={size}
+                />
+            );
+        case 'mattermost':
+            return (
+                <Mattermost
                     name={name}
                     style={style}
                     size={size}

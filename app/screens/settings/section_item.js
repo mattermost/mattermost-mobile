@@ -9,7 +9,7 @@ import {
     View,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import CheckMark from 'app/components/checkmark';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -29,6 +29,7 @@ function sectionItem(props) {
         theme,
         selected,
         description,
+        isLandscape,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -72,7 +73,7 @@ function sectionItem(props) {
     }
 
     const component = (
-        <View style={style.container}>
+        <View style={[style.container, padding(isLandscape)]}>
             <View style={description ? style.doubleContainer : style.singleContainer}>
                 {labelComponent}
                 {descriptionComponent}

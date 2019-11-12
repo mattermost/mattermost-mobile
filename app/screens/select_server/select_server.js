@@ -12,6 +12,7 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
+    SafeAreaView,
     StatusBar,
     StyleSheet,
     Text,
@@ -37,6 +38,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 import {changeOpacity} from 'app/utils/theme';
+import {resetToChannel, goToScreen} from 'app/actions/navigation';
 
 import telemetry from 'app/telemetry';
 
@@ -52,7 +54,6 @@ export default class SelectServer extends PureComponent {
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
             setServerVersion: PropTypes.func.isRequired,
         }).isRequired,
@@ -158,7 +159,6 @@ export default class SelectServer extends PureComponent {
     };
 
     goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
-        const {actions} = this.props;
         const defaultOptions = {
             popGesture: !LocalConfig.AutoSelectServerUrl,
             topBar: {
@@ -168,7 +168,7 @@ export default class SelectServer extends PureComponent {
         };
         const options = merge(defaultOptions, navOptions);
 
-        actions.goToScreen(screen, title, passProps, options);
+        goToScreen(screen, title, passProps, options);
     };
 
     handleAndroidKeyboard = () => {
@@ -286,7 +286,7 @@ export default class SelectServer extends PureComponent {
         await this.props.actions.handleSuccessfulLogin();
         this.scheduleSessionExpiredNotification();
 
-        this.props.actions.resetToChannel();
+        resetToChannel();
     };
 
     pingServer = (url, retryWithHttp = true) => {
@@ -415,58 +415,62 @@ export default class SelectServer extends PureComponent {
         }
 
         return (
-            <KeyboardAvoidingView
-                behavior='padding'
+            <SafeAreaView
                 style={style.container}
-                keyboardVerticalOffset={0}
-                enabled={Platform.OS === 'ios'}
             >
-                <StatusBar barStyle={statusStyle}/>
-                <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                        <Image
-                            source={require('assets/images/logo.png')}
-                        />
-
-                        <View>
-                            <FormattedText
-                                style={[GlobalStyles.header, GlobalStyles.label]}
-                                id='mobile.components.select_server_view.enterServerUrl'
-                                defaultMessage='Enter Server URL'
+                <KeyboardAvoidingView
+                    behavior='padding'
+                    style={style.container}
+                    keyboardVerticalOffset={0}
+                    enabled={Platform.OS === 'ios'}
+                >
+                    <StatusBar barStyle={statusStyle}/>
+                    <TouchableWithoutFeedback onPress={this.blur}>
+                        <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                            <Image
+                                source={require('assets/images/logo.png')}
                             />
+
+                            <View>
+                                <FormattedText
+                                    style={[GlobalStyles.header, GlobalStyles.label]}
+                                    id='mobile.components.select_server_view.enterServerUrl'
+                                    defaultMessage='Enter Server URL'
+                                />
+                            </View>
+                            <TextInput
+                                ref={this.inputRef}
+                                value={url}
+                                editable={!inputDisabled}
+                                onChangeText={this.handleTextChanged}
+                                onSubmitEditing={this.handleConnect}
+                                style={inputStyle}
+                                autoCapitalize='none'
+                                autoCorrect={false}
+                                keyboardType='url'
+                                placeholder={formatMessage({
+                                    id: 'mobile.components.select_server_view.siteUrlPlaceholder',
+                                    defaultMessage: 'https://mattermost.example.com',
+                                })}
+                                placeholderTextColor={changeOpacity('#000', 0.5)}
+                                returnKeyType='go'
+                                underlineColorAndroid='transparent'
+                                disableFullscreenUI={true}
+                            />
+                            <Button
+                                onPress={this.handleConnect}
+                                containerStyle={[GlobalStyles.signupButton, style.connectButton]}
+                            >
+                                {buttonIcon}
+                                <Text style={GlobalStyles.signupButtonText}>
+                                    {buttonText}
+                                </Text>
+                            </Button>
+                            <ErrorText error={error}/>
                         </View>
-                        <TextInput
-                            ref={this.inputRef}
-                            value={url}
-                            editable={!inputDisabled}
-                            onChangeText={this.handleTextChanged}
-                            onSubmitEditing={this.handleConnect}
-                            style={inputStyle}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            keyboardType='url'
-                            placeholder={formatMessage({
-                                id: 'mobile.components.select_server_view.siteUrlPlaceholder',
-                                defaultMessage: 'https://mattermost.example.com',
-                            })}
-                            placeholderTextColor={changeOpacity('#000', 0.5)}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
-                        />
-                        <Button
-                            onPress={this.handleConnect}
-                            containerStyle={[GlobalStyles.signupButton, style.connectButton]}
-                        >
-                            {buttonIcon}
-                            <Text style={GlobalStyles.signupButtonText}>
-                                {buttonText}
-                            </Text>
-                        </Button>
-                        <ErrorText error={error}/>
-                    </View>
-                </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
+                    </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
         );
     }
 }

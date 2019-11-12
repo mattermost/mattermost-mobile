@@ -45,6 +45,7 @@ export default class SearchBarAndroid extends PureComponent {
         value: PropTypes.string,
         containerStyle: CustomPropTypes.Style,
         leftComponent: PropTypes.element,
+        keyboardAppearance: PropTypes.string,
     };
 
     static defaultProps = {
@@ -73,6 +74,10 @@ export default class SearchBarAndroid extends PureComponent {
             isFocused: false,
             refocusInput: true,
         };
+    }
+
+    setInputRef = (ref) => {
+        this.inputRef = ref;
     }
 
     cancel = () => {
@@ -122,11 +127,11 @@ export default class SearchBarAndroid extends PureComponent {
     };
 
     blur = () => {
-        this.refs.input.blur();
+        this.inputRef.blur();
     };
 
     focus = () => {
-        this.refs.input.focus();
+        this.inputRef.focus();
     };
 
     render() {
@@ -150,6 +155,7 @@ export default class SearchBarAndroid extends PureComponent {
             containerStyle,
             value,
             showArrow,
+            keyboardAppearance,
         } = this.props;
         const {isFocused} = this.state;
 
@@ -205,7 +211,7 @@ export default class SearchBarAndroid extends PureComponent {
                         />
                     }
                     <TextInput
-                        ref='input'
+                        ref={this.setInputRef}
                         blurOnSubmit={blurOnSubmit}
                         refocusInput={this.state.refocusInput}
                         value={this.props.value}
@@ -223,6 +229,7 @@ export default class SearchBarAndroid extends PureComponent {
                         selectionColor={selectionColor}
                         underlineColorAndroid='transparent'
                         disableFullscreenUI={true}
+                        keyboardAppearance={keyboardAppearance}
                         style={[
                             styles.searchBarInput,
                             inputNoBackground,

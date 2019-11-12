@@ -21,15 +21,17 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
-import {GlobalStyles} from 'app/styles';
+import {resetToChannel, goToScreen} from 'app/actions/navigation';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
 import {changeOpacity} from 'app/utils/theme';
+import {GlobalStyles} from 'app/styles';
 
 import telemetry from 'app/telemetry';
 
@@ -43,8 +45,6 @@ export default class Login extends PureComponent {
             handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         theme: PropTypes.object,
         config: PropTypes.object.isRequired,
@@ -52,6 +52,7 @@ export default class Login extends PureComponent {
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
         loginRequest: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -91,16 +92,15 @@ export default class Login extends PureComponent {
 
         this.scheduleSessionExpiredNotification();
 
-        this.props.actions.resetToChannel();
+        resetToChannel();
     };
 
     goToMfa = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     };
 
     blur = () => {
@@ -287,12 +287,11 @@ export default class Login extends PureComponent {
     };
 
     forgotPassword = () => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'ForgotPassword';
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
 
-        actions.goToScreen(screen, title);
+        goToScreen(screen, title);
     }
 
     render() {
@@ -357,7 +356,7 @@ export default class Login extends PureComponent {
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
                         style={style.container}
-                        contentContainerStyle={style.innerContainer}
+                        contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
                         keyboardShouldPersistTaps='handled'
                         enableOnAndroid={true}
                     >

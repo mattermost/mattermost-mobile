@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment from 'moment-timezone';
+
 import {getDataRetentionPolicy} from 'mattermost-redux/actions/general';
 import {GeneralTypes} from 'mattermost-redux/action_types';
 import {getSessions} from 'mattermost-redux/actions/users';
@@ -13,7 +15,7 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {ViewTypes} from 'app/constants';
 import {setAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
-import {getDeviceTimezone} from 'app/utils/timezone';
+import {getDeviceTimezoneAsync} from 'app/utils/timezone';
 import {setCSRFFromCookie} from 'app/utils/security';
 
 export function handleLoginIdChanged(loginId) {
@@ -49,7 +51,8 @@ export function handleSuccessfulLogin() {
 
         const enableTimezone = isTimezoneEnabled(state);
         if (enableTimezone) {
-            dispatch(autoUpdateTimezone(getDeviceTimezone()));
+            const timezone = await getDeviceTimezoneAsync();
+            dispatch(autoUpdateTimezone(timezone));
         }
 
         dispatch({
@@ -75,10 +78,7 @@ export function scheduleExpiredNotification(intl) {
         const state = getState();
         const {currentUserId} = state.entities.users;
         const {deviceToken} = state.entities.general;
-        const message = intl.formatMessage({
-            id: 'mobile.session_expired',
-            defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
-        });
+        const config = getConfig(state);
 
         // Once the user logs in we are going to wait for 10 seconds
         // before retrieving the session that belongs to this device
@@ -99,6 +99,15 @@ export function scheduleExpiredNotification(intl) {
 
             const session = sessions.data.find((s) => s.device_id === deviceToken);
             const expiresAt = session?.expires_at || 0; //eslint-disable-line camelcase
+            const expiresInDays = parseInt(Math.ceil(Math.abs(moment.duration(moment().diff(expiresAt)).asDays())), 10);
+
+            const message = intl.formatMessage({
+                id: 'mobile.session_expired',
+                defaultMessage: 'Session Expired: Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
+            }, {
+                siteName: config.SiteName,
+                daysCount: expiresInDays,
+            });
 
             if (expiresAt) {
                 PushNotifications.localNotificationSchedule({

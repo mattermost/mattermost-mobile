@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CustomTextInput should render custom text input 1`] = `
+<TextInput
+  allowFontScaling={true}
+  onPaste={[MockFunction]}
+  rejectResponderTermination={true}
+  underlineColorAndroid="transparent"
+>
+  My Text
+</TextInput>
+`;

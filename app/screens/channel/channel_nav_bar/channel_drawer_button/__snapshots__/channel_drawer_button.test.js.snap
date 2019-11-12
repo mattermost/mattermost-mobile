@@ -1,0 +1,110 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelDrawerButton should match, full snapshot 1`] = `
+<TouchableOpacity
+  accessibilityHint="Opens the channels and teams drawer"
+  accessibilityLabel="Channels and teams"
+  accessibilityRole="button"
+  accessible={true}
+  activeOpacity={0.2}
+  onPress={[Function]}
+  style={
+    Object {
+      "width": 10,
+    }
+  }
+>
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "column",
+          "justifyContent": "center",
+          "paddingHorizontal": 10,
+        },
+      ]
+    }
+  >
+    <View>
+      <View
+        style={
+          Object {
+            "height": 25,
+          }
+        }
+      />
+    </View>
+  </View>
+</TouchableOpacity>
+`;
+
+exports[`ChannelDrawerButton should match, full snapshot 2`] = `
+<TouchableOpacity
+  accessibilityHint="Opens the channels and teams drawer"
+  accessibilityLabel="Channels and teams"
+  accessibilityRole="button"
+  accessible={true}
+  activeOpacity={0.2}
+  onPress={[Function]}
+  style={
+    Object {
+      "width": 55,
+    }
+  }
+>
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "column",
+          "justifyContent": "center",
+          "paddingHorizontal": 10,
+        },
+      ]
+    }
+  >
+    <View>
+      <Icon
+        allowFontScaling={false}
+        color="#ffffff"
+        name="md-menu"
+        size={25}
+      />
+      <Badge
+        containerStyle={
+          Object {
+            "borderColor": "#1153ab",
+            "borderRadius": 14,
+            "borderWidth": 2,
+            "position": "absolute",
+            "right": -14,
+            "top": -7,
+          }
+        }
+        count={1}
+        countStyle={
+          Object {
+            "color": "#145dbf",
+            "fontSize": 10,
+          }
+        }
+        extraPaddingHorizontal={10}
+        minHeight={20}
+        minWidth={19}
+        onPress={[Function]}
+        style={
+          Object {
+            "backgroundColor": "#ffffff",
+            "height": 19,
+            "padding": 3,
+          }
+        }
+      />
+    </View>
+  </View>
+</TouchableOpacity>
+`;

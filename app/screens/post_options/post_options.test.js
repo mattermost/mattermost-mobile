@@ -11,12 +11,6 @@ import PostOptions from './post_options';
 
 jest.mock('react-intl');
 
-jest.mock('Alert', () => {
-    return {
-        alert: jest.fn(),
-    };
-});
-
 describe('PostOptions', () => {
     const actions = {
         addReaction: jest.fn(),
@@ -26,8 +20,6 @@ describe('PostOptions', () => {
         removePost: jest.fn(),
         unflagPost: jest.fn(),
         unpinPost: jest.fn(),
-        dismissModal: jest.fn(),
-        showModal: jest.fn(),
     };
 
     const post = {
@@ -57,6 +49,7 @@ describe('PostOptions', () => {
         post,
         showAddReaction: true,
         theme: Preferences.THEMES.default,
+        isLandscape: false,
     };
 
     function getWrapper(props = {}) {
@@ -110,8 +103,14 @@ describe('PostOptions', () => {
         expect(Alert.alert).toBeCalled();
 
         // Trigger on press of Delete in the Alert
+        const closeWithAnimation = jest.spyOn(wrapper.instance(), 'closeWithAnimation');
         Alert.alert.mock.calls[0][2][1].onPress();
+        expect(closeWithAnimation).toBeCalled();
 
+        // get the callback that gets called by closeWithAnimation
+        const callback = closeWithAnimation.mock.calls[0][0];
+
+        callback();
         expect(actions.deletePost).toBeCalled();
         expect(actions.removePost).toBeCalled();
     });

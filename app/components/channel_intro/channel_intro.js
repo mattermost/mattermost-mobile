@@ -5,16 +5,18 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
-import {getFullName} from 'mattermost-redux/utils/user_utils';
-import {General} from 'mattermost-redux/constants';
 import {injectIntl, intlShape} from 'react-intl';
 
+import {getFullName} from 'mattermost-redux/utils/user_utils';
+import {General} from 'mattermost-redux/constants';
+
+import {goToScreen} from 'app/actions/navigation';
 import ProfilePicture from 'app/components/profile_picture';
-import BotTag from 'app/components/bot_tag';
-import GuestTag from 'app/components/guest_tag';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {BotTag, GuestTag} from 'app/components/tag';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -22,14 +24,12 @@ import {isGuest} from 'app/utils/users';
 
 class ChannelIntro extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         creator: PropTypes.object,
         currentChannel: PropTypes.object.isRequired,
         currentChannelMembers: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -37,14 +37,14 @@ class ChannelIntro extends PureComponent {
     };
 
     goToUserProfile = (userId) => {
-        const {actions, intl} = this.props;
+        const {intl} = this.props;
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
             userId,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     getDisplayName = (member) => {
@@ -66,10 +66,11 @@ class ChannelIntro extends PureComponent {
         const style = getStyleSheet(theme);
 
         return currentChannelMembers.map((member) => (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 key={member.id}
                 onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
                 style={style.profile}
+                type={'opacity'}
             >
                 <ProfilePicture
                     userId={member.id}
@@ -77,7 +78,7 @@ class ChannelIntro extends PureComponent {
                     statusBorderWidth={2}
                     statusSize={25}
                 />
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         ));
     };
 
@@ -87,9 +88,10 @@ class ChannelIntro extends PureComponent {
 
         return currentChannelMembers.map((member, index) => {
             return (
-                <TouchableOpacity
+                <TouchableWithFeedback
                     key={member.id}
                     onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
+                    type={'opacity'}
                 >
                     <View style={style.indicatorContainer}>
                         <Text style={style.displayName}>
@@ -107,7 +109,7 @@ class ChannelIntro extends PureComponent {
                             {index === currentChannelMembers.length - 1 ? '' : ', '}
                         </Text>
                     </View>
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         });
     };
@@ -307,7 +309,7 @@ class ChannelIntro extends PureComponent {
     };
 
     render() {
-        const {currentChannel, theme} = this.props;
+        const {currentChannel, theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
         const channelType = currentChannel.type;
 
@@ -315,10 +317,10 @@ class ChannelIntro extends PureComponent {
         if (channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL) {
             profiles = (
                 <View>
-                    <View style={style.profilesContainer}>
+                    <View style={[style.profilesContainer, padding(isLandscape)]}>
                         {this.buildProfiles()}
                     </View>
-                    <View style={style.namesContainer}>
+                    <View style={[style.namesContainer, padding(isLandscape)]}>
                         {this.buildNames()}
                     </View>
                 </View>
@@ -328,7 +330,7 @@ class ChannelIntro extends PureComponent {
         return (
             <View style={style.container}>
                 {profiles}
-                <View style={style.contentContainer}>
+                <View style={[style.contentContainer, padding(isLandscape)]}>
                     {this.buildContent()}
                 </View>
             </View>

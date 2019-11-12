@@ -32,7 +32,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "horizontalRule": Object {
             "backgroundColor": "#3d3c40",
-            "flex": 1,
             "height": 0.5,
             "marginVertical": 10,
           },
@@ -120,6 +119,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "mention_highlight": Object {
             "backgroundColor": "#ffe577",
+            "color": "#166de0",
           },
           "strong": Object {
             "fontWeight": "bold",
@@ -167,7 +167,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "horizontalRule": Object {
             "backgroundColor": "#3d3c40",
-            "flex": 1,
             "height": 0.5,
             "marginVertical": 10,
           },
@@ -255,6 +254,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "mention_highlight": Object {
             "backgroundColor": "#ffe577",
+            "color": "#166de0",
           },
           "strong": Object {
             "fontWeight": "bold",
@@ -305,6 +305,7 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",
@@ -366,7 +367,6 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           },
           "horizontalRule": Object {
             "backgroundColor": "#3d3c40",
-            "flex": 1,
             "height": 0.5,
             "marginVertical": 10,
           },
@@ -454,6 +454,7 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           },
           "mention_highlight": Object {
             "backgroundColor": "#ffe577",
+            "color": "#166de0",
           },
           "strong": Object {
             "fontWeight": "bold",

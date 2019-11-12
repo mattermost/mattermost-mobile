@@ -6,9 +6,12 @@ exports[`MoreChannels should match snapshot 1`] = `
   <React.Fragment>
     <View
       style={
-        Object {
-          "marginVertical": 5,
-        }
+        Array [
+          Object {
+            "marginVertical": 5,
+          },
+          null,
+        ]
       }
     >
       <SearchBarIos
@@ -23,6 +26,7 @@ exports[`MoreChannels should match snapshot 1`] = `
             "fontSize": 15,
           }
         }
+        keyboardAppearance="light"
         leftComponent={null}
         onBlur={[Function]}
         onCancelButtonPress={[Function]}
@@ -50,6 +54,7 @@ exports[`MoreChannels should match snapshot 1`] = `
         ]
       }
       extraData={true}
+      isLandscape={false}
       listType="flat"
       loading={true}
       loadingComponent={
@@ -91,6 +96,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",

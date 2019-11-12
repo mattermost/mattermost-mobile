@@ -20,6 +20,7 @@ describe('ChannelLoader', () => {
             handleSelectChannel: jest.fn(),
             setChannelLoading: jest.fn(),
         },
+        isLandscape: false,
     };
 
     test('should match snapshot', () => {

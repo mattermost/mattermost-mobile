@@ -5,6 +5,7 @@ import React from 'react';
 
 import {Preferences} from 'mattermost-redux/constants';
 
+import * as NavigationActions from 'app/actions/navigation';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelAddMembers from './channel_add_members';
@@ -16,8 +17,6 @@ describe('ChannelAddMembers', () => {
             getProfilesNotInChannel: jest.fn().mockResolvedValue({}),
             handleAddChannelMembers: jest.fn().mockResolvedValue({}),
             searchProfiles: jest.fn().mockResolvedValue({data: []}),
-            setButtons: jest.fn(),
-            popTopScreen: jest.fn(),
         },
         currentChannelId: 'current_channel_id',
         currentTeamId: 'current_team_id',
@@ -25,18 +24,21 @@ describe('ChannelAddMembers', () => {
         profilesNotInChannel: [],
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should render without error and call functions on mount', () => {
+        const setButtons = jest.spyOn(NavigationActions, 'setButtons');
+
         shallowWithIntl(<ChannelAddMembers {...baseProps}/>);
 
         expect(baseProps.actions.getTeamStats).toBeCalledTimes(1);
         expect(baseProps.actions.getTeamStats).toBeCalledWith(baseProps.currentTeamId);
 
         const button = {enabled: false, id: 'add-members', text: 'Add', showAsAction: 'always'};
-        expect(baseProps.actions.setButtons).toBeCalledTimes(2);
-        expect(baseProps.actions.setButtons.mock.calls[0][0]).toEqual(baseProps.componentId, {rightButtons: [button]});
-        expect(baseProps.actions.setButtons.mock.calls[1][0]).toEqual(baseProps.componentId, {rightButtons: [button]});
+        expect(setButtons).toBeCalledTimes(2);
+        expect(setButtons.mock.calls[0][0]).toEqual(baseProps.componentId, {rightButtons: [button]});
+        expect(setButtons.mock.calls[1][0]).toEqual(baseProps.componentId, {rightButtons: [button]});
     });
 
     test('should match state on clearSearch', () => {
@@ -48,11 +50,13 @@ describe('ChannelAddMembers', () => {
         wrapper.setState({term: '', searchResults: []});
     });
 
-    test('should call props.popTopScreen on close', () => {
+    test('should call popTopScreen on close', () => {
+        const popTopScreen = jest.spyOn(NavigationActions, 'popTopScreen');
+
         const wrapper = shallowWithIntl(<ChannelAddMembers {...baseProps}/>);
 
         wrapper.instance().close();
-        expect(baseProps.actions.popTopScreen).toBeCalledTimes(1);
+        expect(popTopScreen).toBeCalledTimes(1);
     });
 
     test('should match state on onProfilesLoaded', () => {

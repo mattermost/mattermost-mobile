@@ -5,12 +5,12 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
 import * as Utils from 'mattermost-redux/utils/file_utils.js';
 
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {isDocument, isGif} from 'app/utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -21,7 +21,6 @@ import FileAttachmentImage from './file_attachment_image';
 export default class FileAttachment extends PureComponent {
     static propTypes = {
         canDownloadFiles: PropTypes.bool.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
         file: PropTypes.object.isRequired,
         id: PropTypes.string.isRequired,
         index: PropTypes.number.isRequired,
@@ -89,7 +88,6 @@ export default class FileAttachment extends PureComponent {
     render() {
         const {
             canDownloadFiles,
-            deviceWidth,
             file,
             theme,
             onLongPress,
@@ -100,17 +98,18 @@ export default class FileAttachment extends PureComponent {
         let fileAttachmentComponent;
         if ((data && data.has_preview_image) || file.loading || isGif(data)) {
             fileAttachmentComponent = (
-                <TouchableOpacity
+                <TouchableWithFeedback
                     key={`${this.props.id}${file.loading}`}
                     onPress={this.handlePreviewPress}
                     onLongPress={onLongPress}
+                    type={'opacity'}
                 >
                     <FileAttachmentImage
                         file={data || {}}
                         onCaptureRef={this.handleCaptureRef}
                         theme={theme}
                     />
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         } else if (isDocument(data)) {
             fileAttachmentComponent = (
@@ -124,31 +123,31 @@ export default class FileAttachment extends PureComponent {
             );
         } else {
             fileAttachmentComponent = (
-                <TouchableOpacity
+                <TouchableWithFeedback
                     onPress={this.handlePreviewPress}
                     onLongPress={onLongPress}
+                    type={'opacity'}
                 >
                     <FileAttachmentIcon
                         file={data}
                         onCaptureRef={this.handleCaptureRef}
                         theme={theme}
                     />
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             );
         }
 
-        const width = deviceWidth * 0.72;
-
         return (
-            <View style={[style.fileWrapper, {width}]}>
+            <View style={[style.fileWrapper]}>
                 {fileAttachmentComponent}
-                <TouchableOpacity
+                <TouchableWithFeedback
+                    style={style.fileInfoContainer}
                     onLongPress={onLongPress}
                     onPress={this.handlePreviewPress}
-                    style={style.fileInfoContainer}
+                    type={'opacity'}
                 >
                     {this.renderFileInfo()}
-                </TouchableOpacity>
+                </TouchableWithFeedback>
             </View>
         );
     }
@@ -195,7 +194,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderRadius: 2,
-            maxWidth: 350,
+            width: 300,
         },
         circularProgress: {
             width: '100%',

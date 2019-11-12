@@ -9,7 +9,7 @@ import {
     InteractionManager,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -18,6 +18,7 @@ import {ViewTypes} from 'app/constants';
 import {setNavigatorStyles} from 'app/utils/theme';
 import {cleanUpUrlable} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
+import {popTopScreen, setButtons} from 'app/actions/navigation';
 
 const messages = {
     display_name_required: {
@@ -56,8 +57,6 @@ export default class EditChannel extends PureComponent {
             patchChannel: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -93,19 +92,21 @@ export default class EditChannel extends PureComponent {
         this.state = {
             error: null,
             updating: false,
+            updateChannelRequest: props.updateChannelRequest,
             displayName,
             channelURL,
             purpose,
             header,
         };
 
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.rightButton.text = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
 
         const buttons = {
             rightButtons: [this.rightButton],
         };
 
-        props.actions.setButtons(props.componentId, buttons);
+        setButtons(props.componentId, buttons);
     }
 
     componentDidMount() {
@@ -114,30 +115,50 @@ export default class EditChannel extends PureComponent {
         this.emitCanUpdateChannel(false);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
-
+    static getDerivedStateFromProps(nextProps, state) {
         const {updateChannelRequest} = nextProps;
 
-        if (this.props.updateChannelRequest !== updateChannelRequest) {
+        if (state.updateChannelRequest !== updateChannelRequest) {
+            const newState = {
+                error: null,
+                updating: true,
+                updateChannelRequest,
+            };
+
             switch (updateChannelRequest.status) {
+            case RequestStatus.SUCCESS:
+                newState.updating = false;
+                break;
+            case RequestStatus.FAILURE:
+                newState.error = updateChannelRequest.error;
+                newState.updating = false;
+                break;
+            }
+
+            return newState;
+        }
+        return null;
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.theme !== this.props.theme) {
+            setNavigatorStyles(prevProps.componentId, this.props.theme);
+        }
+
+        if (prevProps.updateChannelRequest !== this.props.updateChannelRequest) {
+            switch (this.props.updateChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitUpdating(true);
-                this.setState({error: null, updating: true});
                 break;
             case RequestStatus.SUCCESS:
                 EventEmitter.emit('close_channel_drawer');
                 InteractionManager.runAfterInteractions(() => {
                     this.emitUpdating(false);
-                    this.setState({error: null, updating: false});
                     this.close();
                 });
                 break;
             case RequestStatus.FAILURE:
                 this.emitUpdating(false);
-                this.setState({error: updateChannelRequest.error, updating: false});
                 break;
             }
         }
@@ -162,25 +183,25 @@ export default class EditChannel extends PureComponent {
             this.props.actions.setChannelDisplayName(this.state.displayName);
         }
 
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     emitCanUpdateChannel = (enabled) => {
-        const {actions, componentId} = this.props;
+        const {componentId} = this.props;
         const buttons = {
             rightButtons: [{...this.rightButton, enabled}],
         };
 
-        actions.setButtons(componentId, buttons);
+        setButtons(componentId, buttons);
     };
 
     emitUpdating = (loading) => {
-        const {actions, componentId} = this.props;
+        const {componentId} = this.props;
         const buttons = {
             rightButtons: [{...this.rightButton, enabled: !loading}],
         };
 
-        actions.setButtons(componentId, buttons);
+        setButtons(componentId, buttons);
     };
 
     validateDisplayName = (displayName) => {
@@ -295,29 +316,34 @@ export default class EditChannel extends PureComponent {
         } = this.state;
 
         return (
-            <EditChannelInfo
-                theme={theme}
-                enableRightButton={this.emitCanUpdateChannel}
-                error={error}
-                saving={updating}
-                channelType={type}
-                currentTeamUrl={currentTeamUrl}
-                onDisplayNameChange={this.onDisplayNameChange}
-                onChannelURLChange={this.onChannelURLChange}
-                onPurposeChange={this.onPurposeChange}
-                onHeaderChange={this.onHeaderChange}
-                displayName={displayName}
-                channelURL={channelURL}
-                header={header}
-                purpose={purpose}
-                editing={true}
-                oldDisplayName={oldDisplayName}
-                oldChannelURL={oldChannelURL}
-                oldPurpose={oldPurpose}
-                oldHeader={oldHeader}
-                deviceWidth={deviceWidth}
-                deviceHeight={deviceHeight}
-            />
+            <SafeAreaView
+                excludeHeader={true}
+                excludeFooter={true}
+            >
+                <EditChannelInfo
+                    theme={theme}
+                    enableRightButton={this.emitCanUpdateChannel}
+                    error={error}
+                    saving={updating}
+                    channelType={type}
+                    currentTeamUrl={currentTeamUrl}
+                    onDisplayNameChange={this.onDisplayNameChange}
+                    onChannelURLChange={this.onChannelURLChange}
+                    onPurposeChange={this.onPurposeChange}
+                    onHeaderChange={this.onHeaderChange}
+                    displayName={displayName}
+                    channelURL={channelURL}
+                    header={header}
+                    purpose={purpose}
+                    editing={true}
+                    oldDisplayName={oldDisplayName}
+                    oldChannelURL={oldChannelURL}
+                    oldPurpose={oldPurpose}
+                    oldHeader={oldHeader}
+                    deviceWidth={deviceWidth}
+                    deviceHeight={deviceHeight}
+                />
+            </SafeAreaView>
         );
     }
 }

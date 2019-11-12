@@ -9,9 +9,8 @@ import {getCurrentChannel, canManageChannelMembers} from 'mattermost-redux/selec
 import {makeGetProfilesInChannel} from 'mattermost-redux/selectors/entities/users';
 import {getProfilesInChannel, searchProfiles} from 'mattermost-redux/actions/users';
 
-import {setButtons, popTopScreen} from 'app/actions/navigation';
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
-
+import {isLandscape} from 'app/selectors/device';
 import ChannelMembers from './channel_members';
 
 function makeMapStateToProps() {
@@ -32,6 +31,7 @@ function makeMapStateToProps() {
             currentChannelMembers,
             currentUserId: state.entities.users.currentUserId,
             theme: getTheme(state),
+            isLandscape: isLandscape(state),
         };
     };
 }
@@ -42,8 +42,6 @@ function mapDispatchToProps(dispatch) {
             getProfilesInChannel,
             handleRemoveChannelMembers,
             searchProfiles,
-            setButtons,
-            popTopScreen,
         }, dispatch),
     };
 }

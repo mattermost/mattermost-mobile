@@ -20,12 +20,6 @@ describe('Permalink', () => {
         joinChannel: jest.fn(),
         loadThreadIfNecessary: jest.fn(),
         selectPost: jest.fn(),
-        setChannelDisplayName: jest.fn(),
-        setChannelLoading: jest.fn(),
-        goToScreen: jest.fn(),
-        dismissModal: jest.fn(),
-        dismissAllModals: jest.fn(),
-        resetToChannel: jest.fn(),
     };
 
     const baseProps = {
@@ -44,6 +38,7 @@ describe('Permalink', () => {
         postIds: ['post_id_1', 'focused_post_id', 'post_id_3'],
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot', () => {

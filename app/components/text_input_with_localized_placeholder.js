@@ -14,16 +14,24 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
         placeholder: PropTypes.object.isRequired,
     };
 
+    static defaultProps = {
+        placeholderTextColor: changeOpacity('#000', 0.5),
+    };
+
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
+    setInputRef = (ref) => {
+        this.inputRef = ref;
+    }
+
     blur = () => {
-        this.refs.input.blur();
+        this.inputRef.blur();
     };
 
     focus = () => {
-        this.refs.input.focus();
+        this.inputRef.focus();
     };
 
     render() {
@@ -36,10 +44,9 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
 
         return (
             <TextInput
-                ref='input'
+                ref={this.setInputRef}
                 {...otherProps}
                 placeholder={placeholderString}
-                placeholderTextColor={changeOpacity('#000', 0.5)}
                 disableFullscreenUI={true}
             />
         );

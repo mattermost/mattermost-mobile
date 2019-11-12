@@ -6,13 +6,14 @@ import PropTypes from 'prop-types';
 import {
     Switch,
     Text,
-    TouchableHighlight,
     View,
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
-import VectorIcon from 'app/components/vector_icon.js';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
+import VectorIcon from 'app/components/vector_icon';
 
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -54,14 +55,14 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 function createTouchableComponent(children, action) {
     return (
-        <TouchableHighlight onPress={action}>
+        <TouchableWithFeedback onPress={action}>
             {children}
-        </TouchableHighlight>
+        </TouchableWithFeedback>
     );
 }
 
 function userProfileRow(props) {
-    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconType, iconSize, shouldRender = true} = props;
+    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconType, iconSize, shouldRender = true, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -71,7 +72,7 @@ function userProfileRow(props) {
 
     const RowComponent = (
         <View style={style.wrapper}>
-            <View style={style.container}>
+            <View style={[style.container, padding(isLandscape, +15)]}>
                 <VectorIcon
                     name={icon}
                     size={iconSize}
@@ -123,6 +124,7 @@ userProfileRow.propTypes = {
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
     theme: PropTypes.object.isRequired,
+    isLandscape: PropTypes.bool.isRequired,
 };
 
 userProfileRow.defaultProps = {
@@ -130,6 +132,7 @@ userProfileRow.defaultProps = {
     iconSize: 15,
     textColor: '#000',
     togglable: false,
+    isLandscape: false,
 };
 
 export default userProfileRow;

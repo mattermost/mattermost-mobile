@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ChannelSidebar should match, full snapshot 1`] = `
+exports[`MainSidebar should match, full snapshot 1`] = `
 <DrawerLayout
   drawerPosition="left"
-  drawerWidth={-30}
+  drawerWidth={710}
   isTablet={false}
   onDrawerClose={[Function]}
   onDrawerOpen={[Function]}

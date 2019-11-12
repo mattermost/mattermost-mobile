@@ -37,7 +37,7 @@ export default class OptionsModalList extends PureComponent {
             if (typeof action === 'function') {
                 action();
             }
-        }, 100);
+        }, 250);
     });
 
     renderOptions = () => {
