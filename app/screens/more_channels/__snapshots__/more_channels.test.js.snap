@@ -43,7 +43,14 @@ exports[`MoreChannels should match snapshot 1`] = `
         value=""
       />
     </View>
-    <View>
+    <View
+      style={
+        Array [
+          undefined,
+          null,
+        ]
+      }
+    >
       <Text
         accessibilityRole="button"
         onPress={[Function]}
