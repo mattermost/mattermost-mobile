@@ -355,6 +355,8 @@ export default class MoreChannels extends PureComponent {
             case 1:
                 typeOfChannels = 'archived';
                 break;
+            default:
+                typeOfChannels = this.state.typeOfChannels;
             }
             this.setState({typeOfChannels});
         });
