@@ -8,11 +8,12 @@ import initialState from 'app/initial_state';
 import {ViewTypes} from 'app/constants';
 import testHelper from 'test/test_helper';
 
-import {
+import * as ChannelActions from 'app/actions/views/channel';
+const {
     handleSelectChannel,
     handleSelectChannelByName,
     loadPostsIfNecessaryWithRetry,
-} from 'app/actions/views/channel';
+} = ChannelActions;
 
 import postReducer from 'mattermost-redux/reducers/entities/posts';
 
@@ -240,35 +241,69 @@ describe('Actions.Views.Channel', () => {
         expect(receivedPostsSince).not.toBe(null);
     });
 
-    test('handleSelectChannel selects channel using channelId param when from push notification', async () => {
+    test('handleSelectChannel does not dispatch markChannelViewedAndRead when from push notification', () => {
+        const markChannelViewedAndRead = jest.spyOn(ChannelActions, 'markChannelViewedAndRead');
         store = mockStore({...storeObj});
 
-        const channelId = 'from-push-notification';
-        const fromPushNotification = true;
-        await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
-        const storeBatchActions = store.getActions().find(({type}) => type === 'BATCHING_REDUCER.BATCH');
-        const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
+        const channelIds = [currentChannelId, `not-${currentChannelId}`];
+        channelIds.forEach(async (channelId) => {
+            const fromPushNotification = true;
+            await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
+            const storeBatchActions = store.getActions().find(({type}) => type === 'BATCHING_REDUCER.BATCH');
+            const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
 
-        const expectedSelectChannelWithMember = {
-            type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-            data: channelId,
-            channel: {
+            const expectedSelectChannelWithMember = {
+                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
                 data: channelId,
-            },
-            member: {
-                data: {
-                    member: {},
+                channel: {
+                    data: channelId,
                 },
-            },
+                member: {
+                    data: {
+                        member: {},
+                    },
+                },
 
-        };
-        expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+            };
+            expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+            expect(markChannelViewedAndRead).not.toHaveBeenCalled();
+        });
     });
 
-    test('handleSelectChannel selects channel using channelId param when not from push notification and same channel', async () => {
+    test('handleSelectChannel does not dispatch markChannelViewedAndRead when from same channel', () => {
+        const markChannelViewedAndRead = jest.spyOn(ChannelActions, 'markChannelViewedAndRead');
         store = mockStore({...storeObj});
 
-        const channelId = currentChannelId;
+        const fromPushnotifications = [true, false];
+        fromPushnotifications.forEach(async (fromPushNotification) => {
+            const channelId = currentChannelId;
+            await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
+            const storeBatchActions = store.getActions().find(({type}) => type === 'BATCHING_REDUCER.BATCH');
+            const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
+
+            const expectedSelectChannelWithMember = {
+                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+                data: channelId,
+                channel: {
+                    data: channelId,
+                },
+                member: {
+                    data: {
+                        member: {},
+                    },
+                },
+
+            };
+            expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+            expect(markChannelViewedAndRead).not.toHaveBeenCalled();
+        });
+    });
+
+    test('handleSelectChannel dispatches markChannelViewedAndRead when not from notification and not from same channel', async () => {
+        const markChannelViewedAndRead = jest.spyOn(ChannelActions, 'markChannelViewedAndRead');
+        store = mockStore({...storeObj});
+
+        const channelId = `not-${currentChannelId}`;
         const fromPushNotification = false;
         await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
         const storeBatchActions = store.getActions().find(({type}) => type === 'BATCHING_REDUCER.BATCH');
@@ -288,30 +323,6 @@ describe('Actions.Views.Channel', () => {
 
         };
         expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
-    });
-
-    test('handleSelectChannel selects channel using currentChannelId when not from push notification and not same channel', async () => {
-        store = mockStore({...storeObj});
-
-        const channelId = 'not-current-channel-id';
-        const fromPushNotification = false;
-        await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
-        const storeBatchActions = store.getActions().find(({type}) => type === 'BATCHING_REDUCER.BATCH');
-        const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
-
-        const expectedSelectChannelWithMember = {
-            type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-            data: currentChannelId,
-            channel: {
-                data: currentChannelId,
-            },
-            member: {
-                data: {
-                    member: {},
-                },
-            },
-
-        };
-        expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+        expect(markChannelViewedAndRead).not.toHaveBeenCalledWith(channelId, currentChannelId);
     });
 });
