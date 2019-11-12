@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import Button from 'react-native-button';
 
 import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import ActionButtonText from './action_button_text';
 
 export default class ActionButton extends PureComponent {
@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 7,
         },
         buttonDisabled: {
-            backgroundColor: theme.buttonBg + '4F',
+            backgroundColor: changeOpacity(theme.buttonBg, 0.3),
         },
         text: {
             color: theme.buttonColor,
