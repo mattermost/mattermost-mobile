@@ -12,6 +12,7 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
+    SafeAreaView,
     StatusBar,
     StyleSheet,
     Text,
@@ -26,7 +27,6 @@ import merge from 'deepmerge';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import SafeAreaView from 'app/components/safe_area_view';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
@@ -432,8 +432,7 @@ export default class SelectServer extends PureComponent {
 
         return (
             <SafeAreaView
-                excludeHeader={true}
-                useLandscapeMargin={true}
+                style={style.container}
             >
                 <KeyboardAvoidingView
                     behavior='padding'

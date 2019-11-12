@@ -6,6 +6,7 @@ import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
+import merge from 'deepmerge';
 
 import {ErrorTypes, GeneralTypes} from 'mattermost-redux/action_types';
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -218,23 +219,56 @@ export function configureAppStore() {
 
                     await persistor.purge();
 
+                    const {currentTeamId} = state.entities.teams;
+                    const myPreferences = {...state.entities.preferences.myPreferences};
+                    Object.keys(myPreferences).forEach((key) => {
+                        if (!key.startsWith('theme--')) {
+                            Reflect.deleteProperty(myPreferences, key);
+                        }
+                    });
+
+                    const initialStateWithTeamAndThemePreferences = merge(initialState, {
+                        entities: {
+                            teams: {
+                                currentTeamId,
+                            },
+                            preferences: {
+                                myPreferences,
+                            },
+                        },
+                    });
+
                     store.dispatch(batchActions([
                         {
                             type: General.OFFLINE_STORE_RESET,
-                            data: initialState,
+                            data: initialStateWithTeamAndThemePreferences,
                         },
                         {
-                            type: General.STORE_REHYDRATION_COMPLETE,
+                            type: ErrorTypes.RESTORE_ERRORS,
+                            data: [...state.errors],
+                        },
+                        {
+                            type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
+                            data: state.entities.general.deviceToken,
+                        },
+                        {
+                            type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
+                            data: {
+                                url: state.entities.general.credentials.url,
+                            },
                         },
                         {
                             type: ViewTypes.SERVER_URL_CHANGED,
                             serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
                         },
                         {
-                            type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
-                            data: state.entities.general.deviceToken,
+                            type: GeneralTypes.RECEIVED_SERVER_VERSION,
+                            data: state.entities.general.serverVersion,
                         },
-                    ]));
+                        {
+                            type: General.STORE_REHYDRATION_COMPLETE,
+                        },
+                    ], 'BATCH_FOR_RESTART'));
 
                     // When logging out remove the data stored in the bucket
                     mattermostBucket.removePreference('cert');
