@@ -12,9 +12,18 @@ index ffef75f..a4df210 100644
  
  </manifest>
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
-index 8fb5f01..74d6138 100644
+index 8fb5f01..2a6b5f3 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
 +++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
+@@ -5,7 +5,7 @@ import android.app.Application;
+ import android.content.Context;
+ import android.content.Intent;
+ import android.os.Bundle;
+-import android.support.v4.app.NotificationManagerCompat;
++import androidx.core.app.NotificationManagerCompat;
+ import android.util.Log;
+ 
+ import com.facebook.react.bridge.ActivityEventListener;
 @@ -103,12 +103,26 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
          pushNotification.onPostRequest(notificationId);
      }
@@ -42,6 +51,18 @@ index 8fb5f01..74d6138 100644
      @ReactMethod
      public void isRegisteredForRemoteNotifications(Promise promise) {
          boolean hasPermission = NotificationManagerCompat.from(getReactApplicationContext()).areNotificationsEnabled();
+diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/InitialNotificationHolder.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/InitialNotificationHolder.java
+index 3636f41..ae9ffc4 100644
+--- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/InitialNotificationHolder.java
++++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/InitialNotificationHolder.java
+@@ -1,6 +1,6 @@
+ package com.wix.reactnativenotifications.core;
+ 
+-import android.support.annotation.Nullable;
++import androidx.annotation.Nullable;
+ 
+ import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
+ 
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java
 new file mode 100644
 index 0000000..c35076d
