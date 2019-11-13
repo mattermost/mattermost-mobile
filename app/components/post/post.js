@@ -254,6 +254,7 @@ export default class Post extends PureComponent {
             isLandscape,
             previousPostExists,
             beforePrevPostUserId,
+            isFirstReply,
         } = this.props;
 
         if (!post) {
@@ -305,6 +306,7 @@ export default class Post extends PureComponent {
                     theme={theme}
                     previousPostExists={previousPostExists}
                     beforePrevPostUserId={beforePrevPostUserId}
+                    isFirstReply={isFirstReply}
                 />
             );
         }
