@@ -9,12 +9,10 @@ import {Text} from 'react-native';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {getCurrentServerUrl} from 'app/init/credentials';
 import {preventDoubleTap} from 'app/utils/tap';
+import {goToScreen} from 'app/actions/navigation';
 
 export default class MarkdownTableImage extends React.PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goToScreen: PropTypes.func.isRequired,
-        }).isRequired,
         children: PropTypes.node.isRequired,
         source: PropTypes.string.isRequired,
         textStyle: CustomPropTypes.Style.isRequired,
@@ -27,7 +25,6 @@ export default class MarkdownTableImage extends React.PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'TableImage';
         const title = intl.formatMessage({
@@ -38,7 +35,7 @@ export default class MarkdownTableImage extends React.PureComponent {
             imageSource: this.getImageSource(),
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     getImageSource = async () => {

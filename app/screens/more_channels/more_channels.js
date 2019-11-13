@@ -10,6 +10,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import CustomList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
@@ -19,6 +20,7 @@ import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
+import {goToScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -34,9 +36,6 @@ export default class MoreChannels extends PureComponent {
             getChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         canCreateChannels: PropTypes.bool.isRequired,
@@ -126,6 +125,10 @@ export default class MoreChannels extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     cancelSearch = () => {
         const {channels} = this.props;
 
@@ -136,7 +139,7 @@ export default class MoreChannels extends PureComponent {
     };
 
     close = () => {
-        this.props.actions.dismissModal();
+        dismissModal();
     };
 
     doGetChannels = () => {
@@ -164,7 +167,7 @@ export default class MoreChannels extends PureComponent {
     getChannels = debounce(this.doGetChannels, 100);
 
     setHeaderButtons = (createEnabled) => {
-        const {actions, canCreateChannels, componentId} = this.props;
+        const {canCreateChannels, componentId} = this.props;
         const buttons = {
             leftButtons: [this.leftButton],
         };
@@ -173,7 +176,7 @@ export default class MoreChannels extends PureComponent {
             buttons.rightButtons = [{...this.rightButton, enabled: createEnabled}];
         }
 
-        actions.setButtons(componentId, buttons);
+        setButtons(componentId, buttons);
     };
 
     loadedChannels = ({data}) => {
@@ -228,7 +231,6 @@ export default class MoreChannels extends PureComponent {
     };
 
     onCreateChannel = () => {
-        const {actions} = this.props;
         const {formatMessage} = this.context.intl;
 
         const screen = 'CreateChannel';
@@ -237,7 +239,7 @@ export default class MoreChannels extends PureComponent {
             channelType: General.OPEN_CHANNEL,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     renderLoading = () => {
@@ -342,7 +344,7 @@ export default class MoreChannels extends PureComponent {
                 <React.Fragment>
                     <View style={[style.searchBar, padding(isLandscape)]}>
                         <SearchBar
-                            ref='search_bar'
+                            ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'

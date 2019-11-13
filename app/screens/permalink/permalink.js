@@ -24,9 +24,18 @@ import Loading from 'app/components/loading';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import SafeAreaView from 'app/components/safe_area_view';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
+
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
+
+import {
+    resetToChannel,
+    goToScreen,
+    dismissModal,
+    dismissAllModals,
+    popToRoot,
+} from 'app/actions/navigation';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -56,12 +65,6 @@ export default class Permalink extends PureComponent {
             joinChannel: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            dismissAllModals: PropTypes.func.isRequired,
-            resetToChannel: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         channelIsArchived: PropTypes.bool,
@@ -175,6 +178,10 @@ export default class Permalink extends PureComponent {
         }
     }
 
+    setViewRef = (ref) => {
+        this.viewRef = ref;
+    }
+
     goToThread = preventDoubleTap((post) => {
         const {actions} = this.props;
         const channelId = post.channel_id;
@@ -189,16 +196,16 @@ export default class Permalink extends PureComponent {
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     handleClose = () => {
         const {actions, onClose} = this.props;
-        if (this.refs.view) {
+        if (this.viewRef) {
             this.mounted = false;
-            this.refs.view.zoomOut().then(() => {
+            this.viewRef.zoomOut().then(() => {
                 actions.selectPost('');
-                actions.dismissModal();
+                dismissModal();
 
                 if (onClose) {
                     onClose();
@@ -216,27 +223,28 @@ export default class Permalink extends PureComponent {
     };
 
     handlePress = () => {
-        const {channelIdState, channelNameState} = this.state;
+        const {channelIdState} = this.state;
 
-        if (this.refs.view) {
-            this.refs.view.growOut().then(() => {
-                this.jumpToChannel(channelIdState, channelNameState);
+        if (this.viewRef) {
+            this.viewRef.growOut().then(() => {
+                this.jumpToChannel(channelIdState);
             });
         }
     };
 
-    jumpToChannel = (channelId, channelDisplayName) => {
+    jumpToChannel = async (channelId) => {
         if (channelId) {
             const {actions, channelTeamId, currentTeamId, onClose} = this.props;
             const currentChannelId = this.props.channelId;
             const {
                 handleSelectChannel,
                 handleTeamChange,
-                setChannelLoading,
-                setChannelDisplayName,
             } = actions;
 
             actions.selectPost('');
+
+            await dismissAllModals();
+            await popToRoot();
 
             if (channelId === currentChannelId) {
                 EventEmitter.emit('reset_channel');
@@ -244,10 +252,8 @@ export default class Permalink extends PureComponent {
                 const passProps = {
                     disableTermsModal: true,
                 };
-                actions.resetToChannel(passProps);
+                resetToChannel(passProps);
             }
-
-            actions.dismissAllModals();
 
             if (onClose) {
                 onClose();
@@ -257,8 +263,6 @@ export default class Permalink extends PureComponent {
                 handleTeamChange(channelTeamId);
             }
 
-            setChannelLoading(channelId !== currentChannelId);
-            setChannelDisplayName(channelDisplayName);
             handleSelectChannel(channelId);
         }
     };
@@ -398,7 +402,7 @@ export default class Permalink extends PureComponent {
                     style={[style.container, margin(isLandscape)]}
                 >
                     <Animatable.View
-                        ref='view'
+                        ref={this.setViewRef}
                         animation='zoomIn'
                         duration={200}
                         delay={0}

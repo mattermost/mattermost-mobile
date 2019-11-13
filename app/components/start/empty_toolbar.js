@@ -44,7 +44,7 @@ export default class EmptyToolbar extends PureComponent {
                 height = IOS_TOP_LANDSCAPE;
             }
 
-            if (DeviceTypes.IS_IPHONE_X && isLandscape) {
+            if (DeviceTypes.IS_IPHONE_WITH_INSETS && isLandscape) {
                 padding.paddingHorizontal = 10;
             }
             break;

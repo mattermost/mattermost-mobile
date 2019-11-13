@@ -52,16 +52,22 @@ export default class Swiper extends PureComponent {
         this.state = this.initialState(props);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.width !== nextProps.width) {
-            this.scrollByWidth(nextProps.width);
+    static getDerivedStateFromProps(props, state) {
+        const total = React.Children.count(props.children);
+        if (total !== state.total) {
+            return {total};
         }
+        return null;
     }
 
     componentDidUpdate(prevProps, prevState) {
         // If the index has changed, we notify the parent via the onIndexChanged callback
         if (this.state.index !== prevState.index) {
             this.props.onIndexChanged(this.state.index);
+        }
+
+        if (this.props.width !== prevProps.width) {
+            this.scrollByWidth(this.props.width);
         }
     }
 
@@ -180,7 +186,7 @@ export default class Swiper extends PureComponent {
         const bottom = this.paginationBottom(width, height);
         const drawerWidth = (width > height) ? width - ViewTypes.IOS_HORIZONTAL_LANDSCAPE : width;
         let style;
-        if (DeviceTypes.IS_IPHONE_X && (width < height)) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS && (width < height)) {
             style = {
                 bottom,
                 width: drawerWidth,
@@ -235,7 +241,7 @@ export default class Swiper extends PureComponent {
         }
 
         const landscape = width > height;
-        if (DeviceTypes.IS_IPHONE_X) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
             return landscape ? 14 : 34;
         }
 

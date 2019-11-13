@@ -28,15 +28,16 @@ import PostSeparator from 'app/components/post_separator';
 import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes, ListTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
+import {goToScreen, showModalOverCurrentContext, dismissModal} from 'app/actions/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import ChannelDisplayName from './channel_display_name';
 import Modifier, {MODIFIER_LABEL_HEIGHT} from './modifier';
@@ -61,9 +62,6 @@ export default class Search extends PureComponent {
             getMorePostsForSearch: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -111,8 +109,8 @@ export default class Search extends PureComponent {
         }
 
         setTimeout(() => {
-            if (this.refs.searchBar) {
-                this.refs.searchBar.focus();
+            if (this.searchBarRef && !this.props.initialValue) {
+                this.searchBarRef.focus();
             }
         }, 150);
     }
@@ -126,7 +124,7 @@ export default class Search extends PureComponent {
             !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore && prevState.recent.length === recent.length;
 
         if (this.props.isLandscape !== prevProps.isLandscape) {
-            this.refs.searchBar.blur();
+            this.searchBarRef.blur();
         }
 
         if (shouldScroll) {
@@ -139,8 +137,8 @@ export default class Search extends PureComponent {
                 const offset = modifiersHeight + modifiersSeparatorHeight + SECTION_HEIGHT + recentLabelsHeight + recentSeparatorsHeight;
 
                 Keyboard.dismiss();
-                if (this.refs.list) {
-                    this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+                if (this.listRef?._wrapperListRef) {
+                    this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                         animated: true,
                         offset,
                     });
@@ -151,12 +149,20 @@ export default class Search extends PureComponent {
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'backPress') {
-            if (this.state.preview) {
-                this.refs.preview.handleClose();
+            if (this.state.preview && this.previewRef) {
+                this.previewRef.handleClose();
             } else {
-                this.props.actions.dismissModal();
+                dismissModal();
             }
         }
+    }
+
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
+    setListRef = (ref) => {
+        this.listRef = ref;
     }
 
     archivedIndicator = (postID, style) => {
@@ -185,7 +191,7 @@ export default class Search extends PureComponent {
 
     cancelSearch = preventDoubleTap(() => {
         this.handleTextChanged('', true);
-        this.props.actions.dismissModal();
+        dismissModal();
     });
 
     goToThread = (post) => {
@@ -204,12 +210,12 @@ export default class Search extends PureComponent {
             rootId,
         };
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     handleHashtagPress = (hashtag) => {
         if (this.showingPermalink) {
-            this.props.actions.dismissModal();
+            dismissModal();
             this.handleClosePermalink();
         }
 
@@ -464,13 +470,13 @@ export default class Search extends PureComponent {
             };
 
             this.showingPermalink = true;
-            actions.showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options);
         }
     };
 
     scrollToTop = () => {
-        if (this.refs.list) {
-            this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+        if (this.listRef?._wrapperListRef) {
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                 animated: false,
                 offset: 0,
             });
@@ -525,8 +531,8 @@ export default class Search extends PureComponent {
 
         this.handleTextChanged(newValue, true);
 
-        if (this.refs.searchBar) {
-            this.refs.searchBar.focus();
+        if (this.searchBarRef) {
+            this.searchBarRef.focus();
         }
     });
 
@@ -687,14 +693,14 @@ export default class Search extends PureComponent {
 
         return (
             <SafeAreaView
-                excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_X}
+                excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_WITH_INSETS}
                 forceTop={44}
             >
                 <KeyboardLayout>
                     <StatusBar/>
                     <View style={[style.header, padding(isLandscape)]}>
                         <SearchBar
-                            ref='searchBar'
+                            ref={this.setSearchBarRef}
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'
@@ -717,7 +723,7 @@ export default class Search extends PureComponent {
                         />
                     </View>
                     <SectionList
-                        ref='list'
+                        ref={this.setListRef}
                         style={style.sectionList}
                         renderSectionHeader={this.renderSectionHeader}
                         sections={sections}
@@ -842,4 +848,3 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-

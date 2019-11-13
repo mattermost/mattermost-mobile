@@ -9,7 +9,6 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -21,10 +20,15 @@ import SafeAreaView from 'app/components/safe_area_view';
 import SettingsSidebar from 'app/components/sidebars/settings';
 
 import {preventDoubleTap} from 'app/utils/tap';
+import {setNavigatorStyles} from 'app/utils/theme';
 import PushNotifications from 'app/push_notifications';
 import EphemeralStore from 'app/store/ephemeral_store';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
+import {
+    goToScreen,
+    showModalOverCurrentContext,
+} from 'app/actions/navigation';
 
 import LocalConfig from 'assets/config';
 
@@ -38,9 +42,6 @@ export default class ChannelBase extends PureComponent {
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
-            peek: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
@@ -68,18 +69,14 @@ export default class ChannelBase extends PureComponent {
         this.postTextbox = React.createRef();
         this.keyboardTracker = React.createRef();
 
-        Navigation.mergeOptions(props.componentId, {
-            layout: {
-                backgroundColor: props.theme.centerChannelBg,
-            },
-        });
+        setNavigatorStyles(props.componentId, props.theme);
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
     }
 
-    componentWillMount() {
+    componentDidMount() {
         EventEmitter.on('leave_team', this.handleLeaveTeam);
 
         if (this.props.currentTeamId) {
@@ -91,9 +88,7 @@ export default class ChannelBase extends PureComponent {
         if (this.props.currentChannelId) {
             PushNotifications.clearChannelNotifications(this.props.currentChannelId);
         }
-    }
 
-    componentDidMount() {
         if (tracker.initialLoad && !this.props.skipMetrics) {
             this.props.actions.recordLoadTime('Start time', 'initialLoad');
         }
@@ -113,10 +108,10 @@ export default class ChannelBase extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
-            Navigation.mergeOptions(this.props.componentId, {
-                layout: {
-                    backgroundColor: nextProps.theme.centerChannelBg,
-                },
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
+
+            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+                setNavigatorStyles(componentId, nextProps.theme);
             });
         }
 
@@ -177,7 +172,7 @@ export default class ChannelBase extends PureComponent {
 
     showTermsOfServiceModal = async () => {
         const {intl} = this.context;
-        const {actions, theme} = this.props;
+        const {theme} = this.props;
         const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
         const screen = 'TermsOfService';
         const passProps = {closeButton};
@@ -196,11 +191,10 @@ export default class ChannelBase extends PureComponent {
             },
         };
 
-        actions.showModalOverCurrentContext(screen, passProps, options);
+        showModalOverCurrentContext(screen, passProps, options);
     };
 
     goToChannelInfo = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'ChannelInfo';
         const title = intl.formatMessage({id: 'mobile.routes.channelInfo', defaultMessage: 'Info'});
@@ -208,7 +202,7 @@ export default class ChannelBase extends PureComponent {
         Keyboard.dismiss();
 
         requestAnimationFrame(() => {
-            actions.goToScreen(screen, title);
+            goToScreen(screen, title);
         });
     });
 
@@ -321,6 +315,12 @@ export default class ChannelBase extends PureComponent {
                 />
             </MainSidebar>
         );
+    }
+
+    render() {
+        // Overriden in channel.android.js and channel.ios.js
+        // but defined here for channel_base.test.js
+        return; // eslint-disable-line no-useless-return
     }
 }
 

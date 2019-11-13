@@ -29,8 +29,6 @@ describe('SelectTeam', () => {
         handleTeamChange: jest.fn(),
         joinTeam: jest.fn(),
         logout: jest.fn(),
-        resetToChannel: jest.fn(),
-        dismissModal: jest.fn(),
     };
 
     const baseProps = {

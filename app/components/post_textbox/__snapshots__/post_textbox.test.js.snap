@@ -19,8 +19,15 @@ exports[`PostTextBox should match, full snapshot 1`] = `
       ]
     }
   >
-    <Connect(AttachmentButton)
+    <AttachmentButton
       blurTextBox={[Function]}
+      browseFileTypes="public.item"
+      canBrowseFiles={true}
+      canBrowsePhotoLibrary={true}
+      canBrowseVideoLibrary={true}
+      canTakePhoto={true}
+      canTakeVideo={true}
+      extraOptions={null}
       fileCount={0}
       maxFileCount={5}
       maxFileSize={1024}
@@ -37,6 +44,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -55,6 +63,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         }
       }
       uploadFiles={[Function]}
+      validMimeTypes={Array []}
     />
     <View
       style={
@@ -114,6 +123,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
               "dndIndicator": "#f74343",
               "errorTextColor": "#fd5960",
               "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
               "mentionBj": "#ffffff",
               "mentionColor": "#145dbf",
               "mentionHighlightBg": "#ffe577",

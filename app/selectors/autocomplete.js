@@ -99,15 +99,20 @@ export const filterMembersNotInChannel = createSelector(
         let profiles;
         if (matchTerm) {
             profiles = profilesNotInChannel.filter((p) => {
-                return ((p.id !== currentUserId && p.detele_at === 0) && (
-                    p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
-                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm)));
+                return (
+                    p.username.toLowerCase().includes(matchTerm) ||
+                    p.email.toLowerCase().includes(matchTerm) ||
+                    p.first_name.toLowerCase().includes(matchTerm) ||
+                    p.last_name.toLowerCase().includes(matchTerm)
+                ) && (p.delete_at === 0 && p.id !== currentUserId);
             });
         } else {
             profiles = profilesNotInChannel.filter((p) => p.delete_at === 0);
         }
 
-        return profiles.map((p) => p.id);
+        return profiles.map((p) => {
+            return p.id;
+        });
     }
 );
 

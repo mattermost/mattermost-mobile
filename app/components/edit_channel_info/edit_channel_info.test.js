@@ -11,10 +11,6 @@ import EditChannelInfo from './edit_channel_info';
 
 describe('EditChannelInfo', () => {
     const baseProps = {
-        actions: {
-            dismissModal: jest.fn(),
-            popTopScreen: jest.fn(),
-        },
         theme: Preferences.THEMES.default,
         deviceWidth: 400,
         deviceHeight: 600,

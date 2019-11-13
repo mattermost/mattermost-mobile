@@ -19,6 +19,7 @@ import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import telemetry from 'app/telemetry';
+import {goToScreen} from 'app/actions/navigation';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -32,7 +33,7 @@ export default class ChannelPostList extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
+            setChannelRefreshing: PropTypes.func,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelRefreshingFailed: PropTypes.bool,
@@ -119,7 +120,7 @@ export default class ChannelPostList extends PureComponent {
         };
 
         requestAnimationFrame(() => {
-            actions.goToScreen(screen, title, passProps);
+            goToScreen(screen, title, passProps);
         });
     };
 

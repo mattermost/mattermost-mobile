@@ -7,7 +7,6 @@ import {
     FlatList,
     Platform,
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
@@ -15,6 +14,9 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import Emoji from 'app/components/emoji';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
+import {BuiltInEmojis} from 'app/utils/emojis';
+import {getEmojiByName} from 'app/utils/emoji_utils';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
@@ -138,10 +140,16 @@ export default class EmojiSuggestion extends Component {
             // We are going to set a double : on iOS to prevent the auto correct from taking over and replacing it
             // with the wrong value, this is a hack but I could not found another way to solve it
             let completedDraft;
+            let prefix = ':';
             if (Platform.OS === 'ios') {
-                completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `::${emoji}: `);
+                prefix = '::';
+            }
+
+            const emojiData = getEmojiByName(emoji);
+            if (emojiData?.filename && !BuiltInEmojis.includes(emojiData.filename)) {
+                completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, String.fromCodePoint(parseInt(emojiData.filename, 16)));
             } else {
-                completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `:${emoji}: `);
+                completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `${prefix}${emoji}: `);
             }
 
             if (value.length > cursorPosition) {
@@ -150,7 +158,7 @@ export default class EmojiSuggestion extends Component {
 
             onChangeText(completedDraft);
 
-            if (Platform.OS === 'ios') {
+            if (Platform.OS === 'ios' && (!emojiData?.filename || BuiltInEmojis.includes(emojiData?.filename))) {
                 // This is the second part of the hack were we replace the double : with just one
                 // after the auto correct vanished
                 setTimeout(() => {
@@ -171,18 +179,20 @@ export default class EmojiSuggestion extends Component {
         const style = getStyleFromTheme(this.props.theme);
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={() => this.completeSuggestion(item)}
                 style={style.row}
+                type={'opacity'}
             >
                 <View style={style.emoji}>
                     <Emoji
                         emojiName={item}
+                        textStyle={style.emojiText}
                         size={20}
                     />
                 </View>
                 <Text style={style.emojiName}>{`:${item}:`}</Text>
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     };
 
@@ -224,6 +234,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         emojiName: {
             fontSize: 13,
             color: theme.centerChannelColor,
+        },
+        emojiText: {
+            color: '#000',
+            fontWeight: 'bold',
         },
         listView: {
             flex: 1,

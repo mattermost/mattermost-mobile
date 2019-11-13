@@ -14,6 +14,7 @@ import {Navigation} from 'react-native-navigation';
 import {debounce} from 'mattermost-redux/actions/helpers';
 import {General} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
@@ -30,6 +31,7 @@ import {
     setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
+import {popTopScreen, setButtons} from 'app/actions/navigation';
 
 export default class ChannelMembers extends PureComponent {
     static propTypes = {
@@ -37,8 +39,6 @@ export default class ChannelMembers extends PureComponent {
             getProfilesInChannel: PropTypes.func.isRequired,
             handleRemoveChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         canManageUsers: PropTypes.bool.isRequired,
@@ -78,7 +78,7 @@ export default class ChannelMembers extends PureComponent {
         };
 
         if (props.canManageUsers) {
-            props.actions.setButtons(props.componentId, {
+            setButtons(props.componentId, {
                 rightButtons: [this.removeButton],
             });
         }
@@ -108,18 +108,22 @@ export default class ChannelMembers extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     clearSearch = () => {
         this.setState({term: '', searchResults: []});
     };
 
     close = () => {
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     enableRemoveOption = (enabled) => {
-        const {actions, canManageUsers, componentId} = this.props;
+        const {canManageUsers, componentId} = this.props;
         if (canManageUsers) {
-            actions.setButtons(componentId, {
+            setButtons(componentId, {
                 rightButtons: [{...this.removeButton, enabled}],
             });
         }
@@ -371,7 +375,7 @@ export default class ChannelMembers extends PureComponent {
                 <StatusBar/>
                 <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
-                        ref='search_bar'
+                        ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

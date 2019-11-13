@@ -19,15 +19,14 @@ import StatusBar from 'app/components/status_bar';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
+import {dismissModal, dismissAllModals, setButtons} from 'app/actions/navigation';
+
 export default class TermsOfService extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             getTermsOfService: PropTypes.func.isRequired,
             updateMyTermsOfServiceStatus: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            dismissAllModals: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         closeButton: PropTypes.object,
@@ -98,13 +97,13 @@ export default class TermsOfService extends PureComponent {
     }
 
     setNavigatorButtons = (enabled = true) => {
-        const {actions, componentId} = this.props;
+        const {componentId} = this.props;
         const buttons = {
             leftButtons: [{...this.leftButton, enabled}],
             rightButtons: [{...this.rightButton, enabled}],
         };
 
-        actions.setButtons(componentId, buttons);
+        setButtons(componentId, buttons);
     };
 
     enableNavigatorLogout = () => {
@@ -113,13 +112,13 @@ export default class TermsOfService extends PureComponent {
             rightButtons: [{...this.rightButton, enabled: false}],
         };
 
-        this.props.actions.setButtons(buttons);
+        setButtons(buttons);
     };
 
-    closeTermsAndLogout = () => {
+    closeTermsAndLogout = async () => {
         const {actions} = this.props;
 
-        actions.dismissAllModals();
+        await dismissAllModals();
         actions.logout();
     };
 
@@ -156,7 +155,7 @@ export default class TermsOfService extends PureComponent {
         this.registerUserAction(
             true,
             () => {
-                this.props.actions.dismissModal();
+                dismissModal();
             },
             this.handleAcceptTerms
         );

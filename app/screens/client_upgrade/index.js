@@ -5,7 +5,6 @@ import {connect} from 'react-redux';
 
 import {logError} from 'mattermost-redux/actions/errors';
 
-import {popTopScreen, dismissModal} from 'app/actions/navigation';
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import getClientUpgrade from 'app/selectors/client_upgrade';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -30,8 +29,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             logError,
             setLastUpgradeCheck,
-            popTopScreen,
-            dismissModal,
         }, dispatch),
     };
 }

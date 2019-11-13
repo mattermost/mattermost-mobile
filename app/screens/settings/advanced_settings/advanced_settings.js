@@ -12,7 +12,7 @@ import {
     Text,
     View,
 } from 'react-native';
-import {Sentry} from 'react-native-sentry';
+import * as Sentry from '@sentry/react-native';
 
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
@@ -22,13 +22,13 @@ import {t} from 'app/utils/i18n';
 import {deleteFileCache, getFileCacheSize} from 'app/utils/file';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {dismissAllModals} from 'app/actions/navigation';
 
 import Config from 'assets/config';
 
 class AdvancedSettings extends Component {
     static propTypes = {
         actions: PropTypes.shape({
-            dismissAllModals: PropTypes.func.isRequired,
             purgeOfflineStore: PropTypes.func.isRequired,
         }).isRequired,
         intl: intlShape.isRequired,
@@ -81,7 +81,7 @@ class AdvancedSettings extends Component {
         actions.purgeOfflineStore();
 
         if (Platform.OS === 'android') {
-            actions.dismissAllModals();
+            dismissAllModals();
         }
     });
 

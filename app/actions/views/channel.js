@@ -10,7 +10,8 @@ import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     markChannelAsRead,
-    leaveChannel as serviceLeaveChannel, markChannelAsViewed,
+    markChannelAsViewed,
+    leaveChannel as serviceLeaveChannel,
     selectChannel,
     getChannelStats,
 } from 'mattermost-redux/actions/channels';
@@ -378,45 +379,23 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
         }
 
+        let previousChannelId;
+        if (!fromPushNotification && !sameChannel) {
+            previousChannelId = currentChannelId;
+        }
+
         const actions = [
             selectChannel(channelId),
             getChannelStats(channelId),
             setChannelDisplayName(channel.display_name),
-            {
-                type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
-                data: channelId,
-            },
+            setInitialPostVisibility(channelId),
             setChannelLoading(false),
-            {
-                type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-                teamId: currentTeamId,
-                channelId,
-            },
+            setLastChannelForTeam(currentTeamId, channelId),
+            selectChannelWithMember(channelId, channel, member),
+            markChannelViewedAndRead(channelId, previousChannelId),
         ];
 
-        let markPreviousChannelId;
-        if (!fromPushNotification && !sameChannel) {
-            markPreviousChannelId = currentChannelId;
-            actions.push({
-                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-                data: currentChannelId,
-                channel: getChannel(state, currentChannelId),
-                member: getMyChannelMember(state, currentChannelId),
-            });
-        }
-
-        if (!fromPushNotification) {
-            actions.push({
-                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-                data: channelId,
-                channel,
-                member,
-            });
-        }
-
         dispatch(batchActions(actions));
-
-        dispatch(markChannelViewedAndRead(channelId, markPreviousChannelId));
     };
 }
 
@@ -683,5 +662,29 @@ function setLoadMorePostsVisible(visible) {
     return {
         type: ViewTypes.SET_LOAD_MORE_POSTS_VISIBLE,
         data: visible,
+    };
+}
+
+function setInitialPostVisibility(channelId) {
+    return {
+        type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
+        data: channelId,
+    };
+}
+
+function setLastChannelForTeam(teamId, channelId) {
+    return {
+        type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
+        teamId,
+        channelId,
+    };
+}
+
+function selectChannelWithMember(channelId, channel, member) {
+    return {
+        type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+        data: channelId,
+        channel,
+        member,
     };
 }

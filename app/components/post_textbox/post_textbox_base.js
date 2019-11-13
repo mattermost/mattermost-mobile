@@ -24,11 +24,12 @@ import AttachmentButton from 'app/components/attachment_button';
 import Fade from 'app/components/fade';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
-import SendButton from 'app/components/send_button';
 import PasteableTextInput from 'app/components/pasteable_text_input';
-
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import SendButton from 'app/components/send_button';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {NOTIFY_ALL_MEMBERS} from 'app/constants/view';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {
@@ -36,7 +37,6 @@ import {
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {RNTextInputReset} = NativeModules;
 
@@ -83,6 +83,7 @@ export default class PostTextBoxBase extends PureComponent {
         isTimezoneEnabled: PropTypes.bool,
         currentChannel: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
+        screenId: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
@@ -202,7 +203,7 @@ export default class PostTextBoxBase extends PureComponent {
                     }),
                     intl.formatMessage({
                         id: 'mobile.message_length.message',
-                        defaultMessage: 'Your current message is too long. Current character count: {max}/{count}',
+                        defaultMessage: 'Your current message is too long. Current character count: {count}/{max}',
                     }, {
                         max: maxMessageLength,
                         count: valueLength,
@@ -408,23 +409,23 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handleUploadFiles = (images) => {
-        this.props.actions.initUploadFiles(images, this.props.rootId);
+    handleUploadFiles = (files) => {
+        this.props.actions.initUploadFiles(files, this.props.rootId);
     };
 
-    isFileLoading() {
+    isFileLoading = () => {
         const {files} = this.props;
 
         return files.some((file) => file.loading);
-    }
+    };
 
-    isSendButtonVisible() {
+    isSendButtonVisible = () => {
         return this.canSend() || this.isFileLoading();
-    }
+    };
 
-    isSendButtonEnabled() {
+    isSendButtonEnabled = () => {
         return this.canSend() && !this.isFileLoading() && !this.state.sendingMessage;
-    }
+    };
 
     sendMessage = () => {
         const {value} = this.state;
@@ -445,7 +446,7 @@ export default class PostTextBoxBase extends PureComponent {
     textContainsAtAllAtChannel = (text) => {
         const textWithoutCode = text.replace(/(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)| *(`{3,}|~{3,})[ .]*(\S+)? *\n([\s\S]*?\s*)\3 *(?:\n+|$)/g, '');
         return (/\B@(all|channel)\b/i).test(textWithoutCode);
-    }
+    };
 
     showSendToAllOrChannelAlert = (currentMembersCount) => {
         const {intl} = this.context;
@@ -505,7 +506,7 @@ export default class PostTextBoxBase extends PureComponent {
                 },
             ],
         );
-    }
+    };
 
     doSubmitMessage = () => {
         const {actions, currentUserId, channelId, files, rootId} = this.props;
@@ -562,7 +563,7 @@ export default class PostTextBoxBase extends PureComponent {
         }
 
         EventEmitter.emit('scroll-to-bottom');
-    }
+    };
 
     getStatusFromSlashCommand = (message) => {
         const tokens = message.split(' ');
@@ -684,49 +685,51 @@ export default class PostTextBoxBase extends PureComponent {
         });
     };
 
-    showPasteImageErrorDialog = () => {
+    showPasteFilesErrorDialog = () => {
         const {formatMessage} = this.context.intl;
         Alert.alert(
             formatMessage({
-                id: 'mobile.image_paste.error_title',
-                defaultMessage: 'Paste Image failed',
+                id: 'mobile.files_paste.error_title',
+                defaultMessage: 'Paste failed',
             }),
             formatMessage({
-                id: 'mobile.image_paste.error_description',
-                defaultMessage: 'An error occurred while pasting the image. Please try again.',
+                id: 'mobile.files_paste.error_description',
+                defaultMessage: 'An error occurred while pasting the file(s). Please try again.',
             }),
             [
                 {
                     text: formatMessage({
-                        id: 'mobile.image_paste.error_dismiss',
+                        id: 'mobile.files_paste.error_dismiss',
                         defaultMessage: 'Dismiss',
                     }),
                 },
             ]
         );
-    }
+    };
 
-    handlePasteImages = (error, images) => {
-        if (error) {
-            this.showPasteImageErrorDialog();
-            return;
+    handlePasteFiles = (error, files) => {
+        if (this.props.screenId === EphemeralStore.getNavigationTopComponentId()) {
+            if (error) {
+                this.showPasteFilesErrorDialog();
+                return;
+            }
+
+            const {maxFileSize} = this.props;
+            const availableCount = MAX_FILE_COUNT - this.props.files.length;
+            if (files.length > availableCount) {
+                this.onShowFileMaxWarning();
+                return;
+            }
+
+            const largeFile = files.find((image) => image.fileSize > maxFileSize);
+            if (largeFile) {
+                this.onShowFileSizeWarning(largeFile.fileName);
+                return;
+            }
+
+            this.handleUploadFiles(files);
         }
-
-        const {maxFileSize, files} = this.props;
-        const availableCount = MAX_FILE_COUNT - files.length;
-        if (images.length > availableCount) {
-            this.onShowFileMaxWarning();
-            return;
-        }
-
-        const largeImage = images.find((image) => image.fileSize > maxFileSize);
-        if (largeImage) {
-            this.onShowFileSizeWarning(largeImage.fileName);
-            return;
-        }
-
-        this.handleUploadFiles(images);
-    }
+    };
 
     renderDeactivatedChannel = () => {
         const {intl} = this.context;
@@ -740,7 +743,7 @@ export default class PostTextBoxBase extends PureComponent {
                 })}
             </Text>
         );
-    }
+    };
 
     renderTextBox = () => {
         const {intl} = this.context;
@@ -777,7 +780,7 @@ export default class PostTextBoxBase extends PureComponent {
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
                         editable={!channelIsReadOnly}
-                        onPaste={this.handlePasteImages}
+                        onPaste={this.handlePasteFiles}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     />
                     <Fade visible={this.isSendButtonVisible()}>

@@ -28,12 +28,14 @@ export default class ChannelTitle extends PureComponent {
         isGuest: PropTypes.bool.isRequired,
         hasGuests: PropTypes.bool.isRequired,
         canHaveSubtitle: PropTypes.bool.isRequired,
+        isSelfDMChannel: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         currentChannel: {},
         displayName: null,
         theme: {},
+        isSelfDMChannel: false,
     };
 
     archiveIcon(style) {
@@ -55,6 +57,9 @@ export default class ChannelTitle extends PureComponent {
             return null;
         }
         if (!isGuest && !hasGuests) {
+            return null;
+        }
+        if (channelType === General.DM_CHANNEL && !isGuest) {
             return null;
         }
 
@@ -85,15 +90,45 @@ export default class ChannelTitle extends PureComponent {
         );
     }
 
+    renderChannelDisplayName = () => {
+        const {
+            displayName,
+            currentChannelName,
+            isSelfDMChannel,
+        } = this.props;
+
+        const channelDisplayName = displayName || currentChannelName;
+
+        if (isSelfDMChannel) {
+            const messageId = t('channel_header.directchannel.you');
+            const defaultMessage = '{displayname} (you)';
+            const values = {displayname: channelDisplayName};
+
+            return (
+                <FormattedText
+                    id={messageId}
+                    defaultMessage={defaultMessage}
+                    values={values}
+                />
+            );
+        }
+
+        return channelDisplayName;
+    }
+
     render() {
-        const {currentChannelName, displayName, isChannelMuted, onPress, theme} = this.props;
+        const {
+            isChannelMuted,
+            onPress,
+            theme,
+        } = this.props;
 
         const style = getStyle(theme);
-
-        const channelName = displayName || currentChannelName;
         const hasGuestsText = this.renderHasGuestsText(style);
+        const channelDisplayName = this.renderChannelDisplayName();
+
         let icon;
-        if (channelName) {
+        if (channelDisplayName) {
             icon = (
                 <Icon
                     style={style.icon}
@@ -126,7 +161,7 @@ export default class ChannelTitle extends PureComponent {
                         numberOfLines={1}
                         style={style.text}
                     >
-                        {channelName}
+                        {channelDisplayName}
                     </Text>
                     {icon}
                     {mutedIcon}

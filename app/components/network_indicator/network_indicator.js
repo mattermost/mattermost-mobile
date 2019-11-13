@@ -34,7 +34,7 @@ const {
     ANDROID_TOP_PORTRAIT,
     IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
-    IOSX_TOP_PORTRAIT,
+    IOS_INSETS_TOP_PORTRAIT,
 } = ViewTypes;
 
 export default class NetworkIndicator extends PureComponent {
@@ -113,7 +113,7 @@ export default class NetworkIndicator extends PureComponent {
         }
 
         if (this.props.isOnline) {
-            if (previousWebsocketStatus === RequestStatus.STARTED && websocketStatus === RequestStatus.SUCCESS) {
+            if (previousWebsocketStatus !== RequestStatus.SUCCESS && websocketStatus === RequestStatus.SUCCESS) {
                 // Show the connected animation only if we had a previous network status
                 this.connected();
                 clearTimeout(this.connectionRetryTimeout);
@@ -201,12 +201,12 @@ export default class NetworkIndicator extends PureComponent {
             return ANDROID_TOP_PORTRAIT;
         }
 
-        const isX = DeviceTypes.IS_IPHONE_X;
+        const iPhoneWithInsets = DeviceTypes.IS_IPHONE_WITH_INSETS;
 
-        if (isX && isLandscape) {
+        if (iPhoneWithInsets && isLandscape) {
             return IOS_TOP_LANDSCAPE;
-        } else if (isX) {
-            return IOSX_TOP_PORTRAIT;
+        } else if (iPhoneWithInsets) {
+            return IOS_INSETS_TOP_PORTRAIT;
         } else if (isLandscape && !DeviceTypes.IS_TABLET) {
             return IOS_TOP_LANDSCAPE;
         }

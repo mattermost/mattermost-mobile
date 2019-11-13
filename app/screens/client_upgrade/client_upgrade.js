@@ -20,14 +20,13 @@ import {UpgradeTypes} from 'app/constants';
 import logo from 'assets/images/logo.png';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {popTopScreen, dismissModal} from 'app/actions/navigation';
 
 export default class ClientUpgrade extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         currentVersion: PropTypes.string,
@@ -60,15 +59,15 @@ export default class ClientUpgrade extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-upgrade') {
-            this.props.actions.dismissModal();
+            dismissModal();
         }
     }
 
@@ -97,15 +96,14 @@ export default class ClientUpgrade extends PureComponent {
         const {
             closeAction,
             userCheckedForUpgrade,
-            actions,
         } = this.props;
 
         if (closeAction) {
             closeAction();
         } else if (userCheckedForUpgrade) {
-            actions.popTopScreen();
+            popTopScreen();
         } else {
-            actions.dismissModal();
+            dismissModal();
         }
     };
 

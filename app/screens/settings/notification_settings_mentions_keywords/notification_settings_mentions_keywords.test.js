@@ -11,9 +11,6 @@ import NotificationSettingsMentionsKeywords from './notification_settings_mentio
 
 describe('NotificationSettingsMentionsKeywords', () => {
     const baseProps = {
-        actions: {
-            popTopScreen: jest.fn(),
-        },
         componentId: 'component-id',
         keywords: '',
         isLandscape: false,

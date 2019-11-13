@@ -6,7 +6,9 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
+    FlatList,
     Platform,
+    SectionList,
     Text,
     TouchableOpacity,
     View,
@@ -28,10 +30,11 @@ import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone
 import EmojiPickerRow from './emoji_picker_row';
 
 const EMOJI_SIZE = 30;
-const EMOJI_GUTTER = 7.5;
+const EMOJI_GUTTER = 7;
 const EMOJIS_PER_PAGE = 200;
 const SECTION_HEADER_HEIGHT = 28;
-export const SECTION_MARGIN = 15;
+const SECTION_MARGIN = 15;
+export const SCROLLVIEW_NATIVE_ID = 'emojiPicker';
 
 export function filterEmojiSearchInput(searchText) {
     return searchText.toLowerCase().replace(/^:|:$/g, '');
@@ -69,7 +72,7 @@ export default class EmojiPicker extends PureComponent {
 
         this.sectionListGetItemLayout = sectionListGetItemLayout({
             getItemHeight: () => {
-                return EMOJI_SIZE + (EMOJI_GUTTER * 2);
+                return (EMOJI_SIZE + 7) + (EMOJI_GUTTER * 2);
             },
             getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
         });
@@ -77,7 +80,6 @@ export default class EmojiPicker extends PureComponent {
         const emojis = this.renderableEmojis(props.emojisBySection, props.deviceWidth);
         const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
-        this.searchBarRef = React.createRef();
         this.scrollToSectionTries = 0;
         this.state = {
             emojis,
@@ -94,8 +96,8 @@ export default class EmojiPicker extends PureComponent {
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
             this.rebuildEmojis = true;
 
-            if (this.searchBarRef?.current) {
-                this.searchBarRef.current.blur();
+            if (this.searchBarRef) {
+                this.searchBarRef.blur();
             }
         }
 
@@ -104,6 +106,14 @@ export default class EmojiPicker extends PureComponent {
             this.setRebuiltEmojis();
         }
     }
+
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
+    setSectionListRef = (ref) => {
+        this.sectionListRef = ref;
+    };
 
     setRebuiltEmojis = (searchBarAnimationComplete = true) => {
         if (this.rebuildEmojis && searchBarAnimationComplete) {
@@ -158,7 +168,7 @@ export default class EmojiPicker extends PureComponent {
         let lastOffset = 0;
         return emojiSections.map((section) => {
             const start = lastOffset;
-            const nextOffset = (section.data.length * (EMOJI_SIZE + (EMOJI_GUTTER * 2))) + SECTION_HEADER_HEIGHT;
+            const nextOffset = (section.data.length * ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * 2))) + SECTION_HEADER_HEIGHT;
             lastOffset += nextOffset;
 
             return start;
@@ -198,10 +208,6 @@ export default class EmojiPicker extends PureComponent {
         });
     };
 
-    filterEmojiAliases = (aliases, searchTerm) => {
-        return aliases.findIndex((alias) => alias.includes(searchTerm)) !== -1;
-    };
-
     searchEmojis = (searchTerm) => {
         const {emojis, fuse} = this.props;
         const searchTermLowerCase = searchTerm.toLowerCase();
@@ -216,8 +222,8 @@ export default class EmojiPicker extends PureComponent {
     };
 
     getNumberOfColumns = (deviceWidth) => {
-        const shorten = DeviceTypes.IS_IPHONE_X && this.props.isLandscape ? 4 : 2;
-        return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / (EMOJI_SIZE + (EMOJI_GUTTER * shorten)))));
+        const shorten = DeviceTypes.IS_IPHONE_WITH_INSETS && this.props.isLandscape ? 4 : 2;
+        return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
     renderItem = ({item}) => {
@@ -230,6 +236,54 @@ export default class EmojiPicker extends PureComponent {
                 onEmojiPress={this.props.onEmojiPress}
             />
         );
+    };
+
+    renderListComponent = (shorten) => {
+        const {deviceWidth, theme} = this.props;
+        const {emojis, filteredEmojis, searchTerm} = this.state;
+        const styles = getStyleSheetFromTheme(theme);
+
+        let listComponent;
+        if (searchTerm) {
+            listComponent = (
+                <FlatList
+                    data={filteredEmojis}
+                    initialListSize={10}
+                    keyboardShouldPersistTaps='always'
+                    keyExtractor={this.flatListKeyExtractor}
+                    nativeID={SCROLLVIEW_NATIVE_ID}
+                    pageSize={10}
+                    renderItem={this.flatListRenderItem}
+                    style={styles.flatList}
+                />
+            );
+        } else {
+            listComponent = (
+                <SectionList
+                    ref={this.setSectionListRef}
+                    getItemLayout={this.sectionListGetItemLayout}
+                    initialNumToRender={50}
+                    keyboardShouldPersistTaps='always'
+                    keyboardDismissMode='interactive'
+                    ListFooterComponent={this.renderFooter}
+                    nativeID={SCROLLVIEW_NATIVE_ID}
+                    onEndReached={this.loadMoreCustomEmojis}
+                    onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
+                    onMomentumScrollEnd={this.onMomentumScrollEnd}
+                    onScroll={this.onScroll}
+                    onScrollToIndexFailed={this.handleScrollToSectionFailed}
+                    pageSize={50}
+                    removeClippedSubviews={false}
+                    renderItem={this.renderItem}
+                    renderSectionHeader={this.renderSectionHeader}
+                    sections={emojis}
+                    showsVerticalScrollIndicator={false}
+                    style={[styles.sectionList, {width: deviceWidth - (SECTION_MARGIN * shorten)}]}
+                />
+            );
+        }
+
+        return listComponent;
     };
 
     flatListKeyExtractor = (item) => item;
@@ -271,7 +325,7 @@ export default class EmojiPicker extends PureComponent {
         }
 
         this.props.actions.incrementEmojiPickerPage();
-    }
+    };
 
     onScroll = (e) => {
         if (this.state.jumpToSection) {
@@ -309,7 +363,7 @@ export default class EmojiPicker extends PureComponent {
             jumpToSection: true,
             currentSectionIndex: index,
         }, () => {
-            this.sectionList.scrollToLocation({
+            this.sectionListRef.scrollToLocation({
                 sectionIndex: index,
                 itemIndex: 0,
                 viewOffset: 25,
@@ -324,7 +378,7 @@ export default class EmojiPicker extends PureComponent {
                 this.scrollToSection(index);
             }, 200);
         }
-    }
+    };
 
     renderSectionHeader = ({section}) => {
         const {theme} = this.props;
@@ -351,7 +405,7 @@ export default class EmojiPicker extends PureComponent {
         if (isCustomSection && this.props.customEmojiPage === 0) {
             this.loadMoreCustomEmojis();
         }
-    }
+    };
 
     renderSectionIcons = () => {
         const {theme} = this.props;
@@ -376,10 +430,6 @@ export default class EmojiPicker extends PureComponent {
         });
     };
 
-    attachSectionList = (c) => {
-        this.sectionList = c;
-    };
-
     renderFooter = () => {
         if (!this.state.missingPages) {
             return null;
@@ -393,7 +443,7 @@ export default class EmojiPicker extends PureComponent {
                 <ActivityIndicator/>
             </View>
         );
-    }
+    };
 }
 
 export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {

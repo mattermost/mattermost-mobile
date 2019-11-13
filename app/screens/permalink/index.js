@@ -18,16 +18,8 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {isLandscape} from 'app/selectors/device';
 
 import {
-    goToScreen,
-    dismissModal,
-    dismissAllModals,
-    resetToChannel,
-} from 'app/actions/navigation';
-import {
     handleSelectChannel,
     loadThreadIfNecessary,
-    setChannelDisplayName,
-    setChannelLoading,
 } from 'app/actions/views/channel';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
@@ -79,12 +71,6 @@ function mapDispatchToProps(dispatch) {
             joinChannel,
             loadThreadIfNecessary,
             selectPost,
-            setChannelDisplayName,
-            setChannelLoading,
-            goToScreen,
-            dismissModal,
-            dismissAllModals,
-            resetToChannel,
         }, dispatch),
     };
 }

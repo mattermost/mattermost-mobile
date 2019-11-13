@@ -7,6 +7,7 @@ import {
     IMAGE_MAX_HEIGHT,
     IMAGE_MIN_DIMENSION,
 } from 'app/constants/image';
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 let previewComponents;
 
@@ -57,7 +58,7 @@ export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHe
     };
 };
 
-export function previewImageAtIndex(components, index, files, showModalOverCurrentContext) {
+export function previewImageAtIndex(components, index, files) {
     previewComponents = components;
     const component = components[index];
     if (component) {

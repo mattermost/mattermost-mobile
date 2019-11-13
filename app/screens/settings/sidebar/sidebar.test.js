@@ -13,6 +13,7 @@ import SidebarSettings from './index';
 jest.mock('react-intl');
 jest.mock('app/mattermost_managed', () => ({
     isRunningInSplitView: jest.fn().mockResolvedValue(false),
+    addEventListener: jest.fn(),
 }));
 
 describe('SidebarSettings', () => {
@@ -55,6 +56,7 @@ describe('SidebarSettings', () => {
                 makeDirectChannel: jest.fn(),
                 setChannelDisplayName: jest.fn(),
                 setChannelLoading: jest.fn(),
+                joinChannel: jest.fn(),
             },
             blurPostTextBox: jest.fn(),
             currentTeamId: 'current-team-id',

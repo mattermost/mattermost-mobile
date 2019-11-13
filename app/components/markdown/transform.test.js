@@ -2966,28 +2966,28 @@ describe('Components.Markdown.transform', () => {
 // Confirms that all parent, child, and sibling linkages are correct and go both ways.
 function verifyAst(node) {
     if (node.prev && node.prev.next !== node) {
-        console.error('node is not linked properly to prev');
+        console.error('node is not linked properly to prev'); //eslint-disable-line no-console
         return false;
     }
 
     if (node.next && node.next.prev !== node) {
-        console.error('node is not linked properly to next');
+        console.error('node is not linked properly to next'); //eslint-disable-line no-console
         return false;
     }
 
     if (!node.firstChild && node.lastChild) {
-        console.error('node has children, but is not linked to first child');
+        console.error('node has children, but is not linked to first child'); //eslint-disable-line no-console
         return false;
     }
 
     if (node.firstChild && !node.lastChild) {
-        console.error('node has children, but is not linked to last child');
+        console.error('node has children, but is not linked to last child'); //eslint-disable-line no-console
         return false;
     }
 
     for (let child = node.firstChild; child; child = child.next) {
         if (child.parent !== node) {
-            console.error('node is not linked properly to child');
+            console.error('node is not linked properly to child'); //eslint-disable-line no-console
             return false;
         }
 
@@ -2996,18 +2996,18 @@ function verifyAst(node) {
         }
 
         if (!child.next && child !== node.lastChild) {
-            console.error('node children are not linked correctly');
+            console.error('node children are not linked correctly'); //eslint-disable-line no-console
             return false;
         }
     }
 
     if (node.firstChild && node.firstChild.prev) {
-        console.error('node\'s first child has previous sibling');
+        console.error('node\'s first child has previous sibling'); //eslint-disable-line no-console
         return false;
     }
 
     if (node.lastChild && node.lastChild.next) {
-        console.error('node\'s last child has next sibling');
+        console.error('node\'s last child has next sibling'); //eslint-disable-line no-console
         return false;
     }
 

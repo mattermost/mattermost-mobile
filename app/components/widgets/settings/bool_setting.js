@@ -104,25 +104,27 @@ export default class BoolSetting extends PureComponent {
         }
 
         return (
-            <View style={padding(isLandscape)}>
-                {labelContent}
+            <React.Fragment>
+                <View style={padding(isLandscape)}>
+                    {labelContent}
+                </View>
                 <View style={style.separator}/>
-                <View style={[style.inputContainer]}>
-                    <Text style={style.placeholderText}>
+                <View style={style.inputContainer}>
+                    <Text style={[style.placeholderText, padding(isLandscape)]}>
                         {placeholder}
                     </Text>
                     <Switch
                         onValueChange={this.handleChange}
                         value={value}
-                        style={style.inputSwitch}
+                        style={[style.inputSwitch, padding(isLandscape)]}
                     />
                 </View>
                 <View style={style.separator}/>
-                <View>
+                <View style={padding(isLandscape)}>
                     {helpTextContent}
                     {errorTextContent}
                 </View>
-            </View>
+            </React.Fragment>
         );
     }
 }

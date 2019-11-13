@@ -21,14 +21,14 @@ import {General} from 'mattermost-redux/constants';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes, ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 
 import BottomSheet from 'app/utils/bottom_sheet';
 import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
-
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {showModal} from 'app/actions/navigation';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -50,9 +50,6 @@ export default class List extends PureComponent {
         orderedChannelIds: PropTypes.array.isRequired,
         previewChannel: PropTypes.func,
         isLandscape: PropTypes.bool.isRequired,
-        actions: PropTypes.shape({
-            showModal: PropTypes.func.isRequired,
-        }).isRequired,
     };
 
     static contextTypes = {
@@ -101,12 +98,16 @@ export default class List extends PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (prevState.sections !== this.state.sections && this.refs.list._wrapperListRef.getListRef()._viewabilityHelper) { //eslint-disable-line
-            this.refs.list.recordInteraction();
+        if (prevState.sections !== this.state.sections && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
+            this.listRef.recordInteraction();
             this.updateUnreadIndicators({
-                viewableItems: Array.from(this.refs.list._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
+                viewableItems: Array.from(this.listRef._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
             });
         }
+    }
+
+    setListRef = (ref) => {
+        this.listRef = ref;
     }
 
     getSectionConfigByType = (props, sectionType) => {
@@ -224,7 +225,6 @@ export default class List extends PureComponent {
     };
 
     goToCreatePublicChannel = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'CreateChannel';
         const title = intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
@@ -233,11 +233,10 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        actions.showModal(screen, title, passProps);
+        showModal(screen, title, passProps);
     });
 
     goToCreatePrivateChannel = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'CreateChannel';
         const title = intl.formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'});
@@ -246,11 +245,10 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        actions.showModal(screen, title, passProps);
+        showModal(screen, title, passProps);
     });
 
     goToDirectMessages = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'MoreDirectMessages';
         const title = intl.formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'});
@@ -264,11 +262,10 @@ export default class List extends PureComponent {
             },
         };
 
-        actions.showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps, options);
     });
 
     goToMoreChannels = preventDoubleTap(() => {
-        const {actions} = this.props;
         const {intl} = this.context;
         const screen = 'MoreChannels';
         const title = intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
@@ -276,7 +273,7 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        actions.showModal(screen, title, passProps);
+        showModal(screen, title, passProps);
     });
 
     keyExtractor = (item) => item.id || item;
@@ -352,8 +349,8 @@ export default class List extends PureComponent {
     };
 
     scrollToTop = () => {
-        if (this.refs.list) {
-            this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+        if (this.listRef?._wrapperListRef) {
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                 x: 0,
                 y: 0,
                 animated: true,
@@ -390,7 +387,7 @@ export default class List extends PureComponent {
 
         const {width, height} = Dimensions.get('window');
         const landscape = width > height;
-        if (DeviceTypes.IS_IPHONE_X) {
+        if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
             return landscape ? 54 : 44;
         }
 
@@ -409,7 +406,7 @@ export default class List extends PureComponent {
                 onLayout={this.onLayout}
             >
                 <SectionList
-                    ref='list'
+                    ref={this.setListRef}
                     sections={sections}
                     contentContainerStyle={{paddingBottom}}
                     renderItem={this.renderItem}
@@ -424,10 +421,10 @@ export default class List extends PureComponent {
                 />
                 {UnreadIndicator &&
                 <UnreadIndicator
-                    show={showIndicator}
-                    style={styles.above}
                     onPress={this.scrollToTop}
                     theme={theme}
+                    style={styles.above}
+                    visible={showIndicator}
                 />
                 }
             </View>

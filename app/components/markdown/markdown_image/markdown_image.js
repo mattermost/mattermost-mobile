@@ -11,12 +11,12 @@ import {
     Platform,
     StyleSheet,
     Text,
-    TouchableHighlight,
     View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import ProgressiveImage from 'app/components/progressive_image';
+import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import EphemeralStore from 'app/store/ephemeral_store';
 import mattermostManaged from 'app/mattermost_managed';
@@ -34,9 +34,6 @@ const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
 export default class MarkdownImage extends React.Component {
     static propTypes = {
-        actions: PropTypes.shape({
-            showModalOverCurrentContext: PropTypes.func.isRequired,
-        }).isRequired,
         children: PropTypes.node,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -93,6 +90,14 @@ export default class MarkdownImage extends React.Component {
 
     componentWillUnmount() {
         this.mounted = false;
+    }
+
+    setImageRef = (ref) => {
+        this.imageRef = ref;
+    }
+
+    setItemRef = (ref) => {
+        this.itemRef = ref;
     }
 
     getSource = () => {
@@ -177,7 +182,6 @@ export default class MarkdownImage extends React.Component {
             originalWidth,
             uri,
         } = this.state;
-        const {actions} = this.props;
         const link = this.getSource();
         let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
         const extension = filename.split('.').pop();
@@ -199,7 +203,7 @@ export default class MarkdownImage extends React.Component {
             },
         }];
 
-        previewImageAtIndex([this.refs.item], 0, files, actions.showModalOverCurrentContext);
+        previewImageAtIndex([this.itemRef], 0, files);
     };
 
     loadImageSize = (source) => {
@@ -250,18 +254,18 @@ export default class MarkdownImage extends React.Component {
                 }
 
                 image = (
-                    <TouchableHighlight
+                    <TouchableWithFeedback
                         onLongPress={this.handleLinkLongPress}
                         onPress={this.handlePreviewImage}
                         style={{width, height}}
                     >
                         <ProgressiveImage
-                            ref='image'
+                            ref={this.setImageRef}
                             defaultSource={source}
                             resizeMode='contain'
                             style={{width, height}}
                         />
-                    </TouchableHighlight>
+                    </TouchableWithFeedback>
                 );
             }
         } else if (this.state.failed) {
@@ -275,18 +279,18 @@ export default class MarkdownImage extends React.Component {
 
         if (image && this.props.linkDestination) {
             image = (
-                <TouchableHighlight
+                <TouchableWithFeedback
                     onPress={this.handleLinkPress}
                     onLongPress={this.handleLinkLongPress}
                 >
                     {image}
-                </TouchableHighlight>
+                </TouchableWithFeedback>
             );
         }
 
         return (
             <View
-                ref='item'
+                ref={this.setItemRef}
                 style={style.container}
             >
                 {image}

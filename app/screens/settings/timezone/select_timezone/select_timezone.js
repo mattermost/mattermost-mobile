@@ -13,7 +13,7 @@ import {intlShape} from 'react-intl';
 
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import SelectTimezoneRow from './select_timezone_row';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 import {ListTypes} from 'app/constants';
 import {
@@ -21,16 +21,15 @@ import {
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {popTopScreen} from 'app/actions/navigation';
+
+import SelectTimezoneRow from './select_timezone_row';
 
 const ITEM_HEIGHT = 45;
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
 export default class Timezone extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            popTopScreen: PropTypes.func.isRequired,
-        }).isRequired,
         selectedTimezone: PropTypes.string.isRequired,
         initialScrollIndex: PropTypes.number.isRequired,
         timezones: PropTypes.array.isRequired,
@@ -52,6 +51,10 @@ export default class Timezone extends PureComponent {
         };
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     filteredTimezones = (timezonePrefix) => {
         if (timezonePrefix.length === 0) {
             return this.state.timezones;
@@ -67,7 +70,7 @@ export default class Timezone extends PureComponent {
 
     timezoneSelected = (timezone) => {
         this.props.onBack(timezone);
-        this.props.actions.popTopScreen();
+        popTopScreen();
     };
 
     handleTextChanged = (value) => {
@@ -111,7 +114,7 @@ export default class Timezone extends PureComponent {
                 <StatusBar/>
                 <View style={[style.header, padding(isLandscape)]}>
                     <SearchBar
-                        ref='searchBar'
+                        ref={this.setSearchBarRef}
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

@@ -16,6 +16,7 @@ import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
 import telemetry from 'app/telemetry';
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
@@ -41,7 +42,6 @@ export default class PostList extends PureComponent {
             refreshChannelWithRetry: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             setDeepLinkURL: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         deepLinkURL: PropTypes.string,
@@ -260,6 +260,7 @@ export default class PostList extends PureComponent {
         // Remember that the list is rendered with item 0 at the bottom so the "previous" post
         // comes after this one in the list
         const previousPostId = index < this.props.postIds.length - 1 ? this.props.postIds[index + 1] : null;
+        const beforePrevPostId = index < this.props.postIds.length - 2 ? this.props.postIds[index + 2] : null;
         const nextPostId = index > 0 ? this.props.postIds[index - 1] : null;
 
         const postProps = {
@@ -274,6 +275,7 @@ export default class PostList extends PureComponent {
             onPress: this.props.onPostPress,
             renderReplies: this.props.renderReplies,
             shouldRenderReplyButton: this.props.shouldRenderReplyButton,
+            beforePrevPostId,
         };
 
         if (PostListUtils.isCombinedUserActivityPost(item)) {
@@ -299,30 +301,33 @@ export default class PostList extends PureComponent {
 
     scrollToBottom = () => {
         setTimeout(() => {
-            if (this.flatListRef && this.flatListRef.current) {
+            if (this.flatListRef.current) {
                 this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
             }
         }, 250);
     };
 
+    flatListScrollToIndex = (index) => {
+        this.flatListRef.current.scrollToIndex({
+            animated: false,
+            index,
+            viewOffset: 0,
+            viewPosition: 1, // 0 is at bottom
+        });
+    }
+
     scrollToIndex = (index) => {
-        if (this.flatListRef?.current) {
-            this.animationFrameInitialIndex = requestAnimationFrame(() => {
-                this.flatListRef.current.scrollToIndex({
-                    animated: false,
-                    index,
-                    viewOffset: 0,
-                    viewPosition: 1, // 0 is at bottom
-                });
-            });
-        }
+        this.animationFrameInitialIndex = requestAnimationFrame(() => {
+            if (this.flatListRef.current && index > 0 && index <= this.getItemCount()) {
+                this.flatListScrollToIndex(index);
+            }
+        });
     };
 
     scrollToInitialIndexIfNeeded = (index, count = 0) => {
-        if (!this.hasDoneInitialScroll && this.flatListRef?.current) {
-            this.hasDoneInitialScroll = true;
-
+        if (!this.hasDoneInitialScroll) {
             if (index > 0 && index <= this.getItemCount()) {
+                this.hasDoneInitialScroll = true;
                 this.scrollToIndex(index);
             } else if (count < 3) {
                 setTimeout(() => {
@@ -350,7 +355,7 @@ export default class PostList extends PureComponent {
             };
 
             this.showingPermalink = true;
-            actions.showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options);
         }
     };
 

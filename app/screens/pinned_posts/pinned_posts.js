@@ -23,6 +23,13 @@ import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
 import SearchResultPost from 'app/screens/search/search_result_post';
 import {changeOpacity} from 'app/utils/theme';
+import {
+    goToScreen,
+    showModalOverCurrentContext,
+    showSearchModal,
+    dismissModal,
+} from 'app/actions/navigation';
+
 import noResultsImage from 'assets/images/no_results/pin.png';
 
 export default class PinnedPosts extends PureComponent {
@@ -34,10 +41,6 @@ export default class PinnedPosts extends PureComponent {
             getPinnedPosts: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
-            showSearchModal: PropTypes.func.isRequired,
-            showModalOverCurrentContext: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string.isRequired,
         didFail: PropTypes.bool,
@@ -64,8 +67,12 @@ export default class PinnedPosts extends PureComponent {
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-settings') {
-            this.props.actions.dismissModal();
+            dismissModal();
         }
+    }
+
+    setListRef = (ref) => {
+        this.listRef = ref;
     }
 
     goToThread = (post) => {
@@ -81,7 +88,7 @@ export default class PinnedPosts extends PureComponent {
         Keyboard.dismiss();
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     };
 
     handleClosePermalink = () => {
@@ -96,11 +103,8 @@ export default class PinnedPosts extends PureComponent {
     };
 
     handleHashtagPress = async (hashtag) => {
-        const {actions} = this.props;
-
-        await actions.dismissModal();
-
-        actions.showSearchModal('#' + hashtag);
+        dismissModal();
+        showSearchModal('#' + hashtag);
     };
 
     keyExtractor = (item) => item;
@@ -182,7 +186,7 @@ export default class PinnedPosts extends PureComponent {
             };
 
             this.showingPermalink = true;
-            actions.showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options);
         }
     };
 
@@ -209,7 +213,7 @@ export default class PinnedPosts extends PureComponent {
         } else if (postIds.length) {
             component = (
                 <FlatList
-                    ref='list'
+                    ref={this.setListRef}
                     contentContainerStyle={style.sectionList}
                     data={postIds}
                     keyExtractor={this.keyExtractor}

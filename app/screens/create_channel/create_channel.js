@@ -15,6 +15,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EditChannelInfo from 'app/components/edit_channel_info';
 import {setNavigatorStyles} from 'app/utils/theme';
+import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
 
 export default class CreateChannel extends PureComponent {
     static propTypes = {
@@ -27,9 +28,6 @@ export default class CreateChannel extends PureComponent {
         closeButton: PropTypes.object,
         actions: PropTypes.shape({
             handleCreateChannel: PropTypes.func.isRequired,
-            setButtons: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            popTopScreen: PropTypes.func.isRequired,
         }),
     };
 
@@ -116,16 +114,15 @@ export default class CreateChannel extends PureComponent {
     }
 
     close = (goBack = false) => {
-        const {actions} = this.props;
         if (goBack) {
-            actions.popTopScreen();
+            popTopScreen();
         } else {
-            actions.dismissModal();
+            dismissModal();
         }
     };
 
     emitCanCreateChannel = (enabled) => {
-        const {actions, componentId} = this.props;
+        const {componentId} = this.props;
         const buttons = {
             rightButtons: [{...this.rightButton, enabled}],
         };
@@ -134,11 +131,11 @@ export default class CreateChannel extends PureComponent {
             buttons.leftButtons = [this.left];
         }
 
-        actions.setButtons(componentId, buttons);
+        setButtons(componentId, buttons);
     };
 
     emitCreating = (loading) => {
-        const {actions, componentId} = this.props;
+        const {componentId} = this.props;
         const buttons = {
             rightButtons: [{...this.rightButton, enabled: !loading}],
         };
@@ -147,7 +144,7 @@ export default class CreateChannel extends PureComponent {
             buttons.leftButtons = [this.left];
         }
 
-        actions.setButtons(componentId, buttons);
+        setButtons(componentId, buttons);
     };
 
     onCreateChannel = () => {

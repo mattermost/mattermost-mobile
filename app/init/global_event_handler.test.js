@@ -6,6 +6,7 @@ import thunk from 'redux-thunk';
 
 import intitialState from 'app/initial_state';
 import PushNotification from 'app/push_notifications';
+import * as I18n from 'app/i18n';
 
 import GlobalEventHandler from './global_event_handler';
 
@@ -29,17 +30,23 @@ jest.mock('react-native-notifications', () => ({
     NotificationCategory: jest.fn(),
 }));
 
+jest.mock('react-native-status-bar-size', () => ({
+    addEventListener: jest.fn(),
+}));
+
 const mockStore = configureMockStore([thunk]);
 const store = mockStore(intitialState);
 GlobalEventHandler.store = store;
 
 // TODO: Add Android test as part of https://mattermost.atlassian.net/browse/MM-17110
 describe('GlobalEventHandler', () => {
-    it('should clear notifications on logout', async () => {
+    it('should clear notifications and reset moment locale on logout', async () => {
         const clearNotifications = jest.spyOn(PushNotification, 'clearNotifications');
+        const resetMomentLocale = jest.spyOn(I18n, 'resetMomentLocale');
 
         await GlobalEventHandler.onLogout();
         expect(clearNotifications).toHaveBeenCalled();
+        expect(resetMomentLocale).toHaveBeenCalledWith();
     });
 
     it('should call onAppStateChange after configuration', () => {
@@ -82,5 +89,15 @@ describe('GlobalEventHandler', () => {
         GlobalEventHandler.onAppStateChange('background');
         expect(appActive).not.toHaveBeenCalled();
         expect(appInactive).not.toHaveBeenCalled();
+    });
+
+    it('should set the user TimeZone when the app becomes active', () => {
+        const onAppStateChange = jest.spyOn(GlobalEventHandler, 'onAppStateChange');
+        const setUserTimezone = jest.spyOn(GlobalEventHandler, 'setUserTimezone');
+
+        GlobalEventHandler.configure({store});
+        expect(GlobalEventHandler.store).not.toBeNull();
+        expect(onAppStateChange).toHaveBeenCalledWith('active');
+        expect(setUserTimezone).toHaveBeenCalledTimes(1);
     });
 });

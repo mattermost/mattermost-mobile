@@ -12,9 +12,6 @@ jest.useFakeTimers();
 
 describe('AnnouncementBanner', () => {
     const baseProps = {
-        actions: {
-            goToScreen: jest.fn(),
-        },
         bannerColor: '#ddd',
         bannerDismissed: false,
         bannerEnabled: true,

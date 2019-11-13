@@ -16,12 +16,12 @@ import {Navigation} from 'react-native-navigation';
 import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
 import Post from 'app/components/post';
-import Reactions from 'app/components/reactions';
 import SafeAreaView from 'app/components/safe_area_view';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
+import {goToScreen, dismissModal} from 'app/actions/navigation';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -45,12 +45,9 @@ export default class LongPost extends PureComponent {
         actions: PropTypes.shape({
             loadThreadIfNecessary: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            dismissModal: PropTypes.func.isRequired,
-            goToScreen: PropTypes.func.isRequired,
         }).isRequired,
         channelName: PropTypes.string,
         fileIds: PropTypes.array,
-        hasReactions: PropTypes.bool,
         isPermalink: PropTypes.bool,
         inThreadView: PropTypes.bool,
         managedConfig: PropTypes.object,
@@ -79,6 +76,10 @@ export default class LongPost extends PureComponent {
         }
     }
 
+    setViewRef = (ref) => {
+        this.viewRef = ref;
+    }
+
     goToThread = preventDoubleTap((post) => {
         const {actions} = this.props;
         const channelId = post.channel_id;
@@ -93,14 +94,13 @@ export default class LongPost extends PureComponent {
         actions.loadThreadIfNecessary(rootId);
         actions.selectPost(rootId);
 
-        actions.goToScreen(screen, title, passProps);
+        goToScreen(screen, title, passProps);
     });
 
     handleClose = () => {
-        const {actions} = this.props;
-        if (this.refs.view) {
-            this.refs.view.zoomOut().then(() => {
-                actions.dismissModal();
+        if (this.viewRef) {
+            this.viewRef.zoomOut().then(() => {
+                dismissModal();
             });
         }
     };
@@ -138,28 +138,10 @@ export default class LongPost extends PureComponent {
         return attachments;
     }
 
-    renderReactions = (style) => {
-        const {hasReactions, postId} = this.props;
-
-        if (!hasReactions) {
-            return null;
-        }
-
-        return (
-            <View style={style.reactions}>
-                <Reactions
-                    position='left'
-                    postId={postId}
-                />
-            </View>
-        );
-    };
-
     render() {
         const {
             channelName,
             fileIds,
-            hasReactions,
             managedConfig,
             onHashtagPress,
             onPermalinkPress,
@@ -170,11 +152,10 @@ export default class LongPost extends PureComponent {
         const style = getStyleSheet(theme);
 
         let footer;
-        if (hasReactions || fileIds.length) {
+        if (fileIds.length) {
             footer = (
                 <View style={style.footer}>
                     {this.renderFileAttachments(style)}
-                    {this.renderReactions(style)}
                 </View>
             );
         }
@@ -188,7 +169,7 @@ export default class LongPost extends PureComponent {
             >
                 <View style={[style.container, margin(isLandscape)]}>
                     <Animatable.View
-                        ref='view'
+                        ref={this.setViewRef}
                         animation='zoomIn'
                         duration={200}
                         delay={0}
@@ -224,6 +205,7 @@ export default class LongPost extends PureComponent {
                                 onPress={this.handlePress}
                                 isSearchResult={false}
                                 showLongPost={true}
+                                showAddReaction={false}
                                 onHashtagPress={onHashtagPress}
                                 onPermalinkPress={onPermalinkPress}
                                 managedConfig={managedConfig}
@@ -297,10 +279,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         attachments: {
             backgroundColor: theme.centerChannelBg,
             height: 95,
-            width: '100%',
-        },
-        reactions: {
-            height: 47,
             width: '100%',
         },
     };

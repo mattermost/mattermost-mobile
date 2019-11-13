@@ -25,6 +25,7 @@ import FormattedText from 'app/components/formatted_text';
 import ProfilePicture from 'app/components/profile_picture';
 import {changeOpacity} from 'app/utils/theme';
 import {NavigationTypes} from 'app/constants';
+import {popToRoot, dismissAllModals, dismissOverlay} from 'app/actions/navigation';
 
 import logo from 'assets/images/icon.png';
 import webhookIcon from 'assets/images/icons/webhook.jpg';
@@ -36,9 +37,6 @@ export default class Notification extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadFromPushNotification: PropTypes.func.isRequired,
-            dismissOverlay: PropTypes.func.isRequired,
-            dismissAllModals: PropTypes.func.isRequired,
-            popToRoot: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         channel: PropTypes.object,
@@ -91,11 +89,10 @@ export default class Notification extends PureComponent {
     }
 
     setDidDisappearListener = () => {
-        this.didDismissListener = Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
+        this.didDismissListener = Navigation.events().registerComponentDidDisappearListener(async ({componentId}) => {
             if (componentId === this.props.componentId && this.tapped) {
-                const {actions} = this.props;
-                actions.dismissAllModals();
-                actions.popToRoot();
+                await dismissAllModals();
+                await popToRoot();
             }
         });
     }
@@ -120,8 +117,8 @@ export default class Notification extends PureComponent {
     dismissOverlay = () => {
         this.clearDismissTimer();
 
-        const {actions, componentId} = this.props;
-        actions.dismissOverlay(componentId);
+        const {componentId} = this.props;
+        dismissOverlay(componentId);
     }
 
     animateDismissOverlay = () => {

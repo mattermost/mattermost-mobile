@@ -118,6 +118,7 @@ export default class DialogElement extends PureComponent {
                     multiline={multiline}
                     keyboardType={keyboardType}
                     secureTextEntry={secureTextEntry}
+                    isLandscape={isLandscape}
                 />
             );
         } else if (type === 'select') {
@@ -135,6 +136,7 @@ export default class DialogElement extends PureComponent {
                     showRequiredAsterisk={true}
                     selected={this.state.selected}
                     roundedBorders={false}
+                    isLandscape={isLandscape}
                 />
             );
         } else if (type === 'radio') {
@@ -148,6 +150,7 @@ export default class DialogElement extends PureComponent {
                     theme={theme}
                     default={value}
                     onChange={this.onChange}
+                    isLandscape={isLandscape}
                 />
             );
         } else if (type === 'bool') {

@@ -1,0 +1,121 @@
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
+index 82b434b..858ca59 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
+@@ -26,6 +26,7 @@ import com.reactnativenavigation.viewcontrollers.ViewController;
+ import com.reactnativenavigation.viewcontrollers.navigator.Navigator;
+ 
+ import java.util.ArrayList;
++import java.lang.ClassCastException;
+ 
+ import androidx.annotation.NonNull;
+ import androidx.annotation.Nullable;
+@@ -54,14 +55,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+         reactContext.addLifecycleEventListener(new LifecycleEventListenerAdapter() {
+             @Override
+             public void onHostResume() {
+-                eventEmitter = new EventEmitter(reactContext);
+-                navigator().setEventEmitter(eventEmitter);
+-                layoutFactory.init(
+-                        activity(),
+-                        eventEmitter,
+-                        navigator().getChildRegistry(),
+-                        ((NavigationApplication) activity().getApplication()).getExternalComponents()
+-                );
++                try {
++                    eventEmitter = new EventEmitter(reactContext);
++                    navigator().setEventEmitter(eventEmitter);
++                    layoutFactory.init(
++                            activity(),
++                            eventEmitter,
++                            navigator().getChildRegistry(),
++                            ((NavigationApplication) activity().getApplication()).getExternalComponents()
++                    );
++                } catch (ClassCastException e) {
++                    // The most current activity is not a NavigationActivity
++                }
+             }
+         });
+     }
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
+index 2d34f5a..82e7bcc 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
+@@ -69,7 +69,7 @@ - (void)setRoot:(NSDictionary*)layout commandId:(NSString*)commandId completion:
+ 		}
+ 	}
+ 	
+-	[_modalManager dismissAllModalsAnimated:NO];
++	[_modalManager dismissAllModalsAnimated:NO completion:nil];
+ 	
+ 	UIViewController *vc = [_controllerFactory createLayout:layout[@"root"]];
+ 	
+@@ -289,10 +289,9 @@ - (void)dismissAllModals:(NSDictionary *)mergeOptions commandId:(NSString*)comma
+ 	[CATransaction begin];
+ 	[CATransaction setCompletionBlock:^{
+ 		[_eventEmitter sendOnNavigationCommandCompletion:dismissAllModals commandId:commandId params:@{}];
+-		completion();
+ 	}];
+ 	RNNNavigationOptions* options = [[RNNNavigationOptions alloc] initWithDict:mergeOptions];
+-	[_modalManager dismissAllModalsAnimated:[options.animations.dismissModal.enable getWithDefaultValue:YES]];
++	[_modalManager dismissAllModalsAnimated:[options.animations.dismissModal.enable getWithDefaultValue:YES] completion:completion];
+ 	
+ 	[CATransaction commit];
+ }
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNModalManager.h b/node_modules/react-native-navigation/lib/ios/RNNModalManager.h
+index 9809db0..a602c92 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNModalManager.h
++++ b/node_modules/react-native-navigation/lib/ios/RNNModalManager.h
+@@ -19,6 +19,6 @@ typedef void (^RNNTransitionRejectionBlock)(NSString *code, NSString *message, N
+ - (void)showModal:(UIViewController *)viewController animated:(BOOL)animated completion:(RNNTransitionWithComponentIdCompletionBlock)completion;
+ - (void)showModal:(UIViewController *)viewController animated:(BOOL)animated hasCustomAnimation:(BOOL)hasCustomAnimation completion:(RNNTransitionWithComponentIdCompletionBlock)completion;
+ - (void)dismissModal:(UIViewController *)viewController completion:(RNNTransitionCompletionBlock)completion;
+-- (void)dismissAllModalsAnimated:(BOOL)animated;
++- (void)dismissAllModalsAnimated:(BOOL)animated completion:(RNNTransitionCompletionBlock)completion;
+ 
+ @end
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNModalManager.m b/node_modules/react-native-navigation/lib/ios/RNNModalManager.m
+index 91adb14..8aa3935 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNModalManager.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNModalManager.m
+@@ -50,9 +50,16 @@ - (void)dismissModal:(UIViewController *)viewController completion:(RNNTransitio
+ 	}
+ }
+ 
+--(void)dismissAllModalsAnimated:(BOOL)animated {
++-(void)dismissAllModalsAnimated:(BOOL)animated completion:(RNNTransitionCompletionBlock)completion {
++	if (!_presentedModals || !_presentedModals.count) {
++		if (completion) {
++			completion();
++		}
++		return;
++	}
++
+ 	UIViewController *root = UIApplication.sharedApplication.delegate.window.rootViewController;
+-	[root dismissViewControllerAnimated:animated completion:nil];
++	[root dismissViewControllerAnimated:animated completion:completion];
+ 	[_delegate dismissedMultipleModals:_presentedModals];
+ 	[_pendingModalIdsToDismiss removeAllObjects];
+ 	[_presentedModals removeAllObjects];
+diff --git a/node_modules/react-native-navigation/lib/ios/ReactNativeNavigationTests/RNNModalManagerTest.m b/node_modules/react-native-navigation/lib/ios/ReactNativeNavigationTests/RNNModalManagerTest.m
+index 1f9df16..23b6528 100644
+--- a/node_modules/react-native-navigation/lib/ios/ReactNativeNavigationTests/RNNModalManagerTest.m
++++ b/node_modules/react-native-navigation/lib/ios/ReactNativeNavigationTests/RNNModalManagerTest.m
+@@ -51,7 +51,7 @@ - (void)testDismissMultipleModalsInvokeDelegateWithCorrectParameters {
+ 	[_modalManager showModal:_vc3 animated:NO completion:nil];
+ 	
+ 	_modalManager.delegate = self;
+-	[_modalManager dismissAllModalsAnimated:NO];
++	[_modalManager dismissAllModalsAnimated:NO completion:nil];
+ 	
+ 	XCTAssertTrue(_modalDismissedCount == 3);
+ }
+@@ -87,7 +87,7 @@ - (void)testDismissAllModals_AfterDismissingPreviousModal_InvokeDelegateWithCorr
+ 	[_modalManager dismissModal:_vc2 completion:nil];
+ 	
+ 	XCTAssertTrue(_modalDismissedCount == 1);
+-	[_modalManager dismissAllModalsAnimated:NO];
++	[_modalManager dismissAllModalsAnimated:NO completion:nil];
+ 	XCTAssertTrue(_modalDismissedCount == 2);
+ }
+ 
