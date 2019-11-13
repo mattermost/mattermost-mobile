@@ -392,10 +392,10 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             setChannelLoading(false),
             setLastChannelForTeam(currentTeamId, channelId),
             selectChannelWithMember(channelId, channel, member),
-            markChannelViewedAndRead(channelId, previousChannelId),
         ];
 
         dispatch(batchActions(actions));
+        dispatch(markChannelViewedAndRead(channelId, previousChannelId));
     };
 }
 
