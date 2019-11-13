@@ -17,12 +17,15 @@ const {
 
 import postReducer from 'mattermost-redux/reducers/entities/posts';
 
+const MOCK_CHANNEL_MARK_AS_READ = 'MOCK_CHANNEL_MARK_AS_READ';
+const MOCK_CHANNEL_MARK_AS_VIEWED = 'MOCK_CHANNEL_MARK_AS_VIEWED';
+
 jest.mock('mattermost-redux/actions/channels', () => {
     const channelActions = require.requireActual('mattermost-redux/actions/channels');
     return {
         ...channelActions,
-        markChannelAsRead: jest.fn().mockReturnValue({type: ''}),
-        markChannelAsViewed: jest.fn().mockReturnValue({type: ''}),
+        markChannelAsRead: jest.fn().mockReturnValue({type: 'MOCK_CHANNEL_MARK_AS_READ'}),
+        markChannelAsViewed: jest.fn().mockReturnValue({type: 'MOCK_CHANNEL_MARK_AS_VIEWED'}),
     };
 });
 
@@ -251,8 +254,11 @@ describe('Actions.Views.Channel', () => {
         store = mockStore({...storeObj});
 
         await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
-        const storeBatchActions = store.getActions().find(({type}) => type === 'BATCHING_REDUCER.BATCH');
+        const storeActions = store.getActions();
+        const storeBatchActions = storeActions.find(({type}) => type === 'BATCHING_REDUCER.BATCH');
         const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
+        const viewedAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_VIEWED);
+        const readAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_READ);
 
         const expectedSelectChannelWithMember = {
             type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
@@ -268,5 +274,7 @@ describe('Actions.Views.Channel', () => {
 
         };
         expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+        expect(viewedAction).not.toBe(null);
+        expect(readAction).not.toBe(null);
     });
 });
