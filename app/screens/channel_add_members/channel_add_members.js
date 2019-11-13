@@ -23,6 +23,7 @@ import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import SelectedUsers from 'app/components/selected_users';
 import {alertErrorIfInvalidPermissions} from 'app/utils/general';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
 import {
@@ -277,6 +278,20 @@ export default class ChannelAddMembers extends PureComponent {
         );
     };
 
+    handleRemoveProfile = (id) => {
+        this.setState((prevState) => {
+            const {selectedIds} = prevState;
+
+            const newSelectedIds = Object.assign({}, selectedIds);
+
+            Reflect.deleteProperty(newSelectedIds, id);
+
+            return {
+                selectedIds: newSelectedIds,
+            };
+        });
+    };
+
     searchProfiles = (term) => {
         const {actions, currentChannelId, currentChannelGroupConstrained, currentTeamId} = this.props;
         const options = {not_in_channel_id: currentChannelId, team_id: currentTeamId, group_constrained: currentChannelGroupConstrained};
@@ -363,6 +378,12 @@ export default class ChannelAddMembers extends PureComponent {
                         autoCapitalize='none'
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
+                    />
+                    <SelectedUsers
+                        selectedIds={selectedIds}
+                        warnCount={5}
+                        maxCount={7}
+                        onRemove={this.handleRemoveProfile}
                     />
                 </View>
                 <CustomList

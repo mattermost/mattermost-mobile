@@ -21,6 +21,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import SelectedUsers from 'app/components/selected_users';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
 import {
@@ -31,8 +32,6 @@ import {
 } from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {dismissModal, setButtons} from 'app/actions/navigation';
-
-import SelectedUsers from './selected_users';
 
 const START_BUTTON = 'start-conversation';
 const CLOSE_BUTTON = 'close-dms';
