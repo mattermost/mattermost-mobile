@@ -342,12 +342,14 @@ export default class MoreChannels extends PureComponent {
 
     handleDropdownClick = () => {
         const {formatMessage} = this.context.intl;
-        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Show: Public Channels'});
-        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Show: Archived Channels'});
+        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Public Channels'});
+        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Archived Channels'});
+        const titleText = formatMessage({id: 'more_channels.dropdownTitle', defaultMessage: 'Show'});
         const cancelText = 'Cancel';
         BottomSheet.showBottomSheetWithOptions({
             options: [publicChannelsText, archivedChannelsText, cancelText],
             cancelButtonIndex: 2,
+            title: titleText,
         }, (value) => {
             let typeOfChannels;
             switch (value) {
@@ -371,8 +373,8 @@ export default class MoreChannels extends PureComponent {
         const more = term ? () => true : this.getChannels;
         const style = getStyleFromTheme(theme);
 
-        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Show: Public Channels'});
-        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Show: Archived Channels'});
+        const publicChannelsText = formatMessage({id: 'more_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
+        const archivedChannelsText = formatMessage({id: 'more_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
 
         let content;
         if (adding) {
