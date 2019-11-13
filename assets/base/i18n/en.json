@@ -496,6 +496,8 @@
   "more_channels.dropdownTitle": "Show",
   "more_channels.noMore": "No more channels to join",
   "more_channels.publicChannels": "Public Channels",
+  "more_channels.showArchivedChannels": "Show: Archived Channels",
+  "more_channels.showPublicChannels": "Show: Public Channels",
   "more_channels.title": "More Channels",
   "msg_typing.areTyping": "{users} and {last} are typing...",
   "msg_typing.isTyping": "{user} is typing...",
