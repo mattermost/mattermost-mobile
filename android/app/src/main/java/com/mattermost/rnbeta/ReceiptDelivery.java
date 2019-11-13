@@ -38,7 +38,6 @@ public class ReceiptDelivery {
 
                 WritableMap map = (WritableMap) value;
                 if (map != null) {
-                    String userId = map.getString("username").split(", ")[1];
                     String token = map.getString("password");
                     String serverUrl = map.getString("service");
                     if (serverUrl.isEmpty()) {
@@ -50,13 +49,13 @@ public class ReceiptDelivery {
                     }
 
                     Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with TOKEN=%s", ackId, type, serverUrl, token));
-                    execute(serverUrl, postId, userId, token, ackId, type, promise);
+                    execute(serverUrl, postId, token, ackId, type, promise);
                 }
             }
         });
     }
 
-    protected static void execute(String serverUrl, String postId, String userId, String token, String ackId, String type, ResolvePromise promise) {
+    protected static void execute(String serverUrl, String postId, String token, String ackId, String type, ResolvePromise promise) {
         if (token == null) {
             promise.reject("Receipt delivery failure", "Invalid token");
             return;
@@ -76,7 +75,6 @@ public class ReceiptDelivery {
             json.put("platform", "android");
             json.put("type", type);
             json.put("post_id", postId);
-            json.put("user_id", userId);
         } catch (JSONException e) {
             Log.e("ReactNative", "Receipt delivery failed to build json payload");
             promise.reject("Receipt delivery failure", e);
