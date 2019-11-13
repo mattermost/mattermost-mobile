@@ -2,6 +2,7 @@ package com.mattermost.rnbeta;
 
 import android.content.Context;
 import androidx.annotation.Nullable;
+import android.os.Bundle;
 import android.util.Log;
 import java.lang.System;
 
@@ -18,13 +19,14 @@ import org.json.JSONException;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.Arguments;
 
 import com.mattermost.react_native_interface.ResolvePromise;
 
 public class ReceiptDelivery {
     static final String CURRENT_SERVER_URL = "@currentServerUrl";
 
-    public static void send (Context context, final String ackId, final String type) {
+    public static void send(Context context, final String ackId, final String postId, final String type, ResolvePromise promise) {
         final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
 
         MattermostCredentialsHelper.getCredentialsForCurrentServer(reactApplicationContext, new ResolvePromise() {
@@ -36,6 +38,7 @@ public class ReceiptDelivery {
 
                 WritableMap map = (WritableMap) value;
                 if (map != null) {
+                    String userId = map.getString("username").split(", ")[1];
                     String token = map.getString("password");
                     String serverUrl = map.getString("service");
                     if (serverUrl.isEmpty()) {
@@ -47,15 +50,20 @@ public class ReceiptDelivery {
                     }
 
                     Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with TOKEN=%s", ackId, type, serverUrl, token));
-                    execute(serverUrl, token, ackId, type);
+                    execute(serverUrl, postId, userId, token, ackId, type, promise);
                 }
             }
         });
     }
 
-    protected static void execute(String serverUrl, String token, String ackId, String type) {
-        if (token == null || serverUrl == null) {
+    protected static void execute(String serverUrl, String postId, String userId, String token, String ackId, String type, ResolvePromise promise) {
+        if (token == null) {
+            promise.reject("Receipt delivery failure", "Invalid token");
             return;
+        }
+
+        if (serverUrl == null) {
+            promise.reject("Receipt delivery failure", "Invalid server URL");
         }
 
         JSONObject json;
@@ -67,8 +75,11 @@ public class ReceiptDelivery {
             json.put("received_at", receivedAt);
             json.put("platform", "android");
             json.put("type", type);
+            json.put("post_id", postId);
+            json.put("user_id", userId);
         } catch (JSONException e) {
             Log.e("ReactNative", "Receipt delivery failed to build json payload");
+            promise.reject("Receipt delivery failure", e);
             return;
         }
 
@@ -86,9 +97,17 @@ public class ReceiptDelivery {
                     .build();
 
             try {
-                client.newCall(request).execute();
+                Response response = client.newCall(request).execute();
+                JSONObject jsonResponse = new JSONObject(response.body().string());
+                Bundle bundle = new Bundle();
+                String keys[] = new String[] {"post_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
+                for (int i = 0; i < keys.length; i++) {
+                    bundle.putString(keys[i], jsonResponse.getString(keys[i]));
+                }
+                promise.resolve(bundle);
             } catch (Exception e) {
                 Log.e("ReactNative", "Receipt delivery failed to send");
+                promise.reject("Receipt delivery failure", e);
             }
         }
     }
