@@ -77,7 +77,7 @@ public class ReceiptDelivery {
             json.put("post_id", postId);
         } catch (JSONException e) {
             Log.e("ReactNative", "Receipt delivery failed to build json payload");
-            promise.reject("Receipt delivery failure", e);
+            promise.reject("Receipt delivery failure", e.toString());
             return;
         }
 
@@ -105,7 +105,7 @@ public class ReceiptDelivery {
                 promise.resolve(bundle);
             } catch (Exception e) {
                 Log.e("ReactNative", "Receipt delivery failed to send");
-                promise.reject("Receipt delivery failure", e);
+                promise.reject("Receipt delivery failure", e.toString());
             }
         }
     }
