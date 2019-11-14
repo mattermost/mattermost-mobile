@@ -253,7 +253,6 @@ index 5e4e3d2..ec37f87 100644
 -
          String CHANNEL_ID = "channel_01";
          String CHANNEL_NAME = "Channel Name";
- 
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java
 new file mode 100644
 index 0000000..5b64593
