@@ -165,7 +165,7 @@ index 0d70024..47b962e 100644
      PushNotificationProps asProps();
  }
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
-index 5e4e3d2..871e157 100644
+index 5e4e3d2..ec37f87 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 +++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 @@ -1,5 +1,6 @@
@@ -175,16 +175,28 @@ index 5e4e3d2..871e157 100644
  import android.app.Notification;
  import android.app.NotificationChannel;
  import android.app.NotificationManager;
-@@ -20,7 +21,9 @@ import com.wix.reactnativenotifications.core.InitialNotificationHolder;
+@@ -20,18 +21,20 @@ import com.wix.reactnativenotifications.core.InitialNotificationHolder;
  import com.wix.reactnativenotifications.core.JsIOHelper;
  import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
  import com.wix.reactnativenotifications.core.ProxyService;
 +import com.wix.reactnativenotifications.core.helpers.ScheduleNotificationHelper;
-  
+ 
 +import static com.wix.reactnativenotifications.Defs.LOGTAG;
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_OPENED_EVENT_NAME;
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_FOREGROUND_EVENT_NAME;
+ 
+ public class PushNotification implements IPushNotification {
+ 
++    protected PushNotificationProps mNotificationProps;
+     final protected Context mContext;
+     final protected AppLifecycleFacade mAppLifecycleFacade;
+     final protected AppLaunchHelper mAppLaunchHelper;
+     final protected JsIOHelper mJsIOHelper;
+-    final protected PushNotificationProps mNotificationProps;
+     final protected AppVisibilityListener mAppVisibilityListener = new AppVisibilityListener() {
+         @Override
+         public void onAppVisible() {
 @@ -80,6 +83,41 @@ public class PushNotification implements IPushNotification {
          return postNotification(notificationId);
      }
