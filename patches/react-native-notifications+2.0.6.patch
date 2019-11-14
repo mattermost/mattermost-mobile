@@ -12,7 +12,7 @@ index ffef75f..a4df210 100644
  
  </manifest>
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
-index 8fb5f01..2a6b5f3 100644
+index 8fb5f01..74d6138 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
 +++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
 @@ -103,12 +103,26 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
