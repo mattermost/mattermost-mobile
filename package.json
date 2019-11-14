@@ -150,5 +150,6 @@
     "transformIgnorePatterns": [
       "node_modules/(?!react-native|jail-monkey|@sentry/react-native|react-navigation)"
     ]
-  }
+  },
+  "dummy": "test"
 }
