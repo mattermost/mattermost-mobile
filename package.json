@@ -23,7 +23,7 @@
     "intl": "1.2.5",
     "jail-monkey": "2.3.0",
     "jsc-android": "241213.1.0",
-    "mattermost-redux": "github:mattermost/mattermost-redux#e09899fda322c362c55c8ebbddc967920864a385",
+    "mattermost-redux": "github:mattermost/mattermost-redux#98a375cea54f78fb6c0ede01ee4e9aec009f9fa5",
     "mime-db": "1.42.0",
     "moment-timezone": "0.5.27",
     "prop-types": "15.7.2",
@@ -114,7 +114,8 @@
     "redux-mock-store": "1.5.3",
     "remote-redux-devtools": "0.5.16",
     "socketcluster": "14.4.1",
-    "underscore": "1.9.1"
+    "underscore": "1.9.1",
+    "util": "0.12.1"
   },
   "scripts": {
     "start": "node ./node_modules/react-native/local-cli/cli.js start",
