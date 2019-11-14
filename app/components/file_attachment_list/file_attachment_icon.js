@@ -48,10 +48,10 @@ export default class FileAttachmentIcon extends PureComponent {
         onCaptureRef: PropTypes.func,
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
+        theme: PropTypes.object,
     };
 
     static defaultProps = {
-        backgroundColor: '#fff',
         iconHeight: ATTACHMENT_ICON_HEIGHT,
         iconWidth: ATTACHMENT_ICON_WIDTH,
         wrapperHeight: ATTACHMENT_ICON_HEIGHT,
@@ -72,16 +72,17 @@ export default class FileAttachmentIcon extends PureComponent {
     };
 
     render() {
-        const {backgroundColor, file, iconHeight, iconWidth, wrapperHeight, wrapperWidth} = this.props;
+        const {backgroundColor, file, iconHeight, iconWidth, wrapperHeight, wrapperWidth, theme} = this.props;
         const source = this.getFileIconPath(file);
+        const bgColor = backgroundColor || theme.centerChannelBg || 'transparent';
 
         return (
             <View
                 ref={this.handleCaptureRef}
-                style={[styles.fileIconWrapper, {backgroundColor, height: wrapperHeight, width: wrapperWidth}]}
+                style={[styles.fileIconWrapper, {backgroundColor: bgColor, height: wrapperHeight, width: wrapperWidth}]}
             >
                 <Image
-                    style={[styles.icon, {maxHeight: iconHeight, maxWidth: iconWidth}]}
+                    style={{maxHeight: iconHeight, maxWidth: iconWidth}}
                     source={source}
                 />
             </View>
@@ -93,8 +94,5 @@ const styles = StyleSheet.create({
     fileIconWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    icon: {
-        backgroundColor: '#fff',
     },
 });

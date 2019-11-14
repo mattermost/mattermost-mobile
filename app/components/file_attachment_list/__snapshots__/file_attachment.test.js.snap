@@ -31,7 +31,6 @@ exports[`FileAttachment should match snapshot 1`] = `
       type="opacity"
     >
       <FileAttachmentIcon
-        backgroundColor="#fff"
         file={
           Object {
             "mime_type": "image/png",
