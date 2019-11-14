@@ -165,6 +165,7 @@ export default class FileAttachmentList extends Component {
         let nonVisibleImagesCount;
         let container = styles.container;
         const containerWithGutter = [container, styles.gutter];
+        const gifContainer = [container, {width: portraitPostWidth, marginTop: 10}];
 
         return items.map((file, idx) => {
             const f = {
@@ -178,6 +179,10 @@ export default class FileAttachmentList extends Component {
 
             if (idx !== 0) {
                 container = containerWithGutter;
+            }
+
+            if (isGif(file)) {
+                container = gifContainer;
             }
 
             return (
