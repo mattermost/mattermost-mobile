@@ -110,5 +110,6 @@ export const GlobalStyles = StyleSheet.create({
         paddingLeft: 10,
         alignSelf: 'stretch',
         borderRadius: 3,
+        color: '#3d3c40',
     },
 });
