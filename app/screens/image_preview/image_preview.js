@@ -28,7 +28,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import FileAttachmentDocument from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import {DeviceTypes, NavigationTypes, PermissionTypes} from 'app/constants';
-import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
+import {getLocalFilePathFromFile, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
 import {t} from 'app/utils/i18n';
@@ -366,7 +366,7 @@ export default class ImagePreview extends PureComponent {
         if (imageDimensions) {
             const {deviceHeight, deviceWidth} = this.props;
             const {height, width} = imageDimensions;
-            const {style, ...otherProps} = imageProps;
+            const {style, source} = imageProps;
             const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
             const flattenStyle = StyleSheet.flatten(style);
             const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
@@ -375,7 +375,7 @@ export default class ImagePreview extends PureComponent {
             return (
                 <View style={[style, {justifyContent: 'center', alignItems: 'center'}]}>
                     <Image
-                        {...otherProps}
+                        source={source}
                         style={imageStyle}
                     />
                 </View>
@@ -390,9 +390,7 @@ export default class ImagePreview extends PureComponent {
         const file = files[index];
 
         if (file.data) {
-            if (isDocument(file.data)) {
-                return this.renderAttachmentDocument(file);
-            } else if (isVideo(file.data)) {
+            if (isVideo(file.data)) {
                 return this.renderVideoPreview(file);
             }
 

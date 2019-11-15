@@ -24,6 +24,7 @@ import videoIcon from 'assets/images/icons/video.png';
 import wordIcon from 'assets/images/icons/word.png';
 
 import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from 'app/constants/attachment';
+import {changeOpacity} from 'app/utils/theme';
 
 const ICON_PATH_FROM_FILE_TYPE = {
     audio: audioIcon,
@@ -82,7 +83,7 @@ export default class FileAttachmentIcon extends PureComponent {
                 style={[styles.fileIconWrapper, {backgroundColor: bgColor, height: wrapperHeight, width: wrapperWidth}]}
             >
                 <Image
-                    style={{maxHeight: iconHeight, maxWidth: iconWidth}}
+                    style={{maxHeight: iconHeight, maxWidth: iconWidth, tintColor: changeOpacity(theme.centerChannelColor, 20)}}
                     source={source}
                 />
             </View>

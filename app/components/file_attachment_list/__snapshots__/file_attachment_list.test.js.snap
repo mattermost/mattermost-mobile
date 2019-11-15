@@ -8,6 +8,7 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
         Object {
           "flex": 1,
           "flexDirection": "row",
+          "marginTop": 5,
         },
         Object {
           "width": 657,
@@ -93,6 +94,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
         Object {
           "flex": 1,
           "flexDirection": "row",
+          "marginTop": 5,
         },
         Object {
           "width": 657,
@@ -173,7 +175,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }
@@ -263,6 +265,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
       }
       id="fileId"
       index={0}
+      isSingleImage={false}
       onCaptureRef={[Function]}
       onPreviewPress={[Function]}
       theme={
@@ -308,6 +311,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
         Object {
           "flex": 1,
           "flexDirection": "row",
+          "marginTop": 5,
         },
         Object {
           "width": 657,
@@ -388,7 +392,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }
@@ -459,7 +463,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }
@@ -530,7 +534,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }
@@ -606,6 +610,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
         Object {
           "flex": 1,
           "flexDirection": "row",
+          "marginTop": 5,
         },
         Object {
           "width": 657,
@@ -686,7 +691,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }
@@ -757,7 +762,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }
@@ -828,7 +833,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }
@@ -923,7 +928,8 @@ exports[`FileAttachmentList should match snapshot with non-image attachment 1`] 
         }
       }
       id="fileId"
-      index={0}
+      index={-1}
+      isSingleImage={false}
       onCaptureRef={[Function]}
       onPreviewPress={[Function]}
       theme={
@@ -969,6 +975,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
         Object {
           "flex": 1,
           "flexDirection": "row",
+          "marginTop": 5,
         },
         Object {
           "width": 657,
@@ -1049,7 +1056,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }
@@ -1120,7 +1127,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }
@@ -1196,6 +1203,7 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
         Object {
           "flex": 1,
           "flexDirection": "row",
+          "marginTop": 5,
         },
         Object {
           "width": 657,
@@ -1276,7 +1284,7 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 3,
+            "marginLeft": 6,
           },
         ]
       }

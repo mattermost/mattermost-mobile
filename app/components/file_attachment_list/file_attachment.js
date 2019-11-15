@@ -202,6 +202,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             fontWeight: '600',
             color: theme.centerChannelColor,
+            paddingRight: 10,
         },
         fileWrapper: {
             flex: 1,

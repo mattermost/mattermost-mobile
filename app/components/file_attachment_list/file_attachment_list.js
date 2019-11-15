@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Dimensions, StyleSheet, View} from 'react-native';
 
 import {Client4} from 'mattermost-redux/client';
 
-import {isDocument, isGif, isVideo} from 'app/utils/file';
+import {isGif, isVideo} from 'app/utils/file';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex} from 'app/utils/images';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -19,7 +19,7 @@ const MAX_VISIBLE_ROW_IMAGES = 4;
 const VIEWPORT_IMAGE_OFFSET = 93;
 const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
-export default class FileAttachmentList extends Component {
+export default class FileAttachmentList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadFilesForPostIfNecessary: PropTypes.func.isRequired,
@@ -42,12 +42,13 @@ export default class FileAttachmentList extends Component {
         super(props);
 
         this.items = [];
+        this.filesForGallery = this.setFilesForGallery(props);
         this.state = {
             loadingFiles: props.files.length === 0,
             portraitPostWidth: this.getPortraitPostWidth(),
         };
 
-        this.buildGalleryFiles(props).then((results) => {
+        this.buildGalleryFiles().then((results) => {
             this.galleryFiles = results;
         });
     }
@@ -61,7 +62,8 @@ export default class FileAttachmentList extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.files !== nextProps.files) {
-            this.buildGalleryFiles(nextProps).then((results) => {
+            this.filesForGallery = this.setFilesForGallery(nextProps);
+            this.buildGalleryFiles().then((results) => {
                 this.galleryFiles = results;
             });
         }
@@ -80,16 +82,30 @@ export default class FileAttachmentList extends Component {
         });
     }
 
-    buildGalleryFiles = async (props) => {
+    setFilesForGallery = (props) => {
         const {files} = props;
         const results = [];
 
         if (files && files.length) {
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+            files.forEach((file) => {
+                if (isVideo(file) || file.has_preview_image || isGif(file)) {
+                    results.push(file);
+                }
+            });
+        }
+
+        return results;
+    };
+
+    buildGalleryFiles = async () => {
+        const results = [];
+
+        if (this.filesForGallery && this.filesForGallery.length) {
+            for (let i = 0; i < this.filesForGallery.length; i++) {
+                const file = this.filesForGallery[i];
                 const caption = file.name;
 
-                if (isDocument(file) || isVideo(file) || (!file.has_preview_image && !isGif(file))) {
+                if (isVideo(file)) {
                     results.push({
                         caption,
                         data: file,
@@ -127,7 +143,7 @@ export default class FileAttachmentList extends Component {
 
     attachmentManifest = (attachments) => {
         return attachments.reduce((info, file) => {
-            if (file.has_preview_image) {
+            if (this.isImage(file)) {
                 info.imageAttachments.push(file);
             } else {
                 info.nonImageAttachments.push(file);
@@ -136,13 +152,12 @@ export default class FileAttachmentList extends Component {
         }, {imageAttachments: [], nonImageAttachments: []});
     }
 
-    isImage = (file) => (file.has_preview_image);
+    isImage = (file) => (file.has_preview_image || isGif(file));
 
     isSingleImage = (files) => (files.length === 1 && this.isImage(files[0]));
 
     attachmentIndex = (fileId) => {
-        const {files} = this.props;
-        return files.findIndex((file) => file.id === fileId);
+        return this.filesForGallery.findIndex((file) => file.id === fileId) || 0;
     }
 
     getPortraitPostWidth = () => {
@@ -158,14 +173,13 @@ export default class FileAttachmentList extends Component {
         return portraitPostWidth;
     };
 
-    renderItems = (items, moreImagesCount) => {
+    renderItems = (items, moreImagesCount, includeGutter = false) => {
         const {canDownloadFiles, onLongPress, theme} = this.props;
         const {portraitPostWidth} = this.state;
         const isSingleImage = this.isSingleImage(items);
         let nonVisibleImagesCount;
         let container = styles.container;
         const containerWithGutter = [container, styles.gutter];
-        const gifContainer = [container, {width: portraitPostWidth, marginTop: 10}];
 
         return items.map((file, idx) => {
             const f = {
@@ -177,12 +191,8 @@ export default class FileAttachmentList extends Component {
                 nonVisibleImagesCount = moreImagesCount;
             }
 
-            if (idx !== 0) {
+            if (idx !== 0 && includeGutter) {
                 container = containerWithGutter;
-            }
-
-            if (isGif(file)) {
-                container = gifContainer;
             }
 
             return (
@@ -224,7 +234,7 @@ export default class FileAttachmentList extends Component {
 
         return (
             <View style={[styles.row, {width: portraitPostWidth}]}>
-                { this.renderItems(visibleImages, nonVisibleImagesCount) }
+                { this.renderItems(visibleImages, nonVisibleImagesCount, true) }
             </View>
         );
     };
@@ -249,8 +259,8 @@ export default class FileAttachmentList extends Component {
 
         return (
             <View style={isFailed && styles.failed}>
-                { this.renderImageRow(manifest.imageAttachments) }
-                { this.renderItems(manifest.nonImageAttachments) }
+                {this.renderImageRow(manifest.imageAttachments)}
+                {this.renderItems(manifest.nonImageAttachments)}
             </View>
         );
     }
@@ -260,12 +270,13 @@ const styles = StyleSheet.create({
     row: {
         flex: 1,
         flexDirection: 'row',
+        marginTop: 5,
     },
     container: {
         flex: 1,
     },
     gutter: {
-        marginLeft: 3,
+        marginLeft: 6,
     },
     failed: {
         opacity: 0.5,
