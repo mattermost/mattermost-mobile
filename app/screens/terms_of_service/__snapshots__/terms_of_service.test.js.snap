@@ -115,7 +115,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
             "color": "#2389d7",
           },
           "mention": Object {
-            "color": "#166de0",
+            "color": "#2389d7",
           },
           "mention_highlight": Object {
             "backgroundColor": "#ffe577",
@@ -250,7 +250,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
             "color": "#2389d7",
           },
           "mention": Object {
-            "color": "#166de0",
+            "color": "#2389d7",
           },
           "mention_highlight": Object {
             "backgroundColor": "#ffe577",
@@ -305,6 +305,7 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
         "mentionBj": "#ffffff",
         "mentionColor": "#145dbf",
         "mentionHighlightBg": "#ffe577",
@@ -449,7 +450,7 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
             "color": "#2389d7",
           },
           "mention": Object {
-            "color": "#166de0",
+            "color": "#2389d7",
           },
           "mention_highlight": Object {
             "backgroundColor": "#ffe577",

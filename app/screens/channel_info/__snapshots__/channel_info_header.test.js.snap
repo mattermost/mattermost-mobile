@@ -47,6 +47,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -212,7 +213,7 @@ exports[`channel_info_header should match snapshot 1`] = `
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -363,7 +364,7 @@ exports[`channel_info_header should match snapshot 1`] = `
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -463,6 +464,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -656,7 +658,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -807,7 +809,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -907,6 +909,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -1072,7 +1075,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -1223,7 +1226,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -1323,6 +1326,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -1516,7 +1520,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -1667,7 +1671,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -1767,6 +1771,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -1932,7 +1937,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -2083,7 +2088,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -2205,6 +2210,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -2398,7 +2404,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",
@@ -2549,7 +2555,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
                 "color": "#2389d7",
               },
               "mention": Object {
-                "color": "#166de0",
+                "color": "#2389d7",
               },
               "mention_highlight": Object {
                 "backgroundColor": "#ffe577",

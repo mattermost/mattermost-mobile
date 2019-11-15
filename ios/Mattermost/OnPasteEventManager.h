@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OnPasteEventManager : RCTEventEmitter<RCTBridgeModule>
 
-+(void)pasteImage:(NSArray<NSDictionary *> *)data;
++(void)pasteFiles:(NSArray<NSDictionary *> *)data;
 
 @end
 

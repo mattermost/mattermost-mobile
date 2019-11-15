@@ -4,6 +4,7 @@ exports[`thread should match snapshot, has root post 1`] = `
 <React.Fragment>
   <Connect(SafeAreaIos)
     excludeHeader={true}
+    forceInsets={true}
   >
     <View
       style={
@@ -74,6 +75,7 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
 <React.Fragment>
   <Connect(SafeAreaIos)
     excludeHeader={true}
+    forceInsets={true}
   >
     <View
       style={
@@ -143,6 +145,7 @@ exports[`thread should match snapshot, render footer 3`] = `
 <React.Fragment>
   <Connect(SafeAreaIos)
     excludeHeader={true}
+    forceInsets={true}
   >
     <View
       style={

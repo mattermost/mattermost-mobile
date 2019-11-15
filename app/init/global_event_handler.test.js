@@ -30,6 +30,10 @@ jest.mock('react-native-notifications', () => ({
     NotificationCategory: jest.fn(),
 }));
 
+jest.mock('react-native-status-bar-size', () => ({
+    addEventListener: jest.fn(),
+}));
+
 const mockStore = configureMockStore([thunk]);
 const store = mockStore(intitialState);
 GlobalEventHandler.store = store;
@@ -85,5 +89,15 @@ describe('GlobalEventHandler', () => {
         GlobalEventHandler.onAppStateChange('background');
         expect(appActive).not.toHaveBeenCalled();
         expect(appInactive).not.toHaveBeenCalled();
+    });
+
+    it('should set the user TimeZone when the app becomes active', () => {
+        const onAppStateChange = jest.spyOn(GlobalEventHandler, 'onAppStateChange');
+        const setUserTimezone = jest.spyOn(GlobalEventHandler, 'setUserTimezone');
+
+        GlobalEventHandler.configure({store});
+        expect(GlobalEventHandler.store).not.toBeNull();
+        expect(onAppStateChange).toHaveBeenCalledWith('active');
+        expect(setUserTimezone).toHaveBeenCalledTimes(1);
     });
 });

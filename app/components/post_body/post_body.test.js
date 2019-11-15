@@ -9,6 +9,9 @@ import PostBodyAdditionalContent from 'app/components/post_body_additional_conte
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import PostBody from './post_body.js';
+import * as SystemMessageHelpers from './system_message_helpers';
+
+jest.mock('./system_message_helpers');
 
 describe('PostBody', () => {
     const baseProps = {
@@ -121,5 +124,10 @@ describe('PostBody', () => {
         event.nativeEvent.layout.height = wrapper.state('maxHeight') + 1;
         instance.measurePost(event);
         expect(wrapper.state('isLongPost')).toEqual(false);
+    });
+
+    test('should return system message as post body', () => {
+        shallowWithIntl(<PostBody {...baseProps}/>);
+        expect(SystemMessageHelpers.renderSystemMessage.mock.calls.length).toBe(1);
     });
 });
