@@ -9,13 +9,30 @@ class NotificationService: UNNotificationServiceExtension {
   override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
     self.contentHandler = contentHandler
     bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
-    
     if let bestAttemptContent = bestAttemptContent {
+      let ackId = bestAttemptContent.userInfo["ack_id"]
+      let type = bestAttemptContent.userInfo["type"]
+      let postId = bestAttemptContent.userInfo["post_id"]
       UploadSession.shared.notificationReceipt(
-        notificationId: bestAttemptContent.userInfo["ack_id"],
+        notificationId: ackId,
         receivedAt: Date().millisencondsSince1970,
-        type: bestAttemptContent.userInfo["type"]
-      )
+        type: type,
+        postId: postId
+      ) { data, error in
+        if (type as? String == "id_loaded") {
+          guard let data = data, error == nil else {
+            // TODO: set default notification message
+            return
+          }
+
+          do {
+            let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String:Any]
+            print(json)
+          } catch {
+            print("JSON error: \(error.localizedDescription)")
+          }
+        }
+      }
       
       contentHandler(bestAttemptContent)
     }
