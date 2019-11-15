@@ -23,12 +23,18 @@ jest.doMock('react-native', () => {
         ImagePickerManager,
         requireNativeComponent,
         Alert: RNAlert,
+        InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
     } = ReactNative;
 
     const Alert = {
         ...RNAlert,
         alert: jest.fn(),
+    };
+
+    const InteractionManager = {
+        ...RNInteractionManager,
+        runAfterInteractions: jest.fn((cb) => cb()),
     };
 
     const NativeModules = {
@@ -87,6 +93,7 @@ jest.doMock('react-native', () => {
         ImagePickerManager,
         requireNativeComponent,
         Alert,
+        InteractionManager,
         NativeModules,
     }, ReactNative);
 });
