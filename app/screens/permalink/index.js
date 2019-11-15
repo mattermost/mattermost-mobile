@@ -20,8 +20,6 @@ import {isLandscape} from 'app/selectors/device';
 import {
     handleSelectChannel,
     loadThreadIfNecessary,
-    setChannelDisplayName,
-    setChannelLoading,
 } from 'app/actions/views/channel';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
@@ -73,8 +71,6 @@ function mapDispatchToProps(dispatch) {
             joinChannel,
             loadThreadIfNecessary,
             selectPost,
-            setChannelDisplayName,
-            setChannelLoading,
         }, dispatch),
     };
 }

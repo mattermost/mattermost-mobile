@@ -245,6 +245,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 16,
             lineHeight: 24,
             paddingRight: 10,
+            maxWidth: '80%',
             flex: 1,
             alignSelf: 'center',
             fontFamily: 'Open Sans',

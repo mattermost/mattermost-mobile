@@ -39,25 +39,25 @@ describe('PushNotification', () => {
             // Three channel1 delivered notifications
             {
                 identifier: 'channel1-1',
-                userInfo: {channel_id: channel1ID},
+                channel_id: channel1ID,
             },
             {
                 identifier: 'channel1-2',
-                userInfo: {channel_id: channel1ID},
+                channel_id: channel1ID,
             },
             {
                 identifier: 'channel1-3',
-                userInfo: {channel_id: channel1ID},
+                channel_id: channel1ID,
             },
 
             // Two channel2 delivered notifications
             {
                 identifier: 'channel2-1',
-                userInfo: {channel_id: channel2ID},
+                channel_id: channel2ID,
             },
             {
                 identifier: 'channel2-2',
-                userInfo: {channel_id: channel2ID},
+                channel_id: channel2ID,
             },
         ];
         NotificationsIOS.setDeliveredNotifications(deliveredNotifications);
@@ -73,8 +73,8 @@ describe('PushNotification', () => {
 
         await NotificationsIOS.getDeliveredNotifications(async (deliveredNotifs) => {
             expect(deliveredNotifs.length).toBe(2);
-            const channel1DeliveredNotifications = deliveredNotifs.filter((n) => n.userInfo.channel_id === channel1ID);
-            const channel2DeliveredNotifications = deliveredNotifs.filter((n) => n.userInfo.channel_id === channel2ID);
+            const channel1DeliveredNotifications = deliveredNotifs.filter((n) => n.channel_id === channel1ID);
+            const channel2DeliveredNotifications = deliveredNotifs.filter((n) => n.channel_id === channel2ID);
             expect(channel1DeliveredNotifications.length).toBe(0);
             expect(channel2DeliveredNotifications.length).toBe(2);
         });

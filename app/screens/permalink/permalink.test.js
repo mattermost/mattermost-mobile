@@ -20,8 +20,6 @@ describe('Permalink', () => {
         joinChannel: jest.fn(),
         loadThreadIfNecessary: jest.fn(),
         selectPost: jest.fn(),
-        setChannelDisplayName: jest.fn(),
-        setChannelLoading: jest.fn(),
     };
 
     const baseProps = {

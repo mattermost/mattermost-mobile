@@ -64,6 +64,10 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         this.mounted = false;
     }
 
+    setItemRef = (ref) => {
+        this.itemRef = ref;
+    }
+
     fetchData = (url, openGraphData) => {
         if (!openGraphData) {
             this.props.actions.getOpenGraphMetadata(url);
@@ -205,7 +209,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             },
         }];
 
-        previewImageAtIndex([this.refs.item], 0, files);
+        previewImageAtIndex([this.itemRef], 0, files);
     };
 
     renderDescription = () => {
@@ -247,7 +251,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         return (
             <View
-                ref='item'
+                ref={this.setItemRef}
                 style={[style.imageContainer, {width, height}]}
             >
                 <TouchableWithFeedback

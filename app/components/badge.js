@@ -59,19 +59,19 @@ export default class Badge extends PureComponent {
         this.mounted = false;
     }
 
+    setBadgeRef = (ref) => {
+        this.badgeRef = ref;
+    };
+
     handlePress = () => {
         if (this.props.onPress) {
             this.props.onPress();
         }
     };
 
-    setBadgeRef = (ref) => {
-        this.badgeContainerRef = ref;
-    };
-
     setNativeProps = (props) => {
-        if (this.mounted && this.badgeContainerRef) {
-            this.badgeContainerRef.setNativeProps(props);
+        if (this.mounted && this.badgeRef) {
+            this.badgeRef.setNativeProps(props);
         }
     };
 

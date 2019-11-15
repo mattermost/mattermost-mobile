@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.24.0</string>
+	<string>1.25.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -34,7 +34,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>238</string>
+	<string>245</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -57,9 +57,9 @@
 	<key>NSAppleMusicUsageDescription</key>
 	<string>Let Mattermost access your Media files</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Share post data accross devices with Mattermost</string>
+	<string>Share post data across devices with Mattermost</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Share post data accross devices with Mattermost</string>
+	<string>Share post data across devices with Mattermost</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Share contacts in your Mattermost instance</string>
 	<key>NSCameraUsageDescription</key>
@@ -74,8 +74,8 @@
 	<string>Share your route in your Mattermost instance</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Upload Photos and Videos from your device to your Mattermost instance</string>
-  	<key>NSPhotoLibraryAddUsageDescription</key>
-  	<string>Save downloaded Photos and Videos from your Mattermost instance to your device</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save downloaded Photos and Videos from your Mattermost instance to your device</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Send voice messages to your Mattermost instance</string>
 	<key>UIAppFonts</key>

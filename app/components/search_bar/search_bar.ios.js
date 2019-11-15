@@ -56,8 +56,12 @@ export default class SearchBarIos extends PureComponent {
         searchIconExpandedMargin: 10,
     };
 
+    setSearchRef = (ref) => {
+        this.searchRef = ref;
+    }
+
     cancel = () => {
-        this.refs.search.onCancel();
+        this.searchRef.onCancel();
     };
 
     onBlur = () => {
@@ -94,18 +98,18 @@ export default class SearchBarIos extends PureComponent {
     };
 
     blur = () => {
-        this.refs.search.blur();
+        this.searchRef.blur();
     };
 
     focus = () => {
-        this.refs.search.focus();
+        this.searchRef.focus();
     };
 
     render() {
         return (
             <Search
                 {...this.props}
-                ref='search'
+                ref={this.setSearchRef}
                 placeholderCollapsedMargin={33}
                 placeholderExpandedMargin={33}
                 shadowVisible={false}
