@@ -134,12 +134,13 @@ export default class NotificationSettings extends PureComponent {
 
     saveNotificationProps = (notifyProps) => {
         const {currentUser} = this.props;
+        const prevProps = getNotificationProps(currentUser);
         const updatedProps = {
-            ...getNotificationProps(currentUser),
+            ...prevProps,
             ...notifyProps,
         };
 
-        if (!deepEqual(updatedProps, notifyProps)) {
+        if (!deepEqual(prevProps, notifyProps)) {
             this.props.actions.updateMe({notify_props: updatedProps});
         }
     };

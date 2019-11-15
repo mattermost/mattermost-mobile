@@ -36,6 +36,7 @@ export default class AutocompleteSelector extends PureComponent {
         errorText: PropTypes.node,
         roundedBorders: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
+        disabled: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -119,6 +120,7 @@ export default class AutocompleteSelector extends PureComponent {
             showRequiredAsterisk,
             roundedBorders,
             isLandscape,
+            disabled,
         } = this.props;
         const {selectedText} = this.state;
         const style = getStyleSheet(theme);
@@ -188,9 +190,10 @@ export default class AutocompleteSelector extends PureComponent {
                     {labelContent}
                 </View>
                 <TouchableWithFeedback
-                    style={style.flex}
+                    style={disabled ? style.disabled : null}
                     onPress={this.goToSelectorScreen}
                     type={'opacity'}
+                    disabled={disabled}
                 >
                     <View style={inputStyle}>
                         <Text
@@ -283,6 +286,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         asterisk: {
             color: theme.errorTextColor,
             fontSize: 14,
+        },
+        disabled: {
+            opacity: 0.5,
         },
     };
 });
