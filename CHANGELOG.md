@@ -16,14 +16,13 @@
  - Fixed an issue on Android where email notification setting displayed was not updated when the setting was changed.
  - Fixed an issue where Favorite channels list didn't update if the app was running in the background.
  - Fixed an issue where the timezone setting did not update when changing it back to set automatically.
- - Fixed an issue where accessing Mobile tab reversed auto-reply setting to OFF when auto-reply was set to ON.
  - Fixed an issue on iOS where clicking on a hashtag from "recent mentions" (or flagged posts) returned the user to the channel instead of displaying hashtag search results.
  - Fixed an issue where tapping on a hashtag engaged a keyboard for a moment before displaying search results.
  - Fixed an issue where posts of the same thread appeared to be from different threads if separated by a new message line.
- - Fixed an issue on iOS where the Name, Purpose and Header information appeared “boxed in” on channel info screen.
- - Fixed an issue where bot posts timestamps wrapped in search results and pinned posts.
- - Fixed an issue with horizontal margin on single sign-on screen in landscape view on iOS iPhone X and later.
- - Fixed an issue on iOS where the Helper text on two Settings screens was not offset on the left.
+ - Fixed styling issues on iOS for Name, Purpose and Header information on the channel info screen.
+ - Fixed styling issues with bot posts timestamps in search results and pinned posts.
+ - Fixed styling issues on single sign-on screen in landscape view on iOS iPhone X and later.
+ - Fixed styling issues on iOS for the Helper text on Settings screens.
  - Fixed an issue where the thread view header theme was inconsistent during transition back to main channel view.
  - Fixed an issue on iOS where the navigation bar tucked under the phone's status bar when switching orientation.
  - Fixed an issue on iOS where the keyboard flashed darker when Automatic Replies had been previously enabled.
