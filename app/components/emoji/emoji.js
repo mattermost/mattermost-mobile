@@ -96,8 +96,8 @@ export default class Emoji extends React.PureComponent {
             literal,
             textStyle,
             displayTextOnly,
-            imageUrl,
         } = this.props;
+        const {imageUrl} = this.state;
 
         let size = this.props.size;
         let fontSize = size;
