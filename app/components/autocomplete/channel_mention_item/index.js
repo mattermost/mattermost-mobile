@@ -20,7 +20,7 @@ function mapStateToProps(state, ownProps) {
 
     let isBot = false;
     let isGuest = false;
-    if (channel.type === General.DM_CHANNEL) {
+    if (channel?.type === General.DM_CHANNEL) {
         const teammate = getUser(state, channel.teammate_id);
         if (teammate) {
             displayName = teammate.username;
@@ -31,8 +31,8 @@ function mapStateToProps(state, ownProps) {
 
     return {
         displayName,
-        name: channel.name,
-        type: channel.type,
+        name: channel?.name,
+        type: channel?.type,
         isBot,
         isGuest,
         theme: getTheme(state),
