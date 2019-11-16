@@ -217,7 +217,7 @@ export default class SelectTeam extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         if (this.state.joining) {
-            return <Loading/>;
+            return <Loading color={theme.centerChannelColor}/>;
         }
 
         if (this.props.teamsRequest.status === RequestStatus.FAILURE) {
@@ -262,7 +262,14 @@ export default class SelectTeam extends PureComponent {
                 <CustomList
                     data={teams}
                     loading={this.state.loading}
-                    loadingComponent={<Loading/>}
+                    loadingComponent={
+                        <View style={style.footer}>
+                            <Loading
+                                color={theme.centerChannelColor}
+                                size='small'
+                            />
+                        </View>
+                    }
                     refreshing={this.state.refreshing}
                     onRefresh={this.onRefresh}
                     onLoadMore={this.getTeams}
@@ -299,6 +306,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             width: '100%',
             height: 1,
+        },
+        footer: {
+            marginVertical: 10,
         },
         teamWrapper: {
             marginTop: 20,

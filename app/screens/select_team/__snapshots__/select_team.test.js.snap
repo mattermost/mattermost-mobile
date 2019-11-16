@@ -97,11 +97,19 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
     listType="flat"
     loading={false}
     loadingComponent={
-      <Loading
-        color="grey"
-        size="large"
-        style={Object {}}
-      />
+      <View
+        style={
+          Object {
+            "marginVertical": 10,
+          }
+        }
+      >
+        <Loading
+          color="#3d3c40"
+          size="small"
+          style={Object {}}
+        />
+      </View>
     }
     onLoadMore={[Function]}
     onRefresh={[Function]}

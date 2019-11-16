@@ -370,7 +370,7 @@ export default class Permalink extends PureComponent {
                 </View>
             );
         } else if (loading) {
-            postList = <Loading/>;
+            postList = <Loading color={theme.centerChannelColor}/>;
         } else {
             postList = (
                 <PostList

@@ -327,7 +327,7 @@ export default class MoreChannels extends PureComponent {
 
         let content;
         if (adding) {
-            content = (<Loading/>);
+            content = (<Loading color={theme.centerChannelColor}/>);
         } else {
             const searchBarInput = {
                 backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
