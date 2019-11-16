@@ -247,6 +247,7 @@ export default class PostBody extends PureComponent {
                     isFailed={isFailed}
                     onLongPress={this.showPostOptions}
                     postId={post.id}
+                    isReplyPost={this.props.isReplyPost}
                 />
             );
         }

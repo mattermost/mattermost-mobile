@@ -9,6 +9,7 @@
   "dependencies": {
     "@babel/runtime": "7.6.3",
     "@react-native-community/async-storage": "1.6.2",
+    "@react-native-community/cameraroll": "1.3.0",
     "@react-native-community/netinfo": "4.4.0",
     "@sentry/react-native": "1.0.9",
     "analytics-react-native": "1.2.0",
@@ -153,7 +154,7 @@
       "assets/images/video_player/(.*).png": "<rootDir>/dist/assets/images/video_player/$1@2x.png"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!react-native|jail-monkey|@sentry/react-native|react-navigation)"
+      "node_modules/(?!react-native|jail-monkey|@sentry/react-native|react-navigation|@react-native-community/cameraroll)"
     ]
   }
 }
