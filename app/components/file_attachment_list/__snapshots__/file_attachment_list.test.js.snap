@@ -958,7 +958,7 @@ exports[`FileAttachmentList should match snapshot with non-image attachment 1`] 
         }
       }
       id="fileId"
-      index={-1}
+      index={0}
       isSingleImage={false}
       onCaptureRef={[Function]}
       onPreviewPress={[Function]}

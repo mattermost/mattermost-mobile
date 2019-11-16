@@ -28,7 +28,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import FileAttachmentDocument from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import {DeviceTypes, NavigationTypes, PermissionTypes} from 'app/constants';
-import {getLocalFilePathFromFile, isVideo} from 'app/utils/file';
+import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
 import {t} from 'app/utils/i18n';
@@ -206,8 +206,8 @@ export default class ImagePreview extends PureComponent {
                     backgroundColor='transparent'
                     canDownloadFiles={canDownloadFiles}
                     file={file}
-                    iconHeight={100}
-                    iconWidth={100}
+                    iconHeight={200}
+                    iconWidth={200}
                     theme={theme}
                     wrapperHeight={200}
                     wrapperWidth={200}
@@ -223,8 +223,8 @@ export default class ImagePreview extends PureComponent {
                     backgroundColor='transparent'
                     file={file}
                     theme={this.props.theme}
-                    iconHeight={150}
-                    iconWidth={150}
+                    iconHeight={200}
+                    iconWidth={200}
                     wrapperHeight={200}
                     wrapperWidth={200}
                 />
@@ -390,7 +390,9 @@ export default class ImagePreview extends PureComponent {
         const file = files[index];
 
         if (file.data) {
-            if (isVideo(file.data)) {
+            if (isDocument(file.data)) {
+                return this.renderAttachmentDocument(file);
+            } else if (isVideo(file.data)) {
                 return this.renderVideoPreview(file);
             }
 

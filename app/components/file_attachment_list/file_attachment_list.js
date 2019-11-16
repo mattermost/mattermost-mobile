@@ -12,7 +12,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
-import {isGif, isVideo} from 'app/utils/file';
+import {isDocument, isGif, isVideo} from 'app/utils/file';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex} from 'app/utils/images';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -115,7 +115,7 @@ export default class FileAttachmentList extends PureComponent {
                 const file = this.filesForGallery[i];
                 const caption = file.name;
 
-                if (isVideo(file)) {
+                if (isDocument(file) || isVideo(file) || (!file.has_preview_image && !isGif(file))) {
                     results.push({
                         caption,
                         data: file,
@@ -144,14 +144,13 @@ export default class FileAttachmentList extends PureComponent {
     };
 
     getFilesForGallery = (props) => {
-        const {files} = props;
+        const manifest = this.attachmentManifest(props.files);
+        const files = manifest.imageAttachments.concat(manifest.nonImageAttachments);
         const results = [];
 
         if (files && files.length) {
             files.forEach((file) => {
-                if (isVideo(file) || file.has_preview_image || isGif(file)) {
-                    results.push(file);
-                }
+                results.push(file);
             });
         }
 
