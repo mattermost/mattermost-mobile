@@ -124,7 +124,7 @@ exports[`Permalink should match snapshot 1`] = `
         }
       >
         <Loading
-          color="grey"
+          color="#3d3c40"
           size="large"
           style={Object {}}
         />

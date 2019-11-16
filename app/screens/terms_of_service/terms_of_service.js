@@ -231,7 +231,7 @@ export default class TermsOfService extends PureComponent {
         const textStyles = getMarkdownTextStyles(theme);
 
         if (this.state.loading) {
-            return <Loading/>;
+            return <Loading color={theme.centerChannelColor}/>;
         }
 
         if (this.state.getTermsError) {

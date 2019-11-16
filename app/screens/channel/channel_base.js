@@ -292,7 +292,10 @@ export default class ChannelBase extends PureComponent {
                             theme={theme}
                             isLandscape={isLandscape}
                         />
-                        <Loading channelIsLoading={true}/>
+                        <Loading
+                            channelIsLoading={true}
+                            color={theme.centerChannelColor}
+                        />
                     </View>
                 </SafeAreaView>
             );
