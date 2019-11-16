@@ -120,10 +120,6 @@ public class CustomPushNotification extends PushNotification {
                 @Override
                 public void reject(String code, String message) {
                     Log.e("ReactNative", code + ": " + message);
-                    if (PUSH_TYPE_ID_LOADED.equals(type)) {
-                        initialData.putString("message", "You've received a new message");
-                        mNotificationProps = createProps(initialData);
-                    }
                 }
             });
         }
