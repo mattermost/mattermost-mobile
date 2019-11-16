@@ -12,9 +12,6 @@ exports[`FileAttachment should match snapshot 1`] = `
         "flexDirection": "row",
         "marginTop": 10,
       },
-      Object {
-        "width": 300,
-      },
     ]
   }
 >

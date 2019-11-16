@@ -4,6 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
+    PixelRatio,
     Text,
     View,
     StyleSheet,
@@ -13,6 +15,7 @@ import * as Utils from 'mattermost-redux/utils/file_utils.js';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {isDocument, isGif} from 'app/utils/file';
+import {calculateDimensions} from 'app/utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FileAttachmentDocument from './file_attachment_document';
@@ -56,7 +59,7 @@ export default class FileAttachment extends PureComponent {
     };
 
     renderFileInfo() {
-        const {file, theme} = this.props;
+        const {file, onLongPress, theme} = this.props;
         const {data} = file;
         const style = getStyleSheet(theme);
 
@@ -65,24 +68,31 @@ export default class FileAttachment extends PureComponent {
         }
 
         return (
-            <View style={style.attachmentContainer}>
-                <Text
-                    numberOfLines={2}
-                    ellipsizeMode='tail'
-                    style={style.fileName}
-                >
-                    {file.caption.trim()}
-                </Text>
-                <View style={style.fileDownloadContainer}>
+            <TouchableWithFeedback
+                onPress={this.handlePreviewPress}
+                onLongPress={onLongPress}
+                type={'opacity'}
+                style={style.attachmentContainer}
+            >
+                <React.Fragment>
                     <Text
-                        numberOfLines={2}
+                        numberOfLines={1}
                         ellipsizeMode='tail'
-                        style={style.fileInfo}
+                        style={style.fileName}
                     >
-                        {`${Utils.getFormattedFileSize(data)}`}
+                        {file.caption.trim()}
                     </Text>
-                </View>
-            </View>
+                    <View style={style.fileDownloadContainer}>
+                        <Text
+                            numberOfLines={1}
+                            ellipsizeMode='tail'
+                            style={style.fileInfo}
+                        >
+                            {`${Utils.getFormattedFileSize(data)}`}
+                        </Text>
+                    </View>
+                </React.Fragment>
+            </TouchableWithFeedback>
         );
     }
 
@@ -107,6 +117,24 @@ export default class FileAttachment extends PureComponent {
         );
     };
 
+    getImageDimensions = (file) => {
+        const {isSingleImage, wrapperWidth} = this.props;
+        const viewPortHeight = this.getViewPortHeight();
+
+        if (isSingleImage) {
+            return calculateDimensions(file?.height, file?.width, wrapperWidth, viewPortHeight);
+        }
+
+        return null;
+    };
+
+    getViewPortHeight = () => {
+        const dimensions = Dimensions.get('window');
+        const viewPortHeight = Math.max(dimensions.height, dimensions.width) * 0.45;
+
+        return viewPortHeight;
+    };
+
     render() {
         const {
             canDownloadFiles,
@@ -115,32 +143,35 @@ export default class FileAttachment extends PureComponent {
             onLongPress,
             isSingleImage,
             nonVisibleImagesCount,
-            wrapperWidth,
         } = this.props;
         const {data} = file;
         const style = getStyleSheet(theme);
 
         let fileAttachmentComponent;
         if ((data && data.has_preview_image) || file.loading || isGif(data)) {
+            const imageDimensions = this.getImageDimensions(data);
+
             fileAttachmentComponent = (
                 <TouchableWithFeedback
                     key={`${this.props.id}${file.loading}`}
                     onPress={this.handlePreviewPress}
                     onLongPress={onLongPress}
                     type={'opacity'}
+                    style={{width: imageDimensions?.width}}
                 >
                     <FileAttachmentImage
                         file={data || {}}
                         onCaptureRef={this.handleCaptureRef}
                         theme={theme}
                         isSingleImage={isSingleImage}
+                        imageDimensions={imageDimensions}
                     />
                     {this.renderMoreImagesOverlay(nonVisibleImagesCount, theme)}
                 </TouchableWithFeedback>
             );
         } else if (isDocument(data)) {
             fileAttachmentComponent = (
-                <View style={[style.fileWrapper, {width: wrapperWidth}]}>
+                <View style={[style.fileWrapper]}>
                     <View style={style.iconWrapper}>
                         <FileAttachmentDocument
                             ref={this.setDocumentRef}
@@ -155,7 +186,7 @@ export default class FileAttachment extends PureComponent {
             );
         } else {
             fileAttachmentComponent = (
-                <View style={[style.fileWrapper, {width: wrapperWidth}]}>
+                <View style={[style.fileWrapper]}>
                     <View style={style.iconWrapper}>
                         <TouchableWithFeedback
                             onPress={this.handlePreviewPress}
@@ -179,6 +210,8 @@ export default class FileAttachment extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    const scale = Dimensions.get('window').width / 320;
+
     return {
         attachmentContainer: {
             flex: 1,
@@ -240,7 +273,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         moreImagesText: {
             color: theme.sidebarHeaderTextColor,
-            fontSize: 24,
+            fontSize: Math.round(PixelRatio.roundToNearestPixel(24 * scale)),
             fontFamily: 'Open Sans',
             textAlign: 'center',
         },

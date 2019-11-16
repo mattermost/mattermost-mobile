@@ -1,7 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`FileAttachmentList should match snapshot with a single image file 1`] = `
-<View>
+<View
+  style={
+    Array [
+      undefined,
+    ]
+  }
+>
   <View
     style={
       Array [
@@ -11,7 +17,7 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
           "marginTop": 5,
         },
         Object {
-          "width": 657,
+          "width": undefined,
         },
       ]
     }
@@ -79,7 +85,7 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
   </View>
@@ -87,7 +93,13 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
 `;
 
 exports[`FileAttachmentList should match snapshot with combination of image and non-image attachments 1`] = `
-<View>
+<View
+  style={
+    Array [
+      undefined,
+    ]
+  }
+>
   <View
     style={
       Array [
@@ -97,7 +109,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
           "marginTop": 5,
         },
         Object {
-          "width": 657,
+          "width": undefined,
         },
       ]
     }
@@ -165,7 +177,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -175,7 +187,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -236,7 +248,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
   </View>
@@ -297,14 +309,20 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
           "type": "Mattermost",
         }
       }
-      wrapperWidth={657}
+      wrapperWidth={680}
     />
   </View>
 </View>
 `;
 
 exports[`FileAttachmentList should match snapshot with four image files 1`] = `
-<View>
+<View
+  style={
+    Array [
+      undefined,
+    ]
+  }
+>
   <View
     style={
       Array [
@@ -314,7 +332,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
           "marginTop": 5,
         },
         Object {
-          "width": 657,
+          "width": undefined,
         },
       ]
     }
@@ -382,7 +400,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -392,7 +410,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -453,7 +471,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -463,7 +481,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -524,7 +542,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -534,7 +552,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -595,7 +613,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
   </View>
@@ -603,7 +621,13 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
 `;
 
 exports[`FileAttachmentList should match snapshot with more than four image files 1`] = `
-<View>
+<View
+  style={
+    Array [
+      undefined,
+    ]
+  }
+>
   <View
     style={
       Array [
@@ -613,7 +637,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
           "marginTop": 5,
         },
         Object {
-          "width": 657,
+          "width": undefined,
         },
       ]
     }
@@ -681,7 +705,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -691,7 +715,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -752,7 +776,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -762,7 +786,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -823,7 +847,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -833,7 +857,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -895,7 +919,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
   </View>
@@ -903,7 +927,13 @@ exports[`FileAttachmentList should match snapshot with more than four image file
 `;
 
 exports[`FileAttachmentList should match snapshot with non-image attachment 1`] = `
-<View>
+<View
+  style={
+    Array [
+      undefined,
+    ]
+  }
+>
   <View
     style={
       Object {
@@ -961,14 +991,20 @@ exports[`FileAttachmentList should match snapshot with non-image attachment 1`] 
           "type": "Mattermost",
         }
       }
-      wrapperWidth={657}
+      wrapperWidth={680}
     />
   </View>
 </View>
 `;
 
 exports[`FileAttachmentList should match snapshot with three image files 1`] = `
-<View>
+<View
+  style={
+    Array [
+      undefined,
+    ]
+  }
+>
   <View
     style={
       Array [
@@ -978,7 +1014,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
           "marginTop": 5,
         },
         Object {
-          "width": 657,
+          "width": undefined,
         },
       ]
     }
@@ -1046,7 +1082,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -1056,7 +1092,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -1117,7 +1153,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -1127,7 +1163,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -1188,7 +1224,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
   </View>
@@ -1196,7 +1232,13 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
 `;
 
 exports[`FileAttachmentList should match snapshot with two image files 1`] = `
-<View>
+<View
+  style={
+    Array [
+      undefined,
+    ]
+  }
+>
   <View
     style={
       Array [
@@ -1206,7 +1248,7 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
           "marginTop": 5,
         },
         Object {
-          "width": 657,
+          "width": undefined,
         },
       ]
     }
@@ -1274,7 +1316,7 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
     <View
@@ -1284,7 +1326,7 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
             "flex": 1,
           },
           Object {
-            "marginLeft": 6,
+            "marginLeft": 8,
           },
         ]
       }
@@ -1345,7 +1387,7 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperWidth={657}
+        wrapperWidth={680}
       />
     </View>
   </View>

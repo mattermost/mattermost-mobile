@@ -4,9 +4,14 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Dimensions, StyleSheet, View} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import {Client4} from 'mattermost-redux/client';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
+import {DeviceTypes} from 'app/constants';
+import mattermostManaged from 'app/mattermost_managed';
 import {isGif, isVideo} from 'app/utils/file';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex} from 'app/utils/images';
@@ -16,8 +21,8 @@ import {emptyFunction} from 'app/utils/general';
 import FileAttachment from './file_attachment';
 
 const MAX_VISIBLE_ROW_IMAGES = 4;
-const VIEWPORT_IMAGE_OFFSET = 93;
-const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
+const VIEWPORT_IMAGE_OFFSET = 70;
+const VIEWPORT_IMAGE_REPLY_OFFSET = 11;
 
 export default class FileAttachmentList extends PureComponent {
     static propTypes = {
@@ -42,10 +47,9 @@ export default class FileAttachmentList extends PureComponent {
         super(props);
 
         this.items = [];
-        this.filesForGallery = this.setFilesForGallery(props);
+        this.filesForGallery = this.getFilesForGallery(props);
         this.state = {
             loadingFiles: props.files.length === 0,
-            portraitPostWidth: this.getPortraitPostWidth(),
         };
 
         this.buildGalleryFiles().then((results) => {
@@ -55,6 +59,13 @@ export default class FileAttachmentList extends PureComponent {
 
     componentDidMount() {
         const {files} = this.props;
+
+        this.mounted = true;
+        this.handlePermanentSidebar();
+        this.handleDimensions();
+        EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
+        Dimensions.addEventListener('change', this.handleDimensions);
+
         if (files.length === 0) {
             this.loadFilesForPost();
         }
@@ -62,7 +73,7 @@ export default class FileAttachmentList extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.files !== nextProps.files) {
-            this.filesForGallery = this.setFilesForGallery(nextProps);
+            this.filesForGallery = this.getFilesForGallery(nextProps);
             this.buildGalleryFiles().then((results) => {
                 this.galleryFiles = results;
             });
@@ -75,26 +86,25 @@ export default class FileAttachmentList extends PureComponent {
         }
     }
 
-    loadFilesForPost = async () => {
-        await this.props.actions.loadFilesForPostIfNecessary(this.props.postId);
-        this.setState({
-            loadingFiles: false,
-        });
+    componentWillUnmount() {
+        this.mounted = false;
+        EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
+        Dimensions.removeEventListener('change', this.handleDimensions);
     }
 
-    setFilesForGallery = (props) => {
-        const {files} = props;
-        const results = [];
+    attachmentIndex = (fileId) => {
+        return this.filesForGallery.findIndex((file) => file.id === fileId) || 0;
+    };
 
-        if (files && files.length) {
-            files.forEach((file) => {
-                if (isVideo(file) || file.has_preview_image || isGif(file)) {
-                    results.push(file);
-                }
-            });
-        }
-
-        return results;
+    attachmentManifest = (attachments) => {
+        return attachments.reduce((info, file) => {
+            if (this.isImage(file)) {
+                info.imageAttachments.push(file);
+            } else {
+                info.nonImageAttachments.push(file);
+            }
+            return info;
+        }, {imageAttachments: [], nonImageAttachments: []});
     };
 
     buildGalleryFiles = async () => {
@@ -133,38 +143,30 @@ export default class FileAttachmentList extends PureComponent {
         return results;
     };
 
-    handleCaptureRef = (ref, idx) => {
-        this.items[idx] = ref;
+    getFilesForGallery = (props) => {
+        const {files} = props;
+        const results = [];
+
+        if (files && files.length) {
+            files.forEach((file) => {
+                if (isVideo(file) || file.has_preview_image || isGif(file)) {
+                    results.push(file);
+                }
+            });
+        }
+
+        return results;
     };
-
-    handlePreviewPress = preventDoubleTap((idx) => {
-        previewImageAtIndex(this.items, idx, this.galleryFiles);
-    });
-
-    attachmentManifest = (attachments) => {
-        return attachments.reduce((info, file) => {
-            if (this.isImage(file)) {
-                info.imageAttachments.push(file);
-            } else {
-                info.nonImageAttachments.push(file);
-            }
-            return info;
-        }, {imageAttachments: [], nonImageAttachments: []});
-    }
-
-    isImage = (file) => (file.has_preview_image || isGif(file));
-
-    isSingleImage = (files) => (files.length === 1 && this.isImage(files[0]));
-
-    attachmentIndex = (fileId) => {
-        return this.filesForGallery.findIndex((file) => file.id === fileId) || 0;
-    }
 
     getPortraitPostWidth = () => {
         const {isReplyPost} = this.props;
         const {width, height} = Dimensions.get('window');
-
+        const permanentSidebar = DeviceTypes.IS_TABLET && !this.state?.isSplitView && this.state?.permanentSidebar;
         let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
+
+        if (permanentSidebar) {
+            portraitPostWidth -= TABLET_WIDTH;
+        }
 
         if (isReplyPost) {
             portraitPostWidth -= VIEWPORT_IMAGE_REPLY_OFFSET;
@@ -173,9 +175,45 @@ export default class FileAttachmentList extends PureComponent {
         return portraitPostWidth;
     };
 
+    handleCaptureRef = (ref, idx) => {
+        this.items[idx] = ref;
+    };
+
+    handleDimensions = () => {
+        if (this.mounted) {
+            if (DeviceTypes.IS_TABLET) {
+                mattermostManaged.isRunningInSplitView().then((result) => {
+                    const isSplitView = Boolean(result.isSplitView);
+                    this.setState({isSplitView});
+                });
+            }
+        }
+    };
+
+    handlePermanentSidebar = async () => {
+        if (DeviceTypes.IS_TABLET && this.mounted) {
+            const enabled = await AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS);
+            this.setState({permanentSidebar: enabled === 'true'});
+        }
+    };
+
+    handlePreviewPress = preventDoubleTap((idx) => {
+        previewImageAtIndex(this.items, idx, this.galleryFiles);
+    });
+
+    isImage = (file) => (file.has_preview_image || isGif(file));
+
+    isSingleImage = (files) => (files.length === 1 && this.isImage(files[0]));
+
+    loadFilesForPost = async () => {
+        await this.props.actions.loadFilesForPostIfNecessary(this.props.postId);
+        this.setState({
+            loadingFiles: false,
+        });
+    }
+
     renderItems = (items, moreImagesCount, includeGutter = false) => {
         const {canDownloadFiles, onLongPress, theme} = this.props;
-        const {portraitPostWidth} = this.state;
         const isSingleImage = this.isSingleImage(items);
         let nonVisibleImagesCount;
         let container = styles.container;
@@ -212,7 +250,7 @@ export default class FileAttachmentList extends PureComponent {
                         theme={theme}
                         isSingleImage={isSingleImage}
                         nonVisibleImagesCount={nonVisibleImagesCount}
-                        wrapperWidth={portraitPostWidth}
+                        wrapperWidth={this.getPortraitPostWidth()}
                     />
                 </View>
             );
@@ -258,7 +296,7 @@ export default class FileAttachmentList extends PureComponent {
         const manifest = this.attachmentManifest(files);
 
         return (
-            <View style={isFailed && styles.failed}>
+            <View style={[isFailed && styles.failed]}>
                 {this.renderImageRow(manifest.imageAttachments)}
                 {this.renderItems(manifest.nonImageAttachments)}
             </View>
@@ -276,7 +314,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     gutter: {
-        marginLeft: 6,
+        marginLeft: 8,
     },
     failed: {
         opacity: 0.5,

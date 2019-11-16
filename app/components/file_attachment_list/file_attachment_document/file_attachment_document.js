@@ -10,6 +10,7 @@ import {
     Platform,
     StatusBar,
     StyleSheet,
+    Text,
     View,
 } from 'react-native';
 import OpenFile from 'react-native-doc-viewer';
@@ -343,23 +344,31 @@ export default class FileAttachmentDocument extends PureComponent {
         );
     }
 
-    render() {
-        const {onLongPress, theme, wrapperHeight} = this.props;
-        const {downloading, progress} = this.state;
+    renderDownloadProgres = () => {
+        const {theme} = this.props;
+        return (
+            <Text style={{fontSize: 10, color: theme.centerChannelColor, fontWeight: '600'}}>
+                {`${this.state.progress}%`}
+            </Text>
+        );
+    };
 
+    render() {
+        const {onLongPress, theme} = this.props;
+        const {downloading, progress} = this.state;
         let fileAttachmentComponent;
         if (downloading) {
             fileAttachmentComponent = (
-                <View style={[style.circularProgressContent, {height: wrapperHeight}]}>
+                <View style={[style.circularProgressContent]}>
                     <CircularProgress
-                        size={wrapperHeight + circularProgressWidth}
+                        size={40}
                         fill={progress}
                         width={circularProgressWidth}
                         backgroundColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColor={theme.linkColor}
                         rotation={0}
                     >
-                        {this.renderFileAttachmentIcon}
+                        {this.renderDownloadProgres}
                     </CircularProgress>
                 </View>
             );
@@ -381,6 +390,9 @@ export default class FileAttachmentDocument extends PureComponent {
 
 const style = StyleSheet.create({
     circularProgressContent: {
-        left: -(circularProgressWidth * 2),
+        left: -(circularProgressWidth - 2),
+        top: 4,
+        width: 36,
+        height: 48,
     },
 });
