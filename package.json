@@ -68,7 +68,7 @@
     "react-navigation": "4.0.10",
     "react-navigation-stack": "1.9.4",
     "react-redux": "7.1.1",
-    "realm": "3.3.0",
+    "realm": "3.4.2",
     "realm-react-redux": "0.0.9",
     "redux": "4.0.4",
     "redux-batched-actions": "0.4.1",
