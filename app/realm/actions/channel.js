@@ -670,3 +670,23 @@ export function updateChannelNotifyProps(userId, channelId, props) {
         return {data: true};
     };
 }
+
+export function patchChannel(channelId, patch) {
+    return async (dispatch) => {
+        let updated;
+        try {
+            updated = await Client4.patchChannel(channelId, patch);
+        } catch (error) {
+            forceLogoutIfNecessary(error);
+
+            return {error};
+        }
+
+        dispatch({
+            type: ChannelTypes.RECEIVED_CHANNEL,
+            data: updated,
+        });
+
+        return {data: updated};
+    };
+}

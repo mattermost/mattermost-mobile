@@ -7,7 +7,7 @@ import {shallow} from 'enzyme';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import Autocomplete from 'app/components/autocomplete';
-import EditChannelInfo from './edit_channel_info';
+import EditChannelInfo from './index';
 
 describe('EditChannelInfo', () => {
     const baseProps = {

@@ -5,18 +5,16 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    Dimensions,
     Keyboard,
-    InteractionManager,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import SafeAreaView from 'app/components/safe_area_view';
-import {General, RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {General} from 'mattermost-redux/constants';
 
 import EditChannelInfo from 'app/components/edit_channel_info';
 import {ViewTypes} from 'app/constants';
 import {setNavigatorStyles} from 'app/utils/theme';
-import {cleanUpUrlable} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
 import {popTopScreen, setButtons} from 'app/actions/navigation';
 
@@ -53,19 +51,11 @@ const messages = {
 
 export default class EditChannel extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            patchChannel: PropTypes.func.isRequired,
-            getChannel: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
-        }),
-        componentId: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
-        deviceHeight: PropTypes.number.isRequired,
         channel: PropTypes.object.isRequired,
-        currentTeamUrl: PropTypes.string.isRequired,
-        updateChannelRequest: PropTypes.object.isRequired,
-        closeButton: PropTypes.object,
+        componentId: PropTypes.string,
+        getChannel: PropTypes.func.isRequired,
+        patchChannel: PropTypes.func.isRequired,
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
@@ -82,19 +72,16 @@ export default class EditChannel extends PureComponent {
         super(props);
         const {
             channel: {
-                display_name: displayName,
+                displayName,
                 header,
                 purpose,
-                name: channelURL,
             },
         } = props;
 
         this.state = {
             error: null,
             updating: false,
-            updateChannelRequest: props.updateChannelRequest,
             displayName,
-            channelURL,
             purpose,
             header,
         };
@@ -115,76 +102,22 @@ export default class EditChannel extends PureComponent {
         this.emitCanUpdateChannel(false);
     }
 
-    static getDerivedStateFromProps(nextProps, state) {
-        const {updateChannelRequest} = nextProps;
-
-        if (state.updateChannelRequest !== updateChannelRequest) {
-            const newState = {
-                error: null,
-                updating: true,
-                updateChannelRequest,
-            };
-
-            switch (updateChannelRequest.status) {
-            case RequestStatus.SUCCESS:
-                newState.updating = false;
-                break;
-            case RequestStatus.FAILURE:
-                newState.error = updateChannelRequest.error;
-                newState.updating = false;
-                break;
-            }
-
-            return newState;
-        }
-        return null;
-    }
-
     componentDidUpdate(prevProps) {
         if (prevProps.theme !== this.props.theme) {
             setNavigatorStyles(prevProps.componentId, this.props.theme);
-        }
-
-        if (prevProps.updateChannelRequest !== this.props.updateChannelRequest) {
-            switch (this.props.updateChannelRequest.status) {
-            case RequestStatus.STARTED:
-                this.emitUpdating(true);
-                break;
-            case RequestStatus.SUCCESS:
-                EventEmitter.emit('close_channel_drawer');
-                InteractionManager.runAfterInteractions(() => {
-                    this.emitUpdating(false);
-                    this.close();
-                });
-                break;
-            case RequestStatus.FAILURE:
-                this.emitUpdating(false);
-                break;
-            }
         }
     }
 
     navigationButtonPressed({buttonId}) {
         switch (buttonId) {
         case 'close-edit-channel':
-            this.close();
+            popTopScreen();
             break;
         case 'edit-channel':
             this.onUpdateChannel();
             break;
         }
     }
-
-    close = () => {
-        const {channel: {type}} = this.props;
-        const isDirect = type === General.DM_CHANNEL || type === General.GM_CHANNEL;
-
-        if (!isDirect) {
-            this.props.actions.setChannelDisplayName(this.state.displayName);
-        }
-
-        popTopScreen();
-    };
 
     emitCanUpdateChannel = (enabled) => {
         const {componentId} = this.props;
@@ -195,12 +128,13 @@ export default class EditChannel extends PureComponent {
         setButtons(componentId, buttons);
     };
 
-    emitUpdating = (loading) => {
+    emitUpdating = (updating) => {
         const {componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, enabled: !loading}],
+            rightButtons: [{...this.rightButton, enabled: !updating}],
         };
 
+        this.setState({updating});
         setButtons(componentId, buttons);
     };
 
@@ -224,26 +158,6 @@ export default class EditChannel extends PureComponent {
         return {error: null};
     };
 
-    validateChannelURL = (channelURL) => {
-        const {formatMessage} = this.context.intl;
-
-        if (!channelURL) {
-            return {error: formatMessage(messages.name_required)};
-        } else if (channelURL.length > ViewTypes.MAX_CHANNELNAME_LENGTH) {
-            return {error: formatMessage(
-                messages.name_maxLength,
-                {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH}
-            )};
-        }
-
-        const cleanedName = cleanUpUrlable(channelURL);
-        if (cleanedName === channelURL) {
-            return {error: null};
-        }
-
-        return {error: formatMessage(messages.name_lowercase)};
-    };
-
     onUpdateChannel = async () => {
         Keyboard.dismiss();
         const {displayName, channelURL, purpose, header} = this.state;
@@ -256,32 +170,27 @@ export default class EditChannel extends PureComponent {
             header,
         };
 
+        this.emitUpdating(true);
         if (!isDirect) {
-            let result = this.validateDisplayName(displayName.trim());
-            if (result.error) {
-                this.setState({error: result.error});
-                return;
-            }
-
-            result = this.validateChannelURL(channelURL.trim());
+            const result = this.validateDisplayName(displayName.trim());
             if (result.error) {
                 this.setState({error: result.error});
                 return;
             }
         }
 
-        const data = await this.props.actions.patchChannel(id, channel);
+        const data = await this.props.patchChannel(id, channel);
+        this.emitUpdating(false);
         if (data.error && data.error.server_error_id === 'store.sql_channel.update.archived_channel.app_error') {
-            this.props.actions.getChannel(id);
+            this.props.getChannel(id);
+            return;
         }
+
+        popTopScreen();
     };
 
     onDisplayNameChange = (displayName) => {
         this.setState({displayName});
-    };
-
-    onChannelURLChange = (channelURL) => {
-        this.setState({channelURL});
     };
 
     onPurposeChange = (purpose) => {
@@ -295,25 +204,21 @@ export default class EditChannel extends PureComponent {
     render() {
         const {
             channel: {
-                display_name: oldDisplayName,
-                name: oldChannelURL,
+                displayName: oldDisplayName,
                 header: oldHeader,
                 purpose: oldPurpose,
                 type,
             },
             theme,
-            currentTeamUrl,
-            deviceWidth,
-            deviceHeight,
         } = this.props;
         const {
             error,
             updating,
             displayName,
-            channelURL,
             purpose,
             header,
         } = this.state;
+        const {width, height} = Dimensions.get('window');
 
         return (
             <SafeAreaView
@@ -326,22 +231,19 @@ export default class EditChannel extends PureComponent {
                     error={error}
                     saving={updating}
                     channelType={type}
-                    currentTeamUrl={currentTeamUrl}
                     onDisplayNameChange={this.onDisplayNameChange}
                     onChannelURLChange={this.onChannelURLChange}
                     onPurposeChange={this.onPurposeChange}
                     onHeaderChange={this.onHeaderChange}
                     displayName={displayName}
-                    channelURL={channelURL}
                     header={header}
                     purpose={purpose}
                     editing={true}
                     oldDisplayName={oldDisplayName}
-                    oldChannelURL={oldChannelURL}
                     oldPurpose={oldPurpose}
                     oldHeader={oldHeader}
-                    deviceWidth={deviceWidth}
-                    deviceHeight={deviceHeight}
+                    deviceWidth={width}
+                    deviceHeight={height}
                 />
             </SafeAreaView>
         );
