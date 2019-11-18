@@ -42,6 +42,7 @@
     "react-native-document-picker": "3.2.4",
     "react-native-exception-handler": "2.10.8",
     "react-native-gesture-handler": "1.4.1",
+    "react-native-fast-image": "7.0.2",
     "react-native-haptic-feedback": "1.8.2",
     "react-native-image-gallery": "github:mattermost/react-native-image-gallery#c1a9f7118e90cc87d47620bc0584c9cac4b0cf38",
     "react-native-image-picker": "0.28.1",
