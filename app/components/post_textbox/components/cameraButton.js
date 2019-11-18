@@ -86,8 +86,9 @@ export default class AttachmentButton extends PureComponent {
         return this.attachFileFromCamera('video');
     };
 
-    attachFileFromCamera = async (mediaType) => {
+    attachFileFromCamera = async () => {
         const {formatMessage} = this.context.intl;
+        const mediaType = 'mixed';
         const source = 'camera';
         const {title, text} = this.getPermissionDeniedMessage(mediaType);
         const options = {
@@ -110,9 +111,10 @@ export default class AttachmentButton extends PureComponent {
             },
         };
 
-        const hasCameraPermission = await this.hasPhotoPermission(source, mediaType);
+        const hasPhotoPermission = await this.hasPhotoPermission(source, 'photo');
+        const hasVideoPermission = await this.hasPhotoPermission(source, 'video');
 
-        if (hasCameraPermission) {
+        if (hasPhotoPermission && hasVideoPermission) {
             ImagePicker.launchCamera(options, (response) => {
                 if (response.error || response.didCancel) {
                     return;
@@ -240,11 +242,11 @@ export default class AttachmentButton extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const launchCamera = Platform.OS === 'ios' ? () => this.attachFileFromCamera('mixed') : this.showFileAttachmentOptions;
+        // const launchCamera = Platform.OS === 'ios' ? () => this.attachFileFromCamera('mixed') : this.showFileAttachmentOptions;
 
         return (
             <TouchableWithFeedback
-                onPress={launchCamera}
+                onPress={this.attachFileFromCamera}
                 style={style.buttonContainer}
                 type={'opacity'}
             >
