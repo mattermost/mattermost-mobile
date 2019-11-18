@@ -41,7 +41,18 @@ exports[`PostList setting channel deep link 1`] = `
   onLayout={[Function]}
   onScroll={[Function]}
   onScrollToIndexFailed={[Function]}
-  refreshing={false}
+  refreshControl={
+    <RefreshControlMock
+      colors={
+        Array [
+          "#3d3c40",
+        ]
+      }
+      onRefresh={null}
+      refreshing={false}
+      tintColor="#3d3c40"
+    />
+  }
   removeClippedSubviews={true}
   renderItem={[Function]}
   scrollEventThrottle={60}
@@ -91,7 +102,18 @@ exports[`PostList setting permalink deep link 1`] = `
   onLayout={[Function]}
   onScroll={[Function]}
   onScrollToIndexFailed={[Function]}
-  refreshing={false}
+  refreshControl={
+    <RefreshControlMock
+      colors={
+        Array [
+          "#3d3c40",
+        ]
+      }
+      onRefresh={null}
+      refreshing={false}
+      tintColor="#3d3c40"
+    />
+  }
   removeClippedSubviews={true}
   renderItem={[Function]}
   scrollEventThrottle={60}
@@ -141,7 +163,18 @@ exports[`PostList should match snapshot 1`] = `
   onLayout={[Function]}
   onScroll={[Function]}
   onScrollToIndexFailed={[Function]}
-  refreshing={false}
+  refreshControl={
+    <RefreshControlMock
+      colors={
+        Array [
+          "#3d3c40",
+        ]
+      }
+      onRefresh={null}
+      refreshing={false}
+      tintColor="#3d3c40"
+    />
+  }
   removeClippedSubviews={true}
   renderItem={[Function]}
   scrollEventThrottle={60}

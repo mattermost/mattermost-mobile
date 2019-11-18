@@ -31,6 +31,16 @@ exports[`CustomList should match snapshot with FlatList 1`] = `
   onEndReachedThreshold={2}
   onLayout={[Function]}
   onScroll={[Function]}
+  refreshControl={
+    <RefreshControlMock
+      colors={
+        Array [
+          "#3d3c40",
+        ]
+      }
+      tintColor="#3d3c40"
+    />
+  }
   removeClippedSubviews={true}
   renderItem={[Function]}
   scrollEventThrottle={60}

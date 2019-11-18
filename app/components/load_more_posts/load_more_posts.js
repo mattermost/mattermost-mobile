@@ -46,7 +46,7 @@ export default class LoadMorePosts extends PureComponent {
 
         return (
             <View style={{flex: 1, alignItems: 'center'}}>
-                <ActivityIndicator/>
+                <ActivityIndicator color={this.props.theme.centerChannelColor}/>
             </View>
         );
     }
