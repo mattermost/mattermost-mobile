@@ -96,7 +96,11 @@ public class ReceiptDelivery {
 
             try {
                 Response response = client.newCall(request).execute();
-                JSONObject jsonResponse = new JSONObject(response.body().string());
+                String responseBody = response.body().toString();
+                if (response.code() != 200) {
+                    throw new Exception(responseBody);
+                }
+                JSONObject jsonResponse = new JSONObject(responseBody);
                 Bundle bundle = new Bundle();
                 String keys[] = new String[] {"post_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
                 for (int i = 0; i < keys.length; i++) {
