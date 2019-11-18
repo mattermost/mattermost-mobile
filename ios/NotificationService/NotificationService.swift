@@ -29,7 +29,7 @@ class NotificationService: UNNotificationServiceExtension {
           bestAttemptContent.body = json!["message"] as! String
 
           bestAttemptContent.userInfo["channel_name"] = json!["channel_name"] as! String
-          bestAttemptContent.userInfo["team_id"] = json!["team_id"] as! String
+          bestAttemptContent.userInfo["team_id"] = json!["team_id"] as? String
           bestAttemptContent.userInfo["sender_id"] = json!["sender_id"] as! String
           bestAttemptContent.userInfo["sender_name"] = json!["sender_name"] as! String
           bestAttemptContent.userInfo["root_id"] = json!["root_id"] as? String
