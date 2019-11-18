@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     Animated,
-    Image,
     Platform,
     SafeAreaView,
     StatusBar,
@@ -22,6 +21,7 @@ import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
 import DeviceInfo from 'react-native-device-info';
+import FastImage from 'react-native-fast-image';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -374,7 +374,7 @@ export default class ImagePreview extends PureComponent {
 
             return (
                 <View style={[style, {justifyContent: 'center', alignItems: 'center'}]}>
-                    <Image
+                    <FastImage
                         source={source}
                         style={imageStyle}
                     />

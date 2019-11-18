@@ -4,12 +4,14 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Animated, Image, ImageBackground, Platform, View, StyleSheet} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
+const AnimatedImage = Animated.createAnimatedComponent(FastImage);
 
 export default class ProgressiveImage extends PureComponent {
     static propTypes = {
@@ -131,7 +133,7 @@ export default class ProgressiveImage extends PureComponent {
             ImageComponent = AnimatedImageBackground;
         } else {
             DefaultComponent = Image;
-            ImageComponent = Animated.Image;
+            ImageComponent = AnimatedImage;
         }
 
         const styles = getStyleSheet(theme);
