@@ -32,6 +32,14 @@ exports[`AttachmentImage it matches snapshot 1`] = `
     }
   >
     <Connect(ProgressiveImage)
+      imageStyle={
+        Object {
+          "marginBottom": 5,
+          "marginLeft": 2.5,
+          "marginRight": 5,
+          "marginTop": 2.5,
+        }
+      }
       imageUri="https://images.com/image.png"
       resizeMode="contain"
       style={

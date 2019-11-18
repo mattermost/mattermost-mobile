@@ -15,8 +15,12 @@ import ProgressiveImage from 'app/components/progressive_image';
 import {isGif} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager from 'app/utils/image_cache_manager';
+import {changeOpacity} from 'app/utils/theme';
 
 import thumb from 'assets/images/thumb.png';
+
+const SMALL_IMAGE_MAX_HEIGHT = 48;
+const SMALL_IMAGE_MAX_WIDTH = 48;
 
 const IMAGE_SIZE = {
     Fullsize: 'fullsize',
@@ -35,22 +39,18 @@ export default class FileAttachmentImage extends PureComponent {
         ]),
         imageWidth: PropTypes.number,
         onCaptureRef: PropTypes.func,
+        theme: PropTypes.object,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
+        isSingleImage: PropTypes.bool,
+        imageDimensions: PropTypes.object,
     };
 
     static defaultProps = {
-        fadeInOnLoad: false,
-        imageHeight: 80,
-        imageSize: IMAGE_SIZE.Preview,
-        imageWidth: 80,
-        loading: false,
         resizeMode: 'cover',
         resizeMethod: 'resize',
-        wrapperHeight: 80,
-        wrapperWidth: 80,
     };
 
     constructor(props) {
@@ -72,15 +72,11 @@ export default class FileAttachmentImage extends PureComponent {
         };
     }
 
-    calculateNeededWidth = (height, width, newHeight) => {
-        const ratio = width / height;
-
-        let newWidth = newHeight * ratio;
-        if (newWidth < newHeight) {
-            newWidth = newHeight;
+    boxPlaceholder = () => {
+        if (this.props.isSingleImage) {
+            return null;
         }
-
-        return newWidth;
+        return (<View style={style.boxPlaceholder}/>);
     };
 
     handleCaptureRef = (ref) => {
@@ -91,27 +87,7 @@ export default class FileAttachmentImage extends PureComponent {
         }
     };
 
-    render() {
-        const {
-            file,
-            imageHeight,
-            imageWidth,
-            imageSize,
-            resizeMethod,
-            resizeMode,
-            wrapperHeight,
-            wrapperWidth,
-        } = this.props;
-
-        let height = imageHeight;
-        let width = imageWidth;
-        let imageStyle = {height, width};
-        if (imageSize === IMAGE_SIZE.Preview) {
-            height = 80;
-            width = this.calculateNeededWidth(file.height, file.width, height) || 80;
-            imageStyle = {height, width, position: 'absolute', top: 0, left: 0, borderBottomLeftRadius: 2, borderTopLeftRadius: 2};
-        }
-
+    imageProps = (file) => {
         const imageProps = {};
         if (file.localPath) {
             imageProps.defaultSource = {uri: file.localPath};
@@ -119,20 +95,73 @@ export default class FileAttachmentImage extends PureComponent {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
             imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
         }
+        return imageProps;
+    };
+
+    renderSmallImage = () => {
+        const {file, isSingleImage, resizeMethod, theme} = this.props;
+
+        let wrapperStyle = style.fileImageWrapper;
+
+        if (isSingleImage) {
+            wrapperStyle = style.singleSmallImageWrapper;
+
+            if (file.width > SMALL_IMAGE_MAX_WIDTH) {
+                wrapperStyle = [wrapperStyle, {width: '100%'}];
+            }
+        }
 
         return (
             <View
                 ref={this.handleCaptureRef}
-                style={[style.fileImageWrapper, {height: wrapperHeight, width: wrapperWidth, overflow: 'hidden'}]}
+                style={[
+                    wrapperStyle,
+                    style.smallImageBorder,
+                    {borderColor: changeOpacity(theme.centerChannelColor, 0.4)},
+                ]}
             >
+                {this.boxPlaceholder()}
+                <View style={style.smallImageOverlay}>
+                    <ProgressiveImage
+                        style={{height: file.height, width: file.width}}
+                        defaultSource={thumb}
+                        tintDefaultSource={!file.localPath}
+                        filename={file.name}
+                        resizeMode={'contain'}
+                        resizeMethod={resizeMethod}
+                        {...this.imageProps(file)}
+                    />
+                </View>
+            </View>
+        );
+    };
+
+    render() {
+        const {
+            file,
+            imageDimensions,
+            resizeMethod,
+            resizeMode,
+        } = this.props;
+
+        if (file.height <= SMALL_IMAGE_MAX_HEIGHT || file.width <= SMALL_IMAGE_MAX_WIDTH) {
+            return this.renderSmallImage();
+        }
+
+        return (
+            <View
+                ref={this.handleCaptureRef}
+                style={style.fileImageWrapper}
+            >
+                {this.boxPlaceholder()}
                 <ProgressiveImage
-                    style={imageStyle}
+                    style={[this.props.isSingleImage ? null : style.imagePreview, imageDimensions]}
                     defaultSource={thumb}
                     tintDefaultSource={!file.localPath}
                     filename={file.name}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
-                    {...imageProps}
+                    {...this.imageProps(file)}
                 />
             </View>
         );
@@ -140,17 +169,28 @@ export default class FileAttachmentImage extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    fileImageWrapper: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderBottomLeftRadius: 2,
-        borderTopLeftRadius: 2,
+    imagePreview: {
+        ...StyleSheet.absoluteFill,
     },
-    loaderContainer: {
-        position: 'absolute',
-        height: '100%',
-        width: '100%',
-        alignItems: 'center',
+    fileImageWrapper: {
+        borderRadius: 5,
+        overflow: 'hidden',
+    },
+    boxPlaceholder: {
+        paddingBottom: '100%',
+    },
+    smallImageBorder: {
+        borderWidth: 1,
+        borderRadius: 5,
+    },
+    smallImageOverlay: {
+        ...StyleSheet.absoluteFill,
         justifyContent: 'center',
+        alignItems: 'center',
+    },
+    singleSmallImageWrapper: {
+        height: SMALL_IMAGE_MAX_HEIGHT,
+        width: SMALL_IMAGE_MAX_WIDTH,
+        overflow: 'hidden',
     },
 });
