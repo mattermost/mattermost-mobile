@@ -38,10 +38,6 @@ target 'Mattermost' do
   pod 'XCDYouTubeKit', '~> 2.8'
   pod 'Swime', '3.0.6'
 
-  pod 'RNSentry', :path => '../node_modules/@sentry/react-native'
-
-  pod 'RNFastImage', :path => '../node_modules/react-native-fast-image'
-
   target 'MattermostTests' do
     inherit! :search_paths
     # Pods for testing
