@@ -16,7 +16,7 @@ describe('MoreChannels', () => {
     const actions = {
         handleSelectChannel: jest.fn(),
         joinChannel: jest.fn(),
-        getChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2'}]}),
+        loadPublicAndArchivedChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2'}]}),
         searchChannels: jest.fn(),
         setChannelDisplayName: jest.fn(),
     };
@@ -25,12 +25,14 @@ describe('MoreChannels', () => {
         actions,
         canCreateChannels: true,
         channels: [{id: 'id', name: 'name', display_name: 'display_name'}],
+        archivedChannels: [{id: 'id2', name: 'archived', display_name: 'archived channel'}],
         closeButton: {},
         currentUserId: 'current_user_id',
         currentTeamId: 'current_team_id',
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
         isLandscape: false,
+        canShowArchivedChannels: true,
     };
 
     test('should match snapshot', () => {
@@ -90,5 +92,21 @@ describe('MoreChannels', () => {
         wrapper.instance().cancelSearch(true);
         expect(wrapper.state('term')).toEqual('');
         expect(wrapper.state('channels')).toEqual(baseProps.channels);
+    });
+
+    test('should search correct channels', () => {
+        const wrapper = shallow(
+            <MoreChannels {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+
+        wrapper.setState({typeOfChannels: 'public'});
+        instance.searchChannels('display_name');
+        expect(wrapper.state('channels')).toEqual(baseProps.channels);
+
+        wrapper.setState({typeOfChannels: 'archived'});
+        instance.searchChannels('archived channel');
+        expect(wrapper.state('archivedChannels')).toEqual(baseProps.archivedChannels);
     });
 });
