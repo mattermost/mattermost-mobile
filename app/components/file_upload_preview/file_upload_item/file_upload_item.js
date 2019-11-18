@@ -190,11 +190,7 @@ export default class FileUploadItem extends PureComponent {
             filePreviewComponent = (
                 <FileAttachmentImage
                     file={file}
-                    imageSize='fullsize'
-                    imageHeight={100}
-                    imageWidth={100}
-                    wrapperHeight={100}
-                    wrapperWidth={100}
+                    theme={theme}
                 />
             );
         } else {
@@ -202,8 +198,6 @@ export default class FileUploadItem extends PureComponent {
                 <FileAttachmentIcon
                     file={file}
                     theme={theme}
-                    imageHeight={100}
-                    imageWidth={100}
                     wrapperHeight={100}
                     wrapperWidth={100}
                 />
@@ -260,6 +254,7 @@ const styles = StyleSheet.create({
         height: 100,
         width: 100,
         elevation: 10,
+        borderRadius: 5,
         ...Platform.select({
             ios: {
                 backgroundColor: '#fff',

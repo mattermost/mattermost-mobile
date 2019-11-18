@@ -560,7 +560,7 @@ export default class EditProfile extends PureComponent {
             return (
                 <View style={[style.container, style.flex]}>
                     <StatusBar/>
-                    <Loading/>
+                    <Loading color={theme.centerChannelColor}/>
                 </View>
             );
         }

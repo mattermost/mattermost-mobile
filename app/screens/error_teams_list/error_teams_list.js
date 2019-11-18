@@ -78,7 +78,7 @@ export default class ErrorTeamsList extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         if (this.state.loading) {
-            return <Loading/>;
+            return <Loading color={theme.centerChannelColor}/>;
         }
 
         return (

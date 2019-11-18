@@ -440,7 +440,7 @@ export default class EmojiPicker extends PureComponent {
         const styles = getStyleSheetFromTheme(theme);
         return (
             <View style={styles.loading}>
-                <ActivityIndicator/>
+                <ActivityIndicator color={theme.centerChannelColor}/>
             </View>
         );
     };
