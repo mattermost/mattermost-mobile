@@ -489,6 +489,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         channelDropdown: {
+            color: theme.centerChannelColor,
             fontWeight: 'bold',
             marginLeft: 10,
             marginTop: 20,
