@@ -268,6 +268,7 @@ dependencies {
     implementation project(':react-native-android-open-settings')
     implementation project(':react-native-haptic-feedback')
 
+    implementation project(':react-native-fast-image')
     // For animated GIF support
     implementation 'com.facebook.fresco:fresco:2.0.0'
     implementation 'com.facebook.fresco:animated-gif:2.0.0'

@@ -141,6 +141,7 @@ export default class AttachmentImage extends PureComponent {
             progressiveImage = (
                 <ProgressiveImage
                     ref={this.setImageRef}
+                    imageStyle={style.attachmentMargin}
                     style={{height, width}}
                     imageUri={imageUri}
                     resizeMode='contain'
@@ -177,6 +178,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderRadius: 2,
             flex: 1,
+        },
+        attachmentMargin: {
+            marginTop: 2.5,
+            marginLeft: 2.5,
+            marginBottom: 5,
+            marginRight: 5,
         },
     };
 });
