@@ -85,7 +85,7 @@ export default class ThreadIOS extends ThreadBase {
             );
         } else {
             content = (
-                <Loading/>
+                <Loading color={theme.centerChannelColor}/>
             );
         }
 
