@@ -41,6 +41,7 @@ export default class ProgressiveImage extends PureComponent {
             intensity: new Animated.Value(80),
             thumb: null,
             uri: null,
+            failedImageLoad: false,
         };
     }
 
@@ -87,12 +88,17 @@ export default class ProgressiveImage extends PureComponent {
 
     setThumbnail = (thumb) => {
         if (this.subscribedToCache) {
-            const {filename, imageUri} = this.props;
-            this.setState({thumb}, () => {
-                setTimeout(() => {
-                    ImageCacheManager.cache(filename, imageUri, this.setImage);
-                }, 300);
-            });
+            if (!thumb && !this.state.failedImageLoad) {
+                this.load();
+                this.setState({failedImageLoad: true});
+            } else {
+                const {filename, imageUri} = this.props;
+                this.setState({thumb}, () => {
+                    setTimeout(() => {
+                        ImageCacheManager.cache(filename, imageUri, this.setImage);
+                    }, 300);
+                });
+            }
         }
     };
 
