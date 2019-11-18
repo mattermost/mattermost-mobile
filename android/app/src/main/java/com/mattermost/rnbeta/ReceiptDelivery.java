@@ -100,7 +100,10 @@ public class ReceiptDelivery {
                 Bundle bundle = new Bundle();
                 String keys[] = new String[] {"post_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
                 for (int i = 0; i < keys.length; i++) {
-                    bundle.putString(keys[i], jsonResponse.getString(keys[i]));
+                    String key = keys[i];
+                    if (jsonResponse.has(key)) {
+                        bundle.putString(key, jsonResponse.getString(key));
+                    }
                 }
                 promise.resolve(bundle);
             } catch (Exception e) {
