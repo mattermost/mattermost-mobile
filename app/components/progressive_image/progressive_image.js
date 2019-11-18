@@ -7,7 +7,7 @@ import {Animated, Image, ImageBackground, Platform, View, StyleSheet} from 'reac
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import ImageCacheManager from 'app/utils/image_cache_manager';
-import {changeOpacity} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 
@@ -18,6 +18,7 @@ export default class ProgressiveImage extends PureComponent {
         defaultSource: PropTypes.oneOfType([PropTypes.object, PropTypes.number]), // this should be provided by the component
         filename: PropTypes.string,
         imageUri: PropTypes.string,
+        imageStyle: CustomPropTypes.Style,
         onError: PropTypes.func,
         resizeMethod: PropTypes.string,
         resizeMode: PropTypes.string,
@@ -96,7 +97,17 @@ export default class ProgressiveImage extends PureComponent {
     };
 
     render() {
-        const {style, defaultSource, isBackgroundImage, theme, tintDefaultSource, onError, resizeMode, resizeMethod} = this.props;
+        const {
+            defaultSource,
+            imageStyle,
+            isBackgroundImage,
+            onError,
+            resizeMode,
+            resizeMethod,
+            style,
+            theme,
+            tintDefaultSource,
+        } = this.props;
         const {uri, intensity, thumb} = this.state;
         const hasDefaultSource = Boolean(defaultSource);
         const hasPreview = Boolean(thumb);
@@ -117,13 +128,15 @@ export default class ProgressiveImage extends PureComponent {
             ImageComponent = Animated.Image;
         }
 
+        const styles = getStyleSheet(theme);
+
         let defaultImage;
         if (hasDefaultSource && tintDefaultSource) {
             defaultImage = (
                 <View style={styles.defaultImageContainer}>
                     <DefaultComponent
                         source={defaultSource}
-                        style={{flex: 1, tintColor: changeOpacity(theme.centerChannelColor, 0.2)}}
+                        style={styles.defaultImageTint}
                         resizeMode='center'
                         resizeMethod={resizeMethod}
                         onError={onError}
@@ -139,7 +152,7 @@ export default class ProgressiveImage extends PureComponent {
                     resizeMethod={resizeMethod}
                     onError={onError}
                     source={defaultSource}
-                    style={StyleSheet.absoluteFill}
+                    style={[StyleSheet.absoluteFill, imageStyle]}
                 >
                     {this.props.children}
                 </DefaultComponent>
@@ -155,7 +168,7 @@ export default class ProgressiveImage extends PureComponent {
                     resizeMethod={resizeMethod}
                     onError={onError}
                     source={{uri: thumb}}
-                    style={StyleSheet.absoluteFill}
+                    style={[StyleSheet.absoluteFill, imageStyle]}
                     blurRadius={5}
                 >
                     {this.props.children}
@@ -167,7 +180,7 @@ export default class ProgressiveImage extends PureComponent {
                     resizeMethod={resizeMethod}
                     onError={onError}
                     source={{uri}}
-                    style={[StyleSheet.absoluteFill, styles.attachmentMargin]}
+                    style={[StyleSheet.absoluteFill, imageStyle]}
                 >
                     {this.props.children}
                 </ImageComponent>
@@ -180,19 +193,19 @@ export default class ProgressiveImage extends PureComponent {
     }
 }
 
-const styles = StyleSheet.create({
-    defaultImageContainer: {
-        flex: 1,
-        position: 'absolute',
-        height: 80,
-        width: 80,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    attachmentMargin: {
-        marginTop: 2.5,
-        marginLeft: 2.5,
-        marginBottom: 5,
-        marginRight: 5,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        defaultImageContainer: {
+            flex: 1,
+            position: 'absolute',
+            height: 80,
+            width: 80,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        defaultImageTint: {
+            flex: 1,
+            tintColor: changeOpacity(theme.centerChannelColor, 0.2),
+        },
+    };
 });
