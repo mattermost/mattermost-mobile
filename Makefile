@@ -74,6 +74,7 @@ clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleanup finished
 
 post-install:
+	@./node_modules/.bin/patch-package
 	@./node_modules/.bin/jetify
 
 	@rm -f node_modules/intl/.babelrc
@@ -83,8 +84,6 @@ post-install:
 	@sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-messageformat/package.json
 	@sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-relativeformat/package.json
 	@sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
-
-	@./node_modules/.bin/patch-package
 
 start: | pre-run ## Starts the React Native packager server
 	$(call start_packager)

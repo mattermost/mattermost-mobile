@@ -126,8 +126,12 @@ import os.log
             }
         })
     }
-    
+
     public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?) {
+        notificationReceipt(notificationId:notificationId, receivedAt:receivedAt, type:type, postId:nil, completion:{_, _ in})
+    }
+
+    public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?, postId: Any? = nil, completion: @escaping (Data?, Error?) -> Void) {
         if (notificationId != nil) {
             let store = StoreManager.shared() as StoreManager
             let entities = store.getEntities(true)
@@ -142,18 +146,23 @@ import os.log
                         "id": notificationId as Any,
                         "received_at": receivedAt,
                         "platform": "ios",
-                        "type": type as Any
+                        "type": type as Any,
+                        "post_id": postId as Any
                     ]
                     
                     if !JSONSerialization.isValidJSONObject(jsonObject) {return}
-                    
+
                     guard let url = URL(string: urlString) else {return}
                     var request = URLRequest(url: url)
                     request.httpMethod = "POST"
                     request.setValue("Bearer \(sessionToken!)", forHTTPHeaderField: "Authorization")
                     request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
                     request.httpBody = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted)
-                    URLSession(configuration: .ephemeral).dataTask(with: request).resume()
+
+                    let task = URLSession(configuration: .ephemeral).dataTask(with: request) { data, _, error in
+                        completion(data, error)
+                    }
+                    task.resume()
                 }
             }
         }
