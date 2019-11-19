@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 import {isLandscape} from 'app/selectors/device';
 import {General} from 'mattermost-redux/constants';
-import {getChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
+import {joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
 import {getChannelsInCurrentTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
@@ -15,11 +15,13 @@ import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
-import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
+import {handleSelectChannel, setChannelDisplayName, loadPublicAndArchivedChannels} from 'app/actions/views/channel';
 
 import MoreChannels from './more_channels';
 
-const joinableChannels = createSelector(
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+
+const joinablePublicChannels = createSelector(
     getChannelsInCurrentTeam,
     getMyChannelMemberships,
     (channels, myMembers) => {
@@ -29,11 +31,19 @@ const joinableChannels = createSelector(
     }
 );
 
+const teamArchivedChannels = createSelector(
+    getChannelsInCurrentTeam,
+    (channels) => {
+        return channels.filter((c) => c.delete_at !== 0);
+    }
+);
+
 function mapStateToProps(state) {
     const config = getConfig(state);
     const license = getLicense(state);
     const roles = getCurrentUserRoles(state);
-    const channels = joinableChannels(state);
+    const channels = joinablePublicChannels(state);
+    const archivedChannels = teamArchivedChannels(state);
     const currentTeamId = getCurrentTeamId(state);
 
     return {
@@ -41,8 +51,10 @@ function mapStateToProps(state) {
         currentUserId: getCurrentUserId(state),
         currentTeamId,
         channels,
+        archivedChannels,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
+        canShowArchivedChannels: isMinimumServerVersion(state.entities.general.serverVersion, 5, 18),
     };
 }
 
@@ -51,7 +63,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             handleSelectChannel,
             joinChannel,
-            getChannels,
+            loadPublicAndArchivedChannels,
             searchChannels,
             setChannelDisplayName,
         }, dispatch),

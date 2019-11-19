@@ -14,6 +14,8 @@ import {
     leaveChannel as serviceLeaveChannel,
     selectChannel,
     getChannelStats,
+    getChannels,
+    getArchivedChannels,
 } from 'mattermost-redux/actions/channels';
 import {
     getPosts,
@@ -70,6 +72,26 @@ export function loadChannelsByTeamName(teamName) {
         if (team && team.id !== currentTeamId) {
             await dispatch(fetchMyChannelsAndMembers(team.id));
         }
+    };
+}
+
+export function loadPublicAndArchivedChannels(teamId, publicPage, archivedPage, perPage, shouldLoadArchivedChannels) {
+    return async (dispatch) => {
+        return dispatch(getChannels(
+            teamId,
+            publicPage,
+            perPage
+        )).then(async (publicChannels) => {
+            if (shouldLoadArchivedChannels) {
+                const archivedChannels = await dispatch(getArchivedChannels(
+                    teamId,
+                    archivedPage,
+                    perPage
+                ));
+                return archivedChannels;
+            }
+            return publicChannels;
+        });
     };
 }
 
@@ -379,45 +401,23 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
         }
 
+        let previousChannelId;
+        if (!fromPushNotification && !sameChannel) {
+            previousChannelId = currentChannelId;
+        }
+
         const actions = [
             selectChannel(channelId),
             getChannelStats(channelId),
             setChannelDisplayName(channel.display_name),
-            {
-                type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
-                data: channelId,
-            },
+            setInitialPostVisibility(channelId),
             setChannelLoading(false),
-            {
-                type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-                teamId: currentTeamId,
-                channelId,
-            },
+            setLastChannelForTeam(currentTeamId, channelId),
+            selectChannelWithMember(channelId, channel, member),
         ];
 
-        let markPreviousChannelId;
-        if (!fromPushNotification && !sameChannel) {
-            markPreviousChannelId = currentChannelId;
-            actions.push({
-                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-                data: currentChannelId,
-                channel: getChannel(state, currentChannelId),
-                member: getMyChannelMember(state, currentChannelId),
-            });
-        }
-
-        if (!fromPushNotification) {
-            actions.push({
-                type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-                data: channelId,
-                channel,
-                member,
-            });
-        }
-
         dispatch(batchActions(actions));
-
-        dispatch(markChannelViewedAndRead(channelId, markPreviousChannelId));
+        dispatch(markChannelViewedAndRead(channelId, previousChannelId));
     };
 }
 
@@ -684,5 +684,29 @@ function setLoadMorePostsVisible(visible) {
     return {
         type: ViewTypes.SET_LOAD_MORE_POSTS_VISIBLE,
         data: visible,
+    };
+}
+
+function setInitialPostVisibility(channelId) {
+    return {
+        type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
+        data: channelId,
+    };
+}
+
+function setLastChannelForTeam(teamId, channelId) {
+    return {
+        type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
+        teamId,
+        channelId,
+    };
+}
+
+function selectChannelWithMember(channelId, channel, member) {
+    return {
+        type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+        data: channelId,
+        channel,
+        member,
     };
 }

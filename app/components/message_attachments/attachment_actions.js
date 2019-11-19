@@ -41,6 +41,7 @@ export default class AttachmentActions extends PureComponent {
                         defaultOption={action.default_option}
                         options={action.options}
                         postId={postId}
+                        disabled={action.disabled}
                     />
                 );
                 break;
@@ -53,6 +54,7 @@ export default class AttachmentActions extends PureComponent {
                         cookie={action.cookie}
                         name={action.name}
                         postId={postId}
+                        disabled={action.disabled}
                     />
                 );
                 break;

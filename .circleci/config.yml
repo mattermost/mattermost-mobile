@@ -91,15 +91,18 @@ commands:
     steps:
       - restore_cache:
           name: Restore npm cache
-          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+          key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
       - run:
           name: Getting JavaScript dependencies
-          command: NODE_ENV=development npm install
+          command: NODE_ENV=development npm install --ignore-scripts
       - save_cache:
           name: Save npm cache
-          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+          key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
           paths:
             - node_modules
+      - run:
+          name: "Run post install scripts"
+          command: make post-install
 
   pods-dependencies:
     description: "Get cocoapods dependencies"

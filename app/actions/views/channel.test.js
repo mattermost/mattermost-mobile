@@ -5,27 +5,27 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import initialState from 'app/initial_state';
+import {ViewTypes} from 'app/constants';
 import testHelper from 'test/test_helper';
 
-import {
+import * as ChannelActions from 'app/actions/views/channel';
+const {
+    handleSelectChannel,
     handleSelectChannelByName,
     loadPostsIfNecessaryWithRetry,
-} from 'app/actions/views/channel';
+} = ChannelActions;
 
 import postReducer from 'mattermost-redux/reducers/entities/posts';
 
-jest.mock('mattermost-redux/selectors/entities/channels', () => ({
-    getChannel: () => ({data: 'received-channel-id'}),
-    getCurrentChannelId: () => 'current-channel-id',
-    getMyChannelMember: () => ({data: {member: {}}}),
-}));
+const MOCK_CHANNEL_MARK_AS_READ = 'MOCK_CHANNEL_MARK_AS_READ';
+const MOCK_CHANNEL_MARK_AS_VIEWED = 'MOCK_CHANNEL_MARK_AS_VIEWED';
 
 jest.mock('mattermost-redux/actions/channels', () => {
     const channelActions = require.requireActual('mattermost-redux/actions/channels');
     return {
         ...channelActions,
-        markChannelAsRead: jest.fn(),
-        markChannelAsViewed: jest.fn(),
+        markChannelAsRead: jest.fn().mockReturnValue({type: 'MOCK_CHANNEL_MARK_AS_READ'}),
+        markChannelAsViewed: jest.fn().mockReturnValue({type: 'MOCK_CHANNEL_MARK_AS_VIEWED'}),
     };
 });
 
@@ -129,6 +129,11 @@ describe('Actions.Views.Channel', () => {
             },
         },
     };
+
+    const channelSelectors = require('mattermost-redux/selectors/entities/channels');
+    channelSelectors.getChannel = jest.fn((state, channelId) => ({data: channelId}));
+    channelSelectors.getCurrentChannelId = jest.fn(() => currentChannelId);
+    channelSelectors.getMyChannelMember = jest.fn(() => ({data: {member: {}}}));
 
     test('handleSelectChannelByName success', async () => {
         store = mockStore(storeObj);
@@ -237,5 +242,39 @@ describe('Actions.Views.Channel', () => {
         expect(postUtils.getLastCreateAt).not.toBeCalled();
         expect(postActions.getPostsSince).toHaveBeenCalledWith(currentChannelId, store.getState().views.channel.lastGetPosts[currentChannelId]);
         expect(receivedPostsSince).not.toBe(null);
+    });
+
+    const handleSelectChannelCases = [
+        [currentChannelId, true],
+        [currentChannelId, false],
+        [`not-${currentChannelId}`, true],
+        [`not-${currentChannelId}`, false],
+    ];
+    test.each(handleSelectChannelCases)('handleSelectChannel dispatches selectChannelWithMember', async (channelId, fromPushNotification) => {
+        store = mockStore({...storeObj});
+
+        await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
+        const storeActions = store.getActions();
+        const storeBatchActions = storeActions.find(({type}) => type === 'BATCHING_REDUCER.BATCH');
+        const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
+        const viewedAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_VIEWED);
+        const readAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_READ);
+
+        const expectedSelectChannelWithMember = {
+            type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+            data: channelId,
+            channel: {
+                data: channelId,
+            },
+            member: {
+                data: {
+                    member: {},
+                },
+            },
+
+        };
+        expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+        expect(viewedAction).not.toBe(null);
+        expect(readAction).not.toBe(null);
     });
 });

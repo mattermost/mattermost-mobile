@@ -47,7 +47,7 @@ class PushNotificationUtils {
     loadFromNotification = async (notification) => {
         // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
         EphemeralStore.appStartedFromPushNotification = true;
-        await this.store.dispatch(loadFromPushNotification(notification, true));
+        await this.store.dispatch(loadFromPushNotification(notification));
 
         // if we have a componentId means that the app is already initialized
         const componentId = EphemeralStore.getNavigationTopComponentId();

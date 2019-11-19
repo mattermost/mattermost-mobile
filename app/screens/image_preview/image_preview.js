@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     Animated,
-    Image,
     Platform,
     SafeAreaView,
     StatusBar,
@@ -22,6 +21,7 @@ import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
 import DeviceInfo from 'react-native-device-info';
+import FastImage from 'react-native-fast-image';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -206,8 +206,8 @@ export default class ImagePreview extends PureComponent {
                     backgroundColor='transparent'
                     canDownloadFiles={canDownloadFiles}
                     file={file}
-                    iconHeight={100}
-                    iconWidth={100}
+                    iconHeight={200}
+                    iconWidth={200}
                     theme={theme}
                     wrapperHeight={200}
                     wrapperWidth={200}
@@ -223,8 +223,8 @@ export default class ImagePreview extends PureComponent {
                     backgroundColor='transparent'
                     file={file}
                     theme={this.props.theme}
-                    iconHeight={150}
-                    iconWidth={150}
+                    iconHeight={200}
+                    iconWidth={200}
                     wrapperHeight={200}
                     wrapperWidth={200}
                 />
@@ -366,7 +366,7 @@ export default class ImagePreview extends PureComponent {
         if (imageDimensions) {
             const {deviceHeight, deviceWidth} = this.props;
             const {height, width} = imageDimensions;
-            const {style, ...otherProps} = imageProps;
+            const {style, source} = imageProps;
             const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
             const flattenStyle = StyleSheet.flatten(style);
             const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
@@ -374,8 +374,8 @@ export default class ImagePreview extends PureComponent {
 
             return (
                 <View style={[style, {justifyContent: 'center', alignItems: 'center'}]}>
-                    <Image
-                        {...otherProps}
+                    <FastImage
+                        source={source}
                         style={imageStyle}
                     />
                 </View>

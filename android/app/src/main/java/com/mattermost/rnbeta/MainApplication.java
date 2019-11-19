@@ -31,6 +31,7 @@ import com.reactnativecommunity.asyncstorage.AsyncStorageModule;
 import com.reactnativecommunity.netinfo.NetInfoModule;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import io.sentry.RNSentryModule;
+import com.dylanvann.fastimage.FastImageViewPackage;
 import com.levelasquez.androidopensettings.AndroidOpenSettings;
 import com.mkuczera.RNReactNativeHapticFeedbackModule;
 
@@ -192,6 +193,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                 };
               }
             },
+            new FastImageViewPackage(),
             new RNCWebViewPackage(),
             new SvgPackage(),
             new LinearGradientPackage(),
