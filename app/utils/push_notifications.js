@@ -75,7 +75,7 @@ class PushNotificationUtils {
 
         if (data.type === 'clear') {
             dispatch(markChannelViewedAndRead(data.channel_id, null, false));
-        } else {
+        } else if (data.type === 'message') {
             // get the posts for the channel as soon as possible
             retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
 

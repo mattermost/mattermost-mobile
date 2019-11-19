@@ -360,6 +360,7 @@
   "mobile.post_info.add_reaction": "Add Reaction",
   "mobile.post_info.copy_text": "Copy Text",
   "mobile.post_info.flag": "Flag",
+  "mobile.post_info.mark_unread": "Mark post as unread",
   "mobile.post_info.pin": "Pin to Channel",
   "mobile.post_info.reply": "Reply",
   "mobile.post_info.unflag": "Unflag",

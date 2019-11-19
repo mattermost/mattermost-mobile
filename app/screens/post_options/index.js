@@ -11,6 +11,7 @@ import {
     unflagPost,
     unpinPost,
     removePost,
+    setUnreadPost,
 } from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
 import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
@@ -115,6 +116,7 @@ export function makeMapStateToProps() {
             canFlag,
             canPin,
             currentTeamUrl: getCurrentTeamUrl(state),
+            currentUserId,
             isMyPost: currentUserId === post.user_id,
             theme: getTheme(state),
             isLandscape: isLandscape(state),
@@ -132,6 +134,7 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
+            setUnreadPost,
         }, dispatch),
     };
 }

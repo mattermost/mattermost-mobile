@@ -26,8 +26,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
@@ -47,13 +48,16 @@ public class CustomPushNotification extends PushNotification {
     public static final String KEY_TEXT_REPLY = "CAN_REPLY";
     public static final String NOTIFICATION_REPLIED_EVENT_NAME = "notificationReplied";
 
+    private static final String PUSH_TYPE_MESSAGE = "message";
+    private static final String PUSH_TYPE_CLEAR = "clear";
     private static final String PUSH_TYPE_ID_LOADED = "id_loaded";
+    private static final String PUSH_TYPE_UPDATE_BADGE = "update_badge";
 
     private NotificationChannel mHighImportanceChannel;
     private NotificationChannel mMinImportanceChannel;
 
-    private static LinkedHashMap<String,Integer> channelIdToNotificationCount = new LinkedHashMap<String,Integer>();
-    private static LinkedHashMap<String,List<Bundle>> channelIdToNotification = new LinkedHashMap<String,List<Bundle>>();
+    private static Map<String, Integer> channelIdToNotificationCount = new HashMap<String, Integer>();
+    private static Map<String, List<Bundle>> channelIdToNotification = new HashMap<String, List<Bundle>>();
     private static AppLifecycleFacade lifecycleFacade;
     private static Context context;
     private static int badgeCount = 0;
@@ -66,11 +70,9 @@ public class CustomPushNotification extends PushNotification {
 
     public static void clearNotification(Context mContext, int notificationId, String channelId) {
         if (notificationId != -1) {
-            Object objCount = channelIdToNotificationCount.get(channelId);
-            Integer count = -1;
-
-            if (objCount != null) {
-                count = (Integer)objCount;
+            Integer count = channelIdToNotificationCount.get(channelId);
+            if (count == null) {
+                count = -1;
             }
 
             channelIdToNotificationCount.remove(channelId);
@@ -130,22 +132,25 @@ public class CustomPushNotification extends PushNotification {
 
         if (channelId != null) {
             notificationId = channelId.hashCode();
-            Object objCount = channelIdToNotificationCount.get(channelId);
-            Integer count = 1;
-            if (objCount != null) {
-                count = (Integer)objCount + 1;
-            }
-            channelIdToNotificationCount.put(channelId, count);
 
-            Object bundleArray = channelIdToNotification.get(channelId);
-            List list = null;
-            if (bundleArray == null) {
-                list = Collections.synchronizedList(new ArrayList(0));
-            } else {
-                list = Collections.synchronizedList((List)bundleArray);
+            synchronized (channelIdToNotificationCount) {
+                Integer count = channelIdToNotificationCount.get(channelId);
+                if (count == null) {
+                    count = 0;
+                }
+
+                count += 1;
+
+                channelIdToNotificationCount.put(channelId, count);
             }
-            synchronized (list) {
-                if (!"clear".equals(type)) {
+
+            synchronized (channelIdToNotification) {
+                List<Bundle> list = channelIdToNotification.get(channelId);
+                if (list == null) {
+                    list = Collections.synchronizedList(new ArrayList(0));
+                }
+
+                if (PUSH_TYPE_MESSAGE.equals(type)) {
                     String senderName = getSenderName(data);
                     data.putLong("time", new Date().getTime());
                     data.putString("sender_name", senderName);
@@ -156,10 +161,13 @@ public class CustomPushNotification extends PushNotification {
             }
         }
 
-        if ("clear".equals(type)) {
-            cancelNotification(data, notificationId);
-        } else {
+        switch(type) {
+        case PUSH_TYPE_MESSAGE:
             super.postNotification(notificationId);
+            break;
+        case PUSH_TYPE_CLEAR:
+            cancelNotification(data, notificationId);
+            break;
         }
 
         notifyReceivedToJS();
@@ -270,10 +278,9 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void setNotificationNumber(Notification.Builder notification, String channelId) {
-        Integer number = 1;
-        Object objCount = channelIdToNotificationCount.get(channelId);
-        if (objCount != null) {
-            number = (Integer)objCount;
+        Integer number = channelIdToNotificationCount.get(channelId);
+        if (number != null) {
+            number = 0;
         }
         notification.setNumber(number);
     }

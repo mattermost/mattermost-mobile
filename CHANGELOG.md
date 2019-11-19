@@ -1,5 +1,37 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.25.0 Release
+- Release Date: November 16, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed an issue where Mattermost monokai theme no longer worked properly on mobile apps.
+ - Fixed an issue on Android where the notification badge count didn't update when using multiple channels.
+ - Fixed an issue on Android where test notifications did not work properly.
+ - Fixed an issue where "In-app" notifications caused the app badge count to get out of sync.
+ - Fixed an issue on Android where email notification setting displayed was not updated when the setting was changed.
+ - Fixed an issue where Favorite channels list didn't update if the app was running in the background.
+ - Fixed an issue where the timezone setting did not update when changing it back to set automatically.
+ - Fixed an issue on iOS where clicking on a hashtag from "recent mentions" (or flagged posts) returned the user to the channel instead of displaying hashtag search results.
+ - Fixed an issue where tapping on a hashtag engaged a keyboard for a moment before displaying search results.
+ - Fixed an issue where posts of the same thread appeared to be from different threads if separated by a new message line.
+ - Fixed styling issues on iOS for Name, Purpose and Header information on the channel info screen.
+ - Fixed styling issues with bot posts timestamps in search results and pinned posts.
+ - Fixed styling issues on single sign-on screen in landscape view on iOS iPhone X and later.
+ - Fixed styling issues on iOS for the Helper text on Settings screens.
+ - Fixed an issue where the thread view header theme was inconsistent during transition back to main channel view.
+ - Fixed an issue on iOS where the navigation bar tucked under the phone's status bar when switching orientation.
+ - Fixed an issue on iOS where the keyboard flashed darker when Automatic Replies had been previously enabled.
+ - Fixed an issue on Android where uploading pictures from storage or camera required unwanted permissions.
+ - Fixed an issue where ``mobile.message_length.message`` did not match webapp's ``create_post.error_message``.
+ 
+### Known Issues
+ - App slows down when opening a channel with large number of animated emoji. [MM-15792](https://mattermost.atlassian.net/browse/MM-15792)
+
 ## 1.24.0 Release
 - Release Date: October 16, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
