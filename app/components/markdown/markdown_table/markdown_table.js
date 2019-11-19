@@ -7,6 +7,7 @@ import {intlShape} from 'react-intl';
 import {
     ScrollView,
     View,
+    Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -19,6 +20,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {goToScreen} from 'app/actions/navigation';
 
 const MAX_HEIGHT = 300;
+const MAX_PREVIEW_COLUMNS = 5;
 
 export default class MarkdownTable extends React.PureComponent {
     static propTypes = {
@@ -38,7 +40,21 @@ export default class MarkdownTable extends React.PureComponent {
             containerWidth: 0,
             contentHeight: 0,
             contentWidth: 0,
+            maxPreviewColumns: MAX_PREVIEW_COLUMNS,
         };
+    }
+
+    componentDidMount() {
+        Dimensions.addEventListener('change', this.setMaxPreviewColumns);
+    }
+
+    componentWillUnmount() {
+        Dimensions.removeEventListener('change', this.setMaxPreviewColumns);
+    }
+
+    setMaxPreviewColumns = ({window}) => {
+        const maxPreviewColumns = Math.floor(window.width / CELL_WIDTH);
+        this.setState({maxPreviewColumns});
     }
 
     getTableWidth = () => {
@@ -72,6 +88,38 @@ export default class MarkdownTable extends React.PureComponent {
             contentWidth,
         });
     };
+
+    renderPreviewRows = (drawExtraBorders = true) => {
+        const {maxPreviewColumns} = this.state;
+        const style = getStyleSheet(this.props.theme);
+
+        const tableStyle = [style.table];
+        if (drawExtraBorders) {
+            tableStyle.push(style.tableExtraBorders);
+        }
+
+        // Add an extra prop to the last row of the table so that it knows not to render a bottom border
+        // since the container should be rendering that
+        const rows = React.Children.toArray(this.props.children).slice(0, maxPreviewColumns).map((row) => {
+            const children = React.Children.toArray(row.props.children).slice(0, maxPreviewColumns);
+            return {
+                ...row,
+                props: {
+                    ...row.props,
+                    children,
+                },
+            };
+        });
+        rows[rows.length - 1] = React.cloneElement(rows[rows.length - 1], {
+            isLastRow: true,
+        });
+
+        return (
+            <View style={tableStyle}>
+                {rows}
+            </View>
+        );
+    }
 
     renderRows = (drawExtraBorders = true) => {
         const style = getStyleSheet(this.props.theme);
@@ -152,7 +200,7 @@ export default class MarkdownTable extends React.PureComponent {
                     showsVerticalScrollIndicator={false}
                     style={[style.container, {maxWidth: this.getTableWidth()}]}
                 >
-                    {this.renderRows(false)}
+                    {this.renderPreviewRows(false)}
                 </ScrollView>
                 {moreRight}
                 {moreBelow}
