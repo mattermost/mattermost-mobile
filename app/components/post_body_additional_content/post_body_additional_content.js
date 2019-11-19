@@ -125,7 +125,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 imageUrl = link;
             } else if (isYoutubeLink(link)) {
                 const videoId = getYouTubeVideoId(link);
-                if (metadata) {
+                if (metadata && metadata.images) {
                     const image = openGraphData.images[0];
                     imageUrl = image.secure_url || image.url;
                     ImageCacheManager.cache(null, imageUrl, () => true);
@@ -236,7 +236,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 const videoId = getYouTubeVideoId(link);
                 let imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                 let thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
-                if (metadata) {
+                if (metadata && metadata.images) {
                     const image = openGraphData.images[0];
                     imgUrl = image.secure_url || image.url;
                     thumbUrl = image.secure_url || image.url;
