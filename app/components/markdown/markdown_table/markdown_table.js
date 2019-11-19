@@ -7,6 +7,7 @@ import {intlShape} from 'react-intl';
 import {
     ScrollView,
     View,
+    Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -19,12 +20,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {goToScreen} from 'app/actions/navigation';
 
 const MAX_HEIGHT = 300;
+const MAX_PREVIEW_COLUMNS = 5;
 
 export default class MarkdownTable extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         numColumns: PropTypes.number.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -39,7 +40,21 @@ export default class MarkdownTable extends React.PureComponent {
             containerWidth: 0,
             contentHeight: 0,
             contentWidth: 0,
+            maxPreviewColumns: MAX_PREVIEW_COLUMNS,
         };
+    }
+
+    componentDidMount() {
+        Dimensions.addEventListener('change', this.setMaxPreviewColumns);
+    }
+
+    componentWillUnmount() {
+        Dimensions.removeEventListener('change', this.setMaxPreviewColumns);
+    }
+
+    setMaxPreviewColumns = async ({window}) => {
+        const maxPreviewColumns = Math.floor(window.width / CELL_WIDTH);
+        this.setState({maxPreviewColumns});
     }
 
     getTableWidth = () => {
@@ -75,6 +90,7 @@ export default class MarkdownTable extends React.PureComponent {
     };
 
     renderPreviewRows = (drawExtraBorders = true) => {
+        const {maxPreviewColumns} = this.state;
         const style = getStyleSheet(this.props.theme);
 
         const tableStyle = [style.table];
@@ -84,9 +100,8 @@ export default class MarkdownTable extends React.PureComponent {
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
         // since the container should be rendering that
-        const maxColumns = Math.floor(this.props.deviceWidth / CELL_WIDTH);
-        const rows = React.Children.toArray(this.props.children).slice(0, maxColumns).map((row) => {
-            const children = React.Children.toArray(row.props.children).slice(0, maxColumns);
+        const rows = React.Children.toArray(this.props.children).slice(0, maxPreviewColumns).map((row) => {
+            const children = React.Children.toArray(row.props.children).slice(0, maxPreviewColumns);
             return {
                 ...row,
                 props: {

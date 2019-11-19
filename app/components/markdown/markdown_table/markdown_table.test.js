@@ -8,13 +8,25 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import MarkdownTable from './markdown_table';
 
-const Element = React.cloneElement('', null, '');
-
 describe('MarkdownTable', () => {
+    const createCell = (type, children = null) => {
+        return React.createElement('', {key: Date.now(), className: type}, children);
+    };
+
+    const numColumns = 10;
+    const children = [];
+    for (let i = 0; i <= numColumns; i++) {
+        const cols = [];
+        for (let j = 0; j <= numColumns; j++) {
+            cols.push(createCell('col'));
+        }
+
+        children.push(createCell('row', cols));
+    }
+
     const baseProps = {
-        children: [Element],
-        numColumns: 10,
-        deviceWidth: 100,
+        children,
+        numColumns,
         theme: Preferences.THEMES.default,
     };
 
@@ -24,5 +36,20 @@ describe('MarkdownTable', () => {
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should slice rows and columns', () => {
+        const wrapper = shallowWithIntl(
+            <MarkdownTable {...baseProps}/>
+        );
+
+        const {maxPreviewColumns} = wrapper.state();
+        expect(wrapper.find('.row')).toHaveLength(maxPreviewColumns);
+        expect(wrapper.find('.col')).toHaveLength(Math.pow(maxPreviewColumns, 2));
+
+        const newMaxPreviewColumns = maxPreviewColumns - 1;
+        wrapper.setState({maxPreviewColumns: newMaxPreviewColumns});
+        expect(wrapper.find('.row')).toHaveLength(newMaxPreviewColumns);
+        expect(wrapper.find('.col')).toHaveLength(Math.pow(newMaxPreviewColumns, 2));
     });
 });
