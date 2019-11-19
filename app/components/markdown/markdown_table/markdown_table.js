@@ -24,6 +24,7 @@ export default class MarkdownTable extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         numColumns: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -83,8 +84,9 @@ export default class MarkdownTable extends React.PureComponent {
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
         // since the container should be rendering that
-        const rows = React.Children.toArray(this.props.children).slice(0, 5).map((row) => {
-            const children = React.Children.toArray(row.props.children).slice(0, 5);
+        const maxColumns = Math.floor(this.props.deviceWidth / CELL_WIDTH);
+        const rows = React.Children.toArray(this.props.children).slice(0, maxColumns).map((row) => {
+            const children = React.Children.toArray(row.props.children).slice(0, maxColumns);
             return {
                 ...row,
                 props: {
