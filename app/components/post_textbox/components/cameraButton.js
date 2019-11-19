@@ -20,15 +20,9 @@ import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {PermissionTypes} from 'app/constants';
 
-import {t} from 'app/utils/i18n';
-import {showModalOverCurrentContext} from 'app/actions/navigation';
-
 export default class AttachmentButton extends PureComponent {
     static propTypes = {
-        blurTextBox: PropTypes.func.isRequired,
         validMimeTypes: PropTypes.array,
-        canTakePhoto: PropTypes.bool,
-        canTakeVideo: PropTypes.bool,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
         maxFileSize: PropTypes.number.isRequired,
@@ -50,22 +44,9 @@ export default class AttachmentButton extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    getPermissionDeniedMessage = (mediaType = '') => {
+    getPermissionDeniedMessage = () => {
         const {formatMessage} = this.context.intl;
         const applicationName = DeviceInfo.getApplicationName();
-        if (mediaType === 'video') {
-            return {
-                title: formatMessage({
-                    id: 'mobile.camera_video_permission_denied_title',
-                    defaultMessage: '{applicationName} would like to access your camera',
-                }, {applicationName}),
-                text: formatMessage({
-                    id: 'mobile.camera_video_permission_denied_description',
-                    defaultMessage: 'Take videos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
-                }),
-            };
-        }
-
         return {
             title: formatMessage({
                 id: 'mobile.camera_photo_permission_denied_title',
@@ -78,19 +59,23 @@ export default class AttachmentButton extends PureComponent {
         };
     }
 
-    attachPhotoFromCamera = () => {
-        return this.attachFileFromCamera('photo');
-    };
-
-    attachVideoFromCamera = () => {
-        return this.attachFileFromCamera('video');
-    };
-
     attachFileFromCamera = async () => {
         const {formatMessage} = this.context.intl;
+        const {
+            fileCount,
+            maxFileCount,
+            onShowFileMaxWarning,
+        } = this.props;
+
         const mediaType = 'mixed';
         const source = 'camera';
-        const {title, text} = this.getPermissionDeniedMessage(mediaType);
+        const {title, text} = this.getPermissionDeniedMessage();
+
+        if (fileCount === maxFileCount) {
+            onShowFileMaxWarning();
+            return;
+        }
+
         const options = {
             quality: 0.8,
             videoQuality: 'high',
@@ -111,10 +96,9 @@ export default class AttachmentButton extends PureComponent {
             },
         };
 
-        const hasPhotoPermission = await this.hasPhotoPermission(source, 'photo');
-        const hasVideoPermission = await this.hasPhotoPermission(source, 'video');
+        const hasCameraPermission = await this.hasPhotoPermission(source);
 
-        if (hasPhotoPermission && hasVideoPermission) {
+        if (hasCameraPermission) {
             ImagePicker.launchCamera(options, (response) => {
                 if (response.error || response.didCancel) {
                     return;
@@ -125,7 +109,7 @@ export default class AttachmentButton extends PureComponent {
         }
     };
 
-    hasPhotoPermission = async (source, mediaType = '') => {
+    hasPhotoPermission = async (source) => {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
@@ -152,7 +136,7 @@ export default class AttachmentButton extends PureComponent {
                     };
                 }
 
-                const {title, text} = this.getPermissionDeniedMessage(source, mediaType);
+                const {title, text} = this.getPermissionDeniedMessage();
 
                 Alert.alert(
                     title,
@@ -198,51 +182,8 @@ export default class AttachmentButton extends PureComponent {
         }
     };
 
-    showFileAttachmentOptions = () => {
-        const {
-            canTakePhoto,
-            canTakeVideo,
-            fileCount,
-            maxFileCount,
-            onShowFileMaxWarning,
-        } = this.props;
-
-        if (fileCount === maxFileCount) {
-            onShowFileMaxWarning();
-            return;
-        }
-
-        this.props.blurTextBox();
-        const items = [];
-
-        if (canTakePhoto) {
-            items.push({
-                action: this.attachPhotoFromCamera,
-                text: {
-                    id: t('mobile.file_upload.camera_photo'),
-                    defaultMessage: 'Take Photo',
-                },
-                icon: 'camera',
-            });
-        }
-
-        if (canTakeVideo) {
-            items.push({
-                action: this.attachVideoFromCamera,
-                text: {
-                    id: t('mobile.file_upload.camera_video'),
-                    defaultMessage: 'Take Video',
-                },
-                icon: 'video-camera',
-            });
-        }
-
-        showModalOverCurrentContext('OptionsModal', {items});
-    };
-
     render() {
         const {theme} = this.props;
-        // const launchCamera = Platform.OS === 'ios' ? () => this.attachFileFromCamera('mixed') : this.showFileAttachmentOptions;
 
         return (
             <TouchableWithFeedback

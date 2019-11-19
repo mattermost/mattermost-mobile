@@ -75,13 +75,8 @@ export default class FileUploadButton extends PureComponent {
         const hasPermission = await this.hasStoragePermission();
 
         if (hasPermission) {
-            DocumentPicker.show({
-                filetype: [browseFileTypes],
-            }, async (error, res) => {
-                if (error) {
-                    return;
-                }
-
+            try {
+                const res = await DocumentPicker.pick({type: [browseFileTypes]});
                 if (Platform.OS === 'android') {
                     // For android we need to retrieve the realPath in case the file being imported is from the cloud
                     const newUri = await ShareExtension.getFilePath(res.uri);
@@ -96,7 +91,9 @@ export default class FileUploadButton extends PureComponent {
                 res.uri = decodeURIComponent(res.uri);
 
                 this.uploadFiles([res]);
-            });
+            } catch (error) {
+                // Do nothing
+            }
         }
     };
 

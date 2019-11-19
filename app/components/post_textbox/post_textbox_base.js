@@ -266,6 +266,7 @@ export default class PostTextBoxBase extends PureComponent {
 
                 button = (
                     <TouchableOpacity
+                        disabled={slashDisabled}
                         onPress={slashDisabled ? null : () => {
                             this.handleTextChange('/', true);
                             this.focus();

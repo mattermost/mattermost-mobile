@@ -13,6 +13,9 @@ import * as NavigationActions from 'app/actions/navigation';
 import ThreadIOS from './thread.ios';
 
 jest.mock('react-intl');
+jest.mock('react-native-image-picker', () => ({
+    launchCamera: jest.fn(),
+}));
 
 describe('thread', () => {
     const baseProps = {
