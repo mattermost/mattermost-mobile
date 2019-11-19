@@ -1,0 +1,86 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MarkdownTable should match snapshot 1`] = `
+<TouchableWithFeedbackIOS
+  onPress={[Function]}
+  style={
+    Object {
+      "paddingRight": 10,
+    }
+  }
+  type="opacity"
+>
+  <ScrollViewMock
+    contentContainerStyle={
+      Object {
+        "width": 1000,
+      }
+    }
+    onContentSizeChange={[Function]}
+    onLayout={[Function]}
+    scrollEnabled={false}
+    showsVerticalScrollIndicator={false}
+    style={
+      Array [
+        Object {
+          "borderBottomWidth": 1,
+          "borderColor": "rgba(61,60,64,0.2)",
+          "borderRightWidth": 1,
+          "maxHeight": 300,
+        },
+        Object {
+          "maxWidth": 1000,
+        },
+      ]
+    }
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "borderColor": "rgba(61,60,64,0.2)",
+            "borderLeftWidth": 1,
+            "borderTopWidth": 1,
+          },
+        ]
+      }
+    >
+      <UNDEFINED
+        isLastRow={true}
+      >
+        
+      </UNDEFINED>
+    </View>
+  </ScrollViewMock>
+  <TouchableWithFeedbackIOS
+    onPress={[Function]}
+    style={
+      Object {
+        "backgroundColor": "#ffffff",
+        "borderColor": "rgba(61,60,64,0.2)",
+        "borderRadius": 15,
+        "borderWidth": 1,
+        "bottom": 20,
+        "height": 30,
+        "left": -20,
+        "paddingLeft": 7,
+        "paddingTop": 6,
+        "width": 30,
+      }
+    }
+    type="native"
+  >
+    <Icon
+      allowFontScaling={false}
+      name="expand"
+      size={12}
+      style={
+        Object {
+          "color": "#2389d7",
+          "fontSize": 15,
+        }
+      }
+    />
+  </TouchableWithFeedbackIOS>
+</TouchableWithFeedbackIOS>
+`;
