@@ -5,10 +5,15 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {getDimensions} from 'app/selectors/device';
+
 import MarkdownTable from './markdown_table';
 
 function mapStateToProps(state) {
+    const {deviceWidth} = getDimensions(state);
+
     return {
+        deviceWidth,
         theme: getTheme(state),
     };
 }
