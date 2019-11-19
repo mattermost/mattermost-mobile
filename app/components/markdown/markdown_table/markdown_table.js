@@ -52,7 +52,7 @@ export default class MarkdownTable extends React.PureComponent {
         Dimensions.removeEventListener('change', this.setMaxPreviewColumns);
     }
 
-    setMaxPreviewColumns = async ({window}) => {
+    setMaxPreviewColumns = ({window}) => {
         const maxPreviewColumns = Math.floor(window.width / CELL_WIDTH);
         this.setState({maxPreviewColumns});
     }
