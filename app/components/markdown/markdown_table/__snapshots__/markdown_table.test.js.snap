@@ -45,11 +45,102 @@ exports[`MarkdownTable should match snapshot 1`] = `
         ]
       }
     >
-      <UNDEFINED
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
         isLastRow={true}
       >
-        
-      </UNDEFINED>
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
     </View>
   </ScrollViewMock>
   <TouchableWithFeedbackIOS
