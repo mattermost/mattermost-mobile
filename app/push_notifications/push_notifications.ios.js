@@ -38,7 +38,7 @@ class PushNotification {
         this.deviceNotification = {
             data,
             foreground,
-            message: data.message,
+            message: data.body || data.message,
             userInfo: data.userInfo,
             userInteraction,
         };
@@ -155,9 +155,10 @@ class PushNotification {
             ephemeralStore.appStartedFromPushNotification = true;
         }
 
+        const data = notification.getData();
         const info = {
-            ...notification.getData(),
-            message: notification.getMessage(),
+            ...data,
+            message: data.body || notification.getMessage(),
         };
 
         if (!userInteraction) {
@@ -166,9 +167,10 @@ class PushNotification {
     };
 
     onNotificationReceivedForeground = (notification) => {
+        const data = notification.getData();
         const info = {
-            ...notification.getData(),
-            message: notification.getMessage(),
+            ...data,
+            message: data.body || notification.getMessage(),
         };
         this.handleNotification(info, true, false);
     };
@@ -177,9 +179,10 @@ class PushNotification {
         if (action.identifier === REPLY_ACTION) {
             this.handleReply(notification, action.text, completion);
         } else {
+            const data = notification.getData();
             const info = {
-                ...notification.getData(),
-                message: notification.getMessage(),
+                ...data,
+                message: data.body || notification.getMessage(),
             };
             this.handleNotification(info, false, true);
             completion();

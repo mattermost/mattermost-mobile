@@ -20,6 +20,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Build;
 import android.provider.Settings.System;
+import androidx.annotation.Nullable;
+import android.util.Log;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +38,9 @@ import com.wix.reactnativenotifications.core.JsIOHelper;
 
 import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
 
+import com.mattermost.react_native_interface.ResolvePromise;
+import com.facebook.react.bridge.WritableMap;
+
 public class CustomPushNotification extends PushNotification {
     public static final int MESSAGE_NOTIFICATION_ID = 435345;
     public static final String GROUP_KEY_MESSAGES = "mm_group_key_messages";
@@ -45,6 +50,7 @@ public class CustomPushNotification extends PushNotification {
 
     private static final String PUSH_TYPE_MESSAGE = "message";
     private static final String PUSH_TYPE_CLEAR = "clear";
+    private static final String PUSH_TYPE_ID_LOADED = "id_loaded";
     private static final String PUSH_TYPE_UPDATE_BADGE = "update_badge";
 
     private NotificationChannel mHighImportanceChannel;
@@ -96,15 +102,33 @@ public class CustomPushNotification extends PushNotification {
 
     @Override
     public void onReceived() throws InvalidNotificationException {
-        Bundle data = mNotificationProps.asBundle();
-        final String channelId = data.getString("channel_id");
-        final String type = data.getString("type");
-        final String ackId = data.getString("ack_id");
+        final Bundle initialData = mNotificationProps.asBundle();
+        final String type = initialData.getString("type");
+        final String ackId = initialData.getString("ack_id");
+        final String postId = initialData.getString("post_id");
+        final String channelId = initialData.getString("channel_id");
         int notificationId = MESSAGE_NOTIFICATION_ID;
 
         if (ackId != null) {
-            notificationReceiptDelivery(ackId, type);
+            notificationReceiptDelivery(ackId, postId, type, new ResolvePromise() {
+                @Override
+                public void resolve(@Nullable Object value) {
+                    if (PUSH_TYPE_ID_LOADED.equals(type)) {
+                        Bundle response = (Bundle) value;
+                        mNotificationProps = createProps(response);
+                    }
+                }
+
+                @Override
+                public void reject(String code, String message) {
+                    Log.e("ReactNative", code + ": " + message);
+                }
+            });
         }
+
+        // notificationReceiptDelivery can override mNotificationProps
+        // so we fetch the bundle again
+        final Bundle data = mNotificationProps.asBundle();
 
         if (channelId != null) {
             notificationId = channelId.hashCode();
@@ -501,8 +525,8 @@ public class CustomPushNotification extends PushNotification {
         return message.replaceFirst(senderName, "").replaceFirst(": ", "").trim();
     }
 
-    private void notificationReceiptDelivery(String ackId, String type) {
-        ReceiptDelivery.send(context, ackId, type);
+    private void notificationReceiptDelivery(String ackId, String postId, String type, ResolvePromise promise) {
+        ReceiptDelivery.send(context, ackId, postId, type, promise);
     }
 
     private void createNotificationChannels() {
