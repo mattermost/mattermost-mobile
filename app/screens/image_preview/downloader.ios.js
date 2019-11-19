@@ -48,7 +48,7 @@ export default class Downloader extends PureComponent {
         intl: intlShape,
     };
 
-    static getDerivedStateFromProps(props, _) {
+    static getDerivedStateFromProps(props) {
         if (!props.show) {
             return {
                 didCancel: false,
