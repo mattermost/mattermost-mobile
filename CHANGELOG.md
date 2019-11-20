@@ -1,5 +1,17 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.25.1 Release
+- Release Date: TBD
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixing a crash issue on iOS when SSO cookies do not contain an expiration date during login.
+ - Fixing an issue where changing team/channel when sharing several files closes the share dialog.
+
 ## 1.25.0 Release
 - Release Date: November 16, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
