@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-
 import com.mattermost.share.ShareModule;
 import com.learnium.RNDeviceInfo.RNDeviceModule;
 import com.imagepicker.ImagePickerModule;
@@ -208,8 +207,6 @@ public class MainApplication extends NavigationApplication implements INotificat
     super.onCreate();
     instance = this;
 
-    registerActivityLifecycleCallbacks(new ManagedActivityLifecycleCallbacks());
-
     // Delete any previous temp files created by the app
     File tempFolder = new File(getApplicationContext().getCacheDir(), "mmShare");
     RealPathUtil.deleteTempFiles(tempFolder);
@@ -269,7 +266,7 @@ public class MainApplication extends NavigationApplication implements INotificat
   }
 
   public synchronized Bundle getManagedConfig() {
-    if (mManagedConfig!= null && mManagedConfig.size() > 0) {
+    if (mManagedConfig != null && mManagedConfig.size() > 0) {
         return mManagedConfig;
     }
 
