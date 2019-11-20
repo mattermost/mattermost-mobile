@@ -128,10 +128,10 @@ import os.log
     }
 
     public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?) {
-        notificationReceipt(notificationId:notificationId, receivedAt:receivedAt, type:type, postId:nil, completion:{_, _ in})
+        notificationReceipt(notificationId:notificationId, receivedAt:receivedAt, type:type, postId:nil, idLoaded: false, completion:{_, _ in})
     }
 
-    public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?, postId: Any? = nil, completion: @escaping (Data?, Error?) -> Void) {
+    public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?, postId: Any? = nil, idLoaded: Bool, completion: @escaping (Data?, Error?) -> Void) {
         if (notificationId != nil) {
             let store = StoreManager.shared() as StoreManager
             let entities = store.getEntities(true)
@@ -147,7 +147,8 @@ import os.log
                         "received_at": receivedAt,
                         "platform": "ios",
                         "type": type as Any,
-                        "post_id": postId as Any
+                        "post_id": postId as Any,
+                        "is_id_loaded": idLoaded as Bool
                     ]
                     
                     if !JSONSerialization.isValidJSONObject(jsonObject) {return}
