@@ -56,9 +56,11 @@ export default class ChannelItem extends PureComponent {
     onPress = preventDoubleTap(() => {
         const {channelId, currentChannelId, displayName, onSelectChannel, channel} = this.props;
         const {type, fake} = channel;
-        requestAnimationFrame(() => {
-            onSelectChannel({id: channelId, display_name: displayName, fake, type}, currentChannelId);
-        });
+
+        // requestAnimationFrame(() => {
+        onSelectChannel({id: channelId, display_name: displayName, fake, type}, currentChannelId);
+
+        // });
     });
 
     onPreview = ({reactTag}) => {

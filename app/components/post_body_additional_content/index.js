@@ -45,7 +45,13 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const config = getConfig(state);
-        const link = getFirstLink(ownProps.message);
+        const {metadata} = ownProps;
+        let link;
+        if (metadata && metadata.embeds) {
+            link = metadata.embeds[0].url;
+        } else {
+            link = getFirstLink(ownProps.message);
+        }
 
         // Link previews used to be an advanced settings until server version 4.4 when it was changed to be a display setting.
         // We are checking both here until we bump the server requirement for the mobile apps.

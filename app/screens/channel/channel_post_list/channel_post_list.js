@@ -57,6 +57,7 @@ export default class ChannelPostList extends PureComponent {
 
         this.state = {
             visiblePostIds: this.getVisiblePostIds(props),
+            showLoader: true,
         };
 
         this.contentHeight = 0;
@@ -79,6 +80,15 @@ export default class ChannelPostList extends PureComponent {
 
         if (this.props.channelId !== nextProps.channelId) {
             this.isLoadingMoreTop = false;
+            this.setState({showLoader: true});
+            requestAnimationFrame(() => {
+                this.setState((prevState) => {
+                    if (!prevState.showLoader) {
+                        return null;
+                    }
+                    return {showLoader: false};
+                });
+            });
         }
 
         this.setState({visiblePostIds});
@@ -186,7 +196,9 @@ export default class ChannelPostList extends PureComponent {
 
         const {visiblePostIds} = this.state;
         let component;
-
+        if (this.state.showLoader) {
+            return null;
+        }
         if (visiblePostIds.length === 0 && channelRefreshingFailed) {
             const FailedNetworkAction = require('app/components/failed_network_action').default;
 

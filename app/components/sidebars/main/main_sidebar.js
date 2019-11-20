@@ -38,6 +38,7 @@ export default class ChannelSidebar extends Component {
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
+            handleSelectChannel: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
@@ -199,7 +200,8 @@ export default class ChannelSidebar extends Component {
         if (closeDrawer) {
             telemetry.start(['channel:close_drawer']);
             this.closeChannelDrawer();
-            setChannelLoading(channel.id !== currentChannelId);
+
+            // setChannelLoading(channel.id !== currentChannelId);
         }
 
         if (!channel) {
@@ -217,7 +219,7 @@ export default class ChannelSidebar extends Component {
             return;
         }
 
-        EventEmitter.emit('switch_channel', channel, currentChannelId);
+        this.props.actions.handleSelectChannel(channel.id);
     };
 
     joinChannel = (channel, currentChannelId) => {
