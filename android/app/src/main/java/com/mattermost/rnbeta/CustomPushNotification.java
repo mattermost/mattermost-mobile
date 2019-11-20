@@ -50,7 +50,6 @@ public class CustomPushNotification extends PushNotification {
 
     private static final String PUSH_TYPE_MESSAGE = "message";
     private static final String PUSH_TYPE_CLEAR = "clear";
-    private static final String PUSH_TYPE_ID_LOADED = "id_loaded";
     private static final String PUSH_TYPE_UPDATE_BADGE = "update_badge";
 
     private NotificationChannel mHighImportanceChannel;
