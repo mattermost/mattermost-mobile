@@ -5,6 +5,8 @@ import {NativeModules, DeviceEventEmitter} from 'react-native';
 import LocalAuth from 'react-native-local-auth';
 import JailMonkey from 'jail-monkey';
 
+import {emptyFunction} from 'app/utils/general';
+
 const {MattermostManaged} = NativeModules;
 
 const listeners = [];
@@ -35,7 +37,7 @@ export default {
         }
     },
     authenticate: LocalAuth.auth,
-    blurAppScreen: MattermostManaged.blurAppScreen,
+    blurAppScreen: emptyFunction,
     appGroupIdentifier: null,
     hasSafeAreaInsets: null,
     isRunningInSplitView: MattermostManaged.isRunningInSplitView,
