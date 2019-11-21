@@ -507,6 +507,11 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void createNotificationChannels() {
+        // If Android Oreo or above we need to create notification channels
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+
         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         mHighImportanceChannel = new NotificationChannel("channel_01", "High Importance", NotificationManager.IMPORTANCE_HIGH);
