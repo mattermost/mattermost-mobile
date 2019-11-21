@@ -507,7 +507,7 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void createNotificationChannels() {
-        // If Android Oreo or above we need to create notification channels
+        // Notification channels are not supported in Android Nougat and below
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return;
         }
