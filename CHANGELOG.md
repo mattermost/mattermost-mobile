@@ -9,32 +9,33 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Highlights
-- ID-loaded push notifications
-- Upgraded RN to 0.61
+
+#### ID-loaded push notifications
+
+#### Upgraded RN to v0.61
 
 ### Improvements
+- Added support for pasting other file types such as videos, PDFs, and Google Docs.
 - Added the option to convert public channels to private in the channel info screen.
-- Added support for native emojis in the emoji picker and autocomplete.
-- Removed "Add Reaction" option from long post view.
 - Made usernames in system messages tappable.
 - Added a count for pinned posts header icon.
-- Add an autocomplete to edit post screen.
-- Added support for pasting other file types such as videos, PDFs, and Office docs.
-- Updated the channel name length character limit to 64 to match webapp.
-- Added support for a generic error in interactive dialog responses.
-- Added the ability to disable attachment buttons and fields.
+- Added an autocomplete to edit post screen.
+- Updated the channel name length character limit to 64 to match server.
 - Added an expand button to truncated markdown tables to improve discoverability of opening them in full screen.
 - Added an error message when trying to share too long text from share extension.
 - Improved behaviour where posts from different authors in the same thread appeared to be from different threads if separated by new message line.
-- Added support for viewing archived channels.
-- Improved a behaviour where large number of emojis on a post changed from horizontal scroll to wrap.
+- Added support for native emojis in the emoji picker and autocomplete.
+- Removed "Add Reaction" option from the long post view.
+- Improved behaviour of large number of emojis when a post changed from horizontal scroll to wrap.
+- Added support for a generic error message in interactive dialog responses.
+- Added the ability to disable attachment buttons and fields.
 
 ### Bug Fixes
 - Fixed an issue on Android where the app slowed down when opening a channel with large number of animated emoji.
 - Fixed an issue where the app crashed when pasting a large file to the text box from the clipboard.
 - Fixed an issue where the app crashed when previewing an image attachment.
-- Fixed an issue where the thread header in landscape view was wider than main channel view header.
-- Fixed an issue where channels archived via CLI were still visible on the left-hand side and accessible on mobile apps.
+- Fixed an issue where channels archived via the command line interface were still visible on the left-hand side and accessible on mobile apps.
+- Fixed an issue where the thread header in landscape view was wider than the main channel view header.
 - Fixed an issue where sidebar separator line was misaligned between Teams and Channel view.
 - Fixed an issue on iOS where the channel spinner appeared black on a dark theme.
 
