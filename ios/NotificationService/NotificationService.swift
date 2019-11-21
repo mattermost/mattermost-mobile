@@ -13,13 +13,15 @@ class NotificationService: UNNotificationServiceExtension {
       let ackId = bestAttemptContent.userInfo["ack_id"]
       let type = bestAttemptContent.userInfo["type"]
       let postId = bestAttemptContent.userInfo["post_id"]
+      let idLoaded = bestAttemptContent.userInfo["id_loaded"] ?? false
       UploadSession.shared.notificationReceipt(
         notificationId: ackId,
         receivedAt: Date().millisencondsSince1970,
         type: type,
-        postId: postId
+        postId: postId,
+        idLoaded: idLoaded as! Bool
       ) { data, error in
-        if (type as? String == "id_loaded") {
+        if (idLoaded as! Bool) {
           guard let data = data, error == nil else {
             return
           }
