@@ -11,27 +11,14 @@ exports[`MarkdownTable should match snapshot 1`] = `
   type="opacity"
 >
   <ScrollViewMock
-    contentContainerStyle={
-      Object {
-        "width": 1000,
-      }
-    }
     onContentSizeChange={[Function]}
     onLayout={[Function]}
     scrollEnabled={false}
     showsVerticalScrollIndicator={false}
     style={
-      Array [
-        Object {
-          "borderBottomWidth": 1,
-          "borderColor": "rgba(61,60,64,0.2)",
-          "borderRightWidth": 1,
-          "maxHeight": 300,
-        },
-        Object {
-          "maxWidth": 1000,
-        },
-      ]
+      Object {
+        "maxHeight": 300,
+      }
     }
   >
     <View
@@ -39,8 +26,10 @@ exports[`MarkdownTable should match snapshot 1`] = `
         Array [
           Object {
             "borderColor": "rgba(61,60,64,0.2)",
-            "borderLeftWidth": 1,
-            "borderTopWidth": 1,
+            "borderWidth": 1,
+          },
+          Object {
+            "width": 480,
           },
         ]
       }
@@ -143,23 +132,64 @@ exports[`MarkdownTable should match snapshot 1`] = `
       </>
     </View>
   </ScrollViewMock>
+  <LinearGradient
+    colors={
+      Array [
+        "rgba(61,60,64,0)",
+        "rgba(61,60,64,0.1)",
+      ]
+    }
+    end={
+      Object {
+        "x": 1,
+        "y": 0,
+      }
+    }
+    start={
+      Object {
+        "x": 0,
+        "y": 0,
+      }
+    }
+    style={
+      Array [
+        Object {
+          "borderColor": "rgba(61,60,64,0.2)",
+          "borderRightWidth": 1,
+          "maxHeight": 300,
+          "position": "absolute",
+          "top": 0,
+          "width": 20,
+        },
+        Object {
+          "height": 0,
+          "left": -20,
+        },
+      ]
+    }
+  />
   <TouchableWithFeedbackIOS
     onPress={[Function]}
     style={
-      Object {
-        "backgroundColor": "#ffffff",
-        "borderColor": "rgba(61,60,64,0.2)",
-        "borderRadius": 15,
-        "borderWidth": 1,
-        "bottom": 20,
-        "height": 30,
-        "left": -20,
-        "paddingLeft": 7,
-        "paddingTop": 6,
-        "width": 30,
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderColor": "rgba(61,60,64,0.2)",
+          "borderRadius": 15,
+          "borderWidth": 1,
+          "bottom": 20,
+          "display": "flex",
+          "height": 30,
+          "justifyContent": "center",
+          "width": 30,
+        },
+        Object {
+          "left": -20,
+        },
+      ]
     }
-    type="native"
+    type="opacity"
   >
     <Icon
       allowFontScaling={false}

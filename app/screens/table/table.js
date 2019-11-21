@@ -37,7 +37,10 @@ export default class Table extends React.PureComponent {
         } else {
             container = (
                 <SafeAreaView>
-                    <ScrollView contentContainerStyle={viewStyle}>
+                    <ScrollView
+                        style={style.fullHeight}
+                        contentContainerStyle={viewStyle}
+                    >
                         {content}
                     </ScrollView>
                 </SafeAreaView>
@@ -49,6 +52,9 @@ export default class Table extends React.PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
+        fullHeight: {
+            height: '100%',
+        },
         displayFlex: {
             ...Platform.select({
                 android: {

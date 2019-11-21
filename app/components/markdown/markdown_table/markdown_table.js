@@ -8,7 +8,6 @@ import {
     Dimensions,
     ScrollView,
     View,
-    Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -60,7 +59,13 @@ export default class MarkdownTable extends React.PureComponent {
     }
 
     getTableWidth = (isFullView = false) => {
-        return isFullView || this.props.numColumns === 1 ? this.props.numColumns * CELL_MAX_WIDTH : this.props.numColumns * CELL_MIN_WIDTH;
+        let columns = this.props.numColumns;
+
+        if (columns > MAX_PREVIEW_COLUMNS) {
+            columns = MAX_PREVIEW_COLUMNS;
+        }
+
+        return isFullView || columns === 1 ? columns * CELL_MAX_WIDTH : columns * CELL_MIN_WIDTH;
     };
 
     handlePress = preventDoubleTap(() => {
@@ -186,7 +191,17 @@ export default class MarkdownTable extends React.PureComponent {
         let moreRight = null;
         const tableWidth = this.getTableWidth();
         const renderAsFlex = this.shouldRenderAsFlex();
-        if (this.state.containerWidth && tableWidth > this.state.containerWidth && !renderAsFlex) {
+
+        let leftOffset;
+        if (renderAsFlex || tableWidth > this.state.containerWidth) {
+            leftOffset = this.state.containerWidth - 20;
+        } else {
+            leftOffset = tableWidth - 20;
+        }
+
+        // Renders when table width exceeds the container, or if the columns exceed maximum allowed for previews
+        if ((this.state.containerWidth && tableWidth > this.state.containerWidth && !renderAsFlex) ||
+            (this.props.numColumns > MAX_PREVIEW_COLUMNS)) {
             moreRight = (
                 <LinearGradient
                     colors={[
@@ -195,7 +210,7 @@ export default class MarkdownTable extends React.PureComponent {
                     ]}
                     start={{x: 0, y: 0}}
                     end={{x: 1, y: 0}}
-                    style={[style.moreRight, {height: this.state.contentHeight}]}
+                    style={[style.moreRight, {height: this.state.contentHeight, left: leftOffset}]}
                 />
             );
         }
@@ -213,18 +228,11 @@ export default class MarkdownTable extends React.PureComponent {
             );
         }
 
-        const expandButtonStyle = [style.expandButton];
-        if (renderAsFlex || tableWidth > this.state.containerWidth) {
-            expandButtonStyle.push({left: this.state.containerWidth - 20});
-        } else {
-            expandButtonStyle.push({left: tableWidth - 20});
-        }
-
         const expandButton = (
             <TouchableWithFeedback
                 type={'opacity'}
                 onPress={this.handlePress}
-                style={expandButtonStyle}
+                style={[style.expandButton, {left: leftOffset}]}
             >
                 <Icon
                     name={'expand'}
@@ -246,7 +254,7 @@ export default class MarkdownTable extends React.PureComponent {
                     showsVerticalScrollIndicator={false}
                     style={style.container}
                 >
-                    {this.renderPreviewRows(false)}
+                    {this.renderPreviewRows()}
                 </ScrollView>
                 {moreRight}
                 {moreBelow}
@@ -301,7 +309,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         moreRight: {
             maxHeight: MAX_HEIGHT,
             position: 'absolute',
-            right: 10,
             top: 0,
             width: 20,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
