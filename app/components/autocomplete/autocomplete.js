@@ -34,6 +34,7 @@ export default class Autocomplete extends PureComponent {
         valueEvent: PropTypes.string,
         cursorPositionEvent: PropTypes.string,
         nestedScrollEnabled: PropTypes.bool,
+        expandDown: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -160,15 +161,17 @@ export default class Autocomplete extends PureComponent {
     }
 
     render() {
-        const style = getStyleFromTheme(this.props.theme);
+        const {theme, isSearch, expandDown} = this.props;
+        const style = getStyleFromTheme(theme);
 
         const wrapperStyle = [];
         const containerStyle = [];
-        if (this.props.isSearch) {
+        if (isSearch) {
             wrapperStyle.push(style.base, style.searchContainer);
             containerStyle.push(style.content);
         } else {
-            containerStyle.push(style.base, style.container);
+            const container = expandDown ? style.containerExpandDown : style.container;
+            containerStyle.push(style.base, container);
         }
 
         // We always need to render something, but we only draw the borders when we have results to show
@@ -255,6 +258,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         container: {
             bottom: 0,
+        },
+        containerExpandDown: {
+            top: 0,
+            zIndex: 1,
         },
         content: {
             flex: 1,
