@@ -7,7 +7,6 @@ import {
     Platform,
     TouchableWithoutFeedback,
     View,
-    findNodeHandle,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
@@ -67,7 +66,6 @@ export default class EditChannelInfo extends PureComponent {
         this.urlInput = React.createRef();
         this.purposeInput = React.createRef();
         this.headerInput = React.createRef();
-        this.lastText = React.createRef();
         this.scroll = React.createRef();
     }
 
@@ -154,11 +152,36 @@ export default class EditChannelInfo extends PureComponent {
         }
     };
 
-    scrollToEnd = () => {
-        if (this.scroll?.current && this.lastText?.current) {
-            this.scroll.current.scrollToFocusedInput(findNodeHandle(this.lastText.current));
+    onHeaderLayout = ({nativeEvent}) => {
+        this.setState({headerPosition: nativeEvent.layout.y});
+    }
+
+    onKeyboardDidShow = () => {
+        this.setState({keyboardVisible: true});
+
+        if (this.state.headerHasFocus) {
+            this.setState({headerHasFocus: false});
+            this.scrollHeaderToTop();
+        }
+    }
+
+    onKeyboardDidHide = () => {
+        this.setState({keyboardVisible: false});
+    }
+
+    onHeaderFocus = () => {
+        if (this.state.keyboardVisible) {
+            this.scrollHeaderToTop();
+        } else {
+            this.setState({headerHasFocus: true});
         }
     };
+
+    scrollHeaderToTop = () => {
+        if (this.scroll.current) {
+            this.scroll.current.scrollToPosition(0, this.state.headerPosition);
+        }
+    }
 
     render() {
         const {
@@ -170,8 +193,9 @@ export default class EditChannelInfo extends PureComponent {
             header,
             purpose,
             isLandscape,
+            error,
+            saving,
         } = this.props;
-        const {error, saving} = this.props;
 
         const style = getStyleSheet(theme);
 
@@ -205,6 +229,8 @@ export default class EditChannelInfo extends PureComponent {
                     ref={this.scroll}
                     style={style.container}
                     keyboardShouldPersistTaps={'always'}
+                    onKeyboardDidShow={this.onKeyboardDidShow}
+                    onKeyboardDidHide={this.onKeyboardDidHide}
                 >
                     {displayError}
                     <TouchableWithoutFeedback onPress={this.blur}>
@@ -277,7 +303,10 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                 </View>
                             )}
-                            <View style={[style.titleContainer15, padding(isLandscape)]}>
+                            <View
+                                onLayout={this.onHeaderLayout}
+                                style={[style.titleContainer15, padding(isLandscape)]}
+                            >
                                 <FormattedText
                                     style={style.title}
                                     id='channel_modal.header'
@@ -289,13 +318,6 @@ export default class EditChannelInfo extends PureComponent {
                                     defaultMessage='(optional)'
                                 />
                             </View>
-                            <Autocomplete
-                                cursorPosition={header.length}
-                                maxHeight={200}
-                                onChangeText={this.onHeaderChangeText}
-                                value={header}
-                                nestedScrollEnabled={true}
-                            />
                             <View style={[style.inputContainer, padding(isLandscape)]}>
                                 <TextInputWithLocalizedPlaceholder
                                     ref={this.headerInput}
@@ -308,14 +330,22 @@ export default class EditChannelInfo extends PureComponent {
                                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                     multiline={true}
                                     blurOnSubmit={false}
-                                    onFocus={this.scrollToEnd}
+                                    onFocus={this.onHeaderFocus}
                                     textAlignVertical='top'
                                     underlineColorAndroid='transparent'
                                     disableFullscreenUI={true}
                                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                 />
                             </View>
-                            <View ref={this.lastText}>
+                            <Autocomplete
+                                cursorPosition={header.length}
+                                maxHeight={200}
+                                onChangeText={this.onHeaderChangeText}
+                                value={header}
+                                nestedScrollEnabled={true}
+                                expandDown={true}
+                            />
+                            <View>
                                 <FormattedText
                                     style={[style.helpText, padding(isLandscape)]}
                                     id='channel_modal.headerHelp'
