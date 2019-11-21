@@ -67,6 +67,10 @@ export default class EditChannelInfo extends PureComponent {
         this.purposeInput = React.createRef();
         this.headerInput = React.createRef();
         this.scroll = React.createRef();
+
+        this.state = {
+            keyboardVisible: false,
+        }
     }
 
     blur = () => {
@@ -179,7 +183,7 @@ export default class EditChannelInfo extends PureComponent {
 
     scrollHeaderToTop = () => {
         if (this.scroll.current) {
-            this.scroll.current.scrollToPosition(0, this.state.headerPosition);
+            this.innerRef.props.scrollToPosition(0, this.state.headerPosition);
         }
     }
 
@@ -196,6 +200,7 @@ export default class EditChannelInfo extends PureComponent {
             error,
             saving,
         } = this.props;
+        const {keyboardVisible} = this.state;
 
         const style = getStyleSheet(theme);
 
@@ -231,6 +236,8 @@ export default class EditChannelInfo extends PureComponent {
                     keyboardShouldPersistTaps={'always'}
                     onKeyboardDidShow={this.onKeyboardDidShow}
                     onKeyboardDidHide={this.onKeyboardDidHide}
+                    enableAutomaticScroll={!keyboardVisible}
+                    innerRef={(ref) => this.innerRef = ref}
                 >
                     {displayError}
                     <TouchableWithoutFeedback onPress={this.blur}>
