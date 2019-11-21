@@ -530,6 +530,11 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void createNotificationChannels() {
+        // Notification channels are not supported in Android Nougat and below
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+
         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         mHighImportanceChannel = new NotificationChannel("channel_01", "High Importance", NotificationManager.IMPORTANCE_HIGH);
