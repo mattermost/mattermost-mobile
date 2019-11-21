@@ -470,6 +470,7 @@ export default class EditProfile extends PureComponent {
                 theme={theme}
                 value={nickname}
                 isLandscape={isLandscape}
+                optional={true}
             />
         );
     };
