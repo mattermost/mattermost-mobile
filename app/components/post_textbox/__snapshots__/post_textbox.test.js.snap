@@ -4,6 +4,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
 <React.Fragment>
   <Connect(Typing) />
   <View
+    accessibilityLabel="post textbox"
     onLayout={[Function]}
     style={
       Array [
@@ -18,6 +19,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         null,
       ]
     }
+    testID="post textbox"
   >
     <AttachmentButton
       blurTextBox={[Function]}

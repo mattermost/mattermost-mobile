@@ -30,6 +30,7 @@ import SendButton from 'app/components/send_button';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {NOTIFY_ALL_MEMBERS} from 'app/constants/view';
 import EphemeralStore from 'app/store/ephemeral_store';
+import {accessibilityProps} from 'app/utils/accessibility';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {
@@ -760,6 +761,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         return (
             <View
+                {...accessibilityProps('post textbox')}
                 style={[style.inputWrapper, padding(isLandscape)]}
                 onLayout={this.handleLayout}
             >
