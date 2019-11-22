@@ -352,7 +352,7 @@ export default class EditChannelInfo extends PureComponent {
                                 nestedScrollEnabled={true}
                                 expandDown={true}
                             />
-                            <View>
+                            <View style={style.headerHelpText}>
                                 <FormattedText
                                     style={[style.helpText, padding(isLandscape)]}
                                     id='channel_modal.headerHelp'
@@ -418,6 +418,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginTop: 10,
             marginHorizontal: 15,
+        },
+        headerHelpText: {
+            zIndex: -1,
         },
     };
 });

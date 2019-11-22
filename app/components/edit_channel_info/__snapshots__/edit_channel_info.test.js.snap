@@ -9,6 +9,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
     enableResetScrollToCoords={true}
     extraHeight={75}
     extraScrollHeight={0}
+    innerRef={[Function]}
     keyboardOpeningTime={250}
     keyboardShouldPersistTaps="always"
     onKeyboardDidHide={[Function]}
@@ -292,7 +293,13 @@ exports[`EditChannelInfo should match snapshot 1`] = `
           onChangeText={[Function]}
           value="header"
         />
-        <View>
+        <View
+          style={
+            Object {
+              "zIndex": -1,
+            }
+          }
+        >
           <FormattedText
             defaultMessage="Set text that will appear in the header of the channel beside the channel name. For example, include frequently used links by typing [Link Title](http://example.com)."
             id="channel_modal.headerHelp"

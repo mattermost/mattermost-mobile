@@ -164,14 +164,14 @@ export default class Autocomplete extends PureComponent {
         const {theme, isSearch, expandDown} = this.props;
         const style = getStyleFromTheme(theme);
 
-        const wrapperStyle = [];
-        const containerStyle = [];
+        const wrapperStyles = [];
+        const containerStyles = [];
         if (isSearch) {
-            wrapperStyle.push(style.base, style.searchContainer);
-            containerStyle.push(style.content);
+            wrapperStyles.push(style.base, style.searchContainer);
+            containerStyles.push(style.content);
         } else {
-            const container = expandDown ? style.containerExpandDown : style.container;
-            containerStyle.push(style.base, container);
+            const containerStyle = expandDown ? style.containerExpandDown : style.container;
+            containerStyles.push(style.base, containerStyle);
         }
 
         // We always need to render something, but we only draw the borders when we have results to show
@@ -180,15 +180,15 @@ export default class Autocomplete extends PureComponent {
             if (this.props.isSearch) {
                 wrapperStyle.push(style.bordersSearch);
             } else {
-                containerStyle.push(style.borders);
+                containerStyles.push(style.borders);
             }
         }
 
         const maxListHeight = this.maxListHeight();
 
         return (
-            <View style={wrapperStyle}>
-                <View style={containerStyle}>
+            <View style={wrapperStyles}>
+                <View style={containerStyles}>
                     <AtMention
                         {...this.props}
                         cursorPosition={cursorPosition}
@@ -261,7 +261,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         containerExpandDown: {
             top: 0,
-            zIndex: 1,
         },
         content: {
             flex: 1,
