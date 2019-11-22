@@ -10,7 +10,7 @@
 
 ### Highlights
 
-#### ID-loaded push notifications
+#### ID-loaded push notifications (E20)
 
 #### Upgraded RN to v0.61
 
@@ -38,6 +38,7 @@
 - Fixed an issue where the thread header in landscape view was wider than the main channel view header.
 - Fixed an issue where sidebar separator line was misaligned between Teams and Channel view.
 - Fixed an issue on iOS where the channel spinner appeared black on a dark theme.
+- Fixed an issue where an asterisk appeared on the "Nickname" and "Position" fields in Edit Profile screen even though nickname is not handled through the login provider.
 
 ### Known Issues
 
