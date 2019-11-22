@@ -9,7 +9,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
     enableResetScrollToCoords={true}
     extraHeight={75}
     extraScrollHeight={0}
-    innerRef={[Function]}
     keyboardOpeningTime={250}
     keyboardShouldPersistTaps="always"
     onKeyboardDidHide={[Function]}
