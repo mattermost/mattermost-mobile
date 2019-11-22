@@ -17,7 +17,7 @@
     "webdriverio": "^5.16.7"
   },
   "scripts": {
-    "build:android": "cd .. && make clean && make debug-android && cd ..",
+    "build:android": "cd .. && make clean && make unsigned-android && cd ..",
     "build:ios": "cd .. && make clean && make ios-sim-x86_64 && cd ..",
     "test:android": "./node_modules/.bin/wdio ./wdio/config/wdio.android.conf.js",
     "test:ios": "./node_modules/.bin/wdio ./wdio/config/wdio.ios.conf.js",
