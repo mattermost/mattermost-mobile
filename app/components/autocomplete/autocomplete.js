@@ -178,7 +178,7 @@ export default class Autocomplete extends PureComponent {
         const {atMentionCount, channelMentionCount, emojiCount, commandCount, dateCount, cursorPosition, value} = this.state;
         if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount > 0) {
             if (this.props.isSearch) {
-                wrapperStyle.push(style.bordersSearch);
+                wrapperStyles.push(style.bordersSearch);
             } else {
                 containerStyles.push(style.borders);
             }

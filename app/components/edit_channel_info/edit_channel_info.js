@@ -70,7 +70,7 @@ export default class EditChannelInfo extends PureComponent {
 
         this.state = {
             keyboardVisible: false,
-        }
+        };
     }
 
     blur = () => {
