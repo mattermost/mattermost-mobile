@@ -10,8 +10,8 @@
 
 ### Bug Fixes
  - Fixed a crash issue on iOS when SSO cookies did not contain an expiration date during login.
- - Fixed a crash issue on Android caused by notification channels being uavailable in Android 7.
- - Fixed an issue on Android where Enterprise Mobility Management (EMM) blur app screen did work.
+ - Fixed a crash issue on Android caused by notification channels being unavailable in Android 7.
+ - Fixed an issue on Android where Enterprise Mobility Management (EMM) blur app screen did not work.
  - Fixed an issue where changing team/channel when sharing several files closed the share dialog.
 
 ## 1.25.0 Release
