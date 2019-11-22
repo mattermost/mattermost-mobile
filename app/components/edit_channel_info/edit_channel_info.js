@@ -183,7 +183,7 @@ export default class EditChannelInfo extends PureComponent {
 
     scrollHeaderToTop = () => {
         if (this.scroll.current) {
-            this.innerRef.props.scrollToPosition(0, this.state.headerPosition);
+            this.scroll.current.scrollToPosition(0, this.state.headerPosition);
         }
     }
 
@@ -237,7 +237,6 @@ export default class EditChannelInfo extends PureComponent {
                     onKeyboardDidShow={this.onKeyboardDidShow}
                     onKeyboardDidHide={this.onKeyboardDidHide}
                     enableAutomaticScroll={!keyboardVisible}
-                    innerRef={(ref) => this.innerRef = ref}
                 >
                     {displayError}
                     <TouchableWithoutFeedback onPress={this.blur}>
