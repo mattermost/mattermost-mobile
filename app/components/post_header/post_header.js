@@ -130,9 +130,13 @@ export default class PostHeader extends PureComponent {
 
         const style = getStyleSheet(theme);
         const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
+
         const reduceWidth = showReply && (isBot || fromAutoResponder || fromWebHook);
         const isLandscapeStyle = isLandscape && reduceWidth ? style.displayNameContainerLandscapeBotReplyWidth : isLandscape ? style.displayNameContainerLandscape : null; //eslint-disable-line no-nested-ternary
         const displayNameStyle = [style.displayNameContainer, reduceWidth ? style.displayNameContainerBotReplyWidth : null, isLandscapeStyle];
+
+        //const displayNameWidth = calcNameWidth();
+        //const displayNameStyle = [style.displayNameContainer, reduceWidth ? style.displayNameContainerBotReplyWidth : null, isLandscapeStyle];
 
         if (fromAutoResponder || fromWebHook) {
             let name = displayName;
