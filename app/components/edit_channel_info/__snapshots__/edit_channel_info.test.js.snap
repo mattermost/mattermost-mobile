@@ -48,9 +48,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                     "fontSize": 14,
                     "marginLeft": 15,
                   },
-                  Object {
-                    "paddingHorizontal": 44,
-                  },
+                  null,
                 ]
               }
             />
@@ -62,9 +60,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   "backgroundColor": "#ffffff",
                   "marginTop": 10,
                 },
-                Object {
-                  "paddingHorizontal": 44,
-                },
+                null,
               ]
             }
           >
@@ -103,9 +99,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   "flexDirection": "row",
                   "marginTop": 30,
                 },
-                Object {
-                  "paddingHorizontal": 44,
-                },
+                null,
               ]
             }
           >
@@ -139,9 +133,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   "backgroundColor": "#ffffff",
                   "marginTop": 10,
                 },
-                Object {
-                  "paddingHorizontal": 44,
-                },
+                null,
               ]
             }
           >
@@ -190,9 +182,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                     "marginHorizontal": 15,
                     "marginTop": 10,
                   },
-                  Object {
-                    "paddingHorizontal": 44,
-                  },
+                  null,
                 ]
               }
             />
@@ -205,9 +195,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                 "flexDirection": "row",
                 "marginTop": 15,
               },
-              Object {
-                "paddingHorizontal": 44,
-              },
+              null,
             ]
           }
         >
@@ -248,9 +236,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                 "backgroundColor": "#ffffff",
                 "marginTop": 10,
               },
-              Object {
-                "paddingHorizontal": 44,
-              },
+              null,
             ]
           }
         >
@@ -300,9 +286,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   "marginHorizontal": 15,
                   "marginTop": 10,
                 },
-                Object {
-                  "paddingHorizontal": 44,
-                },
+                null,
               ]
             }
           />

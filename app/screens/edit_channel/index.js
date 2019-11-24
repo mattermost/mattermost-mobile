@@ -1,42 +1,33 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+import {realmConnect} from 'realm-react-redux';
 
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
-import {patchChannel, getChannel} from 'mattermost-redux/actions/channels';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
-import {setChannelDisplayName} from 'app/actions/views/channel';
-import {getDimensions} from 'app/selectors/device';
+import {patchChannel, getChannel} from 'app/realm/actions/channel';
+import {General, Preferences} from 'app/constants';
+import {getTheme} from 'app/realm/selectors/preference';
+import options from 'app/store/realm_options';
 
 import EditChannel from './edit_channel';
 
-function mapStateToProps(state) {
-    const {updateChannel: updateChannelRequest} = state.requests.channels;
-    const channel = getCurrentChannel(state);
-    const {deviceWidth, deviceHeight} = getDimensions(state);
+function mapPropsToQueries(realm) {
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID) || General.REALM_EMPTY_OBJECT;
+    const channel = realm.objectForPrimaryKey('Channel', general.currentChannelId) || General.REALM_EMPTY_OBJECT;
+    const themePreference = realm.objects('Preference').filtered(`category="${Preferences.CATEGORY_THEME}"`);
 
+    return [general, channel, themePreference];
+}
+
+function mapQueriesToProps([general, channel, themePreference]) {
     return {
         channel,
-        currentTeamUrl: getCurrentTeamUrl(state),
-        updateChannelRequest,
-        theme: getTheme(state),
-        deviceWidth,
-        deviceHeight,
+        theme: getTheme([general], themePreference),
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            patchChannel,
-            getChannel,
-            setChannelDisplayName,
-        }, dispatch),
-    };
-}
+const mapRealmDispatchToProps = {
+    patchChannel,
+    getChannel,
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditChannel);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(EditChannel);
