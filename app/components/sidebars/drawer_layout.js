@@ -33,6 +33,7 @@ export const TABLET_WIDTH = 250;
 
 export type PropType = {
     children: any,
+    displaceContent: Boolean,
     drawerBackgroundColor?: string,
     drawerLockMode?: 'unlocked' | 'locked-closed' | 'locked-open',
     drawerPosition: 'left' | 'right',
@@ -83,6 +84,7 @@ export default class DrawerLayout extends Component {
     canClose: boolean;
 
     static defaultProps = {
+        displaceContent: false,
         drawerWidth: 0,
         drawerPosition: 'left',
         useNativeAnimations: false,
@@ -271,12 +273,36 @@ export default class DrawerLayout extends Component {
     };
 
     render() {
-        const {isTablet} = this.props;
+        const {displaceContent, drawerWidth, isTablet} = this.props;
         const panHandlers = isTablet ? emptyObject : this._panResponder.panHandlers;
         const containerStyles = [styles.container];
         if (isTablet) {
             containerStyles.push(styles.tabletContainer);
         }
+
+        const mainStyles = [styles.main]
+        if (displaceContent && Platform.OS === 'ios') {
+            /* Drawer styles */
+            let outputRange;
+            
+            if (this.getDrawerPosition() === 'left') {
+                outputRange = [0, drawerWidth];
+            } else {
+                outputRange = [drawerWidth, 0];
+            }
+            
+            const drawerTranslateX = this.openValue.interpolate({
+                inputRange: [0, 1],
+                outputRange,
+                extrapolate: 'clamp',
+            });
+
+            const animatedDrawerStyles = {
+                transform: [{ translateX: drawerTranslateX }],
+            };
+            mainStyles.push(animatedDrawerStyles)
+        }
+        
 
         return (
             <View
@@ -284,7 +310,7 @@ export default class DrawerLayout extends Component {
                 {...panHandlers}
             >
                 {this.renderDrawerForTablet()}
-                <Animated.View style={styles.main}>
+                <Animated.View style={mainStyles}>
                     {this.props.children}
                 </Animated.View>
                 {this.renderDrawer()}

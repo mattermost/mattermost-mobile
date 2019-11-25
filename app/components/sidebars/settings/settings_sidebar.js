@@ -377,6 +377,7 @@ export default class SettingsDrawer extends PureComponent {
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}
+                displaceContent={false}
                 drawerPosition='right'
                 drawerWidth={drawerWidth}
                 useNativeAnimations={true}
