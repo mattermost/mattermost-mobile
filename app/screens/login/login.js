@@ -63,6 +63,7 @@ export default class Login extends PureComponent {
         super(props);
 
         this.state = {
+            loginRequest: this.props.loginRequest,
             error: null,
         };
     }
@@ -74,17 +75,22 @@ export default class Login extends PureComponent {
     }
 
     componentDidUpdate(nextProps) {
-       const {loginRequest:{status}, actions:{handleSuccessfulLogin}} = this.props;
+        const {loginRequest: {status}, actions: {handleSuccessfulLogin}} = this.props;
 
         if (status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-           handleSuccessfulLogin().then(this.goToChannel);
-       } else if (status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
-           this.setState({isLoading: false});
-       }
+            handleSuccessfulLogin().then(this.goToChannel);
+        }
     }
 
     componentWillUnmount() {
         Dimensions.removeEventListener('change', this.orientationDidChange);
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (prevState.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
+            return {isLoading: false};
+        }
+        return null;
     }
 
     goToChannel = () => {
