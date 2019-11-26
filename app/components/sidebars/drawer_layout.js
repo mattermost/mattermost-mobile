@@ -47,6 +47,7 @@ export type PropType = {
     statusBarBackgroundColor?: string,
     useNativeAnimations?: boolean,
     isTablet?: boolean,
+    zIndex: number,
 };
 
 export type StateType = {
@@ -186,8 +187,9 @@ export default class DrawerLayout extends Component {
             drawerBackgroundColor,
             drawerWidth,
             drawerPosition,
+            zIndex,
         } = this.props;
-
+        
         /**
          * We need to use the "original" drawer position here
          * as RTL turns position left and right on its own
@@ -198,10 +200,9 @@ export default class DrawerLayout extends Component {
             left: drawerPosition === 'left' ? 0 : null,
             right: drawerPosition === 'right' ? 0 : null,
         };
-
         /* Drawer styles */
         let outputRange;
-        let translateDistance = Platform.OS === 'ios' ? Math.floor(drawerWidth * .2) : drawerWidth
+        let translateDistance = Platform.OS === 'ios' && drawerPosition === 'left' ? Math.floor(drawerWidth * .2) : drawerWidth
 
         if (this.getDrawerPosition() === 'left') {
             outputRange = [-translateDistance, 0];
@@ -217,31 +218,12 @@ export default class DrawerLayout extends Component {
         const animatedDrawerStyles = {
             transform: [{ translateX: drawerTranslateX }],
         };
-
-        // /* Overlay styles */
-        // const overlayOpacity = this.openValue.interpolate({
-        //     inputRange: [0, 1],
-        //     outputRange: [0, 0.5],
-        //     extrapolate: 'clamp',
-        // });
-        // const animatedOverlayStyles = { opacity: overlayOpacity };
-        // const pointerEvents = this.state.drawerShown ? 'auto' : 'none';
-
         return (
             <React.Fragment>
-                {/* <TouchableWithoutFeedback
-                    pointerEvents={pointerEvents}
-                    onPress={this._onOverlayClick}
-                >
-                    <Animated.View
-                        pointerEvents={pointerEvents}
-                        style={[styles.overlay, animatedOverlayStyles]}
-                    />
-                </TouchableWithoutFeedback> */}
                 <Animated.View
                     accessibilityViewIsModal={accessibilityViewIsModal}
                     style={[
-                        styles.drawer,
+                        StyleSheetFactory.drawer(zIndex),
                         dynamicDrawerStyles,
                         animatedDrawerStyles,
                     ]}
@@ -549,6 +531,17 @@ export default class DrawerLayout extends Component {
 
         // position === 'right'
         return (deviceWidth - x) / drawerWidth;
+    }
+}
+
+class StyleSheetFactory {
+    static drawer(zIndex) {
+        return ({
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            zIndex,
+        });
     }
 }
 
