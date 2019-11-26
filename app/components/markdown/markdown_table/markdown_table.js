@@ -179,10 +179,12 @@ export default class MarkdownTable extends React.PureComponent {
                 onPress={this.handlePress}
                 style={{...style.expandButton, left: this.state.containerWidth - 20}}
             >
-                <Icon
-                    name={'expand'}
-                    style={style.icon}
-                />
+                <View style={[style.iconContainer, {width: this.getTableWidth()}]}>
+                    <Icon
+                        name={'expand'}
+                        style={style.icon}
+                    />
+                </View>
             </TouchableWithFeedback>
         );
 
@@ -229,11 +231,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             bottom: 20,
             backgroundColor: theme.centerChannelBg,
         },
+        iconContainer: {
+            maxWidth: '100%',
+            alignItems: 'flex-end',
+            paddingTop: 8,
+            paddingBottom: 4,
+        },
         icon: {
             fontSize: 15,
             color: theme.linkColor,
         },
         table: {
+            width: '100%',
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderLeftWidth: 1,
             borderTopWidth: 1,
