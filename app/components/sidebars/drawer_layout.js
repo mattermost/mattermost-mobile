@@ -201,11 +201,12 @@ export default class DrawerLayout extends Component {
 
         /* Drawer styles */
         let outputRange;
+        let translateDistance = Platform.OS === 'ios' ? Math.floor(drawerWidth * .2) : drawerWidth
 
         if (this.getDrawerPosition() === 'left') {
-            outputRange = [-drawerWidth, 0];
+            outputRange = [-translateDistance, 0];
         } else {
-            outputRange = [drawerWidth, 0];
+            outputRange = [translateDistance, 0];
         }
 
         const drawerTranslateX = this.openValue.interpolate({
@@ -217,18 +218,18 @@ export default class DrawerLayout extends Component {
             transform: [{ translateX: drawerTranslateX }],
         };
 
-        /* Overlay styles */
-        const overlayOpacity = this.openValue.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 0.5],
-            extrapolate: 'clamp',
-        });
-        const animatedOverlayStyles = { opacity: overlayOpacity };
-        const pointerEvents = drawerShown ? 'auto' : 'none';
+        // /* Overlay styles */
+        // const overlayOpacity = this.openValue.interpolate({
+        //     inputRange: [0, 1],
+        //     outputRange: [0, 0.5],
+        //     extrapolate: 'clamp',
+        // });
+        // const animatedOverlayStyles = { opacity: overlayOpacity };
+        // const pointerEvents = this.state.drawerShown ? 'auto' : 'none';
 
         return (
             <React.Fragment>
-                <TouchableWithoutFeedback
+                {/* <TouchableWithoutFeedback
                     pointerEvents={pointerEvents}
                     onPress={this._onOverlayClick}
                 >
@@ -236,7 +237,7 @@ export default class DrawerLayout extends Component {
                         pointerEvents={pointerEvents}
                         style={[styles.overlay, animatedOverlayStyles]}
                     />
-                </TouchableWithoutFeedback>
+                </TouchableWithoutFeedback> */}
                 <Animated.View
                     accessibilityViewIsModal={accessibilityViewIsModal}
                     style={[
@@ -302,7 +303,15 @@ export default class DrawerLayout extends Component {
             };
             mainStyles.push(animatedDrawerStyles)
         }
-        
+
+        /* Overlay styles */
+        const overlayOpacity = this.openValue.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 0.5],
+            extrapolate: 'clamp',
+        });
+        const animatedOverlayStyles = { opacity: overlayOpacity };
+        const pointerEvents = this.state.drawerShown ? 'auto' : 'none';        
 
         return (
             <View
@@ -311,6 +320,15 @@ export default class DrawerLayout extends Component {
             >
                 {this.renderDrawerForTablet()}
                 <Animated.View style={mainStyles}>
+                    <TouchableWithoutFeedback
+                        pointerEvents={pointerEvents}
+                        onPress={this._onOverlayClick}
+                    >
+                        <Animated.View
+                            pointerEvents={pointerEvents}
+                            style={[styles.overlay, animatedOverlayStyles]}
+                        />
+                    </TouchableWithoutFeedback>
                     {this.props.children}
                 </Animated.View>
                 {this.renderDrawer()}
@@ -546,7 +564,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         bottom: 0,
-        zIndex: 1001,
+        zIndex: 999,
     },
     tablet: {
         height: '100%',
@@ -554,15 +572,16 @@ const styles = StyleSheet.create({
     },
     main: {
         flex: 1,
-        zIndex: 0,
+        zIndex: 1000,
+        position: 'relative', // so overlay pins to this View
     },
     overlay: {
         backgroundColor: '#000',
         position: 'absolute',
         top: 0,
-        left: -350,
+        left: 0,
         bottom: 0,
         right: 0,
-        zIndex: 1000,
+        zIndex: 1001,
     },
 });

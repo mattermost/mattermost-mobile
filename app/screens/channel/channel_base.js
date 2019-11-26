@@ -307,12 +307,12 @@ export default class ChannelBase extends PureComponent {
                 blurPostTextBox={this.blurPostTextBox}
                 {...optionalProps}
             >
-                <SettingsSidebar
+                {/* <SettingsSidebar
                     ref={this.settingsSidebarRef}
                     blurPostTextBox={this.blurPostTextBox}
-                >
+                > */}
                     {drawerContent}
-                </SettingsSidebar>
+                {/* </SettingsSidebar> */}
                 <InteractiveDialogController
                     theme={theme}
                 />
