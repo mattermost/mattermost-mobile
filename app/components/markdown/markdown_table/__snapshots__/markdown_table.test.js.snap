@@ -41,6 +41,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
             "borderColor": "rgba(61,60,64,0.2)",
             "borderLeftWidth": 1,
             "borderTopWidth": 1,
+            "width": "100%",
           },
         ]
       }
@@ -161,17 +162,33 @@ exports[`MarkdownTable should match snapshot 1`] = `
     }
     type="native"
   >
-    <Icon
-      allowFontScaling={false}
-      name="expand"
-      size={12}
+    <View
       style={
-        Object {
-          "color": "#2389d7",
-          "fontSize": 15,
-        }
+        Array [
+          Object {
+            "alignItems": "flex-end",
+            "maxWidth": "100%",
+            "paddingBottom": 4,
+            "paddingTop": 8,
+          },
+          Object {
+            "width": 1000,
+          },
+        ]
       }
-    />
+    >
+      <Icon
+        allowFontScaling={false}
+        name="expand"
+        size={12}
+        style={
+          Object {
+            "color": "#2389d7",
+            "fontSize": 15,
+          }
+        }
+      />
+    </View>
   </TouchableWithFeedbackIOS>
 </TouchableWithFeedbackIOS>
 `;
