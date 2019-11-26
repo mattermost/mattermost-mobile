@@ -311,7 +311,9 @@ export default class ChannelBase extends PureComponent {
                     ref={this.settingsSidebarRef}
                     blurPostTextBox={this.blurPostTextBox}
                 >
-                    {drawerContent}
+                    <View style={StyleFactory.backdrop(theme)}>
+                        {drawerContent}
+                    </View>
                 </SettingsSidebar>
                 <InteractiveDialogController
                     theme={theme}
@@ -327,9 +329,22 @@ export default class ChannelBase extends PureComponent {
     }
 }
 
+class StyleFactory {
+    static backdrop(theme) {
+        return {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    }
+}
+
 export const style = StyleSheet.create({
     flex: {
         flex: 1,
+    },
+    backdrop: {
+        flex: 1,
+        backgroundColor: 'white',
     },
     channelLoader: {
         position: 'absolute',
