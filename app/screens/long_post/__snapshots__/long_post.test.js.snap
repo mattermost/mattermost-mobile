@@ -38,7 +38,6 @@ LongPost {
       "loadThreadIfNecessary": [MockFunction],
       "selectPost": [MockFunction],
     },
-    "fileIds": Array [],
     "intl": Object {
       "defaultFormats": Object {},
       "defaultLocale": "en",
@@ -150,7 +149,6 @@ LongPost {
             "selectPost": [MockFunction],
           }
         }
-        fileIds={Array []}
         intl={
           Object {
             "defaultFormats": Object {},
@@ -337,6 +335,23 @@ LongPost {
                 showLongPost={true}
               />
             </ScrollViewMock>
+            <View
+              style={
+                Object {
+                  "alignItems": "flex-start",
+                  "backgroundColor": "#ffffff",
+                  "borderBottomLeftRadius": 6,
+                  "borderBottomRightRadius": 6,
+                  "borderTopColor": "rgba(61,60,64,0.2)",
+                  "borderTopWidth": 1,
+                  "flexDirection": "column",
+                  "height": 10,
+                  "justifyContent": "center",
+                  "marginVertical": 10,
+                  "paddingLeft": 16,
+                }
+              }
+            />
           </withAnimatable(View)>
         </View>
       </Connect(SafeAreaIos)>,
