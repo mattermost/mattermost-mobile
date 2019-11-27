@@ -45,7 +45,6 @@ export default class LongPost extends PureComponent {
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         channelName: PropTypes.string,
-        fileIds: PropTypes.array,
         isPermalink: PropTypes.bool,
         inThreadView: PropTypes.bool,
         managedConfig: PropTypes.object,
@@ -54,10 +53,6 @@ export default class LongPost extends PureComponent {
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-    };
-
-    static defaultProps = {
-        fileIds: [],
     };
 
     static contextTypes = {
@@ -176,6 +171,7 @@ export default class LongPost extends PureComponent {
                                 managedConfig={managedConfig}
                             />
                         </ScrollView>
+                        <View style={style.footer}/>
                     </Animatable.View>
                 </View>
             </SafeAreaView>
@@ -227,6 +223,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         postList: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
+        },
+        footer: {
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderTopWidth: 1,
+            height: 10,
+            backgroundColor: theme.centerChannelBg,
+            borderBottomLeftRadius: 6,
+            borderBottomRightRadius: 6,
+            flexDirection: 'column',
+            marginVertical: 10,
+            paddingLeft: 16,
         },
     };
 });
