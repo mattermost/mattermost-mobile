@@ -98,6 +98,7 @@ jest.doMock('react-native', () => {
     }, ReactNative);
 });
 
+jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
 jest.mock('react-native-device-info', () => {
