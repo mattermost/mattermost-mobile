@@ -3,13 +3,8 @@
 exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 1`] = `
 <section
   disableFooter={false}
-  footerDefaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes."
+  footerDefaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes."
   footerId="user.settings.notifications.emailInfo"
-  footerValues={
-    Object {
-      "siteName": "Mattermost",
-    }
-  }
   headerDefaultMessage="SEND EMAIL NOTIFICATIONS"
   headerId="mobile.notification_settings.email.send"
   isLandscape={false}

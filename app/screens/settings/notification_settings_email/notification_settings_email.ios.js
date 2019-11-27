@@ -24,7 +24,6 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
         const {
             enableEmailBatching,
             sendEmailNotifications,
-            siteName,
             theme,
             isLandscape,
         } = this.props;
@@ -36,8 +35,7 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                 headerId={t('mobile.notification_settings.email.send')}
                 headerDefaultMessage='SEND EMAIL NOTIFICATIONS'
                 footerId={t('user.settings.notifications.emailInfo')}
-                footerDefaultMessage='Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes.'
-                footerValues={{siteName}}
+                footerDefaultMessage='Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes.'
                 disableFooter={!sendEmailNotifications}
                 theme={theme}
                 isLandscape={isLandscape}
