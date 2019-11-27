@@ -4,6 +4,7 @@ exports[`MainSidebar should match, full snapshot 1`] = `
 <DrawerLayout
   drawerPosition="left"
   drawerWidth={710}
+  isMain={true}
   isTablet={false}
   onDrawerClose={[Function]}
   onDrawerOpen={[Function]}

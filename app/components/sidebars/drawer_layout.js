@@ -187,7 +187,7 @@ export default class DrawerLayout extends Component {
             drawerPosition,
             isMain,
         } = this.props;
-        
+
         /**
          * We need to use the "original" drawer position here
          * as RTL turns position left and right on its own
@@ -230,7 +230,7 @@ export default class DrawerLayout extends Component {
                 <Animated.View
                     accessibilityViewIsModal={accessibilityViewIsModal}
                     style={[
-                        StyleSheetFactory.drawer(drawerZIndex),
+                        StyleFactory.drawer(drawerZIndex),
                         dynamicDrawerStyles,
                         animatedDrawerStyles,
                     ]}
@@ -541,7 +541,7 @@ export default class DrawerLayout extends Component {
     }
 }
 
-class StyleSheetFactory {
+class StyleFactory {
     static drawer(zIndex) {
         return ({
             position: 'absolute',

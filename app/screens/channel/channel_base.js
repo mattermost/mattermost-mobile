@@ -333,8 +333,8 @@ class StyleFactory {
     static backdrop(theme) {
         return {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
+            backgroundColor: theme.centerChannelBg,
+        };
     }
 }
 
