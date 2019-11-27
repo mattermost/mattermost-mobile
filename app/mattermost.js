@@ -54,6 +54,7 @@ const launchApp = async (credentials) => {
     ]);
 
     if (credentials) {
+        await waitForHydration();
         store.dispatch(loadMe());
         resetToChannel({skipMetrics: true});
     } else {
@@ -82,6 +83,25 @@ const launchAppAndAuthenticateIfNeeded = async (credentials) => {
         store.dispatch(setDeepLinkURL(url));
     });
 };
+
+function waitForHydration() {
+    let unsubscribeFromStore;
+    return new Promise((resolve) => {
+        if (__DEV__) {
+            // when in DEV mode resetting the app can get into a white screen
+            resolve();
+            return;
+        }
+        const subscription = () => {
+            if (store.getState().views.root.hydrationComplete) {
+                unsubscribeFromStore();
+                resolve();
+            }
+        };
+
+        unsubscribeFromStore = store.subscribe(subscription);
+    });
+}
 
 Navigation.events().registerAppLaunchedListener(() => {
     init();
