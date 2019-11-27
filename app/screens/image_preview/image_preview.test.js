@@ -6,10 +6,13 @@ import {shallow} from 'enzyme';
 import {
     TouchableOpacity,
 } from 'react-native';
+import RNFetchBlob from 'rn-fetch-blob';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
+import BottomSheet from 'app/utils/bottom_sheet';
+import {emptyFunction} from 'app/utils/general';
 
 import ImagePreview from './image_preview';
 
@@ -20,6 +23,12 @@ jest.mock('react-native-doc-viewer', () => {
         OpenFile: jest.fn(),
     };
 });
+jest.mock('react-native-permissions', () => {
+    return {
+        check: jest.fn(),
+    };
+});
+
 
 describe('ImagePreview', () => {
     const baseProps = {
@@ -107,5 +116,112 @@ describe('ImagePreview', () => {
                 },
             },
         );
+    });
+
+    test('should show bottom sheet when showDownloadOptionsIOS is called for existing video', async () => {
+        BottomSheet.showBottomSheetWithOptions = jest.fn();
+        RNFetchBlob.fs.exists = jest.fn().mockReturnValue(true);
+        const formatMessage = jest.fn(({defaultMessage}) => {
+            return defaultMessage;
+        });
+
+        const index = 0;
+        const files = [{
+            caption: 'caption',
+            data: {
+                'mime_type': 'video/mp4',
+            } ,
+        }];
+        const props = {
+            ...baseProps,
+            index,
+            files,
+        };
+        const wrapper = shallow(
+            <ImagePreview
+                {...props}
+            />,
+            {context: {intl: {formatMessage}}},
+        );
+
+        const instance = wrapper.instance();
+        await instance.showDownloadOptionsIOS();
+
+        const expectedOptions = {
+            options: ['Save Video', 'Cancel'],
+            cancelButtonIndex: 1,
+            anchor: null,
+            title: files[index].caption,
+        };
+        expect(BottomSheet.showBottomSheetWithOptions).
+            toHaveBeenCalledWith(expectedOptions, expect.any(Function));
+    });
+
+    test('should not show bottom sheet when showDownloadOptionsIOS is called for non-existing video', async () => {
+        BottomSheet.showBottomSheetWithOptions = jest.fn();
+        RNFetchBlob.fs.exists = jest.fn().mockReturnValue(false);
+
+        const index = 0;
+        const files = [{
+            caption: 'caption',
+            data: {
+                'mime_type': 'video/mp4',
+            } ,
+        }];
+        const props = {
+            ...baseProps,
+            index,
+            files,
+        };
+        const wrapper = shallow(
+            <ImagePreview
+                {...props}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        const instance = wrapper.instance();
+        await instance.showDownloadOptionsIOS();
+
+        expect(BottomSheet.showBottomSheetWithOptions).not.toHaveBeenCalled();
+    });
+
+    test('should show bottom sheet when showDownloadOptionsIOS is called for image', async () => {
+        BottomSheet.showBottomSheetWithOptions = jest.fn();
+        RNFetchBlob.fs.exists = jest.fn().mockReturnValue(true);
+        const formatMessage = jest.fn(({defaultMessage}) => {
+            return defaultMessage;
+        });
+
+        const index = 0;
+        const files = [{
+            caption: 'caption',
+            data: {
+                'mime_type': 'image/jpeg',
+            } ,
+        }];
+        const props = {
+            ...baseProps,
+            index,
+            files,
+        };
+        const wrapper = shallow(
+            <ImagePreview
+                {...props}
+            />,
+            {context: {intl: {formatMessage}}},
+        );
+
+        const instance = wrapper.instance();
+        await instance.showDownloadOptionsIOS();
+
+        const expectedOptions = {
+            options: ['Save Image', 'Cancel'],
+            cancelButtonIndex: 1,
+            anchor: null,
+            title: files[index].caption,
+        };
+        expect(BottomSheet.showBottomSheetWithOptions).
+            toHaveBeenCalledWith(expectedOptions, expect.any(Function));
     });
 });
