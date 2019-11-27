@@ -340,14 +340,13 @@ LongPost {
                 Object {
                   "alignItems": "flex-start",
                   "backgroundColor": "#ffffff",
+                  "borderBottomColor": "rgba(61,60,64,0.2)",
                   "borderBottomLeftRadius": 6,
                   "borderBottomRightRadius": 6,
-                  "borderTopColor": "rgba(61,60,64,0.2)",
-                  "borderTopWidth": 1,
+                  "borderBottomWidth": 1,
                   "flexDirection": "column",
-                  "height": 10,
                   "justifyContent": "center",
-                  "marginVertical": 10,
+                  "marginBottom": 10,
                   "paddingLeft": 16,
                 }
               }

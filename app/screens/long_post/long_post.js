@@ -227,14 +227,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         footer: {
             alignItems: 'flex-start',
             justifyContent: 'center',
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderTopWidth: 1,
-            height: 10,
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderBottomWidth: 1,
             backgroundColor: theme.centerChannelBg,
             borderBottomLeftRadius: 6,
             borderBottomRightRadius: 6,
             flexDirection: 'column',
-            marginVertical: 10,
+            marginBottom: 10,
             paddingLeft: 16,
         },
     };
