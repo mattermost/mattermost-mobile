@@ -177,17 +177,34 @@ exports[`MarkdownTable should match snapshot 1`] = `
         ]
       }
     >
-      <Icon
-        allowFontScaling={false}
-        name="expand"
-        size={12}
+      <View
         style={
           Object {
-            "color": "#2389d7",
-            "fontSize": 15,
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "borderColor": "rgba(61,60,64,0.2)",
+            "borderRadius": 50,
+            "borderWidth": 1,
+            "height": 34,
+            "justifyContent": "center",
+            "marginRight": -6,
+            "marginTop": -32,
+            "width": 34,
           }
         }
-      />
+      >
+        <Icon
+          allowFontScaling={false}
+          name="expand"
+          size={12}
+          style={
+            Object {
+              "color": "#2389d7",
+              "fontSize": 14,
+            }
+          }
+        />
+      </View>
     </View>
   </TouchableWithFeedbackIOS>
 </TouchableWithFeedbackIOS>
