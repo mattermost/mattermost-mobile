@@ -12,7 +12,6 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
 import BottomSheet from 'app/utils/bottom_sheet';
-import {emptyFunction} from 'app/utils/general';
 
 import ImagePreview from './image_preview';
 
@@ -28,7 +27,6 @@ jest.mock('react-native-permissions', () => {
         check: jest.fn(),
     };
 });
-
 
 describe('ImagePreview', () => {
     const baseProps = {
@@ -129,8 +127,8 @@ describe('ImagePreview', () => {
         const files = [{
             caption: 'caption',
             data: {
-                'mime_type': 'video/mp4',
-            } ,
+                mime_type: 'video/mp4',
+            },
         }];
         const props = {
             ...baseProps,
@@ -165,8 +163,8 @@ describe('ImagePreview', () => {
         const files = [{
             caption: 'caption',
             data: {
-                'mime_type': 'video/mp4',
-            } ,
+                mime_type: 'video/mp4',
+            },
         }];
         const props = {
             ...baseProps,
@@ -197,8 +195,8 @@ describe('ImagePreview', () => {
         const files = [{
             caption: 'caption',
             data: {
-                'mime_type': 'image/jpeg',
-            } ,
+                mime_type: 'image/jpeg',
+            },
         }];
         const props = {
             ...baseProps,
