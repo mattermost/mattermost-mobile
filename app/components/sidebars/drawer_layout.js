@@ -33,7 +33,6 @@ export const TABLET_WIDTH = 250;
 
 export type PropType = {
     children: any,
-    displaceContent: Boolean,
     drawerBackgroundColor?: string,
     drawerLockMode?: 'unlocked' | 'locked-closed' | 'locked-open',
     drawerPosition: 'left' | 'right',
@@ -47,7 +46,6 @@ export type PropType = {
     statusBarBackgroundColor?: string,
     useNativeAnimations?: boolean,
     isTablet?: boolean,
-    zIndex: number,
 };
 
 export type StateType = {
@@ -85,7 +83,6 @@ export default class DrawerLayout extends Component {
     canClose: boolean;
 
     static defaultProps = {
-        displaceContent: false,
         drawerWidth: 0,
         drawerPosition: 'left',
         useNativeAnimations: false,
@@ -187,7 +184,7 @@ export default class DrawerLayout extends Component {
             drawerBackgroundColor,
             drawerWidth,
             drawerPosition,
-            zIndex,
+            isMain,
         } = this.props;
         
         /**
@@ -202,7 +199,9 @@ export default class DrawerLayout extends Component {
         };
         /* Drawer styles */
         let outputRange;
-        let translateDistance = Platform.OS === 'ios' && drawerPosition === 'left' ? Math.floor(drawerWidth * .2) : drawerWidth
+        // ios sidebar sits mostly under the main screen, with slight move
+        const translateDistance = Platform.OS === 'ios' && isMain ?
+            Math.floor(drawerWidth * .2) : drawerWidth
 
         if (this.getDrawerPosition() === 'left') {
             outputRange = [-translateDistance, 0];
@@ -218,12 +217,19 @@ export default class DrawerLayout extends Component {
         const animatedDrawerStyles = {
             transform: [{ translateX: drawerTranslateX }],
         };
+
+        // 0 - ios main drawer
+        // 1 - main | tablet
+        // 2 - overlay
+        // 3 - android main drawer | settings drawer
+        const drawerZIndex = isMain && Platform.OS === 'ios' ? 0 : 3
+
         return (
             <React.Fragment>
                 <Animated.View
                     accessibilityViewIsModal={accessibilityViewIsModal}
                     style={[
-                        StyleSheetFactory.drawer(zIndex),
+                        StyleSheetFactory.drawer(drawerZIndex),
                         dynamicDrawerStyles,
                         animatedDrawerStyles,
                     ]}
@@ -256,7 +262,7 @@ export default class DrawerLayout extends Component {
     };
 
     render() {
-        const {displaceContent, drawerWidth, isTablet} = this.props;
+        const {isMain, drawerWidth, isTablet} = this.props;
         const panHandlers = isTablet ? emptyObject : this._panResponder.panHandlers;
         const containerStyles = [styles.container];
         if (isTablet) {
@@ -264,7 +270,7 @@ export default class DrawerLayout extends Component {
         }
 
         const mainStyles = [styles.main]
-        if (displaceContent && Platform.OS === 'ios') {
+        if (isMain && Platform.OS === 'ios') {
             /* Drawer styles */
             let outputRange;
             
@@ -553,19 +559,13 @@ const styles = StyleSheet.create({
     tabletContainer: {
         flexDirection: 'row',
     },
-    drawer: {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        zIndex: 999,
-    },
     tablet: {
         height: '100%',
-        zIndex: 0,
+        zIndex: 1,
     },
     main: {
         flex: 1,
-        zIndex: 1000,
+        zIndex: 1,
         position: 'relative', // so overlay pins to this View
     },
     overlay: {
@@ -575,6 +575,6 @@ const styles = StyleSheet.create({
         left: 0,
         bottom: 0,
         right: 0,
-        zIndex: 1001,
+        zIndex: 2,
     },
 });

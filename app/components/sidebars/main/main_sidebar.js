@@ -413,8 +413,8 @@ export default class ChannelSidebar extends Component {
                 displaceContent={true}
                 drawerWidth={drawerWidth}
                 useNativeAnimations={true}
+                isMain={true}
                 isTablet={isTablet}
-                zIndex={999}
             >
                 {children}
             </DrawerLayout>

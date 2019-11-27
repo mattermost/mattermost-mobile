@@ -380,8 +380,8 @@ export default class SettingsDrawer extends PureComponent {
                 displaceContent={false}
                 drawerPosition='right'
                 drawerWidth={drawerWidth}
+                isMain={false}
                 useNativeAnimations={true}
-                zIndex={1002}
             >
                 {children}
             </DrawerLayout>
