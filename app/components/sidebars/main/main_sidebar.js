@@ -410,7 +410,6 @@ export default class ChannelSidebar extends Component {
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}
-                displaceContent={true}
                 drawerWidth={drawerWidth}
                 useNativeAnimations={true}
                 isMain={true}

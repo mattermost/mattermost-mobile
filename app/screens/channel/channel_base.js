@@ -342,10 +342,6 @@ export const style = StyleSheet.create({
     flex: {
         flex: 1,
     },
-    backdrop: {
-        flex: 1,
-        backgroundColor: 'white',
-    },
     channelLoader: {
         position: 'absolute',
         width: '100%',

@@ -45,6 +45,7 @@ export type PropType = {
     renderNavigationView: () => any,
     statusBarBackgroundColor?: string,
     useNativeAnimations?: boolean,
+    isMain: boolean,
     isTablet?: boolean,
 };
 
@@ -199,7 +200,7 @@ export default class DrawerLayout extends Component {
         };
         /* Drawer styles */
         let outputRange;
-        // ios sidebar sits mostly under the main screen, with slight move
+        // ios main sidebar sits mostly under the main screen, with slight move
         const translateDistance = Platform.OS === 'ios' && isMain ?
             Math.floor(drawerWidth * .2) : drawerWidth
 
