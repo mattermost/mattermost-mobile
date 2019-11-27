@@ -63,7 +63,7 @@
     "react-native-vector-icons": "6.6.0",
     "react-native-video": "5.0.2",
     "react-native-webview": "github:mattermost/react-native-webview#b5e22940a613869d3999feac9451ee65352f4fbe",
-    "react-native-youtube": "2.0.0-beta.3",
+    "react-native-youtube": "2.0.0",
     "react-navigation": "4.0.10",
     "react-navigation-stack": "1.9.4",
     "react-redux": "7.1.1",
