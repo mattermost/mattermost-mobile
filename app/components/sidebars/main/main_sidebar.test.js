@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import { Platform } from 'react-native';
+import {Platform} from 'react-native';
 import {shallow} from 'enzyme';
 import _ from 'underscore';
 
@@ -86,24 +86,24 @@ describe('MainSidebar', () => {
     });
 
     test('should render main sidebar below PostList for iOS', () => {
-        Platform.OS = 'ios'
+        Platform.OS = 'ios';
 
         const wrapper = shallow(
             <MainSidebar {...baseProps}/>
         );
-        const drawer = wrapper.dive().childAt(1)
-        const drawerStyle = _.extend({}, ...drawer.props().style)
-        expect(drawerStyle).toHaveProperty('zIndex', 0)
+        const drawer = wrapper.dive().childAt(1);
+        const drawerStyle = _.extend({}, ...drawer.props().style);
+        expect(drawerStyle).toHaveProperty('zIndex', 0);
     });
 
     test('should render main sidebar above PostList for android', () => {
-        Platform.OS = 'android'
+        Platform.OS = 'android';
 
         const wrapper = shallow(
             <MainSidebar {...baseProps}/>
         );
-        const drawer = wrapper.dive().childAt(1)
-        const drawerStyle = _.extend({}, ...drawer.props().style)
-        expect(drawerStyle).toHaveProperty('zIndex', 3)
+        const drawer = wrapper.dive().childAt(1);
+        const drawerStyle = _.extend({}, ...drawer.props().style);
+        expect(drawerStyle).toHaveProperty('zIndex', 3);
     });
 });
