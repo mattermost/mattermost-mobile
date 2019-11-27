@@ -6,6 +6,7 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     ScrollView,
+    Platform,
     View,
     Dimensions,
 } from 'react-native';
@@ -223,21 +224,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             maxHeight: MAX_HEIGHT,
         },
         expandButton: {
-            height: 30,
-            width: 30,
-            borderWidth: 1,
-            paddingTop: 6,
-            paddingLeft: 7,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRadius: 15,
-            bottom: 20,
-            backgroundColor: theme.centerChannelBg,
+            height: 34,
+            width: 34,
         },
         iconContainer: {
             maxWidth: '100%',
             alignItems: 'flex-end',
             paddingTop: 8,
             paddingBottom: 4,
+            ...Platform.select({
+                ios: {
+                    paddingRight: 14,
+                },
+            }),
         },
         iconButton: {
             backgroundColor: theme.centerChannelBg,
@@ -254,6 +253,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         icon: {
             fontSize: 14,
             color: theme.linkColor,
+            ...Platform.select({
+                ios: {
+                    fontSize: 13,
+                },
+            }),
         },
         table: {
             width: '100%',
