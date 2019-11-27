@@ -41,6 +41,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
             "borderColor": "rgba(61,60,64,0.2)",
             "borderLeftWidth": 1,
             "borderTopWidth": 1,
+            "width": "100%",
           },
         ]
       }
@@ -147,31 +148,58 @@ exports[`MarkdownTable should match snapshot 1`] = `
     onPress={[Function]}
     style={
       Object {
-        "backgroundColor": "#ffffff",
-        "borderColor": "rgba(61,60,64,0.2)",
-        "borderRadius": 15,
-        "borderWidth": 1,
-        "bottom": 20,
-        "height": 30,
+        "height": 34,
         "left": -20,
-        "paddingLeft": 7,
-        "paddingTop": 6,
-        "width": 30,
+        "width": 34,
       }
     }
     type="native"
   >
-    <Icon
-      allowFontScaling={false}
-      name="expand"
-      size={12}
+    <View
       style={
-        Object {
-          "color": "#2389d7",
-          "fontSize": 15,
-        }
+        Array [
+          Object {
+            "alignItems": "flex-end",
+            "maxWidth": "100%",
+            "paddingBottom": 4,
+            "paddingRight": 14,
+            "paddingTop": 8,
+          },
+          Object {
+            "width": 1000,
+          },
+        ]
       }
-    />
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "borderColor": "rgba(61,60,64,0.2)",
+            "borderRadius": 50,
+            "borderWidth": 1,
+            "height": 34,
+            "justifyContent": "center",
+            "marginRight": -6,
+            "marginTop": -32,
+            "width": 34,
+          }
+        }
+      >
+        <Icon
+          allowFontScaling={false}
+          name="expand"
+          size={12}
+          style={
+            Object {
+              "color": "#2389d7",
+              "fontSize": 13,
+            }
+          }
+        />
+      </View>
+    </View>
   </TouchableWithFeedbackIOS>
 </TouchableWithFeedbackIOS>
 `;
