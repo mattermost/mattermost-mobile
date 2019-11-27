@@ -16,6 +16,7 @@ import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
 import store from 'app/store';
+import {waitForHydration} from 'app/store/utils';
 import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import pushNotificationsUtils from 'app/utils/push_notifications';
@@ -54,7 +55,7 @@ const launchApp = async (credentials) => {
     ]);
 
     if (credentials) {
-        await waitForHydration();
+        await waitForHydration(store);
         store.dispatch(loadMe());
         resetToChannel({skipMetrics: true});
     } else {
@@ -83,25 +84,6 @@ const launchAppAndAuthenticateIfNeeded = async (credentials) => {
         store.dispatch(setDeepLinkURL(url));
     });
 };
-
-function waitForHydration() {
-    let unsubscribeFromStore;
-    return new Promise((resolve) => {
-        if (__DEV__) {
-            // when in DEV mode resetting the app can get into a white screen
-            resolve();
-            return;
-        }
-        const subscription = () => {
-            if (store.getState().views.root.hydrationComplete) {
-                unsubscribeFromStore();
-                resolve();
-            }
-        };
-
-        unsubscribeFromStore = store.subscribe(subscription);
-    });
-}
 
 Navigation.events().registerAppLaunchedListener(() => {
     init();
