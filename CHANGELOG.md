@@ -39,6 +39,7 @@
 - Fixed an issue where sidebar separator line was misaligned between Teams and Channel view.
 - Fixed an issue on iOS where the channel spinner appeared black on a dark theme.
 - Fixed an issue where an asterisk appeared on the "Nickname" and "Position" fields in Edit Profile screen even though nickname is not handled through the login provider.
+- Fixed an issue where the filtered list for emojis opened above the edit box and behind the channel header when adding an emoji to channel header using ``:emoji:``.
 
 ### Known Issues
 
