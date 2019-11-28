@@ -53,7 +53,7 @@ export default class ThreadAndroid extends ThreadBase {
             );
         } else {
             content = (
-                <Loading/>
+                <Loading color={theme.centerChannelColor}/>
             );
         }
 

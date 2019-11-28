@@ -23,6 +23,7 @@ import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import EphemeralStore from 'app/store/ephemeral_store';
+import {waitForHydration} from 'app/store/utils';
 import {t} from 'app/utils/i18n';
 
 class PushNotificationsHandler {
@@ -64,8 +65,6 @@ class PushNotificationsHandler {
 
     onPushNotification = async (deviceNotification) => {
         const {dispatch, getState} = this.reduxStore;
-        let unsubscribeFromStore = null;
-        let stopLoadingNotification = false;
 
         const {data, foreground, message, userInteraction} = deviceNotification;
         const notification = {
@@ -75,7 +74,7 @@ class PushNotificationsHandler {
 
         if (data.type === 'clear') {
             dispatch(markChannelViewedAndRead(data.channel_id, null, false));
-        } else {
+        } else if (data.type === 'message') {
             // get the posts for the channel as soon as possible
             retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
 
@@ -88,15 +87,9 @@ class PushNotificationsHandler {
                         this.loadFromNotification(notification);
                     }, 0);
                 } else {
-                    const waitForHydration = () => {
-                        if (getState().views.root.hydrationComplete && !stopLoadingNotification) {
-                            stopLoadingNotification = true;
-                            unsubscribeFromStore();
-                            this.loadFromNotification(notification);
-                        }
-                    };
-
-                    unsubscribeFromStore = this.reduxStore.subscribe(waitForHydration);
+                    waitForHydration(this.reduxStore, () => {
+                        this.loadFromNotification(notification);
+                    });
                 }
             }
         }
@@ -164,8 +157,7 @@ class PushNotificationsHandler {
     };
 
     onRegisterDevice = (data) => {
-        const {dispatch, getState} = this.reduxStore;
-        let unsubscribeFromStore = null;
+        const {dispatch} = this.reduxStore;
 
         let prefix;
         if (Platform.OS === 'ios') {
@@ -180,15 +172,10 @@ class PushNotificationsHandler {
         EphemeralStore.deviceToken = `${prefix}:${data.token}`;
 
         // TODO: Remove when realm is ready
-        const waitForHydration = () => {
-            if (getState().views.root.hydrationComplete && !this.configured) {
-                this.configured = true;
-                dispatch(setDeviceToken(EphemeralStore.deviceToken));
-                unsubscribeFromStore();
-            }
-        };
-
-        unsubscribeFromStore = this.reduxStore.subscribe(waitForHydration);
+        waitForHydration(this.reduxStore, () => {
+            this.configured = true;
+            dispatch(setDeviceToken(EphemeralStore.deviceToken));
+        });
     };
 
     getNotification = () => {

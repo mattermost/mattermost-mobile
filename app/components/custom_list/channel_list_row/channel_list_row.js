@@ -15,6 +15,7 @@ import CustomListRow from 'app/components/custom_list/custom_list_row';
 export default class ChannelListRow extends React.PureComponent {
     static propTypes = {
         id: PropTypes.string.isRequired,
+        isArchived: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         channel: PropTypes.object.isRequired,
         ...CustomListRow.propTypes,
@@ -53,7 +54,7 @@ export default class ChannelListRow extends React.PureComponent {
                 <View style={style.container}>
                     <View style={style.titleContainer}>
                         <Icon
-                            name='globe'
+                            name={this.props.isArchived ? 'archive' : 'globe'}
                             style={style.icon}
                         />
                         <Text style={style.displayName}>
