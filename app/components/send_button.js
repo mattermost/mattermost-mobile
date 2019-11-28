@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {memo} from 'react';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 import PropTypes from 'prop-types';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
@@ -63,7 +63,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         sendButtonContainer: {
             justifyContent: 'flex-end',
             paddingHorizontal: 5,
-            paddingVertical: 3,
+            paddingVertical: Platform.select({
+                android: 8,
+                ios: 2,
+            }),
         },
         sendButton: {
             backgroundColor: theme.buttonBg,
@@ -72,6 +75,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 28,
             alignItems: 'center',
             justifyContent: 'center',
+            paddingLeft: 3,
         },
     };
 });
