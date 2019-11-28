@@ -24,7 +24,6 @@ describe('NotificationSettingsEmailAndroid', () => {
             savePreferences: jest.fn(),
         },
         sendEmailNotifications: true,
-        siteName: 'Mattermost',
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
     };
