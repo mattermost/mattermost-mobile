@@ -4,15 +4,39 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
+    Dimensions,
     Platform,
     ScrollView,
 } from 'react-native';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class Table extends React.PureComponent {
     static propTypes = {
         renderRows: PropTypes.func.isRequired,
         tableWidth: PropTypes.number.isRequired,
     };
+
+    constructor(props) {
+        super(props);
+
+        const {width, height} = Dimensions.get('window');
+        const isLandscape = width > height;
+        this.state = {isLandscape};
+    }
+
+    componentDidMount() {
+        Dimensions.addEventListener('change', this.handleDimensionChange);
+    }
+
+    componentWillUnmount() {
+        Dimensions.removeEventListener('change', this.handleDimensionChange);
+    }
+
+    handleDimensionChange = ({window}) => {
+        const {width, height} = window;
+        const isLandscape = width > height;
+        this.setState({isLandscape});
+    }
 
     render() {
         const content = this.props.renderRows();
@@ -29,8 +53,13 @@ export default class Table extends React.PureComponent {
                 </ScrollView>
             );
         } else {
+            const {isLandscape} = this.state;
+
             container = (
-                <ScrollView contentContainerStyle={{width: this.props.tableWidth}}>
+                <ScrollView
+                    style={padding(isLandscape)}
+                    contentContainerStyle={{width: this.props.tableWidth}}
+                >
                     {content}
                 </ScrollView>
             );
