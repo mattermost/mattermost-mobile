@@ -16,7 +16,7 @@ import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divide
 import Emoji from 'app/components/emoji';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {BuiltInEmojis} from 'app/utils/emojis';
-import {getEmojiByName} from 'app/utils/emoji_utils';
+import {getEmojiByName, compareEmojis} from 'app/utils/emoji_utils';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
@@ -92,7 +92,7 @@ export default class EmojiSuggestion extends Component {
             } else {
                 const initialEmojis = [...nextProps.emojis];
                 initialEmojis.splice(0, 300);
-                const data = initialEmojis.sort();
+                const data = initialEmojis.sort(compareEmojis);
 
                 this.setEmojiData(data);
             }
@@ -106,7 +106,7 @@ export default class EmojiSuggestion extends Component {
         } else if (!this.matchTerm.length) {
             const initialEmojis = [...nextProps.emojis];
             initialEmojis.splice(0, 300);
-            const data = initialEmojis.sort();
+            const data = initialEmojis.sort(compareEmojis);
 
             this.setEmojiData(data);
         }
