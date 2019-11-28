@@ -31,7 +31,6 @@ exports[`PostHeader should match snapshot when just a base post 1`] = `
               "maxWidth": "60%",
             },
             null,
-            null,
           ]
         }
         type="opacity"
@@ -101,7 +100,6 @@ exports[`PostHeader should match snapshot when just a base post in landscape mod
               "marginRight": 5,
               "maxWidth": "60%",
             },
-            null,
             Object {
               "maxWidth": "80%",
             },
@@ -173,7 +171,6 @@ exports[`PostHeader should match snapshot when post is autoresponder 1`] = `
               "marginRight": 5,
               "maxWidth": "60%",
             },
-            null,
             null,
           ]
         }
@@ -350,7 +347,6 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
               "maxWidth": "60%",
             },
             null,
-            null,
           ]
         }
         type="opacity"
@@ -423,7 +419,6 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
             Object {
               "maxWidth": "50%",
             },
-            null,
           ]
         }
         type="opacity"
@@ -572,9 +567,6 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
               "marginBottom": 3,
               "marginRight": 5,
               "maxWidth": "60%",
-            },
-            Object {
-              "maxWidth": "50%",
             },
             Object {
               "maxWidth": "70%",
@@ -729,7 +721,6 @@ exports[`PostHeader should match snapshot when post renders Commented On for new
               "maxWidth": "60%",
             },
             null,
-            null,
           ]
         }
         type="opacity"
@@ -816,7 +807,6 @@ exports[`PostHeader should match snapshot when post should display reply button 
               "marginRight": 5,
               "maxWidth": "60%",
             },
-            null,
             null,
           ]
         }
