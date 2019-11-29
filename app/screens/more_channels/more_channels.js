@@ -21,7 +21,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import {alertErrorWithFallback} from 'app/utils/general';
+import {alertErrorWithFallback, emptyFunction} from 'app/utils/general';
 import {goToScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import {
     changeOpacity,
@@ -370,7 +370,7 @@ export default class MoreChannels extends PureComponent {
         const {formatMessage} = this.context.intl;
         const {theme, isLandscape, canShowArchivedChannels} = this.props;
         const {adding, channels, archivedChannels, loading, term, typeOfChannels} = this.state;
-        const more = term ? () => true : this.getChannels;
+        const more = term ? emptyFunction : this.getChannels;
         const style = getStyleFromTheme(theme);
 
         const publicChannelsText = formatMessage({id: 'more_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
@@ -440,6 +440,7 @@ export default class MoreChannels extends PureComponent {
                     </View>
                     {channelDropdown}
                     <CustomList
+                        canRefresh={false}
                         data={activeChannels}
                         extraData={loading}
                         key='custom_list'

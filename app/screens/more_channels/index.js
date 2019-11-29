@@ -26,7 +26,7 @@ const joinablePublicChannels = createSelector(
     getMyChannelMemberships,
     (channels, myMembers) => {
         return channels.filter((c) => {
-            return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL);
+            return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL && c.delete_at === 0);
         });
     }
 );
@@ -45,6 +45,8 @@ function mapStateToProps(state) {
     const channels = joinablePublicChannels(state);
     const archivedChannels = teamArchivedChannels(state);
     const currentTeamId = getCurrentTeamId(state);
+    const canShowArchivedChannels = config.ExperimentalViewArchivedChannels === 'true' &&
+        isMinimumServerVersion(state.entities.general.serverVersion, 5, 18);
 
     return {
         canCreateChannels: showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
@@ -54,7 +56,7 @@ function mapStateToProps(state) {
         archivedChannels,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
-        canShowArchivedChannels: isMinimumServerVersion(state.entities.general.serverVersion, 5, 18),
+        canShowArchivedChannels,
     };
 }
 
