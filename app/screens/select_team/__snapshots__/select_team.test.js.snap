@@ -91,6 +91,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
     />
   </View>
   <CustomList
+    canRefresh={true}
     data={Array []}
     extraData={false}
     isLandscape={false}

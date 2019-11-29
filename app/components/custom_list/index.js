@@ -18,6 +18,7 @@ export default class CustomList extends PureComponent {
     static propTypes = {
         data: PropTypes.array.isRequired,
         extraData: PropTypes.any,
+        canRefresh: PropTypes.bool,
         listType: PropTypes.oneOf([FLATLIST, SECTIONLIST]),
         loading: PropTypes.bool,
         loadingComponent: PropTypes.element,
@@ -35,10 +36,11 @@ export default class CustomList extends PureComponent {
     };
 
     static defaultProps = {
+        canRefresh: true,
+        isLandscape: false,
         listType: FLATLIST,
         showNoResults: true,
         shouldRenderSeparator: true,
-        isLandscape: false,
     };
 
     constructor(props) {
@@ -110,16 +112,19 @@ export default class CustomList extends PureComponent {
     };
 
     renderFlatList = () => {
-        const {data, extraData, theme, onRefresh, refreshing} = this.props;
+        const {canRefresh, data, extraData, theme, onRefresh, refreshing} = this.props;
         const style = getStyleFromTheme(theme);
 
-        const refreshControl = (
-            <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={[theme.centerChannelColor]}
-                tintColor={theme.centerChannelColor}
-            />);
+        let refreshControl;
+        if (canRefresh) {
+            refreshControl = (
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={[theme.centerChannelColor]}
+                    tintColor={theme.centerChannelColor}
+                />);
+        }
 
         return (
             <FlatList
