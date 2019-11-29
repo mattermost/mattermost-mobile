@@ -398,4 +398,17 @@ describe('compareEmojis', () => {
 
         expect(emojiArray).toEqual([thumbsUpEmoji, thumbsDownEmoji, smileEmoji]);
     });
+
+    test('it compares emojis when emojis are strings', () => {
+        const thumbsUpEmoji = 'thumbsup';
+        const thumbsDownEmoji = 'thumbsdown';
+        const smileEmoji = {
+            name: 'smile',
+        };
+
+        const emojiArray = [thumbsDownEmoji, thumbsUpEmoji, smileEmoji];
+        emojiArray.sort((a, b) => compareEmojis(a, b, 'thumb'));
+
+        expect(emojiArray).toEqual([thumbsUpEmoji, thumbsDownEmoji, smileEmoji]);
+    });
 });

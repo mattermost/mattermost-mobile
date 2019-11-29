@@ -133,8 +133,8 @@ const customComparisonRules = {
 };
 
 export function compareEmojis(emojiA, emojiB, searchedName) {
-    const aName = emojiA.name || emojiA.aliases[0];
-    const bName = emojiB.name || emojiB.aliases[0];
+    const aName = emojiA.name || (emojiA.aliases ? emojiA.aliases[0] : emojiA);
+    const bName = emojiB.name || (emojiB.aliases ? emojiB.aliases[0] : emojiB);
 
     // Have the emojis that contain the search appear first
     const aPrefix = aName.startsWith(searchedName);
