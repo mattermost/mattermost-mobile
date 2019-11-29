@@ -21,6 +21,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import org.json.JSONObject;
+import org.json.JSONException;
+
 import com.mattermost.react_native_interface.ResolvePromise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
@@ -114,11 +117,15 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     }
 
     protected String buildReplyPost(String channelId, String rootId, String message) {
-        return "{"
-                + "\"channel_id\": \"" + channelId + "\","
-                + "\"message\": \"" + message + "\","
-                + "\"root_id\": \"" + rootId + "\""
-                + "}";
+        try {
+            JSONObject json = new JSONObject();
+            json.put("channel_id", channelId);
+            json.put("message", message);
+            json.put("root_id", rootId);
+            return json.toString();
+        } catch(JSONException e) {
+            return "{}";
+        }
     }
 
     protected void onReplyFailed(NotificationManager notificationManager, int notificationId, String channelId) {
