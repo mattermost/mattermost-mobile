@@ -47,6 +47,7 @@ export default class PostHeader extends PureComponent {
         post: PropTypes.object,
         beforePrevPostUserId: PropTypes.string,
         isFirstReply: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -110,6 +111,33 @@ export default class PostHeader extends PureComponent {
         );
     };
 
+    calcNameWidth = () => {
+        const {
+            fromWebHook,
+            fromAutoResponder,
+            renderReplies,
+            shouldRenderReplyButton,
+            commentedOnDisplayName,
+            commentCount,
+            isBot,
+            isLandscape,
+            theme,
+        } = this.props;
+
+        const style = getStyleSheet(theme);
+        const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
+        const reduceWidth = showReply && (isBot || fromAutoResponder || fromWebHook);
+
+        if (reduceWidth && isLandscape) {
+            return style.displayNameContainerLandscapeBotReplyWidth;
+        } else if (isLandscape) {
+            return style.displayNameContainerLandscape;
+        } else if (reduceWidth) {
+            return style.displayNameContainerBotReplyWidth;
+        }
+        return null;
+    }
+
     renderDisplayName = () => {
         const {
             displayName,
@@ -119,16 +147,12 @@ export default class PostHeader extends PureComponent {
             fromAutoResponder,
             overrideUsername,
             theme,
-            renderReplies,
-            shouldRenderReplyButton,
-            commentedOnDisplayName,
-            commentCount,
-            isBot,
         } = this.props;
 
         const style = getStyleSheet(theme);
-        const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
-        const displayNameStyle = [style.displayNameContainer, showReply && (isBot || fromAutoResponder || fromWebHook) ? style.displayNameContainerBotReplyWidth : null];
+
+        const displayNameWidth = this.calcNameWidth();
+        const displayNameStyle = [style.displayNameContainer, displayNameWidth];
 
         if (fromAutoResponder || fromWebHook) {
             let name = displayName;
@@ -369,5 +393,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         displayNameContainerBotReplyWidth: {
             maxWidth: '50%',
         },
+        displayNameContainerLandscape: {
+            maxWidth: '80%',
+        },
+        displayNameContainerLandscapeBotReplyWidth: {
+            maxWidth: '70%',
+        },
+
     };
 });
