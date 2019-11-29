@@ -62,8 +62,6 @@ export default class PostHeader extends PureComponent {
         }
     };
 
-    
-
     renderCommentedOnMessage = () => {
         const {
             beforePrevPostUserId,
@@ -152,7 +150,7 @@ export default class PostHeader extends PureComponent {
         } = this.props;
 
         const style = getStyleSheet(theme);
-      
+
         const displayNameWidth = this.calcNameWidth();
         const displayNameStyle = [style.displayNameContainer, displayNameWidth];
 
