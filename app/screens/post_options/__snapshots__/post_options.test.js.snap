@@ -119,7 +119,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       icon="bookmark"
       isLandscape={false}
       onPress={[Function]}
-      text="Mark post as unread"
+      text="Mark as Unread"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -345,7 +345,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       icon="bookmark"
       isLandscape={false}
       onPress={[Function]}
-      text="Mark post as unread"
+      text="Mark as Unread"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -607,7 +607,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       icon="bookmark"
       isLandscape={false}
       onPress={[Function]}
-      text="Mark post as unread"
+      text="Mark as Unread"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
