@@ -77,6 +77,11 @@ post-install:
 	@./node_modules/.bin/patch-package
 	@./node_modules/.bin/jetify
 
+	@if [ "${CI}" = "true" ]; then \
+        echo "Run RealmJS installation"; \
+        cd node_modules/realm/ && npm run install; \
+    fi
+
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
