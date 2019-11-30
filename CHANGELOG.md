@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
 ## 1.25.1 Release
-- Release Date: TBD
+- Release Date: November 22, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Compatibility
@@ -9,8 +9,10 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixing a crash issue on iOS when SSO cookies do not contain an expiration date during login.
- - Fixing an issue where changing team/channel when sharing several files closes the share dialog.
+ - Fixed a crash issue on iOS when SSO cookies did not contain an expiration date during login.
+ - Fixed a crash issue on Android caused by notification channels being unavailable in Android 7.
+ - Fixed an issue on Android where Enterprise Mobility Management (EMM) blur app screen did not work.
+ - Fixed an issue where changing team/channel when sharing several files closed the share dialog.
 
 ## 1.25.0 Release
 - Release Date: November 16, 2019

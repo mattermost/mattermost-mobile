@@ -7,6 +7,7 @@ import {intlShape} from 'react-intl';
 import {
     Dimensions,
     ScrollView,
+    Platform,
     View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -234,10 +235,14 @@ export default class MarkdownTable extends React.PureComponent {
                 onPress={this.handlePress}
                 style={[style.expandButton, {left: leftOffset}]}
             >
-                <Icon
-                    name={'expand'}
-                    style={style.icon}
-                />
+                <View style={[style.iconContainer, {width: this.getTableWidth()}]}>
+                    <View style={style.iconButton}>
+                        <Icon
+                            name={'expand'}
+                            style={style.icon}
+                        />
+                    </View>
+                </View>
             </TouchableWithFeedback>
         );
 
@@ -270,20 +275,41 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             maxHeight: MAX_HEIGHT,
         },
         expandButton: {
-            height: 30,
-            width: 30,
+            height: 34,
+            width: 34,
+        },
+        iconContainer: {
+            maxWidth: '100%',
+            alignItems: 'flex-end',
+            paddingTop: 8,
+            paddingBottom: 4,
+            ...Platform.select({
+                ios: {
+                    paddingRight: 14,
+                },
+            }),
+        },
+        iconButton: {
+            backgroundColor: theme.centerChannelBg,
+            marginTop: -32,
+            marginRight: -6,
             borderWidth: 1,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            borderRadius: 50,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRadius: 15,
-            bottom: 20,
-            backgroundColor: theme.centerChannelBg,
+            width: 34,
+            height: 34,
         },
         icon: {
-            fontSize: 15,
+            fontSize: 14,
             color: theme.linkColor,
+            ...Platform.select({
+                ios: {
+                    fontSize: 13,
+                },
+            }),
         },
         displayFlex: {
             flex: 1,
@@ -292,6 +318,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: '100%',
         },
         table: {
+            width: '100%',
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderWidth: 1,
         },

@@ -470,6 +470,7 @@ export default class EditProfile extends PureComponent {
                 theme={theme}
                 value={nickname}
                 isLandscape={isLandscape}
+                optional={true}
             />
         );
     };
@@ -493,6 +494,7 @@ export default class EditProfile extends PureComponent {
                 theme={theme}
                 value={position}
                 isLandscape={isLandscape}
+                optional={true}
             />
         );
     };

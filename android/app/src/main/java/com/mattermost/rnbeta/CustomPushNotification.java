@@ -50,7 +50,6 @@ public class CustomPushNotification extends PushNotification {
 
     private static final String PUSH_TYPE_MESSAGE = "message";
     private static final String PUSH_TYPE_CLEAR = "clear";
-    private static final String PUSH_TYPE_ID_LOADED = "id_loaded";
     private static final String PUSH_TYPE_UPDATE_BADGE = "update_badge";
 
     private NotificationChannel mHighImportanceChannel;
@@ -107,13 +106,14 @@ public class CustomPushNotification extends PushNotification {
         final String ackId = initialData.getString("ack_id");
         final String postId = initialData.getString("post_id");
         final String channelId = initialData.getString("channel_id");
+        final boolean isIdLoaded = initialData.getString("id_loaded") != null ? initialData.getString("id_loaded").equals("true") : false;
         int notificationId = MESSAGE_NOTIFICATION_ID;
 
         if (ackId != null) {
-            notificationReceiptDelivery(ackId, postId, type, new ResolvePromise() {
+            notificationReceiptDelivery(ackId, postId, type, isIdLoaded, new ResolvePromise() {
                 @Override
                 public void resolve(@Nullable Object value) {
-                    if (PUSH_TYPE_ID_LOADED.equals(type)) {
+                    if (isIdLoaded) {
                         Bundle response = (Bundle) value;
                         mNotificationProps = createProps(response);
                     }
@@ -330,7 +330,7 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void setMessagingStyleConversationTitle(Notification.MessagingStyle messagingStyle, String conversationTitle, Bundle bundle) {
-        String channelName = bundle.getString("channel_name");
+        String channelName = getConversationTitle(bundle);
         String senderName = bundle.getString("sender_name");
         if (android.text.TextUtils.isEmpty(senderName)) {
             senderName = getSenderName(bundle);
@@ -358,6 +358,9 @@ public class CustomPushNotification extends PushNotification {
             Bundle data = bundleList.get(i);
             String message = data.getString("message");
             String senderId = data.getString("sender_id");
+            if (senderId == null) {
+                senderId = "sender_id";
+            }
             Bundle userInfoBundle = data.getBundle("userInfo");
             String senderName = getSenderName(data);
             if (userInfoBundle != null) {
@@ -518,18 +521,23 @@ public class CustomPushNotification extends PushNotification {
             }
         }
 
-        return " ";
+        return getConversationTitle(bundle);
     }
 
     private String removeSenderNameFromMessage(String message, String senderName) {
         return message.replaceFirst(senderName, "").replaceFirst(": ", "").trim();
     }
 
-    private void notificationReceiptDelivery(String ackId, String postId, String type, ResolvePromise promise) {
-        ReceiptDelivery.send(context, ackId, postId, type, promise);
+    private void notificationReceiptDelivery(String ackId, String postId, String type, boolean isIdLoaded, ResolvePromise promise) {
+        ReceiptDelivery.send(context, ackId, postId, type, isIdLoaded, promise);
     }
 
     private void createNotificationChannels() {
+        // Notification channels are not supported in Android Nougat and below
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+
         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         mHighImportanceChannel = new NotificationChannel("channel_01", "High Importance", NotificationManager.IMPORTANCE_HIGH);

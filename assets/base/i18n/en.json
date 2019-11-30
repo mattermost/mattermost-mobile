@@ -594,7 +594,7 @@
   "user.settings.notifications.email.immediately": "Immediately",
   "user.settings.notifications.email.never": "Never",
   "user.settings.notifications.email.send": "Send email notifications",
-  "user.settings.notifications.emailInfo": "Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes.",
+  "user.settings.notifications.emailInfo": "Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes.",
   "user.settings.notifications.never": "Never",
   "user.settings.notifications.onlyMentions": "Only for mentions and direct messages",
   "user.settings.push_notification.away": "Away or offline",

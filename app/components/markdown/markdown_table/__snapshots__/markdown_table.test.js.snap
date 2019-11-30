@@ -27,6 +27,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
           Object {
             "borderColor": "rgba(61,60,64,0.2)",
             "borderWidth": 1,
+            "width": "100%",
           },
           Object {
             "width": 480,
@@ -173,16 +174,8 @@ exports[`MarkdownTable should match snapshot 1`] = `
     style={
       Array [
         Object {
-          "alignItems": "center",
-          "backgroundColor": "#ffffff",
-          "borderColor": "rgba(61,60,64,0.2)",
-          "borderRadius": 15,
-          "borderWidth": 1,
-          "bottom": 20,
-          "display": "flex",
-          "height": 30,
-          "justifyContent": "center",
-          "width": 30,
+          "height": 34,
+          "width": 34,
         },
         Object {
           "left": -20,
@@ -191,17 +184,52 @@ exports[`MarkdownTable should match snapshot 1`] = `
     }
     type="opacity"
   >
-    <Icon
-      allowFontScaling={false}
-      name="expand"
-      size={12}
+    <View
       style={
-        Object {
-          "color": "#2389d7",
-          "fontSize": 15,
-        }
+        Array [
+          Object {
+            "alignItems": "flex-end",
+            "maxWidth": "100%",
+            "paddingBottom": 4,
+            "paddingRight": 14,
+            "paddingTop": 8,
+          },
+          Object {
+            "width": 480,
+          },
+        ]
       }
-    />
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "borderColor": "rgba(61,60,64,0.2)",
+            "borderRadius": 50,
+            "borderWidth": 1,
+            "display": "flex",
+            "height": 34,
+            "justifyContent": "center",
+            "marginRight": -6,
+            "marginTop": -32,
+            "width": 34,
+          }
+        }
+      >
+        <Icon
+          allowFontScaling={false}
+          name="expand"
+          size={12}
+          style={
+            Object {
+              "color": "#2389d7",
+              "fontSize": 13,
+            }
+          }
+        />
+      </View>
+    </View>
   </TouchableWithFeedbackIOS>
 </TouchableWithFeedbackIOS>
 `;

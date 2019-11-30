@@ -23,7 +23,6 @@ function makeMapStateToProps() {
         return {
             channelName: channel ? channel.display_name : '',
             inThreadView: Boolean(state.entities.posts.selectedPostId),
-            fileIds: post ? post.file_ids : false,
             theme: getTheme(state),
             isLandscape: isLandscape(state),
         };

@@ -41,7 +41,6 @@ function mapStateToProps(state) {
         enableEmailBatching,
         emailInterval,
         sendEmailNotifications,
-        siteName: config.siteName || '',
         theme: getTheme(state),
         isLandscape: isLandscape(state),
     };
