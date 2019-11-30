@@ -37,6 +37,7 @@ export default class ChannelSidebar extends Component {
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
+            joinChannel: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
@@ -230,10 +231,11 @@ export default class ChannelSidebar extends Component {
         const {
             joinChannel,
             makeDirectChannel,
+            setChannelLoading,
         } = actions;
 
         this.closeChannelDrawer();
-        actions.setChannelLoading(channel.id !== currentChannelId);
+        setChannelLoading(channel.id !== currentChannelId);
 
         setTimeout(async () => {
             const displayValue = {displayName: channel.display_name};
@@ -263,7 +265,7 @@ export default class ChannelSidebar extends Component {
             }
 
             if (result.error || (!result.data && !result.data.channel)) {
-                actions.setChannelLoading(false);
+                setChannelLoading(false);
                 return;
             }
 

@@ -43,6 +43,35 @@ exports[`MoreChannels should match snapshot 1`] = `
         value=""
       />
     </View>
+    <View
+      style={
+        Array [
+          undefined,
+          null,
+        ]
+      }
+    >
+      <Text
+        accessibilityRole="button"
+        onPress={[Function]}
+        style={
+          Object {
+            "color": "#3d3c40",
+            "fontWeight": "bold",
+            "marginBottom": 10,
+            "marginLeft": 10,
+            "marginTop": 20,
+          }
+        }
+      >
+          
+        <Icon
+          allowFontScaling={false}
+          name="caret-down"
+          size={12}
+        />
+      </Text>
+    </View>
     <CustomList
       data={
         Array [
@@ -96,6 +125,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",

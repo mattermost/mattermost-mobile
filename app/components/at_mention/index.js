@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getUsersByUsername} from 'mattermost-redux/selectors/entities/users';
+import {getUsersByUsername, getCurrentUserMentionKeys} from 'mattermost-redux/selectors/entities/users';
 
 import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -13,6 +13,7 @@ function mapStateToProps(state) {
     return {
         theme: getTheme(state),
         usersByUsername: getUsersByUsername(state),
+        mentionKeys: getCurrentUserMentionKeys(state),
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
     };
 }

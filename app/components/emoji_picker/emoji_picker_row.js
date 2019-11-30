@@ -27,7 +27,7 @@ export default class EmojiPickerRow extends Component {
     renderEmojis = (emoji, index, emojis) => {
         const {emojiGutter, emojiSize} = this.props;
 
-        const size = emojiSize + 5;
+        const size = emojiSize + 7;
         const style = [
             styles.emoji,
             {

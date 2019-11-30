@@ -4,7 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Platform, View} from 'react-native';
+import {Platform, View, Text} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
@@ -12,6 +13,7 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import BottomSheet from 'app/utils/bottom_sheet';
 import CustomList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import FormattedText from 'app/components/formatted_text';
@@ -33,18 +35,20 @@ export default class MoreChannels extends PureComponent {
         actions: PropTypes.shape({
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
-            getChannels: PropTypes.func.isRequired,
+            loadPublicAndArchivedChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         canCreateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.array,
+        archivedChannels: PropTypes.array,
         closeButton: PropTypes.object,
         currentUserId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        canShowArchivedChannels: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -59,12 +63,15 @@ export default class MoreChannels extends PureComponent {
         super(props, context);
 
         this.searchTimeoutId = 0;
-        this.page = -1;
+        this.publicPage = -1;
+        this.archivedPage = -1;
         this.next = true;
         this.mounted = false;
 
         this.state = {
             channels: props.channels.slice(0, General.CHANNELS_CHUNK_SIZE),
+            archivedChannels: props.archivedChannels.slice(0, General.CHANNELS_CHUNK_SIZE),
+            typeOfChannels: 'public',
             loading: false,
             adding: false,
             term: '',
@@ -125,11 +132,16 @@ export default class MoreChannels extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     cancelSearch = () => {
-        const {channels} = this.props;
+        const {channels, archivedChannels} = this.props;
 
         this.setState({
             channels,
+            archivedChannels,
             term: '',
         });
     };
@@ -139,15 +151,17 @@ export default class MoreChannels extends PureComponent {
     };
 
     doGetChannels = () => {
-        const {actions, currentTeamId} = this.props;
+        const {actions, currentTeamId, canShowArchivedChannels} = this.props;
         const {loading, term} = this.state;
 
         if (this.next && !loading && !term && this.mounted) {
             this.setState({loading: true}, () => {
-                actions.getChannels(
+                actions.loadPublicAndArchivedChannels(
                     currentTeamId,
-                    this.page + 1,
-                    General.CHANNELS_CHUNK_SIZE
+                    this.publicPage + 1,
+                    this.archivedPage + 1,
+                    General.CHANNELS_CHUNK_SIZE,
+                    canShowArchivedChannels,
                 ).then(this.loadedChannels);
             });
         }
@@ -291,39 +305,80 @@ export default class MoreChannels extends PureComponent {
 
     renderItem = (props) => {
         return (
-            <ChannelListRow {...props}/>
+            <ChannelListRow
+                {...props}
+                isArchived={this.state.typeOfChannels === 'archived'}
+            />
         );
     }
 
     searchChannels = (text) => {
-        const {actions, channels, currentTeamId} = this.props;
+        const {actions, channels, archivedChannels, currentTeamId, canShowArchivedChannels} = this.props;
+        const {typeOfChannels} = this.state;
 
         if (text) {
-            const filtered = this.filterChannels(channels, text);
-            this.setState({
-                channels: filtered,
-                term: text,
-            });
-            clearTimeout(this.searchTimeoutId);
-
+            if (typeOfChannels === 'public') {
+                const filtered = this.filterChannels(channels, text);
+                this.setState({
+                    channels: filtered,
+                    term: text,
+                });
+                clearTimeout(this.searchTimeoutId);
+            } else if (typeOfChannels === 'archived' && canShowArchivedChannels) {
+                const filtered = this.filterChannels(archivedChannels, text);
+                this.setState({
+                    archivedChannels: filtered,
+                    term: text,
+                });
+                clearTimeout(this.searchTimeoutId);
+            }
             this.searchTimeoutId = setTimeout(() => {
-                actions.searchChannels(currentTeamId, text.toLowerCase());
+                actions.searchChannels(currentTeamId, text.toLowerCase(), typeOfChannels === 'archived');
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
         }
     };
 
+    handleDropdownClick = () => {
+        const {formatMessage} = this.context.intl;
+        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Public Channels'});
+        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Archived Channels'});
+        const titleText = formatMessage({id: 'more_channels.dropdownTitle', defaultMessage: 'Show'});
+        const cancelText = 'Cancel';
+        BottomSheet.showBottomSheetWithOptions({
+            options: [publicChannelsText, archivedChannelsText, cancelText],
+            cancelButtonIndex: 2,
+            title: titleText,
+        }, (value) => {
+            let typeOfChannels;
+            switch (value) {
+            case 0:
+                typeOfChannels = 'public';
+                break;
+            case 1:
+                typeOfChannels = 'archived';
+                break;
+            default:
+                typeOfChannels = this.state.typeOfChannels;
+            }
+            this.setState({typeOfChannels});
+        });
+    }
+
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme, isLandscape} = this.props;
-        const {adding, channels, loading, term} = this.state;
+        const {theme, isLandscape, canShowArchivedChannels} = this.props;
+        const {adding, channels, archivedChannels, loading, term, typeOfChannels} = this.state;
         const more = term ? () => true : this.getChannels;
         const style = getStyleFromTheme(theme);
 
+        const publicChannelsText = formatMessage({id: 'more_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
+        const archivedChannelsText = formatMessage({id: 'more_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
+
         let content;
         if (adding) {
-            content = (<Loading/>);
+            content = (<Loading color={theme.centerChannelColor}/>);
         } else {
             const searchBarInput = {
                 backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -336,11 +391,36 @@ export default class MoreChannels extends PureComponent {
                 }),
             };
 
+            let activeChannels = channels;
+
+            if (canShowArchivedChannels && typeOfChannels === 'archived') {
+                activeChannels = archivedChannels;
+            }
+
+            let channelDropdown;
+            if (canShowArchivedChannels) {
+                channelDropdown = (
+                    <View style={[style.titleContainer, padding(isLandscape)]}>
+                        <Text
+                            accessibilityRole={'button'}
+                            style={style.channelDropdown}
+                            onPress={this.handleDropdownClick}
+                        >
+                            {typeOfChannels === 'public' ? publicChannelsText : archivedChannelsText}
+                            {'  '}
+                            <Icon
+                                name={'caret-down'}
+                            />
+                        </Text>
+                    </View>
+                );
+            }
+
             content = (
                 <React.Fragment>
                     <View style={[style.searchBar, padding(isLandscape)]}>
                         <SearchBar
-                            ref='search_bar'
+                            ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'
@@ -358,8 +438,9 @@ export default class MoreChannels extends PureComponent {
                             value={term}
                         />
                     </View>
+                    {channelDropdown}
                     <CustomList
-                        data={channels}
+                        data={activeChannels}
                         extraData={loading}
                         key='custom_list'
                         loading={loading}
@@ -406,6 +487,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         noResultText: {
             fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        channelDropdown: {
+            color: theme.centerChannelColor,
+            fontWeight: 'bold',
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10,
         },
     };
 });

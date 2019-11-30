@@ -134,7 +134,7 @@ class EMMProvider {
     };
 
     showNotSecuredAlert = (translations) => {
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve) => { /* eslint-disable-line no-async-promise-executor */
             const options = [];
 
             if (Platform.OS === 'android') {

@@ -27,6 +27,8 @@ exports[`channel_info should match snapshot 1`] = `
       isArchived={false}
       isBot={false}
       isGroupConstrained={false}
+      isLandscape={false}
+      isTeammateGuest={false}
       memberCount={2}
       onPermalinkPress={[Function]}
       purpose="Purpose"
@@ -42,6 +44,7 @@ exports[`channel_info should match snapshot 1`] = `
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -93,6 +96,7 @@ exports[`channel_info should match snapshot 1`] = `
               "dndIndicator": "#f74343",
               "errorTextColor": "#fd5960",
               "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
               "mentionBj": "#ffffff",
               "mentionColor": "#145dbf",
               "mentionHighlightBg": "#ffe577",
@@ -141,6 +145,7 @@ exports[`channel_info should match snapshot 1`] = `
               "dndIndicator": "#f74343",
               "errorTextColor": "#fd5960",
               "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
               "mentionBj": "#ffffff",
               "mentionColor": "#145dbf",
               "mentionHighlightBg": "#ffe577",
@@ -189,6 +194,7 @@ exports[`channel_info should match snapshot 1`] = `
               "dndIndicator": "#f74343",
               "errorTextColor": "#fd5960",
               "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
               "mentionBj": "#ffffff",
               "mentionColor": "#145dbf",
               "mentionHighlightBg": "#ffe577",
@@ -236,6 +242,7 @@ exports[`channel_info should match snapshot 1`] = `
               "dndIndicator": "#f74343",
               "errorTextColor": "#fd5960",
               "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
               "mentionBj": "#ffffff",
               "mentionColor": "#145dbf",
               "mentionHighlightBg": "#ffe577",
@@ -285,6 +292,7 @@ exports[`channel_info should match snapshot 1`] = `
                 "dndIndicator": "#f74343",
                 "errorTextColor": "#fd5960",
                 "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
                 "mentionBj": "#ffffff",
                 "mentionColor": "#145dbf",
                 "mentionHighlightBg": "#ffe577",
@@ -334,6 +342,7 @@ exports[`channel_info should match snapshot 1`] = `
                 "dndIndicator": "#f74343",
                 "errorTextColor": "#fd5960",
                 "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
                 "mentionBj": "#ffffff",
                 "mentionColor": "#145dbf",
                 "mentionHighlightBg": "#ffe577",
@@ -383,6 +392,7 @@ exports[`channel_info should match snapshot 1`] = `
                 "dndIndicator": "#f74343",
                 "errorTextColor": "#fd5960",
                 "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
                 "mentionBj": "#ffffff",
                 "mentionColor": "#145dbf",
                 "mentionHighlightBg": "#ffe577",
@@ -432,6 +442,7 @@ exports[`channel_info should match snapshot 1`] = `
                 "dndIndicator": "#f74343",
                 "errorTextColor": "#fd5960",
                 "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
                 "mentionBj": "#ffffff",
                 "mentionColor": "#145dbf",
                 "mentionHighlightBg": "#ffe577",
@@ -482,6 +493,7 @@ exports[`channel_info should match snapshot 1`] = `
               "dndIndicator": "#f74343",
               "errorTextColor": "#fd5960",
               "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
               "mentionBj": "#ffffff",
               "mentionColor": "#145dbf",
               "mentionHighlightBg": "#ffe577",
@@ -544,6 +556,7 @@ exports[`channel_info should match snapshot 1`] = `
             "dndIndicator": "#f74343",
             "errorTextColor": "#fd5960",
             "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
             "mentionBj": "#ffffff",
             "mentionColor": "#145dbf",
             "mentionHighlightBg": "#ffe577",

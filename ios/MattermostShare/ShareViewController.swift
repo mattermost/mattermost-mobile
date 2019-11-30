@@ -25,6 +25,10 @@ class ShareViewController: SLComposeServiceViewController {
   
   fileprivate var selectedChannel: Item?
   fileprivate var selectedTeam: Item?
+  private var channelsVC: ChannelsViewController = ChannelsViewController()
+  private var teamsVC: TeamsViewController = TeamsViewController()
+  
+  private var maxMessageSize: Int = 0
 
   // MARK: - Lifecycle methods
   override func viewDidLoad() {
@@ -80,37 +84,45 @@ class ShareViewController: SLComposeServiceViewController {
     entities = store.getEntities(true) as [AnyHashable:Any]?
     sessionToken = store.getToken()
     serverURL = store.getServerUrl()
+    maxMessageSize = Int(store.getMaxPostSize())
 
     extractDataFromContext()
     
-    if sessionToken == nil {
+    if sessionToken == nil || serverURL == nil {
       showErrorMessage(title: "", message: "Authentication required: Please first login using the app.", VC: self)
     }
   }
   
   override func isContentValid() -> Bool {
-    let maxMessageSize = store.getMaxPostSize()
-    self.charactersRemaining = NSNumber(value: Int(maxMessageSize) - contentText.count)
-    //Check content text size is not above max
-    if (contentText.count > maxMessageSize) {
-      if !maxPostAlertShown {
-        maxPostAlertShown = true
-        showErrorMessageAndStayOpen(title: "", message: "Content text shared in Mattermost must be less than \(maxMessageSize+1) characters.", VC: self)
+    if let currentMessage = contentText {
+      let contentCount = currentMessage.count
+      if #available(iOS 13, *) {} else {
+        let remaining = (maxMessageSize - contentCount) as NSNumber
+        // this is causing the extension to run OOM on iOS 13
+        charactersRemaining = remaining
       }
-      return false
-    } else if (attachments.count > 0) { // Do validation of contentText and/or NSExtensionContext attachments here
-      let maxImagePixels = store.getMaxImagePixels()
-      if attachments.hasImageLargerThan(pixels: maxImagePixels) {
-        let readableMaxImagePixels = formatImagePixels(pixels: maxImagePixels)
-        showErrorMessage(title: "", message: "Image attachments shared in Mattermost must be less than \(readableMaxImagePixels).", VC: self)
-      }
-      let maxFileSize = store.getMaxFileSize()
-      if attachments.hasAttachementLargerThan(fileSize: maxFileSize) {
-        let readableMaxFileSize = formatFileSize(fileSize: maxFileSize)
-        showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxFileSize).", VC: self)
+
+      //Check content text size is not above max
+      if (contentCount > maxMessageSize) {
+        if !maxPostAlertShown {
+          maxPostAlertShown = true
+          showErrorMessageAndStayOpen(title: "", message: "Content text shared in Mattermost must be less than \(maxMessageSize+1) characters.", VC: self)
+        }
+        return false
+      } else if (attachments.count > 0) { // Do validation of contentText and/or NSExtensionContext attachments here
+        let maxImagePixels = store.getMaxImagePixels()
+        if attachments.hasImageLargerThan(pixels: maxImagePixels) {
+          let readableMaxImagePixels = formatImagePixels(pixels: maxImagePixels)
+          showErrorMessage(title: "", message: "Image attachments shared in Mattermost must be less than \(readableMaxImagePixels).", VC: self)
+        }
+        let maxFileSize = store.getMaxFileSize()
+        if attachments.hasAttachementLargerThan(fileSize: maxFileSize) {
+          let readableMaxFileSize = formatFileSize(fileSize: maxFileSize)
+          showErrorMessage(title: "", message: "File attachments shared in Mattermost must be less than \(readableMaxFileSize).", VC: self)
+        }
       }
     }
-    
+
     return serverURL != nil &&
       sessionToken != nil &&
       attachmentsCount() == attachments.count &&
@@ -166,10 +178,9 @@ class ShareViewController: SLComposeServiceViewController {
       teams.title = "Team"
       teams.value = selectedTeam?.title
       teams.tapHandler = {
-        let vc = TeamsViewController()
-        vc.teamDecks = teamDecks
-        vc.delegate = self
-        self.pushConfigurationViewController(vc)
+        self.teamsVC.teamDecks = teamDecks
+        self.teamsVC.delegate = self
+        self.pushConfigurationViewController(self.teamsVC)
       }
       items.append(teams)
     }
@@ -180,11 +191,10 @@ class ShareViewController: SLComposeServiceViewController {
       channels.value = selectedChannel?.title
       channels.valuePending = channelDecks == nil
       channels.tapHandler = {
-        let vc = ChannelsViewController()
-        vc.channelDecks = channelDecks!
-        vc.navbarTitle = self.selectedTeam?.title
-        vc.delegate = self
-        self.pushConfigurationViewController(vc)
+        self.channelsVC.channelDecks = channelDecks!
+        self.channelsVC.navbarTitle = self.selectedTeam?.title
+        self.channelsVC.delegate = self
+        self.pushConfigurationViewController(self.channelsVC)
       }
       
       items.append(channels)
@@ -223,7 +233,10 @@ class ShareViewController: SLComposeServiceViewController {
       if id == currentChannelId {
         item.selected = true
         selectedChannel = item
-        placeholder = "Write to \(item.title!)"
+        if #available(iOS 13, *) {} else {
+          // this is causing the extension to run OOM on iOS 13
+          self.placeholder = "Write to \(item.title!)"
+        }
       }
       section.items.append(item)
     }
@@ -398,14 +411,14 @@ class ShareViewController: SLComposeServiceViewController {
       key: "public",
       title: "Public Channels"
     ))
-    
+
     channelDecks.append(buildChannelSection(
       channels: channelsInTeamBySections.object(forKey: "private") as! NSArray,
       currentChannelId: selectedChannel?.id ?? currentChannel?.object(forKey: "id") as! String,
       key: "private",
       title: "Private Channels"
     ))
-    
+
     channelDecks.append(buildChannelSection(
       channels: channelsInTeamBySections.object(forKey: "direct") as! NSArray,
       currentChannelId: selectedChannel?.id ?? currentChannel?.object(forKey: "id") as! String,

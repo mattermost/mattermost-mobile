@@ -11,6 +11,7 @@ import {
     Easing,
     Keyboard,
     PanResponder,
+    Platform,
     StyleSheet,
     TouchableWithoutFeedback,
     View,
@@ -119,10 +120,22 @@ export default class DrawerLayout extends Component {
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.handleDimensionsChange);
+        if (Platform.OS === 'ios') {
+            // on iOS force closing the drawers to prevent them for partially showing
+            // when channging the device orientation, probably caused by RN61
+            Animated.timing(this.openValue, {
+                toValue: 0,
+                duration: 10,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: this.props.useNativeAnimations,
+            }).start();
+        }
     }
 
     componentWillUnmount() {
-        this.openValue?.removeListener(this.handleOpenValueChanged);
+        if (this.openValue) {
+            this.openValue.removeListener(this.handleOpenValueChanged);
+        }
         Dimensions.removeEventListener('change', this.handleDimensionsChange);
     }
 
@@ -261,7 +274,6 @@ export default class DrawerLayout extends Component {
         const {isTablet} = this.props;
         const panHandlers = isTablet ? emptyObject : this._panResponder.panHandlers;
         const containerStyles = [styles.container];
-
         if (isTablet) {
             containerStyles.push(styles.tabletContainer);
         }

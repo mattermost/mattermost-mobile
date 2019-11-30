@@ -348,6 +348,11 @@ function lastChannelViewTime(state = {}, action) {
         return state;
     }
 
+    case ChannelTypes.POST_UNREAD_SUCCESS: {
+        const data = action.data;
+        return {...state, [data.channelId]: data.lastViewedAt};
+    }
+
     default:
         return state;
     }

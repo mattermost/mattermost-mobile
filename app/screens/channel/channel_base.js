@@ -20,6 +20,7 @@ import SafeAreaView from 'app/components/safe_area_view';
 import SettingsSidebar from 'app/components/sidebars/settings';
 
 import {preventDoubleTap} from 'app/utils/tap';
+import {setNavigatorStyles} from 'app/utils/theme';
 import PushNotifications from 'app/push_notifications';
 import EphemeralStore from 'app/store/ephemeral_store';
 import tracker from 'app/utils/time_tracker';
@@ -27,7 +28,6 @@ import telemetry from 'app/telemetry';
 import {
     goToScreen,
     showModalOverCurrentContext,
-    mergeNavigationOptions,
 } from 'app/actions/navigation';
 
 import LocalConfig from 'assets/config';
@@ -69,24 +69,11 @@ export default class ChannelBase extends PureComponent {
         this.postTextbox = React.createRef();
         this.keyboardTracker = React.createRef();
 
-        const options = {
-            layout: {
-                backgroundColor: props.theme.centerChannelBg,
-            },
-        };
-        mergeNavigationOptions(props.componentId, options);
+        setNavigatorStyles(props.componentId, props.theme);
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
-
-        this.state = {
-            theme: null,
-            componentId: null,
-            currentTeamId: null,
-            currentChannelId: null,
-            actions: {},
-        };
     }
 
     componentDidMount() {
@@ -119,26 +106,26 @@ export default class ChannelBase extends PureComponent {
         this.props.actions.getChannelStats(this.props.currentChannelId);
     }
 
-    static getDerivedStateFromProps(props, state) {
-        if (state.theme !== props.theme) {
-            const options = {
-                layout: {
-                    backgroundColor: props.theme.centerChannelBg,
-                },
-            };
-            mergeNavigationOptions(state.componentId, options);
+    componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.componentId, nextProps.theme);
+
+            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+                setNavigatorStyles(componentId, nextProps.theme);
+            });
         }
 
-        if (props.currentTeamId && state.currentTeamId !== props.currentTeamId) {
-            this.loadChannels(props.currentTeamId);
+        if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
+            this.loadChannels(nextProps.currentTeamId);
         }
 
-        if (props.currentChannelId !== state.currentChannelId && props.currentTeamId === state.currentTeamId) {
-            PushNotifications.clearChannelNotifications(props.currentChannelId);
+        if (nextProps.currentChannelId !== this.props.currentChannelId &&
+            nextProps.currentTeamId === this.props.currentTeamId) {
+            PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
         }
 
-        if (props.currentChannelId !== state.currentChannelId) {
-            state.actions.getChannelStats(props.currentChannelId);
+        if (nextProps.currentChannelId !== this.props.currentChannelId) {
+            this.props.actions.getChannelStats(nextProps.currentChannelId);
         }
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
@@ -305,7 +292,10 @@ export default class ChannelBase extends PureComponent {
                             theme={theme}
                             isLandscape={isLandscape}
                         />
-                        <Loading channelIsLoading={true}/>
+                        <Loading
+                            channelIsLoading={true}
+                            color={theme.centerChannelColor}
+                        />
                     </View>
                 </SafeAreaView>
             );
@@ -328,6 +318,12 @@ export default class ChannelBase extends PureComponent {
                 />
             </MainSidebar>
         );
+    }
+
+    render() {
+        // Overriden in channel.android.js and channel.ios.js
+        // but defined here for channel_base.test.js
+        return; // eslint-disable-line no-useless-return
     }
 }
 

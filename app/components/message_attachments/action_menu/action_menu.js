@@ -18,6 +18,7 @@ export default class ActionMenu extends PureComponent {
         options: PropTypes.arrayOf(PropTypes.object),
         postId: PropTypes.string.isRequired,
         selected: PropTypes.object,
+        disabled: PropTypes.bool,
     };
 
     constructor(props) {
@@ -62,6 +63,7 @@ export default class ActionMenu extends PureComponent {
             name,
             dataSource,
             options,
+            disabled,
         } = this.props;
         const {selected} = this.state;
 
@@ -72,6 +74,7 @@ export default class ActionMenu extends PureComponent {
                 options={options}
                 selected={selected}
                 onSelected={this.handleSelect}
+                disabled={disabled}
             />
         );
     }

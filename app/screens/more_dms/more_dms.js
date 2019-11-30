@@ -113,6 +113,10 @@ export default class MoreDirectMessages extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     close = () => {
         dismissModal();
     };
@@ -416,7 +420,7 @@ export default class MoreDirectMessages extends PureComponent {
             return (
                 <View style={style.container}>
                     <StatusBar/>
-                    <Loading/>
+                    <Loading color={theme.centerChannelColor}/>
                 </View>
             );
         }
@@ -460,7 +464,7 @@ export default class MoreDirectMessages extends PureComponent {
                 <StatusBar/>
                 <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
-                        ref='search_bar'
+                        ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

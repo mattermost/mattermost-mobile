@@ -11,9 +11,10 @@ import {hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
 import Permissions from 'mattermost-redux/constants/permissions';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getChannel, isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channels';
 
 import {addReaction} from 'app/actions/views/emoji';
+import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
 
 import Reactions from './reactions';
 
@@ -25,18 +26,25 @@ function makeMapStateToProps() {
         const channel = getChannel(state, channelId) || {};
         const teamId = channel.team_id;
         const channelIsArchived = channel.delete_at !== 0;
+        const channelIsReadOnly = isChannelReadOnlyById(state, channelId);
+
+        const currentUserId = getCurrentUserId(state);
+        const reactions = getReactionsForPostSelector(state, ownProps.postId);
 
         let canAddReaction = true;
         let canRemoveReaction = true;
-        if (channelIsArchived) {
+        let canAddMoreReactions = true;
+        if (channelIsArchived || channelIsReadOnly) {
             canAddReaction = false;
             canRemoveReaction = false;
+            canAddMoreReactions = false;
         } else if (hasNewPermissions(state)) {
             canAddReaction = haveIChannelPermission(state, {
                 team: teamId,
                 channel: channelId,
                 permission: Permissions.ADD_REACTION,
             });
+            canAddMoreReactions = Object.values(reactions).length < MAX_ALLOWED_REACTIONS;
             canRemoveReaction = haveIChannelPermission(state, {
                 team: teamId,
                 channel: channelId,
@@ -44,14 +52,12 @@ function makeMapStateToProps() {
             });
         }
 
-        const currentUserId = getCurrentUserId(state);
-        const reactions = getReactionsForPostSelector(state, ownProps.postId);
-
         return {
             currentUserId,
             reactions,
             theme: getTheme(state),
             canAddReaction,
+            canAddMoreReactions,
             canRemoveReaction,
         };
     };

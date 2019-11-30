@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
-import {Sentry} from 'react-native-sentry';
+import * as Sentry from '@sentry/react-native';
 
 import Config from 'assets/config';
 
@@ -23,9 +23,6 @@ export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
 
 export function initializeSentry() {
     if (!Config.SentryEnabled) {
-        // Still allow Sentry to configure itself in case other code tries to call it
-        Sentry.config('');
-
         return;
     }
 
@@ -33,9 +30,10 @@ export function initializeSentry() {
 
     if (!dsn) {
         console.warn('Sentry is enabled, but not configured on this platform'); // eslint-disable-line no-console
+        return;
     }
 
-    Sentry.config(dsn, Config.SentryOptions).install();
+    Sentry.init({dsn, ...Config.SentryOptions});
 }
 
 function getDsn() {
@@ -135,7 +133,7 @@ export function captureNonErrorAsBreadcrumb(obj, isFatal) {
     }
 
     try {
-        Sentry.captureBreadcrumb(breadcrumb);
+        Sentry.addBreadcrumb(breadcrumb);
     } catch (e) {
         // Do nothing since this is only here to make sure we don't crash when handling an exception
         console.warn('Failed to capture breadcrumb of non-error', e); // eslint-disable-line no-console

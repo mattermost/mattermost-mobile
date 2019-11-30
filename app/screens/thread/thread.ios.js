@@ -85,14 +85,17 @@ export default class ThreadIOS extends ThreadBase {
             );
         } else {
             content = (
-                <Loading/>
+                <Loading color={theme.centerChannelColor}/>
             );
         }
 
         const style = getStyleSheet(theme);
         return (
             <React.Fragment>
-                <SafeAreaView excludeHeader={true}>
+                <SafeAreaView
+                    excludeHeader={true}
+                    forceInsets={true}
+                >
                     <View style={style.separator}/>
                     <StatusBar/>
                     {content}

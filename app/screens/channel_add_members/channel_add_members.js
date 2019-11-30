@@ -116,6 +116,10 @@ export default class ChannelAddMembers extends PureComponent {
         }
     }
 
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
     clearSearch = () => {
         this.setState({term: '', searchResults: []});
     };
@@ -299,7 +303,7 @@ export default class ChannelAddMembers extends PureComponent {
             return (
                 <View style={style.container}>
                     <StatusBar/>
-                    <Loading/>
+                    <Loading color={theme.centerChannelColor}/>
                 </View>
             );
         }
@@ -343,7 +347,7 @@ export default class ChannelAddMembers extends PureComponent {
                 <StatusBar/>
                 <View style={[style.searchBar, padding(isLandscape)]}>
                     <SearchBar
-                        ref='search_bar'
+                        ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

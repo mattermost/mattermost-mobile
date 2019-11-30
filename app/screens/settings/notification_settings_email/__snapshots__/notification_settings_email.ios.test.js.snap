@@ -3,13 +3,8 @@
 exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 1`] = `
 <section
   disableFooter={false}
-  footerDefaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes."
+  footerDefaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes."
   footerId="user.settings.notifications.emailInfo"
-  footerValues={
-    Object {
-      "siteName": "Mattermost",
-    }
-  }
   headerDefaultMessage="SEND EMAIL NOTIFICATIONS"
   headerId="mobile.notification_settings.email.send"
   isLandscape={false}
@@ -24,6 +19,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       "dndIndicator": "#f74343",
       "errorTextColor": "#fd5960",
       "linkColor": "#2389d7",
+      "mentionBg": "#ffffff",
       "mentionBj": "#ffffff",
       "mentionColor": "#145dbf",
       "mentionHighlightBg": "#ffe577",
@@ -66,6 +62,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",
@@ -117,6 +114,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
           "dndIndicator": "#f74343",
           "errorTextColor": "#fd5960",
           "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
           "mentionColor": "#145dbf",
           "mentionHighlightBg": "#ffe577",

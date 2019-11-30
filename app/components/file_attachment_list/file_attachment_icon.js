@@ -19,8 +19,12 @@ import imageIcon from 'assets/images/icons/image.png';
 import patchIcon from 'assets/images/icons/patch.png';
 import pdfIcon from 'assets/images/icons/pdf.png';
 import pptIcon from 'assets/images/icons/ppt.png';
+import textIcon from 'assets/images/icons/text.png';
 import videoIcon from 'assets/images/icons/video.png';
 import wordIcon from 'assets/images/icons/word.png';
+
+import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from 'app/constants/attachment';
+import {changeOpacity} from 'app/utils/theme';
 
 const ICON_PATH_FROM_FILE_TYPE = {
     audio: audioIcon,
@@ -31,6 +35,7 @@ const ICON_PATH_FROM_FILE_TYPE = {
     pdf: pdfIcon,
     presentation: pptIcon,
     spreadsheet: excelIcon,
+    text: textIcon,
     video: videoIcon,
     word: wordIcon,
 };
@@ -44,14 +49,14 @@ export default class FileAttachmentIcon extends PureComponent {
         onCaptureRef: PropTypes.func,
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
+        theme: PropTypes.object,
     };
 
     static defaultProps = {
-        backgroundColor: '#fff',
-        iconHeight: 60,
-        iconWidth: 60,
-        wrapperHeight: 80,
-        wrapperWidth: 80,
+        iconHeight: ATTACHMENT_ICON_HEIGHT,
+        iconWidth: ATTACHMENT_ICON_WIDTH,
+        wrapperHeight: ATTACHMENT_ICON_HEIGHT,
+        wrapperWidth: ATTACHMENT_ICON_WIDTH,
     };
 
     getFileIconPath(file) {
@@ -68,16 +73,17 @@ export default class FileAttachmentIcon extends PureComponent {
     };
 
     render() {
-        const {backgroundColor, file, iconHeight, iconWidth, wrapperHeight, wrapperWidth} = this.props;
+        const {backgroundColor, file, iconHeight, iconWidth, wrapperHeight, wrapperWidth, theme} = this.props;
         const source = this.getFileIconPath(file);
+        const bgColor = backgroundColor || theme.centerChannelBg || 'transparent';
 
         return (
             <View
                 ref={this.handleCaptureRef}
-                style={[styles.fileIconWrapper, {backgroundColor, height: wrapperHeight, width: wrapperWidth}]}
+                style={[styles.fileIconWrapper, {backgroundColor: bgColor, height: wrapperHeight, width: wrapperWidth}]}
             >
                 <Image
-                    style={[styles.icon, {height: iconHeight, width: iconWidth}]}
+                    style={{maxHeight: iconHeight, maxWidth: iconWidth, tintColor: changeOpacity(theme.centerChannelColor, 20)}}
                     source={source}
                 />
             </View>
@@ -89,12 +95,5 @@ const styles = StyleSheet.create({
     fileIconWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
-    },
-    icon: {
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
-        backgroundColor: '#fff',
     },
 });

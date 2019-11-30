@@ -66,6 +66,10 @@ export default class RecentMentions extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
+    setListRef = (ref) => {
+        this.listRef = ref;
+    }
+
     goToThread = (post) => {
         const {actions} = this.props;
         const channelId = post.channel_id;
@@ -95,7 +99,7 @@ export default class RecentMentions extends PureComponent {
     };
 
     handleHashtagPress = async (hashtag) => {
-        dismissModal();
+        await dismissModal();
         showSearchModal('#' + hashtag);
     };
 
@@ -210,7 +214,7 @@ export default class RecentMentions extends PureComponent {
         } else if (postIds.length) {
             component = (
                 <FlatList
-                    ref='list'
+                    ref={this.setListRef}
                     contentContainerStyle={style.sectionList}
                     data={postIds}
                     keyExtractor={this.keyExtractor}

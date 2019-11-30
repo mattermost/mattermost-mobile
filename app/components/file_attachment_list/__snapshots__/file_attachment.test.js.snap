@@ -1,0 +1,74 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FileAttachment should match snapshot 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "borderColor": "rgba(61,60,64,0.4)",
+        "borderRadius": 5,
+        "borderWidth": 1,
+        "flex": 1,
+        "flexDirection": "row",
+        "marginTop": 10,
+      },
+    ]
+  }
+>
+  <View
+    style={
+      Object {
+        "marginHorizontal": 20,
+        "marginVertical": 10,
+      }
+    }
+  >
+    <TouchableWithFeedbackIOS
+      onPress={[Function]}
+      type="opacity"
+    >
+      <FileAttachmentIcon
+        file={
+          Object {
+            "mime_type": "image/png",
+          }
+        }
+        iconHeight={48}
+        iconWidth={36}
+        onCaptureRef={[Function]}
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        wrapperHeight={48}
+        wrapperWidth={36}
+      />
+    </TouchableWithFeedbackIOS>
+  </View>
+</View>
+`;

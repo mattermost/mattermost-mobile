@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {FlatList, StyleSheet} from 'react-native';
+import {FlatList, RefreshControl, StyleSheet} from 'react-native';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import * as PostListUtils from 'mattermost-redux/utils/post_list';
@@ -263,6 +263,7 @@ export default class PostList extends PureComponent {
         // Remember that the list is rendered with item 0 at the bottom so the "previous" post
         // comes after this one in the list
         const previousPostId = index < this.props.postIds.length - 1 ? this.props.postIds[index + 1] : null;
+        const beforePrevPostId = index < this.props.postIds.length - 2 ? this.props.postIds[index + 2] : null;
         const nextPostId = index > 0 ? this.props.postIds[index - 1] : null;
 
         const postProps = {
@@ -277,6 +278,7 @@ export default class PostList extends PureComponent {
             onPress: this.props.onPostPress,
             renderReplies: this.props.renderReplies,
             shouldRenderReplyButton: this.props.shouldRenderReplyButton,
+            beforePrevPostId,
         };
 
         if (PostListUtils.isCombinedUserActivityPost(item)) {
@@ -367,13 +369,16 @@ export default class PostList extends PureComponent {
             postIds,
             refreshing,
             scrollViewNativeID,
+            theme,
         } = this.props;
 
-        const refreshControl = {refreshing};
-
-        if (channelId) {
-            refreshControl.onRefresh = this.handleRefresh;
-        }
+        const refreshControl = (
+            <RefreshControl
+                refreshing={refreshing}
+                onRefresh={channelId ? this.handleRefresh : null}
+                colors={[theme.centerChannelColor]}
+                tintColor={theme.centerChannelColor}
+            />);
 
         const hasPostsKey = postIds.length ? 'true' : 'false';
 
@@ -399,7 +404,7 @@ export default class PostList extends PureComponent {
                 removeClippedSubviews={true}
                 renderItem={this.renderItem}
                 scrollEventThrottle={60}
-                {...refreshControl}
+                refreshControl={refreshControl}
                 nativeID={scrollViewNativeID}
             />
         );

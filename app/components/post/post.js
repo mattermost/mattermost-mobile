@@ -68,6 +68,8 @@ export default class Post extends PureComponent {
         location: PropTypes.string,
         isBot: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
+        previousPostExists: PropTypes.bool,
+        beforePrevPostUserId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -250,6 +252,9 @@ export default class Post extends PureComponent {
             skipPinnedHeader,
             location,
             isLandscape,
+            previousPostExists,
+            beforePrevPostUserId,
+            isFirstReply,
         } = this.props;
 
         if (!post) {
@@ -299,6 +304,9 @@ export default class Post extends PureComponent {
                     onUsernamePress={onUsernamePress}
                     renderReplies={renderReplies}
                     theme={theme}
+                    previousPostExists={previousPostExists}
+                    beforePrevPostUserId={beforePrevPostUserId}
+                    isFirstReply={isFirstReply}
                 />
             );
         }

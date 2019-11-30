@@ -48,11 +48,11 @@ export const getMatchTermForChannelMention = (() => {
             lastIsSearch = isSearch;
             if (match) {
                 if (isSearch) {
-                    lastMatchTerm = match[1];
+                    lastMatchTerm = match[1].toLowerCase();
                 } else if (match.index > 0 && value[match.index - 1] === '~') {
                     lastMatchTerm = null;
                 } else {
-                    lastMatchTerm = match[2];
+                    lastMatchTerm = match[2].toLowerCase();
                 }
             } else {
                 lastMatchTerm = null;
@@ -99,15 +99,20 @@ export const filterMembersNotInChannel = createSelector(
         let profiles;
         if (matchTerm) {
             profiles = profilesNotInChannel.filter((p) => {
-                return ((p.id !== currentUserId && p.detele_at === 0) && (
-                    p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
-                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm)));
+                return (
+                    p.username.toLowerCase().includes(matchTerm) ||
+                    p.email.toLowerCase().includes(matchTerm) ||
+                    p.first_name.toLowerCase().includes(matchTerm) ||
+                    p.last_name.toLowerCase().includes(matchTerm)
+                ) && (p.delete_at === 0 && p.id !== currentUserId);
             });
         } else {
             profiles = profilesNotInChannel.filter((p) => p.delete_at === 0);
         }
 
-        return profiles.map((p) => p.id);
+        return profiles.map((p) => {
+            return p.id;
+        });
     }
 );
 
@@ -147,7 +152,7 @@ export const filterMyChannels = createSelector(
         if (matchTerm) {
             channels = myChannels.filter((c) => {
                 return (c.type === General.OPEN_CHANNEL || c.type === General.PRIVATE_CHANNEL) &&
-                    (c.name.startsWith(matchTerm) || c.display_name.startsWith(matchTerm));
+                    (c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().startsWith(matchTerm));
             });
         } else {
             channels = myChannels.filter((c) => {
@@ -170,7 +175,7 @@ export const filterOtherChannels = createSelector(
         let channels;
         if (matchTerm) {
             channels = otherChannels.filter((c) => {
-                return (c.name.startsWith(matchTerm) || c.display_name.startsWith(matchTerm));
+                return (c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().startsWith(matchTerm));
             });
         } else {
             channels = otherChannels;
@@ -195,9 +200,9 @@ export const filterPublicChannels = createSelector(
         if (matchTerm) {
             channels = myChannels.filter((c) => {
                 return c.type === General.OPEN_CHANNEL &&
-                    (c.name.startsWith(matchTerm) || c.display_name.startsWith(matchTerm));
+                    (c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().startsWith(matchTerm));
             }).concat(
-                otherChannels.filter((c) => c.name.startsWith(matchTerm) || c.display_name.startsWith(matchTerm))
+                otherChannels.filter((c) => c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().startsWith(matchTerm))
             );
         } else {
             channels = myChannels.filter((c) => {
@@ -227,7 +232,7 @@ export const filterPrivateChannels = createSelector(
         if (matchTerm) {
             channels = myChannels.filter((c) => {
                 return c.type === General.PRIVATE_CHANNEL &&
-                    (c.name.startsWith(matchTerm) || c.display_name.startsWith(matchTerm));
+                    (c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().startsWith(matchTerm));
             });
         } else {
             channels = myChannels.filter((c) => {
@@ -256,10 +261,10 @@ export const filterDirectAndGroupMessages = createSelector(
         let channels;
         if (matchTerm) {
             channels = myChannels.filter((c) => {
-                if (c.type === General.DM_CHANNEL && (originalChannels[c.id].display_name.startsWith(matchTerm))) {
+                if (c.type === General.DM_CHANNEL && (originalChannels[c.id].display_name.toLowerCase().startsWith(matchTerm))) {
                     return true;
                 }
-                if (c.type === General.GM_CHANNEL && (c.name.startsWith(matchTerm) || c.display_name.replace(/ /g, '').startsWith(matchTerm))) {
+                if (c.type === General.GM_CHANNEL && (c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().replace(/ /g, '').startsWith(matchTerm))) {
                     return true;
                 }
                 return false;

@@ -7,7 +7,7 @@ import {intlShape} from 'react-intl';
 import {Alert, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {DocumentPickerUtil} from 'react-native-document-picker';
+import DocumentPicker from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 
 import {Client4} from 'mattermost-redux/client';
@@ -470,6 +470,7 @@ export default class EditProfile extends PureComponent {
                 theme={theme}
                 value={nickname}
                 isLandscape={isLandscape}
+                optional={true}
             />
         );
     };
@@ -493,6 +494,7 @@ export default class EditProfile extends PureComponent {
                 theme={theme}
                 value={position}
                 isLandscape={isLandscape}
+                optional={true}
             />
         );
     };
@@ -521,7 +523,7 @@ export default class EditProfile extends PureComponent {
                     currentUser={currentUser}
                     theme={theme}
                     blurTextBox={emptyFunction}
-                    browseFileTypes={DocumentPickerUtil.images()}
+                    browseFileTypes={DocumentPicker.types.images}
                     canTakeVideo={false}
                     canBrowseVideoLibrary={false}
                     maxFileSize={MAX_SIZE}
@@ -560,7 +562,7 @@ export default class EditProfile extends PureComponent {
             return (
                 <View style={[style.container, style.flex]}>
                     <StatusBar/>
-                    <Loading/>
+                    <Loading color={theme.centerChannelColor}/>
                 </View>
             );
         }
