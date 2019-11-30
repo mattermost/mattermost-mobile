@@ -56,7 +56,10 @@ export default class ChannelPostList extends PureComponent {
         super(props);
 
         this.state = {
-            visiblePostIds: this.getVisiblePostIds(props),
+            channelId: props.channelId,
+            postIds: props.postIds,
+            postVisibility: props.postVisibility,
+            visiblePostIds: this.getVisiblePostIds(),
         };
 
         this.contentHeight = 0;
@@ -65,23 +68,20 @@ export default class ChannelPostList extends PureComponent {
         this.isLoadingMoreTop = false;
     }
 
-    componentDidMount() {
-        EventEmitter.on('goToThread', this.goToThread);
+    static getDerivedStateFromProps(props, state) {
+        if (props.channelId !== state.channelId) {
+            this.isLoadingMoreTop = false;
+
+            return {
+                channelId: props.channelId,
+            };
+        }
+
+        return null;
     }
 
-    static getDerivedStateFromProps(props, state) {
-        const {postIds: nextPostIds} = props;
-
-        let visiblePostIds = state.visiblePostIds;
-        if (nextPostIds !== state.postIds || props.postVisibility !== state.postVisibility) {
-            visiblePostIds = this.getVisiblePostIds(props);
-        }
-
-        if (state.channelId !== props.channelId) {
-            this.isLoadingMoreTop = false;
-        }
-
-        return {visiblePostIds};
+    componentDidMount() {
+        EventEmitter.on('goToThread', this.goToThread);
     }
 
     componentDidUpdate(prevProps) {
@@ -93,14 +93,19 @@ export default class ChannelPostList extends PureComponent {
             // This is needed to re-bind the scrollview natively when getting the first posts
             this.props.updateNativeScrollView();
         }
+
+        if (this.props.postVisibility !== prevProps.postVisibility || this.props.postIds !== prevProps.postIds) {
+            this.updateVisiblePost();
+        }
     }
 
     componentWillUnmount() {
         EventEmitter.off('goToThread', this.goToThread);
     }
 
-    getVisiblePostIds = (props) => {
-        return props.postIds ? props.postIds.slice(0, props.postVisibility) : [];
+    getVisiblePostIds = () => {
+        const {postIds, postVisibility} = this.props;
+        return postIds ? postIds.slice(0, postVisibility) : [];
     };
 
     goToThread = (post) => {
@@ -140,6 +145,11 @@ export default class ChannelPostList extends PureComponent {
     loadPostsRetry = () => {
         const {actions, channelId} = this.props;
         actions.loadPostsIfNecessaryWithRetry(channelId);
+    };
+
+    updateVisiblePost = () => {
+        const visiblePostIds = this.getVisiblePostIds();
+        this.setState({visiblePostIds});
     };
 
     renderFooter = () => {

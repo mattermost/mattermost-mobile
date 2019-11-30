@@ -106,36 +106,26 @@ export default class ChannelBase extends PureComponent {
         this.props.actions.getChannelStats(this.props.currentChannelId);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-
-            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-                setNavigatorStyles(componentId, nextProps.theme);
-            });
-        }
-
-        if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
-            this.loadChannels(nextProps.currentTeamId);
-        }
-
-        if (nextProps.currentChannelId !== this.props.currentChannelId &&
-            nextProps.currentTeamId === this.props.currentTeamId) {
-            PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
-        }
-
-        if (nextProps.currentChannelId !== this.props.currentChannelId) {
-            this.props.actions.getChannelStats(nextProps.currentChannelId);
-        }
-
-        if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
-            ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
-        }
-    }
-
     componentDidUpdate(prevProps) {
         if (tracker.teamSwitch) {
             this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
+        }
+
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
+
+            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+                setNavigatorStyles(componentId, this.props.theme);
+            });
+        }
+
+        if (this.props.currentTeamId && prevProps.currentTeamId !== this.props.currentTeamId) {
+            this.loadChannels(this.props.currentTeamId);
+        }
+
+        if (this.props.currentChannelId !== prevProps.currentChannelId &&
+            prevProps.currentTeamId === this.props.currentTeamId) {
+            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
         }
 
         // When the team changes emit the event to render the drawer content
@@ -145,6 +135,10 @@ export default class ChannelBase extends PureComponent {
 
         if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
             this.updateNativeScrollView();
+        }
+
+        if (prevProps.currentChannelId !== this.props.currentChannelId) {
+            this.props.actions.getChannelStats(this.props.currentChannelId);
         }
     }
 

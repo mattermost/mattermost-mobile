@@ -44,7 +44,6 @@ export default class Badge extends PureComponent {
         });
 
         this.state = {
-            layoutReady: false,
             count: props.count,
         };
     }
@@ -55,7 +54,11 @@ export default class Badge extends PureComponent {
 
     static getDerivedStateFromProps(props, state) {
         if (props.count !== state.count) {
-            return {layoutReady: false};
+            this.layoutReady = false;
+
+            return {
+                count: props.count,
+            };
         }
 
         return null;

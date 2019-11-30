@@ -64,23 +64,14 @@ export default class ThreadBase extends PureComponent {
 
         this.state = {
             lastViewedAt: props.myMember && props.myMember.last_viewed_at,
-            theme: props.theme,
-            postIds: props.postIds,
         };
     }
 
     static getDerivedStateFromProps(props, state) {
-        if (props.theme !== state.theme) {
-            setNavigatorStyles(state.componentId, props.theme);
-        }
-
-        if (state.postIds !== props.postIds && !props.postIds.length) {
-            this.close();
-            return null;
-        }
-
-        if (!state.lastViewedAt) {
-            return {lastViewedAt: props.myMember && props.myMember.last_viewed_at};
+        if (props.myMember?.last_viewed_at && !state.lastViewedAt) { //eslint-disable-line camelcase
+            return {
+                lastViewedAt: props.myMember.last_viewed_at,
+            };
         }
 
         return null;
@@ -88,6 +79,16 @@ export default class ThreadBase extends PureComponent {
 
     componentWillUnmount() {
         this.props.actions.selectPost('');
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
+        }
+
+        if (this.props.postIds !== prevProps.postIds && !this.props.postIds.length) {
+            this.close();
+        }
     }
 
     close = () => {

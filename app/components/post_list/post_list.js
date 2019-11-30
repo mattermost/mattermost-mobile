@@ -88,23 +88,27 @@ export default class PostList extends PureComponent {
         this.flatListRef = React.createRef();
 
         this.state = {
-            postListHeight: 0,
             channelId: props.channelId,
+            postListHeight: 0,
         };
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        if (props.channelId !== state.channelId) {
+            this.contentOffsetY = 0;
+            this.hasDoneInitialScroll = false;
+
+            return {
+                channelId: props.channelId,
+                contentHeight: 0,
+            };
+        }
+
+        return null;
     }
 
     componentDidMount() {
         EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
-    }
-
-    static getDerivedStateFromProps(props, state) {
-        if (state.channelId !== props.channelId) {
-            this.contentOffsetY = 0;
-            this.hasDoneInitialScroll = false;
-            return {contentHeight: 0};
-        }
-
-        return null;
     }
 
     componentDidUpdate(prevProps) {

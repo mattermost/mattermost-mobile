@@ -20,7 +20,6 @@ function makeMapStateToProps() {
         const channel = getChannel(state, {id: ownProps.channelId});
 
         return {
-            channelId: ownProps.channelId,
             channelType: channel ? channel.type : '',
             displayName: channel ? channel.display_name : '',
             myMember: getMyCurrentChannelMembership(state),
