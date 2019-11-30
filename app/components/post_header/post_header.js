@@ -46,6 +46,8 @@ export default class PostHeader extends PureComponent {
         previousPostExists: PropTypes.bool,
         post: PropTypes.object,
         beforePrevPostUserId: PropTypes.string,
+        isFirstReply: PropTypes.bool,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -68,8 +70,9 @@ export default class PostHeader extends PureComponent {
             previousPostExists,
             renderReplies,
             theme,
+            isFirstReply,
         } = this.props;
-        if (!renderReplies || !commentedOnDisplayName || (!previousPostExists && post.user_id === beforePrevPostUserId)) {
+        if (!isFirstReply || !renderReplies || !commentedOnDisplayName || (!previousPostExists && post.user_id === beforePrevPostUserId)) {
             return null;
         }
 
@@ -108,6 +111,33 @@ export default class PostHeader extends PureComponent {
         );
     };
 
+    calcNameWidth = () => {
+        const {
+            fromWebHook,
+            fromAutoResponder,
+            renderReplies,
+            shouldRenderReplyButton,
+            commentedOnDisplayName,
+            commentCount,
+            isBot,
+            isLandscape,
+            theme,
+        } = this.props;
+
+        const style = getStyleSheet(theme);
+        const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
+        const reduceWidth = showReply && (isBot || fromAutoResponder || fromWebHook);
+
+        if (reduceWidth && isLandscape) {
+            return style.displayNameContainerLandscapeBotReplyWidth;
+        } else if (isLandscape) {
+            return style.displayNameContainerLandscape;
+        } else if (reduceWidth) {
+            return style.displayNameContainerBotReplyWidth;
+        }
+        return null;
+    }
+
     renderDisplayName = () => {
         const {
             displayName,
@@ -121,6 +151,9 @@ export default class PostHeader extends PureComponent {
 
         const style = getStyleSheet(theme);
 
+        const displayNameWidth = this.calcNameWidth();
+        const displayNameStyle = [style.displayNameContainer, displayNameWidth];
+
         if (fromAutoResponder || fromWebHook) {
             let name = displayName;
             if (overrideUsername && enablePostUsernameOverride) {
@@ -128,7 +161,7 @@ export default class PostHeader extends PureComponent {
             }
 
             return (
-                <View style={[style.displayNameContainer, {maxWidth: fromAutoResponder ? '30%' : '60%'}]}>
+                <View style={displayNameStyle}>
                     <Text
                         style={style.displayName}
                         ellipsizeMode={'tail'}
@@ -152,7 +185,7 @@ export default class PostHeader extends PureComponent {
             return (
                 <TouchableWithFeedback
                     onPress={this.handleUsernamePress}
-                    style={style.displayNameContainer}
+                    style={displayNameStyle}
                     type={'opacity'}
                 >
                     <Text
@@ -357,5 +390,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginBottom: 3,
             lineHeight: 21,
         },
+        displayNameContainerBotReplyWidth: {
+            maxWidth: '50%',
+        },
+        displayNameContainerLandscape: {
+            maxWidth: '80%',
+        },
+        displayNameContainerLandscapeBotReplyWidth: {
+            maxWidth: '70%',
+        },
+
     };
 });

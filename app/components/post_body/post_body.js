@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {Posts} from 'mattermost-redux/constants';
 
 import CombinedSystemMessage from 'app/components/combined_system_message';
+import {renderSystemMessage} from './system_message_helpers';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import MarkdownEmoji from 'app/components/markdown/markdown_emoji';
@@ -246,6 +247,7 @@ export default class PostBody extends PureComponent {
                     isFailed={isFailed}
                     onLongPress={this.showPostOptions}
                     postId={post.id}
+                    isReplyPost={this.props.isReplyPost}
                 />
             );
         }
@@ -347,6 +349,13 @@ export default class PostBody extends PureComponent {
         const textStyles = getMarkdownTextStyles(theme);
         const messageStyle = isSystemMessage ? [style.message, style.systemMessage] : style.message;
         const isPendingOrFailedPost = isPending || isFailed;
+
+        const messageStyles = {messageStyle, textStyles};
+        const intl = this.context.intl;
+        const systemMessage = renderSystemMessage(this.props, messageStyles, intl);
+        if (systemMessage) {
+            return systemMessage;
+        }
 
         let body;
         let messageComponent;

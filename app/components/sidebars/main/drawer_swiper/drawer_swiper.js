@@ -35,8 +35,8 @@ export default class DrawerSwiper extends Component {
     }
 
     runOnLayout = (shouldRun = true) => {
-        if (this.refs.swiper) {
-            this.refs.swiper.runOnLayout = shouldRun;
+        if (this.swiperRef) {
+            this.swiperRef.runOnLayout = shouldRun;
         }
     };
 

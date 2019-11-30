@@ -80,7 +80,6 @@ export default class EmojiPicker extends PureComponent {
         const emojis = this.renderableEmojis(props.emojisBySection, props.deviceWidth);
         const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
-        this.searchBarRef = React.createRef();
         this.scrollToSectionTries = 0;
         this.state = {
             emojis,
@@ -97,8 +96,8 @@ export default class EmojiPicker extends PureComponent {
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
             this.rebuildEmojis = true;
 
-            if (this.searchBarRef?.current) {
-                this.searchBarRef.current.blur();
+            if (this.searchBarRef) {
+                this.searchBarRef.blur();
             }
         }
 
@@ -107,6 +106,14 @@ export default class EmojiPicker extends PureComponent {
             this.setRebuiltEmojis();
         }
     }
+
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
+    }
+
+    setSectionListRef = (ref) => {
+        this.sectionListRef = ref;
+    };
 
     setRebuiltEmojis = (searchBarAnimationComplete = true) => {
         if (this.rebuildEmojis && searchBarAnimationComplete) {
@@ -253,6 +260,7 @@ export default class EmojiPicker extends PureComponent {
         } else {
             listComponent = (
                 <SectionList
+                    ref={this.setSectionListRef}
                     getItemLayout={this.sectionListGetItemLayout}
                     initialNumToRender={50}
                     keyboardShouldPersistTaps='always'
@@ -265,7 +273,6 @@ export default class EmojiPicker extends PureComponent {
                     onScroll={this.onScroll}
                     onScrollToIndexFailed={this.handleScrollToSectionFailed}
                     pageSize={50}
-                    ref={this.attachSectionList}
                     removeClippedSubviews={false}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
@@ -356,7 +363,7 @@ export default class EmojiPicker extends PureComponent {
             jumpToSection: true,
             currentSectionIndex: index,
         }, () => {
-            this.sectionList.scrollToLocation({
+            this.sectionListRef.scrollToLocation({
                 sectionIndex: index,
                 itemIndex: 0,
                 viewOffset: 25,
@@ -423,10 +430,6 @@ export default class EmojiPicker extends PureComponent {
         });
     };
 
-    attachSectionList = (c) => {
-        this.sectionList = c;
-    };
-
     renderFooter = () => {
         if (!this.state.missingPages) {
             return null;
@@ -437,7 +440,7 @@ export default class EmojiPicker extends PureComponent {
         const styles = getStyleSheetFromTheme(theme);
         return (
             <View style={styles.loading}>
-                <ActivityIndicator/>
+                <ActivityIndicator color={theme.centerChannelColor}/>
             </View>
         );
     };

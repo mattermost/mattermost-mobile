@@ -95,6 +95,9 @@ const ViewTypes = keyMirror({
     SELECTED_ACTION_MENU: null,
     SUBMIT_ATTACHMENT_MENU_ACTION: null,
     SELECT_CHANNEL_WITH_MEMBER: null,
+
+    PORTRAIT: null,
+    LANDSCAPE: null,
 });
 
 export default {
@@ -107,7 +110,7 @@ export default {
     MAX_CHANNELNAME_LENGTH: 64,
     ANDROID_TOP_LANDSCAPE: 46,
     ANDROID_TOP_PORTRAIT: 56,
-    IOS_TOP_LANDSCAPE: 40,
+    IOS_TOP_LANDSCAPE: 32,
     IOS_TOP_PORTRAIT: 64,
     IOS_INSETS_TOP_PORTRAIT: 88,
     STATUS_BAR_HEIGHT: 20,

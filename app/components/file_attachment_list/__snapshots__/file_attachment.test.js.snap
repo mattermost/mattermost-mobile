@@ -5,76 +5,70 @@ exports[`FileAttachment should match snapshot 1`] = `
   style={
     Array [
       Object {
-        "borderColor": "rgba(61,60,64,0.2)",
-        "borderRadius": 2,
+        "borderColor": "rgba(61,60,64,0.4)",
+        "borderRadius": 5,
         "borderWidth": 1,
         "flex": 1,
         "flexDirection": "row",
-        "marginRight": 10,
         "marginTop": 10,
-        "width": 300,
       },
     ]
   }
 >
-  <TouchableWithFeedbackIOS
-    onPress={[Function]}
-    type="opacity"
-  >
-    <FileAttachmentIcon
-      backgroundColor="#fff"
-      file={
-        Object {
-          "mime_type": "image/png",
-        }
-      }
-      iconHeight={60}
-      iconWidth={60}
-      onCaptureRef={[Function]}
-      theme={
-        Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        }
-      }
-      wrapperHeight={80}
-      wrapperWidth={80}
-    />
-  </TouchableWithFeedbackIOS>
-  <TouchableWithFeedbackIOS
-    onPress={[Function]}
+  <View
     style={
       Object {
-        "borderLeftColor": "rgba(61,60,64,0.2)",
-        "borderLeftWidth": 1,
-        "flex": 1,
-        "paddingHorizontal": 8,
-        "paddingVertical": 5,
+        "marginHorizontal": 20,
+        "marginVertical": 10,
       }
     }
-    type="opacity"
-  />
+  >
+    <TouchableWithFeedbackIOS
+      onPress={[Function]}
+      type="opacity"
+    >
+      <FileAttachmentIcon
+        file={
+          Object {
+            "mime_type": "image/png",
+          }
+        }
+        iconHeight={48}
+        iconWidth={36}
+        onCaptureRef={[Function]}
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        wrapperHeight={48}
+        wrapperWidth={36}
+      />
+    </TouchableWithFeedbackIOS>
+  </View>
 </View>
 `;

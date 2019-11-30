@@ -14,6 +14,8 @@ import Badge from 'app/components/badge';
 import PushNotifications from 'app/push_notifications';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from 'app/utils/i18n';
+import {intlShape} from 'react-intl';
 
 import telemetry from 'app/telemetry';
 
@@ -23,6 +25,10 @@ export default class ChannelDrawerButton extends PureComponent {
         badgeCount: PropTypes.number,
         theme: PropTypes.object,
         visible: PropTypes.bool,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     static defaultProps = {
@@ -61,6 +67,22 @@ export default class ChannelDrawerButton extends PureComponent {
             visible,
         } = this.props;
 
+        const {formatMessage} = this.context.intl;
+
+        const buttonDescriptor = {
+            id: t('navbar.channel_drawer.button'),
+            defaultMessage: 'Channels and teams',
+            description: 'Accessibility helper for channel drawer button.',
+        };
+        const accessibilityLabel = formatMessage(buttonDescriptor);
+
+        const buttonHint = {
+            id: t('navbar.channel_drawer.hint'),
+            defaultMessage: 'Opens the channels and teams drawer',
+            description: 'Accessibility helper for explaining what the channel drawer button will do.',
+        };
+        const accessibilityHint = formatMessage(buttonHint);
+
         const style = getStyleFromTheme(theme);
 
         let badge;
@@ -95,6 +117,10 @@ export default class ChannelDrawerButton extends PureComponent {
 
         return (
             <TouchableOpacity
+                accessible={true}
+                accessibilityHint={accessibilityHint}
+                accessibilityLabel={accessibilityLabel}
+                accessibilityRole='button'
                 onPress={this.handlePress}
                 style={containerStyle}
             >

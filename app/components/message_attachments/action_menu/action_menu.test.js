@@ -52,4 +52,14 @@ describe('ActionMenu', () => {
 
         expect(wrapper.state('selected')).toBe(props.selected);
     });
+
+    test('disabled works', () => {
+        const props = {
+            ...baseProps,
+            disabled: true,
+        };
+        const wrapper = shallow(<ActionMenu {...props}/>);
+
+        expect(wrapper.props().disabled).toBe(true);
+    });
 });

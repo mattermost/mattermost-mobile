@@ -10,6 +10,7 @@ import {
     Platform,
     StatusBar,
     StyleSheet,
+    Text,
     View,
 } from 'react-native';
 import OpenFile from 'react-native-doc-viewer';
@@ -27,8 +28,9 @@ import mattermostBucket from 'app/mattermost_bucket';
 import {changeOpacity} from 'app/utils/theme';
 import {goToScreen} from 'app/actions/navigation';
 
+import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from 'app/constants/attachment';
+
 const {DOCUMENTS_PATH} = DeviceTypes;
-const DOWNLOADING_OFFSET = 28;
 const TEXT_PREVIEW_FORMATS = [
     'application/json',
     'application/x-x509-ca-cert',
@@ -50,10 +52,10 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     static defaultProps = {
-        iconHeight: 47,
-        iconWidth: 47,
-        wrapperHeight: 80,
-        wrapperWidth: 80,
+        iconHeight: ATTACHMENT_ICON_HEIGHT,
+        iconWidth: ATTACHMENT_ICON_WIDTH,
+        wrapperHeight: ATTACHMENT_ICON_HEIGHT,
+        wrapperWidth: ATTACHMENT_ICON_WIDTH,
     };
 
     static contextTypes = {
@@ -69,7 +71,7 @@ export default class FileAttachmentDocument extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
-        this.eventEmitter = new NativeEventEmitter(NativeModules.RNReactNativeDocViewer);
+        this.eventEmitter = new NativeEventEmitter(NativeModules.RNDocViewer);
         this.eventEmitter.addListener('DoneButtonEvent', this.onDonePreviewingFile);
     }
 
@@ -284,16 +286,6 @@ export default class FileAttachmentDocument extends PureComponent {
         }
     };
 
-    renderProgress = () => {
-        const {wrapperWidth} = this.props;
-
-        return (
-            <View style={[style.circularProgressContent, {width: wrapperWidth}]}>
-                {this.renderFileAttachmentIcon()}
-            </View>
-        );
-    };
-
     showDownloadDisabledAlert = () => {
         const {intl} = this.context;
 
@@ -338,14 +330,6 @@ export default class FileAttachmentDocument extends PureComponent {
 
     renderFileAttachmentIcon = () => {
         const {backgroundColor, iconHeight, iconWidth, file, theme, wrapperHeight, wrapperWidth} = this.props;
-        const {downloading} = this.state;
-        let height = wrapperHeight;
-        let width = wrapperWidth;
-
-        if (downloading) {
-            height -= DOWNLOADING_OFFSET;
-            width -= DOWNLOADING_OFFSET;
-        }
 
         return (
             <FileAttachmentIcon
@@ -354,29 +338,39 @@ export default class FileAttachmentDocument extends PureComponent {
                 theme={theme}
                 iconHeight={iconHeight}
                 iconWidth={iconWidth}
-                wrapperHeight={height}
-                wrapperWidth={width}
+                wrapperHeight={wrapperHeight}
+                wrapperWidth={wrapperWidth}
             />
         );
     }
 
-    render() {
-        const {onLongPress, theme, wrapperHeight} = this.props;
-        const {downloading, progress} = this.state;
+    renderDownloadProgres = () => {
+        const {theme} = this.props;
+        return (
+            <Text style={{fontSize: 10, color: theme.centerChannelColor, fontWeight: '600'}}>
+                {`${this.state.progress}%`}
+            </Text>
+        );
+    };
 
+    render() {
+        const {onLongPress, theme} = this.props;
+        const {downloading, progress} = this.state;
         let fileAttachmentComponent;
         if (downloading) {
             fileAttachmentComponent = (
-                <CircularProgress
-                    size={wrapperHeight}
-                    fill={progress}
-                    width={circularProgressWidth}
-                    backgroundColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    tintColor={theme.linkColor}
-                    rotation={0}
-                >
-                    {this.renderProgress}
-                </CircularProgress>
+                <View style={[style.circularProgressContent]}>
+                    <CircularProgress
+                        size={40}
+                        fill={progress}
+                        width={circularProgressWidth}
+                        backgroundColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        tintColor={theme.linkColor}
+                        rotation={0}
+                    >
+                        {this.renderDownloadProgres}
+                    </CircularProgress>
+                </View>
             );
         } else {
             fileAttachmentComponent = this.renderFileAttachmentIcon();
@@ -396,11 +390,9 @@ export default class FileAttachmentDocument extends PureComponent {
 
 const style = StyleSheet.create({
     circularProgressContent: {
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-        left: -circularProgressWidth,
-        position: 'absolute',
-        top: 0,
+        left: -(circularProgressWidth - 2),
+        top: 4,
+        width: 36,
+        height: 48,
     },
 });

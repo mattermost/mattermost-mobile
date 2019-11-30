@@ -52,6 +52,7 @@ export default class ChannelInfo extends PureComponent {
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
         currentChannelGuestCount: PropTypes.number,
+        currentChannelPinnedPostCount: PropTypes.number,
         currentUserId: PropTypes.string,
         currentUserIsGuest: PropTypes.bool,
         status: PropTypes.string,
@@ -86,32 +87,29 @@ export default class ChannelInfo extends PureComponent {
         };
     }
 
+    static getDerivedStateFromProps(nextProps, state) {
+        if (state.isFavorite !== nextProps.isFavorite ||
+            state.isMuted !== nextProps.isChannelMuted ||
+            state.ignoreChannelMentions !== nextProps.ignoreChannelMentions) {
+            return {
+                isFavorite: nextProps.isFavorite,
+                isMuted: nextProps.isChannelMuted,
+                ignoreChannelMentions: nextProps.ignoreChannelMentions,
+            };
+        }
+
+        return null;
+    }
+
     componentDidMount() {
         this.props.actions.getChannelStats(this.props.currentChannel.id);
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
+    componentDidUpdate(prevProps) {
+        if (prevProps.theme !== this.props.theme) {
+            setNavigatorStyles(prevProps.componentId, this.props.theme);
         }
-
-        let isFavorite = this.state.isFavorite;
-        if (isFavorite !== nextProps.isFavorite) {
-            isFavorite = nextProps.isFavorite;
-        }
-
-        let isMuted = this.state.isMuted;
-        if (isMuted !== nextProps.isChannelMuted) {
-            isMuted = nextProps.isChannelMuted;
-        }
-
-        let ignoreChannelMentions = this.state.ignoreChannelMentions;
-        if (ignoreChannelMentions !== nextProps.ignoreChannelMentions) {
-            ignoreChannelMentions = nextProps.ignoreChannelMentions;
-        }
-
-        this.setState({isFavorite, isMuted, ignoreChannelMentions});
     }
 
     close = (redirect = true) => {
@@ -414,6 +412,7 @@ export default class ChannelInfo extends PureComponent {
     actionsRows = (style, channelIsArchived) => {
         const {
             currentChannelMemberCount,
+            currentChannelPinnedPostCount,
             canManageUsers,
             canEditChannel,
             theme,
@@ -475,6 +474,7 @@ export default class ChannelInfo extends PureComponent {
                 <ChannelInfoRow
                     action={this.goToPinnedPosts}
                     defaultMessage='Pinned Posts'
+                    detail={currentChannelPinnedPostCount}
                     image={pinIcon}
                     textId={t('channel_header.pinnedPosts')}
                     theme={theme}

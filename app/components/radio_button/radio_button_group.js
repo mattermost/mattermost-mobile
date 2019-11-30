@@ -70,7 +70,6 @@ export default class RadioButtonGroup extends PureComponent {
                 return (
                     <RadioButton
                         {...other}
-                        ref={value}
                         name={name}
                         key={`${name}-${value}`}
                         value={value}
