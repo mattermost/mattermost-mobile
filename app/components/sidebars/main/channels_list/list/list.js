@@ -62,12 +62,9 @@ export default class List extends PureComponent {
         this.combinedActionsRef = React.createRef();
 
         this.state = {
-            sections: this.buildSections(props),
+            sections: this.buildSections(),
             showIndicator: false,
             width: 0,
-            canCreatePrivateChannels: false,
-            orderedChannelIds: [],
-            unreadChannelIds: [],
         };
 
         this.keyboardDismissProp = {
@@ -86,22 +83,13 @@ export default class List extends PureComponent {
         }
     }
 
-    static getDerivedStateFromProps(props, state) {
-        const {
-            canCreatePrivateChannels,
-            orderedChannelIds,
-            unreadChannelIds,
-        } = state;
-
-        if (props.canCreatePrivateChannels !== canCreatePrivateChannels ||
-            props.unreadChannelIds !== unreadChannelIds ||
-            props.orderedChannelIds !== orderedChannelIds) {
-            return {sections: this.buildSections(props)};
-        }
-        return null;
-    }
-
     componentDidUpdate(prevProps, prevState) {
+        if (prevProps.canCreatePrivateChannels !== this.props.canCreatePrivateChannels ||
+            prevProps.unreadChannelIds !== this.props.unreadChannelIds ||
+            prevProps.orderedChannelIds !== this.props.orderedChannelIds) {
+            this.updateSections();
+        }
+
         if (prevState.sections !== this.state.sections && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
             this.listRef.recordInteraction();
             this.updateUnreadIndicators({
@@ -114,8 +102,8 @@ export default class List extends PureComponent {
         this.listRef = ref;
     }
 
-    getSectionConfigByType = (props, sectionType) => {
-        const {canCreatePrivateChannels, canJoinPublicChannels} = props;
+    getSectionConfigByType = (sectionType) => {
+        const {canCreatePrivateChannels, canJoinPublicChannels} = this.props;
 
         switch (sectionType) {
         case SidebarSectionTypes.UNREADS:
@@ -167,14 +155,14 @@ export default class List extends PureComponent {
         }
     };
 
-    buildSections = (props) => {
+    buildSections = () => {
         const {
             orderedChannelIds,
-        } = props;
+        } = this.props;
 
         return orderedChannelIds.map((s) => {
             return {
-                ...this.getSectionConfigByType(props, s.type),
+                ...this.getSectionConfigByType(s.type),
                 data: s.items,
             };
         });
@@ -365,6 +353,10 @@ export default class List extends PureComponent {
     emitUnreadIndicatorChange = debounce((showIndicator) => {
         this.setState({showIndicator});
     }, 10);
+
+    updateSections = () => {
+        this.setState({sections: this.buildSections()});
+    };
 
     updateUnreadIndicators = ({viewableItems}) => {
         const {unreadChannelIds} = this.props;

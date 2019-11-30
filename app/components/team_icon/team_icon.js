@@ -35,30 +35,19 @@ export default class TeamIcon extends React.PureComponent {
         }
 
         this.state = {
-            teamIcon: null,
             imageError: false,
-            teamId: '',
-            lastIconUpdate: 0,
+            teamIcon: null,
         };
     }
 
-    static getDerivedStateFromProps(props, state) {
-        const newState = {imageError: false};
-
-        if (state.teamId !== props.teamId) {
-            newState.teamIcon = null;
+    componentDidUpdate(prevProps) {
+        if (prevProps.teamId !== this.props.teamId || prevProps.lastIconUpdate !== this.props.lastIconUpdate) {
+            ImageCacheManager.cache('', Client4.getTeamIconUrl(this.props.teamId, this.props.lastIconUpdate), this.setImageURL);
         }
-
-        if (props.lastIconUpdate && state.lastIconUpdate !== props.lastIconUpdate) {
-            const {lastIconUpdate, teamId} = props;
-            ImageCacheManager.cache('', Client4.getTeamIconUrl(teamId, lastIconUpdate), this.setImageURL);
-        }
-
-        return newState;
     }
 
     setImageURL = (teamIcon) => {
-        this.setState({teamIcon});
+        this.setState({teamIcon, imageError: false});
     };
 
     render() {

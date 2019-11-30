@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EditChannelInfo from 'app/components/edit_channel_info';
@@ -23,7 +23,6 @@ export default class CreateChannel extends PureComponent {
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         deviceHeight: PropTypes.number.isRequired,
-        createChannelRequest: PropTypes.object.isRequired,
         channelType: PropTypes.string,
         closeButton: PropTypes.object,
         actions: PropTypes.shape({
@@ -58,9 +57,6 @@ export default class CreateChannel extends PureComponent {
             displayName: '',
             purpose: '',
             header: '',
-            theme: null,
-            componentId: '',
-            createChannelRequest: null,
         };
 
         this.rightButton.text = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
@@ -76,32 +72,12 @@ export default class CreateChannel extends PureComponent {
         this.emitCanCreateChannel(false);
     }
 
-    static getDerivedStateFromProps(props, state) {
-        if (state.theme !== props.theme) {
-            setNavigatorStyles(state.componentId, props.theme);
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
-        const {createChannelRequest} = props;
-
-        if (state.createChannelRequest !== createChannelRequest) {
-            switch (createChannelRequest.status) {
-            case RequestStatus.STARTED:
-                this.emitCreating(true);
-                return {error: null, creating: true};
-            case RequestStatus.SUCCESS:
-                EventEmitter.emit('close_channel_drawer');
-                InteractionManager.runAfterInteractions(() => {
-                    this.emitCreating(false);
-                    this.close(false);
-                    return {error: null, creating: false};
-                });
-                break;
-            case RequestStatus.FAILURE:
-                this.emitCreating(false);
-                return {error: createChannelRequest.error, creating: false};
-            }
-        }
-        return null;
     }
+
     navigationButtonPressed({buttonId}) {
         switch (buttonId) {
         case 'close-new-channel':
@@ -147,10 +123,27 @@ export default class CreateChannel extends PureComponent {
         setButtons(componentId, buttons);
     };
 
-    onCreateChannel = () => {
+    onCreateChannel = async () => {
         Keyboard.dismiss();
+        const {actions} = this.props;
         const {displayName, purpose, header} = this.state;
-        this.props.actions.handleCreateChannel(displayName, purpose, header, this.props.channelType);
+
+        this.emitCreating(true);
+        this.setState({error: null, creating: true});
+
+        const created = await actions.handleCreateChannel(displayName, purpose, header, this.props.channelType);
+        if (created.error) {
+            this.emitCreating(false);
+            this.setState({error: created.error, creating: false});
+            return;
+        }
+
+        EventEmitter.emit('close_channel_drawer');
+        InteractionManager.runAfterInteractions(() => {
+            this.emitCreating(false);
+            this.setState({error: null, creating: false});
+            this.close(false);
+        });
     };
 
     onDisplayNameChange = (displayName) => {

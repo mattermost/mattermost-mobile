@@ -32,10 +32,12 @@ export function handleCreateChannel(displayName, purpose, header, type) {
             type,
         };
 
-        const {data} = await dispatch(createChannel(channel, currentUserId));
-        if (data && data.id) {
+        const created = await dispatch(createChannel(channel, currentUserId));
+        if (created?.data?.id) {
             dispatch(setChannelDisplayName(displayName));
-            dispatch(handleSelectChannel(data.id));
+            dispatch(handleSelectChannel(created.data.id));
         }
+
+        return created;
     };
 }

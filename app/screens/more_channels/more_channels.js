@@ -75,8 +75,6 @@ export default class MoreChannels extends PureComponent {
             loading: false,
             adding: false,
             term: '',
-            theme: null,
-            componentId: '',
         };
 
         this.rightButton = {
@@ -103,41 +101,14 @@ export default class MoreChannels extends PureComponent {
         this.mounted = false;
     }
 
-    static getDerivedStateFromProps(props, state) {
-        const {term} = state;
-        let channels;
-
-        if (state.theme !== props.theme) {
-            setNavigatorStyles(state.componentId, props.theme);
+    componentDidUpdate(prevProps) {
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
 
-        if (props.channels !== state.channels) {
-            channels = props.channels;
-            if (term) {
-                channels = this.filterChannels(props.channels, term);
-            }
+        if (this.props.channels !== prevProps.channels) {
+            this.updateChannels();
         }
-
-        if (channels) {
-            return {channels};
-        }
-
-        return null;
-    }
-
-    navigationButtonPressed({buttonId}) {
-        switch (buttonId) {
-        case 'close-more-channels':
-            this.close();
-            break;
-        case 'create-pub-channel':
-            this.onCreateChannel();
-            break;
-        }
-    }
-
-    setSearchBarRef = (ref) => {
-        this.searchBarRef = ref;
     }
 
     cancelSearch = () => {
@@ -180,18 +151,31 @@ export default class MoreChannels extends PureComponent {
 
     getChannels = debounce(this.doGetChannels, 100);
 
-    setHeaderButtons = (createEnabled) => {
-        const {canCreateChannels, componentId} = this.props;
-        const buttons = {
-            leftButtons: [this.leftButton],
-        };
-
-        if (canCreateChannels) {
-            buttons.rightButtons = [{...this.rightButton, enabled: createEnabled}];
-        }
-
-        setButtons(componentId, buttons);
-    };
+    handleDropdownClick = () => {
+        const {formatMessage} = this.context.intl;
+        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Public Channels'});
+        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Archived Channels'});
+        const titleText = formatMessage({id: 'more_channels.dropdownTitle', defaultMessage: 'Show'});
+        const cancelText = 'Cancel';
+        BottomSheet.showBottomSheetWithOptions({
+            options: [publicChannelsText, archivedChannelsText, cancelText],
+            cancelButtonIndex: 2,
+            title: titleText,
+        }, (value) => {
+            let typeOfChannels;
+            switch (value) {
+            case 0:
+                typeOfChannels = 'public';
+                break;
+            case 1:
+                typeOfChannels = 'archived';
+                break;
+            default:
+                typeOfChannels = this.state.typeOfChannels;
+            }
+            this.setState({typeOfChannels});
+        });
+    }
 
     loadedChannels = ({data}) => {
         if (this.mounted) {
@@ -202,6 +186,29 @@ export default class MoreChannels extends PureComponent {
             this.page += 1;
             this.setState({loading: false});
         }
+    };
+
+    navigationButtonPressed({buttonId}) {
+        switch (buttonId) {
+        case 'close-more-channels':
+            this.close();
+            break;
+        case 'create-pub-channel':
+            this.onCreateChannel();
+            break;
+        }
+    }
+
+    onCreateChannel = () => {
+        const {formatMessage} = this.context.intl;
+
+        const screen = 'CreateChannel';
+        const title = formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
+        const passProps = {
+            channelType: General.OPEN_CHANNEL,
+        };
+
+        goToScreen(screen, title, passProps);
     };
 
     onSelectChannel = async (id) => {
@@ -244,17 +251,14 @@ export default class MoreChannels extends PureComponent {
         }
     };
 
-    onCreateChannel = () => {
-        const {formatMessage} = this.context.intl;
-
-        const screen = 'CreateChannel';
-        const title = formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
-        const passProps = {
-            channelType: General.OPEN_CHANNEL,
-        };
-
-        goToScreen(screen, title, passProps);
-    };
+    renderItem = (props) => {
+        return (
+            <ChannelListRow
+                {...props}
+                isArchived={this.state.typeOfChannels === 'archived'}
+            />
+        );
+    }
 
     renderLoading = () => {
         const {theme, channels} = this.props;
@@ -307,15 +311,6 @@ export default class MoreChannels extends PureComponent {
         );
     };
 
-    renderItem = (props) => {
-        return (
-            <ChannelListRow
-                {...props}
-                isArchived={this.state.typeOfChannels === 'archived'}
-            />
-        );
-    }
-
     searchChannels = (text) => {
         const {actions, channels, archivedChannels, currentTeamId, canShowArchivedChannels} = this.props;
         const {typeOfChannels} = this.state;
@@ -344,31 +339,33 @@ export default class MoreChannels extends PureComponent {
         }
     };
 
-    handleDropdownClick = () => {
-        const {formatMessage} = this.context.intl;
-        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Public Channels'});
-        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Archived Channels'});
-        const titleText = formatMessage({id: 'more_channels.dropdownTitle', defaultMessage: 'Show'});
-        const cancelText = 'Cancel';
-        BottomSheet.showBottomSheetWithOptions({
-            options: [publicChannelsText, archivedChannelsText, cancelText],
-            cancelButtonIndex: 2,
-            title: titleText,
-        }, (value) => {
-            let typeOfChannels;
-            switch (value) {
-            case 0:
-                typeOfChannels = 'public';
-                break;
-            case 1:
-                typeOfChannels = 'archived';
-                break;
-            default:
-                typeOfChannels = this.state.typeOfChannels;
-            }
-            this.setState({typeOfChannels});
-        });
+    setHeaderButtons = (createEnabled) => {
+        const {canCreateChannels, componentId} = this.props;
+        const buttons = {
+            leftButtons: [this.leftButton],
+        };
+
+        if (canCreateChannels) {
+            buttons.rightButtons = [{...this.rightButton, enabled: createEnabled}];
+        }
+
+        setButtons(componentId, buttons);
+    };
+
+    setSearchBarRef = (ref) => {
+        this.searchBarRef = ref;
     }
+
+    updateChannels = () => {
+        let channels = this.props.channels;
+        const {term} = this.state;
+
+        if (term) {
+            channels = this.filterChannels(channels, term);
+        }
+
+        this.setState({channels});
+    };
 
     render() {
         const {formatMessage} = this.context.intl;
