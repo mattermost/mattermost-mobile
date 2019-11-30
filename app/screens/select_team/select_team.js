@@ -76,7 +76,7 @@ export default class SelectTeam extends PureComponent {
         }
 
         if (teams !== prevProps.teams) {
-            this.buildData(teams);
+            this.buildData(this.props);
         }
     }
 

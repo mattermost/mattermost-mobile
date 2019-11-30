@@ -74,11 +74,9 @@ export default class Login extends PureComponent {
         setMfaPreflightDone(false);
     }
 
-    componentDidUpdate(nextProps) {
-        const {loginRequest: {status}, actions: {handleSuccessfulLogin}} = this.props;
-
-        if (status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-            handleSuccessfulLogin().then(this.goToChannel);
+    componentDidUpdate(prevProps) {
+        if (this.props.loginRequest.status === RequestStatus.STARTED && prevProps.loginRequest.status === RequestStatus.SUCCESS) {
+            this.props.actions.handleSuccessfulLogin().then(this.goToChannel);
         }
     }
 
@@ -87,8 +85,13 @@ export default class Login extends PureComponent {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        if (prevState.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
-            return {isLoading: false};
+        if (prevState.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
+            return null;
+        } else if (prevState.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
+            return {
+                isLoading: false,
+                loginRequest: nextProps.loginRequest,
+            };
         }
         return null;
     }

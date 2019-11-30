@@ -60,7 +60,10 @@ export default class ClientUpgradeListener extends PureComponent {
         if (prevState.isLandscape !== nextProps.isLandscape &&
           isUpgradeAvailable(prevState.upgradeType) && DeviceTypes.IS_IPHONE_WITH_INSETS) {
             const newTop = nextProps.isLandscape ? 45 : 100;
-            return {top: new Animated.Value(newTop)};
+            return {
+                top: new Animated.Value(newTop),
+                isLandscape: nextProps.isLandscape,
+            };
         }
 
         return null;
