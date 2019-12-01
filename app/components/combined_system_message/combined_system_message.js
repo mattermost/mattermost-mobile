@@ -383,7 +383,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         baseText: {
             color: theme.centerChannelColor,
-            opacity: 0.6,
         },
         linkText: {
             color: theme.linkColor,
