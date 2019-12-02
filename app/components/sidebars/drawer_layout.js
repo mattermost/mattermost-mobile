@@ -45,7 +45,6 @@ export type PropType = {
     renderNavigationView: () => any,
     statusBarBackgroundColor?: string,
     useNativeAnimations?: boolean,
-    isMain: boolean,
     isTablet?: boolean,
 };
 
@@ -185,7 +184,6 @@ export default class DrawerLayout extends Component {
             drawerBackgroundColor,
             drawerWidth,
             drawerPosition,
-            isMain,
         } = this.props;
 
         /**
@@ -201,8 +199,8 @@ export default class DrawerLayout extends Component {
         /* Drawer styles */
         let outputRange;
         // ios main sidebar sits mostly under the main screen, with slight move
-        const translateDistance = Platform.OS === 'ios' && isMain ?
-            Math.floor(drawerWidth * .2) : drawerWidth
+        const translateDistance = Platform.OS === 'ios' && drawerPosition === 'left' ?
+            Math.floor(drawerWidth * 0.2) : drawerWidth
 
         if (this.getDrawerPosition() === 'left') {
             outputRange = [-translateDistance, 0];
@@ -223,7 +221,7 @@ export default class DrawerLayout extends Component {
         // 1 - main | tablet
         // 2 - overlay
         // 3 - android main drawer | settings drawer
-        const drawerZIndex = isMain && Platform.OS === 'ios' ? 0 : 3
+        const drawerZIndex = drawerPosition === 'left' && Platform.OS === 'ios' ? 0 : 3
 
         return (
             <React.Fragment>
@@ -263,7 +261,7 @@ export default class DrawerLayout extends Component {
     };
 
     render() {
-        const {isMain, drawerWidth, isTablet} = this.props;
+        const {drawerPosition, drawerWidth, isTablet} = this.props;
         const panHandlers = isTablet ? emptyObject : this._panResponder.panHandlers;
         const containerStyles = [styles.container];
         if (isTablet) {
@@ -271,7 +269,7 @@ export default class DrawerLayout extends Component {
         }
 
         const mainStyles = [styles.main]
-        if (isMain && Platform.OS === 'ios') {
+        if (drawerPosition === 'left' && Platform.OS === 'ios') {
             /* Drawer styles */
             let outputRange;
             

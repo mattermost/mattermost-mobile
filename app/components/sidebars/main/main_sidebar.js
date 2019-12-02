@@ -412,7 +412,6 @@ export default class ChannelSidebar extends Component {
                 onDrawerOpen={this.handleDrawerOpen}
                 drawerWidth={drawerWidth}
                 useNativeAnimations={true}
-                isMain={true}
                 isTablet={isTablet}
             >
                 {children}

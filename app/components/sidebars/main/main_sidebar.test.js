@@ -4,7 +4,6 @@
 import React from 'react';
 import {Platform} from 'react-native';
 import {shallow} from 'enzyme';
-import _ from 'underscore';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -92,7 +91,7 @@ describe('MainSidebar', () => {
             <MainSidebar {...baseProps}/>
         );
         const drawer = wrapper.dive().childAt(1);
-        const drawerStyle = _.extend({}, ...drawer.props().style);
+        const drawerStyle = drawer.props().style.reduce((acc, obj) => ({...acc, ...obj}));
         expect(drawerStyle).toHaveProperty('zIndex', 0);
     });
 
@@ -103,7 +102,7 @@ describe('MainSidebar', () => {
             <MainSidebar {...baseProps}/>
         );
         const drawer = wrapper.dive().childAt(1);
-        const drawerStyle = _.extend({}, ...drawer.props().style);
+        const drawerStyle = drawer.props().style.reduce((acc, obj) => ({...acc, ...obj}));
         expect(drawerStyle).toHaveProperty('zIndex', 3);
     });
 });
