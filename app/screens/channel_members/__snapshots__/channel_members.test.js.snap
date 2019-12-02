@@ -45,6 +45,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
     />
   </View>
   <CustomList
+    canRefresh={true}
     data={Array []}
     extraData={Object {}}
     isLandscape={false}
