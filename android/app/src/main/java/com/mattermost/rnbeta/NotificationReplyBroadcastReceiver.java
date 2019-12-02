@@ -63,7 +63,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
                         String token = map.getString("password");
                         String serverUrl = map.getString("service");
 
-                        Log.i("ReactNative", String.format("URL=%s TOKEN=%s", serverUrl, token));
+                        Log.i("ReactNative", String.format("URL=%s", serverUrl));
                         replyToMessage(serverUrl, token, notificationId, message);
                     }
                 }
@@ -99,7 +99,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.i("ReactNative", String.format("Reply with message %s FAILED exception %s", message, e.getMessage()));
+                Log.i("ReactNative", String.format("Reply FAILED exception %s", e.getMessage()));
                 onReplyFailed(notificationManager, notificationId, channelId);
             }
 
@@ -107,9 +107,9 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
             public void onResponse(Call call, final Response response) throws IOException {
                 if (response.isSuccessful()) {
                     onReplySuccess(notificationManager, notificationId, channelId);
-                    Log.i("ReactNative", String.format("Reply with message %s", message));
+                    Log.i("ReactNative", "Reply SUCCESS");
                 } else {
-                    Log.i("ReactNative", String.format("Reply with message %s FAILED status %s BODY %s", message, response.code(), response.body().string()));
+                    Log.i("ReactNative", String.format("Reply FAILED status %s BODY %s", response.code(), response.body().string()));
                     onReplyFailed(notificationManager, notificationId, channelId);
                 }
             }
