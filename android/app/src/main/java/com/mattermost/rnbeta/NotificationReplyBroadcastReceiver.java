@@ -87,7 +87,6 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         final OkHttpClient client = new OkHttpClient();
         final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         String json = buildReplyPost(channelId, rootId, message.toString());
-        Log.i("ReactNative", String.format("JSON STRING %s", json));
         RequestBody body = RequestBody.create(JSON, json);
         Request request = new Request.Builder()
                 .header("Authorization", String.format("Bearer %s", token))
