@@ -48,7 +48,7 @@ public class ReceiptDelivery {
                         }
                     }
 
-                    Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with TOKEN=%s ID-LOADED=%s", ackId, type, serverUrl, token, isIdLoaded));
+                    Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with ID-LOADED=%s", ackId, type, serverUrl, isIdLoaded));
                     execute(serverUrl, postId, token, ackId, type, isIdLoaded, promise);
                 }
             }
