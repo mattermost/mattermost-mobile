@@ -38,12 +38,12 @@ export default class PostOptions extends PureComponent {
         canFlag: PropTypes.bool,
         canPin: PropTypes.bool,
         canEdit: PropTypes.bool,
+        canMarkAsUnread: PropTypes.bool, //#backwards-compatibility:5.18v
         canEditUntil: PropTypes.number.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         isFlagged: PropTypes.bool,
-        isMyPost: PropTypes.bool,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -231,7 +231,7 @@ export default class PostOptions extends PureComponent {
         const {post, isLandscape, theme} = this.props;
         const {formatMessage} = this.context.intl;
 
-        if (!isSystemMessage(post)) {
+        if (!isSystemMessage(post) && this.props.canMarkAsUnread) {
             return (
                 <PostOption
                     key='markUnread'
