@@ -160,7 +160,13 @@ class GlobalEventHandler {
         PushNotifications.clearNotifications();
         const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
         const mainPath = cacheDir.split('/').slice(0, -1).join('/');
-        await RNFetchBlob.fs.unlink(cacheDir);
+
+        try {
+            await RNFetchBlob.fs.unlink(cacheDir);
+        } catch (e) {
+            console.log('Failed to remove cache folder', e); //eslint-disable-line no-console
+        }
+
         mattermostBucket.removePreference('cert');
         if (Platform.OS === 'ios') {
             mattermostBucket.removeFile('entities');
