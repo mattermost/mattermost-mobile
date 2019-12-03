@@ -16,7 +16,8 @@ describe('MoreChannels', () => {
     const actions = {
         handleSelectChannel: jest.fn(),
         joinChannel: jest.fn(),
-        loadPublicAndArchivedChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2'}]}),
+        getArchivedChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2', delete_at: 123}]}),
+        getChannels: jest.fn().mockResolvedValue({data: [{id: 'id', name: 'name', display_name: 'display_name'}]}),
         searchChannels: jest.fn(),
         setChannelDisplayName: jest.fn(),
     };
@@ -25,7 +26,7 @@ describe('MoreChannels', () => {
         actions,
         canCreateChannels: true,
         channels: [{id: 'id', name: 'name', display_name: 'display_name'}],
-        archivedChannels: [{id: 'id2', name: 'archived', display_name: 'archived channel'}],
+        archivedChannels: [{id: 'id2', name: 'archived', display_name: 'archived channel', delete_at: 123}],
         closeButton: {},
         currentUserId: 'current_user_id',
         currentTeamId: 'current_team_id',

@@ -11,6 +11,7 @@ export default class MarkdownTableRow extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node,
         isLastRow: PropTypes.bool,
+        isFirstRow: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     };
 
@@ -20,6 +21,10 @@ export default class MarkdownTableRow extends React.PureComponent {
         const rowStyle = [style.row];
         if (!this.props.isLastRow) {
             rowStyle.push(style.rowBottomBorder);
+        }
+
+        if (this.props.isFirstRow) {
+            rowStyle.push(style.rowTopBackground);
         }
 
         // Add an extra prop to the last cell so that it knows not to render a right border since the container
@@ -36,7 +41,11 @@ export default class MarkdownTableRow extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
+            flex: 1,
             flexDirection: 'row',
+        },
+        rowTopBackground: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         rowBottomBorder: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),

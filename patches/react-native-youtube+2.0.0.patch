@@ -1,0 +1,77 @@
+diff --git a/node_modules/react-native-youtube/RCTYouTubeStandalone.m b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
+index fabd291..1e29586 100644
+--- a/node_modules/react-native-youtube/RCTYouTubeStandalone.m
++++ b/node_modules/react-native-youtube/RCTYouTubeStandalone.m
+@@ -5,6 +5,18 @@
+ #endif
+ @import AVKit;
+ 
++@interface AVPlayerViewControllerRotation : AVPlayerViewController
++
++@end
++
++@implementation AVPlayerViewControllerRotation
++
++- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
++    return UIInterfaceOrientationMaskAllButUpsideDown;
++}
++
++@end
++
+ @implementation RCTYouTubeStandalone {
+     RCTPromiseResolveBlock resolver;
+     RCTPromiseRejectBlock rejecter;
+@@ -14,6 +26,7 @@ @implementation RCTYouTubeStandalone {
+ 
+ RCT_REMAP_METHOD(playVideo,
+                  playVideoWithResolver:(NSString*)videoId
++                 startTime:(NSNumber* _Nonnull)startTime
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+ {
+@@ -22,10 +35,10 @@ @implementation RCTYouTubeStandalone {
+     #else
+         dispatch_async(dispatch_get_main_queue(), ^{
+             UIViewController *root = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+-            AVPlayerViewController *playerViewController = [AVPlayerViewController new];
++            AVPlayerViewControllerRotation *playerViewController = [AVPlayerViewControllerRotation new];
+             [root presentViewController:playerViewController animated:YES completion:nil];
+ 
+-            __weak AVPlayerViewController *weakPlayerViewController = playerViewController;
++            __weak AVPlayerViewControllerRotation *weakPlayerViewController = playerViewController;
+ 
+             [[XCDYouTubeClient defaultClient] getVideoWithIdentifier:videoId
+                                                    completionHandler:^(XCDYouTubeVideo * _Nullable video, NSError * _Nullable error) {
+@@ -38,10 +51,18 @@ @implementation RCTYouTubeStandalone {
+                         streamURLs[@(XCDYouTubeVideoQualitySmall240)
+                     ];
+ 
+-                    weakPlayerViewController.player = [AVPlayer playerWithURL:streamURL];
+-                    [weakPlayerViewController.player play];
+-
+-                    resolve(@"YouTubeStandaloneIOS player launched successfully");
++                    @try {
++                         CMTime initialPlaybackTime = CMTimeMakeWithSeconds([startTime doubleValue], 1);
++                         weakPlayerViewController.player = [AVPlayer playerWithURL:streamURL];
++                         [weakPlayerViewController.player seekToTime:initialPlaybackTime completionHandler: ^(BOOL finished) {
++                             [weakPlayerViewController.player play];
++                             resolve(@"YouTubeStandaloneIOS player launched successfully");
++                         }];
++                     }
++                     @catch (NSException *ex) {
++                         reject(@"error", ex.reason, nil);
++                         [root dismissViewControllerAnimated:YES completion:nil];
++                     }
+                 } else {
+                     reject(@"error", error.localizedDescription, nil);
+                     [root dismissViewControllerAnimated:YES completion:nil];
+diff --git a/node_modules/react-native-youtube/YouTubeStandalone.ios.js b/node_modules/react-native-youtube/YouTubeStandalone.ios.js
+index b5e1b3c..f7c9999 100644
+--- a/node_modules/react-native-youtube/YouTubeStandalone.ios.js
++++ b/node_modules/react-native-youtube/YouTubeStandalone.ios.js
+@@ -5,4 +5,4 @@ const { YouTubeStandalone } = NativeModules;
+ 
+ export const YouTubeStandaloneIOS = !YouTubeStandalone
+   ? null
+-  : { playVideo: videoId => YouTubeStandalone.playVideo(videoId) };
++  : { playVideo: (videoId, startTime) => YouTubeStandalone.playVideo(videoId, startTime) };

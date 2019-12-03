@@ -110,12 +110,14 @@ class FormattedMarkdownText extends React.PureComponent {
     }
 
     renderAtMention = ({context, mentionName}) => {
+        const style = getStyleSheet(this.props.theme);
+
         return (
             <AtMention
                 mentionStyle={this.props.textStyles.mention}
                 mentionName={mentionName}
                 onPostPress={this.props.onPostPress}
-                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+                textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), style.atMentionOpacity]}
             />
         );
     }
@@ -138,6 +140,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.8),
             fontSize: 15,
             lineHeight: 22,
+        },
+        atMentionOpacity: {
+            opacity: 1,
         },
     };
 });

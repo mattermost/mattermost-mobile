@@ -1,0 +1,235 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MarkdownTable should match snapshot 1`] = `
+<TouchableWithFeedbackIOS
+  onPress={[Function]}
+  style={
+    Object {
+      "paddingRight": 10,
+    }
+  }
+  type="opacity"
+>
+  <ScrollViewMock
+    onContentSizeChange={[Function]}
+    onLayout={[Function]}
+    scrollEnabled={false}
+    showsVerticalScrollIndicator={false}
+    style={
+      Object {
+        "maxHeight": 300,
+      }
+    }
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "borderColor": "rgba(61,60,64,0.2)",
+            "borderWidth": 1,
+            "width": "100%",
+          },
+          Object {
+            "width": 480,
+          },
+        ]
+      }
+    >
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+        isLastRow={true}
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+    </View>
+  </ScrollViewMock>
+  <LinearGradient
+    colors={
+      Array [
+        "rgba(61,60,64,0)",
+        "rgba(61,60,64,0.1)",
+      ]
+    }
+    end={
+      Object {
+        "x": 1,
+        "y": 0,
+      }
+    }
+    start={
+      Object {
+        "x": 0,
+        "y": 0,
+      }
+    }
+    style={
+      Array [
+        Object {
+          "borderColor": "rgba(61,60,64,0.2)",
+          "borderRightWidth": 1,
+          "maxHeight": 300,
+          "position": "absolute",
+          "top": 0,
+          "width": 20,
+        },
+        Object {
+          "height": 0,
+          "left": -20,
+        },
+      ]
+    }
+  />
+  <TouchableWithFeedbackIOS
+    onPress={[Function]}
+    style={
+      Array [
+        Object {
+          "height": 34,
+          "width": 34,
+        },
+        Object {
+          "left": -20,
+        },
+      ]
+    }
+    type="opacity"
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "flex-end",
+            "maxWidth": "100%",
+            "paddingBottom": 4,
+            "paddingRight": 14,
+            "paddingTop": 8,
+          },
+          Object {
+            "width": 480,
+          },
+        ]
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "borderColor": "rgba(61,60,64,0.2)",
+            "borderRadius": 50,
+            "borderWidth": 1,
+            "display": "flex",
+            "height": 34,
+            "justifyContent": "center",
+            "marginRight": -6,
+            "marginTop": -32,
+            "width": 34,
+          }
+        }
+      >
+        <Icon
+          allowFontScaling={false}
+          name="expand"
+          size={12}
+          style={
+            Object {
+              "color": "#2389d7",
+              "fontSize": 13,
+            }
+          }
+        />
+      </View>
+    </View>
+  </TouchableWithFeedbackIOS>
+</TouchableWithFeedbackIOS>
+`;
