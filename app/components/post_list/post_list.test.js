@@ -108,20 +108,18 @@ describe('PostList', () => {
         wrapper.setProps({
             extraData: true,
         });
-        expect(instance.props.extraData).toBe(true);
+        expect(instance.loadToFillContent).toHaveBeenCalledTimes(0);
 
         wrapper.setState({
             postListHeight: 500,
             contentHeight: 200,
         });
-        expect(instance.state.postListHeight).toBe(500);
-        expect(instance.state.contentHeight).toBe(200);
+        expect(instance.loadToFillContent).toHaveBeenCalledTimes(1);
 
         wrapper.setProps({
             extraData: false,
         });
 
-        expect(instance.props.extraData).toBe(false);
         expect(instance.loadToFillContent).toHaveBeenCalledTimes(1);
     });
 });
