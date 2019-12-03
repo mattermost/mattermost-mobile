@@ -21,7 +21,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import {alertErrorWithFallback} from 'app/utils/general';
+import {alertErrorWithFallback, emptyFunction} from 'app/utils/general';
 import {goToScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import {
     changeOpacity,
@@ -33,9 +33,10 @@ import {
 export default class MoreChannels extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            getArchivedChannels: PropTypes.func.isRequired,
+            getChannels: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
-            loadPublicAndArchivedChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
@@ -65,7 +66,8 @@ export default class MoreChannels extends PureComponent {
         this.searchTimeoutId = 0;
         this.publicPage = -1;
         this.archivedPage = -1;
-        this.next = true;
+        this.nextPublic = true;
+        this.nextArchived = true;
         this.mounted = false;
 
         this.state = {
@@ -104,6 +106,7 @@ export default class MoreChannels extends PureComponent {
     componentWillReceiveProps(nextProps) {
         const {term} = this.state;
         let channels;
+        let archivedChannels;
 
         if (this.props.theme !== nextProps.theme) {
             setNavigatorStyles(this.props.componentId, nextProps.theme);
@@ -116,8 +119,24 @@ export default class MoreChannels extends PureComponent {
             }
         }
 
+        if (nextProps.archivedChannels !== this.props.archivedChannels) {
+            archivedChannels = nextProps.archivedChannels;
+            if (term) {
+                archivedChannels = this.filterChannels(nextProps.archivedChannels, term);
+            }
+        }
+
+        const nextState = {};
         if (channels) {
-            this.setState({channels});
+            nextState.channels = channels;
+        }
+
+        if (archivedChannels) {
+            nextState.archivedChannels = archivedChannels;
+        }
+
+        if (nextState.archivedChannels || nextState.channels) {
+            this.setState(nextState);
         }
     }
 
@@ -152,17 +171,30 @@ export default class MoreChannels extends PureComponent {
 
     doGetChannels = () => {
         const {actions, currentTeamId, canShowArchivedChannels} = this.props;
-        const {loading, term} = this.state;
+        const {loading, term, typeOfChannels} = this.state;
 
-        if (this.next && !loading && !term && this.mounted) {
+        if (!loading && !term && this.mounted) {
             this.setState({loading: true}, () => {
-                actions.loadPublicAndArchivedChannels(
-                    currentTeamId,
-                    this.publicPage + 1,
-                    this.archivedPage + 1,
-                    General.CHANNELS_CHUNK_SIZE,
-                    canShowArchivedChannels,
-                ).then(this.loadedChannels);
+                switch (typeOfChannels) {
+                case 'public':
+                    if (this.nextPublic) {
+                        actions.getChannels(
+                            currentTeamId,
+                            this.publicPage + 1,
+                            General.CHANNELS_CHUNK_SIZE,
+                        ).then(this.loadedChannels);
+                    }
+                    break;
+                case 'archived':
+                    if (canShowArchivedChannels && this.nextArchived) {
+                        actions.getArchivedChannels(
+                            currentTeamId,
+                            this.archivedPage + 1,
+                            General.CHANNELS_CHUNK_SIZE,
+                        ).then(this.loadedChannels);
+                    }
+                    break;
+                }
             });
         }
     };
@@ -191,11 +223,17 @@ export default class MoreChannels extends PureComponent {
 
     loadedChannels = ({data}) => {
         if (this.mounted) {
-            if (data && !data.length) {
-                this.next = false;
+            const {typeOfChannels} = this.state;
+            const isPublic = typeOfChannels === 'public';
+
+            if (isPublic) {
+                this.publicPage += 1;
+                this.nextPublic = (data && !data.length);
+            } else {
+                this.archivedPage += 1;
+                this.nextArchived = (data && !data.length);
             }
 
-            this.page += 1;
             this.setState({loading: false});
         }
     };
@@ -253,10 +291,12 @@ export default class MoreChannels extends PureComponent {
     };
 
     renderLoading = () => {
-        const {theme, channels} = this.props;
+        const {theme} = this.props;
+        const {typeOfChannels} = this.state;
         const style = getStyleFromTheme(theme);
 
-        if (!channels.length && this.page <= 0) {
+        if ((typeOfChannels === 'public' && !this.nextPublic) ||
+            (typeOfChannels === 'archived' && !this.nextArchived)) {
             return null;
         }
 
@@ -362,7 +402,10 @@ export default class MoreChannels extends PureComponent {
             default:
                 typeOfChannels = this.state.typeOfChannels;
             }
-            this.setState({typeOfChannels});
+
+            if (typeOfChannels !== this.state.typeOfChannels) {
+                this.setState({typeOfChannels, loading: false}, this.doGetChannels);
+            }
         });
     }
 
@@ -370,7 +413,7 @@ export default class MoreChannels extends PureComponent {
         const {formatMessage} = this.context.intl;
         const {theme, isLandscape, canShowArchivedChannels} = this.props;
         const {adding, channels, archivedChannels, loading, term, typeOfChannels} = this.state;
-        const more = term ? () => true : this.getChannels;
+        const more = term ? emptyFunction : this.getChannels;
         const style = getStyleFromTheme(theme);
 
         const publicChannelsText = formatMessage({id: 'more_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
@@ -440,6 +483,7 @@ export default class MoreChannels extends PureComponent {
                     </View>
                     {channelDropdown}
                     <CustomList
+                        canRefresh={false}
                         data={activeChannels}
                         extraData={loading}
                         key='custom_list'

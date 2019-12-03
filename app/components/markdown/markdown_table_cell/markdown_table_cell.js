@@ -7,7 +7,8 @@ import {Text, View} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export const CELL_WIDTH = 100;
+export const CELL_MIN_WIDTH = 96;
+export const CELL_MAX_WIDTH = 192;
 
 export default class MarkdownTableCell extends React.PureComponent {
     static propTypes = {
@@ -45,11 +46,10 @@ export default class MarkdownTableCell extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         cell: {
+            flex: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            width: CELL_WIDTH,
             justifyContent: 'flex-start',
-            paddingHorizontal: 13,
-            paddingVertical: 6,
+            padding: 8,
         },
         cellRightBorder: {
             borderRightWidth: 1,

@@ -4,67 +4,67 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
-    Dimensions,
     Platform,
     ScrollView,
+    SafeAreaView,
 } from 'react-native';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class Table extends React.PureComponent {
     static propTypes = {
         renderRows: PropTypes.func.isRequired,
         tableWidth: PropTypes.number.isRequired,
+        renderAsFlex: PropTypes.bool.isRequired,
     };
 
-    constructor(props) {
-        super(props);
-
-        const {width, height} = Dimensions.get('window');
-        const isLandscape = width > height;
-        this.state = {isLandscape};
-    }
-
-    componentDidMount() {
-        Dimensions.addEventListener('change', this.handleDimensionChange);
-    }
-
-    componentWillUnmount() {
-        Dimensions.removeEventListener('change', this.handleDimensionChange);
-    }
-
-    handleDimensionChange = ({window}) => {
-        const {width, height} = window;
-        const isLandscape = width > height;
-        this.setState({isLandscape});
-    }
-
     render() {
-        const content = this.props.renderRows();
+        const style = getStyleSheet();
+        const content = this.props.renderRows(true);
+        const viewStyle = this.props.renderAsFlex ? style.displayFlex : {width: this.props.tableWidth};
 
         let container;
         if (Platform.OS === 'android') {
-            // On Android, ScrollViews can only handle one direction at once, so use two ScrollViews that go in
-            // different directions. This prevents diagonal scrolling, so only do it on Android when totally necessary.
             container = (
                 <ScrollView>
-                    <ScrollView horizontal={true}>
+                    <ScrollView
+                        contentContainerStyle={viewStyle}
+                        horizontal={true}
+                    >
                         {content}
                     </ScrollView>
                 </ScrollView>
             );
         } else {
-            const {isLandscape} = this.state;
-
             container = (
-                <ScrollView
-                    style={padding(isLandscape)}
-                    contentContainerStyle={{width: this.props.tableWidth}}
-                >
-                    {content}
-                </ScrollView>
+                <SafeAreaView>
+                    <ScrollView
+                        style={style.fullHeight}
+                        contentContainerStyle={viewStyle}
+                    >
+                        {content}
+                    </ScrollView>
+                </SafeAreaView>
             );
         }
-
         return container;
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme(() => {
+    return {
+        fullHeight: {
+            height: '100%',
+        },
+        displayFlex: {
+            ...Platform.select({
+                android: {
+                    flex: 1,
+                },
+                ios: {
+                    flex: 0,
+                },
+            }),
+        },
+    };
+});
