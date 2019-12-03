@@ -66,4 +66,23 @@ describe('PostBodyAdditionalContent', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('Should not have youtube preview if metadata type is not opengraph even when url matches youtube regex', () => {
+        const props = {
+            ...baseProps,
+            metadata: {
+                ...baseProps.metadata,
+                embeds: [{
+                    type: 'link',
+                    url: 'https://youtu.be/n_4CVqKOCm8',
+                }],
+            },
+        };
+
+        const wrapper = shallowWithIntl(
+            <PostBodyAdditionalContent {...props}/>
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
 });

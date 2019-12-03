@@ -1,5 +1,62 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`PostBodyAdditionalContent Should not have youtube preview if metadata type is not opengraph even when url matches youtube regex 1`] = `
+<Connect(PostAttachmentOpenGraph)
+  imagesMetadata={
+    Object {
+      "imageUrl.jpg": Object {
+        "format": "jpeg",
+        "height": 480,
+        "width": 360,
+      },
+    }
+  }
+  isReplyPost={false}
+  link="https://youtu.be/n_4CVqKOCm8"
+  openGraphData={
+    Object {
+      "images": Array [
+        Object {
+          "height": 360,
+          "secure_url": "secureUrl.jpg",
+          "width": 480,
+        },
+      ],
+      "url": "",
+    }
+  }
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBg": "#ffffff",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
+`;
+
 exports[`PostBodyAdditionalContent Use default image when metadata does not exist 1`] = `
 <TouchableWithFeedbackIOS
   onPress={[Function]}

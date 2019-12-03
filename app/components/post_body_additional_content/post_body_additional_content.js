@@ -500,7 +500,8 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     render() {
         let {link} = this.props;
-        const {openGraphData, postProps} = this.props;
+        let isYouTube = false;
+        const {openGraphData, postProps, metadata} = this.props;
         const {linkLoadError, shortenedLink} = this.state;
         if (shortenedLink) {
             link = shortenedLink;
@@ -510,8 +511,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
         if (!link && !attachments) {
             return null;
         }
+        if (metadata) {
+            isYouTube = metadata?.embeds[0]?.type === 'opengraph' && isYoutubeLink(link);
+        } else {
+            isYouTube = isYoutubeLink(link);
+        }
 
-        const isYouTube = isYoutubeLink(link);
         const isImage = this.isImage(link);
         const isOpenGraph = Boolean(openGraphData);
 
