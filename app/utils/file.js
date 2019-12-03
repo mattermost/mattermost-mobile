@@ -103,6 +103,7 @@ export async function deleteFileCache() {
     if (isVideosDir) {
         await RNFetchBlob.fs.unlink(VIDEOS_PATH);
     }
+
     return true;
 }
 
