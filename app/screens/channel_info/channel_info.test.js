@@ -68,6 +68,7 @@ describe('channel_info', () => {
             closeGMChannel: jest.fn(),
             convertChannelToPrivate: jest.fn(),
             deleteChannel: jest.fn(),
+            undeleteChannel: jest.fn(),
             getChannelStats: jest.fn(),
             getChannel: jest.fn(),
             leaveChannel: jest.fn(),

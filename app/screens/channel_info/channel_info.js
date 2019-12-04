@@ -32,6 +32,7 @@ export default class ChannelInfo extends PureComponent {
             closeGMChannel: PropTypes.func.isRequired,
             convertChannelToPrivate: PropTypes.func.isRequired,
             deleteChannel: PropTypes.func.isRequired,
+            undeleteChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
@@ -297,6 +298,56 @@ export default class ChannelInfo extends PureComponent {
         );
     });
 
+    handleUndelete = preventDoubleTap((eventType) => {
+        title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
+        message = {
+            id: t('mobile.channel_info.alertMessageUndeleteChannel'),
+            defaultMessage: 'Are you sure you want to unarchive the {term} {name}?',
+        };
+        onPressAction = async () => {
+            const result = await this.props.actions.undeleteChannel(channel.id);
+            if (result.error) {
+                alertErrorWithFallback(
+                    this.context.intl,
+                    result.error,
+                    {
+                        id: t('mobile.channel_info.undelete_failed'),
+                        defaultMessage: "We couldn't unarchive the channel {displayName}. Please check your connection and try again.",
+                    },
+                    {
+                        displayName: channel.display_name.trim(),
+                    }
+                );
+                if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
+                    this.props.actions.getChannel(channel.id);
+                }
+            } else if (this.props.viewArchivedChannels) {
+                this.props.actions.handleSelectChannel(channel.id);
+                this.close(false);
+            } else {
+                this.props.actions.selectPenultimateChannel(channel.team_id);
+                this.close(false);
+            }
+        };
+
+        Alert.alert(
+            formatMessage(title, {term}),
+            formatMessage(
+                message,
+                {
+                    term: term.toLowerCase(),
+                    name: channel.display_name.trim(),
+                }
+            ),
+            [{
+                text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
+            }, {
+                text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
+                onPress: onPressAction,
+            }],
+        );
+    });
+
     handleClose = preventDoubleTap(() => {
         const {currentChannel, isCurrent, isFavorite} = this.props;
         const channel = Object.assign({}, currentChannel, {isCurrent}, {isFavorite});
@@ -400,6 +451,14 @@ export default class ChannelInfo extends PureComponent {
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
         return isDirectMessage || isGroupMessage;
+    };
+
+    renderUnarchiveChannel = (channelIsArchived) => {
+        const channel = this.props.currentChannel;
+        const isDirectMessage = channel.type === General.DM_CHANNEL;
+        const isGroupMessage = channel.type === General.GM_CHANNEL;
+
+        return channelIsArchived && (!isDirectMessage && !isGroupMessage);
     };
 
     renderConvertToPrivateRow = () => {
@@ -645,6 +704,20 @@ export default class ChannelInfo extends PureComponent {
                             iconColor='#CA3B27'
                             rightArrow={false}
                             textId={i18nId}
+                            textColor='#CA3B27'
+                            theme={theme}
+                            isLandscape={isLandscape}
+                        />
+                    </View>
+                    }
+                    {this.renderUnarchiveChannel(channelIsArchived) &&
+                    <View style={[style.rowsContainer, style.footer]}>
+                        <ChannelInfoRow
+                            action={this.handleUndelete}
+                            defaultMessage='Unarchive Channel'
+                            iconColor='#CA3B27'
+                            icon='archive' // might need to change the icon...
+                            textId={t('mobile.routes.channelInfo.undelete_channel')}
                             textColor='#CA3B27'
                             theme={theme}
                             isLandscape={isLandscape}

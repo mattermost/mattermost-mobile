@@ -10,6 +10,7 @@ import {
     getChannelStats,
     getChannel,
     deleteChannel,
+    undeleteChannel,
     unfavoriteChannel,
     updateChannelNotifyProps,
 } from 'mattermost-redux/actions/channels';
@@ -134,6 +135,7 @@ function mapDispatchToProps(dispatch) {
             closeGMChannel,
             convertChannelToPrivate,
             deleteChannel,
+            undeleteChannel,
             getChannelStats,
             getChannel,
             leaveChannel,
