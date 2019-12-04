@@ -298,13 +298,19 @@ export default class ChannelInfo extends PureComponent {
         );
     });
 
-    handleUndelete = preventDoubleTap((eventType) => {
-        title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
-        message = {
+    handleUndelete = preventDoubleTap(() => {
+        const {formatMessage} = this.context.intl;
+        const channel = this.props.currentChannel;
+        const term = channel.type === General.OPEN_CHANNEL ?
+            formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
+            formatMessage({id: 'mobile.channel_info.privateChannel', defaultMessage: 'Private Channel'});
+
+        let title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
+        let message = {
             id: t('mobile.channel_info.alertMessageUndeleteChannel'),
             defaultMessage: 'Are you sure you want to unarchive the {term} {name}?',
         };
-        onPressAction = async () => {
+        let onPressAction = async () => {
             const result = await this.props.actions.undeleteChannel(channel.id);
             if (result.error) {
                 alertErrorWithFallback(
