@@ -305,12 +305,12 @@ export default class ChannelInfo extends PureComponent {
             formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
             formatMessage({id: 'mobile.channel_info.privateChannel', defaultMessage: 'Private Channel'});
 
-        let title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
-        let message = {
+        const title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
+        const message = {
             id: t('mobile.channel_info.alertMessageUndeleteChannel'),
             defaultMessage: 'Are you sure you want to unarchive the {term} {name}?',
         };
-        let onPressAction = async () => {
+        const onPressAction = async () => {
             const result = await this.props.actions.undeleteChannel(channel.id);
             if (result.error) {
                 alertErrorWithFallback(
