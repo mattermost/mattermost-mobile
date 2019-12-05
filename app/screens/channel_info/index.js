@@ -30,11 +30,10 @@ import {
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 import Permissions from 'mattermost-redux/constants/permissions';
-import {hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
 import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
