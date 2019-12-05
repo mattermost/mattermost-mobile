@@ -33,6 +33,10 @@ import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystem
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
+import Permissions from 'mattermost-redux/constants/permissions';
+import {hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
+import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     closeDMChannel,
@@ -101,8 +105,17 @@ function mapStateToProps(state) {
         timeZone = getUserCurrentTimezone(currentUser.timezone);
     }
 
+    let canUndeleteChannel = false;
+    if (hasNewPermissions(state)) {
+        canUndeleteChannel = haveITeamPermission(state, {
+            team: getCurrentTeamId(state),
+            permission: Permissions.MANAGE_TEAM,
+        });
+    }
+
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
+        canUndeleteChannel,
         canConvertChannel: isAdmin,
         viewArchivedChannels,
         canEditChannel,
