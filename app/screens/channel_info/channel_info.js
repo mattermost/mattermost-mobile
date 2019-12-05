@@ -440,9 +440,9 @@ export default class ChannelInfo extends PureComponent {
     };
 
     renderUnarchiveChannel = () => {
-        const channelIsArchived = currentChannel.delete_at !== 0
         const {canUndeleteChannel} = this.props;
         const channel = this.props.currentChannel;
+        const channelIsArchived = currentChannel.delete_at !== 0
         const isDirectMessage = channel.type === General.DM_CHANNEL;
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
