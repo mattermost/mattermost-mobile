@@ -34,6 +34,7 @@ describe('channel_info', () => {
     };
     const baseProps = {
         canDeleteChannel: true,
+        canUndeleteChannel: false,
         canConvertChannel: true,
         canManageUsers: true,
         viewArchivedChannels: true,
