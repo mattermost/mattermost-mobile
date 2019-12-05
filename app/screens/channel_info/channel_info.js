@@ -442,11 +442,11 @@ export default class ChannelInfo extends PureComponent {
     renderUnarchiveChannel = () => {
         const {canUndeleteChannel} = this.props;
         const channel = this.props.currentChannel;
-        const channelIsArchived = currentChannel.delete_at !== 0
+        const isChannelIsArchived = channel.delete_at !== 0;
         const isDirectMessage = channel.type === General.DM_CHANNEL;
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
-        return channelIsArchived && (!isDirectMessage && !isGroupMessage) && canUndeleteChannel;
+        return isChannelIsArchived && (!isDirectMessage && !isGroupMessage) && canUndeleteChannel;
     };
 
     renderConvertToPrivateRow = () => {
