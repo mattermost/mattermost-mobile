@@ -167,11 +167,15 @@ export default class ChannelInfo extends PureComponent {
     });
 
     handleLeave = () => {
-        this.handleDeleteOrLeave('leave');
+        this.handleDeleteUndeleteOrLeave('leave');
     };
 
     handleDelete = () => {
-        this.handleDeleteOrLeave('delete');
+        this.handleDeleteUndeleteOrLeave('delete');
+    };
+
+    handleUndelete = () => {
+        this.handleDeleteUndeleteOrLeave('undelete');
     };
 
     handleConfirmConvertToPrivate = preventDoubleTap(async () => {
@@ -227,7 +231,7 @@ export default class ChannelInfo extends PureComponent {
         );
     });
 
-    handleDeleteOrLeave = preventDoubleTap((eventType) => {
+    handleDeleteUndeleteOrLeave = preventDoubleTap((eventType) => {
         const {formatMessage} = this.context.intl;
         const channel = this.props.currentChannel;
         const term = channel.type === General.OPEN_CHANNEL ?
@@ -278,63 +282,38 @@ export default class ChannelInfo extends PureComponent {
                     this.close(false);
                 }
             };
-        }
-
-        Alert.alert(
-            formatMessage(title, {term}),
-            formatMessage(
-                message,
-                {
-                    term: term.toLowerCase(),
-                    name: channel.display_name.trim(),
-                }
-            ),
-            [{
-                text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
-            }, {
-                text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
-                onPress: onPressAction,
-            }],
-        );
-    });
-
-    handleUndelete = preventDoubleTap(() => {
-        const {formatMessage} = this.context.intl;
-        const channel = this.props.currentChannel;
-        const term = channel.type === General.OPEN_CHANNEL ?
-            formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
-            formatMessage({id: 'mobile.channel_info.privateChannel', defaultMessage: 'Private Channel'});
-
-        const title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
-        const message = {
-            id: t('mobile.channel_info.alertMessageUndeleteChannel'),
-            defaultMessage: 'Are you sure you want to unarchive the {term} {name}?',
-        };
-        const onPressAction = async () => {
-            const result = await this.props.actions.undeleteChannel(channel.id);
-            if (result.error) {
-                alertErrorWithFallback(
-                    this.context.intl,
-                    result.error,
-                    {
-                        id: t('mobile.channel_info.undelete_failed'),
-                        defaultMessage: "We couldn't unarchive the channel {displayName}. Please check your connection and try again.",
-                    },
-                    {
-                        displayName: channel.display_name.trim(),
+        } else if (eventType === 'undelete') {
+            title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
+            message = {
+                id: t('mobile.channel_info.alertMessageUndeleteChannel'),
+                defaultMessage: 'Are you sure you want to unarchive the {term} {name}?',
+            };
+            onPressAction = async () => {
+                const result = await this.props.actions.undeleteChannel(channel.id);
+                if (result.error) {
+                    alertErrorWithFallback(
+                        this.context.intl,
+                        result.error,
+                        {
+                            id: t('mobile.channel_info.undelete_failed'),
+                            defaultMessage: "We couldn't unarchive the channel {displayName}. Please check your connection and try again.",
+                        },
+                        {
+                            displayName: channel.display_name.trim(),
+                        }
+                    );
+                    if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
+                        this.props.actions.getChannel(channel.id);
                     }
-                );
-                if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
-                    this.props.actions.getChannel(channel.id);
+                } else if (this.props.viewArchivedChannels) {
+                    this.props.actions.handleSelectChannel(channel.id);
+                    this.close(false);
+                } else {
+                    this.props.actions.selectPenultimateChannel(channel.team_id);
+                    this.close(false);
                 }
-            } else if (this.props.viewArchivedChannels) {
-                this.props.actions.handleSelectChannel(channel.id);
-                this.close(false);
-            } else {
-                this.props.actions.selectPenultimateChannel(channel.team_id);
-                this.close(false);
-            }
-        };
+            };
+        }
 
         Alert.alert(
             formatMessage(title, {term}),
