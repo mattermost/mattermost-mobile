@@ -439,7 +439,8 @@ export default class ChannelInfo extends PureComponent {
         return isDirectMessage || isGroupMessage;
     };
 
-    renderUnarchiveChannel = (channelIsArchived) => {
+    renderUnarchiveChannel = () => {
+        const channelIsArchived = currentChannel.delete_at !== 0
         const {canUndeleteChannel} = this.props;
         const channel = this.props.currentChannel;
         const isDirectMessage = channel.type === General.DM_CHANNEL;
@@ -697,7 +698,7 @@ export default class ChannelInfo extends PureComponent {
                         />
                     </View>
                     }
-                    {this.renderUnarchiveChannel(channelIsArchived) &&
+                    {this.renderUnarchiveChannel() &&
                     <View style={[style.rowsContainer, style.footer]}>
                         <ChannelInfoRow
                             action={this.handleUndelete}

@@ -469,6 +469,7 @@
   "mobile.storage_permission_denied_title": "{applicationName} would like to access your files",
   "mobile.suggestion.members": "Members",
   "mobile.system_message.channel_archived_message": "{username} archived the channel",
+  "mobile.system_message.channel_unarchived_message": "{username} unarchived the channel",
   "mobile.system_message.update_channel_displayname_message_and_forget.updated_from": "{username} updated the channel display name from: {oldDisplayName} to: {newDisplayName}",
   "mobile.system_message.update_channel_header_message_and_forget.removed": "{username} removed the channel header (was: {oldHeader})",
   "mobile.system_message.update_channel_header_message_and_forget.updated_from": "{username} updated the channel header from: {oldHeader} to: {newHeader}",
