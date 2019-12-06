@@ -99,7 +99,10 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     handleAndroidBack = () => {
-        if (this.drawer?.current && this.drawerOpened) {
+        if (this.statusModal) {
+            this.statusModal = false;
+            return false;
+        } else if (this.drawer?.current && this.drawerOpened) {
             this.drawer.current.closeDrawer();
             return true;
         }
@@ -157,6 +160,7 @@ export default class SettingsDrawer extends PureComponent {
             },
         }];
 
+        this.statusModal = true;
         showModalOverCurrentContext('OptionsModal', {items});
     });
 

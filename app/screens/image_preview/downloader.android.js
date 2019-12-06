@@ -89,7 +89,7 @@ export default class Downloader extends PureComponent {
             ToastAndroid.show(started, ToastAndroid.SHORT);
             onDownloadStart();
 
-            let dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${data.id}-${file.caption}`;
+            let dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${data.id}-${data.name}`;
             let downloadFile = true;
 
             if (data.localPath) {

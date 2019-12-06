@@ -5,20 +5,20 @@ import {PropTypes} from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {
+    Dimensions,
     ScrollView,
     Platform,
     View,
-    Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {CELL_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
-
+import {CELL_MAX_WIDTH, CELL_MIN_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {goToScreen} from 'app/actions/navigation';
+import {DeviceTypes} from 'app/constants';
 
 const MAX_HEIGHT = 300;
 const MAX_PREVIEW_COLUMNS = 5;
@@ -42,6 +42,7 @@ export default class MarkdownTable extends React.PureComponent {
             contentHeight: 0,
             contentWidth: 0,
             maxPreviewColumns: MAX_PREVIEW_COLUMNS,
+            cellWidth: 0,
         };
     }
 
@@ -54,12 +55,18 @@ export default class MarkdownTable extends React.PureComponent {
     }
 
     setMaxPreviewColumns = ({window}) => {
-        const maxPreviewColumns = Math.floor(window.width / CELL_WIDTH);
+        const maxPreviewColumns = Math.floor(window.width / CELL_MIN_WIDTH);
         this.setState({maxPreviewColumns});
     }
 
-    getTableWidth = () => {
-        return this.props.numColumns * CELL_WIDTH;
+    getTableWidth = (isFullView = false) => {
+        let columns = this.props.numColumns;
+
+        if (columns > MAX_PREVIEW_COLUMNS) {
+            columns = MAX_PREVIEW_COLUMNS;
+        }
+
+        return isFullView || columns === 1 ? columns * CELL_MAX_WIDTH : columns * CELL_MIN_WIDTH;
     };
 
     handlePress = preventDoubleTap(() => {
@@ -71,7 +78,8 @@ export default class MarkdownTable extends React.PureComponent {
         });
         const passProps = {
             renderRows: this.renderRows,
-            tableWidth: this.getTableWidth(),
+            tableWidth: this.getTableWidth(true),
+            renderAsFlex: this.shouldRenderAsFlex(true),
         };
 
         goToScreen(screen, title, passProps);
@@ -86,18 +94,12 @@ export default class MarkdownTable extends React.PureComponent {
     handleContentSizeChange = (contentWidth, contentHeight) => {
         this.setState({
             contentHeight,
-            contentWidth,
         });
     };
 
-    renderPreviewRows = (drawExtraBorders = true) => {
+    renderPreviewRows = (isFullView = false) => {
         const {maxPreviewColumns} = this.state;
-        const style = getStyleSheet(this.props.theme);
-
-        const tableStyle = [style.table];
-        if (drawExtraBorders) {
-            tableStyle.push(style.tableExtraBorders);
-        }
+        const tableStyle = this.getTableStyle(isFullView);
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
         // since the container should be rendering that
@@ -122,19 +124,60 @@ export default class MarkdownTable extends React.PureComponent {
         );
     }
 
-    renderRows = (drawExtraBorders = true) => {
-        const style = getStyleSheet(this.props.theme);
+    shouldRenderAsFlex = (isFullView = false) => {
+        const {numColumns} = this.props;
+        const {height, width} = Dimensions.get('window');
+        const isLandscape = width > height;
 
-        const tableStyle = [style.table];
-        if (drawExtraBorders) {
-            tableStyle.push(style.tableExtraBorders);
+        // render as flex in the channel screen, only for mobile phones on the portrait mode,
+        // and if tables have 2 ~ 4 columns
+        if (!isFullView && numColumns > 1 && numColumns < 4 && !DeviceTypes.IS_TABLET) {
+            return true;
         }
+
+        // render a 4 column table as flex when in landscape mode only
+        // otherwise it should expand beyond the device's full width
+        if (!isFullView && isLandscape && numColumns === 4) {
+            return true;
+        }
+
+        // render as flex in full table screen, only for mobile phones on portrait mode,
+        // and if tables have 3 or 4 columns
+        if (isFullView && numColumns >= 3 && numColumns <= 4 && !DeviceTypes.IS_TABLET) {
+            return true;
+        }
+
+        return false;
+    }
+
+    getTableStyle = (isFullView) => {
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+        const tableStyle = [style.table];
+
+        const renderAsFlex = this.shouldRenderAsFlex(isFullView);
+        if (renderAsFlex) {
+            tableStyle.push(style.displayFlex);
+            return tableStyle;
+        }
+
+        tableStyle.push({width: this.getTableWidth(isFullView)});
+        return tableStyle;
+    }
+
+    renderRows = (isFullView = false) => {
+        const tableStyle = this.getTableStyle(isFullView);
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
         // since the container should be rendering that
         const rows = React.Children.toArray(this.props.children);
         rows[rows.length - 1] = React.cloneElement(rows[rows.length - 1], {
             isLastRow: true,
+        });
+
+        // Add an extra prop to the first row of the table so that it can have a different background color
+        rows[0] = React.cloneElement(rows[0], {
+            isFirstRow: true,
         });
 
         return (
@@ -146,9 +189,20 @@ export default class MarkdownTable extends React.PureComponent {
 
     render() {
         const style = getStyleSheet(this.props.theme);
-
         let moreRight = null;
-        if (this.state.containerWidth && this.state.contentWidth > this.state.containerWidth) {
+        const tableWidth = this.getTableWidth();
+        const renderAsFlex = this.shouldRenderAsFlex();
+
+        let leftOffset;
+        if (renderAsFlex || tableWidth > this.state.containerWidth) {
+            leftOffset = this.state.containerWidth - 20;
+        } else {
+            leftOffset = tableWidth - 20;
+        }
+
+        // Renders when table width exceeds the container, or if the columns exceed maximum allowed for previews
+        if ((this.state.containerWidth && tableWidth > this.state.containerWidth && !renderAsFlex) ||
+            (this.props.numColumns > MAX_PREVIEW_COLUMNS)) {
             moreRight = (
                 <LinearGradient
                     colors={[
@@ -157,7 +211,7 @@ export default class MarkdownTable extends React.PureComponent {
                     ]}
                     start={{x: 0, y: 0}}
                     end={{x: 1, y: 0}}
-                    style={[style.moreRight, {height: this.state.contentHeight}]}
+                    style={[style.moreRight, {height: this.state.contentHeight, left: leftOffset}]}
                 />
             );
         }
@@ -170,15 +224,16 @@ export default class MarkdownTable extends React.PureComponent {
                         changeOpacity(this.props.theme.centerChannelColor, 0.0),
                         changeOpacity(this.props.theme.centerChannelColor, 0.1),
                     ]}
-                    style={[style.moreBelow, {width: this.getTableWidth()}]}
+                    style={[style.moreBelow, renderAsFlex ? style.fullWidth : {width: tableWidth}]}
                 />
             );
         }
 
         const expandButton = (
             <TouchableWithFeedback
+                type={'opacity'}
                 onPress={this.handlePress}
-                style={{...style.expandButton, left: this.state.containerWidth - 20}}
+                style={[style.expandButton, {left: leftOffset}]}
             >
                 <View style={[style.iconContainer, {width: this.getTableWidth()}]}>
                     <View style={style.iconButton}>
@@ -198,14 +253,13 @@ export default class MarkdownTable extends React.PureComponent {
                 type={'opacity'}
             >
                 <ScrollView
-                    contentContainerStyle={{width: this.getTableWidth()}}
                     onContentSizeChange={this.handleContentSizeChange}
                     onLayout={this.handleContainerLayout}
                     scrollEnabled={false}
                     showsVerticalScrollIndicator={false}
-                    style={[style.container, {maxWidth: this.getTableWidth()}]}
+                    style={style.container}
                 >
-                    {this.renderPreviewRows(false)}
+                    {this.renderPreviewRows()}
                 </ScrollView>
                 {moreRight}
                 {moreBelow}
@@ -218,9 +272,6 @@ export default class MarkdownTable extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            borderBottomWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
             maxHeight: MAX_HEIGHT,
         },
         expandButton: {
@@ -243,12 +294,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: -32,
             marginRight: -6,
             borderWidth: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             borderRadius: 50,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             width: 34,
             height: 34,
-            alignItems: 'center',
-            justifyContent: 'center',
         },
         icon: {
             fontSize: 14,
@@ -259,32 +311,35 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 },
             }),
         },
+        displayFlex: {
+            flex: 1,
+        },
+        fullWidth: {
+            width: '100%',
+        },
         table: {
             width: '100%',
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderTopWidth: 1,
+            borderWidth: 1,
         },
         tablePadding: {
             paddingRight: 10,
-        },
-        tableExtraBorders: {
-            borderBottomWidth: 1,
-            borderRightWidth: 1,
         },
         moreBelow: {
             bottom: 30,
             height: 20,
             position: 'absolute',
             left: 0,
-            width: '100%',
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderBottomWidth: 1,
         },
         moreRight: {
             maxHeight: MAX_HEIGHT,
             position: 'absolute',
-            right: 10,
             top: 0,
             width: 20,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
         },
     };
 });

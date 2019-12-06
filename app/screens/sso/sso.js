@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Dimensions,
-    InteractionManager,
     Text,
     View,
     Platform,
@@ -78,7 +77,7 @@ class SSO extends PureComponent {
 
         this.state = {
             error: null,
-            renderWebView: false,
+            renderWebView: true,
             jsCode: '',
             messagingEnabled: false,
         };
@@ -102,16 +101,6 @@ class SSO extends PureComponent {
             this.useWebkit = parseInt(Platform.Version, 10) >= 11;
         }
     }
-
-    componentDidMount() {
-        InteractionManager.runAfterInteractions(this.clearPreviousCookies);
-    }
-
-    clearPreviousCookies = () => {
-        CookieManager.clearAll(this.useWebkit).then(() => {
-            this.setState({renderWebView: true});
-        });
-    };
 
     goToChannel = () => {
         tracker.initialLoad = Date.now();
@@ -226,7 +215,7 @@ class SSO extends PureComponent {
                     onLoadEnd={this.onLoadEnd}
                     onMessage={messagingEnabled ? this.onMessage : null}
                     useSharedProcessPool={true}
-                    cacheEnabled={true}
+                    cacheEnabled={false}
                 />
             );
         }
