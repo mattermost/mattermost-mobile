@@ -279,7 +279,7 @@ public class CustomPushNotification extends PushNotification {
 
     private void setNotificationNumber(Notification.Builder notification, String channelId) {
         Integer number = channelIdToNotificationCount.get(channelId);
-        if (number != null) {
+        if (number == null) {
             number = 0;
         }
         notification.setNumber(number);
