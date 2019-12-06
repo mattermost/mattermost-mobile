@@ -98,6 +98,7 @@ jest.doMock('react-native', () => {
     }, ReactNative);
 });
 
+jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
 jest.mock('react-native-device-info', () => {
@@ -117,6 +118,7 @@ jest.mock('react-native-cookies', () => ({
     openURL: jest.fn(),
     canOpenURL: jest.fn(),
     getInitialURL: jest.fn(),
+    clearAll: jest.fn(),
 }));
 
 jest.mock('react-native-navigation', () => {
@@ -201,7 +203,7 @@ jest.mock('rn-fetch-blob', () => ({
     fs: {
         dirs: {
             DocumentDir: () => jest.fn(),
-            CacheDir: () => jest.fn(),
+            CacheDir: '/data/com.mattermost.beta/cache',
         },
         exists: jest.fn(),
         existsWithDiffExt: jest.fn(),
@@ -215,7 +217,7 @@ jest.mock('rn-fetch-blob', () => ({
 jest.mock('rn-fetch-blob/fs', () => ({
     dirs: {
         DocumentDir: () => jest.fn(),
-        CacheDir: () => jest.fn(),
+        CacheDir: '/data/com.mattermost.beta/cache',
     },
     exists: jest.fn(),
     existsWithDiffExt: jest.fn(),

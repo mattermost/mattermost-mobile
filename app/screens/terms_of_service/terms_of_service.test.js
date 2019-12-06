@@ -121,8 +121,6 @@ describe('TermsOfService', () => {
     });
 
     test('should call dismissAllModals on closeTermsAndLogout', () => {
-        const dismissAllModals = jest.spyOn(NavigationActions, 'dismissAllModals');
-
         const wrapper = shallow(
             <TermsOfService {...baseProps}/>,
             {context: {intl: {formatMessage: jest.fn()}}},
@@ -130,6 +128,6 @@ describe('TermsOfService', () => {
 
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
         wrapper.instance().closeTermsAndLogout();
-        expect(dismissAllModals).toHaveBeenCalledTimes(1);
+        expect(baseProps.actions.logout).toHaveBeenCalledTimes(1);
     });
 });

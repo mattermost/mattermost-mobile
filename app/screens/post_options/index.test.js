@@ -35,6 +35,9 @@ describe('makeMapStateToProps', () => {
                     post_id: {},
                 },
             },
+            general: {
+                serverVersion: '5.18',
+            },
         },
     };
 
@@ -64,5 +67,26 @@ describe('makeMapStateToProps', () => {
         const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, ownProps);
         expect(props.canFlag).toBe(true);
+    });
+
+    test('canMarkAsUnread is true when isMinimumServerVersion is 5.18v', () => {
+        const mapStateToProps = makeMapStateToProps();
+        const props = mapStateToProps(baseState, baseOwnProps);
+        expect(props.canMarkAsUnread).toBe(true);
+    });
+
+    test('canMarkAsUnread is false when isMinimumServerVersion is not 5.18v', () => {
+        const state = {
+            entities: {
+                ...baseState.entities,
+                general: {
+                    serverVersion: '5.17',
+                },
+            },
+        };
+
+        const mapStateToProps = makeMapStateToProps();
+        const props = mapStateToProps(state, baseOwnProps);
+        expect(props.canMarkAsUnread).toBe(false);
     });
 });

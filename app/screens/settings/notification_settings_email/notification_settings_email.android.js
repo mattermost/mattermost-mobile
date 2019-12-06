@@ -101,7 +101,6 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
         const {
             enableEmailBatching,
             sendEmailNotifications,
-            siteName,
         } = this.props;
         const {newInterval} = this.state;
 
@@ -110,8 +109,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
             helpText = (
                 <FormattedText
                     id='user.settings.notifications.emailInfo'
-                    defaultMessage='Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes.'
-                    values={{siteName}}
+                    defaultMessage='Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes.'
                     style={style.modalHelpText}
                 />
             );
