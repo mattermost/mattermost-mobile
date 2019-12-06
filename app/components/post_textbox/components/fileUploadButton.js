@@ -14,7 +14,7 @@ import DeviceInfo from 'react-native-device-info';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {DocumentPicker} from 'react-native-document-picker';
+import DocumentPicker from 'react-native-document-picker';
 import Permissions from 'react-native-permissions';
 
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';

@@ -19,6 +19,7 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
           "borderRadius": 4,
           "height": 28,
           "justifyContent": "center",
+          "paddingLeft": 3,
           "width": 72,
         },
         Object {
@@ -56,7 +57,8 @@ exports[`SendButton should match snapshot 1`] = `
         "borderRadius": 4,
         "height": 28,
         "justifyContent": "center",
-        "width": 28,
+        "paddingLeft": 3,
+        "width": 72,
       }
     }
   >
@@ -89,7 +91,8 @@ exports[`SendButton should render theme backgroundColor 1`] = `
         "borderRadius": 4,
         "height": 28,
         "justifyContent": "center",
-        "width": 28,
+        "paddingLeft": 3,
+        "width": 72,
       }
     }
   >
