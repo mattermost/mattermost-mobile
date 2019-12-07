@@ -156,7 +156,7 @@ describe('channel_info', () => {
         const props = Object.assign({}, baseProps);
         props.canUndeleteChannel = true;
         props.currentChannel.delete_at = 1234566;
-        
+
         const wrapper = shallow(
             <ChannelInfo
                 {...props}
