@@ -151,4 +151,19 @@ describe('channel_info', () => {
         const render = instance.renderConvertToPrivateRow();
         expect(render).toBeFalsy();
     });
+
+    test('should render unarchive channel button when currentChannel is an archived channel', async () => {
+        const props = Object.assign({}, baseProps);
+        props.currentChannel.delete_at = 1234566;
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+
+        const instance = wrapper.instance();
+        const render = instance.renderUnarchiveChannel();
+        expect(render).toBeTruthy();
+    });
 });
