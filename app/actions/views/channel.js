@@ -650,6 +650,16 @@ export function increasePostVisibility(channelId, postId) {
     };
 }
 
+export function increasePostVisibilityByOne(channelId) {
+    return (dispatch) => {
+        dispatch({
+            type: ViewTypes.INCREASE_POST_VISIBILITY,
+            data: channelId,
+            amount: 1,
+        });
+    };
+}
+
 function doIncreasePostVisibility(channelId) {
     return {
         type: ViewTypes.INCREASE_POST_VISIBILITY,
