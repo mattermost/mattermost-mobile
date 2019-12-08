@@ -304,7 +304,7 @@ describe('compareEmojis', () => {
         expect(emojiArray).toEqual([dashEmoji, goatEmoji, smileEmoji]);
     });
 
-    test('should have partiall matched emoji first', () => {
+    test('should have partial matched emoji first', () => {
         const goatEmoji = {
             name: 'goat',
         };
