@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
@@ -9,8 +9,6 @@ import {
     Text,
     View,
 } from 'react-native';
-
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import Emoji from 'app/components/emoji';
@@ -22,7 +20,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
 
-export default class EmojiSuggestion extends Component {
+export default class EmojiSuggestion extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addReactionToLatestPost: PropTypes.func.isRequired,
@@ -38,7 +36,6 @@ export default class EmojiSuggestion extends Component {
         onResultCountChange: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         value: PropTypes.string,
-        serverVersion: PropTypes.string,
         nestedScrollEnabled: PropTypes.bool,
     };
 
@@ -80,35 +77,15 @@ export default class EmojiSuggestion extends Component {
         const oldMatchTerm = this.matchTerm;
         this.matchTerm = match[3] || '';
 
-        // If we're server version 4.7 or higher
-        if (isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
-            if (this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
-                this.props.actions.autocompleteCustomEmojis(this.matchTerm);
-                return;
-            }
-
-            if (this.matchTerm.length) {
-                this.handleFuzzySearch(this.matchTerm, nextProps);
-            } else {
-                const initialEmojis = [...nextProps.emojis];
-                initialEmojis.splice(0, 300);
-                const data = initialEmojis.sort();
-
-                this.setEmojiData(data);
-            }
-
+        if (this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
+            this.props.actions.autocompleteCustomEmojis(this.matchTerm);
             return;
         }
 
-        // If we're server version 4.6 or lower
-        if (this.matchTerm !== oldMatchTerm) {
+        if (this.matchTerm.length) {
             this.handleFuzzySearch(this.matchTerm, nextProps);
-        } else if (!this.matchTerm.length) {
-            const initialEmojis = [...nextProps.emojis];
-            initialEmojis.splice(0, 300);
-            const data = initialEmojis.sort();
-
-            this.setEmojiData(data);
+        } else {
+            this.setEmojiData(nextProps.emojis);
         }
     }
 
