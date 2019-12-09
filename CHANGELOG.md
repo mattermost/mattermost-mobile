@@ -41,9 +41,6 @@
 - Fixed an issue where an asterisk appeared on the "Nickname" and "Position" fields in Edit Profile screen even though nickname is not handled through the login provider.
 - Fixed an issue where the filtered list for emojis opened above the edit box and behind the channel header when adding an emoji to channel header using ``:emoji:``.
 
-### Known Issues
-
-
 ## 1.25.0 Release
 - Release Date: November 16, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
