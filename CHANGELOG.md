@@ -10,13 +10,20 @@
 
 ### Highlights
 
+#### File, Image and Video Thumbnail Display Improvements
+
+#### Mark as Unread
+ - With server v5.18 and above, the user will land on the unread post the next time they click on the relevant channel when marking a post as unread.
+
 #### ID-loaded push notifications (E20)
+ - Allows push notifications to be delivered showing the full message contents that are fetched from the server once the notification is delivered to the device. This means that Apple Push Notification Service (APNS) or Google Firebase Cloud Messaging (FCM) cannot read the message contents since only a unique message ID is sent in the notification payload. 
 
 #### Upgraded RN to v0.61
 
 ### Improvements
 - Added support for pasting other file types such as videos, PDFs, and Google Docs.
 - Added the option to convert public channels to private in the channel info screen.
+- Added support for reading the channel drawer button with voice-over.
 - Made usernames in system messages tappable.
 - Added a count for pinned posts header icon.
 - Added an autocomplete to edit post screen.
@@ -33,7 +40,10 @@
 ### Bug Fixes
 - Fixed an issue on Android where the app slowed down when opening a channel with large number of animated emoji.
 - Fixed an issue where the app crashed when pasting a large file to the text box from the clipboard.
-- Fixed an issue where the app crashed when previewing an image attachment.
+- Fixed an issue where the app crashed when previewing large GIF files.
+- Fixed an issue where the app crashed when using the emoji category selector.
+- Fixed an issue where the app was not able to play YouTube videos.
+- Fixed an issue where images/videos could not be saved.
 - Fixed an issue where channels archived via the command line interface were still visible on the left-hand side and accessible on mobile apps.
 - Fixed an issue where the thread header in landscape view was wider than the main channel view header.
 - Fixed an issue where sidebar separator line was misaligned between Teams and Channel view.
