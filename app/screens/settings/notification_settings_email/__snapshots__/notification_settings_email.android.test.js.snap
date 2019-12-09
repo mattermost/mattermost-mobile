@@ -91,14 +91,9 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
           }
         />
         <FormattedText
-          defaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes."
+          defaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes."
           id="user.settings.notifications.emailInfo"
           style={Object {}}
-          values={
-            Object {
-              "siteName": "Mattermost",
-            }
-          }
         />
       </View>
       <View

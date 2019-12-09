@@ -51,6 +51,20 @@
 - Fixed an issue where an asterisk appeared on the "Nickname" and "Position" fields in Edit Profile screen even though nickname is not handled through the login provider.
 - Fixed an issue where the filtered list for emojis opened above the edit box and behind the channel header when adding an emoji to channel header using ``:emoji:``.
 
+## 1.25.1 Release
+- Release Date: November 22, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed a crash issue on iOS when SSO cookies did not contain an expiration date during login.
+ - Fixed a crash issue on Android caused by notification channels being unavailable in Android 7.
+ - Fixed an issue on Android where Enterprise Mobility Management (EMM) blur app screen did not work.
+ - Fixed an issue where changing team/channel when sharing several files closed the share dialog.
+
 ## 1.25.0 Release
 - Release Date: November 16, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device

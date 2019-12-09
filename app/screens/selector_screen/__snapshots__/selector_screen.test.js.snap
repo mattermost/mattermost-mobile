@@ -52,6 +52,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
     />
   </View>
   <CustomList
+    canRefresh={true}
     data={Array []}
     isLandscape={false}
     listType="flat"
@@ -148,6 +149,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
     />
   </View>
   <CustomList
+    canRefresh={true}
     data={Array []}
     isLandscape={false}
     listType="flat"
@@ -244,6 +246,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
     />
   </View>
   <CustomList
+    canRefresh={true}
     data={
       Array [
         Object {
@@ -347,6 +350,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
     />
   </View>
   <CustomList
+    canRefresh={true}
     data={Array []}
     isLandscape={false}
     listType="flat"
@@ -443,6 +447,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
     />
   </View>
   <CustomList
+    canRefresh={true}
     data={Array []}
     isLandscape={false}
     listType="section"
@@ -539,6 +544,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
     />
   </View>
   <CustomList
+    canRefresh={true}
     data={Array []}
     isLandscape={false}
     listType="section"

@@ -16,6 +16,7 @@ import {goToScreen} from 'app/actions/navigation';
 export default class AtMention extends React.PureComponent {
     static propTypes = {
         isSearchResult: PropTypes.bool,
+        mentionKeys: PropTypes.array.isRequired,
         mentionName: PropTypes.string.isRequired,
         mentionStyle: CustomPropTypes.Style,
         onPostPress: PropTypes.func,
@@ -111,7 +112,7 @@ export default class AtMention extends React.PureComponent {
     };
 
     render() {
-        const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle} = this.props;
+        const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
         const {user} = this.state;
 
         if (!user.username) {
@@ -119,6 +120,7 @@ export default class AtMention extends React.PureComponent {
         }
 
         const suffix = this.props.mentionName.substring(user.username.length);
+        const highlighted = mentionKeys.some((item) => item.key === user.username);
 
         return (
             <Text
@@ -126,7 +128,7 @@ export default class AtMention extends React.PureComponent {
                 onPress={isSearchResult ? onPostPress : this.goToUserProfile}
                 onLongPress={this.handleLongPress}
             >
-                <Text style={mentionStyle}>
+                <Text style={highlighted ? null : mentionStyle}>
                     {'@' + displayUsername(user, teammateNameDisplay)}
                 </Text>
                 {suffix}

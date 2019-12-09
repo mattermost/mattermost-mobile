@@ -11,6 +11,7 @@ import CustomList, {FLATLIST, SECTIONLIST} from './index';
 
 describe('CustomList', () => {
     const baseProps = {
+        canRefresh: false,
         data: [{username: 'username_1'}, {username: 'username_2'}],
         listType: FLATLIST,
         loading: false,

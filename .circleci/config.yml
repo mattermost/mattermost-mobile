@@ -160,7 +160,9 @@ commands:
           working_directory: fastlane
           name: Run fastlane to build iOS
           no_output_timeout: 30m
-          command: bundle exec fastlane ios build
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
+            bundle exec fastlane ios build
 
   deploy-to-store:
     description: "Deploy build to store"

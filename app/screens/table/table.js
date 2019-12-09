@@ -6,36 +6,64 @@ import React from 'react';
 import {
     Platform,
     ScrollView,
+    SafeAreaView,
 } from 'react-native';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class Table extends React.PureComponent {
     static propTypes = {
         renderRows: PropTypes.func.isRequired,
         tableWidth: PropTypes.number.isRequired,
+        renderAsFlex: PropTypes.bool.isRequired,
     };
 
     render() {
-        const content = this.props.renderRows();
+        const style = getStyleSheet();
+        const content = this.props.renderRows(true);
+        const viewStyle = this.props.renderAsFlex ? style.displayFlex : {width: this.props.tableWidth};
 
         let container;
         if (Platform.OS === 'android') {
-            // On Android, ScrollViews can only handle one direction at once, so use two ScrollViews that go in
-            // different directions. This prevents diagonal scrolling, so only do it on Android when totally necessary.
             container = (
                 <ScrollView>
-                    <ScrollView horizontal={true}>
+                    <ScrollView
+                        contentContainerStyle={viewStyle}
+                        horizontal={true}
+                    >
                         {content}
                     </ScrollView>
                 </ScrollView>
             );
         } else {
             container = (
-                <ScrollView contentContainerStyle={{width: this.props.tableWidth}}>
-                    {content}
-                </ScrollView>
+                <SafeAreaView>
+                    <ScrollView
+                        style={style.fullHeight}
+                        contentContainerStyle={viewStyle}
+                    >
+                        {content}
+                    </ScrollView>
+                </SafeAreaView>
             );
         }
-
         return container;
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme(() => {
+    return {
+        fullHeight: {
+            height: '100%',
+        },
+        displayFlex: {
+            ...Platform.select({
+                android: {
+                    flex: 1,
+                },
+                ios: {
+                    flex: 0,
+                },
+            }),
+        },
+    };
+});

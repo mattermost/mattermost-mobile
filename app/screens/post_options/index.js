@@ -11,6 +11,7 @@ import {
     unflagPost,
     unpinPost,
     removePost,
+    setUnreadPost,
 } from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
 import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
@@ -21,6 +22,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
 import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
 import {canEditPost} from 'mattermost-redux/utils/post_utils';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
 import {THREAD} from 'app/constants/screen';
@@ -42,6 +44,8 @@ export function makeMapStateToProps() {
         const currentChannelId = getCurrentChannelId(state);
         const reactions = getReactionsForPostSelector(state, post.id);
         const channelIsArchived = channel.delete_at !== 0;
+        const {serverVersion} = state.entities.general;
+        const canMarkAsUnread = isMinimumServerVersion(serverVersion, 5, 18);
 
         let canAddReaction = true;
         let canReply = true;
@@ -114,8 +118,9 @@ export function makeMapStateToProps() {
             canDelete,
             canFlag,
             canPin,
+            canMarkAsUnread,
             currentTeamUrl: getCurrentTeamUrl(state),
-            isMyPost: currentUserId === post.user_id,
+            currentUserId,
             theme: getTheme(state),
             isLandscape: isLandscape(state),
         };
@@ -132,6 +137,7 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
+            setUnreadPost,
         }, dispatch),
     };
 }

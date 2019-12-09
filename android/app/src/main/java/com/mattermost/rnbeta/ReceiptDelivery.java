@@ -26,7 +26,7 @@ import com.mattermost.react_native_interface.ResolvePromise;
 public class ReceiptDelivery {
     static final String CURRENT_SERVER_URL = "@currentServerUrl";
 
-    public static void send(Context context, final String ackId, final String postId, final String type, ResolvePromise promise) {
+    public static void send(Context context, final String ackId, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
         final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
 
         MattermostCredentialsHelper.getCredentialsForCurrentServer(reactApplicationContext, new ResolvePromise() {
@@ -48,14 +48,14 @@ public class ReceiptDelivery {
                         }
                     }
 
-                    Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with TOKEN=%s", ackId, type, serverUrl, token));
-                    execute(serverUrl, postId, token, ackId, type, promise);
+                    Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with ID-LOADED=%s", ackId, type, serverUrl, isIdLoaded));
+                    execute(serverUrl, postId, token, ackId, type, isIdLoaded, promise);
                 }
             }
         });
     }
 
-    protected static void execute(String serverUrl, String postId, String token, String ackId, String type, ResolvePromise promise) {
+    protected static void execute(String serverUrl, String postId, String token, String ackId, String type, boolean isIdLoaded, ResolvePromise promise) {
         if (token == null) {
             promise.reject("Receipt delivery failure", "Invalid token");
             return;
@@ -75,6 +75,7 @@ public class ReceiptDelivery {
             json.put("platform", "android");
             json.put("type", type);
             json.put("post_id", postId);
+            json.put("is_id_loaded", isIdLoaded);
         } catch (JSONException e) {
             Log.e("ReactNative", "Receipt delivery failed to build json payload");
             promise.reject("Receipt delivery failure", e.toString());
@@ -96,8 +97,8 @@ public class ReceiptDelivery {
 
             try {
                 Response response = client.newCall(request).execute();
-                String responseBody = response.body().toString();
-                if (response.code() != 200) {
+                String responseBody = response.body().string();
+                if (response.code() != 200 || !isIdLoaded) {
                     throw new Exception(responseBody);
                 }
                 JSONObject jsonResponse = new JSONObject(responseBody);

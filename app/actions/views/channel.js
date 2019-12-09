@@ -14,8 +14,6 @@ import {
     leaveChannel as serviceLeaveChannel,
     selectChannel,
     getChannelStats,
-    getChannels,
-    getArchivedChannels,
 } from 'mattermost-redux/actions/channels';
 import {
     getPosts,
@@ -72,26 +70,6 @@ export function loadChannelsByTeamName(teamName) {
         if (team && team.id !== currentTeamId) {
             await dispatch(fetchMyChannelsAndMembers(team.id));
         }
-    };
-}
-
-export function loadPublicAndArchivedChannels(teamId, publicPage, archivedPage, perPage, shouldLoadArchivedChannels) {
-    return async (dispatch) => {
-        return dispatch(getChannels(
-            teamId,
-            publicPage,
-            perPage
-        )).then(async (publicChannels) => {
-            if (shouldLoadArchivedChannels) {
-                const archivedChannels = await dispatch(getArchivedChannels(
-                    teamId,
-                    archivedPage,
-                    perPage
-                ));
-                return archivedChannels;
-            }
-            return publicChannels;
-        });
     };
 }
 
@@ -669,6 +647,16 @@ export function increasePostVisibility(channelId, postId) {
         telemetry.save();
 
         return hasMorePost;
+    };
+}
+
+export function increasePostVisibilityByOne(channelId) {
+    return (dispatch) => {
+        dispatch({
+            type: ViewTypes.INCREASE_POST_VISIBILITY,
+            data: channelId,
+            amount: 1,
+        });
     };
 }
 
