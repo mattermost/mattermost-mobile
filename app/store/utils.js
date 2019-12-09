@@ -43,7 +43,9 @@ export function transformSet(incoming, setTransforms, toStorage = true) {
 
 export function waitForHydration(store, callback) {
     if (store.getState().views.root.hydrationComplete) {
-        callback();
+        if (callback && typeof callback === 'function') {
+            callback();
+        }
     } else {
         const subscription = () => {
             if (store.getState().views.root.hydrationComplete) {
