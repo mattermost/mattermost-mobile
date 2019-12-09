@@ -42,14 +42,18 @@ export function transformSet(incoming, setTransforms, toStorage = true) {
 }
 
 export function waitForHydration(store, callback) {
-    const subscription = () => {
-        if (store.getState().views.root.hydrationComplete) {
-            unsubscribeFromStore();
-            if (callback && typeof callback === 'function') {
-                callback();
+    if (store.getState().views.root.hydrationComplete) {
+        callback();
+    } else {
+        const subscription = () => {
+            if (store.getState().views.root.hydrationComplete) {
+                unsubscribeFromStore();
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
             }
-        }
-    };
+        };
 
-    const unsubscribeFromStore = store.subscribe(subscription);
+        const unsubscribeFromStore = store.subscribe(subscription);
+    }
 }
