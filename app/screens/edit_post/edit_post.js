@@ -61,6 +61,7 @@ export default class EditPost extends PureComponent {
         this.state = {
             message: props.post.message,
             cursorPosition: 0,
+            autocompleteVisible: false,
         };
 
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
@@ -163,9 +164,13 @@ export default class EditPost extends PureComponent {
         this.setState({cursorPosition});
     };
 
+    onAutocompleteVisible = (autocompleteVisible) => {
+        this.setState({autocompleteVisible});
+    }
+
     render() {
         const {deviceHeight, deviceWidth, theme, isLandscape} = this.props;
-        const {editing, message, error} = this.state;
+        const {editing, message, error, autocompleteVisible} = this.state;
 
         const style = getStyleSheet(theme);
 
@@ -173,7 +178,7 @@ export default class EditPost extends PureComponent {
             return (
                 <View style={style.container}>
                     <StatusBar/>
-                    <Loading/>
+                    <Loading color={theme.centerChannelColor}/>
                 </View>
             );
         }
@@ -190,6 +195,10 @@ export default class EditPost extends PureComponent {
         }
 
         const height = Platform.OS === 'android' ? (deviceHeight / 2) - 40 : (deviceHeight / 2);
+        const autocompleteStyles = [
+            style.autocompleteContainer,
+            {flex: autocompleteVisible ? 1 : 0},
+        ];
 
         return (
             <View style={style.container}>
@@ -215,13 +224,14 @@ export default class EditPost extends PureComponent {
                         />
                     </View>
                 </View>
-                <KeyboardTrackingView style={style.autocompleteContainer}>
+                <KeyboardTrackingView style={autocompleteStyles}>
                     <Autocomplete
                         cursorPosition={this.state.cursorPosition}
                         maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                         onChangeText={this.onPostChangeText}
                         value={message}
                         nestedScrollEnabled={true}
+                        onVisible={this.onAutocompleteVisible}
                     />
                 </KeyboardTrackingView>
             </View>

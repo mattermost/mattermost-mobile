@@ -272,7 +272,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
 
 exports[`TermsOfService should match snapshot 1`] = `
 <Loading
-  color="grey"
+  color="#3d3c40"
   size="large"
   style={Object {}}
 />
@@ -291,7 +291,7 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
   <FailedNetworkAction
     actionDefaultMessage="try again"
     actionId="mobile.failed_network_action.retry"
-    errorDefaultMessage="Messages will load when you have an internet connection or {refresh}."
+    errorDefaultMessage="Messages will load when you have an internet connection or {tryAgainAction}."
     errorId="mobile.failed_network_action.shortDescription"
     onRetry={[Function]}
     theme={
@@ -329,7 +329,7 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
 
 exports[`TermsOfService should match snapshot for get terms 1`] = `
 <Loading
-  color="grey"
+  color="#3d3c40"
   size="large"
   style={Object {}}
 />

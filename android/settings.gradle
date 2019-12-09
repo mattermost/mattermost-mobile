@@ -5,6 +5,8 @@ include ':@sentry_react-native'
 project(':@sentry_react-native').projectDir = new File(rootProject.projectDir, '../node_modules/@sentry/react-native/android')
 include ':react-native-android-open-settings'
 project(':react-native-android-open-settings').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-android-open-settings/android')
+include ':react-native-fast-image'
+project(':react-native-fast-image').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-fast-image/android')
 include ':react-native-haptic-feedback'
 project(':react-native-haptic-feedback').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-haptic-feedback/android')
 include ':react-native-gesture-handler'

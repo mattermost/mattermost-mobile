@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {mapStateToProps} from './index';
+import {makeMapStateToProps} from './index';
 
 import * as channelSelectors from 'mattermost-redux/selectors/entities/channels';
 import * as generalSelectors from 'mattermost-redux/selectors/entities/general';
@@ -24,10 +24,27 @@ deviceSelectors.getDimensions = jest.fn();
 deviceSelectors.isLandscape = jest.fn();
 preferencesSelectors.getTheme = jest.fn();
 
-describe('mapStateToProps', () => {
-    const baseState = {};
+describe('makeMapStateToProps', () => {
+    const baseState = {
+        entities: {
+            posts: {
+                posts: {
+                    post_id: {},
+                },
+                reactions: {
+                    post_id: {},
+                },
+            },
+            general: {
+                serverVersion: '5.18',
+            },
+        },
+    };
+
     const baseOwnProps = {
-        post: {},
+        post: {
+            id: 'post_id',
+        },
     };
 
     test('canFlag is false for system messages', () => {
@@ -36,6 +53,7 @@ describe('mapStateToProps', () => {
             isSystemMessage: true,
         };
 
+        const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, ownProps);
         expect(props.canFlag).toBe(false);
     });
@@ -46,7 +64,29 @@ describe('mapStateToProps', () => {
             isSystemMessage: false,
         };
 
+        const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, ownProps);
         expect(props.canFlag).toBe(true);
+    });
+
+    test('canMarkAsUnread is true when isMinimumServerVersion is 5.18v', () => {
+        const mapStateToProps = makeMapStateToProps();
+        const props = mapStateToProps(baseState, baseOwnProps);
+        expect(props.canMarkAsUnread).toBe(true);
+    });
+
+    test('canMarkAsUnread is false when isMinimumServerVersion is not 5.18v', () => {
+        const state = {
+            entities: {
+                ...baseState.entities,
+                general: {
+                    serverVersion: '5.17',
+                },
+            },
+        };
+
+        const mapStateToProps = makeMapStateToProps();
+        const props = mapStateToProps(state, baseOwnProps);
+        expect(props.canMarkAsUnread).toBe(false);
     });
 });

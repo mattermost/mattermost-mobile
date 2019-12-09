@@ -34,7 +34,12 @@ export default class AutocompleteSectionHeader extends PureComponent {
                         defaultMessage={defaultMessage}
                         style={style.sectionText}
                     />
-                    {loading && <ActivityIndicator size='small'/>}
+                    {loading &&
+                    <ActivityIndicator
+                        color={theme.centerChannelColor}
+                        size='small'
+                    />
+                    }
                 </View>
             </View>
         );
