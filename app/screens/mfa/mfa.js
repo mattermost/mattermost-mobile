@@ -118,10 +118,10 @@ export default class Mfa extends PureComponent {
                 <Button
                     onPress={this.submit}
                     loading={false}
-                    containerStyle={GlobalStyles.signupButton}
+                    containerStyle={GlobalStyles.authButton}
                 >
                     <FormattedText
-                        style={GlobalStyles.signupButtonText}
+                        style={GlobalStyles.authButtonText}
                         id='mobile.components.select_server_view.proceed'
                         defaultMessage='Proceed'
                     />
@@ -138,7 +138,7 @@ export default class Mfa extends PureComponent {
             >
                 <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                    <View style={[GlobalStyles.container, GlobalStyles.authContainer]}>
                         <Image
                             source={require('assets/images/logo.png')}
                         />

@@ -12,6 +12,8 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import * as NavigationActions from 'app/actions/navigation';
 
 import {mfaExpectedErrors} from 'app/screens/login/login';
+import {darkColors, lightColors} from 'app/styles/colors';
+import {getColorStyles} from 'app/utils/appearance';
 import Login from './login';
 
 describe('Login', () => {
@@ -20,6 +22,8 @@ describe('Login', () => {
             EnableSignInWithEmail: 'true',
             EnableSignInWithUsername: 'true',
         },
+        colorScheme: 'light',
+        colorStyles: getColorStyles('light'),
         license: {
             IsLicensed: 'false',
         },
@@ -146,5 +150,31 @@ describe('Login', () => {
                 'ForgotPassword',
                 'Password Reset',
             );
+    });
+
+    test('should show light background when user has dark color scheme set', () => {
+        const props = {
+            ...baseProps,
+            colorScheme: 'light',
+            colorStyles: getColorStyles('light'),
+        };
+
+        const wrapper = shallowWithIntl(<Login {...props}/>);
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper).toHaveStyle('backgroundColor', lightColors.containerBg);
+    });
+
+    test('should show dark background when user has dark color scheme set', () => {
+        const props = {
+            ...baseProps,
+            colorScheme: 'dark',
+            colorStyles: getColorStyles('dark'),
+        };
+
+        const wrapper = shallowWithIntl(<Login {...props}/>);
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper).toHaveStyle('backgroundColor', darkColors.containerBg);
     });
 });

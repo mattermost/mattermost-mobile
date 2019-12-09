@@ -26,11 +26,11 @@ import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {resetToChannel, goToScreen} from 'app/actions/navigation';
+import {getLogo} from 'app/utils/appearance';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
-import {changeOpacity} from 'app/utils/theme';
 import {GlobalStyles} from 'app/styles';
 
 import telemetry from 'app/telemetry';
@@ -46,7 +46,8 @@ export default class Login extends PureComponent {
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
-        theme: PropTypes.object,
+        colorScheme: PropTypes.string.isRequired,
+        colorStyles: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
@@ -223,11 +224,21 @@ export default class Login extends PureComponent {
         return '';
     }
 
+    styleError = () => {
+        this.loginId.setNativeProps({
+            style: GlobalStyles.inputBoxError,
+        });
+        this.passwd.setNativeProps({
+            style: GlobalStyles.inputBoxError,
+        });
+    }
+
     getLoginErrorMessage = () => {
-        return (
-            this.getServerErrorForLogin() ||
-            this.state.error
-        );
+        const error = this.getServerErrorForLogin() || this.state.error;
+        if (error && this.loginId && this.passwd) {
+            this.styleError();
+        }
+        return error;
     };
 
     getServerErrorForLogin = () => {
@@ -294,13 +305,58 @@ export default class Login extends PureComponent {
         goToScreen(screen, title);
     }
 
+    isLoginButtonDisabled = () => {
+        return !(this.props.loginId && this.props.password);
+    };
+
+    onLoginFocus = () => {
+        this.loginId.setNativeProps({
+            style: this.props.colorStyles.inputBoxFocused,
+        });
+    }
+    onLoginBlur = () => {
+        this.loginId.setNativeProps({
+            style: this.props.colorStyles.inputBox,
+        });
+    }
+
+    onPasswordFocus = () => {
+        this.passwd.setNativeProps({
+            style: this.props.colorStyles.inputBoxFocused,
+        });
+    }
+    onPasswordBlur = () => {
+        this.passwd.setNativeProps({
+            style: this.props.colorStyles.inputBox,
+        });
+    }
+
     render() {
+        const {colorScheme, colorStyles} = this.props;
+
         const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
+
+        const inputStyle = [GlobalStyles.inputBox, colorStyles.inputBox];
+        if (isLoading) {
+            inputStyle.push(GlobalStyles.inputBoxDisabled);
+            inputStyle.push(colorStyles.inputBoxDisabled);
+        }
+
+        const buttonStyle = [GlobalStyles.authButton, colorStyles.authButton];
+        const buttonTextStyle = [GlobalStyles.authButtonText, colorStyles.authButtonText];
+        if (this.isLoginButtonDisabled()) {
+            buttonStyle.push(colorStyles.buttonDisabled);
+            buttonTextStyle.push(colorStyles.buttonTextDisabled);
+        }
+        if (this.state.error) {
+            buttonStyle.push(GlobalStyles.inputError);
+        }
 
         let proceed;
         if (isLoading) {
             proceed = (
                 <ActivityIndicator
+                    color={colorStyles.buttonTextDisabled.color}
                     animating={true}
                     size='small'
                 />
@@ -321,13 +377,14 @@ export default class Login extends PureComponent {
 
             proceed = (
                 <Button
+                    disabled={this.isLoginButtonDisabled()}
                     onPress={this.preSignIn}
-                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
+                    containerStyle={buttonStyle}
                 >
                     <FormattedText
                         id='login.signIn'
                         defaultMessage='Sign in'
-                        style={[GlobalStyles.signupButtonText, additionalTextStyle]}
+                        style={buttonTextStyle}
                     />
                 </Button>
             );
@@ -343,44 +400,45 @@ export default class Login extends PureComponent {
                     <FormattedText
                         id='login.forgot'
                         defaultMessage='I forgot my password'
-                        style={style.forgotPasswordTxt}
+                        style={colorStyles.link}
                     />
                 </Button>
             );
         }
 
         return (
-            <View style={style.container}>
+            <View style={[style.container, colorStyles.container]}>
                 <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
-                        style={style.container}
+                        style={[style.container, colorStyles.container]}
                         contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
                         keyboardShouldPersistTaps='handled'
                         enableOnAndroid={true}
                     >
                         <Image
-                            source={require('assets/images/logo.png')}
+                            source={getLogo(colorScheme)}
                         />
                         <View>
-                            <Text style={GlobalStyles.header}>
+                            <Text style={[GlobalStyles.header, colorStyles.header]}>
                                 {this.props.config.SiteName}
                             </Text>
                             <FormattedText
-                                style={GlobalStyles.subheader}
+                                style={[GlobalStyles.subheader, colorStyles.header]}
                                 id='web.root.signup_info'
                                 defaultMessage='All team communication in one place, searchable and accessible anywhere'
                             />
                         </View>
-                        <ErrorText error={this.getLoginErrorMessage()}/>
                         <TextInput
                             ref={this.loginRef}
                             value={this.props.loginId}
+                            onBlur={this.onLoginBlur}
                             onChangeText={this.props.actions.handleLoginIdChanged}
-                            style={GlobalStyles.inputBox}
+                            onFocus={this.onLoginFocus}
+                            style={inputStyle}
                             placeholder={this.createLoginPlaceholder()}
-                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                            placeholderTextColor={colorStyles.inputBoxDisabled.color}
                             autoCorrect={false}
                             autoCapitalize='none'
                             keyboardType='email-address'
@@ -389,14 +447,17 @@ export default class Login extends PureComponent {
                             onSubmitEditing={this.passwordFocus}
                             blurOnSubmit={false}
                             disableFullscreenUI={true}
+                            editable={!isLoading}
                         />
                         <TextInput
                             ref={this.passwordRef}
                             value={this.props.password}
+                            onBlur={this.onPasswordBlur}
                             onChangeText={this.props.actions.handlePasswordChanged}
-                            style={GlobalStyles.inputBox}
+                            onFocus={this.onPasswordFocus}
+                            style={inputStyle}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
-                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                            placeholderTextColor={colorStyles.inputBoxDisabled.color}
                             secureTextEntry={true}
                             autoCorrect={false}
                             autoCapitalize='none'
@@ -404,7 +465,9 @@ export default class Login extends PureComponent {
                             returnKeyType='go'
                             onSubmitEditing={this.preSignIn}
                             disableFullscreenUI={true}
+                            editable={!isLoading}
                         />
+                        <ErrorText error={this.getLoginErrorMessage()}/>
                         {proceed}
                         {forgotPassword}
                     </KeyboardAwareScrollView>
@@ -416,7 +479,6 @@ export default class Login extends PureComponent {
 
 const style = StyleSheet.create({
     container: {
-        backgroundColor: '#FFFFFF',
         flex: 1,
     },
     innerContainer: {
@@ -429,8 +491,5 @@ const style = StyleSheet.create({
     forgotPasswordBtn: {
         borderColor: 'transparent',
         marginTop: 15,
-    },
-    forgotPasswordTxt: {
-        color: '#2389D7',
     },
 });

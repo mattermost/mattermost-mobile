@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {AppearanceProvider} from 'react-native-appearance';
 import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
@@ -13,9 +14,11 @@ export function registerScreens(store, Provider) {
     // TODO consolidate this with app/utils/wrap_context_provider
     const wrapper = (Comp) => (props) => ( // eslint-disable-line react/display-name
         <Provider store={store}>
-            <Root>
-                <Comp {...props}/>
-            </Root>
+            <AppearanceProvider>
+                <Root>
+                    <Comp {...props}/>
+                </Root>
+            </AppearanceProvider>
         </Provider>
     );
 

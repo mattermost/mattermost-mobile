@@ -68,6 +68,8 @@ import com.facebook.soloader.SoLoader;
 
 import com.mattermost.share.RealPathUtil;
 
+import io.expo.appearance.RNCAppearancePackage;
+
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
 
@@ -197,7 +199,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new LinearGradientPackage(),
             new ReactVideoPackage(),
             new RNGestureHandlerPackage(),
-            new RNPasteableTextInputPackage()
+            new RNPasteableTextInputPackage(),
+            new RNCAppearancePackage()
     );
   }
 

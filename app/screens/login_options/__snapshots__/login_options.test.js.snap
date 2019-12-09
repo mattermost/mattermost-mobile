@@ -1,0 +1,189 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoginOptions should show dark background when user has dark color scheme set 1`] = `
+<ScrollViewMock
+  contentContainerStyle={
+    Array [
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "column",
+        "justifyContent": "center",
+        "paddingHorizontal": 15,
+      },
+      null,
+    ]
+  }
+  style={
+    Array [
+      Object {
+        "flex": 1,
+      },
+      Object {
+        "backgroundColor": "#171717",
+      },
+    ]
+  }
+>
+  <Connect(StatusBar) />
+  <Image
+    source={
+      Object {
+        "testUri": "../../../dist/assets/images/logo_dark.png",
+      }
+    }
+  />
+  <Text
+    style={
+      Array [
+        Object {
+          "fontSize": 32,
+          "fontWeight": "600",
+          "marginBottom": 15,
+          "marginTop": 15,
+          "textAlign": "center",
+        },
+        Object {
+          "color": "#dbdbdb",
+        },
+      ]
+    }
+  />
+  <FormattedText
+    defaultMessage="All team communication in one place, searchable and accessible anywhere"
+    id="web.root.signup_info"
+    style={
+      Array [
+        Object {
+          "color": "#777",
+          "fontSize": 16,
+          "fontWeight": "300",
+          "lineHeight": 22,
+          "marginBottom": 15,
+          "textAlign": "center",
+        },
+        Object {
+          "color": "#dbdbdb",
+        },
+      ]
+    }
+  />
+  <FormattedText
+    defaultMessage="Choose your login method"
+    id="mobile.login_options.choose_title"
+    style={
+      Array [
+        Object {
+          "color": "#777",
+          "fontSize": 16,
+          "fontWeight": "300",
+          "lineHeight": 22,
+          "marginBottom": 15,
+          "textAlign": "center",
+        },
+        Object {
+          "fontWeight": "bold",
+          "marginTop": 10,
+        },
+        Object {
+          "color": "#dbdbdb",
+        },
+      ]
+    }
+  />
+</ScrollViewMock>
+`;
+
+exports[`LoginOptions should show light background when user has dark color scheme set 1`] = `
+<ScrollViewMock
+  contentContainerStyle={
+    Array [
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "column",
+        "justifyContent": "center",
+        "paddingHorizontal": 15,
+      },
+      null,
+    ]
+  }
+  style={
+    Array [
+      Object {
+        "flex": 1,
+      },
+      Object {
+        "backgroundColor": "#ffffff",
+      },
+    ]
+  }
+>
+  <Connect(StatusBar) />
+  <Image
+    source={
+      Object {
+        "testUri": "../../../dist/assets/images/logo_light.png",
+      }
+    }
+  />
+  <Text
+    style={
+      Array [
+        Object {
+          "fontSize": 32,
+          "fontWeight": "600",
+          "marginBottom": 15,
+          "marginTop": 15,
+          "textAlign": "center",
+        },
+        Object {
+          "color": "#171717",
+        },
+      ]
+    }
+  />
+  <FormattedText
+    defaultMessage="All team communication in one place, searchable and accessible anywhere"
+    id="web.root.signup_info"
+    style={
+      Array [
+        Object {
+          "color": "#777",
+          "fontSize": 16,
+          "fontWeight": "300",
+          "lineHeight": 22,
+          "marginBottom": 15,
+          "textAlign": "center",
+        },
+        Object {
+          "color": "#171717",
+        },
+      ]
+    }
+  />
+  <FormattedText
+    defaultMessage="Choose your login method"
+    id="mobile.login_options.choose_title"
+    style={
+      Array [
+        Object {
+          "color": "#777",
+          "fontSize": 16,
+          "fontWeight": "300",
+          "lineHeight": 22,
+          "marginBottom": 15,
+          "textAlign": "center",
+        },
+        Object {
+          "fontWeight": "bold",
+          "marginTop": 10,
+        },
+        Object {
+          "color": "#171717",
+        },
+      ]
+    }
+  />
+</ScrollViewMock>
+`;

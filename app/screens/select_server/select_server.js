@@ -32,12 +32,12 @@ import FormattedText from 'app/components/formatted_text';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
+import {getLogo, getStyledGoToScreenOptions} from 'app/utils/appearance';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
-import {changeOpacity} from 'app/utils/theme';
 import {resetToChannel, goToScreen} from 'app/actions/navigation';
 
 import telemetry from 'app/telemetry';
@@ -58,11 +58,11 @@ export default class SelectServer extends PureComponent {
             setServerVersion: PropTypes.func.isRequired,
         }).isRequired,
         allowOtherServers: PropTypes.bool,
-        config: PropTypes.object,
+        colorScheme: PropTypes.string.isRequired,
+        colorStyles: PropTypes.object.isRequired,
         currentVersion: PropTypes.string,
         hasConfigAndLicense: PropTypes.bool.isRequired,
         latestVersion: PropTypes.string,
-        license: PropTypes.object,
         minVersion: PropTypes.string,
         serverUrl: PropTypes.string.isRequired,
     };
@@ -159,6 +159,7 @@ export default class SelectServer extends PureComponent {
     };
 
     goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
+        const {colorStyles} = this.props;
         const defaultOptions = {
             popGesture: !LocalConfig.AutoSelectServerUrl,
             topBar: {
@@ -166,7 +167,7 @@ export default class SelectServer extends PureComponent {
                 height: LocalConfig.AutoSelectServerUrl ? 0 : null,
             },
         };
-        const options = merge(defaultOptions, navOptions);
+        const options = merge(getStyledGoToScreenOptions(colorStyles), defaultOptions, navOptions);
 
         goToScreen(screen, title, passProps, options);
     };
@@ -174,6 +175,12 @@ export default class SelectServer extends PureComponent {
     handleAndroidKeyboard = () => {
         this.blur();
     };
+
+    styleError = () => {
+        this.textInput.setNativeProps({
+            style: GlobalStyles.inputBoxError,
+        });
+    }
 
     handleConnect = preventDoubleTap(async () => {
         const url = this.getUrl();
@@ -187,6 +194,7 @@ export default class SelectServer extends PureComponent {
         }
 
         if (!isValidUrl(url)) {
+            this.styleError();
             this.setState({
                 error: {
                     intl: {
@@ -333,6 +341,10 @@ export default class SelectServer extends PureComponent {
                 setServerVersion(Client4.getServerVersion());
             }
 
+            if (result.error) {
+                this.styleError();
+            }
+
             this.setState({
                 connected: !result.error,
                 connecting: false,
@@ -368,9 +380,33 @@ export default class SelectServer extends PureComponent {
         });
     };
 
-    render() {
-        const {formatMessage} = this.context.intl;
+    isConnectButtonDisabled = () => {
+        const {connected, connecting} = this.state;
+
+        return !this.state.url || connected || connecting;
+    };
+
+    isInputDisabled = () => {
         const {allowOtherServers} = this.props;
+        const {connected, connecting} = this.state;
+
+        return !allowOtherServers || connected || connecting;
+    };
+
+    onFocus = () => {
+        this.textInput.setNativeProps({
+            style: this.props.colorStyles.inputBoxFocused,
+        });
+    }
+    onBlur = () => {
+        this.textInput.setNativeProps({
+            style: this.props.colorStyles.inputBox,
+        });
+    }
+
+    render() {
+        const {colorScheme, colorStyles} = this.props;
+        const {formatMessage} = this.context.intl;
         const {
             connected,
             connecting,
@@ -384,6 +420,7 @@ export default class SelectServer extends PureComponent {
             buttonIcon = (
                 <ActivityIndicator
                     animating={true}
+                    color={colorStyles.buttonTextDisabled.color}
                     size='small'
                     style={style.connectingIndicator}
                 />
@@ -408,32 +445,39 @@ export default class SelectServer extends PureComponent {
             statusStyle = 'light-content';
         }
 
-        const inputDisabled = !allowOtherServers || connected || connecting;
-        const inputStyle = [GlobalStyles.inputBox];
-        if (inputDisabled) {
-            inputStyle.push(style.disabledInput);
+        const buttonStyle = [GlobalStyles.authButton, colorStyles.authButton];
+        const buttonTextStyle = [GlobalStyles.authButtonText, colorStyles.authButtonText];
+        if (this.isConnectButtonDisabled()) {
+            buttonStyle.push(colorStyles.buttonDisabled);
+            buttonTextStyle.push(colorStyles.buttonTextDisabled);
+        }
+
+        const inputStyle = [GlobalStyles.inputBox, colorStyles.inputBox];
+        if (this.isInputDisabled()) {
+            inputStyle.push(GlobalStyles.inputBoxDisabled);
+            inputStyle.push(colorStyles.inputBoxDisabled);
         }
 
         return (
             <SafeAreaView
-                style={style.container}
+                style={[style.container, colorStyles.container]}
             >
                 <KeyboardAvoidingView
                     behavior='padding'
-                    style={style.container}
+                    style={[style.container, colorStyles.container]}
                     keyboardVerticalOffset={0}
                     enabled={Platform.OS === 'ios'}
                 >
                     <StatusBar barStyle={statusStyle}/>
                     <TouchableWithoutFeedback onPress={this.blur}>
-                        <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                        <View style={[GlobalStyles.container, GlobalStyles.authContainer, colorStyles.container]}>
                             <Image
-                                source={require('assets/images/logo.png')}
+                                source={getLogo(colorScheme)}
                             />
 
                             <View>
                                 <FormattedText
-                                    style={[GlobalStyles.header, GlobalStyles.label]}
+                                    style={[GlobalStyles.header, GlobalStyles.label, colorStyles.header]}
                                     id='mobile.components.select_server_view.enterServerUrl'
                                     defaultMessage='Enter Server URL'
                                 />
@@ -441,8 +485,10 @@ export default class SelectServer extends PureComponent {
                             <TextInput
                                 ref={this.inputRef}
                                 value={url}
-                                editable={!inputDisabled}
+                                editable={!this.isInputDisabled()}
+                                onBlur={this.onBlur}
                                 onChangeText={this.handleTextChanged}
+                                onFocus={this.onFocus}
                                 onSubmitEditing={this.handleConnect}
                                 style={inputStyle}
                                 autoCapitalize='none'
@@ -452,21 +498,22 @@ export default class SelectServer extends PureComponent {
                                     id: 'mobile.components.select_server_view.siteUrlPlaceholder',
                                     defaultMessage: 'https://mattermost.example.com',
                                 })}
-                                placeholderTextColor={changeOpacity('#000', 0.5)}
+                                placeholderTextColor={colorStyles.inputBoxDisabled.color}
                                 returnKeyType='go'
                                 underlineColorAndroid='transparent'
                                 disableFullscreenUI={true}
                             />
+                            <ErrorText error={error}/>
                             <Button
+                                disabled={this.isConnectButtonDisabled()}
                                 onPress={this.handleConnect}
-                                containerStyle={[GlobalStyles.signupButton, style.connectButton]}
+                                containerStyle={buttonStyle}
                             >
                                 {buttonIcon}
-                                <Text style={GlobalStyles.signupButtonText}>
+                                <Text style={buttonTextStyle}>
                                     {buttonText}
                                 </Text>
                             </Button>
-                            <ErrorText error={error}/>
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAvoidingView>
@@ -478,12 +525,6 @@ export default class SelectServer extends PureComponent {
 const style = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    disabledInput: {
-        backgroundColor: '#e3e3e3',
-    },
-    connectButton: {
-        alignItems: 'center',
     },
     connectingIndicator: {
         marginRight: 5,

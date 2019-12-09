@@ -1,9 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Appearance} from 'react-native-appearance';
 import {networkStatusChangedAction} from 'redux-offline';
 
 import {DeviceTypes} from 'app/constants';
+
+export function getColorScheme() {
+    return {
+        type: DeviceTypes.COLOR_SCHEME_CHANGED,
+        colorScheme: Appearance.getColorScheme(),
+    };
+}
 
 export function connection(isOnline) {
     return async (dispatch) => {

@@ -1,0 +1,367 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SelectServer should show dark background when user has dark color scheme set 1`] = `
+<ForwardRef(_SafeAreaView)
+  style={
+    Array [
+      Object {
+        "flex": 1,
+      },
+      Object {
+        "backgroundColor": "#171717",
+      },
+    ]
+  }
+>
+  <KeyboardAvoidingView
+    behavior="padding"
+    enabled={true}
+    keyboardVerticalOffset={0}
+    style={
+      Array [
+        Object {
+          "flex": 1,
+        },
+        Object {
+          "backgroundColor": "#171717",
+        },
+      ]
+    }
+  >
+    <StatusBar
+      animated={false}
+      barStyle="dark-content"
+      showHideTransition="fade"
+    />
+    <TouchableWithoutFeedback
+      onPress={[Function]}
+    >
+      <View
+        style={
+          Array [
+            Object {
+              "alignItems": "center",
+              "backgroundColor": "white",
+              "flex": 1,
+              "flexDirection": "column",
+              "justifyContent": "center",
+            },
+            Object {
+              "paddingLeft": 15,
+              "paddingRight": 15,
+            },
+            Object {
+              "backgroundColor": "#171717",
+            },
+          ]
+        }
+      >
+        <Image
+          source={
+            Object {
+              "testUri": "../../../dist/assets/images/logo_dark.png",
+            }
+          }
+        />
+        <View>
+          <FormattedText
+            defaultMessage="Enter Server URL"
+            id="mobile.components.select_server_view.enterServerUrl"
+            style={
+              Array [
+                Object {
+                  "fontSize": 32,
+                  "fontWeight": "600",
+                  "marginBottom": 15,
+                  "marginTop": 15,
+                  "textAlign": "center",
+                },
+                Object {
+                  "fontSize": 20,
+                  "fontWeight": "400",
+                },
+                Object {
+                  "color": "#dbdbdb",
+                },
+              ]
+            }
+          />
+        </View>
+        <TextInput
+          allowFontScaling={true}
+          autoCapitalize="none"
+          autoCorrect={false}
+          disableFullscreenUI={true}
+          editable={false}
+          keyboardType="url"
+          onBlur={[Function]}
+          onChangeText={[Function]}
+          onFocus={[Function]}
+          onSubmitEditing={[Function]}
+          placeholder="https://mattermost.example.com"
+          placeholderTextColor="#9b9b9b"
+          rejectResponderTermination={true}
+          returnKeyType="go"
+          style={
+            Array [
+              Object {
+                "alignSelf": "stretch",
+                "borderRadius": 3,
+                "borderWidth": 2,
+                "fontSize": 16,
+                "height": 45,
+                "marginBottom": 5,
+                "marginTop": 5,
+                "paddingLeft": 10,
+              },
+              Object {
+                "borderColor": "#9b9b9b",
+                "color": "#dbdbdb",
+              },
+              Object {
+                "borderWidth": 0,
+              },
+              Object {
+                "backgroundColor": "#2e2e2e",
+                "color": "#9b9b9b",
+              },
+            ]
+          }
+          underlineColorAndroid="transparent"
+          value=""
+        />
+        <Connect(ErrorText)
+          error={null}
+        />
+        <Button
+          containerStyle={
+            Array [
+              Object {
+                "alignItems": "center",
+                "alignSelf": "stretch",
+                "borderRadius": 3,
+                "marginTop": 10,
+                "padding": 15,
+              },
+              Object {
+                "backgroundColor": "#399fff",
+              },
+              Object {
+                "backgroundColor": "#2e2e2e",
+              },
+            ]
+          }
+          disabled={true}
+          onPress={[Function]}
+        >
+          <Text
+            style={
+              Array [
+                Object {
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                  "textAlign": "center",
+                },
+                Object {
+                  "color": "#171717",
+                },
+                Object {
+                  "color": "#9b9b9b",
+                },
+              ]
+            }
+          >
+            <FormattedText
+              defaultMessage="Connect"
+              id="mobile.components.select_server_view.connect"
+            />
+          </Text>
+        </Button>
+      </View>
+    </TouchableWithoutFeedback>
+  </KeyboardAvoidingView>
+</ForwardRef(_SafeAreaView)>
+`;
+
+exports[`SelectServer should show light background when user has dark color scheme set 1`] = `
+<ForwardRef(_SafeAreaView)
+  style={
+    Array [
+      Object {
+        "flex": 1,
+      },
+      Object {
+        "backgroundColor": "#ffffff",
+      },
+    ]
+  }
+>
+  <KeyboardAvoidingView
+    behavior="padding"
+    enabled={true}
+    keyboardVerticalOffset={0}
+    style={
+      Array [
+        Object {
+          "flex": 1,
+        },
+        Object {
+          "backgroundColor": "#ffffff",
+        },
+      ]
+    }
+  >
+    <StatusBar
+      animated={false}
+      barStyle="dark-content"
+      showHideTransition="fade"
+    />
+    <TouchableWithoutFeedback
+      onPress={[Function]}
+    >
+      <View
+        style={
+          Array [
+            Object {
+              "alignItems": "center",
+              "backgroundColor": "white",
+              "flex": 1,
+              "flexDirection": "column",
+              "justifyContent": "center",
+            },
+            Object {
+              "paddingLeft": 15,
+              "paddingRight": 15,
+            },
+            Object {
+              "backgroundColor": "#ffffff",
+            },
+          ]
+        }
+      >
+        <Image
+          source={
+            Object {
+              "testUri": "../../../dist/assets/images/logo_light.png",
+            }
+          }
+        />
+        <View>
+          <FormattedText
+            defaultMessage="Enter Server URL"
+            id="mobile.components.select_server_view.enterServerUrl"
+            style={
+              Array [
+                Object {
+                  "fontSize": 32,
+                  "fontWeight": "600",
+                  "marginBottom": 15,
+                  "marginTop": 15,
+                  "textAlign": "center",
+                },
+                Object {
+                  "fontSize": 20,
+                  "fontWeight": "400",
+                },
+                Object {
+                  "color": "#171717",
+                },
+              ]
+            }
+          />
+        </View>
+        <TextInput
+          allowFontScaling={true}
+          autoCapitalize="none"
+          autoCorrect={false}
+          disableFullscreenUI={true}
+          editable={false}
+          keyboardType="url"
+          onBlur={[Function]}
+          onChangeText={[Function]}
+          onFocus={[Function]}
+          onSubmitEditing={[Function]}
+          placeholder="https://mattermost.example.com"
+          placeholderTextColor="#5c5c5c"
+          rejectResponderTermination={true}
+          returnKeyType="go"
+          style={
+            Array [
+              Object {
+                "alignSelf": "stretch",
+                "borderRadius": 3,
+                "borderWidth": 2,
+                "fontSize": 16,
+                "height": 45,
+                "marginBottom": 5,
+                "marginTop": 5,
+                "paddingLeft": 10,
+              },
+              Object {
+                "borderColor": "#dbdbdb",
+                "color": "#171717",
+              },
+              Object {
+                "borderWidth": 0,
+              },
+              Object {
+                "backgroundColor": "#dbdbdb",
+                "color": "#5c5c5c",
+              },
+            ]
+          }
+          underlineColorAndroid="transparent"
+          value=""
+        />
+        <Connect(ErrorText)
+          error={null}
+        />
+        <Button
+          containerStyle={
+            Array [
+              Object {
+                "alignItems": "center",
+                "alignSelf": "stretch",
+                "borderRadius": 3,
+                "marginTop": 10,
+                "padding": 15,
+              },
+              Object {
+                "backgroundColor": "#1247b1",
+              },
+              Object {
+                "backgroundColor": "#dbdbdb",
+              },
+            ]
+          }
+          disabled={true}
+          onPress={[Function]}
+        >
+          <Text
+            style={
+              Array [
+                Object {
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                  "textAlign": "center",
+                },
+                Object {
+                  "color": "#ffffff",
+                },
+                Object {
+                  "color": "#5c5c5c",
+                },
+              ]
+            }
+          >
+            <FormattedText
+              defaultMessage="Connect"
+              id="mobile.components.select_server_view.connect"
+            />
+          </Text>
+        </Button>
+      </View>
+    </TouchableWithoutFeedback>
+  </KeyboardAvoidingView>
+</ForwardRef(_SafeAreaView)>
+`;

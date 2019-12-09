@@ -135,14 +135,14 @@ export default class ForgotPassword extends PureComponent {
                         disableFullscreenUI={true}
                     />
                     <Button
-                        containerStyle={GlobalStyles.signupButton}
+                        containerStyle={GlobalStyles.authButton}
                         disabled={!this.state.email}
                         onPress={this.submitResetPassword}
                     >
                         <FormattedText
                             id='password_send.reset'
                             defaultMessage='Reset my password'
-                            style={[GlobalStyles.signupButtonText]}
+                            style={[GlobalStyles.authButtonText]}
                         />
                     </Button>
                 </View>

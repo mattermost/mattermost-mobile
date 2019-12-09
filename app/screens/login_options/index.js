@@ -6,13 +6,19 @@ import {connect} from 'react-redux';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
-import {isLandscape} from 'app/selectors/device';
+import {getColorScheme, isLandscape} from 'app/selectors/device';
+import {getColorStyles} from 'app/utils/appearance';
 import LoginOptions from './login_options';
 
 function mapStateToProps(state) {
     const config = getConfig(state);
     const license = getLicense(state);
+    const colorScheme = getColorScheme(state);
+    const colorStyles = getColorStyles(colorScheme);
+
     return {
+        colorScheme,
+        colorStyles,
         config,
         license,
         theme: getTheme(state),

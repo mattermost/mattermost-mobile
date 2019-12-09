@@ -1,0 +1,473 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Login should show dark background when user has dark color scheme set 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "flex": 1,
+      },
+      Object {
+        "backgroundColor": "#171717",
+      },
+    ]
+  }
+>
+  <Connect(StatusBar) />
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <KeyboardAwareScrollViewMock
+      contentContainerStyle={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flexDirection": "column",
+            "justifyContent": "center",
+            "paddingHorizontal": 15,
+            "paddingVertical": 50,
+          },
+          null,
+        ]
+      }
+      enableAutomaticScroll={true}
+      enableOnAndroid={true}
+      enableResetScrollToCoords={true}
+      extraHeight={75}
+      extraScrollHeight={0}
+      keyboardOpeningTime={250}
+      keyboardShouldPersistTaps="handled"
+      style={
+        Array [
+          Object {
+            "flex": 1,
+          },
+          Object {
+            "backgroundColor": "#171717",
+          },
+        ]
+      }
+      viewIsInsideTabBar={false}
+    >
+      <Image
+        source={
+          Object {
+            "testUri": "../../../dist/assets/images/logo_dark.png",
+          }
+        }
+      />
+      <View>
+        <Text
+          style={
+            Array [
+              Object {
+                "fontSize": 32,
+                "fontWeight": "600",
+                "marginBottom": 15,
+                "marginTop": 15,
+                "textAlign": "center",
+              },
+              Object {
+                "color": "#dbdbdb",
+              },
+            ]
+          }
+        />
+        <FormattedText
+          defaultMessage="All team communication in one place, searchable and accessible anywhere"
+          id="web.root.signup_info"
+          style={
+            Array [
+              Object {
+                "color": "#777",
+                "fontSize": 16,
+                "fontWeight": "300",
+                "lineHeight": 22,
+                "marginBottom": 15,
+                "textAlign": "center",
+              },
+              Object {
+                "color": "#dbdbdb",
+              },
+            ]
+          }
+        />
+      </View>
+      <TextInput
+        allowFontScaling={true}
+        autoCapitalize="none"
+        autoCorrect={false}
+        blurOnSubmit={false}
+        disableFullscreenUI={true}
+        editable={true}
+        keyboardType="email-address"
+        onBlur={[Function]}
+        onChangeText={[MockFunction]}
+        onFocus={[Function]}
+        onSubmitEditing={[Function]}
+        placeholder="Email or Username"
+        placeholderTextColor="#9b9b9b"
+        rejectResponderTermination={true}
+        returnKeyType="next"
+        style={
+          Array [
+            Object {
+              "alignSelf": "stretch",
+              "borderRadius": 3,
+              "borderWidth": 2,
+              "fontSize": 16,
+              "height": 45,
+              "marginBottom": 5,
+              "marginTop": 5,
+              "paddingLeft": 10,
+            },
+            Object {
+              "borderColor": "#9b9b9b",
+              "color": "#dbdbdb",
+            },
+          ]
+        }
+        underlineColorAndroid="transparent"
+        value=""
+      />
+      <TextInput
+        allowFontScaling={true}
+        autoCapitalize="none"
+        autoCorrect={false}
+        disableFullscreenUI={true}
+        editable={true}
+        onBlur={[Function]}
+        onChangeText={[MockFunction]}
+        onFocus={[Function]}
+        onSubmitEditing={[Function]}
+        placeholder="Password"
+        placeholderTextColor="#9b9b9b"
+        rejectResponderTermination={true}
+        returnKeyType="go"
+        secureTextEntry={true}
+        style={
+          Array [
+            Object {
+              "alignSelf": "stretch",
+              "borderRadius": 3,
+              "borderWidth": 2,
+              "fontSize": 16,
+              "height": 45,
+              "marginBottom": 5,
+              "marginTop": 5,
+              "paddingLeft": 10,
+            },
+            Object {
+              "borderColor": "#9b9b9b",
+              "color": "#dbdbdb",
+            },
+          ]
+        }
+        underlineColorAndroid="transparent"
+        value=""
+      />
+      <Connect(ErrorText)
+        error={null}
+      />
+      <Button
+        containerStyle={
+          Array [
+            Object {
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "borderRadius": 3,
+              "marginTop": 10,
+              "padding": 15,
+            },
+            Object {
+              "backgroundColor": "#399fff",
+            },
+            Object {
+              "backgroundColor": "#2e2e2e",
+            },
+          ]
+        }
+        disabled={true}
+        onPress={[Function]}
+      >
+        <FormattedText
+          defaultMessage="Sign in"
+          id="login.signIn"
+          style={
+            Array [
+              Object {
+                "fontSize": 17,
+                "fontWeight": "500",
+                "textAlign": "center",
+              },
+              Object {
+                "color": "#171717",
+              },
+              Object {
+                "color": "#9b9b9b",
+              },
+            ]
+          }
+        />
+      </Button>
+      <Button
+        containerStyle={
+          Array [
+            Object {
+              "borderColor": "transparent",
+              "marginTop": 15,
+            },
+          ]
+        }
+        onPress={[Function]}
+      >
+        <FormattedText
+          defaultMessage="I forgot my password"
+          id="login.forgot"
+          style={
+            Object {
+              "color": "#399fff",
+            }
+          }
+        />
+      </Button>
+    </KeyboardAwareScrollViewMock>
+  </TouchableWithoutFeedback>
+</View>
+`;
+
+exports[`Login should show light background when user has dark color scheme set 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "flex": 1,
+      },
+      Object {
+        "backgroundColor": "#ffffff",
+      },
+    ]
+  }
+>
+  <Connect(StatusBar) />
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <KeyboardAwareScrollViewMock
+      contentContainerStyle={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flexDirection": "column",
+            "justifyContent": "center",
+            "paddingHorizontal": 15,
+            "paddingVertical": 50,
+          },
+          null,
+        ]
+      }
+      enableAutomaticScroll={true}
+      enableOnAndroid={true}
+      enableResetScrollToCoords={true}
+      extraHeight={75}
+      extraScrollHeight={0}
+      keyboardOpeningTime={250}
+      keyboardShouldPersistTaps="handled"
+      style={
+        Array [
+          Object {
+            "flex": 1,
+          },
+          Object {
+            "backgroundColor": "#ffffff",
+          },
+        ]
+      }
+      viewIsInsideTabBar={false}
+    >
+      <Image
+        source={
+          Object {
+            "testUri": "../../../dist/assets/images/logo_light.png",
+          }
+        }
+      />
+      <View>
+        <Text
+          style={
+            Array [
+              Object {
+                "fontSize": 32,
+                "fontWeight": "600",
+                "marginBottom": 15,
+                "marginTop": 15,
+                "textAlign": "center",
+              },
+              Object {
+                "color": "#171717",
+              },
+            ]
+          }
+        />
+        <FormattedText
+          defaultMessage="All team communication in one place, searchable and accessible anywhere"
+          id="web.root.signup_info"
+          style={
+            Array [
+              Object {
+                "color": "#777",
+                "fontSize": 16,
+                "fontWeight": "300",
+                "lineHeight": 22,
+                "marginBottom": 15,
+                "textAlign": "center",
+              },
+              Object {
+                "color": "#171717",
+              },
+            ]
+          }
+        />
+      </View>
+      <TextInput
+        allowFontScaling={true}
+        autoCapitalize="none"
+        autoCorrect={false}
+        blurOnSubmit={false}
+        disableFullscreenUI={true}
+        editable={true}
+        keyboardType="email-address"
+        onBlur={[Function]}
+        onChangeText={[MockFunction]}
+        onFocus={[Function]}
+        onSubmitEditing={[Function]}
+        placeholder="Email or Username"
+        placeholderTextColor="#5c5c5c"
+        rejectResponderTermination={true}
+        returnKeyType="next"
+        style={
+          Array [
+            Object {
+              "alignSelf": "stretch",
+              "borderRadius": 3,
+              "borderWidth": 2,
+              "fontSize": 16,
+              "height": 45,
+              "marginBottom": 5,
+              "marginTop": 5,
+              "paddingLeft": 10,
+            },
+            Object {
+              "borderColor": "#dbdbdb",
+              "color": "#171717",
+            },
+          ]
+        }
+        underlineColorAndroid="transparent"
+        value=""
+      />
+      <TextInput
+        allowFontScaling={true}
+        autoCapitalize="none"
+        autoCorrect={false}
+        disableFullscreenUI={true}
+        editable={true}
+        onBlur={[Function]}
+        onChangeText={[MockFunction]}
+        onFocus={[Function]}
+        onSubmitEditing={[Function]}
+        placeholder="Password"
+        placeholderTextColor="#5c5c5c"
+        rejectResponderTermination={true}
+        returnKeyType="go"
+        secureTextEntry={true}
+        style={
+          Array [
+            Object {
+              "alignSelf": "stretch",
+              "borderRadius": 3,
+              "borderWidth": 2,
+              "fontSize": 16,
+              "height": 45,
+              "marginBottom": 5,
+              "marginTop": 5,
+              "paddingLeft": 10,
+            },
+            Object {
+              "borderColor": "#dbdbdb",
+              "color": "#171717",
+            },
+          ]
+        }
+        underlineColorAndroid="transparent"
+        value=""
+      />
+      <Connect(ErrorText)
+        error={null}
+      />
+      <Button
+        containerStyle={
+          Array [
+            Object {
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "borderRadius": 3,
+              "marginTop": 10,
+              "padding": 15,
+            },
+            Object {
+              "backgroundColor": "#1247b1",
+            },
+            Object {
+              "backgroundColor": "#dbdbdb",
+            },
+          ]
+        }
+        disabled={true}
+        onPress={[Function]}
+      >
+        <FormattedText
+          defaultMessage="Sign in"
+          id="login.signIn"
+          style={
+            Array [
+              Object {
+                "fontSize": 17,
+                "fontWeight": "500",
+                "textAlign": "center",
+              },
+              Object {
+                "color": "#ffffff",
+              },
+              Object {
+                "color": "#5c5c5c",
+              },
+            ]
+          }
+        />
+      </Button>
+      <Button
+        containerStyle={
+          Array [
+            Object {
+              "borderColor": "transparent",
+              "marginTop": 15,
+            },
+          ]
+        }
+        onPress={[Function]}
+      >
+        <FormattedText
+          defaultMessage="I forgot my password"
+          id="login.forgot"
+          style={
+            Object {
+              "color": "#1247b1",
+            }
+          }
+        />
+      </Button>
+    </KeyboardAwareScrollViewMock>
+  </TouchableWithoutFeedback>
+</View>
+`;

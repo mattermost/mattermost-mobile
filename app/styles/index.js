@@ -6,6 +6,8 @@ no-magic-numbers */
 
 import {StyleSheet} from 'react-native';
 
+import {error} from 'app/styles/colors';
+
 export const GlobalStyles = StyleSheet.create({
     container: {
         flex: 1,
@@ -14,7 +16,7 @@ export const GlobalStyles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'white',
     },
-    signupContainer: {
+    authContainer: {
         paddingRight: 15,
         paddingLeft: 15,
     },
@@ -36,19 +38,17 @@ export const GlobalStyles = StyleSheet.create({
         marginBottom: 15,
         lineHeight: 22,
     },
-    signupButton: {
+    authButton: {
         borderRadius: 3,
-        borderColor: '#2389D7',
-        borderWidth: 1,
         alignItems: 'center',
         alignSelf: 'stretch',
         marginTop: 10,
         padding: 15,
     },
-    signupButtonText: {
+    authButtonText: {
         textAlign: 'center',
-        color: '#2389D7',
         fontSize: 17,
+        fontWeight: '500',
     },
     buttonListItemText: {
         textAlign: 'left',
@@ -74,12 +74,6 @@ export const GlobalStyles = StyleSheet.create({
         paddingLeft: 15,
         paddingRight: 15,
     },
-
-    buttonText: {
-        color: '#5890FF',
-        fontSize: 18,
-    },
-
     label: {
         fontSize: 20,
         fontWeight: '400',
@@ -103,12 +97,20 @@ export const GlobalStyles = StyleSheet.create({
     inputBox: {
         fontSize: 16,
         height: 45,
-        borderColor: 'gainsboro',
-        borderWidth: 1,
+        borderWidth: 2,
         marginTop: 5,
         marginBottom: 5,
         paddingLeft: 10,
         alignSelf: 'stretch',
         borderRadius: 3,
+    },
+    inputBoxDisabled: {
+        borderWidth: 0,
+    },
+    inputBoxError: {
+        borderColor: error,
+    },
+    textError: {
+        color: error,
     },
 });

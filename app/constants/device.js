@@ -6,6 +6,7 @@ import RNFetchBlobFS from 'rn-fetch-blob/fs';
 import keyMirror from 'mattermost-redux/utils/key_mirror';
 
 const deviceTypes = keyMirror({
+    COLOR_SCHEME_CHANGED: null,
     CONNECTION_CHANGED: null,
     DEVICE_DIMENSIONS_CHANGED: null,
     DEVICE_TYPE_CHANGED: null,

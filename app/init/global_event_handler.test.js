@@ -22,6 +22,12 @@ jest.mock('app/utils/error_handling', () => ({
     },
 }));
 
+jest.mock('react-native-appearance', () => ({
+    Appearance: {
+        getColorScheme: jest.fn(),
+    },
+}));
+
 jest.mock('react-native-notifications', () => ({
     addEventListener: jest.fn(),
     cancelAllLocalNotifications: jest.fn(),
