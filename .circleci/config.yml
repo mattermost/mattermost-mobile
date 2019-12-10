@@ -318,6 +318,7 @@ jobs:
       name: android
       resource_class: medium
     steps:
+      - ruby-setup
       - deploy-to-store:
           task: "Deploy to Google Play"
           target: android
@@ -328,6 +329,7 @@ jobs:
       name: android
       resource_class: medium
     steps:
+      - ruby-setup
       - deploy-to-store:
           task: "Deploy to Google Play"
           target: android
@@ -336,6 +338,7 @@ jobs:
   deploy-ios-release:
     executor: ios
     steps:
+      - ruby-setup
       - deploy-to-store:
           task: "Deploy to TestFlight"
           target: ios
@@ -344,6 +347,7 @@ jobs:
   deploy-ios-beta:
     executor: ios
     steps:
+      - ruby-setup
       - deploy-to-store:
           task: "Deploy to TestFlight"
           target: ios
