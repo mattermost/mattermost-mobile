@@ -49,6 +49,7 @@ export default class Reaction extends PureComponent {
                     emojiName={emojiName}
                     size={20}
                     textStyle={{color: 'black', fontWeight: 'bold'}}
+                    customEmojiStyle={{marginHorizontal: 3}}
                     padding={5}
                 />
                 <Text style={styles.count}>{count}</Text>
