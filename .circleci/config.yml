@@ -21,7 +21,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "11.0.0"
+      xcode: "11.1.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
 
