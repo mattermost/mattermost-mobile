@@ -31,9 +31,6 @@ describe('makeMapStateToProps', () => {
                 posts: {
                     post_id: {},
                 },
-                reactions: {
-                    post_id: {},
-                },
             },
             general: {
                 serverVersion: '5.18',

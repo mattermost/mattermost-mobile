@@ -27,7 +27,6 @@ export default class Reactions extends PureComponent {
             removeReaction: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
-        canAddMoreReactions: PropTypes.bool,
         canRemoveReaction: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         position: PropTypes.oneOf(['right', 'left']),
@@ -133,29 +132,26 @@ export default class Reactions extends PureComponent {
     };
 
     render() {
-        const {position, reactions, canAddMoreReactions} = this.props;
+        const {position, reactions} = this.props;
         const styles = getStyleSheet(this.props.theme);
 
         if (!reactions) {
             return null;
         }
 
-        let addMoreReactions = null;
-        if (canAddMoreReactions) {
-            addMoreReactions = (
-                <TouchableWithFeedback
-                    key='addReaction'
-                    onPress={this.handleAddReaction}
-                    style={[styles.reaction]}
-                    type={'opacity'}
-                >
-                    <Image
-                        source={addReactionIcon}
-                        style={styles.addReaction}
-                    />
-                </TouchableWithFeedback>
-            );
-        }
+        const addMoreReactions = (
+            <TouchableWithFeedback
+                key='addReaction'
+                onPress={this.handleAddReaction}
+                style={[styles.reaction]}
+                type={'opacity'}
+            >
+                <Image
+                    source={addReactionIcon}
+                    style={styles.addReaction}
+                />
+            </TouchableWithFeedback>
+        );
 
         const reactionElements = [];
         switch (position) {

@@ -14,7 +14,6 @@ import {
     setUnreadPost,
 } from 'mattermost-redux/actions/posts';
 import {General, Permissions} from 'mattermost-redux/constants';
-import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
@@ -24,7 +23,6 @@ import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/en
 import {canEditPost} from 'mattermost-redux/utils/post_utils';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
-import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
 import {THREAD} from 'app/constants/screen';
 import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions, isLandscape} from 'app/selectors/device';
@@ -32,8 +30,6 @@ import {getDimensions, isLandscape} from 'app/selectors/device';
 import PostOptions from './post_options';
 
 export function makeMapStateToProps() {
-    const getReactionsForPostSelector = makeGetReactionsForPost();
-
     return (state, ownProps) => {
         const post = ownProps.post;
         const channel = getChannel(state, post.channel_id) || {};
@@ -42,7 +38,6 @@ export function makeMapStateToProps() {
         const currentUserId = getCurrentUserId(state);
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
-        const reactions = getReactionsForPostSelector(state, post.id);
         const channelIsArchived = channel.delete_at !== 0;
         const {serverVersion} = state.entities.general;
         const canMarkAsUnread = isMinimumServerVersion(serverVersion, 5, 18);
@@ -101,10 +96,6 @@ export function makeMapStateToProps() {
 
         if (!ownProps.isSystemMessage && ownProps.managedConfig?.copyAndPasteProtection !== 'true' && post.message) {
             canCopyText = true;
-        }
-
-        if (reactions && Object.values(reactions).length >= MAX_ALLOWED_REACTIONS) {
-            canAddReaction = false;
         }
 
         return {
