@@ -20,6 +20,7 @@ describe('PostOptions', () => {
         removePost: jest.fn(),
         unflagPost: jest.fn(),
         unpinPost: jest.fn(),
+        setUnreadPost: jest.fn(),
     };
 
     const post = {
@@ -37,13 +38,14 @@ describe('PostOptions', () => {
         canDelete: true,
         canPin: true,
         canEdit: true,
+        canMarkAsUnread: true,
         canEditUntil: -1,
         channelIsReadOnly: false,
         currentTeamUrl: 'http://localhost:8065/team-name',
+        currentUserId: 'user1',
         deviceHeight: 600,
         hasBeenDeleted: false,
         isFlagged: false,
-        isMyPost: true,
         isSystemMessage: false,
         managedConfig: {},
         post,
@@ -94,6 +96,12 @@ describe('PostOptions', () => {
         const wrapper = getWrapper({canReply: false});
 
         expect(wrapper.findWhere((node) => node.key() === 'reply')).toMatchObject({});
+    });
+
+    test('should not show mark as unread option', () => {
+        const wrapper = getWrapper({canMarkAsUnread: false});
+
+        expect(wrapper.findWhere((node) => node.key() === 'markUnread')).toMatchObject({});
     });
 
     test('should remove post after delete', () => {

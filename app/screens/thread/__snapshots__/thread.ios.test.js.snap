@@ -32,7 +32,7 @@ exports[`thread should match snapshot, has root post 1`] = `
         }
         renderFooter={
           <Loading
-            color="grey"
+            color="#3d3c40"
             size="large"
             style={Object {}}
           />
@@ -87,7 +87,7 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
     />
     <Connect(StatusBar) />
     <Loading
-      color="grey"
+      color="#3d3c40"
       size="large"
       style={Object {}}
     />
@@ -112,7 +112,7 @@ exports[`thread should match snapshot, render footer 1`] = `
   }
   renderFooter={
     <Loading
-      color="grey"
+      color="#3d3c40"
       size="large"
       style={Object {}}
     />
@@ -157,7 +157,7 @@ exports[`thread should match snapshot, render footer 3`] = `
     />
     <Connect(StatusBar) />
     <Loading
-      color="grey"
+      color="#3d3c40"
       size="large"
       style={Object {}}
     />

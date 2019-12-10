@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     Animated,
-    Image,
     Platform,
     SafeAreaView,
     StatusBar,
@@ -14,6 +13,7 @@ import {
     Text,
     TouchableOpacity,
     View,
+    findNodeHandle,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -22,6 +22,7 @@ import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
 import DeviceInfo from 'react-native-device-info';
+import FastImage from 'react-native-fast-image';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -32,8 +33,8 @@ import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
 import {t} from 'app/utils/i18n';
+import BottomSheet from 'app/utils/bottom_sheet';
 import {
-    showModalOverCurrentContext,
     dismissModal,
     mergeNavigationOptions,
 } from 'app/actions/navigation';
@@ -89,6 +90,8 @@ export default class ImagePreview extends PureComponent {
             showDownloader: false,
             target: props.target,
         };
+
+        this.headerRef = React.createRef();
     }
 
     componentDidMount() {
@@ -267,6 +270,7 @@ export default class ImagePreview extends PureComponent {
 
             return (
                 <TouchableOpacity
+                    ref={this.headerRef}
                     onPress={action}
                     style={style.headerIcon}
                 >
@@ -374,7 +378,7 @@ export default class ImagePreview extends PureComponent {
 
             return (
                 <View style={[style, {justifyContent: 'center', alignItems: 'center'}]}>
-                    <Image
+                    <FastImage
                         source={source}
                         style={imageStyle}
                     />
@@ -434,7 +438,9 @@ export default class ImagePreview extends PureComponent {
         }
 
         this.setState({showHeaderFooter: show});
-        StatusBar.setHidden(!show, 'slide');
+        if (Platform.OS === 'ios') {
+            StatusBar.setHidden(!show, 'slide');
+        }
 
         Animated.timing(this.headerFooterAnim, {
             ...ANIM_CONFIG,
@@ -465,7 +471,8 @@ export default class ImagePreview extends PureComponent {
     showDownloadOptionsIOS = async () => {
         const {formatMessage} = this.context.intl;
         const file = this.getCurrentFile();
-        const items = [];
+        const options = [];
+        const actions = [];
         let permissionRequest;
 
         const hasPermissionToStorage = await Permissions.check('photo');
@@ -510,37 +517,37 @@ export default class ImagePreview extends PureComponent {
             const path = getLocalFilePathFromFile(VIDEOS_PATH, file);
             const exist = await RNFetchBlob.fs.exists(path);
             if (exist) {
-                items.push({
-                    action: this.saveVideoIOS,
-                    text: {
-                        id: t('mobile.image_preview.save_video'),
-                        defaultMessage: 'Save Video',
-                    },
-                });
+                options.push(formatMessage({
+                    id: t('mobile.image_preview.save_video'),
+                    defaultMessage: 'Save Video',
+                }));
+                actions.push(this.saveVideoIOS);
             } else {
                 this.showVideoDownloadRequiredAlertIOS();
             }
         } else {
-            items.push({
-                action: this.showDownloader,
-                text: {
-                    id: t('mobile.image_preview.save'),
-                    defaultMessage: 'Save Image',
-                },
-            });
+            options.push(formatMessage({
+                id: t('mobile.image_preview.save'),
+                defaultMessage: 'Save Image',
+            }));
+            actions.push(this.showDownloader);
         }
 
-        if (items.length) {
-            this.setHeaderAndFooterVisible(false);
+        if (options.length) {
+            options.push(formatMessage({
+                id: 'mobile.post.cancel',
+                defaultMessage: 'Cancel',
+            }));
+            actions.push(emptyFunction);
 
-            const screen = 'OptionsModal';
-            const passProps = {
+            BottomSheet.showBottomSheetWithOptions({
+                options,
+                cancelButtonIndex: options.length - 1,
                 title: file.caption,
-                items,
-                onCancelPress: () => this.setHeaderAndFooterVisible(true),
-            };
-
-            showModalOverCurrentContext(screen, passProps);
+                anchor: this.headerRef.current ? findNodeHandle(this.headerRef.current) : null,
+            }, (buttonIndex) => {
+                actions[buttonIndex]();
+            });
         }
     };
 

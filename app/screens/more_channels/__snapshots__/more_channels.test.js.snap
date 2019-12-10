@@ -43,7 +43,37 @@ exports[`MoreChannels should match snapshot 1`] = `
         value=""
       />
     </View>
+    <View
+      style={
+        Array [
+          undefined,
+          null,
+        ]
+      }
+    >
+      <Text
+        accessibilityRole="button"
+        onPress={[Function]}
+        style={
+          Object {
+            "color": "#3d3c40",
+            "fontWeight": "bold",
+            "marginBottom": 10,
+            "marginLeft": 10,
+            "marginTop": 20,
+          }
+        }
+      >
+          
+        <Icon
+          allowFontScaling={false}
+          name="caret-down"
+          size={12}
+        />
+      </Text>
+    </View>
     <CustomList
+      canRefresh={false}
       data={
         Array [
           Object {

@@ -459,7 +459,7 @@ export default class PostTextBoxBase extends PureComponent {
                 intl.formatMessage(
                     {
                         id: 'mobile.post_textbox.entire_channel.message.with_timezones',
-                        defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers} people in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
+                        defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
                     },
                     {
                         totalMembers: currentMembersCount - 1,
@@ -472,7 +472,7 @@ export default class PostTextBoxBase extends PureComponent {
                 intl.formatMessage(
                     {
                         id: 'mobile.post_textbox.entire_channel.message',
-                        defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers} people. Are you sure you want to do this?',
+                        defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?',
                     },
                     {
                         totalMembers: currentMembersCount - 1,
@@ -829,6 +829,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         inputWrapper: {
             alignItems: 'flex-end',
             flexDirection: 'row',
+            justifyContent: 'center',
             paddingVertical: 4,
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,

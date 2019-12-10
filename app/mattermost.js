@@ -16,6 +16,7 @@ import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
 import store from 'app/store';
+import {waitForHydration} from 'app/store/utils';
 import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import pushNotificationsUtils from 'app/utils/push_notifications';
@@ -47,15 +48,17 @@ const init = async () => {
     }
 };
 
-const launchApp = async (credentials) => {
+const launchApp = (credentials) => {
     telemetry.start([
         'start:select_server_screen',
         'start:channel_screen',
     ]);
 
     if (credentials) {
-        store.dispatch(loadMe());
-        resetToChannel({skipMetrics: true});
+        waitForHydration(store, () => {
+            store.dispatch(loadMe());
+            resetToChannel({skipMetrics: true});
+        });
     } else {
         resetToSelectServer(emmProvider.allowOtherServers);
     }

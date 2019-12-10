@@ -195,7 +195,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                     height: ANDROID_TOP_PORTRAIT,
                 },
                 ios: {
-                    height: 44,
+                    height: 54,
                 },
             }),
         },

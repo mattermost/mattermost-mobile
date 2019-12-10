@@ -29,12 +29,14 @@ describe('PostHeader', () => {
         username: 'JohnSmith',
         isBot: false,
         isGuest: false,
+        isLandscape: false,
         userTimezone: '',
         enableTimezone: false,
         previousPostExists: false,
         post: {id: 'post'},
         beforePrevPostUserId: '0',
         onPress: jest.fn(),
+        isFirstReply: true,
     };
 
     test('should match snapshot when just a base post', () => {
@@ -94,5 +96,62 @@ describe('PostHeader', () => {
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find('#ReplyIcon').exists()).toEqual(false);
+    });
+
+    test('should match snapshot when post renders Commented On for new post', () => {
+        const props = {
+            ...baseProps,
+            isFirstReply: true,
+            renderReplies: true,
+            commentedOnDisplayName: 'John Doe',
+            previousPostExists: true,
+        };
+
+        const wrapper = shallow(
+            <PostHeader {...props}/>
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when post is same thread, so dont display Commented On', () => {
+        const props = {
+            ...baseProps,
+            isFirstReply: false,
+            renderReplies: true,
+            commentedOnDisplayName: 'John Doe',
+            previousPostExists: true,
+        };
+
+        const wrapper = shallow(
+            <PostHeader {...props}/>
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when just a base post in landscape mode', () => {
+        const props = {
+            ...baseProps,
+            isLandscape: true,
+        };
+
+        const wrapper = shallow(
+            <PostHeader {...props}/>
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.find('#ReplyIcon').exists()).toEqual(false);
+    });
+
+    test('should match snapshot when post isBot and shouldRenderReplyButton in landscape mode', () => {
+        const props = {
+            ...baseProps,
+            shouldRenderReplyButton: true,
+            isBot: true,
+            isLandscape: true,
+        };
+
+        const wrapper = shallow(
+            <PostHeader {...props}/>
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

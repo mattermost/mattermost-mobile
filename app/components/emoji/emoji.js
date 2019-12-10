@@ -9,6 +9,7 @@ import {
     StyleSheet,
     Text,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import ImageCacheManager from 'app/utils/image_cache_manager';
@@ -39,6 +40,7 @@ export default class Emoji extends React.PureComponent {
         size: PropTypes.number,
         textStyle: CustomPropTypes.Style,
         unicode: PropTypes.string,
+        customEmojiStyle: CustomPropTypes.Style,
     };
 
     static defaultProps = {
@@ -95,6 +97,7 @@ export default class Emoji extends React.PureComponent {
             literal,
             textStyle,
             displayTextOnly,
+            customEmojiStyle,
         } = this.props;
         const {imageUrl} = this.state;
 
@@ -140,9 +143,9 @@ export default class Emoji extends React.PureComponent {
         }
 
         return (
-            <Image
+            <FastImage
                 key={key}
-                style={{width, height}}
+                style={[customEmojiStyle, {width, height}]}
                 source={{uri: imageUrl}}
                 onError={this.onError}
             />

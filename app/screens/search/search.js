@@ -333,11 +333,13 @@ export default class Search extends PureComponent {
     });
 
     renderFooter = () => {
-        if (this.props.isSearchGettingMore) {
-            const style = getStyleFromTheme(this.props.theme);
+        const {isSearchGettingMore, theme} = this.props;
+
+        if (isSearchGettingMore) {
+            const style = getStyleFromTheme(theme);
             return (
                 <View style={style.loadingMore}>
-                    <Loading/>
+                    <Loading color={theme.centerChannelColor}/>
                 </View>
             );
         }
@@ -634,7 +636,7 @@ export default class Search extends PureComponent {
                     id: SEARCHING,
                     component: (
                         <View style={style.searching}>
-                            <Loading/>
+                            <Loading color={theme.centerChannelColor}/>
                         </View>
                     ),
                 }];
