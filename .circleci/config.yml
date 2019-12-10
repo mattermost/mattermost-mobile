@@ -48,7 +48,9 @@ commands:
       - run:
           working_directory: fastlane
           name: Download Fastlane dependencies
-          command: bundle install --path vendor/bundle
+          command: |
+            chruby 2.6.3
+            bundle install --path vendor/bundle
       - save_cache:
           name: Save Fastlane cache
           key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
