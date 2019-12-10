@@ -33,6 +33,7 @@ import {
     getMyChannelMember,
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
+    isManuallyUnread,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
@@ -444,6 +445,17 @@ export function markChannelViewedAndRead(channelId, previousChannelId, markOnSer
     return (dispatch) => {
         dispatch(markChannelAsRead(channelId, previousChannelId, markOnServer));
         dispatch(markChannelAsViewed(channelId, previousChannelId));
+    };
+}
+
+export function markChannelViewedAndReadOnReconnect(channelId) {
+    return (dispatch, getState) => {
+        if (isManuallyUnread(getState(), channelId)) {
+            return;
+        }
+
+        dispatch(markChannelAsRead(channelId));
+        dispatch(markChannelAsViewed(channelId));
     };
 }
 
