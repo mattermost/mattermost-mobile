@@ -517,7 +517,7 @@ const style = StyleSheet.create({
     attachIcon: {
         marginTop: Platform.select({
             ios: 2,
-            android: 0,
+            android: -5,
         }),
     },
     buttonContainer: {

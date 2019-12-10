@@ -6,7 +6,7 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
     Object {
       "justifyContent": "flex-end",
       "paddingHorizontal": 5,
-      "paddingVertical": 3,
+      "paddingVertical": 2,
     }
   }
 >
@@ -19,6 +19,7 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
           "borderRadius": 18,
           "height": 28,
           "justifyContent": "center",
+          "paddingLeft": 3,
           "width": 28,
         },
         Object {
@@ -43,7 +44,7 @@ exports[`SendButton should match snapshot 1`] = `
     Object {
       "justifyContent": "flex-end",
       "paddingHorizontal": 5,
-      "paddingVertical": 3,
+      "paddingVertical": 2,
     }
   }
   type="opacity"
@@ -56,6 +57,7 @@ exports[`SendButton should match snapshot 1`] = `
         "borderRadius": 18,
         "height": 28,
         "justifyContent": "center",
+        "paddingLeft": 3,
         "width": 28,
       }
     }
@@ -76,7 +78,7 @@ exports[`SendButton should render theme backgroundColor 1`] = `
     Object {
       "justifyContent": "flex-end",
       "paddingHorizontal": 5,
-      "paddingVertical": 3,
+      "paddingVertical": 2,
     }
   }
   type="opacity"
@@ -89,6 +91,7 @@ exports[`SendButton should render theme backgroundColor 1`] = `
         "borderRadius": 18,
         "height": 28,
         "justifyContent": "center",
+        "paddingLeft": 3,
         "width": 28,
       }
     }
