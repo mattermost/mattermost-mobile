@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {makeMapStateToProps} from './index';
+import {mapStateToProps} from './index';
 
 import * as channelSelectors from 'mattermost-redux/selectors/entities/channels';
 import * as generalSelectors from 'mattermost-redux/selectors/entities/general';
@@ -42,9 +42,7 @@ describe('makeMapStateToProps', () => {
     };
 
     const baseOwnProps = {
-        post: {
-            id: 'post_id',
-        },
+        post: {},
     };
 
     test('canFlag is false for system messages', () => {
@@ -53,7 +51,6 @@ describe('makeMapStateToProps', () => {
             isSystemMessage: true,
         };
 
-        const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, ownProps);
         expect(props.canFlag).toBe(false);
     });
@@ -64,13 +61,11 @@ describe('makeMapStateToProps', () => {
             isSystemMessage: false,
         };
 
-        const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, ownProps);
         expect(props.canFlag).toBe(true);
     });
 
     test('canMarkAsUnread is true when isMinimumServerVersion is 5.18v', () => {
-        const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, baseOwnProps);
         expect(props.canMarkAsUnread).toBe(true);
     });
@@ -85,7 +80,6 @@ describe('makeMapStateToProps', () => {
             },
         };
 
-        const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(state, baseOwnProps);
         expect(props.canMarkAsUnread).toBe(false);
     });
