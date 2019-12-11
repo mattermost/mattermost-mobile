@@ -13,6 +13,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {DeviceTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {emptyFunction} from 'app/utils/general';
 
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
@@ -34,6 +35,8 @@ export default class Autocomplete extends PureComponent {
         valueEvent: PropTypes.string,
         cursorPositionEvent: PropTypes.string,
         nestedScrollEnabled: PropTypes.bool,
+        expandDown: PropTypes.bool,
+        onVisible: PropTypes.func,
     };
 
     static defaultProps = {
@@ -41,6 +44,7 @@ export default class Autocomplete extends PureComponent {
         cursorPosition: 0,
         enableDateSuggestion: false,
         nestedScrollEnabled: false,
+        onVisible: emptyFunction,
     };
 
     static getDerivedStateFromProps(props, state) {
@@ -73,6 +77,8 @@ export default class Autocomplete extends PureComponent {
             keyboardOffset: 0,
             value: props.value,
         };
+
+        this.containerRef = React.createRef();
     }
 
     componentDidMount() {
@@ -99,6 +105,11 @@ export default class Autocomplete extends PureComponent {
         if (this.props.cursorPositionEvent) {
             EventEmitter.off(this.props.cursorPositionEvent, this.handleCursorPositionChange);
         }
+    }
+
+    componentDidUpdate() {
+        const visible = Boolean(this.containerRef.current?._children.length);
+        this.props.onVisible(visible);
     }
 
     onChangeText = (value) => {
@@ -160,32 +171,37 @@ export default class Autocomplete extends PureComponent {
     }
 
     render() {
-        const style = getStyleFromTheme(this.props.theme);
+        const {theme, isSearch, expandDown} = this.props;
+        const style = getStyleFromTheme(theme);
 
-        const wrapperStyle = [];
-        const containerStyle = [];
-        if (this.props.isSearch) {
-            wrapperStyle.push(style.base, style.searchContainer);
-            containerStyle.push(style.content);
+        const wrapperStyles = [];
+        const containerStyles = [];
+        if (isSearch) {
+            wrapperStyles.push(style.base, style.searchContainer);
+            containerStyles.push(style.content);
         } else {
-            containerStyle.push(style.base, style.container);
+            const containerStyle = expandDown ? style.containerExpandDown : style.container;
+            containerStyles.push(style.base, containerStyle);
         }
 
         // We always need to render something, but we only draw the borders when we have results to show
         const {atMentionCount, channelMentionCount, emojiCount, commandCount, dateCount, cursorPosition, value} = this.state;
         if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount > 0) {
             if (this.props.isSearch) {
-                wrapperStyle.push(style.bordersSearch);
+                wrapperStyles.push(style.bordersSearch);
             } else {
-                containerStyle.push(style.borders);
+                containerStyles.push(style.borders);
             }
         }
 
         const maxListHeight = this.maxListHeight();
 
         return (
-            <View style={wrapperStyle}>
-                <View style={containerStyle}>
+            <View style={wrapperStyles}>
+                <View
+                    ref={this.containerRef}
+                    style={containerStyles}
+                >
                     <AtMention
                         {...this.props}
                         cursorPosition={cursorPosition}
@@ -255,6 +271,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         container: {
             bottom: 0,
+        },
+        containerExpandDown: {
+            top: 0,
         },
         content: {
             flex: 1,

@@ -23,7 +23,6 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         emailInterval: PropTypes.string.isRequired,
         enableEmailBatching: PropTypes.bool.isRequired,
         sendEmailNotifications: PropTypes.bool.isRequired,
-        siteName: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 

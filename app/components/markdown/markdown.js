@@ -199,10 +199,12 @@ export default class Markdown extends PureComponent {
             return this.renderText({context, literal: `@${mentionName}`});
         }
 
+        const style = getStyleSheet(this.props.theme);
+
         return (
             <AtMention
                 mentionStyle={this.props.textStyles.mention}
-                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+                textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), style.atMentionOpacity]}
                 isSearchResult={this.props.isSearchResult}
                 mentionName={mentionName}
                 onPostPress={this.props.onPostPress}
@@ -461,6 +463,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         editedIndicatorText: {
             color: editedColor,
             opacity: editedOpacity,
+        },
+        atMentionOpacity: {
+            opacity: 1,
         },
     };
 });

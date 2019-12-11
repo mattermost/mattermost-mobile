@@ -16,8 +16,6 @@ import {
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
-
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
 import {DeviceTypes} from 'app/constants';
@@ -50,7 +48,6 @@ export default class EmojiPicker extends PureComponent {
         fuse: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         onEmojiPress: PropTypes.func,
-        serverVersion: PropTypes.string,
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getCustomEmojis: PropTypes.func.isRequired,
@@ -87,13 +84,13 @@ export default class EmojiPicker extends PureComponent {
             filteredEmojis: [],
             searchTerm: '',
             currentSectionIndex: 0,
-            missingPages: isMinimumServerVersion(this.props.serverVersion, 4, 7),
+            missingPages: true,
         };
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentDidUpdate(prevProps) {
         this.rebuildEmojis = false;
-        if (this.props.deviceWidth !== nextProps.deviceWidth) {
+        if (this.props.deviceWidth !== prevProps.deviceWidth) {
             this.rebuildEmojis = true;
 
             if (this.searchBarRef) {
@@ -101,7 +98,7 @@ export default class EmojiPicker extends PureComponent {
             }
         }
 
-        if (this.props.emojis !== nextProps.emojis) {
+        if (this.props.emojis !== prevProps.emojis) {
             this.rebuildEmojis = true;
             this.setRebuiltEmojis();
         }
@@ -190,9 +187,6 @@ export default class EmojiPicker extends PureComponent {
         clearTimeout(this.searchTermTimeout);
         const timeout = searchTerm ? 100 : 0;
         this.searchTermTimeout = setTimeout(async () => {
-            if (isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
-                await this.props.actions.searchCustomEmojis(searchTerm);
-            }
             const filteredEmojis = this.searchEmojis(searchTerm);
             this.setState({
                 filteredEmojis,
@@ -308,7 +302,7 @@ export default class EmojiPicker extends PureComponent {
     };
 
     loadMoreCustomEmojis = async () => {
-        if (!this.props.customEmojisEnabled || !isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
+        if (!this.props.customEmojisEnabled) {
             return;
         }
 
@@ -440,7 +434,7 @@ export default class EmojiPicker extends PureComponent {
         const styles = getStyleSheetFromTheme(theme);
         return (
             <View style={styles.loading}>
-                <ActivityIndicator/>
+                <ActivityIndicator color={theme.centerChannelColor}/>
             </View>
         );
     };

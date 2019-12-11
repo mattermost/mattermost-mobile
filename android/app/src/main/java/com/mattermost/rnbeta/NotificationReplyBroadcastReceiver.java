@@ -21,6 +21,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import org.json.JSONObject;
+import org.json.JSONException;
+
 import com.mattermost.react_native_interface.ResolvePromise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
@@ -60,7 +63,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
                         String token = map.getString("password");
                         String serverUrl = map.getString("service");
 
-                        Log.i("ReactNative", String.format("URL=%s TOKEN=%s", serverUrl, token));
+                        Log.i("ReactNative", String.format("URL=%s", serverUrl));
                         replyToMessage(serverUrl, token, notificationId, message);
                     }
                 }
@@ -84,7 +87,6 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         final OkHttpClient client = new OkHttpClient();
         final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         String json = buildReplyPost(channelId, rootId, message.toString());
-        Log.i("ReactNative", String.format("JSON STRING %s", json));
         RequestBody body = RequestBody.create(JSON, json);
         Request request = new Request.Builder()
                 .header("Authorization", String.format("Bearer %s", token))
@@ -96,7 +98,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.i("ReactNative", String.format("Reply with message %s FAILED exception %s", message, e.getMessage()));
+                Log.i("ReactNative", String.format("Reply FAILED exception %s", e.getMessage()));
                 onReplyFailed(notificationManager, notificationId, channelId);
             }
 
@@ -104,9 +106,9 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
             public void onResponse(Call call, final Response response) throws IOException {
                 if (response.isSuccessful()) {
                     onReplySuccess(notificationManager, notificationId, channelId);
-                    Log.i("ReactNative", String.format("Reply with message %s", message));
+                    Log.i("ReactNative", "Reply SUCCESS");
                 } else {
-                    Log.i("ReactNative", String.format("Reply with message %s FAILED status %s BODY %s", message, response.code(), response.body().string()));
+                    Log.i("ReactNative", String.format("Reply FAILED status %s BODY %s", response.code(), response.body().string()));
                     onReplyFailed(notificationManager, notificationId, channelId);
                 }
             }
@@ -114,11 +116,15 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     }
 
     protected String buildReplyPost(String channelId, String rootId, String message) {
-        return "{"
-                + "\"channel_id\": \"" + channelId + "\","
-                + "\"message\": \"" + message + "\","
-                + "\"root_id\": \"" + rootId + "\""
-                + "}";
+        try {
+            JSONObject json = new JSONObject();
+            json.put("channel_id", channelId);
+            json.put("message", message);
+            json.put("root_id", rootId);
+            return json.toString();
+        } catch(JSONException e) {
+            return "{}";
+        }
     }
 
     protected void onReplyFailed(NotificationManager notificationManager, int notificationId, String channelId) {
@@ -127,12 +133,16 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         String packageName = mContext.getPackageName();
         int smallIconResId = res.getIdentifier("ic_notification", "mipmap", packageName);
 
+        Bundle userInfoBundle = new Bundle();
+        userInfoBundle.putString("channel_id", channelId);
+
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, NotificationManager.IMPORTANCE_LOW);
         notificationManager.createNotificationChannel(channel);
         Notification notification =
                 new Notification.Builder(mContext, CHANNEL_ID)
                         .setContentTitle("Message failed to send.")
                         .setSmallIcon(smallIconResId)
+                        .addExtras(userInfoBundle)
                         .build();
 
         CustomPushNotification.clearNotification(mContext, notificationId, channelId);

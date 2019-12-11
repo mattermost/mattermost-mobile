@@ -33,6 +33,7 @@ import {
     getMyChannelMember,
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
+    isManuallyUnread,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
@@ -392,10 +393,10 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             setChannelLoading(false),
             setLastChannelForTeam(currentTeamId, channelId),
             selectChannelWithMember(channelId, channel, member),
-            markChannelViewedAndRead(channelId, previousChannelId),
         ];
 
         dispatch(batchActions(actions));
+        dispatch(markChannelViewedAndRead(channelId, previousChannelId));
     };
 }
 
@@ -444,6 +445,17 @@ export function markChannelViewedAndRead(channelId, previousChannelId, markOnSer
     return (dispatch) => {
         dispatch(markChannelAsRead(channelId, previousChannelId, markOnServer));
         dispatch(markChannelAsViewed(channelId, previousChannelId));
+    };
+}
+
+export function markChannelViewedAndReadOnReconnect(channelId) {
+    return (dispatch, getState) => {
+        if (isManuallyUnread(getState(), channelId)) {
+            return;
+        }
+
+        dispatch(markChannelAsRead(channelId));
+        dispatch(markChannelAsViewed(channelId));
     };
 }
 
@@ -647,6 +659,16 @@ export function increasePostVisibility(channelId, postId) {
         telemetry.save();
 
         return hasMorePost;
+    };
+}
+
+export function increasePostVisibilityByOne(channelId) {
+    return (dispatch) => {
+        dispatch({
+            type: ViewTypes.INCREASE_POST_VISIBILITY,
+            data: channelId,
+            amount: 1,
+        });
     };
 }
 

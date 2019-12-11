@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {FlatList, Keyboard, Platform, SectionList, Text, View} from 'react-native';
+import {FlatList, Keyboard, Platform, RefreshControl, SectionList, Text, View} from 'react-native';
 
 import {ListTypes} from 'app/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
@@ -18,6 +18,7 @@ export default class CustomList extends PureComponent {
     static propTypes = {
         data: PropTypes.array.isRequired,
         extraData: PropTypes.any,
+        canRefresh: PropTypes.bool,
         listType: PropTypes.oneOf([FLATLIST, SECTIONLIST]),
         loading: PropTypes.bool,
         loadingComponent: PropTypes.element,
@@ -35,10 +36,11 @@ export default class CustomList extends PureComponent {
     };
 
     static defaultProps = {
+        canRefresh: true,
+        isLandscape: false,
         listType: FLATLIST,
         showNoResults: true,
         shouldRenderSeparator: true,
-        isLandscape: false,
     };
 
     constructor(props) {
@@ -110,8 +112,19 @@ export default class CustomList extends PureComponent {
     };
 
     renderFlatList = () => {
-        const {data, extraData, theme, onRefresh, refreshing} = this.props;
+        const {canRefresh, data, extraData, theme, onRefresh, refreshing} = this.props;
         const style = getStyleFromTheme(theme);
+
+        let refreshControl;
+        if (canRefresh) {
+            refreshControl = (
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={[theme.centerChannelColor]}
+                    tintColor={theme.centerChannelColor}
+                />);
+        }
 
         return (
             <FlatList
@@ -128,8 +141,7 @@ export default class CustomList extends PureComponent {
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 onLayout={this.handleLayout}
                 onScroll={this.handleScroll}
-                onRefresh={onRefresh}
-                refreshing={refreshing}
+                refreshControl={refreshControl}
                 ref={this.setListRef}
                 removeClippedSubviews={true}
                 renderItem={this.renderItem}

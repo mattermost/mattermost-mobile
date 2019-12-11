@@ -20,12 +20,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Build;
 import android.provider.Settings.System;
+import androidx.annotation.Nullable;
+import android.util.Log;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
@@ -35,6 +38,9 @@ import com.wix.reactnativenotifications.core.JsIOHelper;
 
 import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
 
+import com.mattermost.react_native_interface.ResolvePromise;
+import com.facebook.react.bridge.WritableMap;
+
 public class CustomPushNotification extends PushNotification {
     public static final int MESSAGE_NOTIFICATION_ID = 435345;
     public static final String GROUP_KEY_MESSAGES = "mm_group_key_messages";
@@ -42,11 +48,15 @@ public class CustomPushNotification extends PushNotification {
     public static final String KEY_TEXT_REPLY = "CAN_REPLY";
     public static final String NOTIFICATION_REPLIED_EVENT_NAME = "notificationReplied";
 
+    private static final String PUSH_TYPE_MESSAGE = "message";
+    private static final String PUSH_TYPE_CLEAR = "clear";
+    private static final String PUSH_TYPE_UPDATE_BADGE = "update_badge";
+
     private NotificationChannel mHighImportanceChannel;
     private NotificationChannel mMinImportanceChannel;
 
-    private static LinkedHashMap<String,Integer> channelIdToNotificationCount = new LinkedHashMap<String,Integer>();
-    private static LinkedHashMap<String,List<Bundle>> channelIdToNotification = new LinkedHashMap<String,List<Bundle>>();
+    private static Map<String, Integer> channelIdToNotificationCount = new HashMap<String, Integer>();
+    private static Map<String, List<Bundle>> channelIdToNotification = new HashMap<String, List<Bundle>>();
     private static AppLifecycleFacade lifecycleFacade;
     private static Context context;
     private static int badgeCount = 0;
@@ -59,11 +69,9 @@ public class CustomPushNotification extends PushNotification {
 
     public static void clearNotification(Context mContext, int notificationId, String channelId) {
         if (notificationId != -1) {
-            Object objCount = channelIdToNotificationCount.get(channelId);
-            Integer count = -1;
-
-            if (objCount != null) {
-                count = (Integer)objCount;
+            Integer count = channelIdToNotificationCount.get(channelId);
+            if (count == null) {
+                count = -1;
             }
 
             channelIdToNotificationCount.remove(channelId);
@@ -93,34 +101,56 @@ public class CustomPushNotification extends PushNotification {
 
     @Override
     public void onReceived() throws InvalidNotificationException {
-        Bundle data = mNotificationProps.asBundle();
-        final String channelId = data.getString("channel_id");
-        final String type = data.getString("type");
-        final String ackId = data.getString("ack_id");
+        final Bundle initialData = mNotificationProps.asBundle();
+        final String type = initialData.getString("type");
+        final String ackId = initialData.getString("ack_id");
+        final String postId = initialData.getString("post_id");
+        final String channelId = initialData.getString("channel_id");
+        final boolean isIdLoaded = initialData.getString("id_loaded") != null ? initialData.getString("id_loaded").equals("true") : false;
         int notificationId = MESSAGE_NOTIFICATION_ID;
 
         if (ackId != null) {
-            notificationReceiptDelivery(ackId, type);
+            notificationReceiptDelivery(ackId, postId, type, isIdLoaded, new ResolvePromise() {
+                @Override
+                public void resolve(@Nullable Object value) {
+                    if (isIdLoaded) {
+                        Bundle response = (Bundle) value;
+                        mNotificationProps = createProps(response);
+                    }
+                }
+
+                @Override
+                public void reject(String code, String message) {
+                    Log.e("ReactNative", code + ": " + message);
+                }
+            });
         }
+
+        // notificationReceiptDelivery can override mNotificationProps
+        // so we fetch the bundle again
+        final Bundle data = mNotificationProps.asBundle();
 
         if (channelId != null) {
             notificationId = channelId.hashCode();
-            Object objCount = channelIdToNotificationCount.get(channelId);
-            Integer count = 1;
-            if (objCount != null) {
-                count = (Integer)objCount + 1;
-            }
-            channelIdToNotificationCount.put(channelId, count);
 
-            Object bundleArray = channelIdToNotification.get(channelId);
-            List list = null;
-            if (bundleArray == null) {
-                list = Collections.synchronizedList(new ArrayList(0));
-            } else {
-                list = Collections.synchronizedList((List)bundleArray);
+            synchronized (channelIdToNotificationCount) {
+                Integer count = channelIdToNotificationCount.get(channelId);
+                if (count == null) {
+                    count = 0;
+                }
+
+                count += 1;
+
+                channelIdToNotificationCount.put(channelId, count);
             }
-            synchronized (list) {
-                if (!"clear".equals(type)) {
+
+            synchronized (channelIdToNotification) {
+                List<Bundle> list = channelIdToNotification.get(channelId);
+                if (list == null) {
+                    list = Collections.synchronizedList(new ArrayList(0));
+                }
+
+                if (PUSH_TYPE_MESSAGE.equals(type)) {
                     String senderName = getSenderName(data);
                     data.putLong("time", new Date().getTime());
                     data.putString("sender_name", senderName);
@@ -131,10 +161,13 @@ public class CustomPushNotification extends PushNotification {
             }
         }
 
-        if ("clear".equals(type)) {
-            cancelNotification(data, notificationId);
-        } else {
+        switch(type) {
+        case PUSH_TYPE_MESSAGE:
             super.postNotification(notificationId);
+            break;
+        case PUSH_TYPE_CLEAR:
+            cancelNotification(data, notificationId);
+            break;
         }
 
         notifyReceivedToJS();
@@ -245,10 +278,9 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void setNotificationNumber(Notification.Builder notification, String channelId) {
-        Integer number = 1;
-        Object objCount = channelIdToNotificationCount.get(channelId);
-        if (objCount != null) {
-            number = (Integer)objCount;
+        Integer number = channelIdToNotificationCount.get(channelId);
+        if (number == null) {
+            number = 0;
         }
         notification.setNumber(number);
     }
@@ -298,7 +330,7 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void setMessagingStyleConversationTitle(Notification.MessagingStyle messagingStyle, String conversationTitle, Bundle bundle) {
-        String channelName = bundle.getString("channel_name");
+        String channelName = getConversationTitle(bundle);
         String senderName = bundle.getString("sender_name");
         if (android.text.TextUtils.isEmpty(senderName)) {
             senderName = getSenderName(bundle);
@@ -326,6 +358,9 @@ public class CustomPushNotification extends PushNotification {
             Bundle data = bundleList.get(i);
             String message = data.getString("message");
             String senderId = data.getString("sender_id");
+            if (senderId == null) {
+                senderId = "sender_id";
+            }
             Bundle userInfoBundle = data.getBundle("userInfo");
             String senderName = getSenderName(data);
             if (userInfoBundle != null) {
@@ -486,18 +521,23 @@ public class CustomPushNotification extends PushNotification {
             }
         }
 
-        return " ";
+        return getConversationTitle(bundle);
     }
 
     private String removeSenderNameFromMessage(String message, String senderName) {
         return message.replaceFirst(senderName, "").replaceFirst(": ", "").trim();
     }
 
-    private void notificationReceiptDelivery(String ackId, String type) {
-        ReceiptDelivery.send(context, ackId, type);
+    private void notificationReceiptDelivery(String ackId, String postId, String type, boolean isIdLoaded, ResolvePromise promise) {
+        ReceiptDelivery.send(context, ackId, postId, type, isIdLoaded, promise);
     }
 
     private void createNotificationChannels() {
+        // Notification channels are not supported in Android Nougat and below
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+
         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         mHighImportanceChannel = new NotificationChannel("channel_01", "High Importance", NotificationManager.IMPORTANCE_HIGH);

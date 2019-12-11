@@ -64,4 +64,31 @@ describe('EditChannelInfo', () => {
         expect(instance.enableRightButton).toHaveBeenCalledTimes(1);
         expect(instance.enableRightButton).toHaveBeenCalledWith(true);
     });
+
+    test('should call scrollHeaderToTop', () => {
+        const wrapper = shallow(
+            <EditChannelInfo {...baseProps}/>
+        );
+
+        const instance = wrapper.instance();
+        instance.scrollHeaderToTop = jest.fn();
+
+        expect(instance.scrollHeaderToTop).not.toHaveBeenCalled();
+
+        wrapper.setState({keyboardVisible: false});
+        instance.onHeaderFocus();
+        expect(instance.scrollHeaderToTop).not.toHaveBeenCalled();
+
+        wrapper.setState({keyboardVisible: true});
+        instance.onHeaderFocus();
+        expect(instance.scrollHeaderToTop).toHaveBeenCalledTimes(1);
+
+        wrapper.setState({headerHasFocus: false});
+        instance.onKeyboardDidShow();
+        expect(instance.scrollHeaderToTop).toHaveBeenCalledTimes(1);
+
+        wrapper.setState({headerHasFocus: true});
+        instance.onKeyboardDidShow();
+        expect(instance.scrollHeaderToTop).toHaveBeenCalledTimes(2);
+    });
 });

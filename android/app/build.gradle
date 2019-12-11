@@ -140,8 +140,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative60"
-        versionCode 244
-        versionName "1.25.0"
+        versionCode 250
+        versionName "1.26.0"
         multiDexEnabled = true
         ndk {
             abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
@@ -268,6 +268,7 @@ dependencies {
     implementation project(':react-native-android-open-settings')
     implementation project(':react-native-haptic-feedback')
 
+    implementation project(':react-native-fast-image')
     // For animated GIF support
     implementation 'com.facebook.fresco:fresco:2.0.0'
     implementation 'com.facebook.fresco:animated-gif:2.0.0'

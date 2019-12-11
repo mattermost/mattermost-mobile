@@ -13,12 +13,10 @@ import * as Animatable from 'react-native-animatable';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {Navigation} from 'react-native-navigation';
 
-import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
 import Post from 'app/components/post';
 import SafeAreaView from 'app/components/safe_area_view';
 import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
-import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {goToScreen, dismissModal} from 'app/actions/navigation';
@@ -47,7 +45,6 @@ export default class LongPost extends PureComponent {
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         channelName: PropTypes.string,
-        fileIds: PropTypes.array,
         isPermalink: PropTypes.bool,
         inThreadView: PropTypes.bool,
         managedConfig: PropTypes.object,
@@ -56,10 +53,6 @@ export default class LongPost extends PureComponent {
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-    };
-
-    static defaultProps = {
-        fileIds: [],
     };
 
     static contextTypes = {
@@ -115,33 +108,9 @@ export default class LongPost extends PureComponent {
         }
     };
 
-    renderFileAttachments(style) {
-        const {
-            fileIds,
-            postId,
-        } = this.props;
-
-        let attachments;
-        if (fileIds.length > 0) {
-            attachments = (
-                <View style={style.attachments}>
-                    <FileAttachmentList
-                        fileIds={fileIds}
-                        isFailed={false}
-                        onLongPress={emptyFunction}
-                        postId={postId}
-                        toggleSelected={emptyFunction}
-                    />
-                </View>
-            );
-        }
-        return attachments;
-    }
-
     render() {
         const {
             channelName,
-            fileIds,
             managedConfig,
             onHashtagPress,
             onPermalinkPress,
@@ -150,15 +119,6 @@ export default class LongPost extends PureComponent {
             isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
-
-        let footer;
-        if (fileIds.length) {
-            footer = (
-                <View style={style.footer}>
-                    {this.renderFileAttachments(style)}
-                </View>
-            );
-        }
 
         return (
             <SafeAreaView
@@ -211,7 +171,7 @@ export default class LongPost extends PureComponent {
                                 managedConfig={managedConfig}
                             />
                         </ScrollView>
-                        {footer}
+                        <View style={style.footer}/>
                     </Animatable.View>
                 </View>
             </SafeAreaView>
@@ -267,19 +227,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         footer: {
             alignItems: 'flex-start',
             justifyContent: 'center',
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderTopWidth: 1,
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderBottomWidth: 1,
             backgroundColor: theme.centerChannelBg,
             borderBottomLeftRadius: 6,
             borderBottomRightRadius: 6,
             flexDirection: 'column',
-            marginVertical: 10,
+            marginBottom: 10,
             paddingLeft: 16,
-        },
-        attachments: {
-            backgroundColor: theme.centerChannelBg,
-            height: 95,
-            width: '100%',
         },
     };
 });

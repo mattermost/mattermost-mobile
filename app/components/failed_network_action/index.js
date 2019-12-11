@@ -25,7 +25,7 @@ export default class FailedNetworkAction extends PureComponent {
         actionId: t('mobile.failed_network_action.retry'),
         actionDefaultMessage: 'try again',
         errorId: t('mobile.failed_network_action.shortDescription'),
-        errorDefaultMessage: 'Messages will load when you have an internet connection or {refresh}.',
+        errorDefaultMessage: 'Messages will load when you have an internet connection or {tryAgainAction}.',
     };
 
     render() {
@@ -54,7 +54,7 @@ export default class FailedNetworkAction extends PureComponent {
                     defaultMessage={errorDefaultMessage}
                     style={style.description}
                     values={{
-                        refresh: (
+                        tryAgainAction: (
                             <FormattedText
                                 id={actionId}
                                 defaultMessage={actionDefaultMessage}
