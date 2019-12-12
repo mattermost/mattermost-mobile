@@ -333,6 +333,29 @@ describe('PostTextBox', () => {
         });
     });
 
+    test('should preseve post message in the input field if the command failed', async () => {
+        const props = {...baseProps};
+        props.actions.executeCommand = jest.fn().mockResolvedValue({
+            error: {
+                message: 'Command with a trigger of \'fail\' not found. To send a message beginning with "/", try adding an empty space at the beginning of the message.',
+            },
+        });
+        const msg = '/fail preserve this text in the post draft';
+        const wrapper = shallowWithIntl(
+            <PostTextbox {...baseProps}/>
+        );
+
+        const instance = wrapper.instance();
+        instance.handleTextChange(msg);
+        expect(wrapper.state('value')).toBe(msg);
+
+        wrapper.setState({sendingMessage: true});
+        await instance.sendCommand(msg);
+        expect(wrapper.state('value')).toBe(msg);
+        expect(wrapper.state('sendingMessage')).toBe(false);
+        expect(Alert.alert).toHaveBeenCalledTimes(1);
+    });
+
     describe('Paste images', () => {
         test('should show error dialog if error occured', () => {
             jest.spyOn(Alert, 'alert').mockReturnValue(null);
