@@ -50,6 +50,11 @@ function makeMapStateToProps() {
         let isFirstReply = true;
         let isLastReply = true;
         let commentedOnPost = null;
+        let sameThreadAsPrev = false;
+
+        if (beforePrevPost && (beforePrevPost.id === post.root_id || beforePrevPost.root_id === post.root_id)) {
+            sameThreadAsPrev = true;
+        }
 
         if (ownProps.renderReplies && post && post.root_id) {
             if (ownProps.previousPostId) {
@@ -78,6 +83,7 @@ function makeMapStateToProps() {
             isBot: (user ? user.is_bot : false),
             isFirstReply,
             isLastReply,
+            sameThreadAsPrev,
             consecutivePost: isConsecutivePost(post, previousPost),
             hasComments: getCommentCountForPost(state, {post}) > 0,
             commentedOnPost,

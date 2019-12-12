@@ -47,6 +47,7 @@ export default class PostHeader extends PureComponent {
         post: PropTypes.object,
         beforePrevPostUserId: PropTypes.string,
         isFirstReply: PropTypes.bool,
+        sameThreadAsPrev: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -70,9 +71,10 @@ export default class PostHeader extends PureComponent {
             previousPostExists,
             renderReplies,
             theme,
-            isFirstReply,
+            sameThreadAsPrev,
         } = this.props;
-        if (!isFirstReply || !renderReplies || !commentedOnDisplayName || (!previousPostExists && post.user_id === beforePrevPostUserId)) {
+
+        if (sameThreadAsPrev || !renderReplies || !commentedOnDisplayName || (!previousPostExists && post.user_id === beforePrevPostUserId)) {
             return null;
         }
 
