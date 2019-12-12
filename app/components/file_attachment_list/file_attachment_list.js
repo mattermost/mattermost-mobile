@@ -49,7 +49,6 @@ export default class FileAttachmentList extends PureComponent {
         this.items = [];
         this.filesForGallery = this.getFilesForGallery(props);
         this.state = {
-            loadingFiles: props.files.length === 0,
         };
 
         this.buildGalleryFiles().then((results) => {
@@ -71,17 +70,14 @@ export default class FileAttachmentList extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.files !== nextProps.files) {
-            this.filesForGallery = this.getFilesForGallery(nextProps);
+    componentDidUpdate(prevProps) {
+        if (prevProps.files !== this.props.files) {
+            this.filesForGallery = this.getFilesForGallery(this.props);
             this.buildGalleryFiles().then((results) => {
                 this.galleryFiles = results;
             });
         }
-        if (!this.state.loadingFiles && nextProps.files.length === 0) {
-            this.setState({
-                loadingFiles: true,
-            });
+        if (this.props.files.length === 0) {
             this.loadFilesForPost();
         }
     }
@@ -206,9 +202,6 @@ export default class FileAttachmentList extends PureComponent {
 
     loadFilesForPost = async () => {
         await this.props.actions.loadFilesForPostIfNecessary(this.props.postId);
-        this.setState({
-            loadingFiles: false,
-        });
     }
 
     renderItems = (items, moreImagesCount, includeGutter = false) => {

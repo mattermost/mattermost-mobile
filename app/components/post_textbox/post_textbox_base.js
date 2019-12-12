@@ -106,6 +106,8 @@ export default class PostTextBoxBase extends PureComponent {
             keyboardType: 'default',
             top: 0,
             value: props.value,
+            rootId: props.rootId,
+            channelId: props.channelId,
             channelTimezoneCount: 0,
             longMessageAlertShown: false,
         };
@@ -127,10 +129,15 @@ export default class PostTextBoxBase extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.channelId !== this.props.channelId || nextProps.rootId !== this.props.rootId) {
-            this.setState({value: nextProps.value});
+    static getDerivedStateFromProps(nextProps, state) {
+        if (nextProps.channelId !== state.channelId || nextProps.rootId !== state.rootId) {
+            return {
+                value: nextProps.value,
+                channelId: nextProps.channelId,
+                rootId: nextProps.rootId,
+            };
         }
+        return null;
     }
 
     componentWillUnmount() {
@@ -207,7 +214,7 @@ export default class PostTextBoxBase extends PureComponent {
                     }, {
                         max: maxMessageLength,
                         count: valueLength,
-                    })
+                    }),
                 );
                 this.setState({longMessageAlertShown: true});
             }
@@ -464,7 +471,7 @@ export default class PostTextBoxBase extends PureComponent {
                     {
                         totalMembers: currentMembersCount - 1,
                         timezones: channelTimezoneCount,
-                    }
+                    },
                 )
             );
         } else {
@@ -476,7 +483,7 @@ export default class PostTextBoxBase extends PureComponent {
                     },
                     {
                         totalMembers: currentMembersCount - 1,
-                    }
+                    },
                 )
             );
         }
@@ -608,7 +615,7 @@ export default class PostTextBoxBase extends PureComponent {
                     id: 'mobile.commands.error_title',
                     defaultMessage: 'Error Executing Command',
                 }),
-                error.message
+                error.message,
             );
         }
 
@@ -703,7 +710,7 @@ export default class PostTextBoxBase extends PureComponent {
                         defaultMessage: 'Dismiss',
                     }),
                 },
-            ]
+            ],
         );
     };
 
