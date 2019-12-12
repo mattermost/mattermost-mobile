@@ -46,7 +46,6 @@ export default class Post extends PureComponent {
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
         isLastPost: PropTypes.bool,
-        sameThreadAsPrev: PropTypes.bool,
         consecutivePost: PropTypes.bool,
         hasComments: PropTypes.bool,
         isSearchResult: PropTypes.bool,
@@ -255,8 +254,6 @@ export default class Post extends PureComponent {
             isLandscape,
             previousPostExists,
             beforePrevPostUserId,
-            isFirstReply,
-            sameThreadAsPrev,
         } = this.props;
 
         if (!post) {
@@ -308,8 +305,6 @@ export default class Post extends PureComponent {
                     theme={theme}
                     previousPostExists={previousPostExists}
                     beforePrevPostUserId={beforePrevPostUserId}
-                    isFirstReply={isFirstReply}
-                    sameThreadAsPrev={sameThreadAsPrev}
                 />
             );
         }

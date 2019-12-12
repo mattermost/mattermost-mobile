@@ -10,6 +10,7 @@ import {isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channel
 import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from 'mattermost-redux/selectors/entities/posts';
 import {getUser, getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {isStartOfNewMessages} from 'mattermost-redux/utils/post_list';
 import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
@@ -40,7 +41,8 @@ function makeMapStateToProps() {
     const isPostCommentMention = makeIsPostCommentMention();
     return function mapStateToProps(state, ownProps) {
         const post = ownProps.post || getPost(state, ownProps.postId);
-        const previousPost = getPost(state, ownProps.previousPostId);
+        const previousPostId = isStartOfNewMessages(ownProps.previousPostId) ? ownProps.beforePrevPostId : ownProps.previousPostId;
+        const previousPost = getPost(state, previousPostId);
         const beforePrevPost = getPost(state, ownProps.beforePrevPostId);
 
         const myPreferences = getMyPreferences(state);
@@ -50,14 +52,9 @@ function makeMapStateToProps() {
         let isFirstReply = true;
         let isLastReply = true;
         let commentedOnPost = null;
-        let sameThreadAsPrev = false;
-
-        if (beforePrevPost && (beforePrevPost.id === post.root_id || beforePrevPost.root_id === post.root_id)) {
-            sameThreadAsPrev = true;
-        }
 
         if (ownProps.renderReplies && post && post.root_id) {
-            if (ownProps.previousPostId) {
+            if (previousPostId) {
                 if (previousPost && (previousPost.id === post.root_id || previousPost.root_id === post.root_id)) {
                     // Previous post is root post or previous post is in same thread
                     isFirstReply = false;
@@ -83,7 +80,6 @@ function makeMapStateToProps() {
             isBot: (user ? user.is_bot : false),
             isFirstReply,
             isLastReply,
-            sameThreadAsPrev,
             consecutivePost: isConsecutivePost(post, previousPost),
             hasComments: getCommentCountForPost(state, {post}) > 0,
             commentedOnPost,
