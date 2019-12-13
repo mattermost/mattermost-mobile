@@ -311,6 +311,23 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
       />
     </View>
   </View>
+  <FormattedText
+    defaultMessage="Commented on {name}{apostrophe} message: "
+    id="post_body.commentedOn"
+    style={
+      Object {
+        "color": "rgba(61,60,64,0.65)",
+        "lineHeight": 21,
+        "marginBottom": 3,
+      }
+    }
+    values={
+      Object {
+        "apostrophe": "'s",
+        "name": "John Doe",
+      }
+    }
+  />
 </React.Fragment>
 `;
 
