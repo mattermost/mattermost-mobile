@@ -121,6 +121,13 @@ export default class Swiper extends PureComponent {
         }, 0);
     };
 
+    onScroll = ({nativeEvent}) => {
+        if (this.state.index === 1 && nativeEvent.contentOffset.x === 0) {
+            this.offset = 0;
+            this.setState({index: 0});
+        }
+    }
+
     refScrollView = (view) => {
         this.scrollView = view;
     };
@@ -130,6 +137,14 @@ export default class Swiper extends PureComponent {
             keyboardShouldPersistTaps,
             scrollEnabled,
         } = this.props;
+
+        const pagingEnabled = scrollEnabled;
+        let platformScrollEnabled = scrollEnabled;
+        let platformOnScroll = null;
+        if (Platform.OS === 'android') {
+            platformScrollEnabled = this.state.index === 0;
+            platformOnScroll = this.onScroll;
+        }
 
         return (
             <ScrollView
@@ -143,9 +158,11 @@ export default class Swiper extends PureComponent {
                 contentContainerStyle={[styles.wrapper, this.props.style]}
                 onScrollBeginDrag={this.onScrollBegin}
                 onMomentumScrollEnd={this.onScrollEnd}
-                pagingEnabled={scrollEnabled}
+                pagingEnabled={pagingEnabled}
                 keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-                scrollEnabled={scrollEnabled}
+                scrollEnabled={platformScrollEnabled}
+                onScroll={platformOnScroll}
+                directionalLockEnabled={true}
             >
                 {pages}
             </ScrollView>

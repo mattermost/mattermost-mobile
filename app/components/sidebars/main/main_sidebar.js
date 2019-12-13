@@ -55,7 +55,6 @@ export default class ChannelSidebar extends Component {
     constructor(props) {
         super(props);
 
-        this.swiperIndex = 1;
         this.drawerRef = React.createRef();
         this.channelListRef = React.createRef();
         this.state = {
@@ -65,6 +64,7 @@ export default class ChannelSidebar extends Component {
             drawerOpened: false,
             searching: false,
             isSplitView: false,
+            swiperIndex: 1,
         };
     }
 
@@ -82,10 +82,22 @@ export default class ChannelSidebar extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, teamsCount, theme} = this.props;
-        const {deviceWidth, openDrawerOffset, isSplitView, permanentSidebar, show, searching} = this.state;
+        const { currentTeamId, teamsCount, theme} = this.props;
+        const {
+            deviceWidth,
+            openDrawerOffset,
+            isSplitView,
+            permanentSidebar,
+            show,
+            searching,
+            swiperIndex,
+        } = this.state;
 
-        if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching || nextState.deviceWidth !== deviceWidth) {
+        if (nextState.openDrawerOffset !== openDrawerOffset ||
+            nextState.show !== show ||
+            nextState.searching !== searching ||
+            nextState.deviceWidth !== deviceWidth ||
+            (Platform.OS === 'android' && nextState.swiperIndex !== swiperIndex)) {
             return true;
         }
 
@@ -276,10 +288,10 @@ export default class ChannelSidebar extends Component {
     };
 
     onPageSelected = (index) => {
-        this.swiperIndex = index;
+        this.setState({swiperIndex: index});
 
         if (this.drawerRef?.current) {
-            this.drawerRef.current.canClose = this.swiperIndex !== 0;
+            this.drawerRef.current.canClose = index !== 0;
         }
     };
 
@@ -293,6 +305,11 @@ export default class ChannelSidebar extends Component {
         }
         this.setState({searching: true});
     };
+
+    onScrollValueChange = ({value}) => {
+        const drawerWidth = this.drawerSwiper?.swiperRef.current.props.width;
+        this.drawerSwiper?.swiperRef.current?.scrollView?.scrollTo({x: drawerWidth - value, animated: true});
+    }
 
     showTeams = () => {
         if (this.drawerSwiper && this.props.teamsCount > 1) {
@@ -400,7 +417,7 @@ export default class ChannelSidebar extends Component {
 
     render() {
         const {children} = this.props;
-        const {deviceWidth, openDrawerOffset} = this.state;
+        const {deviceWidth, openDrawerOffset, swiperIndex} = this.state;
         const isTablet = DeviceTypes.IS_TABLET && !this.state.isSplitView && this.state.permanentSidebar;
         const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
 
@@ -413,6 +430,8 @@ export default class ChannelSidebar extends Component {
                 drawerWidth={drawerWidth}
                 useNativeAnimations={true}
                 isTablet={isTablet}
+                onScrollValueChange={this.onScrollValueChange}
+                swiperIndex={swiperIndex}
             >
                 {children}
             </DrawerLayout>

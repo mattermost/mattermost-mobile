@@ -87,6 +87,7 @@ export default class DrawerLayout extends Component {
         drawerPosition: 'left',
         useNativeAnimations: false,
         isTablet: false,
+        swiperIndex: 0,
     };
 
     static positions = {
@@ -98,11 +99,11 @@ export default class DrawerLayout extends Component {
         super(props, context);
 
         this._panResponder = PanResponder.create({
-            onMoveShouldSetPanResponder: this._shouldSetPanResponder,
+            onMoveShouldSetPanResponder: Platform.OS === 'android' ? this._shouldSetPanResponderAndroid : this._shouldSetPanResponderIOS,
             onPanResponderGrant: this._panResponderGrant,
-            onPanResponderMove: this._panResponderMove,
+            onPanResponderMove: Platform.OS === 'android' ? this._panResponderMoveAndroid : this._panResponderMoveIOS,
             onPanResponderTerminationRequest: () => false,
-            onPanResponderRelease: this._panResponderRelease,
+            onPanResponderRelease: Platform.OS === 'android' ? this._panResponderReleaseAndroid : this._panResponderReleaseIOS,
             onPanResponderTerminate: () => {},
         });
 
@@ -114,8 +115,21 @@ export default class DrawerLayout extends Component {
             deviceWidth,
             drawerShown: false,
             threshold: deviceWidth / 2,
+            swiperIndex: props.swiperIndex,
         };
         this.openValue.addListener(this.handleOpenValueChanged);
+        if (props.drawerPosition === 'left') {
+            this.scrollValue = new Animated.Value(0);
+            this.scrollValue.addListener(props.onScrollValueChange);
+        }
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        if (props.swiperIndex !== state.swiperIndex) {
+            return {swiperIndex: props.swiperIndex};
+        }
+
+        return null;
     }
 
     componentDidMount() {
@@ -390,13 +404,76 @@ export default class DrawerLayout extends Component {
         }
     };
 
-    _shouldSetPanResponder = (
+    _shouldSetPanResponderAndroid = (
+        e: EventType,
+        { moveX, dx, dy }: PanResponderEventType,
+    ) => {
+        if (this.openValue._value !== 0 && this.getDrawerPosition() === 'left' && this.state.swiperIndex === 1 && dx > 0) {
+            this._isScrolling = true;
+            return true;
+        }
+        
+
+        if (!dx || !dy || Math.abs(dx) < MIN_SWIPE_DISTANCE) {
+            return false;
+        }
+
+
+        if (this._isLockedClosed() || this._isLockedOpen() || !this.canClose) {
+            return false;
+        }
+
+        const {deviceWidth} = this.state;
+        const overlayArea = deviceWidth -
+            (deviceWidth - this.props.drawerWidth);
+
+        if (this.getDrawerPosition() === 'left') {
+            if (this._lastOpenValue === 1) {
+                if (
+                    (dx < 0 && Math.abs(dx) > Math.abs(dy) * 3) ||
+                    moveX > overlayArea
+                ) {
+                    this._isClosing = true;
+                    this._closingAnchorValue = this._getOpenValueForX(moveX);
+                    return true;
+                }
+            } else {
+                if (moveX <= 35 && dx > 0) {
+                    this._isClosing = false;
+                    return true;
+                }
+
+                return false;
+            }
+        } else {
+            if (this._lastOpenValue === 1) {
+                if (
+                    (dx > 0 && Math.abs(dx) > Math.abs(dy) * 3) ||
+                    moveX < overlayArea
+                ) {
+                    this._isClosing = true;
+                    this._closingAnchorValue = this._getOpenValueForX(moveX);
+                    return true;
+                }
+            } else {
+                if (moveX >= deviceWidth - 35 && dx < 0) {
+                    this._isClosing = false;
+                    return true;
+                }
+
+                return false;
+            }
+        }
+    };
+
+    _shouldSetPanResponderIOS = (
         e: EventType,
         { moveX, dx, dy }: PanResponderEventType,
     ) => {
         if (!dx || !dy || Math.abs(dx) < MIN_SWIPE_DISTANCE) {
             return false;
         }
+
 
         if (this._isLockedClosed() || this._isLockedOpen() || !this.canClose) {
             return false;
@@ -449,7 +526,12 @@ export default class DrawerLayout extends Component {
         this._emitStateChanged(DRAGGING);
     };
 
-    _panResponderMove = (e: EventType, { moveX }: PanResponderEventType) => {
+    _panResponderMoveAndroid = (e: EventType, { moveX, dx }: PanResponderEventType) => {
+        if (this._isScrolling) {
+            this.scrollValue.setValue(dx);
+            return;
+        }
+
         let openValue = this._getOpenValueForX(moveX);
 
         if (this._isClosing) {
@@ -465,13 +547,97 @@ export default class DrawerLayout extends Component {
         this.openValue.setValue(openValue);
     };
 
-    _panResponderRelease = (
+    _panResponderMoveIOS = (e: EventType, { moveX }: PanResponderEventType) => {
+        let openValue = this._getOpenValueForX(moveX);
+
+        if (this._isClosing) {
+            openValue = 1 - (this._closingAnchorValue - openValue);
+        }
+
+        if (openValue > 1) {
+            openValue = 1;
+        } else if (openValue < 0) {
+            openValue = 0;
+        }
+
+        this.openValue.setValue(openValue);
+    };
+
+    _panResponderReleaseAndroid = (
+        e: EventType,
+        { moveX, vx, dx }: PanResponderEventType,
+    ) => {
+        const {threshold} = this.state;
+        const previouslyOpen = this._isClosing;
+        const isWithinVelocityThreshold = Math.abs(vx) < VX_MAX;
+
+        if (this._isScrolling && dx > 0) {
+            this._isScrolling = false;
+            let toValue = 0;
+            if (!isWithinVelocityThreshold || (dx > this.props.drawerWidth / 3)) {
+                toValue = this.props.drawerWidth;
+            }
+
+            Animated.spring(this.scrollValue, {
+                toValue,
+                speed: 36,
+                bounciness: 0,
+                useNativeDriver: true,
+            }).start();
+
+            return;
+        }
+
+        if (this.getDrawerPosition() === 'left') {
+            if (
+                (vx > 0 && moveX > threshold) ||
+                vx >= VX_MAX ||
+                (isWithinVelocityThreshold &&
+                    previouslyOpen &&
+                    moveX > threshold)
+            ) {
+                this.openDrawer({ velocity: vx });
+            } else if (
+                (vx < 0 && moveX < threshold) ||
+                vx < -VX_MAX ||
+                (isWithinVelocityThreshold && !previouslyOpen)
+            ) {
+                this.closeDrawer({ velocity: vx });
+            } else if (previouslyOpen) {
+                this.openDrawer();
+            } else {
+                this.closeDrawer();
+            }
+        } else {
+            if (
+                (vx < 0 && moveX < threshold) ||
+                vx <= -VX_MAX ||
+                (isWithinVelocityThreshold &&
+                    previouslyOpen &&
+                    moveX < threshold)
+            ) {
+                this.openDrawer({ velocity: (-1) * vx });
+            } else if (
+                (vx > 0 && moveX > threshold) ||
+                vx > VX_MAX ||
+                (isWithinVelocityThreshold && !previouslyOpen)
+            ) {
+                this.closeDrawer({ velocity: (-1) * vx });
+            } else if (previouslyOpen) {
+                this.openDrawer();
+            } else {
+                this.closeDrawer();
+            }
+        }
+    };
+
+    _panResponderReleaseIOS = (
         e: EventType,
         { moveX, vx }: PanResponderEventType,
     ) => {
         const {threshold} = this.state;
         const previouslyOpen = this._isClosing;
-        const isWithinVelocityThreshold = vx < VX_MAX && vx > -VX_MAX;
+        const isWithinVelocityThreshold = Math.abs(vx) < VX_MAX;
 
         if (this.getDrawerPosition() === 'left') {
             if (
