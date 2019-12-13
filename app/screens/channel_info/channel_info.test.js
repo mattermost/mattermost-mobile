@@ -168,4 +168,21 @@ describe('channel_info', () => {
         const render = instance.renderUnarchiveChannel();
         expect(render).toBeTruthy();
     });
+
+    test('should not render unarchive channel button when currentChannel is an active channel', async () => {
+        const props = Object.assign({}, baseProps);
+        props.canUndeleteChannel = false;
+        props.currentChannel.delete_at = 0;
+
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+
+        const instance = wrapper.instance();
+        const render = instance.renderUnarchiveChannel();
+        expect(render).toBeFalsy();
+    });
 });

@@ -303,15 +303,9 @@ export default class ChannelInfo extends PureComponent {
                             displayName: channel.display_name.trim(),
                         }
                     );
-                    if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
+                    if (result.error.server_error_id === 'api.channel.undelete_channel.undeleted.app_error') {
                         this.props.actions.getChannel(channel.id);
                     }
-                } else if (this.props.viewArchivedChannels) {
-                    this.props.actions.handleSelectChannel(channel.id);
-                    this.close(false);
-                } else {
-                    this.props.actions.selectPenultimateChannel(channel.team_id);
-                    this.close(false);
                 }
             };
         }
@@ -442,11 +436,11 @@ export default class ChannelInfo extends PureComponent {
     renderUnarchiveChannel = () => {
         const {canUndeleteChannel} = this.props;
         const channel = this.props.currentChannel;
-        const isChannelIsArchived = channel.delete_at !== 0;
+        const channelIsArchived = channel.delete_at !== 0;
         const isDirectMessage = channel.type === General.DM_CHANNEL;
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
-        return isChannelIsArchived && (!isDirectMessage && !isGroupMessage) && canUndeleteChannel;
+        return channelIsArchived && (!isDirectMessage && !isGroupMessage) && canUndeleteChannel;
     };
 
     renderConvertToPrivateRow = () => {
