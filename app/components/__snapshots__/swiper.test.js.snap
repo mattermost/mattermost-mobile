@@ -24,9 +24,11 @@ exports[`Swiper should match snapshot 1`] = `
         undefined,
       ]
     }
+    directionalLockEnabled={true}
     horizontal={true}
     keyboardShouldPersistTaps="handled"
     onMomentumScrollEnd={[Function]}
+    onScroll={null}
     onScrollBeginDrag={[Function]}
     pagingEnabled={true}
     removeClippedSubviews={true}

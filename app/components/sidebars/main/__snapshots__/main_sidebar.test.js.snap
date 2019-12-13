@@ -7,7 +7,9 @@ exports[`MainSidebar should match, full snapshot 1`] = `
   isTablet={false}
   onDrawerClose={[Function]}
   onDrawerOpen={[Function]}
+  onScrollValueChange={[Function]}
   renderNavigationView={[Function]}
+  swiperIndex={1}
   useNativeAnimations={true}
 />
 `;

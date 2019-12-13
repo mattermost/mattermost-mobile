@@ -9,6 +9,7 @@ import {
     Keyboard,
     StyleSheet,
     View,
+    Platform,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -82,7 +83,7 @@ export default class ChannelSidebar extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const { currentTeamId, teamsCount, theme} = this.props;
+        const {currentTeamId, teamsCount, theme} = this.props;
         const {
             deviceWidth,
             openDrawerOffset,
@@ -307,8 +308,10 @@ export default class ChannelSidebar extends Component {
     };
 
     onScrollValueChange = ({value}) => {
-        const drawerWidth = this.drawerSwiper?.swiperRef.current.props.width;
-        this.drawerSwiper?.swiperRef.current?.scrollView?.scrollTo({x: drawerWidth - value, animated: true});
+        const swiper = this.drawerSwiper?.swiperRef.current;
+        if (swiper && swiper.scrollView) {
+            swiper.scrollView.scrollTo({x: swiper.props.width - value, animated: true});
+        }
     }
 
     showTeams = () => {
