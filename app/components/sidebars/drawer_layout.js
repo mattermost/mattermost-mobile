@@ -118,7 +118,7 @@ export default class DrawerLayout extends Component {
             swiperIndex: props.swiperIndex,
         };
         this.openValue.addListener(this.handleOpenValueChanged);
-        if (props.drawerPosition === 'left') {
+        if (Platform.OS === 'android' && props.drawerPosition === 'left') {
             this.scrollValue = new Animated.Value(0);
             this.scrollValue.addListener(props.onScrollValueChange);
         }
