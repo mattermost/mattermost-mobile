@@ -335,25 +335,30 @@ describe('PostTextBox', () => {
 
     test('should preseve post message in the input field if the command failed', async () => {
         const props = {...baseProps};
-        props.actions.executeCommand = jest.fn().mockResolvedValue({
-            error: {
-                message: 'Command with a trigger of \'fail\' not found. To send a message beginning with "/", try adding an empty space at the beginning of the message.',
-            },
-        });
-        const msg = '/fail preserve this text in the post draft';
+        const errorResult = {error: {message: 'Error message'}};
+        props.actions.executeCommand = jest.fn().
+            mockResolvedValueOnce(errorResult).
+            mockResolvedValue({data: 'success'});
+
         const wrapper = shallowWithIntl(
-            <PostTextbox {...baseProps}/>
+            <PostTextbox {...props}/>
         );
 
+        const msg = '/fail preserve this text in the post draft';
         const instance = wrapper.instance();
         instance.handleTextChange(msg);
         expect(wrapper.state('value')).toBe(msg);
 
-        wrapper.setState({sendingMessage: true});
+        // On error, should prompt Alert dialog and should remain text value
         await instance.sendCommand(msg);
-        expect(wrapper.state('value')).toBe(msg);
-        expect(wrapper.state('sendingMessage')).toBe(false);
         expect(Alert.alert).toHaveBeenCalledTimes(1);
+        expect(Alert.alert).toHaveBeenCalledWith('Error Executing Command', errorResult.error.message);
+        expect(wrapper.state('value')).toBe(msg);
+
+        // On success, should not prompt Alert dialog and should change text value to empty
+        await instance.sendCommand(msg);
+        expect(Alert.alert).toHaveBeenCalledTimes(1);
+        expect(wrapper.state('value')).toBe('');
     });
 
     describe('Paste images', () => {
