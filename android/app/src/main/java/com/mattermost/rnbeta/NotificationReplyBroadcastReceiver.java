@@ -133,12 +133,16 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         String packageName = mContext.getPackageName();
         int smallIconResId = res.getIdentifier("ic_notification", "mipmap", packageName);
 
+        Bundle userInfoBundle = new Bundle();
+        userInfoBundle.putString("channel_id", channelId);
+
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, NotificationManager.IMPORTANCE_LOW);
         notificationManager.createNotificationChannel(channel);
         Notification notification =
                 new Notification.Builder(mContext, CHANNEL_ID)
                         .setContentTitle("Message failed to send.")
                         .setSmallIcon(smallIconResId)
+                        .addExtras(userInfoBundle)
                         .build();
 
         CustomPushNotification.clearNotification(mContext, notificationId, channelId);

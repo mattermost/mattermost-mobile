@@ -11,6 +11,7 @@ import {
 
 import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {WebsocketEvents} from 'mattermost-redux/constants';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';
@@ -31,6 +32,7 @@ export default class ChannelPostList extends PureComponent {
             loadPostsIfNecessaryWithRetry: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             increasePostVisibility: PropTypes.func.isRequired,
+            increasePostVisibilityByOne: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
@@ -68,6 +70,7 @@ export default class ChannelPostList extends PureComponent {
 
     componentDidMount() {
         EventEmitter.on('goToThread', this.goToThread);
+        EventEmitter.on(WebsocketEvents.INCREASE_POST_VISIBILITY_BY_ONE, this.increasePostVisibilityByOne);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -98,6 +101,7 @@ export default class ChannelPostList extends PureComponent {
 
     componentWillUnmount() {
         EventEmitter.off('goToThread', this.goToThread);
+        EventEmitter.off(WebsocketEvents.INCREASE_POST_VISIBILITY_BY_ONE, this.increasePostVisibilityByOne);
     }
 
     getVisiblePostIds = (props) => {
@@ -124,6 +128,11 @@ export default class ChannelPostList extends PureComponent {
             goToScreen(screen, title, passProps);
         });
     };
+
+    increasePostVisibilityByOne = () => {
+        const {actions, channelId} = this.props;
+        actions.increasePostVisibilityByOne(channelId);
+    }
 
     loadMorePostsTop = () => {
         const {actions, channelId} = this.props;

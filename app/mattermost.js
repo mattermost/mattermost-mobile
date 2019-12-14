@@ -48,16 +48,17 @@ const init = async () => {
     }
 };
 
-const launchApp = async (credentials) => {
+const launchApp = (credentials) => {
     telemetry.start([
         'start:select_server_screen',
         'start:channel_screen',
     ]);
 
     if (credentials) {
-        await waitForHydration(store);
-        store.dispatch(loadMe());
-        resetToChannel({skipMetrics: true});
+        waitForHydration(store, () => {
+            store.dispatch(loadMe());
+            resetToChannel({skipMetrics: true});
+        });
     } else {
         resetToSelectServer(emmProvider.allowOtherServers);
     }

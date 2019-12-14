@@ -14,6 +14,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           "borderTopColor": "rgba(61,60,64,0.2)",
           "borderTopWidth": 1,
           "flexDirection": "row",
+          "justifyContent": "center",
           "paddingVertical": 4,
         },
         null,
