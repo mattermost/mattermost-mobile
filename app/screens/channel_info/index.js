@@ -36,6 +36,7 @@ import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 import Permissions from 'mattermost-redux/constants/permissions';
 import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {
     closeDMChannel,
@@ -111,10 +112,13 @@ function mapStateToProps(state) {
             permission: Permissions.MANAGE_TEAM,
         });
     }
+    const {serverVersion} = state.entities.general;
+    const canUseUnarchiveFeature = isMinimumServerVersion(serverVersion, 5, 18);
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
         canUndeleteChannel,
+        canUseUnarchiveFeature,
         canConvertChannel: isAdmin,
         viewArchivedChannels,
         canEditChannel,
