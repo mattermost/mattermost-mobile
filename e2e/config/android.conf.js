@@ -47,11 +47,12 @@ config.capabilities = [
         // 'appium:noReset': true,
         'appium:newCommandTimeout': 240,
         'appium:autoGrantPermissions': true,
+
         // 'appium:noReset': true,
         // 'appium:fullReset': false
     },
 ];
 
-config.baseUrl = 'http://10.0.2.2:8065',
+config.baseUrl = 'http://10.0.2.2:8065';
 
 exports.config = config;

@@ -7,7 +7,7 @@ export function accessibilityProps(id, disable = false) {
     const disableAccessibility = disable ? {accessible: false} : {};
 
     if (Platform.OS === 'ios') {
-        return {...disableAccessibility, testID: id};
+        return {...disableAccessibility, testID: id, accessibilityLabel: id};
     }
 
     return {...disableAccessibility, accessibilityLabel: id};

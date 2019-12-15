@@ -45,12 +45,13 @@ config.capabilities = [
         // http://appium.io/docs/en/writing-running-appium/other/reset-strategies/
         // 'appium:noReset': true,
         'appium:newCommandTimeout': 240,
+
         // 'appium:autoGrantPermissions': true,
         // 'appium:noReset': true,
         // 'appium:fullReset': false
     },
 ];
 
-config.baseUrl = 'http://localhost:8065',
+config.baseUrl = 'http://localhost:8065';
 
 exports.config = config;
