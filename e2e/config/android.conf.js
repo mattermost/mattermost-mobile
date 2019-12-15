@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 const {join} = require('path');
-const {config} = require('./wdio.shared.conf');
+const {config} = require('./shared.conf');
 
 // ============
 // Specs
 // ============
 config.specs = [
-    './wdio/tests/specs/**/*.spec.js',
+    './test_android/**/*_spec.js',
 ];
 
 // ============
@@ -26,7 +26,8 @@ config.capabilities = [
         // For W3C the appium capabilities need to have an extension prefix
         // http://appium.io/docs/en/writing-running-appium/caps/
         // This is `appium:` for all Appium Capabilities which can be found here
-        // 'appium:deviceName': 'Pixel_3_XL_API_29',
+        'appium:deviceName': 'Pixel_2_API_27_2',
+
         // 'appium:platformVersion': '10.0',
         // 'appium:orientation': 'PORTRAIT',
 
@@ -38,14 +39,19 @@ config.capabilities = [
         'appium:app': join(process.cwd(), '../Mattermost-unsigned.apk'),
 
         // The app package and activity
-        'appium:appPackage': 'com.mattermost.rnbeta',
+        'appium:appPackage': 'com.mattermost.rn',
         'appium:appActivity': '.MainActivity',
 
         // Read the reset strategies very well, they differ per platform, see
         // http://appium.io/docs/en/writing-running-appium/other/reset-strategies/
         // 'appium:noReset': true,
         'appium:newCommandTimeout': 240,
+        'appium:autoGrantPermissions': true,
+        // 'appium:noReset': true,
+        // 'appium:fullReset': false
     },
 ];
+
+config.baseUrl = 'http://10.0.2.2:8065',
 
 exports.config = config;

@@ -322,7 +322,8 @@ export default class Login extends PureComponent {
 
             proceed = (
                 <Button
-                    {...accessibilityProps('sign in button')}
+                    {...accessibilityProps('sign in')}
+                    accessibilityRole='button'
                     onPress={this.preSignIn}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
@@ -339,7 +340,8 @@ export default class Login extends PureComponent {
         if (this.props.config.EnableSignInWithEmail === 'true' || this.props.config.EnableSignInWithUsername === 'true') {
             forgotPassword = (
                 <Button
-                    {...accessibilityProps('forgot password button')}
+                    {...accessibilityProps('forgot password')}
+                    accessibilityRole='button'
                     onPress={this.forgotPassword}
                     containerStyle={[style.forgotPasswordBtn]}
                 >
@@ -358,7 +360,10 @@ export default class Login extends PureComponent {
                 style={style.container}
             >
                 <StatusBar/>
-                <TouchableWithoutFeedback onPress={this.blur}>
+                <TouchableWithoutFeedback
+                    accessible={false}
+                    onPress={this.blur}
+                >
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
                         style={style.container}
@@ -368,6 +373,7 @@ export default class Login extends PureComponent {
                     >
                         <Image
                             {...accessibilityProps('logo image')}
+                            accessibilityRole='image'
                             source={require('assets/images/logo.png')}
                         />
                         <View>
@@ -382,7 +388,7 @@ export default class Login extends PureComponent {
                         </View>
                         <ErrorText error={this.getLoginErrorMessage()}/>
                         <TextInput
-                            {...accessibilityProps('email or username input')}
+                            {...accessibilityProps('email or username')}
                             ref={this.loginRef}
                             value={this.props.loginId}
                             onChangeText={this.props.actions.handleLoginIdChanged}
@@ -399,7 +405,7 @@ export default class Login extends PureComponent {
                             disableFullscreenUI={true}
                         />
                         <TextInput
-                            {...accessibilityProps('password input')}
+                            {...accessibilityProps('password')}
                             ref={this.passwordRef}
                             value={this.props.password}
                             onChangeText={this.props.actions.handlePasswordChanged}

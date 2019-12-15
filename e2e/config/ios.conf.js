@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 const {join} = require('path');
-const {config} = require('./wdio.shared.conf');
+const {config} = require('./shared.conf');
 
 // ============
 // Specs
 // ============
 config.specs = [
-    './wdio/tests/specs/**/*.spec.js',
+    './test_ios/**/*_spec.js',
 ];
 
 // ============
@@ -26,8 +26,9 @@ config.capabilities = [
         // For W3C the appium capabilities need to have an extension prefix
         // This is `appium:` for all Appium Capabilities which can be found here
         // http://appium.io/docs/en/writing-running-appium/caps/
-        // 'appium:deviceName': 'iPhone 11',
-        // 'appium:platformVersion': '13.2',
+        'appium:deviceName': 'iPhone 11',
+        'appium:platformVersion': '13.2',
+
         // 'appium:orientation': 'PORTRAIT',
 
         // `automationName` will be mandatory, see
@@ -38,13 +39,18 @@ config.capabilities = [
         'appium:app': join(process.cwd(), '../Mattermost-simulator-x86_64.app.zip'),
 
         // The bundle id
-        'appium:bundleId': 'com.mattermost.rnbeta',
+        'appium:bundleId': 'com.mattermost.rn',
 
         // Read the reset strategies very well, they differ per platform, see
         // http://appium.io/docs/en/writing-running-appium/other/reset-strategies/
         // 'appium:noReset': true,
         'appium:newCommandTimeout': 240,
+        // 'appium:autoGrantPermissions': true,
+        // 'appium:noReset': true,
+        // 'appium:fullReset': false
     },
 ];
+
+config.baseUrl = 'http://localhost:8065',
 
 exports.config = config;

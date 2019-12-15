@@ -7,29 +7,23 @@
 // - Use accessibility ID when selecting an element. Create one if none.
 // *********************************************************************
 
-import PermissionScreen from '../../screenobjects/alert/permission.screen';
-import SelectServerScreen from '../../screenobjects/login/select.server.screen';
-import LoginOptionsScreen from '../../screenobjects/login/login.options.screen';
-import LoginScreen from '../../screenobjects/login/login.screen';
-import ChannelScreen from '../../screenobjects/channel/channel.screen';
-import {users} from '../../helpers/utils';
+import SelectServerScreen from '../screen_objects/select_server_screen';
+import LoginScreen from '../screen_objects/login_screen';
+import ChannelScreen from '../screen_objects/channel_screen';
+
+import users from '../fixtures/users.json';
 
 describe('Login', () => {
-    beforeEach(() => {
-        // wdio does not fail when something fails here,
-        // so connectToSever() is called from test instead
-    });
-
     it('should be able to email login successfully', () => {
         const user = users['user-1'];
 
         connectToServer();
 
         // * Check if login options creen in shown
-        LoginOptionsScreen.waitForIsShown(true);
+        // LoginOptionsScreen.waitForIsShown(true);
 
         // # Choose email login
-        LoginOptionsScreen.clickEmailLoginOptionButton();
+        // LoginOptionsScreen.clickEmailLoginOptionButton();
 
         // * Check if login screen in shown
         LoginScreen.waitForIsShown(true);
@@ -48,12 +42,13 @@ describe('Login', () => {
 
         // # Click permission allow button if shown
         browser.pause(2000);
-        if (PermissionScreen.allowButton != null) {
-            PermissionScreen.clickAllowButton();
-        }
+
+        // if (PermissionScreen.allowButton != null) {
+        //     PermissionScreen.clickAllowButton();
+        // }
 
         // * Check if server screen is shown
-        SelectServerScreen.waitForIsShown(true);
+        // SelectServerScreen.waitForIsShown(true);
 
         // * Check logo image is displayed
         expect(SelectServerScreen.logoImage.isDisplayed()).toBe(true);
