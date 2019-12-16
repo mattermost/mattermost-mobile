@@ -28,6 +28,7 @@ Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgr
 - Added support for reading the channel drawer button with voice-over.
 - Made usernames in system messages tappable.
 - Added an autocomplete to edit post screen.
+- Added a count for pinned posts icon.
 - Updated the channel name length character limit to 64 to match server.
 - Added an expand button to truncated markdown tables to improve discoverability of opening them in full screen.
 - Added an error message when trying to share too long text from share extension.
