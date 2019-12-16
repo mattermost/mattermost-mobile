@@ -113,3 +113,42 @@ export function getEmojiByName(emojiName) {
 
     return null;
 }
+
+// Since there is no shared logic between the web and mobile app
+// this is copied from the webapp as custom sorting logic for emojis
+
+const defaultComparisonRule = (aName, bName) => {
+    return aName.localeCompare(bName);
+};
+
+const thumbsDownComparisonRule = (other) =>
+    (other === 'thumbsup' || other === '+1' ? 1 : 0);
+const thumbsUpComparisonRule = (other) => (other === 'thumbsdown' || other === '-1' ? -1 : 0);
+
+const customComparisonRules = {
+    thumbsdown: thumbsDownComparisonRule,
+    '-1': thumbsDownComparisonRule,
+    thumbsup: thumbsUpComparisonRule,
+    '+1': thumbsUpComparisonRule,
+};
+
+export function compareEmojis(emojiA, emojiB, searchedName) {
+    const aName = emojiA.name || (emojiA.aliases ? emojiA.aliases[0] : emojiA);
+    const bName = emojiB.name || (emojiB.aliases ? emojiB.aliases[0] : emojiB);
+
+    // Have the emojis that contain the search appear first
+    const aPrefix = aName.startsWith(searchedName);
+    const bPrefix = bName.startsWith(searchedName);
+
+    if (aPrefix === bPrefix) {
+        if (customComparisonRules[aName]) {
+            return customComparisonRules[aName](bName) || defaultComparisonRule(aName, bName);
+        }
+
+        return defaultComparisonRule(aName, bName, searchedName);
+    } else if (aPrefix) {
+        return -1;
+    }
+
+    return 1;
+}

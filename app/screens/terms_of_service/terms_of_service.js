@@ -19,7 +19,7 @@ import StatusBar from 'app/components/status_bar';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
-import {dismissModal, dismissAllModals, setButtons} from 'app/actions/navigation';
+import {dismissModal, setButtons} from 'app/actions/navigation';
 
 export default class TermsOfService extends PureComponent {
     static propTypes = {
@@ -118,7 +118,6 @@ export default class TermsOfService extends PureComponent {
     closeTermsAndLogout = async () => {
         const {actions} = this.props;
 
-        await dismissAllModals();
         actions.logout();
     };
 

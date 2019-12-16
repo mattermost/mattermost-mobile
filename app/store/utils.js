@@ -40,3 +40,22 @@ export function transformSet(incoming, setTransforms, toStorage = true) {
 
     return state;
 }
+
+export function waitForHydration(store, callback) {
+    if (store.getState().views.root.hydrationComplete) {
+        if (callback && typeof callback === 'function') {
+            callback();
+        }
+    } else {
+        const subscription = () => {
+            if (store.getState().views.root.hydrationComplete) {
+                unsubscribeFromStore();
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            }
+        };
+
+        const unsubscribeFromStore = store.subscribe(subscription);
+    }
+}

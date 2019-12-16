@@ -20,7 +20,7 @@ import SafeAreaView from 'app/components/safe_area_view';
 import SettingsSidebar from 'app/components/sidebars/settings';
 
 import {preventDoubleTap} from 'app/utils/tap';
-import {setNavigatorStyles} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import PushNotifications from 'app/push_notifications';
 import EphemeralStore from 'app/store/ephemeral_store';
 import tracker from 'app/utils/time_tracker';
@@ -301,6 +301,7 @@ export default class ChannelBase extends PureComponent {
             );
         }
 
+        const baseStyle = getStyleFromTheme(theme);
         return (
             <MainSidebar
                 ref={this.channelSidebarRef}
@@ -311,7 +312,9 @@ export default class ChannelBase extends PureComponent {
                     ref={this.settingsSidebarRef}
                     blurPostTextBox={this.blurPostTextBox}
                 >
-                    {drawerContent}
+                    <View style={baseStyle.backdrop}>
+                        {drawerContent}
+                    </View>
                 </SettingsSidebar>
                 <InteractiveDialogController
                     theme={theme}
@@ -326,6 +329,15 @@ export default class ChannelBase extends PureComponent {
         return; // eslint-disable-line no-useless-return
     }
 }
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        backdrop: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg,
+        },
+    };
+});
 
 export const style = StyleSheet.create({
     flex: {

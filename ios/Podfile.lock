@@ -40,7 +40,7 @@ PODS:
     - Folly (= 2018.10.22.00)
     - RCTRequired (= 0.61.2)
     - React-Core (= 0.61.2)
-  - RCTYouTube (2.0.0-beta.3):
+  - RCTYouTube (2.0.0):
     - React
     - YoutubePlayer-in-WKWebView (~> 0.3.1)
   - React (0.61.2):
@@ -297,7 +297,7 @@ PODS:
     - Sentry/Core (= 4.4.0)
   - Sentry/Core (4.4.0)
   - Swime (3.0.6)
-  - XCDYouTubeKit (2.8.1)
+  - XCDYouTubeKit (2.8.2)
   - Yoga (1.14.0)
   - YoutubePlayer-in-WKWebView (0.3.3)
 
@@ -357,7 +357,7 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Swime (= 3.0.6)
-  - XCDYouTubeKit (~> 2.8)
+  - XCDYouTubeKit (= 2.8.2)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -490,7 +490,7 @@ SPEC CHECKSUMS:
   libwebp: 057912d6d0abfb6357d8bb05c0ea470301f5d61e
   RCTRequired: c639d59ed389cfb1f1203f65c2ea946d8ec586e2
   RCTTypeSafety: dc23fb655d6c77667c78e327bf661bc11e3b8aec
-  RCTYouTube: a36b9960e040063877fb8dc61fff19d3bd1a97ff
+  RCTYouTube: 5e94bfa005371c41d307f3f93c51b3e8eabfb0c8
   React: 7e586e5d7bec12b91c1a096826b0fc9ab1da7865
   React-Core: 8ddb9770b4a30a6ab4a754e6ed5ec76454e3d699
   React-CoreModules: b3d9eece8ad7df36c917a41f05c1168c52fe0b34
@@ -535,10 +535,10 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: 947093edd1349d820c40afbd9f42acb6cdecd987
   Sentry: 26650184fe71eb7476dfd2737acb5ea6cc64b4b1
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
-  XCDYouTubeKit: 4ca4e3322fa556ec1c32932d378365c15ce1386e
+  XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
   Yoga: 14927e37bd25376d216b150ab2a561773d57911f
   YoutubePlayer-in-WKWebView: 7694e858c5c3472ed067d6fe34eb9b944845e63c
 
-PODFILE CHECKSUM: 807d95a6b7f45b6daddd86ab902e339f591ca8b0
+PODFILE CHECKSUM: 5d115a6e48c4a1683c49388094e119a6e4679c8f
 
 COCOAPODS: 1.7.5

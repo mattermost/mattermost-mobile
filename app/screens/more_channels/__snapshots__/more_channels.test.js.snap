@@ -73,6 +73,7 @@ exports[`MoreChannels should match snapshot 1`] = `
       </Text>
     </View>
     <CustomList
+      canRefresh={false}
       data={
         Array [
           Object {
