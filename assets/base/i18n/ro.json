@@ -594,7 +594,7 @@
   "user.settings.notifications.email.immediately": "Imediat",
   "user.settings.notifications.email.never": "Niciodată",
   "user.settings.notifications.email.send": "Trimiteți notificări prin e-mail",
-  "user.settings.notifications.emailInfo": "Notificările prin e-mail sunt trimise pentru mențiuni și mesaje directe atunci când sunteți offline sau departe de {siteName} pentru mai mult de 5 minute.",
+  "user.settings.notifications.emailInfo": "Notificările prin e-mail sunt trimise pentru mențiuni și mesaje directe atunci când sunteți offline sau plecați mai mult de 5 minute.",
   "user.settings.notifications.never": "Niciodată",
   "user.settings.notifications.onlyMentions": "Numai pentru mențiuni și mesaje directe",
   "user.settings.push_notification.away": "Departe sau offline",
