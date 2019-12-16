@@ -23,7 +23,7 @@ Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgr
 #### Upgraded RN to v0.61
 
 ### Improvements
-- Added support for pasting other file types such as videos, PDFs, and Google Docs.
+- Added support for pasting other file types such as videos, PDFs and documents.
 - Added the option to convert public channels to private in the channel info screen.
 - Added support for reading the channel drawer button with voice-over.
 - Made usernames in system messages tappable.
