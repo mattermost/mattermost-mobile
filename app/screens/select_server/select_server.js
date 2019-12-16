@@ -466,7 +466,6 @@ export default class SelectServer extends PureComponent {
                             />
                             <Button
                                 {...accessibilityProps('connect')}
-                                accessibilityRole='button'
                                 onPress={this.handleConnect}
                                 containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                             >

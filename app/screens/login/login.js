@@ -323,7 +323,6 @@ export default class Login extends PureComponent {
             proceed = (
                 <Button
                     {...accessibilityProps('sign in')}
-                    accessibilityRole='button'
                     onPress={this.preSignIn}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
@@ -341,7 +340,6 @@ export default class Login extends PureComponent {
             forgotPassword = (
                 <Button
                     {...accessibilityProps('forgot password')}
-                    accessibilityRole='button'
                     onPress={this.forgotPassword}
                     containerStyle={[style.forgotPasswordBtn]}
                 >
@@ -373,7 +371,6 @@ export default class Login extends PureComponent {
                     >
                         <Image
                             {...accessibilityProps('logo image')}
-                            accessibilityRole='image'
                             source={require('assets/images/logo.png')}
                         />
                         <View>
