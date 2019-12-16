@@ -132,7 +132,7 @@ export default class SelectTeam extends PureComponent {
 
     onSelectTeam = async (team) => {
         this.setState({joining: true});
-        const {userWithoutTeams, currentUserId} = this.props;
+        const {userWithoutTeams, currentUserId, serverVersion} = this.props;
         const {
             joinTeam,
             addUserToTeam,
@@ -140,7 +140,7 @@ export default class SelectTeam extends PureComponent {
         } = this.props.actions;
 
         let error;
-        if (isMinimumServerVersion(this.props.serverVersion, 5, 18)) {
+        if (isMinimumServerVersion(serverVersion, 5, 18)) {
             const result = await addUserToTeam(team.id, currentUserId);
             error = result.error;
         } else {

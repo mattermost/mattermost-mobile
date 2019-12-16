@@ -7,7 +7,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
 
 import {Client4} from 'mattermost-redux/client';
-import {ClientError} from 'mattermost-redux/client/client4';
+import {ClientError, HEADER_X_VERSION_ID} from 'mattermost-redux/client/client4';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
@@ -109,6 +109,13 @@ Client4.doFetchWithResponse = async (url, options) => {
     if (headers[HEADER_TOKEN] || headers[HEADER_TOKEN.toLowerCase()]) {
         const token = headers[HEADER_TOKEN] || headers[HEADER_TOKEN.toLowerCase()];
         Client4.setToken(token);
+    }
+
+    if (headers[HEADER_X_VERSION_ID] && !headers['Cache-Control']) {
+        const serverVersion = headers[HEADER_X_VERSION_ID];
+        if (serverVersion && Client4.serverVersion !== serverVersion) {
+            Client4.serverVersion = serverVersion;
+        }
     }
 
     if (response.ok) {
