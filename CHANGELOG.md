@@ -27,14 +27,13 @@ Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgr
 - Added the option to convert public channels to private in the channel info screen.
 - Added support for reading the channel drawer button with voice-over.
 - Made usernames in system messages tappable.
-- Added a count for pinned posts header icon.
 - Added an autocomplete to edit post screen.
 - Updated the channel name length character limit to 64 to match server.
 - Added an expand button to truncated markdown tables to improve discoverability of opening them in full screen.
 - Added an error message when trying to share too long text from share extension.
 - Improved behaviour where posts from different authors in the same thread appeared to be from different threads if separated by new message line.
 - Added support for native emojis in the emoji picker and autocomplete.
-- Removed "Add Reaction" option from the long post view.
+- Removed reactions and file attachments from the long post view.
 - Large number of emoji reactions now wrap instead of introducing horizontal scroll.
 - Added support for a generic error message in interactive dialog responses.
 - Added the ability to disable attachment buttons and fields.
