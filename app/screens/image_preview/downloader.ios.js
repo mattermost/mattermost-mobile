@@ -48,6 +48,16 @@ export default class Downloader extends PureComponent {
         intl: intlShape,
     };
 
+    static getDerivedStateFromProps(props) {
+        if (!props.show) {
+            return {
+                didCancel: false,
+                progress: 0,
+            };
+        }
+        return null;
+    }
+
     constructor(props) {
         super(props);
 
@@ -74,17 +84,11 @@ export default class Downloader extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (!this.props.show && nextProps.show) {
-            this.toggleDownloader();
-            this.setState({
-                didCancel: false,
-                progress: 0,
-            });
-        } else if (!nextProps.show && this.props.show) {
-            this.toggleDownloader(false);
-        } else if (this.props.deviceHeight !== nextProps.deviceHeight) {
-            this.recenterDownloader(nextProps);
+    componentDidUpdate(prevProps) {
+        if (this.props.show !== prevProps.show) {
+            this.toggleDownloader(this.props.show);
+        } else if (this.props.deviceHeight !== prevProps.deviceHeight) {
+            this.recenterDownloader(this.props);
         }
     }
 
@@ -423,7 +427,8 @@ const styles = StyleSheet.create({
         width: 200,
         height: 200,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
+        paddingTop: 40,
     },
     progressCirclePercentage: {
         flex: 1,
