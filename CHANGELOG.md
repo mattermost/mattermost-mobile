@@ -12,12 +12,12 @@ Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgr
 
 ### Highlights
 
-#### File, Image and Video Thumbnail Display Improvements
+#### Improved Styling for File, Image and Video Attachments, Including In-line Image Thumbnails
 
 #### Mark as Unread
- - With server v5.18 and above, the user will land on the unread post the next time they click on the relevant channel when marking a post as unread.
+ - With server v5.18 and above, users can stay on top of important messages with a new feature that allows marking posts as unread. After doing so, users will automatically land on the unread post the next time they click on the relevant channel.
 
-#### ID-loaded push notifications (E20)
+#### Push Notification Message Contents Fetched from the Server on Receipt (E20)
  - Allows push notifications to be delivered showing the full message contents that are fetched from the server once the notification is delivered to the device. This means that Apple Push Notification Service (APNS) or Google Firebase Cloud Messaging (FCM) cannot read the message contents since only a unique message ID is sent in the notification payload. 
 
 #### Upgraded RN to v0.61
@@ -35,7 +35,7 @@ Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgr
 - Improved behaviour where posts from different authors in the same thread appeared to be from different threads if separated by new message line.
 - Added support for native emojis in the emoji picker and autocomplete.
 - Removed "Add Reaction" option from the long post view.
-- Improved behaviour of large number of emojis when a post changed from horizontal scroll to wrap.
+- Large number of emoji reactions now wrap instead of introducing horizontal scroll.
 - Added support for a generic error message in interactive dialog responses.
 - Added the ability to disable attachment buttons and fields.
 
