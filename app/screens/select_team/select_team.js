@@ -14,6 +14,7 @@ import {Navigation} from 'react-native-navigation';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
@@ -34,16 +35,19 @@ export default class SelectTeam extends PureComponent {
             getTeams: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
+            addUserToTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         currentUserIsGuest: PropTypes.bool.isRequired,
+        currentUserId: PropTypes.string.isRequired,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object,
         teamsRequest: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        serverVersion: PropTypes.string,
     };
 
     static defaultProps = {
@@ -128,13 +132,21 @@ export default class SelectTeam extends PureComponent {
 
     onSelectTeam = async (team) => {
         this.setState({joining: true});
-        const {userWithoutTeams} = this.props;
+        const {userWithoutTeams, currentUserId} = this.props;
         const {
             joinTeam,
+            addUserToTeam,
             handleTeamChange,
         } = this.props.actions;
 
-        const {error} = await joinTeam(team.invite_id, team.id);
+        let error;
+        if (isMinimumServerVersion(this.props.serverVersion, 5, 18)) {
+            const result = await addUserToTeam(team.id, currentUserId);
+            error = result.error;
+        } else {
+            const result = await joinTeam(team.invite_id, team.id);
+            error = result.error;
+        }
         if (error) {
             Alert.alert(error.message);
             this.setState({joining: false});
