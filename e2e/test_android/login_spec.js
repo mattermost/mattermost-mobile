@@ -17,13 +17,8 @@ describe('Login', () => {
     it('should be able to email login successfully', () => {
         const user = users['user-1'];
 
-        connectToServer();
-
-        // * Check if login options creen in shown
-        // LoginOptionsScreen.waitForIsShown(true);
-
-        // # Choose email login
-        // LoginOptionsScreen.clickEmailLoginOptionButton();
+        browser.pause(2000);
+        SelectServerScreen.connectToServer(browser.config.serverUrl);
 
         // * Check if login screen in shown
         LoginScreen.waitForIsShown(true);
@@ -36,25 +31,4 @@ describe('Login', () => {
         // * Check if channel screen is shown
         ChannelScreen.waitForIsShown(true);
     });
-
-    function connectToServer() {
-        const serverUrl = browser.config.baseUrl;
-
-        // # Click permission allow button if shown
-        browser.pause(2000);
-
-        // if (PermissionScreen.allowButton != null) {
-        //     PermissionScreen.clickAllowButton();
-        // }
-
-        // * Check if server screen is shown
-        // SelectServerScreen.waitForIsShown(true);
-
-        // * Check logo image is displayed
-        expect(SelectServerScreen.logoImage.isDisplayed()).toBe(true);
-
-        // # Connect to server
-        SelectServerScreen.editUrlInput(serverUrl);
-        SelectServerScreen.clickConnectButton();
-    }
 });

@@ -7,7 +7,7 @@
 // - Use accessibility ID when selecting an element. Create one if none.
 // *********************************************************************
 
-import PermissionScreen from '../screen_objects/alert_permission_dialog';
+import PermissionDialog from '../screen_objects/alert_permission_dialog';
 import SelectServerScreen from '../screen_objects/select_server_screen';
 import LoginScreen from '../screen_objects/login_screen';
 import ChannelScreen from '../screen_objects/channel_screen';
@@ -18,13 +18,14 @@ describe('Login', () => {
     it('should be able to email login successfully', () => {
         const user = users['user-1'];
 
-        connectToServer();
+        browser.pause(2000);
 
-        // * Check if login options creen in shown
-        // LoginOptionsScreen.waitForIsShown(true);
+        // # Click permission allow button if shown
+        if (PermissionDialog.allowButton != null) {
+            PermissionDialog.clickAllowButton();
+        }
 
-        // # Choose email login
-        // LoginOptionsScreen.clickEmailLoginOptionButton();
+        SelectServerScreen.connectToServer(browser.config.serverUrl);
 
         // * Check if login screen in shown
         LoginScreen.waitForIsShown(true);
@@ -37,25 +38,4 @@ describe('Login', () => {
         // * Check if channel screen is shown
         ChannelScreen.waitForIsShown(true);
     });
-
-    function connectToServer() {
-        const serverUrl = browser.config.baseUrl;
-
-        // # Click permission allow button if shown
-        browser.pause(2000);
-
-        if (PermissionScreen.allowButton != null) {
-            PermissionScreen.clickAllowButton();
-        }
-
-        // * Check if server screen is shown
-        // SelectServerScreen.waitForIsShown(true);
-
-        // * Check logo image is displayed
-        expect(SelectServerScreen.logoImage.isDisplayed()).toBe(true);
-
-        // # Connect to server
-        SelectServerScreen.editUrlInput(serverUrl);
-        SelectServerScreen.clickConnectButton();
-    }
 });

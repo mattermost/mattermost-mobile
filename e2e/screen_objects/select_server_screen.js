@@ -29,6 +29,15 @@ class SelectServerScreen extends AppScreen {
     clickConnectButton() {
         this.connectButton.click();
     }
+
+    connectToServer(serverUrl) {
+        // * Check if server screen is shown
+        this.waitForIsShown(true);
+
+        // # Connect to server
+        this.editUrlInput(serverUrl);
+        this.clickConnectButton();
+    }
 }
 
 export default new SelectServerScreen();
