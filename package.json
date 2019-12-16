@@ -100,6 +100,7 @@
     "eslint-plugin-header": "3.0.0",
     "eslint-plugin-jest": "22.19.0",
     "eslint-plugin-react": "7.16.0",
+    "eslint-plugin-wdio": "5.13.2",
     "harmony-reflect": "1.6.1",
     "jest": "24.9.0",
     "jest-cli": "24.9.0",
@@ -145,7 +146,8 @@
       "<rootDir>/node_modules/jest-enzyme/lib/index.js"
     ],
     "testPathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/e2e/"
     ],
     "moduleNameMapper": {
       "assets/images/video_player/(.*).png": "<rootDir>/dist/assets/images/video_player/$1@2x.png"

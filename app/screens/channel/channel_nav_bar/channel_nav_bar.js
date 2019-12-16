@@ -10,6 +10,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
+import {accessibilityProps} from 'app/utils/accessibility';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDrawerButton from './channel_drawer_button';
@@ -105,7 +106,10 @@ export default class ChannelNavBar extends PureComponent {
         }
 
         return (
-            <View style={[style.header, padding(isLandscape), {height}]}>
+            <View
+                {...accessibilityProps('channel nav bar')}
+                style={[style.header, padding(isLandscape), {height}]}
+            >
                 <ChannelDrawerButton
                     openDrawer={openChannelDrawer}
                     visible={drawerButtonVisible}

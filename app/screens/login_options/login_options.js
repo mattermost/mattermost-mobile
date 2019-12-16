@@ -17,6 +17,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {GlobalStyles} from 'app/styles';
+import {accessibilityProps} from 'app/utils/accessibility';
 import {preventDoubleTap} from 'app/utils/tap';
 import {ViewTypes} from 'app/constants';
 import {goToScreen} from 'app/actions/navigation';
@@ -82,6 +83,7 @@ export default class LoginOptions extends PureComponent {
 
             return (
                 <Button
+                    {...accessibilityProps('email login option button')}
                     key='email'
                     onPress={this.goToLogin}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
@@ -153,6 +155,7 @@ export default class LoginOptions extends PureComponent {
         if (!forceHideFromLocal && config.EnableSignUpWithGitLab === 'true') {
             return (
                 <Button
+                    {...accessibilityProps('one login option button')}
                     key='gitlab'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
@@ -250,12 +253,14 @@ export default class LoginOptions extends PureComponent {
     render() {
         return (
             <ScrollView
+                {...accessibilityProps('login options screen')}
                 style={style.container}
                 contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
                 ref={this.scrollRef}
             >
                 <StatusBar/>
                 <Image
+                    {...accessibilityProps('logo image')}
                     source={logo}
                 />
                 <Text style={GlobalStyles.header}>
