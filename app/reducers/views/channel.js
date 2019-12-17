@@ -278,6 +278,15 @@ function postVisibility(state = {}, action) {
         nextState[action.channelId] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
         return nextState;
     }
+    case PostTypes.RECEIVED_NEW_POST: {
+        if (action.data.id === action.data.pending_post_id) {
+            const nextState = {...state};
+            nextState[action.data.channel_id] += 1;
+            return nextState;
+        }
+
+        return state;
+    }
     default:
         return state;
     }
