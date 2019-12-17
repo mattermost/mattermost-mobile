@@ -32,6 +32,7 @@ import FormattedText from 'app/components/formatted_text';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
+import {accessibilityProps} from 'app/utils/accessibility';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -416,6 +417,7 @@ export default class SelectServer extends PureComponent {
 
         return (
             <SafeAreaView
+                {...accessibilityProps('select server screen')}
                 style={style.container}
             >
                 <KeyboardAvoidingView
@@ -428,6 +430,7 @@ export default class SelectServer extends PureComponent {
                     <TouchableWithoutFeedback onPress={this.blur}>
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                             <Image
+                                {...accessibilityProps('logo image')}
                                 source={require('assets/images/logo.png')}
                             />
 
@@ -439,6 +442,7 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
+                                {...accessibilityProps('url input')}
                                 ref={this.inputRef}
                                 value={url}
                                 editable={!inputDisabled}
@@ -458,6 +462,7 @@ export default class SelectServer extends PureComponent {
                                 disableFullscreenUI={true}
                             />
                             <Button
+                                {...accessibilityProps('connect button')}
                                 onPress={this.handleConnect}
                                 containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                             >

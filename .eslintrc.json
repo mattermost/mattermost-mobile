@@ -1,7 +1,11 @@
 {
   "extends": [
     "./node_modules/eslint-config-mattermost/.eslintrc.json",
-    "./node_modules/eslint-config-mattermost/.eslintrc-react.json"
+    "./node_modules/eslint-config-mattermost/.eslintrc-react.json",
+    "plugin:wdio/recommended"
+  ],
+  "plugins": [
+    "wdio"
   ],
   "settings": {
     "react": {
@@ -10,12 +14,18 @@
     }
   },
   "env": {
-    "jest": true
+    "jest": true,
+    "jasmine": true
   },
   "globals": {
-    "__DEV__": true
+    "__DEV__": true,
+    "$": true,
+    "$$": true,
+    "browser": true,
+    "driver": true
   },
   "rules": {
+    "comma-dangle": 0,
     "global-require": 0,
     "react/display-name": [2, { "ignoreTranspilerName": false }],
     "react/jsx-filename-extension": [2, {"extensions": [".js"]}]
