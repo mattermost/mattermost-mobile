@@ -16,7 +16,6 @@ exports.config = {
     logLevel: 'silent',
     deprecationWarnings: true,
     bail: 0,
-    baseUrl: 'http://127.0.0.1:8065',
     waitforTimeout: 10000,
     connectionRetryTimeout: 90000,
     connectionRetryCount: 3,
@@ -30,8 +29,7 @@ exports.config = {
     // For options and arguments see
     // https://github.com/webdriverio/webdriverio/tree/master/packages/wdio-appium-service
     appium: {
-        args: {
-        },
+        args: {},
         command: 'appium'
     },
 

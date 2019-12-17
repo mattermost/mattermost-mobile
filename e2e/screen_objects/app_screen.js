@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DEFAULT_TIMEOUT} from '../constants';
+import {DEFAULT_TIMEOUT} from '../utils/constants';
 
 const SELECTORS = {
     LOGO_IMAGE: '~logo image',

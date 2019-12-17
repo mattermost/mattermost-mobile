@@ -427,7 +427,10 @@ export default class SelectServer extends PureComponent {
                     enabled={Platform.OS === 'ios'}
                 >
                     <StatusBar barStyle={statusStyle}/>
-                    <TouchableWithoutFeedback onPress={this.blur}>
+                    <TouchableWithoutFeedback
+                        accessible={false}
+                        onPress={this.blur}
+                    >
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                             <Image
                                 {...accessibilityProps('logo image')}
@@ -462,7 +465,7 @@ export default class SelectServer extends PureComponent {
                                 disableFullscreenUI={true}
                             />
                             <Button
-                                {...accessibilityProps('connect button')}
+                                {...accessibilityProps('connect')}
                                 onPress={this.handleConnect}
                                 containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                             >

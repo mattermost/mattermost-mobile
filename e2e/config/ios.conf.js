@@ -2,49 +2,51 @@
 // See LICENSE.txt for license information.
 
 const {join} = require('path');
-const {config} = require('./wdio.shared.conf');
+const {config} = require('./shared.conf');
 
 // ============
 // Specs
 // ============
 config.specs = [
-    './wdio/tests/specs/**/*.spec.js',
+    './test_ios/**/*_spec.js',
 ];
 
 // ============
 // Capabilities
 // ============
-// For all capabilities please check
+// For all capabilities, refer to:
 // http://appium.io/docs/en/writing-running-appium/caps/#general-capabilities
 config.capabilities = [
     {
 
-        // The defaults you need to have in your config
+        // Default values for iOS
         platformName: 'iOS',
         maxInstances: 1,
 
-        // For W3C the appium capabilities need to have an extension prefix
-        // This is `appium:` for all Appium Capabilities which can be found here
+        // For W3C, the Appium capabilities need to have an extension prefix of `appium:`
         // http://appium.io/docs/en/writing-running-appium/caps/
-        // 'appium:deviceName': 'iPhone 11',
-        // 'appium:platformVersion': '13.2',
-        // 'appium:orientation': 'PORTRAIT',
 
-        // `automationName` will be mandatory, see
-        // https://github.com/appium/appium/releases/tag/v1.15.1
+        // Should match with available iOS device or simulator
+        'appium:deviceName': 'iPhone 11',
+        'appium:platformVersion': '13.2',
+
+        'appium:orientation': 'PORTRAIT',
         'appium:automationName': 'XCUITest',
 
         // The path to the app
         'appium:app': join(process.cwd(), '../Mattermost-simulator-x86_64.app.zip'),
 
         // The bundle id
-        'appium:bundleId': 'com.mattermost.rnbeta',
+        'appium:bundleId': 'com.mattermost.rn',
 
         // Read the reset strategies very well, they differ per platform, see
         // http://appium.io/docs/en/writing-running-appium/other/reset-strategies/
         // 'appium:noReset': true,
+
         'appium:newCommandTimeout': 240,
     },
 ];
+
+config.serverUrl = 'http://localhost:8065';
 
 exports.config = config;
