@@ -10,6 +10,14 @@
 
 ### Bug Fixes
  - Fixed an issue where very bad network connections caused users to miss messages when at the top of the channel.
+ - Fixed an issue where disagreeing with custom Terms of Service gives users a glimpse of the app.
+ - Fixed an issue on Android where the Back button did not dismiss the modal before dismissing the sidebar.
+ - Fixed an issue where a message draft was lost after attempting to post an invalid slash command.
+ - Fixed an issue where bool values from interactive dialogs were sent as strings to integrations.
+ - Fixed an issue where the display name of a post was truncated even when there was enough space to render it on landscape.
+ - Fixed an issue where the post input field icon was mis-aligned.
+ - Fixed an issue where system message mentions were not at 100% opacity compared to non-system messages.
+ 
 
 ## 1.26.0 Release
 - Release Date: December 16, 2019
