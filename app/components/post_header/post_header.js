@@ -46,6 +46,7 @@ export default class PostHeader extends PureComponent {
         previousPostExists: PropTypes.bool,
         post: PropTypes.object,
         beforePrevPostUserId: PropTypes.string,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -122,11 +123,14 @@ export default class PostHeader extends PureComponent {
             commentedOnDisplayName,
             commentCount,
             isBot,
+            isLandscape,
         } = this.props;
 
         const style = getStyleSheet(theme);
         const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
-        const displayNameStyle = [style.displayNameContainer, showReply && (isBot || fromAutoResponder || fromWebHook) ? style.displayNameContainerBotReplyWidth : null];
+        const reduceWidth = showReply && (isBot || fromAutoResponder || fromWebHook);
+        const isLandscapeStyle = isLandscape && reduceWidth ? style.displayNameContainerLandscapeBotReplyWidth : isLandscape ? style.displayNameContainerLandscape : null; //eslint-disable-line no-nested-ternary
+        const displayNameStyle = [style.displayNameContainer, reduceWidth ? style.displayNameContainerBotReplyWidth : null, isLandscapeStyle];
 
         if (fromAutoResponder || fromWebHook) {
             let name = displayName;
@@ -366,6 +370,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         displayNameContainerBotReplyWidth: {
             maxWidth: '50%',
+        },
+        displayNameContainerLandscape: {
+            maxWidth: '80%',
+        },
+        displayNameContainerLandscapeBotReplyWidth: {
+            maxWidth: '70%',
         },
     };
 });
