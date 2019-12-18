@@ -667,6 +667,19 @@ export default class ChannelInfo extends PureComponent {
                                 theme={theme}
                                 isLandscape={isLandscape}
                             />
+                            {this.renderUnarchiveChannel() &&
+                            <React.Fragment>
+                                <View style={style.separator}/>
+                                <ChannelInfoRow
+                                    action={this.handleUndelete}
+                                    defaultMessage='Unarchive Channel'
+                                    icon='archive' // might need to change the icon...
+                                    textId={t('mobile.routes.channelInfo.undelete_channel')}
+                                    theme={theme}
+                                    isLandscape={isLandscape}
+                                />
+                            </React.Fragment>
+                            }
                         </React.Fragment>
                         }
                     </View>
@@ -693,20 +706,6 @@ export default class ChannelInfo extends PureComponent {
                             iconColor='#CA3B27'
                             rightArrow={false}
                             textId={i18nId}
-                            textColor='#CA3B27'
-                            theme={theme}
-                            isLandscape={isLandscape}
-                        />
-                    </View>
-                    }
-                    {this.renderUnarchiveChannel() &&
-                    <View style={[style.rowsContainer, style.footer]}>
-                        <ChannelInfoRow
-                            action={this.handleUndelete}
-                            defaultMessage='Unarchive Channel'
-                            iconColor='#CA3B27'
-                            icon='archive' // might need to change the icon...
-                            textId={t('mobile.routes.channelInfo.undelete_channel')}
                             textColor='#CA3B27'
                             theme={theme}
                             isLandscape={isLandscape}
