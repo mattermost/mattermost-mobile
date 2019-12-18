@@ -44,11 +44,11 @@ export default class FileUploadItem extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {file} = prevProps;
-        const {file: nextFile} = this.props;
+        const {file: prevFile} = prevProps;
+        const {file} = this.props;
 
-        if (file.failed !== nextFile.failed && nextFile.loading) {
-            this.downloadAndUploadFile(nextFile);
+        if (prevFile.failed !== file.failed && file.loading) {
+            this.downloadAndUploadFile(file);
         }
     }
 

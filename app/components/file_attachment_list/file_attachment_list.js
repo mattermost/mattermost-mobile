@@ -17,6 +17,7 @@ import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex} from 'app/utils/images';
 import {preventDoubleTap} from 'app/utils/tap';
 import {emptyFunction} from 'app/utils/general';
+import deepEqual from 'deep-equal';
 
 import FileAttachment from './file_attachment';
 
@@ -77,7 +78,7 @@ export default class FileAttachmentList extends PureComponent {
                 this.galleryFiles = results;
             });
         }
-        if (this.props.files.length === 0) {
+        if (!deepEqual(this.props.files, prevProps.files) && this.props.files.length === 0) {
             this.loadFilesForPost();
         }
     }

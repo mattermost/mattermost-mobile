@@ -22,7 +22,6 @@ describe('Typing', () => {
             <Typing {...baseProps}/>,
         );
 
-        // expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find(AnimatedView).exists()).toBe(true);
     });
 
