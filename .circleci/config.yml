@@ -42,15 +42,14 @@ commands:
       for:
         type: string
     steps:
+      - ruby-setup
       - restore_cache:
           name: Restore Fastlane cache
           key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
       - run:
           working_directory: fastlane
           name: Download Fastlane dependencies
-          command: |
-            chruby 2.6.3
-            bundle install --path vendor/bundle
+          command: bundle install --path vendor/bundle
       - save_cache:
           name: Save Fastlane cache
           key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
@@ -200,6 +199,12 @@ commands:
       - store_artifacts:
           path: ~/mattermost-mobile/<<parameters.filename>>
 
+  ruby-setup:
+    steps:
+      - run:
+          name: Set Ruby Version
+          command: echo "ruby-2.6.3" > ~/.ruby-version
+
 jobs:
   test:
     working_directory: ~/mattermost-mobile
@@ -313,6 +318,7 @@ jobs:
       name: android
       resource_class: medium
     steps:
+      - ruby-setup
       - deploy-to-store:
           task: "Deploy to Google Play"
           target: android
@@ -323,6 +329,7 @@ jobs:
       name: android
       resource_class: medium
     steps:
+      - ruby-setup
       - deploy-to-store:
           task: "Deploy to Google Play"
           target: android
@@ -331,6 +338,7 @@ jobs:
   deploy-ios-release:
     executor: ios
     steps:
+      - ruby-setup
       - deploy-to-store:
           task: "Deploy to TestFlight"
           target: ios
@@ -339,6 +347,7 @@ jobs:
   deploy-ios-beta:
     executor: ios
     steps:
+      - ruby-setup
       - deploy-to-store:
           task: "Deploy to TestFlight"
           target: ios
