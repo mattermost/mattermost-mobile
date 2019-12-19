@@ -1,43 +1,3 @@
-diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
-index 14f0746..054f652 100644
---- a/node_modules/react-native/react.gradle
-+++ b/node_modules/react-native/react.gradle
-@@ -116,7 +116,7 @@ afterEvaluate {
- 
-             // Set up dev mode
-             def devEnabled = !(config."devDisabledIn${targetName}"
--                || targetName.toLowerCase().contains("release"))
-+                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
- 
-             def extraArgs = extraPackagerArgs;
- 
-@@ -141,7 +141,7 @@ afterEvaluate {
-                     def hermesFlags;
-                     def hbcTempFile = file("${jsBundleFile}.hbc")
-                     exec {
--                        if (targetName.toLowerCase().contains("release")) {
-+                        if (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")) {
-                             // Can't use ?: since that will also substitute valid empty lists
-                             hermesFlags = config.hermesFlagsRelease
-                             if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
-@@ -180,7 +180,7 @@ afterEvaluate {
-                 ? config."bundleIn${targetName}"
-                 : config."bundleIn${variant.buildType.name.capitalize()}" != null
-                     ? config."bundleIn${variant.buildType.name.capitalize()}"
--                    : targetName.toLowerCase().contains("release")
-+                    : (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
-         }
- 
-         // Expose a minimal interface on the application variant and the task itself:
-@@ -272,7 +272,7 @@ afterEvaluate {
-         // This should really be done by packaging all Hermes releated libs into
-         // two separate HermesDebug and HermesRelease AARs, but until then we'll
-         // kludge it by deleting the .so files out of the /transforms/ directory.
--        def isRelease = targetName.toLowerCase().contains("release")
-+        def isRelease = targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")
-         def libDir = "$buildDir/intermediates/transforms/"
-         def vmSelectionAction = {
-             fileTree(libDir).matching {
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 index 7dffc17..548e7bb 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
@@ -215,6 +175,45 @@ index 35f0757..a0205fc 100644
    }
  
    get binaryType(): ?BinaryType {
+diff --git a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h
+index 55b5e3a..04f45a2 100644
+--- a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h
++++ b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h
+@@ -51,6 +51,7 @@
+ @property (nonatomic, assign) BOOL snapToStart;
+ @property (nonatomic, assign) BOOL snapToEnd;
+ @property (nonatomic, copy) NSString *snapToAlignment;
++@property (nonatomic, assign) BOOL inverted;
+ 
+ // NOTE: currently these event props are only declared so we can export the
+ // event names to JS - we don't call the blocks directly because scroll events
+diff --git a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
+index b028f02..93812f8 100644
+--- a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
++++ b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
+@@ -953,6 +953,10 @@ - (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView
+       return NO;
+     }
+   }
++  if(self.inverted) {
++    [self scrollToEnd:YES];
++    return NO;
++  }
+   return YES;
+ }
+ 
+diff --git a/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m b/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m
+index bed6d84..2721fb0 100644
+--- a/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m
++++ b/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m
+@@ -97,6 +97,7 @@ - (UIView *)view
+ RCT_EXPORT_VIEW_PROPERTY(onScrollEndDrag, RCTDirectEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollBegin, RCTDirectEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollEnd, RCTDirectEventBlock)
++RCT_EXPORT_VIEW_PROPERTY(inverted, BOOL)
+ RCT_EXPORT_VIEW_PROPERTY(DEPRECATED_sendUpdatedChildFrames, BOOL)
+ #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
+ RCT_EXPORT_VIEW_PROPERTY(contentInsetAdjustmentBehavior, UIScrollViewContentInsetAdjustmentBehavior)
 diff --git a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
 index ef2ae93..2795802 100644
 --- a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
@@ -228,3 +227,43 @@ index ef2ae93..2795802 100644
        return true;
      } catch (ClassNotFoundException ignored) {
        return false;
+diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
+index 14f0746..054f652 100644
+--- a/node_modules/react-native/react.gradle
++++ b/node_modules/react-native/react.gradle
+@@ -116,7 +116,7 @@ afterEvaluate {
+ 
+             // Set up dev mode
+             def devEnabled = !(config."devDisabledIn${targetName}"
+-                || targetName.toLowerCase().contains("release"))
++                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+ 
+             def extraArgs = extraPackagerArgs;
+ 
+@@ -141,7 +141,7 @@ afterEvaluate {
+                     def hermesFlags;
+                     def hbcTempFile = file("${jsBundleFile}.hbc")
+                     exec {
+-                        if (targetName.toLowerCase().contains("release")) {
++                        if (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")) {
+                             // Can't use ?: since that will also substitute valid empty lists
+                             hermesFlags = config.hermesFlagsRelease
+                             if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
+@@ -180,7 +180,7 @@ afterEvaluate {
+                 ? config."bundleIn${targetName}"
+                 : config."bundleIn${variant.buildType.name.capitalize()}" != null
+                     ? config."bundleIn${variant.buildType.name.capitalize()}"
+-                    : targetName.toLowerCase().contains("release")
++                    : (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+         }
+ 
+         // Expose a minimal interface on the application variant and the task itself:
+@@ -272,7 +272,7 @@ afterEvaluate {
+         // This should really be done by packaging all Hermes releated libs into
+         // two separate HermesDebug and HermesRelease AARs, but until then we'll
+         // kludge it by deleting the .so files out of the /transforms/ directory.
+-        def isRelease = targetName.toLowerCase().contains("release")
++        def isRelease = targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")
+         def libDir = "$buildDir/intermediates/transforms/"
+         def vmSelectionAction = {
+             fileTree(libDir).matching {
