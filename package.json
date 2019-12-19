@@ -23,7 +23,7 @@
     "fuse.js": "3.4.5",
     "intl": "1.2.5",
     "jail-monkey": "2.3.0",
-    "jsc-android": "241213.1.0",
+    "jsc-android": "241213.2.0",
     "mattermost-redux": "github:mattermost/mattermost-redux#6421d6ee52784c629a405d010047becbbf196c00",
     "mime-db": "1.42.0",
     "moment-timezone": "0.5.27",
