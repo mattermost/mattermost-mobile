@@ -114,7 +114,7 @@ index 1b17cff..9efa98e 100644
  
  #pragma mark - RCTSRWebSocketDelegate
 diff --git a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m
-index a134d2e..e815938 100644
+index a134d2e..e1d9988 100644
 --- a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m
 +++ b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m
 @@ -231,7 +231,7 @@ @implementation RCTSRWebSocket
@@ -155,7 +155,44 @@ index a134d2e..e815938 100644
  }
  
  - (void)_RCTSR_commonInit;
-@@ -518,6 +522,24 @@ - (void)_initializeStreams;
+@@ -347,6 +351,36 @@ - (void)setReadyState:(RCTSRReadyState)aReadyState;
+ 
+ #endif
+ 
++- (SecIdentityRef) GetIdentityByName:(NSString *)name
++{
++  NSMutableDictionary * query = [[NSMutableDictionary alloc] init];
++  
++  //Set up the invariant pieces of the query
++  [query setObject:(id)kSecMatchLimitAll forKey:(id)kSecMatchLimit];
++  [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnRef];
++  [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnData];
++  [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];
++  [query setObject:(id)kSecClassIdentity forKey:(id)kSecClass];
++  [query setObject:name forKey:(id)kSecAttrLabel];
++  
++  OSStatus resultCode = noErr;
++  CFTypeRef result = nil;
++  //Execute the query saving the results in items.
++  resultCode = SecItemCopyMatching((CFDictionaryRef)query, &result);
++  CFDictionaryRef item = (CFDictionaryRef)CFArrayGetValueAtIndex((CFArrayRef)result, 0);
++  if (item != nil) {
++    SecIdentityRef identity = nil;
++    CFTypeRef value;
++    if(CFDictionaryGetValueIfPresent(item, kSecValueRef, &value))
++    {
++      identity = (SecIdentityRef)value;
++    }
++    
++    return identity;
++  }
++  return nil;
++}
++
+ - (void)open;
+ {
+   assert(_url);
+@@ -518,6 +552,24 @@ - (void)_initializeStreams;
      RCTLogInfo(@"SocketRocket: In debug mode.  Allowing connection to any root cert");
  #endif
  
