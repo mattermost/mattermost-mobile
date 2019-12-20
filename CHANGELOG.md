@@ -9,8 +9,8 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - 
-
+ - Fixed a crash issue on Android and iOS on server versions prior to the v5.9.0 Extended Support Release (ESR).
+ - Fixed a crash when connecting the WebSocket to a server with Cert Based Auth (CBA) enabled.
 
 ## 1.26.0 Release
 - Release Date: December 16, 2019
