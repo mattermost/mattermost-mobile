@@ -44,7 +44,12 @@ function makeMapStateToProps() {
                 channel: channelId,
                 permission: Permissions.ADD_REACTION,
             });
-            canAddMoreReactions = Object.values(reactions).length < MAX_ALLOWED_REACTIONS;
+
+            if (reactions) {
+                // On servers without metadata reactions at this point can be undefined
+                canAddMoreReactions = Object.values(reactions).length < MAX_ALLOWED_REACTIONS;
+            }
+
             canRemoveReaction = haveIChannelPermission(state, {
                 team: teamId,
                 channel: channelId,
