@@ -1,5 +1,17 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.26.1 Release
+- Release Date: December 20, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed a crash issue on Android and iOS on server versions prior to the v5.9.0 Extended Support Release (ESR).
+ - Fixed a crash when connecting the WebSocket to a server with Cert Based Auth (CBA) enabled.
+
 ## 1.26.0 Release
 - Release Date: December 16, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
