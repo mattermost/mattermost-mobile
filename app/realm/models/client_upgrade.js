@@ -6,8 +6,9 @@ import Realm from 'realm';
 export default class ClientUpgrade extends Realm.Object {
     static schema = {
         name: 'ClientUpgrade',
-        primary: 'lastUpdateCheck',
+        primary: 'id',
         properties: {
+            id: 'string',
             lastUpdateCheck: 'date',
         },
     };

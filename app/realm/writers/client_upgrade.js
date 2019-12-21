@@ -7,7 +7,7 @@ import {ClientUpgradeTypes} from 'app/realm/action_types';
 function clientUpgrade(realm, action) {
     switch (action.type) {
     case ClientUpgradeTypes.SET_LAST_UPGRADE_CHECK: {
-        realm.create('ClientUpgrade', {lastUpdateCheck: Date.now()}, true);
+        realm.create('ClientUpgrade', {id: '0', lastUpdateCheck: Date.now()}, true);
         break;
     }
 
