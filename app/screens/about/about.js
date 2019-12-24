@@ -9,6 +9,7 @@ import {
     Text,
     TouchableOpacity,
     View,
+    Dimensions,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
@@ -28,7 +29,6 @@ export default class About extends PureComponent {
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     componentDidUpdate(prevProps) {
@@ -62,7 +62,8 @@ export default class About extends PureComponent {
     }
 
     render() {
-        const {theme, config, license, isLandscape} = this.props;
+        const {height, width} = Dimensions.get('window');
+        const {theme, config, license} = this.props;
         const style = getStyleSheet(theme);
 
         let title = (
@@ -220,7 +221,7 @@ export default class About extends PureComponent {
             <View style={style.wrapper}>
                 <StatusBar/>
                 <ScrollView
-                    style={[style.scrollView, padding(isLandscape)]}
+                    style={[style.scrollView, padding(width > height)]}
                     contentContainerStyle={style.scrollViewContent}
                 >
                     <View style={style.logoContainer}>
