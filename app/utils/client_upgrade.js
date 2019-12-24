@@ -6,7 +6,7 @@ import {UpgradeTypes} from 'app/constants';
 
 import LocalConfig from 'assets/config';
 
-export function checkUpgradeType(currentVersion, minVersion, latestVersion, logError = null) {
+export function checkUpgradeType(currentVersion, minVersion, latestVersion) {
     let upgradeType = UpgradeTypes.NO_UPGRADE;
 
     try {
@@ -22,9 +22,7 @@ export function checkUpgradeType(currentVersion, minVersion, latestVersion, logE
             }
         }
     } catch (error) {
-        if (logError) {
-            logError(error.message); //disabled currently for Realm migration from client_upgrade screen
-        }
+        console.log(error.message); // eslint-disable-line no-console
     }
 
     return upgradeType;

@@ -5,9 +5,6 @@ import {realmConnect} from 'realm-react-redux';
 
 import {General, Preferences} from 'app/constants';
 
-//import {logError} from 'mattermost-redux/actions/errors'; //need to add log back into server at later date
-
-import {setLastUpgradeCheck} from 'app/realm/actions/client_upgrade';
 import {getClientUpgrade} from 'app/realm/utils/general';
 import {getTheme} from 'app/realm/selectors/preference';
 import options from 'app/store/realm_options';
@@ -34,8 +31,4 @@ function mapQueriesToProps([general, themePreferences]) {
     };
 }
 
-const mapRealmDispatchToProps = {
-    setLastUpgradeCheck,
-};
-
-export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(ClientUpgrade);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, null, null, options)(ClientUpgrade);
