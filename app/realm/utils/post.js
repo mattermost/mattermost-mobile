@@ -46,7 +46,7 @@ export function postDataToRealm(post, owner) {
 
     if (post.metadata?.reactions) {
         post.metadata.reactions.forEach((r) => {
-            const id = `${post.id}-${owner.id}-${r.emoji_name}`;
+            const id = `${post.id}-${owner?.id}-${r.emoji_name}`;
             postData.reactions.push({
                 id,
                 user: r.user_id,

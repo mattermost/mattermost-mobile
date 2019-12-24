@@ -27,6 +27,7 @@ import {loadRolesIfNeeded} from './role';
 import {reduxStore} from 'app/store';
 import {
     loadChannelsIfNecessary,
+    markChannelViewedAndRead,
     selectInitialChannel as selectInitialChannelRedux,
     handleSelectChannel as handleSelectChannelRedux,
     loadProfilesAndTeamMembersForDMSidebar as loadProfilesAndTeamMembersForDMSidebarRedux,
@@ -635,6 +636,12 @@ export function markChannelAsFavorite(channeId, favorite = true) {
         }
 
         return dispatch(savePreferences(general.currentUserId, prefs));
+    };
+}
+
+export function markChannelsViewedAndRead(channelId, previousChannelId, markOnServer = true) {
+    return () => {
+        reduxStore.dispatch(markChannelViewedAndRead(channelId, previousChannelId, markOnServer));
     };
 }
 

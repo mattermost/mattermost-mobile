@@ -13,10 +13,8 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelPeek extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            loadPostsIfNecessaryWithRetry: PropTypes.func.isRequired,
-            markChannelViewedAndRead: PropTypes.func.isRequired,
-        }).isRequired,
+        loadPostsWithRetry: PropTypes.func.isRequired,
+        markChannelsViewedAndRead: PropTypes.func.isRequired,
         channelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string,
         lastViewedAt: PropTypes.number,
@@ -33,8 +31,10 @@ export default class ChannelPeek extends PureComponent {
 
         this.state = {};
 
-        if (props.channelId) {
-            props.actions.loadPostsIfNecessaryWithRetry(props.channelId);
+        const {channelId, loadPostsWithRetry} = props;
+
+        if (channelId) {
+            loadPostsWithRetry(channelId);
             this.state.visiblePostIds = this.getVisiblePostIds(props);
         }
     }
@@ -59,8 +59,8 @@ export default class ChannelPeek extends PureComponent {
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'action-mark-as-read') {
-            const {actions, channelId} = this.props;
-            actions.markChannelViewedAndRead(channelId);
+            const {channelId, markChannelsViewedAndRead} = this.props;
+            markChannelsViewedAndRead(channelId);
         }
     }
 
