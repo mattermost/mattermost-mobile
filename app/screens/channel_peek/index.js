@@ -1,37 +1,40 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+import {realmConnect} from 'realm-react-redux';
 
-import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
-import {getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {loadPostsIfNecessaryWithRetry, markChannelViewedAndRead} from 'app/actions/views/channel';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {General, Preferences} from 'app/constants';
+
+//import {getChannelStats, loadChannelsForTeam, loadSidebarDirectMessagesProfiles, selectInitialChannel} from 'app/realm/actions/channel';
+//import {loadPostsIfNecessaryWithRetry, markChannelViewedAndRead} from 'app/actions/views/channel';
+//import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
+//import {getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
+import {getTheme} from 'app/realm/selectors/preference';
+import options from 'app/store/realm_options';
 
 import ChannelPeek from './channel_peek';
 
-function mapStateToProps(state, ownProps) {
-    const channelId = ownProps.channelId;
-    const myMember = getMyChannelMember(state, channelId);
+function mapPropsToQueries(realm) {
+    const general = realm.objectForPrimaryKey('General', General.REALM_SCHEMA_ID) || General.REALM_EMPTY_OBJECT;
+    const themePreferences = realm.objects('Preference').filtered(`category="${Preferences.CATEGORY_THEME}"`);
+    const currentUser = realm.objectForPrimaryKey('User', general?.currentUserId || '') || General.REALM_EMPTY_OBJECT;
+    return [currentUser, general, themePreferences];
+}
 
+function mapQueriesToProps([currentUser, general, themePreferences]) {
+    //const myMember = getMyChannelMember(state, channelId);
     return {
-        channelId,
-        currentUserId: getCurrentUserId(state),
-        postIds: getPostIdsInChannel(state, channelId),
-        lastViewedAt: myMember && myMember.last_viewed_at,
-        theme: getTheme(state),
+        channelId: general?.currentChannelId,
+        currentUserId: currentUser?.id,
+        //postIds: getPostIdsInChannel(state, channelId),
+        //lastViewedAt: myMember && myMember.last_viewed_at,
+        theme: getTheme([general], themePreferences),
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            loadPostsIfNecessaryWithRetry,
-            markChannelViewedAndRead,
-        }, dispatch),
-    };
-}
+const mapRealmDispatchToProps = {
+    loadPostsIfNecessaryWithRetry,
+    markChannelViewedAndRead,
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelPeek);
+export default realmConnect(mapPropsToQueries, mapQueriesToProps, mapRealmDispatchToProps, null, options)(ChannelPeek);
