@@ -1,5 +1,70 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.26.1 Release
+- Release Date: December 20, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed a crash issue on Android and iOS on server versions prior to the v5.9.0 Extended Support Release (ESR).
+ - Fixed a crash when connecting the WebSocket to a server with Cert Based Auth (CBA) enabled.
+
+## 1.26.0 Release
+- Release Date: December 16, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgrading](http://docs.mattermost.com/administration/upgrade.html) is recommended. Details will be posted on our [security updates page](https://about.mattermost.com/security-updates/) 30 days after release as per the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/).
+
+### Highlights
+
+#### Improved Styling for File, Image and Video Attachments, Including In-line Image Thumbnails
+
+#### Mark as Unread
+ - With server v5.18 and above, users can stay on top of important messages with a new feature that allows marking posts as unread. After doing so, users will automatically land on the unread post the next time they click on the relevant channel.
+
+#### Push Notification Message Contents Fetched from the Server on Receipt (E20)
+ - Allows push notifications to be delivered showing the full message contents that are fetched from the server once the notification is delivered to the device. This means that Apple Push Notification Service (APNS) or Google Firebase Cloud Messaging (FCM) cannot read the message contents since only a unique message ID is sent in the notification payload. 
+
+#### Upgraded RN to v0.61
+
+### Improvements
+- Added support for pasting other file types such as videos, PDFs and documents.
+- Added the option to convert public channels to private in the channel info screen.
+- Added support for reading the channel drawer button with voice-over.
+- Made usernames in system messages tappable.
+- Added an autocomplete to edit post screen.
+- Added a count for pinned posts icon.
+- Updated the channel name length character limit to 64 to match server.
+- Added an expand button to truncated markdown tables to improve discoverability of opening them in full screen.
+- Added an error message when trying to share too long text from share extension.
+- Improved behaviour where posts from different authors in the same thread appeared to be from different threads if separated by new message line.
+- Added support for native emojis in the emoji picker and autocomplete.
+- Removed reactions and file attachments from the long post view.
+- Large number of emoji reactions now wrap instead of introducing horizontal scroll.
+- Added support for a generic error message in interactive dialog responses.
+- Added the ability to disable attachment buttons and fields.
+
+### Bug Fixes
+- Fixed an issue on Android where the app slowed down when opening a channel with large number of animated emoji.
+- Fixed an issue where the app crashed when pasting a large file to the text box from the clipboard.
+- Fixed an issue where the app crashed when previewing large GIF files.
+- Fixed an issue where the app crashed when using the emoji category selector.
+- Fixed an issue where the app was not able to play YouTube videos.
+- Fixed an issue where images/videos could not be saved.
+- Fixed an issue where channels archived via the command line interface were still visible on the left-hand side and accessible on mobile apps.
+- Fixed an issue where the thread header in landscape view was wider than the main channel view header.
+- Fixed an issue where sidebar separator line was misaligned between Teams and Channel view.
+- Fixed an issue on iOS where the channel spinner appeared black on a dark theme.
+- Fixed an issue where an asterisk appeared on the "Nickname" and "Position" fields in Edit Profile screen even though nickname is not handled through the login provider.
+- Fixed an issue where the filtered list for emojis opened above the edit box and behind the channel header when adding an emoji to channel header using ``:emoji:``.
+
 ## 1.25.1 Release
 - Release Date: November 22, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
