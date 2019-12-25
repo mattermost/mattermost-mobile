@@ -370,7 +370,7 @@
   "mobile.post_pre_header.pinned_flagged": "Angeheftet und markiert",
   "mobile.post_textbox.entire_channel.cancel": "Abbrechen",
   "mobile.post_textbox.entire_channel.confirm": "Bestätigen",
-  "mobile.post_textbox.entire_channel.message": "Durch die Verwendung von @all oder @channel werden Sie Benachrichtigungen an {totalMembers} Personen senden. Sind Sie sicher, dass Sie dies tun wollen?",
+  "mobile.post_textbox.entire_channel.message": "Durch die Verwendung von @all oder @channel benachrichtigen Sie {totalMembers} Benutzer in {timezones, number} {timezones, plural, one {Zeitzone} other {Zeitzonen}}. Sind Sie sicher, dass sie dies tun möchten?",
   "mobile.post_textbox.entire_channel.message.with_timezones": "Durch die Verwendung von @all oder @channel benachrichtigen Sie {totalMembers} Benutzer in {timezones, number} {timezones, plural, one {Zeitzone} other {Zeitzonen}}. Sind Sie sicher, dass sie dies tun möchten?",
   "mobile.post_textbox.entire_channel.title": "Bestätigen Sie das Senden von Benachrichtigungen an den gesamten Kanal",
   "mobile.post_textbox.uploadFailedDesc": "Einige Anhänge konnten nicht auf den Server hochgeladen werden. Sind Sie sicher, dass sie die Nachricht abschicken wollen?",

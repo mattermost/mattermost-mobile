@@ -370,7 +370,7 @@
   "mobile.post_pre_header.pinned_flagged": "Épinglé et marqué d'un indicateur",
   "mobile.post_textbox.entire_channel.cancel": "Annuler",
   "mobile.post_textbox.entire_channel.confirm": "Confirmer",
-  "mobile.post_textbox.entire_channel.message": "En utilisant @all ou @channel, vous êtes sur le point d'envoyer des notifications à {totalMembers, number} {totalMembers, plural, one {utilisateur} other {utilisateurs}}. Voulez-vous vraiment continuer ?",
+  "mobile.post_textbox.entire_channel.message": "En utilisant @all ou @channel, vous êtes sur le point d'envoyer des notifications à {totalMembers, number} {totalMembers, plural, one {utilisateur} other {utilisateurs}} dans {timezones, number} {timezones, plural, one {fuseau horaire} other {fuseaux horaires}}. Voulez-vous vraiment continuer ?",
   "mobile.post_textbox.entire_channel.message.with_timezones": "En utilisant @all ou @channel, vous êtes sur le point d'envoyer des notifications à {totalMembers, number} {totalMembers, plural, one {utilisateur} other {utilisateurs}} dans {timezones, number} {timezones, plural, one {fuseau horaire} other {fuseaux horaires}}. Voulez-vous vraiment continuer ?",
   "mobile.post_textbox.entire_channel.title": "Confirmez l'envoi de notifications au canal en entier",
   "mobile.post_textbox.uploadFailedDesc": "Certains fichiers joints n'ont pas pu être envoyés au serveur. Voulez-vous vraiment envoyer votre message ?",

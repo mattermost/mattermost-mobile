@@ -370,7 +370,7 @@
   "mobile.post_pre_header.pinned_flagged": "已被置顶及标记",
   "mobile.post_textbox.entire_channel.cancel": "取消",
   "mobile.post_textbox.entire_channel.confirm": "确认",
-  "mobile.post_textbox.entire_channel.message": "使用 @all 或 @channel 您将发送通知到 {totalMembers} 人。您确定要这样做？",
+  "mobile.post_textbox.entire_channel.message": "使用 @all 或 @channel 您将发送通知到 {timezones, number} 个时区的 {totalMembers} 人。您确定要这么做？",
   "mobile.post_textbox.entire_channel.message.with_timezones": "使用 @all 或 @channel 您将发送通知到 {timezones, number} 个时区的 {totalMembers} 人。您确定要这么做？",
   "mobile.post_textbox.entire_channel.title": "确定发送通知到整个频道",
   "mobile.post_textbox.uploadFailedDesc": "一些附件上传失败，您确定发送此消息？",

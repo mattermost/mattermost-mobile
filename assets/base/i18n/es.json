@@ -370,7 +370,7 @@
   "mobile.post_pre_header.pinned_flagged": "Destacado y Marcado",
   "mobile.post_textbox.entire_channel.cancel": "Cancelar",
   "mobile.post_textbox.entire_channel.confirm": "Confirmar",
-  "mobile.post_textbox.entire_channel.message": "Al utilizar @all o @channel estás a punto de enviar una notificación a {totalMembers} personas. ¿Estás seguro que quieres hacerlo?",
+  "mobile.post_textbox.entire_channel.message": "Al utilizar @all ó @channel estás a punto de enviar notificaciones a {totalMembers} personas en {timezones, number} {zonas horarias, plural, one {zona horaria} other {zonas horarias}}. ¿Estás seguro de querer hacer esto?",
   "mobile.post_textbox.entire_channel.message.with_timezones": "Al utilizar @all ó @channel estás a punto de enviar notificaciones a {totalMembers} personas en {timezones, number} {zonas horarias, plural, one {zona horaria} other {zonas horarias}}. ¿Estás seguro de querer hacer esto?",
   "mobile.post_textbox.entire_channel.title": "Confirma el envío de notificaciones a todo el canal",
   "mobile.post_textbox.uploadFailedDesc": "Algunos archivos adjuntos no se han subido al servidor. ¿Quieres publicar el mensaje?",
