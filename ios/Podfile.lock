@@ -208,6 +208,8 @@ PODS:
     - React
   - react-native-image-picker (0.28.1):
     - React
+  - react-native-keyevent (0.2.7):
+    - React
   - react-native-netinfo (4.4.0):
     - React
   - react-native-notifications (2.0.6):
@@ -326,6 +328,7 @@ DEPENDENCIES:
   - react-native-cookies (from `../node_modules/react-native-cookies/ios`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-keyevent (from `../node_modules/react-native-keyevent`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - react-native-safe-area (from `../node_modules/react-native-safe-area`)
@@ -361,7 +364,7 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - boost-for-react-native
     - libwebp
     - SDWebImage
@@ -416,6 +419,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-document-picker"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-keyevent:
+    :path: "../node_modules/react-native-keyevent"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-notifications:
@@ -502,6 +507,7 @@ SPEC CHECKSUMS:
   react-native-cookies: 854d59c4135c70b92a02ca4930e68e4e2eb58150
   react-native-document-picker: c36bf5f067a581657ecaf7124dcd921a8be19061
   react-native-image-picker: fd93361c666f397bdf72f9c6c23f13d2685b9173
+  react-native-keyevent: d00a8ed8b92e5261efcf5e75af6ec74c91e7b9f0
   react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1
   react-native-notifications: d5cb54ef8bf3004dcb56c887650dea08ecbddee7
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
@@ -541,4 +547,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 5d115a6e48c4a1683c49388094e119a6e4679c8f
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.8.4

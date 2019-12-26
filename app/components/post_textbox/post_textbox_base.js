@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import Button from 'react-native-button';
+import KeyEvent from 'react-native-keyevent';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
@@ -116,6 +117,13 @@ export default class PostTextBoxBase extends PureComponent {
 
         EventEmitter.on(event, this.handleInsertTextToDraft);
         AppState.addEventListener('change', this.handleAppStateChange);
+        KeyEvent.onKeyUpListener((keyEvent) => {
+            switch (keyEvent.pressedKey) {
+            case 'enter': this.handleSendMessage();
+                break;
+            case 'shift-enter': this.handleInsertTextToDraft('\n');
+            }
+        });
 
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -138,6 +146,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         EventEmitter.off(event, this.handleInsertTextToDraft);
         AppState.removeEventListener('change', this.handleAppStateChange);
+        KeyEvent.removeKeyUpListener();
 
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
