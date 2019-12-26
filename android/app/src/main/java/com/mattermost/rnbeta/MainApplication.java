@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.RestrictionsManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Arrays;
@@ -67,6 +68,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.soloader.SoLoader;
 
 import com.mattermost.share.RealPathUtil;
+
+import com.github.kevinejohn.keyevent.KeyEventPackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
@@ -198,7 +201,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new LinearGradientPackage(),
             new ReactVideoPackage(),
             new RNGestureHandlerPackage(),
-            new RNPasteableTextInputPackage()
+            new RNPasteableTextInputPackage(),
+            new KeyEventPackage()
     );
   }
 
