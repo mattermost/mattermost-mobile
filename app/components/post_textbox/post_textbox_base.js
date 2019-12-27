@@ -277,7 +277,6 @@ export default class PostTextBoxBase extends PureComponent {
     };
 
     handleHardwareEnterPress = (keyEvent) => {
-        console.log('---->', keyEvent);
         switch (keyEvent.pressedKey) {
         case 'enter': this.handleSendMessage();
             break;
