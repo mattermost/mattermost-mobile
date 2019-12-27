@@ -13,7 +13,7 @@ public class MainActivity extends NavigationActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.launch_screen);
     }
-    
+
     /*
     https://mattermost.atlassian.net/browse/MM-10601
     Required by react-native-hw-keyboard-event
@@ -27,7 +27,7 @@ public class MainActivity extends NavigationActivity {
                 return true;
             }
             if (event.getAction() == KeyEvent.ACTION_DOWN && event.isShiftPressed()){
-                HWKeyboardEventModule.getInstance().keyPressed("enter");
+                HWKeyboardEventModule.getInstance().keyPressed("shift-enter");
                 return true;
             }
         }
