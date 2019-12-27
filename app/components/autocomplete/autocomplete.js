@@ -13,6 +13,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {DeviceTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {emptyFunction} from 'app/utils/general';
 
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
@@ -35,6 +36,7 @@ export default class Autocomplete extends PureComponent {
         cursorPositionEvent: PropTypes.string,
         nestedScrollEnabled: PropTypes.bool,
         expandDown: PropTypes.bool,
+        onVisible: PropTypes.func,
     };
 
     static defaultProps = {
@@ -42,6 +44,7 @@ export default class Autocomplete extends PureComponent {
         cursorPosition: 0,
         enableDateSuggestion: false,
         nestedScrollEnabled: false,
+        onVisible: emptyFunction,
     };
 
     static getDerivedStateFromProps(props, state) {
@@ -74,6 +77,8 @@ export default class Autocomplete extends PureComponent {
             keyboardOffset: 0,
             value: props.value,
         };
+
+        this.containerRef = React.createRef();
     }
 
     componentDidMount() {
@@ -100,6 +105,11 @@ export default class Autocomplete extends PureComponent {
         if (this.props.cursorPositionEvent) {
             EventEmitter.off(this.props.cursorPositionEvent, this.handleCursorPositionChange);
         }
+    }
+
+    componentDidUpdate() {
+        const visible = Boolean(this.containerRef.current?._children.length);
+        this.props.onVisible(visible);
     }
 
     onChangeText = (value) => {
@@ -188,7 +198,10 @@ export default class Autocomplete extends PureComponent {
 
         return (
             <View style={wrapperStyles}>
-                <View style={containerStyles}>
+                <View
+                    ref={this.containerRef}
+                    style={containerStyles}
+                >
                     <AtMention
                         {...this.props}
                         cursorPosition={cursorPosition}

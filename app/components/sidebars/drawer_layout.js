@@ -196,14 +196,16 @@ export default class DrawerLayout extends Component {
             left: drawerPosition === 'left' ? 0 : null,
             right: drawerPosition === 'right' ? 0 : null,
         };
-
         /* Drawer styles */
         let outputRange;
+        // ios main sidebar sits mostly under the main screen, with slight move
+        const translateDistance = Platform.OS === 'ios' && drawerPosition === 'left' ?
+            Math.floor(drawerWidth * 0.2) : drawerWidth
 
         if (this.getDrawerPosition() === 'left') {
-            outputRange = [-drawerWidth, 0];
+            outputRange = [-translateDistance, 0];
         } else {
-            outputRange = [drawerWidth, 0];
+            outputRange = [translateDistance, 0];
         }
 
         const drawerTranslateX = this.openValue.interpolate({
@@ -215,30 +217,18 @@ export default class DrawerLayout extends Component {
             transform: [{ translateX: drawerTranslateX }],
         };
 
-        /* Overlay styles */
-        const overlayOpacity = this.openValue.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 0.5],
-            extrapolate: 'clamp',
-        });
-        const animatedOverlayStyles = { opacity: overlayOpacity };
-        const pointerEvents = drawerShown ? 'auto' : 'none';
+        // 0 - ios main drawer
+        // 1 - main | tablet
+        // 2 - overlay
+        // 3 - android main drawer | settings drawer
+        const drawerZIndex = drawerPosition === 'left' && Platform.OS === 'ios' ? 0 : 3
 
         return (
             <React.Fragment>
-                <TouchableWithoutFeedback
-                    pointerEvents={pointerEvents}
-                    onPress={this._onOverlayClick}
-                >
-                    <Animated.View
-                        pointerEvents={pointerEvents}
-                        style={[styles.overlay, animatedOverlayStyles]}
-                    />
-                </TouchableWithoutFeedback>
                 <Animated.View
                     accessibilityViewIsModal={accessibilityViewIsModal}
                     style={[
-                        styles.drawer,
+                        StyleFactory.drawer(drawerZIndex),
                         dynamicDrawerStyles,
                         animatedDrawerStyles,
                     ]}
@@ -271,12 +261,44 @@ export default class DrawerLayout extends Component {
     };
 
     render() {
-        const {isTablet} = this.props;
+        const {drawerPosition, drawerWidth, isTablet} = this.props;
         const panHandlers = isTablet ? emptyObject : this._panResponder.panHandlers;
         const containerStyles = [styles.container];
         if (isTablet) {
             containerStyles.push(styles.tabletContainer);
         }
+
+        const mainStyles = [styles.main]
+        if (drawerPosition === 'left' && Platform.OS === 'ios') {
+            /* Drawer styles */
+            let outputRange;
+            
+            if (this.getDrawerPosition() === 'left') {
+                outputRange = [0, drawerWidth];
+            } else {
+                outputRange = [drawerWidth, 0];
+            }
+            
+            const drawerTranslateX = this.openValue.interpolate({
+                inputRange: [0, 1],
+                outputRange,
+                extrapolate: 'clamp',
+            });
+
+            const animatedDrawerStyles = {
+                transform: [{ translateX: drawerTranslateX }],
+            };
+            mainStyles.push(animatedDrawerStyles)
+        }
+
+        /* Overlay styles */
+        const overlayOpacity = this.openValue.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 0.5],
+            extrapolate: 'clamp',
+        });
+        const animatedOverlayStyles = { opacity: overlayOpacity };
+        const pointerEvents = this.state.drawerShown ? 'auto' : 'none';        
 
         return (
             <View
@@ -284,7 +306,16 @@ export default class DrawerLayout extends Component {
                 {...panHandlers}
             >
                 {this.renderDrawerForTablet()}
-                <Animated.View style={styles.main}>
+                <Animated.View style={mainStyles}>
+                    <TouchableWithoutFeedback
+                        pointerEvents={pointerEvents}
+                        onPress={this._onOverlayClick}
+                    >
+                        <Animated.View
+                            pointerEvents={pointerEvents}
+                            style={[styles.overlay, animatedOverlayStyles]}
+                        />
+                    </TouchableWithoutFeedback>
                     {this.props.children}
                 </Animated.View>
                 {this.renderDrawer()}
@@ -508,6 +539,17 @@ export default class DrawerLayout extends Component {
     }
 }
 
+class StyleFactory {
+    static drawer(zIndex) {
+        return ({
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            zIndex,
+        });
+    }
+}
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -516,27 +558,22 @@ const styles = StyleSheet.create({
     tabletContainer: {
         flexDirection: 'row',
     },
-    drawer: {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        zIndex: 1001,
-    },
     tablet: {
         height: '100%',
-        zIndex: 0,
+        zIndex: 1,
     },
     main: {
         flex: 1,
-        zIndex: 0,
+        zIndex: 1,
+        position: 'relative', // so overlay pins to this View
     },
     overlay: {
         backgroundColor: '#000',
         position: 'absolute',
         top: 0,
-        left: -350,
+        left: 0,
         bottom: 0,
         right: 0,
-        zIndex: 1000,
+        zIndex: 2,
     },
 });

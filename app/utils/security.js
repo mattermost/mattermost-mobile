@@ -19,7 +19,14 @@ export function setCSRFFromCookie(url) {
         CookieManager.get(url, false).then((res) => {
             const token = res.MMCSRF;
             if (token) {
-                Client4.setCSRF(token?.value || token);
+                let value = null;
+                if (typeof token === 'object' && Object.prototype.hasOwnProperty.call(token, 'value')) {
+                    value = token.value;
+                } else {
+                    value = token;
+                }
+
+                Client4.setCSRF(value);
             }
             resolve();
         });
