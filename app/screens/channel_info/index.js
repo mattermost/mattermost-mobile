@@ -68,6 +68,7 @@ function mapStateToProps(state) {
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
     const isFavorite = favoriteChannels && favoriteChannels.indexOf(currentChannel.id) > -1;
     const roles = getCurrentUserRoles(state);
+    const {serverVersion} = state.entities.general;
     let canManageUsers = currentChannel.hasOwnProperty('id') ? canManageChannelMembers(state) : false;
     if (currentChannel.group_constrained) {
         canManageUsers = false;
@@ -112,7 +113,7 @@ function mapStateToProps(state) {
             permission: Permissions.MANAGE_TEAM,
         });
     }
-    const {serverVersion} = state.entities.general;
+
     const canUseUnarchiveFeature = isMinimumServerVersion(serverVersion, 5, 18);
 
     return {
