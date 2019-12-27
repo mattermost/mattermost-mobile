@@ -69,7 +69,7 @@ import com.facebook.soloader.SoLoader;
 
 import com.mattermost.share.RealPathUtil;
 
-import com.github.kevinejohn.keyevent.HWKeyboardEventPackage;
+import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventPackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
