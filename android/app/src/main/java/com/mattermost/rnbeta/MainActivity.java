@@ -14,17 +14,20 @@ public class MainActivity extends NavigationActivity {
         setContentView(R.layout.launch_screen);
     }
 
-
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if(keyCode == KeyEvent.KEYCODE_ENTER && event.isShiftPressed()) {
-            KeyEventModule.getInstance().onKeyUpEvent(88, event);
-            return true;
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && !event.isShiftPressed()){
+                KeyEventModule.getInstance().onKeyUpEvent(999, event);
+                return true;
+            }
+            if (event.getAction() == KeyEvent.ACTION_DOWN && event.isShiftPressed()){
+                KeyEventModule.getInstance().onKeyUpEvent(888, event);
+                return true;
+            }
         }
-        if(keyCode == KeyEvent.KEYCODE_ENTER && !event.isShiftPressed()) {
-            KeyEventModule.getInstance().onKeyUpEvent(55, event);
-            return true;
-        }
-        return super.onKeyUp(keyCode, event);
-    }
+
+        KeyEventModule.getInstance().onKeyUpEvent(event.getKeyCode(), event);
+        return super.dispatchKeyEvent(event);
+    };
 }
