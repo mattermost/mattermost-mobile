@@ -168,18 +168,6 @@ export default class ChannelInfo extends PureComponent {
         goToScreen(screen, title);
     });
 
-    handleLeave = () => {
-        this.handleDeleteUndeleteOrLeave('leave');
-    };
-
-    handleDelete = () => {
-        this.handleDeleteUndeleteOrLeave('delete');
-    };
-
-    handleUndelete = () => {
-        this.handleDeleteUndeleteOrLeave('undelete');
-    };
-
     handleConfirmConvertToPrivate = preventDoubleTap(async () => {
         const {actions, currentChannel} = this.props;
         const result = await actions.convertChannelToPrivate(currentChannel.id);
@@ -233,85 +221,90 @@ export default class ChannelInfo extends PureComponent {
         );
     });
 
-    handleDeleteUndeleteOrLeave = preventDoubleTap((eventType) => {
+    handleLeave = preventDoubleTap(() => {
+        const title = {id: t('mobile.channel_info.alertTitleLeaveChannel'), defaultMessage: 'Leave {term}'};
+        const message = {
+            id: t('mobile.channel_info.alertMessageLeaveChannel'),
+            defaultMessage: 'Are you sure you want to leave the {term} {name}?',
+        };
+        const onPressAction = () => {
+            this.props.actions.leaveChannel(this.props.currentChannel, true).then(() => {
+                this.close();
+            });
+        };
+        this.alertAndHandleYesAction(title, message, onPressAction);
+    });
+
+    handleDelete = preventDoubleTap(() => {
+        const title = {id: t('mobile.channel_info.alertTitleDeleteChannel'), defaultMessage: 'Archive {term}'};
+        const message = {
+            id: t('mobile.channel_info.alertMessageDeleteChannel'),
+            defaultMessage: 'Are you sure you want to archive the {term} {name}?',
+        };
+        const onPressAction = async () => {
+            const result = await this.props.actions.deleteChannel(channel.id);
+            if (result.error) {
+                alertErrorWithFallback(
+                    this.context.intl,
+                    result.error,
+                    {
+                        id: t('mobile.channel_info.delete_failed'),
+                        defaultMessage: "We couldn't archive the channel {displayName}. Please check your connection and try again.",
+                    },
+                    {
+                        displayName: channel.display_name.trim(),
+                    }
+                );
+                if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
+                    this.props.actions.getChannel(channel.id);
+                }
+            } else if (this.props.viewArchivedChannels) {
+                this.props.actions.handleSelectChannel(channel.id);
+                this.close(false);
+            } else {
+                this.props.actions.selectPenultimateChannel(channel.team_id);
+                this.close(false);
+            }
+        };
+        this.alertAndHandleYesAction(title, message, onPressAction);
+    });
+
+    handleUndelete = preventDoubleTap(() => {
+        const title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
+        const message = {
+            id: t('mobile.channel_info.alertMessageUndeleteChannel'),
+            defaultMessage: 'Are you sure you want to unarchive the {term} {name}?',
+        };
+        const onPressAction = async () => {
+            const result = await this.props.actions.undeleteChannel(channel.id);
+            if (result.error) {
+                alertErrorWithFallback(
+                    this.context.intl,
+                    result.error,
+                    {
+                        id: t('mobile.channel_info.undelete_failed'),
+                        defaultMessage: "We couldn't unarchive the channel {displayName}. Please check your connection and try again.",
+                    },
+                    {
+                        displayName: channel.display_name.trim(),
+                    }
+                );
+                if (result.error.server_error_id === 'api.channel.undelete_channel.undeleted.app_error') {
+                    this.props.actions.getChannel(channel.id);
+                }
+            } else {
+                this.close(false);
+            }
+        };
+        this.alertAndHandleYesAction(title, message, onPressAction);
+    });
+
+    alertAndHandleYesAction = (title, message, onPressAction) => {
         const {formatMessage} = this.context.intl;
         const channel = this.props.currentChannel;
         const term = channel.type === General.OPEN_CHANNEL ?
             formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
             formatMessage({id: 'mobile.channel_info.privateChannel', defaultMessage: 'Private Channel'});
-        let title;
-        let message;
-        let onPressAction;
-        if (eventType === 'leave') {
-            title = {id: t('mobile.channel_info.alertTitleLeaveChannel'), defaultMessage: 'Leave {term}'};
-            message = {
-                id: t('mobile.channel_info.alertMessageLeaveChannel'),
-                defaultMessage: 'Are you sure you want to leave the {term} {name}?',
-            };
-            onPressAction = () => {
-                this.props.actions.leaveChannel(channel, true).then(() => {
-                    this.close();
-                });
-            };
-        } else if (eventType === 'delete') {
-            title = {id: t('mobile.channel_info.alertTitleDeleteChannel'), defaultMessage: 'Archive {term}'};
-            message = {
-                id: t('mobile.channel_info.alertMessageDeleteChannel'),
-                defaultMessage: 'Are you sure you want to archive the {term} {name}?',
-            };
-            onPressAction = async () => {
-                const result = await this.props.actions.deleteChannel(channel.id);
-                if (result.error) {
-                    alertErrorWithFallback(
-                        this.context.intl,
-                        result.error,
-                        {
-                            id: t('mobile.channel_info.delete_failed'),
-                            defaultMessage: "We couldn't archive the channel {displayName}. Please check your connection and try again.",
-                        },
-                        {
-                            displayName: channel.display_name.trim(),
-                        }
-                    );
-                    if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
-                        this.props.actions.getChannel(channel.id);
-                    }
-                } else if (this.props.viewArchivedChannels) {
-                    this.props.actions.handleSelectChannel(channel.id);
-                    this.close(false);
-                } else {
-                    this.props.actions.selectPenultimateChannel(channel.team_id);
-                    this.close(false);
-                }
-            };
-        } else if (eventType === 'undelete') {
-            title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
-            message = {
-                id: t('mobile.channel_info.alertMessageUndeleteChannel'),
-                defaultMessage: 'Are you sure you want to unarchive the {term} {name}?',
-            };
-            onPressAction = async () => {
-                const result = await this.props.actions.undeleteChannel(channel.id);
-                if (result.error) {
-                    alertErrorWithFallback(
-                        this.context.intl,
-                        result.error,
-                        {
-                            id: t('mobile.channel_info.undelete_failed'),
-                            defaultMessage: "We couldn't unarchive the channel {displayName}. Please check your connection and try again.",
-                        },
-                        {
-                            displayName: channel.display_name.trim(),
-                        }
-                    );
-                    if (result.error.server_error_id === 'api.channel.undelete_channel.undeleted.app_error') {
-                        this.props.actions.getChannel(channel.id);
-                    }
-                } else {
-                    this.close(false);
-                }
-            };
-        }
 
         Alert.alert(
             formatMessage(title, {term}),
@@ -329,7 +322,7 @@ export default class ChannelInfo extends PureComponent {
                 onPress: onPressAction,
             }],
         );
-    });
+    }
 
     handleClose = preventDoubleTap(() => {
         const {currentChannel, isCurrent, isFavorite} = this.props;
@@ -529,7 +522,6 @@ export default class ChannelInfo extends PureComponent {
                     isLandscape={isLandscape}
                 />
                 {
-
                     /**
                      <ChannelInfoRow
                      action={() => true}
