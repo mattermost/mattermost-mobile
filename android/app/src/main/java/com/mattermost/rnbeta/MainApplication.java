@@ -69,7 +69,7 @@ import com.facebook.soloader.SoLoader;
 
 import com.mattermost.share.RealPathUtil;
 
-import com.github.kevinejohn.keyevent.KeyEventPackage;
+import com.github.kevinejohn.keyevent.HWKeyboardEventPackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
@@ -202,7 +202,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new ReactVideoPackage(),
             new RNGestureHandlerPackage(),
             new RNPasteableTextInputPackage(),
-            new KeyEventPackage()
+            new HWKeyboardEventPackage()
     );
   }
 

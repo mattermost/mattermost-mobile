@@ -18,7 +18,7 @@
 #import <UserNotifications/UserNotifications.h>
 #import "Mattermost-Swift.h"
 #import <os/log.h>
-#import <RNKeyEvent.h>
+#import <RNHWKeyboardEvent.h>
 
 @implementation AppDelegate
 
@@ -141,13 +141,13 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 }
 
 // Required for detecting hardware keystrokes
-RNKeyEvent *keyEvent = nil;
+RNHWKeyboardEvent *hwKeyEvent = nil;
 - (NSMutableArray<UIKeyCommand *> *)keyCommands {
   NSMutableArray *keys = [NSMutableArray new];
-  if (keyEvent == nil) {
-    keyEvent = [[RNKeyEvent alloc] init];
+  if (hwKeyEvent == nil) {
+    hwKeyEvent = [[RNHWKeyboardEvent alloc] init];
   }
-  if ([keyEvent isListening]) {
+  if ([hwKeyEvent isListening]) {
     [keys addObject: [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(sendEnter:)]];
     [keys addObject: [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:UIKeyModifierShift action:@selector(sendShiftEnter:)]];
   }
@@ -156,10 +156,10 @@ RNKeyEvent *keyEvent = nil;
 
 - (void)sendEnter:(UIKeyCommand *)sender {
   NSString *selected = sender.input;
-  [keyEvent sendKeyEvent:@"enter"];
+  [hwKeyEvent sendHWKeyEvent:@"enter"];
 }
 - (void)sendShiftEnter:(UIKeyCommand *)sender {
   NSString *selected = sender.input;
-  [keyEvent sendKeyEvent:@"shift-enter"];
+  [hwKeyEvent sendHWKeyEvent:@"shift-enter"];
 }
 @end

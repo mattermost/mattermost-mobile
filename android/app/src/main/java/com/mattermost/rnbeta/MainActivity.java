@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.reactnativenavigation.NavigationActivity;
 import android.view.KeyEvent;
-import com.github.kevinejohn.keyevent.KeyEventModule;
+import com.github.kevinejohn.keyevent.HWKeyboardEventModule;
 
 public class MainActivity extends NavigationActivity {
     @Override
@@ -18,16 +18,14 @@ public class MainActivity extends NavigationActivity {
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
             if (event.getAction() == KeyEvent.ACTION_DOWN && !event.isShiftPressed()){
-                KeyEventModule.getInstance().onKeyUpEvent(999, event);
+                HWKeyboardEventModule.getInstance().keyPressed("enter");
                 return true;
             }
             if (event.getAction() == KeyEvent.ACTION_DOWN && event.isShiftPressed()){
-                KeyEventModule.getInstance().onKeyUpEvent(888, event);
+                HWKeyboardEventModule.getInstance().keyPressed("enter");
                 return true;
             }
         }
-
-        KeyEventModule.getInstance().onKeyUpEvent(event.getKeyCode(), event);
         return super.dispatchKeyEvent(event);
     };
 }
