@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.reactnativenavigation.NavigationActivity;
 import android.view.KeyEvent;
-import com.github.emilioicai.keyevent.HWKeyboardEventModule;
+import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
 
 public class MainActivity extends NavigationActivity {
     @Override
