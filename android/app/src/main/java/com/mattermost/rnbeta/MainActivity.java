@@ -13,7 +13,12 @@ public class MainActivity extends NavigationActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.launch_screen);
     }
-
+    
+    /*
+    https://mattermost.atlassian.net/browse/MM-10601
+    Required by react-native-hw-keyboard-event
+    (https://github.com/emilioicai/react-native-hw-keyboard-event)
+    */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {

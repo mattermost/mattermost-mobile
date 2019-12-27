@@ -140,7 +140,11 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
                      restorationHandler:restorationHandler];
 }
 
-// Required for detecting hardware keystrokes
+/*
+  https://mattermost.atlassian.net/browse/MM-10601
+  Required by react-native-hw-keyboard-event
+  (https://github.com/emilioicai/react-native-hw-keyboard-event)
+*/
 RNHWKeyboardEvent *hwKeyEvent = nil;
 - (NSMutableArray<UIKeyCommand *> *)keyCommands {
   NSMutableArray *keys = [NSMutableArray new];
