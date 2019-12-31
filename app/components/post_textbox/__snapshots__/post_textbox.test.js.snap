@@ -26,6 +26,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           "alignItems": "stretch",
         }
       }
+      keyboardShouldPersistTaps="always"
       style={
         Array [
           Object {

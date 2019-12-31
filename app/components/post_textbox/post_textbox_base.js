@@ -844,6 +844,7 @@ export default class PostTextBoxBase extends PureComponent {
                 <ScrollView
                     style={this.getInputContainerStyle()}
                     contentContainerStyle={style.inputContentContainer}
+                    keyboardShouldPersistTaps={'always'}
                 >
                     <PasteableTextInput
                         ref={this.input}
