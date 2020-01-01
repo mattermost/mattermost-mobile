@@ -25,6 +25,7 @@ export default class AtMentionItem extends PureComponent {
         isBot: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        isCurrentUser: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -47,6 +48,7 @@ export default class AtMentionItem extends PureComponent {
             isBot,
             isLandscape,
             isGuest,
+            isCurrentUser,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -78,6 +80,7 @@ export default class AtMentionItem extends PureComponent {
                 />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
                 {hasFullName && <Text style={style.rowFullname}>{`${firstName} ${lastName}`}</Text>}
+                {isCurrentUser && <Text style={style.rowFullname}>{' (you)'}</Text>}
             </TouchableWithFeedback>
         );
     }
