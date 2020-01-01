@@ -13,6 +13,7 @@ import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone
 import {BotTag, GuestTag} from 'app/components/tag';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {intlShape} from 'react-intl';
 
 export default class AtMentionItem extends PureComponent {
     static propTypes = {
@@ -33,6 +34,10 @@ export default class AtMentionItem extends PureComponent {
         lastName: '',
     };
 
+    static contextTypes = {
+        intl: intlShape,
+    };
+
     completeMention = () => {
         const {onPress, username} = this.props;
         onPress(username);
@@ -51,6 +56,7 @@ export default class AtMentionItem extends PureComponent {
             isCurrentUser,
         } = this.props;
 
+        const {intl} = this.context;
         const style = getStyleFromTheme(theme);
         const hasFullName = firstName.length > 0 && lastName.length > 0;
 
@@ -80,7 +86,10 @@ export default class AtMentionItem extends PureComponent {
                 />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
                 {hasFullName && <Text style={style.rowFullname}>{`${firstName} ${lastName}`}</Text>}
-                {isCurrentUser && <Text style={style.rowFullname}>{' (you)'}</Text>}
+                {isCurrentUser &&
+                    <Text style={style.rowFullname}>
+                        {` ${intl.formatMessage({id: 'suggestion.mention.you', defaultMessage: '(you)'})}`}
+                    </Text>}
             </TouchableWithFeedback>
         );
     }
