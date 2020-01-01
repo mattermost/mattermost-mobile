@@ -7,7 +7,7 @@ import {General} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {
-    getCurrentUser, getCurrentUserId, getProfilesInCurrentChannel,
+    getCurrentUser, getProfilesInCurrentChannel,
     getProfilesNotInCurrentChannel, getProfilesInCurrentTeam,
 } from 'mattermost-redux/selectors/entities/users';
 import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
@@ -64,9 +64,8 @@ export const getMatchTermForChannelMention = (() => {
 
 export const filterMembersInChannel = createSelector(
     getProfilesInCurrentChannel,
-    getCurrentUserId,
     (state, matchTerm) => matchTerm,
-    (profilesInChannel, currentUserId, matchTerm) => {
+    (profilesInChannel, matchTerm) => {
         if (matchTerm === null) {
             return null;
         }
@@ -89,9 +88,8 @@ export const filterMembersInChannel = createSelector(
 
 export const filterMembersNotInChannel = createSelector(
     getProfilesNotInCurrentChannel,
-    getCurrentUserId,
     (state, matchTerm) => matchTerm,
-    (profilesNotInChannel, currentUserId, matchTerm) => {
+    (profilesNotInChannel, matchTerm) => {
         if (matchTerm === null) {
             return null;
         }
