@@ -21,15 +21,13 @@ public class MainActivity extends NavigationActivity {
     */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN && !event.isShiftPressed()){
+        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (!event.isShiftPressed()){
                 HWKeyboardEventModule.getInstance().keyPressed("enter");
-                return true;
-            }
-            if (event.getAction() == KeyEvent.ACTION_DOWN && event.isShiftPressed()){
+            } else (event.isShiftPressed()){
                 HWKeyboardEventModule.getInstance().keyPressed("shift-enter");
-                return true;
             }
+            return true;
         }
         return super.dispatchKeyEvent(event);
     };
