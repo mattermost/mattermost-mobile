@@ -42,23 +42,20 @@ export function transformSet(incoming, setTransforms, toStorage = true) {
 }
 
 export function waitForHydration(store, callback) {
-    let unsubscribeFromStore;
-    return new Promise((resolve) => {
-        if (__DEV__) {
-            // when in DEV mode resetting the app can get into a white screen
-            resolve();
-            return;
+    if (store.getState().views.root.hydrationComplete) {
+        if (callback && typeof callback === 'function') {
+            callback();
         }
+    } else {
         const subscription = () => {
             if (store.getState().views.root.hydrationComplete) {
                 unsubscribeFromStore();
                 if (callback && typeof callback === 'function') {
                     callback();
                 }
-                resolve();
             }
         };
 
-        unsubscribeFromStore = store.subscribe(subscription);
-    });
+        const unsubscribeFromStore = store.subscribe(subscription);
+    }
 }

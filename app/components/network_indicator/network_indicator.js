@@ -43,7 +43,7 @@ export default class NetworkIndicator extends PureComponent {
             closeWebSocket: PropTypes.func.isRequired,
             connection: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
-            markChannelViewedAndRead: PropTypes.func.isRequired,
+            markChannelViewedAndReadOnReconnect: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
             setChannelRetryFailed: PropTypes.func.isRequired,
             setCurrentUserStatusOffline: PropTypes.func.isRequired,
@@ -245,7 +245,7 @@ export default class NetworkIndicator extends PureComponent {
                 // foreground by tapping a notification from another channel
                 this.clearNotificationTimeout = setTimeout(() => {
                     PushNotifications.clearChannelNotifications(currentChannelId);
-                    actions.markChannelViewedAndRead(currentChannelId);
+                    actions.markChannelViewedAndReadOnReconnect(currentChannelId);
                 }, 1000);
             }
         } else {
