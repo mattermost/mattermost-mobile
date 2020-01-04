@@ -227,7 +227,7 @@ describe('FileAttachmentList', () => {
         wrapper.setProps({files: []});
         expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(1);
         expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledWith(props.postId);
-        wrapper.setProps({files: []});
+        wrapper.setProps({test: 'test'});
         expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(1);
     });
 });
