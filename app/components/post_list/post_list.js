@@ -3,7 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {FlatList, RefreshControl, StyleSheet} from 'react-native';
+import {Alert, FlatList, RefreshControl, StyleSheet} from 'react-native';
+import {intlShape} from 'react-intl';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import * as PostListUtils from 'mattermost-redux/utils/post_list';
@@ -76,6 +77,10 @@ export default class PostList extends PureComponent {
         serverURL: '',
         siteURL: '',
         postIds: [],
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -163,12 +168,25 @@ export default class PostList extends PureComponent {
         const {serverURL, siteURL} = this.props;
 
         const match = matchDeepLink(url, serverURL, siteURL);
+
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
                 this.props.actions.handleSelectChannelByName(match.channelName, match.teamName);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 this.handlePermalinkPress(match.postId, match.teamName);
             }
+        } else {
+            const {formatMessage} = this.context.intl;
+            Alert.alert(
+                formatMessage({
+                    id: 'mobile.server_link.error.title',
+                    defaultMessage: 'Link Error',
+                }),
+                formatMessage({
+                    id: 'mobile.server_link.error.text',
+                    defaultMessage: 'The link could not be found on this server.',
+                }),
+            );
         }
     };
 

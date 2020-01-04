@@ -9,7 +9,6 @@ import {Files} from 'mattermost-redux/constants';
 import {DeepLinkTypes} from 'app/constants';
 
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
-const APP_SCHEME = 'mattermost-beta';
 
 export function isValidUrl(url = '') {
     const regex = /^https?:\/\//i;
@@ -104,15 +103,18 @@ export function matchDeepLink(url, serverURL, siteURL) {
         return null;
     }
 
-    const linkRoot = `(?:${escapeRegex(APP_SCHEME)}:\\/|${escapeRegex(serverURL)}|${escapeRegex(siteURL)})?`;
+    const serverURLWithoutProtocol = removeProtocol(serverURL);
+    const siteURLWithoutProtocol = removeProtocol(siteURL);
 
-    let match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
+    const linkRoot = `(?:${escapeRegex(serverURLWithoutProtocol || siteURLWithoutProtocol)})`;
+
+    let match = new RegExp(linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
 
     if (match) {
         return {type: DeepLinkTypes.CHANNEL, teamName: match[1], channelName: match[2]};
     }
 
-    match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
+    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
     if (match) {
         return {type: DeepLinkTypes.PERMALINK, teamName: match[1], postId: match[2]};
     }

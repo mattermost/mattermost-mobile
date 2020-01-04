@@ -443,6 +443,8 @@
   "mobile.select_team.guest_cant_join_team": "Your guest account has no teams or channels assigned. Please contact an administrator.",
   "mobile.select_team.join_open": "Open teams you can join",
   "mobile.select_team.no_teams": "There are no available teams for you to join.",
+  "mobile.server_link.error.text": "The link could not be found on this server.",
+  "mobile.server_link.error.title": "Link Error",
   "mobile.server_upgrade.button": "OK",
   "mobile.server_upgrade.description": "\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n",
   "mobile.server_upgrade.title": "Server upgrade required",

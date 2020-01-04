@@ -167,14 +167,6 @@ lane :configure do
   # Save the config.json file
   save_config_json('../dist/assets/config.json', json)
 
-  # Set deep link prefix for URL lookups
-  app_scheme = ENV['APP_SCHEME'] || 'mattermost-beta'
-  find_replace_string(
-    path_to_file: './app/utils/url.js',
-    old_string: "APP_SCHEME = 'mattermost-beta'",
-    new_string: "APP_SCHEME = '#{app_scheme}'",
-  )
-
   configured = true
 end
 
