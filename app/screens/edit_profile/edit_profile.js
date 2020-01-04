@@ -310,7 +310,7 @@ export default class EditProfile extends PureComponent {
         const {formatMessage} = this.context.intl;
         const fileTypeWarning = formatMessage({
             id: 'mobile.file_upload.unsupportedMimeType',
-            defaultMessage: 'Only BMP, JPG or PNG images may be used for profile pictures',
+            defaultMessage: 'Only BMP, JPG or PNG images may be used for profile pictures.',
         });
 
         Alert.alert('', fileTypeWarning);
