@@ -121,7 +121,7 @@ export default class Search extends PureComponent {
     componentDidUpdate(prevProps, prevState) {
         const {enableDateSuggestion} = this.props;
         const {recent, didFail, isLoaded, status} = this.state;
-        const {status: prevStatus} = prevProps;
+        const {status: prevStatus} = prevState;
         const shouldScroll = prevStatus !== status &&
             (isLoaded || didFail) &&
             !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore && prevState.recent.length === recent.length;
@@ -529,7 +529,7 @@ export default class Search extends PureComponent {
             isLoading: false,
             didFail: Boolean(error),
             isLoaded: true,
-            status: Boolean(error) ? 'didFail' : 'isLoaded'
+            status: error ? 'didFail' : 'isLoaded',
         });
     };
 
