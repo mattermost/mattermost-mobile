@@ -43,11 +43,18 @@ export default class PinnedPosts extends PureComponent {
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string.isRequired,
-        didFail: PropTypes.bool,
-        isLoading: PropTypes.bool,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            didFail: false,
+            isLoading: false,
+        };
+    }
 
     static defaultProps = {
         postIds: [],
@@ -60,15 +67,27 @@ export default class PinnedPosts extends PureComponent {
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
 
-        const {actions, currentChannelId} = this.props;
+        const {actions} = this.props;
         actions.clearSearch();
-        actions.getPinnedPosts(currentChannelId);
+        this.getPinnedPosts();
     }
 
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-settings') {
             dismissModal();
         }
+    }
+
+    getPinnedPosts = async () => {
+        const {actions, currentChannelId} = this.props;
+
+        this.setState({isLoading: true});
+        const {error} = await actions.getPinnedPosts(currentChannelId);
+
+        this.setState({
+            isLoading: false,
+            didFail: Boolean(error),
+        });
     }
 
     setListRef = (ref) => {
@@ -191,12 +210,12 @@ export default class PinnedPosts extends PureComponent {
     };
 
     retry = () => {
-        const {actions, currentChannelId} = this.props;
-        actions.getPinnedPosts(currentChannelId);
+        this.getPinnedPosts();
     };
 
     render() {
-        const {didFail, isLoading, postIds, theme} = this.props;
+        const {postIds, theme} = this.props;
+        const {didFail, isLoading} = this.state;
 
         let component;
         if (didFail) {

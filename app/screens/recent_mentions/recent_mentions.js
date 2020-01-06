@@ -59,11 +59,28 @@ export default class RecentMentions extends PureComponent {
         super(props);
 
         props.actions.clearSearch();
-        props.actions.getRecentMentions();
+        this.state = {
+            didFail: false,
+            isLoading: false,
+        };
+    }
+
+    getRecentMentions = async () => {
+        const {actions} = this.props;
+
+        this.setState({isLoading: true});
+        const {error} = await actions.getRecentMentions();
+
+        this.setState({
+            isLoading: false,
+            didFail: Boolean(error),
+        });
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
+
+        this.getRecentMentions();
     }
 
     setListRef = (ref) => {
@@ -197,7 +214,8 @@ export default class RecentMentions extends PureComponent {
     };
 
     render() {
-        const {didFail, isLoading, postIds, theme} = this.props;
+        const {postIds, theme} = this.props;
+        const {didFail, isLoading} = this.state;
 
         let component;
         if (didFail) {
