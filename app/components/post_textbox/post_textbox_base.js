@@ -527,15 +527,10 @@ export default class PostTextBoxBase extends PureComponent {
             actions.handleClearFiles(channelId, rootId);
         }
 
-        if (Platform.OS === 'ios') {
-            InteractionManager.runAfterInteractions(() => {
-                this.handleTextChange('');
-                this.setState({sendingMessage: false});
-            });
-        } else {
+        InteractionManager.runAfterInteractions(() => {
             this.handleTextChange('');
             this.setState({sendingMessage: false});
-        }
+        });
 
         this.changeDraft('');
 
